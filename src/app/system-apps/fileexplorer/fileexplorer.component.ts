@@ -225,6 +225,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     });
 
     this.setNavButtonsColor();
+    this.getFileExplorerMenuData();
   }
 
   async ngAfterViewInit():Promise<void>{
@@ -1573,7 +1574,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           {icon1:'',  icon2:'osdrive/icons/arrow_next.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=> console.log(), emptyline:false},
           {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:() => console.log('Refresh'), emptyline:true},
           {icon1:'',  icon2:'', label: 'Paste', nest:[], action: () => console.log('Paste!! Paste!!'), emptyline:false},
-          {icon1:'/osdrive/icons/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), emptyline:false},
+          {icon1:'/osdrive/icons/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), emptyline:true},
           {icon1:'',  icon2:'', label:'Properties', nest:[], action: () => console.log('Properties'), emptyline:false}
       ]
   }
