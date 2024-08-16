@@ -1552,29 +1552,27 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     return sortByMenu
   }
 
-  // buildNewMenu(): NestedMenuItem[]{
+  buildNewMenu(): NestedMenuItem[]{
+    const newFolder:NestedMenuItem={ icon:'osdrive/icons/empty_folder.ico', label:'Folder',  action:()=> console.log(),  variables:true , 
+      emptyline:false, styleOption:'C' }
 
-  //   const newFolder:NestedMenuItem={ icon:'osdrive/icons/empty_folder.ico', label:'Folder',  action: this.createFolder.bind(this),  variables:true , 
-  //     emptyline:false, styleOption:'C' }
+    const textEditor:NestedMenuItem={ icon:'osdrive/icons/text-editor_48.png', label:'Rich Text',  action:  ()=> console.log(),  variables:true , 
+      emptyline:false, styleOption:'C' }
 
-  //   const textEditor:NestedMenuItem={ icon:'osdrive/icons/text-editor_48.png', label:'Rich Text',  action: this.openTextEditor.bind(this),  variables:true , 
-  //     emptyline:false, styleOption:'C' }
+    const sortByMenu = [newFolder, textEditor ]
 
-  //   const codeEditor:NestedMenuItem={ icon:'osdrive/icons/vs-code_48.png', label:'Code Editor',  action: this.openCodeEditor.bind(this),  variables:true , 
-  //       emptyline:false, styleOption:'C' }
-
-  //   const sortByMenu = [newFolder, textEditor, codeEditor ]
-
-  //   return sortByMenu
-  // }
+    return sortByMenu
+  }
 
   getFileExplorerMenuData():void{
     this.fileExplrMenu = [
-          {icon1:'',  icon2: 'osdrive/icons/arrow_next.png', label:'View', nest:this.buildViewByMenu(), action: ()=> console.log(), emptyline:false},
-          {icon1:'',  icon2:'osdrive/icons/arrow_next.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=> console.log(), emptyline:false},
+          {icon1:'',  icon2: 'osdrive/icons/arrow_next_1.png', label:'View', nest:this.buildViewByMenu(), action: ()=> console.log(), emptyline:false},
+          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=> console.log(), emptyline:false},
           {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:() => console.log('Refresh'), emptyline:true},
           {icon1:'',  icon2:'', label: 'Paste', nest:[], action: () => console.log('Paste!! Paste!!'), emptyline:false},
-          {icon1:'/osdrive/icons/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), emptyline:true},
+          {icon1:'/osdrive/icons/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), emptyline:false},
+          {icon1:'osdrive/icons/vs-code_48.png', icon2:'', label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), emptyline:true},
+          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'New', nest:this.buildNewMenu(), action: ()=> console.log(), emptyline:true},
           {icon1:'',  icon2:'', label:'Properties', nest:[], action: () => console.log('Properties'), emptyline:false}
       ]
   }

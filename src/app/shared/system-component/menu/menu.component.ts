@@ -57,5 +57,4 @@ export class MenuComponent implements OnChanges, OnDestroy{
   getKeys(obj: any):void{
     this.keys = Object.keys(obj);
   }
-
 }
