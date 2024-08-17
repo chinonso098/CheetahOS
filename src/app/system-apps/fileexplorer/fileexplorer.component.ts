@@ -77,7 +77,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showPathHistory = false;
   onClearSearchIconHover = false;
   onSearchIconHover = false;
-  showCntxtMenu = false;
+  showIconCntxtMenu = false;
   showFileExplrCntxtMenu = false;
   showInformationTip = false;
   hasWindow = true;
@@ -746,6 +746,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
+
+    console.log('onShowIconContextMenu'); 
+
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
@@ -756,7 +759,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.selectedFile = file;
     this.isIconInFocusDueToPriorAction = false;
     this.showInformationTip = false;
-    this.showCntxtMenu = !this.showCntxtMenu;
+    this.showIconCntxtMenu = !this.showIconCntxtMenu;
 
     // show IconContexMenu is still a btn click, just a different type
     this.doBtnClickThings(id);
@@ -878,7 +881,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
   
   onHideIconContextMenu():void{
-    this.showCntxtMenu = false;
+    this.showIconCntxtMenu = false;
+    this.showFileExplrCntxtMenu = false;
 
     //First case - I'm clicking only on the desktop icons
     if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt == 0)){  
@@ -913,7 +917,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  showFileExplorerContextMenu(evt:MouseEvent,):void{
+  onShowFileExplorerContextMenu(evt:MouseEvent,):void{
+
+    console.log('showFileExplorerContextMenu'); 
+
+    if(this.showIconCntxtMenu)
+        return;
 
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const x = evt.clientX - rect.left;
@@ -1526,9 +1535,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const titlesIcon:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Titles icons', action: () => this.isTitleIcon = !this.isTitleIcon, variables:this.isTitleIcon,
         emptyline:false, styleOption:'A' }
 
-
-
-    const viewByMenu = [extraLargeIcon, largeIcon, mediumIcon, smallIcon, listIcon,detailsIcon, titlesIcon];
+    const viewByMenu = [extraLargeIcon, largeIcon, mediumIcon, smallIcon, listIcon, detailsIcon, titlesIcon];
 
     return viewByMenu;
   }

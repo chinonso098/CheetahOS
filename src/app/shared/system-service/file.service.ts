@@ -12,7 +12,6 @@ import * as BrowserFS from 'browserfs';
 import { Buffer } from 'buffer';
 import osDriveFileSystemIndex from '../../../osdrive.json';
 import ini  from 'ini';
-import { P } from "@angular/cdk/keycodes";
 
 @Injectable({
     providedIn: 'root'

@@ -44,7 +44,7 @@
   <div class="dm-dsktp-vertical-menu">
     <div class="dm-dsktp-empty-line-container"></div>
 
-    <div class="dm-dsktp-vertical-sub-menu" *ngFor="let menuItem of desktopMenu" >
+    <div class="dm-dsktp-vertical-sub-menu" *ngFor="let menuItem of nestedMenu" >
 
       <div  *ngIf="menuItem.label !== paste" class="dm-dsktp-vertical-menu-item" (click)="onMenuItemClick(menuItem.action)">
         <div class="dm-dsktp-head"><figure class="dm-dsktp-figure"><img *ngIf="menuItem.icon1" class="dm-dsktp-img" [src]="menuItem.icon1"/></figure></div>
@@ -98,7 +98,7 @@
   <div class="dm-fileExplr-vertical-menu">
     <div class="dm-fileExplr-empty-line-container"></div>
 
-    <div class="dm-fileExplr-vertical-sub-menu" *ngFor="let menuItem of desktopMenu" >
+    <div class="dm-fileExplr-vertical-sub-menu" *ngFor="let menuItem of nestedMenu" >
 
       <div  *ngIf="menuItem.label !== paste" class="dm-fileExplr-vertical-menu-item" (click)="onMenuItemClick(menuItem.action)">
         <div class="dm-fileExplr-head"><figure class="dm-fileExplr-figure"><img *ngIf="menuItem.icon1" class="dm-fileExplr-img" [src]="menuItem.icon1"/></figure></div>

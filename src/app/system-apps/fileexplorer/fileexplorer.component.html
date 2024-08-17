@@ -257,7 +257,7 @@
                 <!-- ngDraggable  [inBounds]="true" zIndex="1" [preventDefaultEvent]="true"
                     (stopped)="onDragEnd($event)" (started)="onDragStart($event)" -->
                 
-                    <ol [ngClass]="olClassName" (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="onHideIconContextMenu()" (contextmenu)="showFileExplorerContextMenu($event)" id="olElmnt-{{this.processId}}"> 
+                    <ol [ngClass]="olClassName" (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="onHideIconContextMenu()" (contextmenu)="onShowFileExplorerContextMenu($event)" id="olElmnt-{{this.processId}}"> 
                         <ng-container [ngTemplateOutlet]="currentViewOption === smallIconsView ? iconsView :
                                                           currentViewOption === mediumIconsView ? iconsView :
                                                           currentViewOption === largeIconsView ? iconsView : 
@@ -397,8 +397,8 @@
                         </div>
                 
     
-                        <cos-menu [generalMenu]="menuData" *ngIf="showCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption"> </cos-menu>
-                        <cos-menu [desktopMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
+                        <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption"> </cos-menu>
+                        <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
     
                         <div class="fx-information-tip-container" id="fx-information-tip-{{this.processId}}"  *ngIf="showInformationTip">
                             <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >

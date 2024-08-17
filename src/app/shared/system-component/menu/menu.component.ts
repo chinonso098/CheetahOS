@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
 export class MenuComponent implements OnChanges, OnDestroy{
 
   @Input() generalMenu: GeneralMenu[] = [];
-  @Input() desktopMenu: NestedMenu[] = [];
+  @Input() nestedMenu: NestedMenu[] = [];
   @Input() fileExplorerMenu: NestedMenu[] = [];
   @Input() menuType = '';
 
@@ -20,16 +20,16 @@ export class MenuComponent implements OnChanges, OnDestroy{
   isPasteActive!:boolean;
 
   menuOption = '';
-  fileExplrMngrMenuOption = "file-explorer-file-manager-menu";
   tskBarMenuOption =  "taskbar-menu";
   deskTopMenuOption =  "desktop-menu";
   fileExplrMenuOption =  "file-explorer-menu";
+  fileExplrMngrMenuOption = "file-explorer-file-manager-menu";
+
   keys: string[] = [];
-  paste = 'Paste';
+  readonly paste = 'Paste';
 
   constructor(menuService:MenuService) { 
     this._menuService = menuService;
-
     this.isPasteActive = this._menuService.getPasteState();
     this._storeDataSub = this._menuService.storeData.subscribe(p => {
 
