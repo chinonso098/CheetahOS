@@ -10,6 +10,7 @@ export interface NestedMenu{
     label: string; 
     nest: NestedMenuItem[]; 
     action: () => void; 
+    action1: () => void; 
     emptyline: boolean; 
 }
 

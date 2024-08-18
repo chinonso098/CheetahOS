@@ -80,7 +80,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showIconCntxtMenu = false;
   showFileExplrCntxtMenu = false;
   showInformationTip = false;
-  hasWindow = true;
+  iconCntxtCntr = 0;
+  fileExplrCntxtCntr = 0;
+
+  currentXPosition = 0;
+  currentYPosition = 0;
+
   //hideInformationTip = false;
 
   fileExplrCntxtMenuStyle:Record<string, unknown> = {};
@@ -174,6 +179,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   type = ComponentType.System;
   directory ='/';
   displayName = 'fileexplorer';
+  hasWindow = true;
 
 
 
@@ -747,7 +753,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
 
-    console.log('onShowIconContextMenu'); 
+    this.iconCntxtCntr++;
+    if(this.showFileExplrCntxtMenu){
+      this.showFileExplrCntxtMenu = false;
+      this.fileExplrCntxtCntr = 0;
+    }
 
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const x = evt.clientX - rect.left;
@@ -759,7 +769,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.selectedFile = file;
     this.isIconInFocusDueToPriorAction = false;
     this.showInformationTip = false;
-    this.showIconCntxtMenu = !this.showIconCntxtMenu;
+
+    if(!this.showIconCntxtMenu)
+      this.showIconCntxtMenu = !this.showIconCntxtMenu;
 
     // show IconContexMenu is still a btn click, just a different type
     this.doBtnClickThings(id);
@@ -883,6 +895,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onHideIconContextMenu():void{
     this.showIconCntxtMenu = false;
     this.showFileExplrCntxtMenu = false;
+    this.iconCntxtCntr = 0;
+    this.fileExplrCntxtCntr = 0;
 
     //First case - I'm clicking only on the desktop icons
     if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt == 0)){  
@@ -919,20 +933,46 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onShowFileExplorerContextMenu(evt:MouseEvent,):void{
 
-    console.log('showFileExplorerContextMenu'); 
-
-    if(this.showIconCntxtMenu)
+    this.fileExplrCntxtCntr++;
+    if(this.iconCntxtCntr >= this.fileExplrCntxtCntr)
         return;
+    else{
+      this.showIconCntxtMenu = false;
+      this.iconCntxtCntr = 0;
+    }
 
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-    const x = evt.clientX - rect.left;
-    const y = evt.clientY - rect.top;
+    // console.log('rect:', rect);
+    // console.log('evt:',evt);
+
+    const horizontalMin = rect.x;
+    const horizontalMax = rect.right
+    const verticalMin = rect.top;
+    const verticalMax = rect.bottom;
+
+    let x = 0;
+    let y = 0;
+
+    if((horizontalMax - evt.clientX) >= 0 && (horizontalMax - evt.clientX) <= 25){
+      x = evt.clientX - rect.left - 25;
+      this.currentXPosition  = x;
+      y = evt.clientY - rect.top;
+      this.currentYPosition = y;
+    }else{
+
+       x = evt.clientX - rect.left;
+       y = evt.clientY - rect.top;
+    }
+ 
+
+    // console.log(`horizontalMin:${horizontalMin} horizontalMax:${horizontalMax} verticalMin:${verticalMin} verticalMax:${verticalMax}`);
+    // console.log(`horizontal-x:${x} vertical-y:${y}`);
     
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
 
-
-    this.showFileExplrCntxtMenu = !this.showFileExplrCntxtMenu;
+    if(!this.showFileExplrCntxtMenu)
+      this.showFileExplrCntxtMenu = !this.showFileExplrCntxtMenu;
 
     this.fileExplrCntxtMenuStyle = {
       'position': 'absolute', 
@@ -940,6 +980,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       'z-index': 2,
     }
     evt.preventDefault();
+  }
+
+  moveNestMenuOver():void{
+    const fileExplrNestedMenu =  document.getElementById("dmfileExplrNestedMenu") as HTMLDivElement;
+    console.log('fileExplrNestedMenu:',fileExplrNestedMenu);
+
+    if(fileExplrNestedMenu)
+      fileExplrNestedMenu.style.left = '-98%';
   }
 
   onDragStart(evt:any):void{
@@ -1573,14 +1621,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   getFileExplorerMenuData():void{
     this.fileExplrMenu = [
-          {icon1:'',  icon2: 'osdrive/icons/arrow_next_1.png', label:'View', nest:this.buildViewByMenu(), action: ()=> console.log(), emptyline:false},
-          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=> console.log(), emptyline:false},
-          {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:() => console.log('Refresh'), emptyline:true},
-          {icon1:'',  icon2:'', label: 'Paste', nest:[], action: () => console.log('Paste!! Paste!!'), emptyline:false},
-          {icon1:'/osdrive/icons/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), emptyline:false},
-          {icon1:'osdrive/icons/vs-code_48.png', icon2:'', label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), emptyline:true},
-          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'New', nest:this.buildNewMenu(), action: ()=> console.log(), emptyline:true},
-          {icon1:'',  icon2:'', label:'Properties', nest:[], action: () => console.log('Properties'), emptyline:false}
+          {icon1:'',  icon2: 'osdrive/icons/arrow_next_1.png', label:'View', nest:this.buildViewByMenu(), action: ()=> '', action1: this.moveNestMenuOver.bind(this), emptyline:false},
+          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=> '', action1: ()=> '', emptyline:false},
+          {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:() => console.log('Refresh'), action1: ()=> '', emptyline:true},
+          {icon1:'',  icon2:'', label: 'Paste', nest:[], action: () => console.log('Paste!! Paste!!'), action1: ()=> '', emptyline:false},
+          {icon1:'/osdrive/icons/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), action1: ()=> '', emptyline:false},
+          {icon1:'osdrive/icons/vs-code_48.png', icon2:'', label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> '', emptyline:true},
+          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'New', nest:this.buildNewMenu(), action: ()=> console.log(), action1: ()=> '', emptyline:true},
+          {icon1:'',  icon2:'', label:'Properties', nest:[], action: () => console.log('Properties'), action1: ()=> '', emptyline:false}
       ]
   }
 

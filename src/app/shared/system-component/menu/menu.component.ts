@@ -54,6 +54,10 @@ export class MenuComponent implements OnChanges, OnDestroy{
     action();
   }
 
+  onMenuItemHover(action1: () => void): void {
+    action1();
+  }
+
   getKeys(obj: any):void{
     this.keys = Object.keys(obj);
   }

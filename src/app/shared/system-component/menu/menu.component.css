@@ -221,7 +221,7 @@ span.dm-tail{
     transition-delay:1s;
 }
 
-.turnOffHoverEffect {
+.turn-off-hover-effect {
     pointer-events: none;
 }
 
@@ -393,21 +393,6 @@ span.dm-tail{
     transition-delay:1s;
 }
 
-.turnOffHoverEffect {
-    pointer-events: none;
-}
-
-@keyframes fade {
-    from {
-      opacity: 0;
-      transform: translateY(0);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-}
-  
 .dm-fileExplr-head{
     max-width: 25%;
     padding-left: 4px;
