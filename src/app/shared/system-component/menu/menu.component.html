@@ -4,7 +4,7 @@
 </ng-container>
 
 <ng-template #fileExplrMngrMenu>
-  <div class="dm-vertical-menu">
+  <div class="dm-vertical-menu" id="dmfileExplrMngrMenu">
     <div class="dm-empty-line-container"></div>
 
     <div lass="dm-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
@@ -41,7 +41,7 @@
 </ng-template>
 
 <ng-template #dsktpMenu>
-  <div class="dm-dsktp-vertical-menu">
+  <div class="dm-dsktp-vertical-menu" id="dmdskptNestedMenu">
     <div class="dm-dsktp-empty-line-container"></div>
 
     <div class="dm-dsktp-vertical-sub-menu" *ngFor="let menuItem of nestedMenu" >
@@ -95,10 +95,10 @@
 </ng-template>
 
 <ng-template #fileExplrMenu>
-  <div class="dm-fileExplr-vertical-menu">
+  <div class="dm-fileExplr-vertical-menu" id="dmfileExplrNestedMenu">
     <div class="dm-fileExplr-empty-line-container" ></div>
 
-    <div class="dm-fileExplr-vertical-sub-menu" *ngFor="let menuItem of nestedMenu" >
+    <div class="dm-fileExplr-vertical-sub-menu" *ngFor="let menuItem of nestedMenu; let i = index" >
 
       <div  *ngIf="menuItem.label !== paste" class="dm-fileExplr-vertical-menu-item" (click)="onMenuItemClick(menuItem.action)" (mouseenter)="onMenuItemHover(menuItem.action1)">
         <div class="dm-fileExplr-head"><figure class="dm-fileExplr-figure"><img *ngIf="menuItem.icon1" class="dm-fileExplr-img" [src]="menuItem.icon1"/></figure></div>
@@ -120,7 +120,7 @@
       </div>
 
 
-      <div  *ngIf="menuItem.nest.length" class="dm-fileExplr-vertical-sub-menu-content" id="dmfileExplrNestedMenu">
+      <div  *ngIf="menuItem.nest.length" class="dm-fileExplr-vertical-sub-menu-content" id="dmfileExplrNestedMenu-{{i}}">
         <div class="dm-fileExplr-empty-line-container"></div>
           <div *ngFor="let item of menuItem.nest" (click)="onMenuItemClick(item.action)">
             <div class="dm-fileExplr-vertical-menu-item">
