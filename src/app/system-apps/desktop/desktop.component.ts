@@ -86,7 +86,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   dskTopCntxtMenuStyle:Record<string, unknown> = {};
   tskBarCntxtMenuStyle:Record<string, unknown> = {};
   tskBarPrevWindowStyle:Record<string, unknown> = {};
-  deskTopMenuOption =  "desktop-menu";
+  deskTopMenuOption =  "nested-menu";
   showDesktopCntxtMenu = false;
   showTskBarCntxtMenu = false;
   showTskBarPreviewWindow = false;
@@ -535,15 +535,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   getDesktopMenuData():void{
     this.deskTopMenu = [
-          {icon1:'',  icon2: 'osdrive/icons/arrow_next.png', label:'View', nest:this.buildViewByMenu(), action: ()=>'', action1: ()=> '', emptyline:false},
-          {icon1:'',  icon2:'osdrive/icons/arrow_next.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=>'', action1: ()=> '', emptyline:false},
+          {icon1:'',  icon2: 'osdrive/icons/arrow_next_1.png', label:'View', nest:this.buildViewByMenu(), action: ()=>'', action1: ()=> '', emptyline:false},
+          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=>'', action1: ()=> '', emptyline:false},
           {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:this.refresh.bind(this), action1: ()=> '', emptyline:true},
           {icon1:'',  icon2:'', label: 'Paste', nest:[], action:this.onPaste.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'/osdrive/icons/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'/osdrive/icons/camera_48.png', icon2:'', label:'Screen Shot', nest:[], action: this.captureComponentImg.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'',  icon2:'', label:'Next Background', nest:[], action: this.nextBackground.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'',  icon2:'', label:'Previous Background', nest:[], action: this.previousBackground.bind(this), action1: ()=> '', emptyline:true},
-          {icon1:'',  icon2:'osdrive/icons/arrow_next.png', label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: ()=> '', emptyline:true},
+          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: ()=> '', emptyline:true},
           {icon1:'',  icon2:'', label:'Many Thanks', nest:[], action: this.openMarkDownViewer.bind(this), action1: ()=> '', emptyline:false}
       ]
   }

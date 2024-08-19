@@ -158,7 +158,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileExplrMenu:NestedMenu[] = [];
 
   fileExplrMngrMenuOption = "file-explorer-file-manager-menu";
-  fileExplrMenuOption = "file-explorer-menu";
+  fileExplrMenuOption = "nested-menu";
 
   fileInfoTipData = [{label:'', data:''}];
 
@@ -750,6 +750,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
 
+    const menuHeight = 213; //this is not ideal
     this.iconCntxtCntr++;
     if(this.showFileExplrCntxtMenu){
       this.showFileExplrCntxtMenu = false;
@@ -757,8 +758,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
 
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-    const x = evt.clientX - rect.left;
-    const y = evt.clientY - rect.top;
+    const axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
     
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
@@ -776,7 +776,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.fileExplrCntxtMenuStyle = {
       'position': 'absolute', 
-      'transform':`translate(${String(x)}px, ${String(y)}px)`,
+      'transform':`translate(${String(axis.xAxis)}px, ${String(axis.yAxis)}px)`,
       'z-index': 2,
     }
 
@@ -931,6 +931,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onShowFileExplorerContextMenu(evt:MouseEvent):void{
 
+    const menuHeight = 230; //this is not ideal
     this.fileExplrCntxtCntr++;
     if(this.iconCntxtCntr >= this.fileExplrCntxtCntr)
         return;
@@ -940,33 +941,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
 
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-    console.log('rect:', rect);
-    console.log('evt:',evt);
+    const axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
 
-    // const horizontalMin = rect.x;
-    // const horizontalMax = rect.right
-    // const verticalMin = rect.top;
-    // const verticalMax = rect.bottom;
-
-    const axis = this.checkAndHandleMenuBounds(rect, evt);
-    // let x = 0;
-    // let y = 0;
-
-    // if((horizontalMax - evt.clientX) >= 0 && (horizontalMax - evt.clientX) <= 10){
-    //   x = evt.clientX - rect.left - 10;
-    //   this.currentXPosition  = x;
-    //   y = evt.clientY - rect.top;
-    //   this.currentYPosition = y;
-    // }else{
-
-    //    x = evt.clientX - rect.left;
-    //    y = evt.clientY - rect.top;
-    // }
- 
-
-    // console.log(`horizontalMin:${horizontalMin} horizontalMax:${horizontalMax} verticalMin:${verticalMin} verticalMax:${verticalMax}`);
-    // console.log(`horizontal-x:${x} vertical-y:${y}`);
-    
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
 
@@ -981,7 +957,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     evt.preventDefault();
   }
 
-  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent):{ xAxis: number; yAxis: number; }{
+  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):{ xAxis: number; yAxis: number; }{
 
     let xAxis = 0;
     let yAxis = 0;
@@ -991,7 +967,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const verticalMax = rect.bottom;
     const horizontalDiff =  horizontalMax - evt.clientX;
     const verticalDiff = verticalMax - evt.clientY;
-    const menuHeight = 230; //get menu height here
     let horizontalShift = false;
     let verticalShift = false;
 
@@ -1015,6 +990,22 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     return {xAxis, yAxis};
   }
 
+
+  //menu doesn't exist when this method is first called
+  // getMenuHeight(menuId:string):number{
+  //   const nestedMenu =  document.getElementById(menuId) as HTMLDivElement;
+  //   let menuHeight = 0;
+  //   console.log('nestedMenu:', nestedMenu);
+
+  //   setTimeout(()=>{
+  //     if(nestedMenu){
+  //       menuHeight = Number(nestedMenu.style.height);
+  //       console.log('menu height:', menuHeight);
+  //     }
+  //   },200)
+  //   return menuHeight
+  // }
+
   shiftViewSubMenu():void{ this.shiftNestedMenuPosition(0); }
 
   shiftSortBySubMenu():void{this.shiftNestedMenuPosition(1);  }
@@ -1022,12 +1013,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   shiftNewSubMenu():void { this.shiftNestedMenuPosition(6); }
 
   shiftNestedMenuPosition(i:number):void{
-    const fileExplrNestedMenu =  document.getElementById(`dmfileExplrNestedMenu-${i}`) as HTMLDivElement;
-    if(fileExplrNestedMenu){
+    const nestedMenu =  document.getElementById(`dmNestedMenu-${i}`) as HTMLDivElement;
+    if(nestedMenu){
       if(this.isShiftSubMenuLeft)
-          fileExplrNestedMenu.style.left = '-98%';
+          nestedMenu.style.left = '-98%';
     }
-
   }
 
   onDragStart(evt:any):void{
@@ -1052,7 +1042,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   onDragEnd(evt:any):void{
-
 1
   }
 

@@ -1,6 +1,5 @@
 <ng-container [ngTemplateOutlet]="menuOption === fileExplrMngrMenuOption ? fileExplrMngrMenu :
-                                  menuOption === tskBarMenuOption ? tskBarMenu: 
-                                  menuOption === deskTopMenuOption ? dsktpMenu: fileExplrMenu  ">
+                                  menuOption === tskBarMenuOption ? tskBarMenu : nestedMenu0  ">
 </ng-container>
 
 <ng-template #fileExplrMngrMenu>
@@ -40,110 +39,57 @@
   
 </ng-template>
 
-<ng-template #dsktpMenu>
-  <div class="dm-dsktp-vertical-menu" id="dmdskptNestedMenu">
-    <div class="dm-dsktp-empty-line-container"></div>
 
-    <div class="dm-dsktp-vertical-sub-menu" *ngFor="let menuItem of nestedMenu" >
+<ng-template #nestedMenu0>
+  <div class="dm-nested-vertical-menu" id="dmNestedMenu">
+    <div class="dm-nested-empty-line-container" ></div>
 
-      <div  *ngIf="menuItem.label !== paste" class="dm-dsktp-vertical-menu-item" (click)="onMenuItemClick(menuItem.action)">
-        <div class="dm-dsktp-head"><figure class="dm-dsktp-figure"><img *ngIf="menuItem.icon1" class="dm-dsktp-img" [src]="menuItem.icon1"/></figure></div>
-        <div class="dm-dsktp-mid"><p class="dm-dsktp-p"> {{menuItem.label}}</p></div>
-        <div class="dm-dsktp-tail"><figure class="dm-dsktp-figure"> <img *ngIf="menuItem.icon2" class="dm-dsktp-img" [src]="menuItem.icon2"/></figure></div>
+    <div class="dm-nested-vertical-sub-menu" *ngFor="let menuItem of nestedMenu; let i = index" >
+
+      <div  *ngIf="menuItem.label !== paste" class="dm-nested-vertical-menu-item" (click)="onMenuItemClick(menuItem.action)" (mouseenter)="onMenuItemHover(menuItem.action1)">
+        <div class="dm-nested-head"><figure class="dm-nested-figure"><img *ngIf="menuItem.icon1" class="dm-nested-img" [src]="menuItem.icon1"/></figure></div>
+        <div class="dm-nested-mid"><p class="dm-nested-p"> {{menuItem.label}}</p></div>
+        <div class="dm-nested-tail"><figure class="dm-nested-figure"> <img *ngIf="menuItem.icon2" class="dm-nested-img" [src]="menuItem.icon2"/></figure></div>
       </div>
 
-      <div  *ngIf="menuItem.label === paste  && isPasteActive" class="dm-dsktp-vertical-menu-item" (click)="onMenuItemClick(menuItem.action)">
-        <div class="dm-dsktp-head"><figure class="dm-dsktp-figure"><img *ngIf="menuItem.icon1" class="dm-dsktp-img" [src]="menuItem.icon1"/></figure></div>
-        <div class="dm-dsktp-mid"><p class="dm-dsktp-p"> {{menuItem.label}}</p></div>
-        <div class="dm-dsktp-tail"><figure class="dm-dsktp-figure"> <img *ngIf="menuItem.icon2" class="dm-dsktp-img" [src]="menuItem.icon2"/></figure></div>
-      </div>
-
-
-      <div  *ngIf="menuItem.label === paste  && !isPasteActive" class="dm-dsktp-vertical-menu-item turn-off-hover-effect ">
-        <div class="dm-dsktp-head"><figure class="dm-dsktp-figure"><img *ngIf="menuItem.icon1" class="dm-dsktp-img" [src]="menuItem.icon1"/></figure></div>
-        <div class="dm-dsktp-mid-disabled"><p class="dm-dsktp-p"> {{menuItem.label}}</p></div>
-        <div class="dm-dsktp-tail"><figure class="dm-dsktp-figure"> <img *ngIf="menuItem.icon2" class="dm-dsktp-img" [src]="menuItem.icon2"/></figure></div>
+      <div  *ngIf="menuItem.label === paste  && isPasteActive" class="dm-nested-vertical-menu-item" (click)="onMenuItemClick(menuItem.action)">
+        <div class="dm-nested-head"><figure class="dm-nested-figure"><img *ngIf="menuItem.icon1" class="dm-nested-img" [src]="menuItem.icon1"/></figure></div>
+        <div class="dm-nested-mid"><p class="dm-nested-p"> {{menuItem.label}}</p></div>
+        <div class="dm-nested-tail"><figure class="dm-nested-figure"> <img *ngIf="menuItem.icon2" class="dm-nested-img" [src]="menuItem.icon2"/></figure></div>
       </div>
 
 
-      <div  *ngIf="menuItem.nest.length" class="dm-dsktp-vertical-sub-menu-content" >
-        <div class="dm-dsktp-empty-line-container"></div>
+      <div  *ngIf="menuItem.label === paste  && !isPasteActive" class="dm-nested-vertical-menu-item turn-off-hover-effect ">
+        <div class="dm-nested-head"><figure class="dm-nested-figure"><img *ngIf="menuItem.icon1" class="dm-nested-img" [src]="menuItem.icon1"/></figure></div>
+        <div class="dm-nested-mid-disabled"><p class="dm-nested-p"> {{menuItem.label}}</p></div>
+        <div class="dm-nested-tail"><figure class="dm-nested-figure"> <img *ngIf="menuItem.icon2" class="dm-nested-img" [src]="menuItem.icon2"/></figure></div>
+      </div>
+
+
+      <div  *ngIf="menuItem.nest.length" class="dm-nested-vertical-sub-menu-content" id="dmNestedMenu-{{i}}">
+        <div class="dm-nested-empty-line-container"></div>
           <div *ngFor="let item of menuItem.nest" (click)="onMenuItemClick(item.action)">
-            <div class="dm-dsktp-vertical-menu-item">
-              <div class="dm-dsktp-head"><figure [ngClass]=" item.styleOption === 'A' ?'dm-dsktp-figure-alt' : 'dm-dsktp-figure-alt2'">
-                                          <img *ngIf="item.variables" [ngClass]=" item.styleOption === 'A' ?'dm-dsktp-img-alt' : 'dm-dsktp-img-alt2' " [src]="item.icon"/>
+            <div class="dm-nested-vertical-menu-item">
+              <div class="dm-nested-head"><figure [ngClass]=" item.styleOption === 'A' ?'dm-nested-figure-alt' : 'dm-nested-figure-alt2'">
+                                          <img *ngIf="item.variables" [ngClass]=" item.styleOption === 'A' ?'dm-nested-img-alt' : 'dm-nested-img-alt2'" [src]="item.icon"/>
                                         </figure>
               </div>
-              <div class="dm-dsktp-mid" *ngIf="item.styleOption === 'A' || item.styleOption === 'B'">{{item.label}}</div>
-              <div class="dm-dsktp-mid"  *ngIf="item.styleOption === 'C'" ><p class="dm-dsktp-p"> {{item.label}}</p></div>
-              <div class="dm-dsktp-tail"><figure class="dm-dsktp-figure"></figure></div>
+              <div class="dm-nested-mid" *ngIf="item.styleOption === 'A' || item.styleOption === 'B'">{{item.label}}</div>
+              <div class="dm-nested-mid"  *ngIf="item.styleOption === 'C'" ><p class="dm-nested-p"> {{item.label}}</p></div>
+              <div class="dm-nested-tail"><figure class="dm-nested-figure"></figure></div>
             </div>
     
-            <div *ngIf="item.emptyline" class="dm-dsktp-empty-line-container"></div>
-            <div *ngIf="item.emptyline" class="dm-dsktp-line-container"><div class="dm-dsktp-line"></div></div>
-            <div *ngIf="item.emptyline" class="dm-dsktp-empty-line-container"></div>
+            <div *ngIf="item.emptyline" class="dm-nested-empty-line-container"></div>
+            <div *ngIf="item.emptyline" class="dm-nested-line-container"><div class="dm-nested-line"></div></div>
+            <div *ngIf="item.emptyline" class="dm-nested-empty-line-container"></div>
           </div>
-        <div class="dm-dsktp-empty-line-container"></div>
+        <div class="dm-nested-empty-line-container"></div>
       </div>
 
-      <div *ngIf="menuItem.emptyline" class="dm-dsktp-empty-line-container"></div>
-      <div *ngIf="menuItem.emptyline" class="dm-dsktp-line-container"><div class="dm-dsktp-line"></div></div>
-      <div *ngIf="menuItem.emptyline" class="dm-dsktp-empty-line-container"></div>
+      <div *ngIf="menuItem.emptyline" class="dm-nested-empty-line-container"></div>
+      <div *ngIf="menuItem.emptyline" class="dm-nested-line-container"><div class="dm-nested-line"></div></div>
+      <div *ngIf="menuItem.emptyline" class="dm-nested-empty-line-container"></div>
     </div>
-    <div class="dm-dsktp-empty-line-container1"></div>  
-  </div>
-</ng-template>
-
-<ng-template #fileExplrMenu>
-  <div class="dm-fileExplr-vertical-menu" id="dmfileExplrNestedMenu">
-    <div class="dm-fileExplr-empty-line-container" ></div>
-
-    <div class="dm-fileExplr-vertical-sub-menu" *ngFor="let menuItem of nestedMenu; let i = index" >
-
-      <div  *ngIf="menuItem.label !== paste" class="dm-fileExplr-vertical-menu-item" (click)="onMenuItemClick(menuItem.action)" (mouseenter)="onMenuItemHover(menuItem.action1)">
-        <div class="dm-fileExplr-head"><figure class="dm-fileExplr-figure"><img *ngIf="menuItem.icon1" class="dm-fileExplr-img" [src]="menuItem.icon1"/></figure></div>
-        <div class="dm-fileExplr-mid"><p class="dm-fileExplr-p"> {{menuItem.label}}</p></div>
-        <div class="dm-fileExplr-tail"><figure class="dm-fileExplr-figure"> <img *ngIf="menuItem.icon2" class="dm-fileExplr-img" [src]="menuItem.icon2"/></figure></div>
-      </div>
-
-      <div  *ngIf="menuItem.label === paste  && isPasteActive" class="dm-fileExplr-vertical-menu-item" (click)="onMenuItemClick(menuItem.action)">
-        <div class="dm-fileExplr-head"><figure class="dm-fileExplr-figure"><img *ngIf="menuItem.icon1" class="dm-fileExplr-img" [src]="menuItem.icon1"/></figure></div>
-        <div class="dm-fileExplr-mid"><p class="dm-fileExplr-p"> {{menuItem.label}}</p></div>
-        <div class="dm-fileExplr-tail"><figure class="dm-fileExplr-figure"> <img *ngIf="menuItem.icon2" class="dm-fileExplr-img" [src]="menuItem.icon2"/></figure></div>
-      </div>
-
-
-      <div  *ngIf="menuItem.label === paste  && !isPasteActive" class="dm-fileExplr-vertical-menu-item turn-off-hover-effect ">
-        <div class="dm-fileExplr-head"><figure class="dm-fileExplr-figure"><img *ngIf="menuItem.icon1" class="dm-fileExplr-img" [src]="menuItem.icon1"/></figure></div>
-        <div class="dm-fileExplr-mid-disabled"><p class="dm-fileExplr-p"> {{menuItem.label}}</p></div>
-        <div class="dm-fileExplr-tail"><figure class="dm-fileExplr-figure"> <img *ngIf="menuItem.icon2" class="dm-fileExplr-img" [src]="menuItem.icon2"/></figure></div>
-      </div>
-
-
-      <div  *ngIf="menuItem.nest.length" class="dm-fileExplr-vertical-sub-menu-content" id="dmfileExplrNestedMenu-{{i}}">
-        <div class="dm-fileExplr-empty-line-container"></div>
-          <div *ngFor="let item of menuItem.nest" (click)="onMenuItemClick(item.action)">
-            <div class="dm-fileExplr-vertical-menu-item">
-              <div class="dm-fileExplr-head"><figure [ngClass]=" item.styleOption === 'A' ?'dm-fileExplr-figure-alt' : 'dm-fileExplr-figure-alt2'">
-                                          <img *ngIf="item.variables" [ngClass]=" item.styleOption === 'A' ?'dm-fileExplr-img-alt' : 'dm-fileExplr-img-alt2'" [src]="item.icon"/>
-                                        </figure>
-              </div>
-              <div class="dm-fileExplr-mid" *ngIf="item.styleOption === 'A' || item.styleOption === 'B'">{{item.label}}</div>
-              <div class="dm-fileExplr-mid"  *ngIf="item.styleOption === 'C'" ><p class="dm-fileExplr-p"> {{item.label}}</p></div>
-              <div class="dm-fileExplr-tail"><figure class="dm-fileExplr-figure"></figure></div>
-            </div>
-    
-            <div *ngIf="item.emptyline" class="dm-fileExplr-empty-line-container"></div>
-            <div *ngIf="item.emptyline" class="dm-fileExplr-line-container"><div class="dm-fileExplr-line"></div></div>
-            <div *ngIf="item.emptyline" class="dm-fileExplr-empty-line-container"></div>
-          </div>
-        <div class="dm-fileExplr-empty-line-container"></div>
-      </div>
-
-      <div *ngIf="menuItem.emptyline" class="dm-fileExplr-empty-line-container"></div>
-      <div *ngIf="menuItem.emptyline" class="dm-fileExplr-line-container"><div class="dm-fileExplr-line"></div></div>
-      <div *ngIf="menuItem.emptyline" class="dm-fileExplr-empty-line-container"></div>
-    </div>
-    <div class="dm-fileExplr-empty-line-container1"></div>  
+    <div class="dm-nested-empty-line-container1"></div>  
   </div>
 </ng-template>

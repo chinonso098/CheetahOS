@@ -21,8 +21,7 @@ export class MenuComponent implements OnChanges, OnDestroy{
 
   menuOption = '';
   tskBarMenuOption =  "taskbar-menu";
-  deskTopMenuOption =  "desktop-menu";
-  fileExplrMenuOption =  "file-explorer-menu";
+  nestedMenuOption =  "nested-menu";
   fileExplrMngrMenuOption = "file-explorer-file-manager-menu";
 
   keys: string[] = [];
