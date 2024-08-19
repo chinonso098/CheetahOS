@@ -51,7 +51,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
   private _timerSubscription!: Subscription;
   private _showTaskBarMenuSub!:Subscription;
-  private _hideMenuSub!:Subscription;
+  private _hideContextMenuSub!:Subscription;
   private _showTaskBarPreviewWindowSub!:Subscription;
   private _hideTaskBarPreviewWindowSub!:Subscription;
   private _keepTaskBarPreviewWindowSub!:Subscription;
@@ -151,9 +151,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this._showTaskBarMenuSub = this._menuService.showTaskBarMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
     this._showTaskBarPreviewWindowSub = this._runningProcessService.showPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
-    this._hideMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
+    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
     this._hideTaskBarPreviewWindowSub = this._runningProcessService.hidePreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
     this._keepTaskBarPreviewWindowSub = this._runningProcessService.keepPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
+
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -207,7 +208,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   ngOnDestroy(): void {
     this._timerSubscription?.unsubscribe();
     this._showTaskBarMenuSub?.unsubscribe();
-    this._hideMenuSub?.unsubscribe();
+    this._hideContextMenuSub?.unsubscribe();
     this._showTaskBarPreviewWindowSub?.unsubscribe();
     this._hideTaskBarPreviewWindowSub?.unsubscribe();
     this._keepTaskBarPreviewWindowSub?.unsubscribe();

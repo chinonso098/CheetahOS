@@ -54,6 +54,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _autoArrangeIconsNotifySub!:Subscription;
   private _autoAlignIconsNotifyBySub!:Subscription;
   private _dirFilesUpdatedSub!: Subscription;
+  private _hideContextMenuSub!:Subscription;
 
   private isPrevBtnActive = false;
   private isNextBtnActive = false;
@@ -205,7 +206,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this._sortByNotifySub = fileManagerService.sortByNotify.subscribe((p)=>{this.sortIcons(p)});
     this._refreshNotifySub = fileManagerService.refreshNotify.subscribe(()=>{this.refreshIcons()});
-
+    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.onHideIconContextMenu()});
   }
 
   ngOnInit():void{
@@ -248,6 +249,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       },this.SECONDS_DELAY[4]) 
     });
 
+  }
+
+  ngOnDestroy(): void {
+    this._viewByNotifySub?.unsubscribe();
+    this._sortByNotifySub?.unsubscribe();
+    this._refreshNotifySub?.unsubscribe();
+    this._autoArrangeIconsNotifySub?.unsubscribe();
+    this._autoAlignIconsNotifyBySub?.unsubscribe();
+    this._dirFilesUpdatedSub?.unsubscribe();
+    this._hideContextMenuSub?.unsubscribe();
   }
 
   captureComponentImg():void{
@@ -628,14 +639,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  ngOnDestroy(): void {
-    this._viewByNotifySub?.unsubscribe();
-    this._sortByNotifySub?.unsubscribe();
-    this._refreshNotifySub?.unsubscribe();
-    this._autoArrangeIconsNotifySub?.unsubscribe();
-    this._autoAlignIconsNotifyBySub?.unsubscribe();
-    this._dirFilesUpdatedSub?.unsubscribe();
-  }
 
   onDragOver(event:DragEvent):void{
     event.stopPropagation();

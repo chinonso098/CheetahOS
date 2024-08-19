@@ -37,6 +37,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private _autoAlignIconsNotifyBySub!:Subscription;
   private _showDesktopIconNotifySub!:Subscription;
   private _dirFilesUpdatedSub!: Subscription;
+  private _hideContextMenuSub!:Subscription;
 
   private autoAlign = true;
   private autoArrange = false;
@@ -111,6 +112,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this._autoAlignIconsNotifyBySub = fileManagerService.alignIconsToGridNotify.subscribe((p) => {this.toggleAutoAlignIconsToGrid(p)});
     this._refreshNotifySub = fileManagerService.refreshNotify.subscribe(()=>{this.refreshIcons()});
     this._showDesktopIconNotifySub = fileManagerService.showDesktopIconsNotify.subscribe((p) =>{this.toggleDesktopIcons(p)});
+    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.onHideIconContextMenu()});
   }
 
   ngOnInit():void{
@@ -131,6 +133,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this._autoAlignIconsNotifyBySub?.unsubscribe();
     this._showDesktopIconNotifySub?.unsubscribe();
     this._dirFilesUpdatedSub?.unsubscribe();
+    this._hideContextMenuSub?.unsubscribe();
   }
 
   onDragOver(event:DragEvent):void{
