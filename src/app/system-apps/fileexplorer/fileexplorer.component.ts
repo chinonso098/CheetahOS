@@ -752,14 +752,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
+    // looking at what Windows does, at any given time. there is only one context window open
+    this._menuService.hideContextMenus.next(); 
 
-    const menuHeight = 213; //this is not ideal
+    const menuHeight = 213; //this is not ideal.. menu height should be gotten dynmically
     this.iconCntxtCntr++;
-    if(this.showFileExplrCntxtMenu){
-      this.showFileExplrCntxtMenu = false;
-      this.fileExplrCntxtCntr = 0;
-      this._menuService.hideContextMenus.next();
-    }
 
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
@@ -789,15 +786,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onShowFileExplorerContextMenu(evt:MouseEvent):void{
 
-    const menuHeight = 230; //this is not ideal
     this.fileExplrCntxtCntr++;
     if(this.iconCntxtCntr >= this.fileExplrCntxtCntr)
         return;
-    else{
-      this.showIconCntxtMenu = false;
-      this.iconCntxtCntr = 0;
-      this._menuService.hideContextMenus.next();
-    }
+
+    // looking at what Windows does, at any given time. there is only one context window open
+    this._menuService.hideContextMenus.next();
+    const menuHeight = 230; //this is not ideal.. menu height should be gotten dynmically
 
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
@@ -999,7 +994,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
  
     return {xAxis, yAxis};
   }
-
 
   //menu doesn't exist when this method is first called
   // getMenuHeight(menuId:string):number{
@@ -1672,5 +1666,4 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type);
   }
-
 }
