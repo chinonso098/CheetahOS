@@ -235,6 +235,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const evtOriginator = this._runningProcessService.getEventOrginator();
 
     if(evtOriginator == ''){
+      this._menuService.hideContextMenus.next();
       this.showDesktopCntxtMenu = true;
       this.dskTopCntxtMenuStyle = {
         'position':'absolute',
@@ -294,9 +295,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  hideContextMenu():void{
+  hideContextMenu(caller?:string):void{
     this.showDesktopCntxtMenu = false;
     this.showTskBarCntxtMenu = false;
+
+    // to prevent an endless loop of calls,
+    if(caller !== undefined && caller === this.name){
+      this._menuService.hideContextMenus.next();
+    }
   }
 
   viewByLargeIcon():void{

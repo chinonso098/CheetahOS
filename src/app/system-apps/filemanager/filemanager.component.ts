@@ -205,6 +205,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
+    this._menuService.hideContextMenus.next();
 
     this.selectedFile = file;
     this.showCntxtMenu = !this.showCntxtMenu;
@@ -254,7 +255,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
   }
 
-  onHideIconContextMenu():void{
+  onHideIconContextMenu(caller?:string):void{
     this.showCntxtMenu = false;
 
     //First case - I'm clicking only on the desktop icons
@@ -283,6 +284,11 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       //clicking on the desktop triggers a hideContextMenuEvt
       if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt > 1))
         this.btnStyleAndValuesReset();
+    }
+
+    // to prevent an endless loop of calls,
+    if(caller !== undefined && caller === this.name){
+      this._menuService.hideContextMenus.next();
     }
   }
 

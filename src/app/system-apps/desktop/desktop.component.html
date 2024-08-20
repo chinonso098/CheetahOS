@@ -1,4 +1,4 @@
- <main class="main-desktop" id="vanta"  (contextmenu)="showDesktopContextMenu($event)" (click)="hideContextMenu()" #desktopContainer> 
+ <main class="main-desktop" id="vanta"  (contextmenu)="showDesktopContextMenu($event)" (click)="hideContextMenu(name)" #desktopContainer> 
 
     <div [@slideStatusAnimation]="slideState" class="dsktp-screen-preview-container"  *ngIf="showDesktopScreenShotPreview">
         <img [src]="dsktpPrevImg"/>

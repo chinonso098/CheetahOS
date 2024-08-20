@@ -758,6 +758,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(this.showFileExplrCntxtMenu){
       this.showFileExplrCntxtMenu = false;
       this.fileExplrCntxtCntr = 0;
+      this._menuService.hideContextMenus.next();
     }
 
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
@@ -784,6 +785,80 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
 
     evt.preventDefault();
+  }
+
+  onShowFileExplorerContextMenu(evt:MouseEvent):void{
+
+    const menuHeight = 230; //this is not ideal
+    this.fileExplrCntxtCntr++;
+    if(this.iconCntxtCntr >= this.fileExplrCntxtCntr)
+        return;
+    else{
+      this.showIconCntxtMenu = false;
+      this.iconCntxtCntr = 0;
+      this._menuService.hideContextMenus.next();
+    }
+
+    const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    const axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
+
+    const uid = `${this.name}-${this.processId}`;
+    this._runningProcessService.addEventOriginator(uid);
+
+    if(!this.showFileExplrCntxtMenu)
+      this.showFileExplrCntxtMenu = !this.showFileExplrCntxtMenu;
+
+    this.fileExplrCntxtMenuStyle = {
+      'position': 'absolute', 
+      'transform':`translate(${String(axis.xAxis)}px, ${String(axis.yAxis)}px)`,
+      'z-index': 2,
+    }
+    evt.preventDefault();
+  }
+
+  onHideIconContextMenu(caller?:string):void{
+    this.showIconCntxtMenu = false;
+    this.showFileExplrCntxtMenu = false;
+    this.isShiftSubMenuLeft = false;
+    this.iconCntxtCntr = 0;
+    this.fileExplrCntxtCntr = 0;
+
+    //First case - I'm clicking only on the desktop icons
+    if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt == 0)){  
+      
+      if(this.isRenameActive){
+        this.isFormDirty();
+      }
+      if(this.isIconInFocusDueToPriorAction){
+        if(this.hideCntxtMenuEvtCnt >= 0)
+          this.setBtnStyle(this.selectedElementId,false);
+      }
+      if(!this.isRenameActive){
+        this.isBtnClickEvt = false;
+        this.btnClickCnt = 0;
+      }
+    }else{
+      this.hideCntxtMenuEvtCnt++;
+      this.isHideCntxtMenuEvt = true;
+      //Second case - I was only clicking on the desktop
+      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= 1) && (!this.isBtnClickEvt && this.btnClickCnt == 0)){
+        this.isIconInFocusDueToCurrentAction = false;
+        this.btnStyleAndValuesChange();
+      }
+      
+      // //Third case - I was clicking on the desktop icons, then i click on the desktop.
+      // //clicking on the desktop triggers a hideContextMenuEvt
+      // if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt > 1)){
+      //   this.isIconInFocusDueToCurrentAction = false;
+      //   console.log('3rd----this.isIconInFocusDueToCurrentAction:', this.isIconInFocusDueToCurrentAction );
+      //   this.btnStyleAndValuesReset();
+      // }
+    }
+
+    // to prevent an endless loop of calls,
+    if(caller !== undefined && caller === this.name){
+      this._menuService.hideContextMenus.next();
+    }
   }
 
   doBtnClickThings(id:number):void{
@@ -892,74 +967,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._menuService.storeData.next([path, action]);
   }
   
-  onHideIconContextMenu():void{
-    this.showIconCntxtMenu = false;
-    this.showFileExplrCntxtMenu = false;
-    this.isShiftSubMenuLeft = false;
-    this.iconCntxtCntr = 0;
-    this.fileExplrCntxtCntr = 0;
-
-    //First case - I'm clicking only on the desktop icons
-    if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt == 0)){  
-      
-      if(this.isRenameActive){
-        this.isFormDirty();
-      }
-      if(this.isIconInFocusDueToPriorAction){
-        if(this.hideCntxtMenuEvtCnt >= 0)
-          this.setBtnStyle(this.selectedElementId,false);
-      }
-      if(!this.isRenameActive){
-        this.isBtnClickEvt = false;
-        this.btnClickCnt = 0;
-      }
-    }else{
-      this.hideCntxtMenuEvtCnt++;
-      this.isHideCntxtMenuEvt = true;
-      //Second case - I was only clicking on the desktop
-      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= 1) && (!this.isBtnClickEvt && this.btnClickCnt == 0)){
-        this.isIconInFocusDueToCurrentAction = false;
-        this.btnStyleAndValuesChange();
-      }
-      
-      // //Third case - I was clicking on the desktop icons, then i click on the desktop.
-      // //clicking on the desktop triggers a hideContextMenuEvt
-      // if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt > 1)){
-      //   this.isIconInFocusDueToCurrentAction = false;
-      //   console.log('3rd----this.isIconInFocusDueToCurrentAction:', this.isIconInFocusDueToCurrentAction );
-      //   this.btnStyleAndValuesReset();
-      // }
-    }
-  }
-
-  onShowFileExplorerContextMenu(evt:MouseEvent):void{
-
-    const menuHeight = 230; //this is not ideal
-    this.fileExplrCntxtCntr++;
-    if(this.iconCntxtCntr >= this.fileExplrCntxtCntr)
-        return;
-    else{
-      this.showIconCntxtMenu = false;
-      this.iconCntxtCntr = 0;
-    }
-
-    const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-    const axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
-
-    const uid = `${this.name}-${this.processId}`;
-    this._runningProcessService.addEventOriginator(uid);
-
-    if(!this.showFileExplrCntxtMenu)
-      this.showFileExplrCntxtMenu = !this.showFileExplrCntxtMenu;
-
-    this.fileExplrCntxtMenuStyle = {
-      'position': 'absolute', 
-      'transform':`translate(${String(axis.xAxis)}px, ${String(axis.yAxis)}px)`,
-      'z-index': 2,
-    }
-    evt.preventDefault();
-  }
-
   checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):{ xAxis: number; yAxis: number; }{
 
     let xAxis = 0;
