@@ -1,6 +1,6 @@
 # CheetahOs
 
-![alt text](https://1drv.ms/i/s!AtWzXoFpw0GGgoU2o4CBTDOT0XS0zw?e=yZ3IBj)
+![alt text](CheetahOS.png)
 
 Building a Dektop environment in the web browser
 
