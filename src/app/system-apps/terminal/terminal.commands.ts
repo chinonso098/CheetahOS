@@ -370,10 +370,11 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
             this.fallBackDirPath = this.getFallBackPath(directory);
         }
 
-        // console.log('directory:', directory);
+        console.log('directory:', directory);
         // console.log('fallBackDirPath:', this.fallBackDirPath);
 
         const firstDirectoryCheck = await this._fileService.checkIfExistsAsync(directory);
+        console.log('firstDirectoryCheck:', firstDirectoryCheck);
         let secondDirectoryCheck = false;
 
         if(!firstDirectoryCheck){
