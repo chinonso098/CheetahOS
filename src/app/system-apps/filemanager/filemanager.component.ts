@@ -310,6 +310,10 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     console.log('TODO:FileManagerComponent, Upgrade the basic state tracking/management logic:',transform);
   }
 
+  onDragStart(evt:any):void{
+      //
+  }
+
   onMouseEnter(id:number):void{
     this.setBtnStyle(id, true);
   }

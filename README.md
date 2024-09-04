@@ -1,5 +1,7 @@
 # CheetahOs
 
+![alt text](https://1drv.ms/i/s!AtWzXoFpw0GGgoU2o4CBTDOT0XS0zw?e=yZ3IBj)
+
 Building a Dektop environment in the web browser
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.0.0.
