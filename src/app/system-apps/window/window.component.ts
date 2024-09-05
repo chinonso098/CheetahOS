@@ -36,9 +36,10 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
    private _focusOnCurrentProcessSub!:Subscription;
    private _focusOutOtherProcessSub!:Subscription;
 
-  SECONDS_DELAY = 350;
-  WINDOW_CAPTURE_SECONDS_DELAY = 5000;
-
+  readonly SECONDS_DELAY = 350;
+  readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
+  readonly MIN_Z_INDEX = 1;
+  readonly MAX_Z_INDEX = 2;
 
   windowHide = false;
   windowMaximize = false;
@@ -122,10 +123,11 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
       this.defaultHeightOnOpen = this.getDivWindowElement.offsetHeight;
       this.defaultWidthOnOpen  = this.getDivWindowElement.offsetWidth;
 
+      const z_index = this._stateManagmentService.getState(this.z_index) as number;
       this.windowTransform =  'translate(0, 0)';
       this.windowHeight =  `${String(this.defaultHeightOnOpen)}px`;
       this.windowWidth =  `${String(this.defaultWidthOnOpen)}px`;
-      this.windowZIndex = '2';
+      this.windowZIndex =  (z_index === undefined)? String(this.MAX_Z_INDEX) : String(z_index);
 
       this._originalWindowsState = {
         app_name: this.name,
@@ -134,7 +136,7 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
         width: this.defaultWidthOnOpen,
         x_axis: 0,
         y_axis: 0,
-        z_index:2,
+        z_index:(z_index === undefined)? this.MAX_Z_INDEX : z_index,
         is_visible:true
       }
       
@@ -260,13 +262,24 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
    
     onHideBtnClick(pid:number):void{
       if(this.processId == pid){
-        this.setHideAndShow()
+        this.setHideAndShow();
       }
     }
 
     restoreHiddenWindow(pid:number):void{
       if(this.processId == pid){
-        this.setHideAndShow()
+        this.setHideAndShow();
+      }
+    }
+
+    updateWindowZIndex(window: WindowState):void{
+      if(this.processId == window.pid){
+        this.currentStyles = {
+          'z-index':this.MIN_Z_INDEX
+        };
+        window.z_index = this.MIN_Z_INDEX;
+        const uid = `${window.app_name}-${window.pid}`;
+        this._stateManagmentService.addState(uid, window, StateType.Window);
       }
     }
 
@@ -389,22 +402,21 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
           
           if(window != undefined && window.is_visible){
             this.setHeaderInActive(window.pid);
+            this.updateWindowZIndex(window);
         }
       }
     }
 
    setWindowToFocusById(pid:number):void{
       let z_index = this._stateManagmentService.getState(this.z_index) as number;
-
       const uid = `${this.name}-${pid}`;
       const windowState = this._stateManagmentService.getState(uid,StateType.Window) as WindowState;
 
       if(windowState !== undefined){
-        if((windowState.pid == pid) && (windowState.z_index != z_index)){
+        if((windowState.pid == pid) && (!z_index) || (windowState.pid == pid) && (windowState.z_index <= z_index)){
+          z_index = this.MAX_Z_INDEX;
+          this._stateManagmentService.addState(this.z_index, z_index);
 
-          if (!z_index ? z_index = 1 :  z_index = z_index + 1)
-            this._stateManagmentService.addState(this.z_index,z_index);
-        
           windowState.z_index = z_index
           this._stateManagmentService.addState(this.uniqueId, windowState, StateType.Window);
   
@@ -412,7 +424,7 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
             'z-index':z_index
           };
           this.setHeaderActive(pid);
-        }
+        }     
       }
     }
 

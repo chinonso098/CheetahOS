@@ -7,15 +7,15 @@
   position: absolute;
   min-width: 25%;
   min-height: 10%;
-  /*max-width: 100%;  Set the width of the parent container */
-  /*max-height: 100%;  Set the height of the parent container */
   top: 40%;
   left: 15%;
-  /* transform: translate(-50%, -50%);  */
-  /* Move the element back by 50% of its own width and height */
   outline: 1px hsl(0deg 0% 20%/70%);
   overflow:hidden;
-  z-index: 2;
+  /*max-width: 100%;  Set the width of the parent container */
+  /*max-height: 100%;  Set the height of the parent container */
+  /* transform: translate(-50%, -50%);  */
+  /* Move the element back by 50% of its own width and height */
+  /* z-index: 2; */
 }
 
 .header-container{
