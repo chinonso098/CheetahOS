@@ -211,7 +211,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._minimizeWindowSub = this._runningProcessService.minimizeWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
     this._sortByNotifySub = fileManagerService.sortByNotify.subscribe((p)=>{this.sortIcons(p)});
     this._refreshNotifySub = fileManagerService.refreshNotify.subscribe(()=>{this.refreshIcons()});
-    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.onHideIconContextMenu()});
+    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideIconContextMenu()});
   }
 
   ngOnInit():void{
@@ -818,12 +818,20 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     evt.preventDefault();
   }
 
-  onHideIconContextMenu(caller?:string):void{
+  hideIconContextMenu(caller?:string):void{
     this.showIconCntxtMenu = false;
     this.showFileExplrCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
     this.iconCntxtCntr = 0;
     this.fileExplrCntxtCntr = 0;
+
+    // to prevent an endless loop of calls,
+    if(caller !== undefined && caller === this.name){
+      this._menuService.hideContextMenus.next();
+    }
+  }
+
+  handleIconHighLightState():void{
 
     //First case - I'm clicking only on the desktop icons
     if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt == 0)){  
@@ -855,11 +863,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       //   console.log('3rd----this.isIconInFocusDueToCurrentAction:', this.isIconInFocusDueToCurrentAction );
       //   this.btnStyleAndValuesReset();
       // }
-    }
-
-    // to prevent an endless loop of calls,
-    if(caller !== undefined && caller === this.name){
-      this._menuService.hideContextMenus.next();
     }
   }
 
@@ -1542,6 +1545,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
       const mainWindow = document.getElementById('vanta');
+
       //window title and button bar, and windows taskbar height, fileExplr headerTab container, 
       //empty line container, fileExplr header container, empty line container 2, footer container
       const pixelTosubtract = 30 + 40 + 115.5 + 6 + 24 + 7 + 24;
@@ -1550,7 +1554,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.fileExplrCntntCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
     }
   }
-
 
   minimizeWindow(arg:number[]):void{
     const uid = `${this.name}-${this.processId}`;

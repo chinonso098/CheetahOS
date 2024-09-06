@@ -112,7 +112,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this._autoAlignIconsNotifyBySub = fileManagerService.alignIconsToGridNotify.subscribe((p) => {this.toggleAutoAlignIconsToGrid(p)});
     this._refreshNotifySub = fileManagerService.refreshNotify.subscribe(()=>{this.refreshIcons()});
     this._showDesktopIconNotifySub = fileManagerService.showDesktopIconsNotify.subscribe((p) =>{this.toggleDesktopIcons(p)});
-    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.onHideIconContextMenu()});
+    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideIconContextMenu()});
   }
 
   ngOnInit():void{
@@ -255,9 +255,17 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
   }
 
-  onHideIconContextMenu(caller?:string):void{
+  hideIconContextMenu(caller?:string):void{
     this.showCntxtMenu = false;
 
+    // to prevent an endless loop of calls,
+    if(caller !== undefined && caller === this.name){
+      this._menuService.hideContextMenus.next();
+    }
+  }
+
+  handleIconHighLightState():void{
+ 
     //First case - I'm clicking only on the desktop icons
     if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt == 0)){  
       if(this.isRenameActive){
@@ -284,11 +292,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       //clicking on the desktop triggers a hideContextMenuEvt
       if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt > 1))
         this.btnStyleAndValuesReset();
-    }
-
-    // to prevent an endless loop of calls,
-    if(caller !== undefined && caller === this.name){
-      this._menuService.hideContextMenus.next();
     }
   }
 

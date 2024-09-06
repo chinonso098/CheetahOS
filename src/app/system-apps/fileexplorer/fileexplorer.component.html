@@ -257,7 +257,7 @@
                 <!-- ngDraggable  [inBounds]="true" zIndex="1" [preventDefaultEvent]="true"
                     (stopped)="onDragEnd($event)" (started)="onDragStart($event)" -->
                 
-                    <ol [ngClass]="olClassName" (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="onHideIconContextMenu(name)" (contextmenu)="onShowFileExplorerContextMenu($event)" id="olElmnt-{{this.processId}}"> 
+                    <ol [ngClass]="olClassName" (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)" (click)="handleIconHighLightState()" (contextmenu)="onShowFileExplorerContextMenu($event)" id="olElmnt-{{this.processId}}"> 
                         <ng-container [ngTemplateOutlet]="currentViewOption === smallIconsView ? iconsView :
                                                           currentViewOption === mediumIconsView ? iconsView :
                                                           currentViewOption === largeIconsView ? iconsView : 
