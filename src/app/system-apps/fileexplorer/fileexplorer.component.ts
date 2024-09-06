@@ -646,7 +646,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-
   onDragOver(event:DragEvent):void{
     event.stopPropagation();
     event.preventDefault();
@@ -1686,7 +1685,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           {icon1:'',  icon2:'', label: 'Paste', nest:[], action: () => console.log('Paste!! Paste!!'), action1: ()=> '', emptyline:false},
           {icon1:'/osdrive/icons/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), action1: ()=> '', emptyline:false},
           {icon1:'osdrive/icons/vs-code_48.png', icon2:'', label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> '', emptyline:true},
-          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'New', nest:this.buildNewMenu(), action: ()=> '',  action1: this.shiftNewSubMenu.bind(this), emptyline:true},
+          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
           {icon1:'',  icon2:'', label:'Properties', nest:[], action: () => console.log('Properties'), action1: ()=> '', emptyline:false}
       ]
   }

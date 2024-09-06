@@ -76,6 +76,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   isSortBySize = false;
   isSortByDateModified = false;
 
+  isShiftSubMenuLeft = false;
+
   autoAlignIcons = true;
   autoArrangeIcons = true;
   showDesktopIcons = true;
@@ -235,12 +237,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const evtOriginator = this._runningProcessService.getEventOrginator();
 
     if(evtOriginator == ''){
+      const menuHeight = 281; //this is not ideal.. menu height should be gotten dynmically
+      const axis = this.checkAndHandleMenuBounds(evt, menuHeight);
+
       this._menuService.hideContextMenus.next();
       this.showDesktopCntxtMenu = true;
       this.dskTopCntxtMenuStyle = {
         'position':'absolute',
         'width': '210px', 
-        'transform':`translate(${String(evt.clientX + 2)}px, ${String(evt.clientY)}px)`,
+        'transform':`translate(${String(axis.xAxis + 2)}px, ${String(axis.yAxis)}px)`,
         'z-index': 2,
         'opacity':1
       }
@@ -251,6 +256,64 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
+  shiftViewSubMenu():void{ this.shiftNestedMenuPosition(0); }
+
+  shiftSortBySubMenu():void{this.shiftNestedMenuPosition(1);  }
+
+  shiftNewSubMenu():void { this.shiftNestedMenuPosition(8); }
+
+  shiftNestedMenuPosition(i:number):void{
+
+    console.log('I was called by:',i);
+    const nestedMenu =  document.getElementById(`dmNestedMenu-${i}`) as HTMLDivElement;
+    if(nestedMenu){
+      console.log('nestedMenu:', nestedMenu);
+
+      if(this.isShiftSubMenuLeft)
+          nestedMenu.style.left = '-98%';
+    }
+  }
+
+  checkAndHandleMenuBounds(evt:MouseEvent, menuHeight:number):{ xAxis: number; yAxis: number; }{
+
+    let xAxis = 0;
+    let yAxis = 0;
+    const menuWidth = 210;
+
+    //console.log(`translate(${String(evt.clientX + 2)}px, ${String(evt.clientY)}px)`);
+
+    const mainWindow = document.getElementById('vanta');
+    const windowWidth =  mainWindow?.offsetWidth || 0;
+    const windowHeight =  mainWindow?.offsetHeight || 0;
+
+    const horizontalDiff =  windowWidth - evt.clientX;
+    const verticalDiff = windowHeight - evt.clientY;
+
+    // console.log('horizontalDiff:', horizontalDiff);
+    // console.log('verticalDiff:',verticalDiff);
+
+    let horizontalShift = false;
+    let verticalShift = false;
+
+    if((horizontalDiff) < menuWidth){
+      this.isShiftSubMenuLeft = true;
+      horizontalShift = true;
+      const diff = menuWidth - horizontalDiff;
+      xAxis = evt.clientX - horizontalDiff - diff;
+    }
+
+    if((verticalDiff) >= 40 && (verticalDiff) <= menuHeight){
+      const shifMenuUpBy = menuHeight - verticalDiff;
+      verticalShift = true;
+
+      yAxis = evt.clientY - shifMenuUpBy;
+    }
+    
+    xAxis = (horizontalShift)? xAxis : evt.clientX;
+    yAxis = (verticalShift)? yAxis : evt.clientY;
+ 
+    return {xAxis, yAxis};
+  }
 
   captureComponentImg():void{
     const directory ='/Documents/Screen-Shots';
@@ -298,6 +361,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   hideContextMenu(caller?:string):void{
     this.showDesktopCntxtMenu = false;
     this.showTskBarCntxtMenu = false;
+    //this.isShiftSubMenuLeft = false;
 
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){
@@ -479,7 +543,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._triggerProcessService.startApplication(file);
   }
 
-
   buildViewByMenu():NestedMenuItem[]{
 
     const smallIcon:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Small icons',  action: this.viewBySmallIcon.bind(this),  variables:this.isSmallIcon, 
@@ -542,15 +605,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   getDesktopMenuData():void{
     this.deskTopMenu = [
-          {icon1:'',  icon2: 'osdrive/icons/arrow_next_1.png', label:'View', nest:this.buildViewByMenu(), action: ()=>'', action1: ()=> '', emptyline:false},
-          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=>'', action1: ()=> '', emptyline:false},
+          {icon1:'',  icon2: 'osdrive/icons/arrow_next_1.png', label:'View', nest:this.buildViewByMenu(), action: ()=>'', action1: this.shiftViewSubMenu.bind(this), emptyline:false},
+          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=>'', action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
           {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:this.refresh.bind(this), action1: ()=> '', emptyline:true},
           {icon1:'',  icon2:'', label: 'Paste', nest:[], action:this.onPaste.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'/osdrive/icons/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'/osdrive/icons/camera_48.png', icon2:'', label:'Screen Shot', nest:[], action: this.captureComponentImg.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'',  icon2:'', label:'Next Background', nest:[], action: this.nextBackground.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'',  icon2:'', label:'Previous Background', nest:[], action: this.previousBackground.bind(this), action1: ()=> '', emptyline:true},
-          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: ()=> '', emptyline:true},
+          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
           {icon1:'',  icon2:'', label:'Many Thanks', nest:[], action: this.openMarkDownViewer.bind(this), action1: ()=> '', emptyline:false}
       ]
   }
