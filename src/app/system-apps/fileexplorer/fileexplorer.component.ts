@@ -55,6 +55,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _autoAlignIconsNotifyBySub!:Subscription;
   private _dirFilesUpdatedSub!: Subscription;
   private _hideContextMenuSub!:Subscription;
+  private _maximizeWindowSub!: Subscription;
+  private _minimizeWindowSub!: Subscription;
+  
 
   private isPrevBtnActive = false;
   private isNextBtnActive = false;
@@ -204,6 +207,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     });
 
+    this._maximizeWindowSub = this._runningProcessService.maximizeWindowNotify.subscribe(() =>{this.maximizeWindow()});
+    this._minimizeWindowSub = this._runningProcessService.minimizeWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
     this._sortByNotifySub = fileManagerService.sortByNotify.subscribe((p)=>{this.sortIcons(p)});
     this._refreshNotifySub = fileManagerService.refreshNotify.subscribe(()=>{this.refreshIcons()});
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.onHideIconContextMenu()});
@@ -259,6 +264,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._autoAlignIconsNotifyBySub?.unsubscribe();
     this._dirFilesUpdatedSub?.unsubscribe();
     this._hideContextMenuSub?.unsubscribe();
+    this._maximizeWindowSub?.unsubscribe();
+    this._minimizeWindowSub?.unsubscribe();
   }
 
   captureComponentImg():void{
@@ -1535,11 +1542,30 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
       const mainWindow = document.getElementById('vanta');
-      //window title and button bar, and windows taskbar height
-      const pixelTosubtract = 30 + 40;
-      this.fileExplrMainCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
-      this.fileExplrMainCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      //window title and button bar, and windows taskbar height, fileExplr headerTab container, 
+      //empty line container, fileExplr header container, empty line container 2, footer container
+      const pixelTosubtract = 30 + 40 + 115.5 + 6 + 24 + 7 + 24;
 
+      this.fileExplrMainCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
+      this.fileExplrCntntCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
+    }
+  }
+
+
+  minimizeWindow(arg:number[]):void{
+    const uid = `${this.name}-${this.processId}`;
+    const evtOriginator = this._runningProcessService.getEventOrginator();
+
+    if(uid === evtOriginator){
+      this._runningProcessService.removeEventOriginator();
+
+      // fileExplr headerTab container, empty line container, fileExplr header container, empty line container 2, footer container
+      const pixelTosubtract =  115.5 + 6 + 24 + 7 + 24;
+      const windowHeight = arg[1];
+      const res = windowHeight - pixelTosubtract;
+
+      this.fileExplrMainCntnr.nativeElement.style.height = `${res}px`;
+      this.fileExplrCntntCntnr.nativeElement.style.height = `${res}px`;
     }
   }
 
@@ -1589,7 +1615,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.getFileExplorerMenuData();
   }
-
 
   buildViewMenu():NestedMenuItem[]{
 
