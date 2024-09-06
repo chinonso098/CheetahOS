@@ -195,7 +195,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   changeAnimationColor():void{
-
     this.CURRENT_DEG = (this.CURRENT_DEG > this.MAX_DEG) ? this.MIN_DEG : this.CURRENT_DEG + 1;
 
     console.log('nextColor:', Number(this.nextColor.changeHue('#4f32c2',this.CURRENT_DEG)?.replace('#','0x')))
@@ -226,7 +225,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   showDesktopContextMenu(evt:MouseEvent):void{
-
     /**
      * There is a doubling of responses to certain events that exist on the 
      * desktop compoonent and any other component running at the time the event was triggered.
@@ -238,10 +236,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     if(evtOriginator == ''){
       const menuHeight = 281; //this is not ideal.. menu height should be gotten dynmically
-      const axis = this.checkAndHandleMenuBounds(evt, menuHeight);
-
+  
       this._menuService.hideContextMenus.next();
       this.showDesktopCntxtMenu = true;
+      const axis = this.checkAndHandleMenuBounds(evt, menuHeight);
+
       this.dskTopCntxtMenuStyle = {
         'position':'absolute',
         'width': '210px', 
@@ -263,14 +262,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   shiftNewSubMenu():void { this.shiftNestedMenuPosition(8); }
 
   shiftNestedMenuPosition(i:number):void{
-
-    console.log('I was called by:',i);
     const nestedMenu =  document.getElementById(`dmNestedMenu-${i}`) as HTMLDivElement;
     if(nestedMenu){
-      console.log('nestedMenu:', nestedMenu);
-
-      if(this.isShiftSubMenuLeft)
-          nestedMenu.style.left = '-98%';
+      if(this.isShiftSubMenuLeft){
+        nestedMenu.style.left = '-98%';
+      }
+      else{
+        nestedMenu.style.left = '98%';
+      }
     }
   }
 
@@ -279,6 +278,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     let xAxis = 0;
     let yAxis = 0;
     const menuWidth = 210;
+    const subMenuWidth = 205;
     const taskBarHeight = 40;
 
     const mainWindow = document.getElementById('vanta');
@@ -292,10 +292,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     let verticalShift = false;
 
     if((horizontalDiff) < menuWidth){
-      this.isShiftSubMenuLeft = true;
       horizontalShift = true;
       const diff = menuWidth - horizontalDiff;
       xAxis = evt.clientX - diff;
+    }
+
+    if((horizontalDiff) < (menuWidth + subMenuWidth)){
+      this.isShiftSubMenuLeft = true;
     }
 
     if((verticalDiff) >= taskBarHeight && (verticalDiff) <= menuHeight){
@@ -339,12 +342,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       setTimeout(()=>{
         this.showDesktopScreenShotPreview = false;
       },6000);
-
     })
   }
 
   async createFolder():Promise<void>{
-
     const folderName = 'New Folder';
     const result =  await this._fileService.createFolderAsync(this.directory, folderName);
     if(result){
@@ -356,7 +357,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   hideContextMenu(caller?:string):void{
     this.showDesktopCntxtMenu = false;
     this.showTskBarCntxtMenu = false;
-    //this.isShiftSubMenuLeft = false;
+    this.isShiftSubMenuLeft = false;
 
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){
@@ -637,7 +638,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       console.error('err:',err);
       //this.buildVantaEffect(this.CURRENT_DESTOP_NUM);
     }
-
   }
 
   onShowTaskBarContextMenu(data:unknown[]):void{
