@@ -279,8 +279,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     let xAxis = 0;
     let yAxis = 0;
     const menuWidth = 210;
-
-    //console.log(`translate(${String(evt.clientX + 2)}px, ${String(evt.clientY)}px)`);
+    const taskBarHeight = 40;
 
     const mainWindow = document.getElementById('vanta');
     const windowWidth =  mainWindow?.offsetWidth || 0;
@@ -289,9 +288,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const horizontalDiff =  windowWidth - evt.clientX;
     const verticalDiff = windowHeight - evt.clientY;
 
-    // console.log('horizontalDiff:', horizontalDiff);
-    // console.log('verticalDiff:',verticalDiff);
-
     let horizontalShift = false;
     let verticalShift = false;
 
@@ -299,14 +295,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.isShiftSubMenuLeft = true;
       horizontalShift = true;
       const diff = menuWidth - horizontalDiff;
-      xAxis = evt.clientX - horizontalDiff - diff;
+      xAxis = evt.clientX - diff;
     }
 
-    if((verticalDiff) >= 40 && (verticalDiff) <= menuHeight){
+    if((verticalDiff) >= taskBarHeight && (verticalDiff) <= menuHeight){
       const shifMenuUpBy = menuHeight - verticalDiff;
       verticalShift = true;
-
-      yAxis = evt.clientY - shifMenuUpBy;
+      yAxis = evt.clientY - shifMenuUpBy - taskBarHeight;
     }
     
     xAxis = (horizontalShift)? xAxis : evt.clientX;
