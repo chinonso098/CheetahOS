@@ -35,12 +35,14 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
    private _focusOnNextProcessSub!:Subscription;
    private _focusOnCurrentProcessSub!:Subscription;
    private _showOnlyCurrentProcessSub!:Subscription;
-   private _focusOutOtherProcessSub!:Subscription;
+   private _removeFocusOnOtherProcessesSub!:Subscription;
    private _hideOtherProcessSub!:Subscription;
+   private _restoreProcessSub!:Subscription
+   private _restoreProcessesSub!:Subscription
 
   readonly SECONDS_DELAY = 350;
   readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
-  readonly HIDDEN_Z_INDEX = -1;
+  readonly HIDDEN_Z_INDEX = 0;
   readonly MIN_Z_INDEX = 1;
   readonly MAX_Z_INDEX = 2;
   readonly TMP_Z_INDEX = 3;
@@ -99,12 +101,14 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
  
       this.retrievePastSessionData();
 
-      this._restoreOrMinSub = this._runningProcessService.restoreOrMinimizeWindowNotify.subscribe((p) => {this.restoreHiddenWindow(p)});
+      this._restoreOrMinSub = this._runningProcessService.restoreOrMinimizeProcessWindowNotify.subscribe((p) => {this.restoreHiddenWindow(p)});
       this._focusOnNextProcessSub = this._runningProcessService.focusOnNextProcessNotify.subscribe(() => {this.setNextWindowToFocus()});
       this._focusOnCurrentProcessSub = this._runningProcessService.focusOnCurrentProcessNotify.subscribe((p) => {this.setFocusOnWindow(p)});
-      this._focusOutOtherProcessSub = this._runningProcessService.focusOutOtherProcessNotify.subscribe((p) => {this.removeFocusOnWindow(p)});
-      this._showOnlyCurrentProcessSub = this._runningProcessService.showOnlyCurrentProcessNotify.subscribe((p) => {this.showOnlyThisWindow(p)});
+      this._removeFocusOnOtherProcessesSub = this._runningProcessService.removeFocusOnOtherProcessesNotify.subscribe((p) => {this.removeFocusOnWindow(p)});
+      this._showOnlyCurrentProcessSub = this._runningProcessService.showOnlyCurrentProcessWindowNotify.subscribe((p) => {this.showOnlyThisWindow(p)});
       this._hideOtherProcessSub = this._runningProcessService.hideOtherProcessNotify.subscribe((p) => {this.moveWindowsOutOfSight(p)});
+      this._restoreProcessSub = this._runningProcessService.restoreProcessWindowNotify.subscribe((p) => {this.restorePriorFocusOnWindow(p)});
+      this._restoreProcessesSub = this._runningProcessService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
     }
 
     get getDivWindowElement(): HTMLElement {
@@ -123,9 +127,11 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
       this._restoreOrMinSub?.unsubscribe();
       this._focusOnNextProcessSub?.unsubscribe();
       this._focusOnCurrentProcessSub?.unsubscribe();
-      this._focusOutOtherProcessSub?.unsubscribe();
+      this._removeFocusOnOtherProcessesSub?.unsubscribe();
       this._showOnlyCurrentProcessSub?.unsubscribe();
       this._hideOtherProcessSub?.unsubscribe();
+      this._restoreProcessSub?.unsubscribe();
+      this._restoreProcessesSub?.unsubscribe();
     }
 
     ngAfterViewInit():void{
@@ -220,7 +226,7 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
           this.setWindowToFullScreen(this.processId, windowState.z_index);
 
           this._runningProcessService.addEventOriginator(uid);
-          this._runningProcessService.maximizeWindowNotify.next();
+          this._runningProcessService.maximizeProcessWindowNotify.next();
         }
       }
       else if(!this.windowMaximize){
@@ -232,7 +238,7 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
 
           const windowTitleBarHeight = 30;
           this._runningProcessService.addEventOriginator(uid);
-          this._runningProcessService.minimizeWindowNotify.next([windowState.width, windowState.height - windowTitleBarHeight]);
+          this._runningProcessService.minimizeProcessWindowNotify.next([windowState.width, windowState.height - windowTitleBarHeight]);
         }
       }
 
@@ -290,6 +296,16 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
         window.z_index = zIndex;
         const uid = `${window.app_name}-${window.pid}`;
         this._stateManagmentService.addState(uid, window, StateType.Window);
+      }
+    }
+
+    setWindowToPriorHiddenState(window: WindowState, zIndex:number):void{
+      console.log(`Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);
+      if(this.processId == window.pid){
+        this.currentStyles = {
+          'z-index':zIndex,
+          'opacity': 0,
+        };
       }
     }
 
@@ -391,11 +407,25 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
        * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
        */
 
-      this._runningProcessService.focusOutOtherProcessNotify.next(pid);
+      this._runningProcessService.removeFocusOnOtherProcessesNotify.next(pid);
       
       if(this.processId == pid){
         this.setHeaderActive(pid);
         this.setWindowToFocusById(pid);
+      }
+    }
+
+    showOnlyThisWindow(pid:number):void{
+      /**
+       * If you want to make a non-focusable element focusable, 
+       * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
+       */
+
+      this._runningProcessService.hideOtherProcessNotify.next(pid);
+      
+      if(this.processId == pid){
+        this.setHeaderActive(pid);
+        this.showOnlyWindowById(pid);
       }
     }
 
@@ -417,27 +447,12 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
       }
     }
 
-    showOnlyThisWindow(pid:number):void{
-      /**
-       * If you want to make a non-focusable element focusable, 
-       * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
-       */
-
-      this._runningProcessService.hideOtherProcessNotify.next(pid);
-      
-      if(this.processId == pid){
-        this.setHeaderActive(pid);
-        this.showOnlyWindowById(pid);
-      }
-    }
-
-
     /**
      * the pid of the current window currently in focus is passed. if the pid of other windows do not match,
      * then they are hidden by setting z -index = -1
      */
     moveWindowsOutOfSight(pid:number):void{
-      const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow == true && p.getProcessId != pid);
+      const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow === true && p.getProcessId !== pid);
 
       for(let i = 0; i < processWithWindows.length; i++){
         const process = processWithWindows[i];
@@ -447,15 +462,56 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
           if(window.z_index === 2){
             this.pid_with_highest_z_index = window.pid;
           }
-
           this.updateWindowZIndex(window, this.HIDDEN_Z_INDEX);
+        }
+        else if(window != undefined && !window.is_visible){
+          // using a z-index of less than 1, breaks hide/show animation, the show part to be exact.
+          this.setWindowToPriorHiddenState(window, this.MIN_Z_INDEX);
         }
       }
     }
 
+    restorePriorFocusOnWindows():void{
+      const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow === true);
 
+      for(let i = 0; i < processWithWindows.length; i++){
+        const process = processWithWindows[i];
+        const window = this._stateManagmentService.getState(`${process.getProcessName}-${process.getProcessId}`, StateType.Window) as WindowState;
+          
+        if(window != undefined && window.is_visible){
+          if(window.pid !== this.pid_with_highest_z_index){
+            this.setHeaderInActive(window.pid);
+            this.updateWindowZIndex(window, this.MIN_Z_INDEX);
+          }else{
+            this.setHeaderActive(window.pid);
+            this.updateWindowZIndex(window, this.MAX_Z_INDEX);
+          }
+        }
+      }
+    }
 
-   setWindowToFocusById(pid:number):void{
+    restorePriorFocusOnWindow(pid:number):void{
+      const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow === true && p.getProcessId === pid);
+
+      const process = processWithWindows[0];
+      const window = this._stateManagmentService.getState(`${process.getProcessName}-${process.getProcessId}`, StateType.Window) as WindowState;
+        
+      if(window != undefined && window.is_visible){
+        if(window.pid !== this.pid_with_highest_z_index){
+          this.setHeaderInActive(window.pid);
+          this.updateWindowZIndex(window, this.MIN_Z_INDEX);
+        }else{
+          this.setHeaderActive(window.pid);
+          this.updateWindowZIndex(window, this.MAX_Z_INDEX);
+        }
+      }
+      else if(window != undefined && !window.is_visible){
+        // using a z-index of less than 1, breaks hide/show animation, the show part to be exact.
+        this.setWindowToPriorHiddenState(window, this.MIN_Z_INDEX);
+      }
+    }
+
+    setWindowToFocusById(pid:number):void{
       let z_index = this._stateManagmentService.getState(this.z_index) as number;
       const uid = `${this.name}-${pid}`;
       const windowState = this._stateManagmentService.getState(uid,StateType.Window) as WindowState;
@@ -483,10 +539,21 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
       if(windowState !== undefined){
         if((windowState.pid == pid)){
           const z_index = this.TMP_Z_INDEX;
-  
-          this.currentStyles = {
-            'z-index':z_index
-          };
+
+          if(!windowState.is_visible){
+            console.log('window:',uid + ' is currently hidden');
+            console.log(`translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`);
+            this.currentStyles = {
+              'z-index':z_index,
+              'opacity': 1,
+              'transform': `translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`
+            };
+            console.log('window:',uid + ' should be visible');
+          }else{
+            this.currentStyles = {
+              'z-index':z_index
+            };
+          }
           this.setHeaderActive(pid);
         }     
       }

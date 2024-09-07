@@ -1,11 +1,14 @@
 import {trigger, transition, state, animate, style, keyframes} from '@angular/animations';
     
+const HIDDEN_Z_INDEX = 1;
+const MAX_Z_INDEX = 2;
+
   // Routable animations
     export const openCloseAnimation =
         trigger('openClose', [
             state('open', style({ 
                 opacity: 1,
-                zIndex: 2,
+                zIndex: MAX_Z_INDEX,
             })),
             state('close',  style({ 
                 opacity: 0
@@ -35,11 +38,11 @@ import {trigger, transition, state, animate, style, keyframes} from '@angular/an
         trigger('hideShow', [
             state('hidden', style({
                 opacity: 0,
-                zIndex: 2,
+                zIndex: HIDDEN_Z_INDEX,
             })),
             state('visible', style({
                 opacity: 1,
-                zIndex: 2,
+                zIndex: MAX_Z_INDEX,
             })),
             transition('visible => hidden', [
                 animate("0.30s ease-out", keyframes([

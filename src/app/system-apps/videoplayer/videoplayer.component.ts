@@ -72,8 +72,8 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   
     this.retrievePastSessionData();
 
-    this._maximizeWindowSub = this._runningProcessService.maximizeWindowNotify.subscribe(() =>{this.maximizeWindow()})
-    this._minimizeWindowSub = this._runningProcessService.minimizeWindowNotify.subscribe((p) =>{this.minmizeWindow(p)})
+    this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
+    this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minmizeWindow(p)})
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 

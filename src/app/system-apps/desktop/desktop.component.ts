@@ -152,10 +152,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._fileService = fileService;
 
     this._showTaskBarMenuSub = this._menuService.showTaskBarMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
-    this._showTaskBarPreviewWindowSub = this._runningProcessService.showPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
+    this._showTaskBarPreviewWindowSub = this._runningProcessService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
-    this._hideTaskBarPreviewWindowSub = this._runningProcessService.hidePreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
-    this._keepTaskBarPreviewWindowSub = this._runningProcessService.keepPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
+    this._hideTaskBarPreviewWindowSub = this._runningProcessService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
+    this._keepTaskBarPreviewWindowSub = this._runningProcessService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
 
 
     this.processId = this._processIdService.getNewProcessId()

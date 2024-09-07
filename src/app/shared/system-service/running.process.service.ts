@@ -15,19 +15,21 @@ export class RunningProcessService{
     private _runningProcessesImages:Map<string, TaskBarPreviewImage[]>;
     private _eventOriginator = '';
 
-    processListChangeNotify: Subject<void> = new Subject<void>();
     closeProcessNotify: Subject<Process> = new Subject<Process>();
     focusOnNextProcessNotify: Subject<void> = new Subject<void>();
     focusOnCurrentProcessNotify: Subject<number> = new Subject<number>();
-    showOnlyCurrentProcessNotify: Subject<number> = new Subject<number>();
-    focusOutOtherProcessNotify: Subject<number> = new Subject<number>();
-    restoreOrMinimizeWindowNotify: Subject<number> = new Subject<number>();
-    maximizeWindowNotify: Subject<void> = new Subject<void>();
-    minimizeWindowNotify: Subject<number[]> = new Subject<number[]>();
-    showPreviewWindowNotify: Subject<unknown[]> = new Subject<unknown[]>();
-    hidePreviewWindowNotify: Subject<void> = new Subject<void>();
+    removeFocusOnOtherProcessesNotify: Subject<number> = new Subject<number>();
+    hideProcessPreviewWindowNotify: Subject<void> = new Subject<void>();
     hideOtherProcessNotify: Subject<number> = new Subject<number>();
-    keepPreviewWindowNotify: Subject<void> = new Subject<void>();
+    keepProcessPreviewWindowNotify: Subject<void> = new Subject<void>();
+    maximizeProcessWindowNotify: Subject<void> = new Subject<void>();
+    minimizeProcessWindowNotify: Subject<number[]> = new Subject<number[]>();
+    showProcessPreviewWindowNotify: Subject<unknown[]> = new Subject<unknown[]>();
+    showOnlyCurrentProcessWindowNotify: Subject<number> = new Subject<number>();
+    processListChangeNotify: Subject<void> = new Subject<void>();
+    restoreOrMinimizeProcessWindowNotify: Subject<number> = new Subject<number>();
+    restoreProcessWindowNotify: Subject<number> = new Subject<number>();
+    restoreProcessesWindowNotify: Subject<void> = new Subject<void>();
 
     constructor(){
         this._runningProcesses = [];
@@ -97,7 +99,6 @@ export class RunningProcessService{
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return process!;
     }
-
 
     getProcessImages(appName:string):TaskBarPreviewImage[]{
         if(this._runningProcessesImages.has(appName))

@@ -179,7 +179,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
       return;
     }else{
       const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.getOpensWith);
-      this._runningProcessService.restoreOrMinimizeWindowNotify.next(process[0].getProcessId);
+      this._runningProcessService.restoreOrMinimizeProcessWindowNotify.next(process[0].getProcessId);
     }
   }
 
@@ -236,15 +236,15 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     const data:unknown[] = [rect, appName, iconPath];
 
     if(this._runningProcessService.isProcessRunning(appName))
-      this._runningProcessService.showPreviewWindowNotify.next(data);
+      this._runningProcessService.showProcessPreviewWindowNotify.next(data);
   }
 
   onMouseLeave():void{
-    this._runningProcessService.hidePreviewWindowNotify.next();
+    this._runningProcessService.hideProcessPreviewWindowNotify.next();
   }
 
   restoreOrMinizeWindow(processId:number){
-    this._runningProcessService.restoreOrMinimizeWindowNotify.next(processId)
+    this._runningProcessService.restoreOrMinimizeProcessWindowNotify.next(processId)
   }
 
   private getComponentDetail():Process{
