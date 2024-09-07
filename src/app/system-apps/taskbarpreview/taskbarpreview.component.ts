@@ -77,7 +77,7 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit {
 
 
   setWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._runningProcessService.showOnlyCurrentProcessNotify.next(pid);
   }
 
 }

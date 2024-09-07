@@ -7,8 +7,8 @@
   position: absolute;
   min-width: 25%;
   min-height: 10%;
-  top: 40%;
-  left: 15%;
+  top: 25%;
+  left: 25%;
   outline: 1px hsl(0deg 0% 20%/70%);
   overflow:hidden;
   /*max-width: 100%;  Set the width of the parent container */
@@ -40,7 +40,6 @@
   min-height: 10%;
   position: relative;
 }
-
 
 .window-dd-box {
   justify-content: center;

@@ -34,12 +34,16 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
    private _restoreOrMinSub!:Subscription
    private _focusOnNextProcessSub!:Subscription;
    private _focusOnCurrentProcessSub!:Subscription;
+   private _showOnlyCurrentProcessSub!:Subscription;
    private _focusOutOtherProcessSub!:Subscription;
+   private _hideOtherProcessSub!:Subscription;
 
   readonly SECONDS_DELAY = 350;
   readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
+  readonly HIDDEN_Z_INDEX = -1;
   readonly MIN_Z_INDEX = 1;
   readonly MAX_Z_INDEX = 2;
+  readonly TMP_Z_INDEX = 3;
 
   windowHide = false;
   windowMaximize = false;
@@ -76,6 +80,7 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
   defaultWidthOnOpen = 0;
   defaultHeightOnOpen = 0;
   private readonly z_index = '25914523'; // this number = zindex
+  private pid_with_highest_z_index = 0;
 
   hasWindow = false;
   icon = '';
@@ -98,6 +103,8 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
       this._focusOnNextProcessSub = this._runningProcessService.focusOnNextProcessNotify.subscribe(() => {this.setNextWindowToFocus()});
       this._focusOnCurrentProcessSub = this._runningProcessService.focusOnCurrentProcessNotify.subscribe((p) => {this.setFocusOnWindow(p)});
       this._focusOutOtherProcessSub = this._runningProcessService.focusOutOtherProcessNotify.subscribe((p) => {this.removeFocusOnWindow(p)});
+      this._showOnlyCurrentProcessSub = this._runningProcessService.showOnlyCurrentProcessNotify.subscribe((p) => {this.showOnlyThisWindow(p)});
+      this._hideOtherProcessSub = this._runningProcessService.hideOtherProcessNotify.subscribe((p) => {this.moveWindowsOutOfSight(p)});
     }
 
     get getDivWindowElement(): HTMLElement {
@@ -117,6 +124,8 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
       this._focusOnNextProcessSub?.unsubscribe();
       this._focusOnCurrentProcessSub?.unsubscribe();
       this._focusOutOtherProcessSub?.unsubscribe();
+      this._showOnlyCurrentProcessSub?.unsubscribe();
+      this._hideOtherProcessSub?.unsubscribe();
     }
 
     ngAfterViewInit():void{
@@ -272,12 +281,13 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
       }
     }
 
-    updateWindowZIndex(window: WindowState):void{
+    updateWindowZIndex(window: WindowState, zIndex:number):void{
+      //console.log(`Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);
       if(this.processId == window.pid){
         this.currentStyles = {
-          'z-index':this.MIN_Z_INDEX
+          'z-index':zIndex
         };
-        window.z_index = this.MIN_Z_INDEX;
+        window.z_index = zIndex;
         const uid = `${window.app_name}-${window.pid}`;
         this._stateManagmentService.addState(uid, window, StateType.Window);
       }
@@ -397,15 +407,53 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
       const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow == true && p.getProcessId != pid);
 
       for(let i = 0; i < processWithWindows.length; i++){
-          const process = processWithWindows[i];
-          const window = this._stateManagmentService.getState(`${process.getProcessName}-${process.getProcessId}`, StateType.Window) as WindowState;
+        const process = processWithWindows[i];
+        const window = this._stateManagmentService.getState(`${process.getProcessName}-${process.getProcessId}`, StateType.Window) as WindowState;
           
-          if(window != undefined && window.is_visible){
-            this.setHeaderInActive(window.pid);
-            this.updateWindowZIndex(window);
+        if(window != undefined && window.is_visible){
+          this.setHeaderInActive(window.pid);
+          this.updateWindowZIndex(window, this.MIN_Z_INDEX);
         }
       }
     }
+
+    showOnlyThisWindow(pid:number):void{
+      /**
+       * If you want to make a non-focusable element focusable, 
+       * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
+       */
+
+      this._runningProcessService.hideOtherProcessNotify.next(pid);
+      
+      if(this.processId == pid){
+        this.setHeaderActive(pid);
+        this.showOnlyWindowById(pid);
+      }
+    }
+
+
+    /**
+     * the pid of the current window currently in focus is passed. if the pid of other windows do not match,
+     * then they are hidden by setting z -index = -1
+     */
+    moveWindowsOutOfSight(pid:number):void{
+      const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow == true && p.getProcessId != pid);
+
+      for(let i = 0; i < processWithWindows.length; i++){
+        const process = processWithWindows[i];
+        const window = this._stateManagmentService.getState(`${process.getProcessName}-${process.getProcessId}`, StateType.Window) as WindowState;
+          
+        if(window != undefined && window.is_visible){
+          if(window.z_index === 2){
+            this.pid_with_highest_z_index = window.pid;
+          }
+
+          this.updateWindowZIndex(window, this.HIDDEN_Z_INDEX);
+        }
+      }
+    }
+
+
 
    setWindowToFocusById(pid:number):void{
       let z_index = this._stateManagmentService.getState(this.z_index) as number;
@@ -419,6 +467,22 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
 
           windowState.z_index = z_index
           this._stateManagmentService.addState(this.uniqueId, windowState, StateType.Window);
+  
+          this.currentStyles = {
+            'z-index':z_index
+          };
+          this.setHeaderActive(pid);
+        }     
+      }
+    }
+
+    showOnlyWindowById(pid:number):void{
+      const uid = `${this.name}-${pid}`;
+      const windowState = this._stateManagmentService.getState(uid,StateType.Window) as WindowState;
+
+      if(windowState !== undefined){
+        if((windowState.pid == pid)){
+          const z_index = this.TMP_Z_INDEX;
   
           this.currentStyles = {
             'z-index':z_index

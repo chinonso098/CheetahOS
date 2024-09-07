@@ -19,12 +19,14 @@ export class RunningProcessService{
     closeProcessNotify: Subject<Process> = new Subject<Process>();
     focusOnNextProcessNotify: Subject<void> = new Subject<void>();
     focusOnCurrentProcessNotify: Subject<number> = new Subject<number>();
+    showOnlyCurrentProcessNotify: Subject<number> = new Subject<number>();
     focusOutOtherProcessNotify: Subject<number> = new Subject<number>();
     restoreOrMinimizeWindowNotify: Subject<number> = new Subject<number>();
     maximizeWindowNotify: Subject<void> = new Subject<void>();
     minimizeWindowNotify: Subject<number[]> = new Subject<number[]>();
     showPreviewWindowNotify: Subject<unknown[]> = new Subject<unknown[]>();
     hidePreviewWindowNotify: Subject<void> = new Subject<void>();
+    hideOtherProcessNotify: Subject<number> = new Subject<number>();
     keepPreviewWindowNotify: Subject<void> = new Subject<void>();
 
     constructor(){
