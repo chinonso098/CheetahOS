@@ -424,14 +424,12 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   toggleAutoArrangeIcons(arrangeIcon:boolean):void{
-
     this.autoArrange = arrangeIcon;
 
     if(this.autoArrange){
       // clear (x,y) position of icons in memory
       this.refreshIcons();
     }
-    
   }
 
   async refreshIcons():Promise<void>{

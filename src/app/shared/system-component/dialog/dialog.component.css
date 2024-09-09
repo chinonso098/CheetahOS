@@ -6,8 +6,8 @@
     background-color: #fff;
     box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%);
     position: absolute;
-    top: 40%;
-    left: 15%;
+    top: 25%;
+    left: 25%;
     transform: translate(-50%, -50%); /* Move the element back by 50% of its own width and height */
     outline: 1px hsl(0deg 0% 20%/70%);
     z-index: 2;
