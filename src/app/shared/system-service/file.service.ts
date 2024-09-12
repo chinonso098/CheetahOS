@@ -1,10 +1,10 @@
 import { Injectable } from "@angular/core";
-import { FileInfo } from "src/app/system-files/fileinfo";
+import { FileInfo } from "src/app/system-files/file.info";
 import { ShortCut } from "src/app/system-files/shortcut";
 import {extname, basename, resolve, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FSModule } from "browserfs/dist/node/core/FS";
-import { FileEntry } from 'src/app/system-files/fileentry';
+import { FileEntry } from 'src/app/system-files/file.entry';
 import { FileMetaData } from "src/app/system-files/file.metadata";
 
 import { Subject } from "rxjs";

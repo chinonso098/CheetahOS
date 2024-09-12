@@ -5,8 +5,8 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { ComponentType } from 'src/app/system-files/component.types';
 import { BaseComponent } from 'src/app/system-base/base/base.component';
 import { Process } from 'src/app/system-files/process';
-import { FileEntry } from 'src/app/system-files/fileentry';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileEntry } from 'src/app/system-files/file.entry';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { Subscription } from 'rxjs';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { FileManagerService } from 'src/app/shared/system-service/file.manager.services';

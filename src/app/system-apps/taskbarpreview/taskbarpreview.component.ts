@@ -85,4 +85,8 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit {
     this._runningProcessService.restoreProcessWindowNotify.next(pid);
   }
 
+  showWindow(pid:number):void{
+    this._runningProcessService.restoreProcessWindowNotify.next(pid);
+  }
+
 }

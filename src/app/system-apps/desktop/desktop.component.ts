@@ -8,7 +8,7 @@ import { BIRDS, GLOBE, HALO, RINGS, WAVE } from './vanta-object/vanta.interfaces
 import { IconsSizes, SortBys } from './desktop.enums';
 import { FileManagerService } from 'src/app/shared/system-service/file.manager.services';
 import { Colors } from './colorutil/colors';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { MenuService } from 'src/app/shared/system-service/menu.services';

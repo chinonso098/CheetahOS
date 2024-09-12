@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Subject } from "rxjs";
-import { FileInfo } from "src/app/system-files/fileinfo";
+import { FileInfo } from "src/app/system-files/file.info";
 import { Process } from "src/app/system-files/process";
 
 

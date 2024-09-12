@@ -5,7 +5,7 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { ComponentType } from 'src/app/system-files/component.types';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { Process } from 'src/app/system-files/process';
 
 @Component({

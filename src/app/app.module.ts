@@ -33,6 +33,7 @@ import { DialogComponent } from './shared/system-component/dialog/dialog.compone
 import { CodeEditorComponent } from './user-apps/codeeditor/codeeditor.component';
 import { PropertiesComponent } from './shared/system-component/properties/properties.component'; 
 import { MarkDownViewerComponent } from './user-apps/markdownviewer/markdownviewer.component';
+import { FileTreeViewComponent } from './shared/system-component/filetreeview/filetreeview.component';
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
@@ -73,6 +74,7 @@ import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.captu
     DialogComponent,
     CodeEditorComponent,
     MarkDownViewerComponent,
+    FileTreeViewComponent,
  
 
     HighlightDirective,

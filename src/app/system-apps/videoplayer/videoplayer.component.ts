@@ -6,7 +6,7 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { Constants } from "src/app/system-files/constants";
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';

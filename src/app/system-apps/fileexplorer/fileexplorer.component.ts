@@ -4,8 +4,8 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ComponentType } from 'src/app/system-files/component.types';
 import { Process } from 'src/app/system-files/process';
-import { FileEntry } from 'src/app/system-files/fileentry';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileEntry } from 'src/app/system-files/file.entry';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { BaseComponent } from 'src/app/system-base/base/base.component';
 import { Subscription } from 'rxjs';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
@@ -23,6 +23,7 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { SortBys } from '../desktop/desktop.enums';
+import { FileTreeNode } from 'src/app/system-files/file.tree.node';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -101,7 +102,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   olClassName = 'ol-icon-size-view';
 
   files:FileInfo[] = [];
-   _fileInfo!:FileInfo;
+  fileTreeNode:FileTreeNode[] = [];
+  _fileInfo!:FileInfo;
   prevPathEntries:string[] = [];
   nextPathEntries:string[] = [];
   recentPathEntries:string[] = [];
@@ -248,6 +250,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       pathInput: (this.directory !== '/')? this.directory : '/'
     })
   
+    await this.loadFileTreeAsync();
     await this.loadFilesInfoAsync().then(()=>{
       setTimeout(()=>{
         this.captureComponentImg();
@@ -680,6 +683,106 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.files.push(fileInfo)
     }
   }
+
+  private async loadFileTreeAsync():Promise<void>{
+    this.fileTreeNode = [];
+    this._fileService.resetDirectoryFiles();
+    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
+
+    for(const dirEntry of directoryEntries){
+      const isFile =  await this._fileService.checkIfDirectory(this.directory + dirEntry);
+      const ftn:FileTreeNode = {
+        name : dirEntry,
+        isFile: isFile,
+        children: []
+      }
+
+      console.log('ftn:', ftn);
+      this.fileTreeNode.push(ftn);
+    }
+  }
+
+  private async updateFileTreeAsync(path:string):Promise<void>{
+
+    //const tmpFileTreeNode:FileTreeNode = [];
+    this._fileService.resetDirectoryFiles();
+    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory + path);
+
+    for(const dirEntry of directoryEntries){
+
+      const isFile =  await this._fileService.checkIfDirectory(this.directory + + dirEntry);
+      const ftn:FileTreeNode = {
+        name : dirEntry,
+        isFile: isFile,
+        children: []
+      }
+
+    }
+  }
+
+  public addChildrenToNode(treeData: FileTreeNode[],  nodeName: string, newChildren: FileTreeNode[] ): FileTreeNode[] {
+
+    // Create a new array for the updated treeData
+    const updatedTreeData: FileTreeNode[] = [];
+
+    for (let i = 0; i < treeData.length; i++) {
+      const node = treeData[i];
+      const updatedNode: FileTreeNode = {
+        name: node.name,
+        isFile: node.isFile,
+        children: node.children || []
+      };
+
+      // If the current node matches the nodeName, add the new children
+      if (node.name === nodeName) {
+        for(const child of newChildren){
+          updatedNode.children.push(child)
+        }
+      }
+
+      // If the node has children, recursively call this function on the children
+      if (node.children) {
+        updatedNode.children = this.addChildrenToNode(node.children, nodeName, newChildren);
+      }
+
+      // Add the updated node to the new treeData array
+      updatedTreeData.push(updatedNode);
+    }
+
+    return updatedTreeData;
+  }
+
+  // public addChildrenToNode(treeData: FileTreeNode[],  nodeName: string, newChildren: string[] ): FileTreeNode[] {
+
+  //   // Create a new array for the updated treeData
+  //   const updatedTreeData: FileTreeNode[] = [];
+
+  //   for (let i = 0; i < treeData.length; i++) {
+  //     const node = treeData[i];
+  //     const updatedNode: FileTreeNode = {
+  //       name: node.name,
+  //       isFile: node.isFile,
+  //       children: node.children ? [] : undefined
+  //     };
+
+  //     // If the current node matches the nodeName, add the new children
+  //     if (node.name === nodeName) {
+  //       updatedNode.children = (node.children || []).concat(
+  //         newChildren.map(childName => ({ name: childName, isFile: node.isFile}))
+  //       );
+  //     }
+
+  //     // If the node has children, recursively call this function on the children
+  //     if (node.children) {
+  //       updatedNode.children = this.addChildrenToNode(node.children, nodeName, newChildren);
+  //     }
+
+  //     // Add the updated node to the new treeData array
+  //     updatedTreeData.push(updatedNode);
+  //   }
+
+  //   return updatedTreeData;
+  // }
 
   async runProcess(file:FileInfo):Promise<void>{
 

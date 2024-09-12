@@ -10,7 +10,7 @@ import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { BaseComponent } from 'src/app/system-base/base/base.component';
 import { ComponentType } from 'src/app/system-files/component.types';
 import { Process } from 'src/app/system-files/process';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';

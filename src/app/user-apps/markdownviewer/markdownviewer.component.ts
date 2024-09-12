@@ -15,7 +15,7 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { FileService } from 'src/app/shared/system-service/file.service';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 declare const marked:any;

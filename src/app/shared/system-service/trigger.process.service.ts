@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { Subject } from "rxjs";
 import { RunningProcessService } from "./running.process.service";
 import { AppDirectory } from "src/app/system-files/app.directory";
-import { FileInfo } from "src/app/system-files/fileinfo";
+import { FileInfo } from "src/app/system-files/file.info";
 
 @Injectable({
     providedIn: 'root'
