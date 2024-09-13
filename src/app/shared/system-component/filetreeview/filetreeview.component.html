@@ -24,10 +24,10 @@
         <ul class="ul-file-tree-view nested">
             <ng-container *ngFor="let node of treeData; let i = index">
                 <li class="li-file-tree-view"> 
-                    <div class="tree-view-cntnr"  id="fileExplrTreeView-{{pid}}-{{i}}" (click)="showChildren(i)">
+                    <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="fileExplrTreeView-{{pid}}-{{i}}" (click)="showChildren(i)">
                         <div class="span fxtreeview-head"> 
                             <figure class="fxtreeview-figure">  
-                                <div class="fxtreeview-img" *ngIf="node.isFolder" >
+                                <div class="fxtreeview-img" >
                                     <svg xmlns="http://www.w3.org/2000/svg" (click)="showChildren()" (mouseenter)="colorChevron()" (mouseleave)="unColorChevron()" [style]="chevronBtnStyle"
                                         height="10" width="10" 
                                         viewBox="0 0 512 512"  id="fileExplrTreeView-img-{{pid}}-{{i}}">
@@ -36,7 +36,9 @@
                                 </div>
                             </figure>
                         </div>
-                        <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/icons/'+ node.name.toLowerCase() + '.ico'"/> </figure> </div>
+                        <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]=" node.name.toLowerCase() === 'downloads' ? 'osdrive/icons/downloads1.png' :  
+                                                                                                                                 node.name.toLowerCase() === 'music'? 'osdrive/icons/music.png': 
+                                                                                                                                 node.name.toLowerCase() === 'icons'? 'osdrive/icons/folder.ico' :'osdrive/icons/'+ node.name.toLowerCase() + '.ico'"/> </figure> </div>
                         <div class="span fxtreeview-tail"> <p class="fxtreeview-nested-p"> {{node.name}}</p></div>
                     </div>
 
@@ -44,10 +46,10 @@
                         <ul class="ul-file-tree-view nested">
                             <ng-container *ngFor="let child of node.children; let j = index">
                                 <li class="li-file-tree-view"> 
-                                    <div class="tree-view-cntnr"  id="fileExplrTreeView-{{pid}}-{{i}}-{{j}}" (click)="showChildren(i,j)">
+                                    <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="fileExplrTreeView-{{pid}}-{{i}}-{{j}}" (click)="showChildren(i,j)">
                                         <div class="span fxtreeview-head"> 
                                             <figure class="fxtreeview-figure">  
-                                                <div class="fxtreeview-img" *ngIf="node.isFolder" >
+                                                <div class="fxtreeview-img" >
                                                     <svg xmlns="http://www.w3.org/2000/svg" (click)="showChildren()" (mouseenter)="colorChevron()" (mouseleave)="unColorChevron()" [style]="chevronBtnStyle"
                                                         height="10" width="10" 
                                                         viewBox="0 0 512 512"  id="fileExplrTreeView-img-{{pid}}-{{i}}-{{j}}">
