@@ -20,10 +20,13 @@ export class FileTreeViewComponent implements OnInit {
 
   showChildren(id?:number, id1?:number):void{
 
-    let ulId = ''
+    let ulId = '';   let imgId = ''
 
-    if(id === undefined && id1 === undefined )
-       ulId = `fileExplrTreeView-${this.pid}`;
+    if(id === undefined && id1 === undefined ){
+      ulId = `fileExplrTreeView-${this.pid}`;
+      imgId = `fileExplrTreeView-img-${this.pid}`;
+    }
+
 
     if(id !== undefined && id1 === undefined )
       ulId = `fileExplrTreeView-${this.pid}-${id}`;
@@ -32,11 +35,21 @@ export class FileTreeViewComponent implements OnInit {
       ulId = `fileExplrTreeView-${this.pid}-${id}-${id1}`;
 
     console.log('passed id:', ulId);
+    console.log('passed imgId:', imgId);
+
     const toggler =  document.getElementById(ulId) as HTMLElement;
+    const imgDiv =  document.getElementById(imgId) as HTMLElement;
+
     if(toggler){
       console.log('toggler:', toggler);
       toggler.parentElement?.querySelector(".nested")?.classList.toggle("active");
-      toggler.classList.toggle("caret-down");
+      //toggler.classList.toggle("caret-down");
+
+      if(imgDiv){
+        console.log('imgDiv:', imgDiv);
+        imgDiv.style.transform = 'rotate(90deg)';
+        imgDiv.style.position = 'relative';
+      }
     }
   }
 

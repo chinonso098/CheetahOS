@@ -1,5 +1,5 @@
 export interface FileTreeNode{
     name: string;
-    isFile:boolean;
+    isFolder:boolean;
     children: FileTreeNode[];
 }

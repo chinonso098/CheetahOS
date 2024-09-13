@@ -3,18 +3,15 @@
         <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
     </svg> -->
 
-<ul id="fileExplrTreeView">
-    <li>
-        
-        <!-- <span class="caret" id="fileExplrTreeView-{{pid}}" (click)="showChildren()">This PC</span> -->
-
+<ul class="ul-file-tree-view" id="fileExplrTreeView">
+    <li class="li-file-tree-view0">
         <div class="tree-view-cntnr"  id="fileExplrTreeView-{{pid}}" (click)="showCurrentSelection()">
             <div class="span fxtreeview-head"> 
                 <figure class="fxtreeview-figure">  
-                    <div class="fxtreeview-img">
+                    <div class="fxtreeview-img" >
                         <svg xmlns="http://www.w3.org/2000/svg" (click)="showChildren()" (mouseenter)="colorChevron()" (mouseleave)="unColorChevron()" [style]="chevronBtnStyle"
                             height="10" width="10" 
-                            viewBox="0 0 512 512">
+                            viewBox="0 0 512 512"  id="fileExplrTreeView-img-{{pid}}">
                             <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
                         </svg>
                     </div>
@@ -24,13 +21,45 @@
             <div class="span fxtreeview-tail"> <p class="fxtreeview-nested-p"> This PC</p></div>
         </div>
 
-        <!-- <ul class="nested">
+        <ul class="ul-file-tree-view nested">
             <ng-container *ngFor="let node of treeData; let i = index">
-                <li> <span class="caret"  id="fileExplrTreeView-{{pid}}-{{i}}" (click)="showChildren(i)">{{ node.name }}</span>
+                <li class="li-file-tree-view"> 
+                    <div class="tree-view-cntnr"  id="fileExplrTreeView-{{pid}}-{{i}}" (click)="showChildren(i)">
+                        <div class="span fxtreeview-head"> 
+                            <figure class="fxtreeview-figure">  
+                                <div class="fxtreeview-img" *ngIf="node.isFolder" >
+                                    <svg xmlns="http://www.w3.org/2000/svg" (click)="showChildren()" (mouseenter)="colorChevron()" (mouseleave)="unColorChevron()" [style]="chevronBtnStyle"
+                                        height="10" width="10" 
+                                        viewBox="0 0 512 512"  id="fileExplrTreeView-img-{{pid}}-{{i}}">
+                                        <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+                                    </svg>
+                                </div>
+                            </figure>
+                        </div>
+                        <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/icons/'+ node.name.toLowerCase() + '.ico'"/> </figure> </div>
+                        <div class="span fxtreeview-tail"> <p class="fxtreeview-nested-p"> {{node.name}}</p></div>
+                    </div>
+
                     <ng-container *ngIf="node.children && node.children.length">
-                        <ul class="nested">
+                        <ul class="ul-file-tree-view nested">
                             <ng-container *ngFor="let child of node.children; let j = index">
-                                <li> <span class="caret" id="fileExplrTreeView-{{pid}}-{{i}}-{{j}}" (click)="showChildren(i,j)">{{ child.name }}</span>
+                                <li class="li-file-tree-view"> 
+                                    <div class="tree-view-cntnr"  id="fileExplrTreeView-{{pid}}-{{i}}-{{j}}" (click)="showChildren(i,j)">
+                                        <div class="span fxtreeview-head"> 
+                                            <figure class="fxtreeview-figure">  
+                                                <div class="fxtreeview-img" *ngIf="node.isFolder" >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" (click)="showChildren()" (mouseenter)="colorChevron()" (mouseleave)="unColorChevron()" [style]="chevronBtnStyle"
+                                                        height="10" width="10" 
+                                                        viewBox="0 0 512 512"  id="fileExplrTreeView-img-{{pid}}-{{i}}-{{j}}">
+                                                        <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+                                                    </svg>
+                                                </div>
+                                            </figure>
+                                        </div>
+                                        <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/icons/empty_folder.ico'"/> </figure> </div>
+                                        <div class="span fxtreeview-tail"> <p class="fxtreeview-nested-p"> {{child.name}}</p></div>
+                                    </div>
+
                                     <ng-container *ngIf="child.children && child.children.length">
                                         <cos-filetreeview [treeData]="child.children"></cos-filetreeview>
                                     </ng-container>
@@ -40,7 +69,7 @@
                     </ng-container>
                 </li>
             </ng-container>
-        </ul> -->
+        </ul> 
     </li>
 </ul>
 

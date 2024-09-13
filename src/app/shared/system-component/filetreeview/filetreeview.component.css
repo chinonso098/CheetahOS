@@ -1,12 +1,23 @@
   /* Remove default bullets */
-  ul, #fileExplrTreeView {
+  /* ul, #fileExplrTreeView {
       list-style-type: none;
-  }
+  } */
     
   /* Remove margins and padding from the parent ul */
-  #fileExplrTreeView {
+  .ul-file-tree-view{
+    list-style-type: none;
     margin: 0;
     padding: 0;
+  }
+  
+  .li-file-tree-view0{
+    margin:0;
+    padding:0 0 0 0px; /* Each nested li will be padded incrementally */
+  }
+  
+  .li-file-tree-view{
+    margin:0;
+    padding:0 0 0 10px; /* Each nested li will be padded incrementally */
   }
     
   /* Style the caret/arrow */
@@ -42,6 +53,7 @@
   .tree-view-cntnr{
     display: inline-flex;
     width: 100%;
+    padding-top: 2px;
   }
 
   .fxtreeview-nested-p{

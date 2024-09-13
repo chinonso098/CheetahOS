@@ -693,7 +693,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const isFile =  await this._fileService.checkIfDirectory(this.directory + dirEntry);
       const ftn:FileTreeNode = {
         name : dirEntry,
-        isFile: isFile,
+        isFolder: isFile,
         children: []
       }
 
@@ -713,7 +713,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const isFile =  await this._fileService.checkIfDirectory(this.directory + + dirEntry);
       const ftn:FileTreeNode = {
         name : dirEntry,
-        isFile: isFile,
+        isFolder: isFile,
         children: []
       }
 
@@ -729,7 +729,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const node = treeData[i];
       const updatedNode: FileTreeNode = {
         name: node.name,
-        isFile: node.isFile,
+        isFolder: node.isFolder,
         children: node.children || []
       };
 
