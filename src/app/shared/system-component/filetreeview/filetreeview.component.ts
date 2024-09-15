@@ -9,6 +9,7 @@ import { FileTreeNode } from 'src/app/system-files/file.tree.node';
 export class FileTreeViewComponent implements OnInit {
   @Input() treeData: FileTreeNode[] = [];
   @Input() pid = 0;
+  @Input() showRoot = true;
   @Output() updateFileTreeData = new EventEmitter<string>();
 
   chevronBtnStyle:Record<string, unknown> = {};
@@ -97,33 +98,11 @@ export class FileTreeViewComponent implements OnInit {
     }
   }
 
-  showExpandedViews():void{
-    for(const el of this.expandedViews){
-      const arr = el.split('-');
-      console.log('arr:', arr);
-      if(arr[0] == 'SGC'){
-        const id = Number(arr[2]);
-        this.showGrandChildren_B(id);
-      }else{
-        1
-      }
-    }
-  }
 
-  showGreatGrandChildren(id?:number, id1?:number, path?:string):void{
+  showGreatGrandChildren( path:string, id:number, id1:number):void{
 
-    let ulId = '';   let imgId = ''
-
-    if(id === undefined && id1 === undefined ){
-      ulId = `fileExplrTreeView-${this.pid}`;
-      imgId = `fileExplrTreeView-img-${this.pid}`;
-    }
-
-    if(id !== undefined && id1 === undefined )
-      ulId = `fileExplrTreeView-${this.pid}-${id}`;
-
-    if(id !== undefined && id1 !== undefined )
-      ulId = `fileExplrTreeView-${this.pid}-${id}-${id1}`;
+    const ulId = `fileExplrTreeView-${this.pid}-${id}-${id1}`;
+    const imgId = `fileExplrTreeView-img-${this.pid}-${id}-${id1}`;
 
     console.log('passed id:', ulId);
     console.log('passed imgId:', imgId);
@@ -133,7 +112,7 @@ export class FileTreeViewComponent implements OnInit {
 
     if(toggler){
       console.log('toggler:', toggler);
-      toggler.parentElement?.querySelector(".nested")?.classList.toggle("active");
+      //toggler.parentElement?.querySelector(".nested")?.classList.toggle("active");
     
 
       //toggler.classList.remove("nested");
@@ -141,18 +120,51 @@ export class FileTreeViewComponent implements OnInit {
       //toggler.classList.toggle("caret-down");
 
       if(imgDiv){
-        this.expandedViews.push(`SGGC-${this.pid}-${id}`);
+        this.expandedViews.push(`SGGC-${this.pid}-${id}-${id1}`);
         console.log('imgDiv:', imgDiv);
         imgDiv.style.transform = 'rotate(90deg)';
         imgDiv.style.position = 'relative';
       }
 
       //pass event to the parent
-      //this.getDataEvent.emit(path);
+      this.updateFileTreeData.emit(path);
+
+      setTimeout(()=>{ this.showExpandedViews();}, 2000);
     }
   }
 
+  showGreatGrandChildren_B(id:number, id1:number):void{
 
+    const ulId = `fileExplrTreeView-${this.pid}-${id}-${id1}`;
+    const imgId = `fileExplrTreeView-img-${this.pid}-${id}-${id1}`;
+
+    const toggler =  document.getElementById(ulId) as HTMLElement;
+    const imgDiv =  document.getElementById(imgId) as HTMLElement;
+
+    if(toggler){
+      if(imgDiv){
+        console.log('imgDiv:', imgDiv);
+        imgDiv.style.transform = 'rotate(90deg)';
+        imgDiv.style.position = 'relative';
+      }
+
+    }
+  }
+
+  showExpandedViews():void{
+    for(const el of this.expandedViews){
+      const arr = el.split('-');
+      console.log('arr:', arr);
+      if(arr[0] == 'SGC'){
+        const id = Number(arr[2]);
+        this.showGrandChildren_B(id);
+      }else{
+        const id = Number(arr[2]);
+        const id1 = Number(arr[3]);
+        this.showGreatGrandChildren_B(id, id1);
+      }
+    }
+  }
 
   showCurrentSelection(path:string):void{
    1
