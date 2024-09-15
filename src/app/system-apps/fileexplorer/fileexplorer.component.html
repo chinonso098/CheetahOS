@@ -227,7 +227,7 @@
             <div class="fileexp-content-container">
                 <div class="navigation-content-container"  #navExplorerContainer>
                     <div style="height: 10px; width: 100%;"></div>
-                    <cos-filetreeview [treeData]="fileTreeNode" [pid] ="this.processId"></cos-filetreeview>
+                    <cos-filetreeview [treeData]="fileTreeNode" [pid] ="this.processId"  (updateFileTreeData)="updateFileTreeAsync($event)"></cos-filetreeview>
                 </div>
                 <div class="file-content-container" #fileExplorerContentContainer>
                 <!-- ngResizable [rzHandles]="'w'" [rzMinWidth]="270" -->

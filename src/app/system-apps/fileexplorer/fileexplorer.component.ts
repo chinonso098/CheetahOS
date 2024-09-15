@@ -685,14 +685,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   private async loadFileTreeAsync():Promise<void>{
+
+    console.log('loadFileTreeAsync callled');
     this.fileTreeNode = [];
     this._fileService.resetDirectoryFiles();
     const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
 
+   // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
       const isFile =  await this._fileService.checkIfDirectory(this.directory + dirEntry);
       const ftn:FileTreeNode = {
         name : dirEntry,
+        path : `${this.directory}${dirEntry}`,
         isFolder: isFile,
         children: []
       }
@@ -702,25 +706,35 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  private async updateFileTreeAsync(path:string):Promise<void>{
+  async updateFileTreeAsync(path:string):Promise<void>{
 
-    //const tmpFileTreeNode:FileTreeNode = [];
+    console.log('updateFileTreeAsync called', path);
+
+    const tmpFileTreeNode:FileTreeNode[] = [];
     this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory + path);
+    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(path);
 
+    // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
 
-      const isFile =  await this._fileService.checkIfDirectory(this.directory + + dirEntry);
+      const isFile =  await this._fileService.checkIfDirectory(`${path}/${dirEntry}`);
       const ftn:FileTreeNode = {
         name : dirEntry,
+        path: `${path}/${dirEntry}`,
         isFolder: isFile,
         children: []
       }
 
+      console.log('update-ftn:', ftn);
+      tmpFileTreeNode.push(ftn);
     }
+
+    const res =  this.addChildrenToNode(this.fileTreeNode, path, tmpFileTreeNode);
+    console.log('updatedTreeData:', res);
+    this.fileTreeNode = res;
   }
 
-  public addChildrenToNode(treeData: FileTreeNode[],  nodeName: string, newChildren: FileTreeNode[] ): FileTreeNode[] {
+  private addChildrenToNode(treeData: FileTreeNode[], nodePath: string, newChildren: FileTreeNode[] ): FileTreeNode[] {
 
     // Create a new array for the updated treeData
     const updatedTreeData: FileTreeNode[] = [];
@@ -729,12 +743,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const node = treeData[i];
       const updatedNode: FileTreeNode = {
         name: node.name,
+        path: node.path,
         isFolder: node.isFolder,
         children: node.children || []
       };
 
       // If the current node matches the nodeName, add the new children
-      if (node.name === nodeName) {
+      if (node.path === nodePath) {
         for(const child of newChildren){
           updatedNode.children.push(child)
         }
@@ -742,7 +757,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       // If the node has children, recursively call this function on the children
       if (node.children) {
-        updatedNode.children = this.addChildrenToNode(node.children, nodeName, newChildren);
+        updatedNode.children = this.addChildrenToNode(node.children, nodePath, newChildren);
       }
 
       // Add the updated node to the new treeData array
