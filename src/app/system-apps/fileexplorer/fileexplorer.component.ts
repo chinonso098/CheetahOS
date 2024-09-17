@@ -143,6 +143,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   isSortBySize = false;
   isSortByDateModified = false;
 
+  showExpandTreeIcon = false;
+
   renameForm!: FormGroup;
   pathForm!: FormGroup;
   searchForm!: FormGroup;
@@ -649,6 +651,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+  showExpandTreeIconBtn():void{
+    this.showExpandTreeIcon = !this.showExpandTreeIcon;
+  }
   onDragOver(event:DragEvent):void{
     event.stopPropagation();
     event.preventDefault();

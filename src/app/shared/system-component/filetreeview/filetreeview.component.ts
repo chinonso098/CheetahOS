@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, OnChanges } from '@angular/core';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
 
 @Component({
@@ -6,10 +6,11 @@ import { FileTreeNode } from 'src/app/system-files/file.tree.node';
   templateUrl: './filetreeview.component.html',
   styleUrl: './filetreeview.component.css'
 })
-export class FileTreeViewComponent implements OnInit {
+export class FileTreeViewComponent implements OnInit, OnChanges {
   @Input() treeData: FileTreeNode[] = [];
   @Input() pid = 0;
   @Input() showRoot = true;
+  @Input() isHoverActive = false;
   @Output() updateFileTreeData = new EventEmitter<string>();
 
   chevronBtnStyle:Record<string, unknown> = {};
@@ -20,7 +21,13 @@ export class FileTreeViewComponent implements OnInit {
   }
 
   ngOnInit():void{
-    this.setcolorChevron();
+    this.setcolorChevron(this.isHoverActive);
+  }
+
+
+  ngOnChanges():void{
+    //console.log('FILETREE onCHANGES:',this.isHoverActive);
+    this.setcolorChevron(this.isHoverActive);
   }
 
   showChildren(name?:string):void{
@@ -171,9 +178,17 @@ export class FileTreeViewComponent implements OnInit {
   }
 
 
-  setcolorChevron():void{
-    this.chevronBtnStyle ={
-       'fill': '#ccc'
+  setcolorChevron(isHoverActive:boolean):void{
+    if(!isHoverActive){
+      this.chevronBtnStyle ={
+        'fill': '#191919',
+        'transition': 'fill 0.75s ease'
+     }
+    }else{
+      this.chevronBtnStyle ={
+        'fill': '#ccc',
+        'transition': 'fill 0.5s ease'
+     }
     }
   }
 
