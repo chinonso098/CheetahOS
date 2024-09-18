@@ -678,17 +678,19 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private async loadFilesInfoAsync(path?:string, showUrl=true):Promise<void>{
     this.files = [];
     this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
+    let directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
 
     console.log('directoryEntries:',directoryEntries);
 
     if(this.directory === '/'){
       if(!showUrl){
         const filteredDirectoryEntries = directoryEntries.filter(x => !x.includes('.url'));
+        directoryEntries = filteredDirectoryEntries;
         this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(filteredDirectoryEntries,this.directory);
       }
       else{
         const filteredDirectoryEntries = directoryEntries.filter(x => x.includes('.url'));
+        directoryEntries = filteredDirectoryEntries;
         this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(filteredDirectoryEntries,this.directory); 
       }
     }else{
