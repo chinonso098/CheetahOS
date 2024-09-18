@@ -227,7 +227,7 @@
             <div class="fileexp-content-container">
                 <div class="navigation-content-container"  (mouseenter)="showExpandTreeIconBtn()" (mouseleave)="showExpandTreeIconBtn()" #navExplorerContainer>
                     <div style="height: 10px; width: 100%;"></div>
-                    <cos-filetreeview [treeData]="fileTreeNode" [pid] ="processId" [isHoverActive]="showExpandTreeIcon"  (updateFileTreeData)="updateFileTreeAsync($event)"></cos-filetreeview>
+                    <cos-filetreeview [treeData]="fileTreeNode" [pid] ="processId" [isHoverActive]="showExpandTreeIcon"  (updateFileTreeData)="updateFileTreeAsync($event)"   (navigateToPath)="navigateToFolder($event)" ></cos-filetreeview>
                 </div>
                 <div class="file-content-container" #fileExplorerContentContainer>
                 <!-- ngResizable [rzHandles]="'w'" [rzMinWidth]="270" -->

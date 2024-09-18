@@ -109,6 +109,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   recentPathEntries:string[] = [];
   upPathEntries:string[] = ['/Desktop'];
   _directoryHops:string[] = ['This PC'];
+  fileTreeHistory:string[] = [];
   SECONDS_DELAY:number[] = [100, 1500, 6000, 12000, 250];
   
   defaultviewOption = ViewOptions.MEDIUM_ICON_VIEW;
@@ -675,7 +676,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  private async loadFilesInfoAsync(path?:string, showUrl=true):Promise<void>{
+  private async loadFilesInfoAsync(showUrlFiles=true):Promise<void>{
     this.files = [];
     this._fileService.resetDirectoryFiles();
     let directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
@@ -683,7 +684,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     console.log('directoryEntries:',directoryEntries);
 
     if(this.directory === '/'){
-      if(!showUrl){
+      if(!showUrlFiles){
         const filteredDirectoryEntries = directoryEntries.filter(x => !x.includes('.url'));
         directoryEntries = filteredDirectoryEntries;
         this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(filteredDirectoryEntries,this.directory);
@@ -738,32 +739,34 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     console.log('updateFileTreeAsync called', path);
 
-    const tmpFileTreeNode:FileTreeNode[] = [];
-    this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(path);
-
-    // this.directory, will not be correct for all cases. Make sure to check
-    for(const dirEntry of directoryEntries){
-
-      const isFile =  await this._fileService.checkIfDirectory(`${path}/${dirEntry}`);
-      const ftn:FileTreeNode = {
-        name : dirEntry,
-        path: `${path}/${dirEntry}`,
-        isFolder: isFile,
-        children: []
+    if(!this.fileTreeHistory.includes(path)){
+      const tmpFileTreeNode:FileTreeNode[] = [];
+      this._fileService.resetDirectoryFiles();
+      const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(path);
+  
+      // this.directory, will not be correct for all cases. Make sure to check
+      for(const dirEntry of directoryEntries){
+  
+        const isFile =  await this._fileService.checkIfDirectory(`${path}/${dirEntry}`);
+        const ftn:FileTreeNode = {
+          name : dirEntry,
+          path: `${path}/${dirEntry}`,
+          isFolder: isFile,
+          children: []
+        }
+  
+        console.log('update-ftn:', ftn);
+        tmpFileTreeNode.push(ftn);
       }
-
-      console.log('update-ftn:', ftn);
-      tmpFileTreeNode.push(ftn);
+  
+      const res =  this.addChildrenToNode(this.fileTreeNode, path, tmpFileTreeNode);
+      console.log('updatedTreeData:', res);
+      this.fileTreeNode = res;
+      this.fileTreeHistory.push(path);
     }
-
-    const res =  this.addChildrenToNode(this.fileTreeNode, path, tmpFileTreeNode);
-    console.log('updatedTreeData:', res);
-    this.fileTreeNode = res;
   }
 
   private addChildrenToNode(treeData: FileTreeNode[], nodePath: string, newChildren: FileTreeNode[] ): FileTreeNode[] {
-
     // Create a new array for the updated treeData
     const updatedTreeData: FileTreeNode[] = [];
 
@@ -794,38 +797,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     return updatedTreeData;
   }
-
-  // public addChildrenToNode(treeData: FileTreeNode[],  nodeName: string, newChildren: string[] ): FileTreeNode[] {
-
-  //   // Create a new array for the updated treeData
-  //   const updatedTreeData: FileTreeNode[] = [];
-
-  //   for (let i = 0; i < treeData.length; i++) {
-  //     const node = treeData[i];
-  //     const updatedNode: FileTreeNode = {
-  //       name: node.name,
-  //       isFile: node.isFile,
-  //       children: node.children ? [] : undefined
-  //     };
-
-  //     // If the current node matches the nodeName, add the new children
-  //     if (node.name === nodeName) {
-  //       updatedNode.children = (node.children || []).concat(
-  //         newChildren.map(childName => ({ name: childName, isFile: node.isFile}))
-  //       );
-  //     }
-
-  //     // If the node has children, recursively call this function on the children
-  //     if (node.children) {
-  //       updatedNode.children = this.addChildrenToNode(node.children, nodeName, newChildren);
-  //     }
-
-  //     // Add the updated node to the new treeData array
-  //     updatedTreeData.push(updatedNode);
-  //   }
-
-  //   return updatedTreeData;
-  // }
 
   async runProcess(file:FileInfo):Promise<void>{
 
@@ -860,6 +831,43 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }else{
         this._triggerProcessService.startApplication(file);
     }
+  }
+
+  async navigateToFolder(data:string[]):Promise<void>{
+    const thisPC = 'This-PC';
+    const fileName = data[0];
+    const path = data[1];
+
+    if(!this.isNavigatedBefore){
+      this.prevPathEntries.push(this.directory);
+      this.upPathEntries.push(this.directory);
+      this.isNavigatedBefore = true;
+    }
+
+    this.isPrevBtnActive = true;
+    this.displayName = fileName;
+    this.directory = (path === thisPC)? '/' : path;
+
+    if(path === `/Users/${fileName}`)
+      this.icon = `osdrive/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder.png`;
+    else
+      this.icon = `osdrive/Cheetah/System/Imageres/folder.png`;
+
+    this.prevPathEntries.push(this.directory);
+    this.upPathEntries.push(this.directory);
+
+    if(this.recentPathEntries.indexOf(this.directory) == -1){
+      this.recentPathEntries.push(this.directory);
+    }
+
+    this.populateHopsList();
+    this.setNavPathIcon(fileName, path);
+    this.storeAppState(path);
+
+    if(path === thisPC || path !== '/')
+      await this.loadFilesInfoAsync();
+    else if(path === '/')
+      await this.loadFilesInfoAsync(false);
   }
 
   setNavPathIcon(fileName:string, directory:string){

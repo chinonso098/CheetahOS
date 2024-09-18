@@ -12,9 +12,11 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   @Input() showRoot = true;
   @Input() isHoverActive = false;
   @Output() updateFileTreeData = new EventEmitter<string>();
+  @Output() navigateToPath = new EventEmitter<string[]>();
 
   chevronBtnStyle:Record<string, unknown> = {};
   expandedViews:string[]= [];
+  selectedElementId = 0;
 
   constructor( ){
     //
@@ -173,10 +175,10 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     }
   }
 
-  showCurrentSelection(path:string):void{
-   1
+  navigateToSelectedPath(name:string, path:string):void{
+    const data:string[] = [name, path]
+    this.navigateToPath.emit(data);
   }
-
 
   setcolorChevron(isHoverActive:boolean):void{
     if(!isHoverActive){
