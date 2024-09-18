@@ -14,7 +14,7 @@
     margin:0;
     padding:0 0 0 0px; /* Each nested li will be padded incrementally */
   }
-  
+
   .li-file-tree-view{
     margin:0;
     padding:0 0 0 10px; /* Each nested li will be padded incrementally */
@@ -53,7 +53,7 @@
   .tree-view-cntnr{
     display: inline-flex;
     width: 100%;
-    padding-top: 2px;
+    padding: 2px 0px;
   }
 
   .fxtreeview-nested-p{
@@ -66,7 +66,8 @@
   }
 
   .fxtreeview-mid{
-    padding: 0 2px;
+    padding-left: 2px;
+    padding-right: 3px;
   }
 
   .fxtreeview-tail{
@@ -74,7 +75,7 @@
     color: white;
     text-align: left;
     font-size: 12px;
-    font-weight: normal;
+    font-weight:200;
   }
 
   .fxtreeview-img{
@@ -94,8 +95,8 @@
   }
 
   .fxtreeview-img1{
-    height: 19px;
-    width: 19px;
+    height: 17px;
+    width: 17px;
     image-rendering:optimizeQuality;
     position: relative;
   }
@@ -104,7 +105,7 @@
     position: relative;
     align-items: center;
     display: inline-flex;
-    min-width: 19px;
+    min-width: 17px;
     top: 0;
     left: 15%;
   }

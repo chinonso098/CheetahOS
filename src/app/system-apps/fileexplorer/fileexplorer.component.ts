@@ -675,11 +675,25 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  private async loadFilesInfoAsync():Promise<void>{
+  private async loadFilesInfoAsync(path?:string, showUrl=true):Promise<void>{
     this.files = [];
     this._fileService.resetDirectoryFiles();
     const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
-    this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(directoryEntries,this.directory);
+
+    console.log('directoryEntries:',directoryEntries);
+
+    if(this.directory === '/'){
+      if(!showUrl){
+        const filteredDirectoryEntries = directoryEntries.filter(x => !x.includes('.url'));
+        this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(filteredDirectoryEntries,this.directory);
+      }
+      else{
+        const filteredDirectoryEntries = directoryEntries.filter(x => x.includes('.url'));
+        this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(filteredDirectoryEntries,this.directory); 
+      }
+    }else{
+      this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(directoryEntries,this.directory);
+    }
 
     for(let i = 0; i < directoryEntries.length; i++){
       const fileEntry = this._directoryFilesEntires[i];
@@ -697,6 +711,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._fileService.resetDirectoryFiles();
     const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(directory);
 
+    const osDrive:FileTreeNode = {
+      name : 'OSDisk (C:)', path : '/', isFolder: true, children: []
+    }
+
    // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
       const isFile =  await this._fileService.checkIfDirectory(directory + dirEntry);
@@ -710,6 +728,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       console.log('ftn:', ftn);
       this.fileTreeNode.push(ftn);
     }
+
+    this.fileTreeNode.push(osDrive);
   }
 
   async updateFileTreeAsync(path:string):Promise<void>{
