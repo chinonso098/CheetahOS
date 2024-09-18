@@ -52,7 +52,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   name= 'videoplayer';
   hasWindow = true;
-  icon = '/osdrive/icons/videoplayer.png';
+  icon = '/osdrive/Cheetah/System/Imageres/videoplayer.png';
   processId = 0;
   type = ComponentType.System;
   displayName = 'Video-js';

@@ -15,7 +15,7 @@ export class StartButtonComponent implements OnInit {
 
   hasWindow = false;
   hover = false;
-  icon = 'osdrive/icons/generic-program.ico';
+  icon = 'osdrive/Cheetah/System/Imageres/generic_program.png';
   name = 'startbutton';
   processId = 0;
   type = ComponentType.System

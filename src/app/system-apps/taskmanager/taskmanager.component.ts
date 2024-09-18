@@ -87,7 +87,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   powerUtil = 'Very low';
 
   hasWindow = true;
-  icon = 'osdrive/icons/taskmanger.png';
+  icon = 'osdrive/Cheetah/System/Imageres/taskmanger.png';
   name = 'taskmanager';
   processId = 0;
   type = ComponentType.System;

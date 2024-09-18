@@ -39,7 +39,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   SECONDS_DELAY = 250;
   name= 'photoviewer';
   hasWindow = true;
-  icon = '/osdrive/icons/photos_48.png';
+  icon = '/osdrive/Cheetah/System/Imageres/photos_48.png';
   isMaximizable = false;
   processId = 0;
   type = ComponentType.System;

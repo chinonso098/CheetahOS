@@ -19,7 +19,7 @@ export class TaskbarComponent implements AfterViewInit{
   SECONDS_DELAY = 1000;
 
   hasWindow = false;
-  icon = 'osdrive/icons/generic-program.ico';
+  icon = 'osdrive/Cheetah/System/Imageres/generic_program.png';
   name = 'taskbar';
   processId = 0;
   type = ComponentType.System

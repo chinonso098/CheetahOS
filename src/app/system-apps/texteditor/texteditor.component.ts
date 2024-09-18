@@ -49,7 +49,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   SECONDS_DELAY = 250;
 
   hasWindow = true;
-  icon = 'osdrive/icons/text-editor_48.png';
+  icon = 'osdrive/Cheetah/System/Imageres/text-editor_48.png';
   name = 'texteditor';
   processId = 0;
   type = ComponentType.System;

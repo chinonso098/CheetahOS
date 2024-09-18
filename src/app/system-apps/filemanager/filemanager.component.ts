@@ -66,12 +66,12 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   renameForm!: FormGroup;
 
   hasWindow = false;
-  icon = 'osdrive/icons/generic-program.ico';
+  icon = 'osdrive/Cheetah/System/Imageres/generic_program.png';
   name = 'filemanager';
   processId = 0;
   type = ComponentType.System;
   displayName = '';
-  directory ='/Desktop';
+  directory ='/Users/Desktop';
   files:FileInfo[] = [];
 
   menuData = [

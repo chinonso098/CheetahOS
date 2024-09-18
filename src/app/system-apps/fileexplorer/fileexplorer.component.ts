@@ -177,8 +177,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileDateModified = '';
 
 
-  icon = 'osdrive/icons/file_explorer.png';
-  navPathIcon = 'osdrive/icons/my_computer.ico'
+  icon = 'osdrive/Cheetah/System/Imageres/file_explorer.png';
+  navPathIcon = 'osdrive/Cheetah/System/Imageres/this_pc.png'
   name = 'fileexplorer';
   processId = 0;
   type = ComponentType.System;
@@ -692,16 +692,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private async loadFileTreeAsync():Promise<void>{
 
     console.log('loadFileTreeAsync callled');
+    const directory = '/Users/';
     this.fileTreeNode = [];
     this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
+    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(directory);
 
    // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
-      const isFile =  await this._fileService.checkIfDirectory(this.directory + dirEntry);
+      const isFile =  await this._fileService.checkIfDirectory(directory + dirEntry);
       const ftn:FileTreeNode = {
         name : dirEntry,
-        path : `${this.directory}${dirEntry}`,
+        path : `${directory}${dirEntry}`,
         isFolder: isFile,
         children: []
       }
@@ -843,31 +844,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     console.log(`fileexplorer - setNavPathIcon: fileName:${fileName} -----  directory:${directory}`)
 
-    if(fileName === 'Desktop' && directory === '/Desktop'){
-      this.navPathIcon = 'osdrive/icons/desktop.ico';
-    }
-    else if(fileName === 'Documents' && directory === '/Documents'){
-      this.navPathIcon = 'osdrive/icons/documents.ico';
-    }
-    else if(fileName === 'Downloads' && directory === '/Downloads'){
-      this.navPathIcon = 'osdrive/icons/downloads.png';
-    }
-    else if(fileName === 'Music' && directory === '/Music'){
-      this.navPathIcon = 'osdrive/icons/music.png';
-    }
-    else if(fileName === 'Pictures' && directory === '/Pictures'){
-      this.navPathIcon = 'osdrive/icons/pictures.ico';
-    }
-    else if(fileName === 'Videos' && directory === '/Videos'){
-      this.navPathIcon = 'osdrive/icons/video.ico';
-    }
-    else if(fileName === 'Games' && directory === '/Games'){
-      this.navPathIcon = 'osdrive/icons/games.ico';
+    if(directory === `/Users/${fileName}`){
+      this.navPathIcon = `osdrive/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder_small.png`;
     }
     else if((fileName === 'fileexplorer' && directory === '/') || fileName === '' && directory === '/'){
-      this.navPathIcon = 'osdrive/icons/my_computer.ico';
+      this.navPathIcon = 'osdrive/Cheetah/System/Imageres/this_pc.png';
     }else{
-      this.navPathIcon = 'osdrive/icons/folder.ico';
+      this.navPathIcon = 'osdrive/Cheetah/System/Imageres/folder_folder_small.png';
     }
   }
 
@@ -1743,25 +1726,25 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   buildViewMenu():NestedMenuItem[]{
 
-    const extraLargeIcon:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Extra Large icons', action: () => this.isExtraLargeIcon = !this.isExtraLargeIcon,  variables:this.isExtraLargeIcon, 
+    const extraLargeIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Extra Large icons', action: () => this.isExtraLargeIcon = !this.isExtraLargeIcon,  variables:this.isExtraLargeIcon, 
       emptyline:false, styleOption:'A' }
 
-    const largeIcon:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Large icons', action: () => this.isLargeIcon = !this.isLargeIcon,  variables:this.isMediumIcon, 
+    const largeIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Large icons', action: () => this.isLargeIcon = !this.isLargeIcon,  variables:this.isMediumIcon, 
       emptyline:false, styleOption:'A' }
 
-    const mediumIcon:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Medium icons', action: () => this.isMediumIcon = !this.isMediumIcon, variables:this.isLargeIcon,
+    const mediumIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Medium icons', action: () => this.isMediumIcon = !this.isMediumIcon, variables:this.isLargeIcon,
       emptyline:false, styleOption:'A' }
 
-    const smallIcon:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Small icons', action: () => this.isSmallIcon = !this.isSmallIcon, variables:this.isLargeIcon,
+    const smallIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Small icons', action: () => this.isSmallIcon = !this.isSmallIcon, variables:this.isLargeIcon,
     emptyline:false, styleOption:'A' }
 
-    const listIcon:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'List icons', action: () => this.isListIcon = !this.isListIcon, variables:this.isListIcon,
+    const listIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'List icons', action: () => this.isListIcon = !this.isListIcon, variables:this.isListIcon,
     emptyline:false, styleOption:'A' }
 
-    const detailsIcon:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Details icons', action: () => this.isDetailsIcon = !this.isDetailsIcon, variables:this.isDetailsIcon,
+    const detailsIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Details icons', action: () => this.isDetailsIcon = !this.isDetailsIcon, variables:this.isDetailsIcon,
       emptyline:false, styleOption:'A' }
 
-    const titlesIcon:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Titles icons', action: () => this.isTitleIcon = !this.isTitleIcon, variables:this.isTitleIcon,
+    const titlesIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Titles icons', action: () => this.isTitleIcon = !this.isTitleIcon, variables:this.isTitleIcon,
         emptyline:false, styleOption:'A' }
 
     const viewByMenu = [extraLargeIcon, largeIcon, mediumIcon, smallIcon, listIcon, detailsIcon, titlesIcon];
@@ -1771,16 +1754,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   buildSortByMenu(): NestedMenuItem[]{
 
-    const sortByName:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Name',  action: this.sortByNameM.bind(this),  variables:this.isSortByName , 
+    const sortByName:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Name',  action: this.sortByNameM.bind(this),  variables:this.isSortByName , 
       emptyline:false, styleOption:'A' }
 
-    const sortBySize:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Size',  action: this.sortBySizeM.bind(this),  variables:this.isSortBySize , 
+    const sortBySize:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Size',  action: this.sortBySizeM.bind(this),  variables:this.isSortBySize , 
       emptyline:false, styleOption:'A' }
 
-    const sortByItemType:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Item type',  action: this.sortByItemTypeM.bind(this),  variables:this.isSortByItemType, 
+    const sortByItemType:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Item type',  action: this.sortByItemTypeM.bind(this),  variables:this.isSortByItemType, 
       emptyline:false, styleOption:'A' }
 
-    const sortByDateModified:NestedMenuItem={ icon:'osdrive/icons/circle.png', label:'Date modified',  action: this.sortByDateModifiedM.bind(this),  variables:this.isSortByDateModified, 
+    const sortByDateModified:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Date modified',  action: this.sortByDateModifiedM.bind(this),  variables:this.isSortByDateModified, 
       emptyline:false, styleOption:'A' }
 
     const sortByMenu = [sortByName, sortBySize, sortByItemType, sortByDateModified ]
@@ -1789,10 +1772,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   buildNewMenu(): NestedMenuItem[]{
-    const newFolder:NestedMenuItem={ icon:'osdrive/icons/empty_folder.ico', label:'Folder',  action:()=> console.log(),  variables:true , 
+    const newFolder:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/empty_folder.png', label:'Folder',  action:()=> console.log(),  variables:true , 
       emptyline:false, styleOption:'C' }
 
-    const textEditor:NestedMenuItem={ icon:'osdrive/icons/text-editor_48.png', label:'Rich Text',  action:  ()=> console.log(),  variables:true , 
+    const textEditor:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/text-editor_48.png', label:'Rich Text',  action:  ()=> console.log(),  variables:true , 
       emptyline:false, styleOption:'C' }
 
     const sortByMenu = [newFolder, textEditor ]
@@ -1802,13 +1785,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   getFileExplorerMenuData():void{
     this.fileExplrMenu = [
-          {icon1:'',  icon2: 'osdrive/icons/arrow_next_1.png', label:'View', nest:this.buildViewMenu(), action: ()=> '', action1: this.shiftViewSubMenu.bind(this), emptyline:false},
-          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=> '', action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
+          {icon1:'',  icon2: 'osdrive/Cheetah/System/Imageres/arrow_next_1.png', label:'View', nest:this.buildViewMenu(), action: ()=> '', action1: this.shiftViewSubMenu.bind(this), emptyline:false},
+          {icon1:'',  icon2:'osdrive/Cheetah/System/Imageres/arrow_next_1.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=> '', action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
           {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:() => console.log('Refresh'), action1: ()=> '', emptyline:true},
           {icon1:'',  icon2:'', label: 'Paste', nest:[], action: () => console.log('Paste!! Paste!!'), action1: ()=> '', emptyline:false},
-          {icon1:'/osdrive/icons/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), action1: ()=> '', emptyline:false},
-          {icon1:'osdrive/icons/vs-code_48.png', icon2:'', label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> '', emptyline:true},
-          {icon1:'',  icon2:'osdrive/icons/arrow_next_1.png', label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
+          {icon1:'/osdrive/Cheetah/System/Imageres/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), action1: ()=> '', emptyline:false},
+          {icon1:'osdrive/Cheetah/System/Imageres/vs-code_48.png', icon2:'', label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> '', emptyline:true},
+          {icon1:'',  icon2:'osdrive/Cheetah/System/Imageres/arrow_next_1.png', label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
           {icon1:'',  icon2:'', label:'Properties', nest:[], action: () => console.log('Properties'), action1: ()=> '', emptyline:false}
       ]
   }

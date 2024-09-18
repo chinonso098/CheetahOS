@@ -69,7 +69,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private SECONDS_DELAY:number[] =[1500, 1500];
 
   hasWindow = false;
-  icon = 'osdrive/icons/generic-program.ico';
+  icon = 'osdrive/Cheetah/System/Imageres/generic_program.png';
   name = 'system';
   processId = 0;
   type = ComponentType.System;

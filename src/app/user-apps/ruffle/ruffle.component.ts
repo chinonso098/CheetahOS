@@ -39,7 +39,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
 
   name= 'ruffle';
   hasWindow = true;
-  icon = '/osdrive/icons/emulator-1.png';
+  icon = '/osdrive/Cheetah/System/Imageres/emulator_1.png';
   isMaximizable = false;
   processId = 0;
   type = ComponentType.User;

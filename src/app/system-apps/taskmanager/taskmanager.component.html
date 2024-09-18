@@ -30,30 +30,30 @@
                 <div class="tskmgr-nav-menu-item">
                   <span class="tskmgr-item-span">Update speed</span>
                   <div class="tskmgr-nav-div" >
-                    <figure class="tskmgr-nav-figure"><img class="tskmgr-nav-img" [src]="'osdrive/icons/arrow_next.png'"/></figure>
+                    <figure class="tskmgr-nav-figure"><img class="tskmgr-nav-img" [src]="'osdrive/Cheetah/System/Imageres/arrow_next.png'"/></figure>
                   </div>
                   <div class="tskmgr-nav-sub-menu-cntnr">
                     <div class="tskmgr-nav-menu-item" (click)="refreshRate(3)">
                       <div class="tskmgr-nav-sub-menu-div head" [class.active]="selectedRefreshRate === 3">
-                        <figure class="tskmgr-nav-sub-menu-figure"><img *ngIf="selectedRefreshRate === 3" class="tskmgr-nav-sub-menu-img" [src]="'osdrive/icons/circle.png'"/></figure>
+                        <figure class="tskmgr-nav-sub-menu-figure"><img *ngIf="selectedRefreshRate === 3" class="tskmgr-nav-sub-menu-img" [src]="'osdrive/Cheetah/System/Imageres/circle.png'"/></figure>
                       </div>
                       <span class="tskmgr-item-span">High</span>
                     </div>
                     <div class="tskmgr-nav-menu-item" (click)="refreshRate(2)">
                       <div class="tskmgr-nav-sub-menu-div head" [class.active]="selectedRefreshRate === 2">
-                        <figure class="tskmgr-nav-sub-menu-figure"><img *ngIf="selectedRefreshRate === 2" class="tskmgr-nav-sub-menu-img" [src]="'osdrive/icons/circle.png'"/></figure>
+                        <figure class="tskmgr-nav-sub-menu-figure"><img *ngIf="selectedRefreshRate === 2" class="tskmgr-nav-sub-menu-img" [src]="'osdrive/Cheetah/System/Imageres/circle.png'"/></figure>
                       </div>
                       <span class="tskmgr-item-span">Normal</span>
                     </div>
                     <div class="tskmgr-nav-menu-item" (click)="refreshRate(1)">
                       <div class="tskmgr-nav-sub-menu-div head" [class.active]="selectedRefreshRate === 1">
-                        <figure class="tskmgr-nav-sub-menu-figure"><img *ngIf="selectedRefreshRate === 1" class="tskmgr-nav-sub-menu-img" [src]="'osdrive/icons/circle.png'"/></figure>
+                        <figure class="tskmgr-nav-sub-menu-figure"><img *ngIf="selectedRefreshRate === 1" class="tskmgr-nav-sub-menu-img" [src]="'osdrive/Cheetah/System/Imageres/circle.png'"/></figure>
                       </div>
                       <span class="tskmgr-item-span">Low</span>
                     </div>
                     <div class="tskmgr-nav-menu-item" (click)="refreshRate(0)">
                       <div class="tskmgr-nav-sub-menu-div head" [class.active]="selectedRefreshRate === 0">
-                        <figure class="tskmgr-nav-sub-menu-figure"><img *ngIf="selectedRefreshRate === 0" class="tskmgr-nav-sub-menu-img" [src]="'osdrive/icons/circle.png'"/></figure>
+                        <figure class="tskmgr-nav-sub-menu-figure"><img *ngIf="selectedRefreshRate === 0" class="tskmgr-nav-sub-menu-img" [src]="'osdrive/Cheetah/System/Imageres/circle.png'"/></figure>
                       </div>
                       <span class="tskmgr-item-span">Paused</span>
                     </div>
@@ -220,61 +220,61 @@
                         <!--Context Menu-->
                         <div class="tskmgr-vertical-menu" [style]="cntxtMenuStyle" #tsmgrCntxtMenu>
                           <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Type')">
-                              <span class="tskmgr-span head" [class.active]="typeColumnVisible"><figure class="tskmgr-figure"><img *ngIf="typeColumnVisible" class="tskmgr-img" [src]="'osdrive/icons/chkmark32.png'"/></figure></span>
+                              <span class="tskmgr-span head" [class.active]="typeColumnVisible"><figure class="tskmgr-figure"><img *ngIf="typeColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
                               <span class="tskmgr-span mid">Type</span>
                               <span class="tskmgr-span tail"><figure></figure></span>
                           </div>
     
                           <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Status')">
-                            <span class="tskmgr-span head" [class.active]="statusColumnVisible"><figure class="tskmgr-figure"><img *ngIf="statusColumnVisible" class="tskmgr-img" [src]="'osdrive/icons/chkmark32.png'"/></figure></span>
+                            <span class="tskmgr-span head" [class.active]="statusColumnVisible"><figure class="tskmgr-figure"><img *ngIf="statusColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
                             <span class="tskmgr-span mid">Status</span>
                             <span class="tskmgr-span tail"><figure></figure></span>
                           </div>
     
                           <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('PID')">
-                            <span class="tskmgr-span head" [class.active]="pidColumnVisible"><figure class="tskmgr-figure"><img *ngIf="pidColumnVisible" class="tskmgr-img" [src]="'osdrive/icons/chkmark32.png'"/></figure></span>
+                            <span class="tskmgr-span head" [class.active]="pidColumnVisible"><figure class="tskmgr-figure"><img *ngIf="pidColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
                             <span class="tskmgr-span mid">PID</span>
                             <span class="tskmgr-span tail"><figure></figure></span>
                           </div>
     
                           <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Process name')">
-                            <span class="tskmgr-span head" [class.active]="processNameColumnVisible"><figure class="tskmgr-figure"><img *ngIf="processNameColumnVisible" class="tskmgr-img" [src]="'osdrive/icons/chkmark32.png'"/></figure></span>
+                            <span class="tskmgr-span head" [class.active]="processNameColumnVisible"><figure class="tskmgr-figure"><img *ngIf="processNameColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
                             <span class="tskmgr-span mid">Process name</span>
                             <span class="tskmgr-span tail"><figure></figure></span>
                           </div>
     
                           <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('CPU')">
-                            <span class="tskmgr-span head" [class.active]="cpuColumnVisible"><figure class="tskmgr-figure"><img *ngIf="cpuColumnVisible" class="tskmgr-img" [src]="'osdrive/icons/chkmark32.png'"/></figure></span>
+                            <span class="tskmgr-span head" [class.active]="cpuColumnVisible"><figure class="tskmgr-figure"><img *ngIf="cpuColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
                             <span class="tskmgr-span mid">CPU</span>
                             <span class="tskmgr-span tail"><figure></figure></span>
                           </div>
     
                           <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Memory')">
-                            <span class="tskmgr-span head" [class.active]="memoryColumnVisible"><figure class="tskmgr-figure"><img *ngIf="memoryColumnVisible" class="tskmgr-img" [src]="'osdrive/icons/chkmark32.png'"/></figure></span>
+                            <span class="tskmgr-span head" [class.active]="memoryColumnVisible"><figure class="tskmgr-figure"><img *ngIf="memoryColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
                             <span class="tskmgr-span mid">Memory</span>
                             <span class="tskmgr-span tail"><figure></figure></span>
                           </div>
     
                           <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Disk')">
-                            <span class="tskmgr-span head" [class.active]="diskColumnVisible"><figure class="tskmgr-figure"><img *ngIf="diskColumnVisible" class="tskmgr-img" [src]="'osdrive/icons/chkmark32.png'"/></figure></span>
+                            <span class="tskmgr-span head" [class.active]="diskColumnVisible"><figure class="tskmgr-figure"><img *ngIf="diskColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
                             <span class="tskmgr-span mid">Disk</span>
                             <span class="tskmgr-span tail"><figure></figure></span>
                           </div>
     
                           <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Network')">
-                            <span class="tskmgr-span head" [class.active]="networkColumnVisible"><figure class="tskmgr-figure"><img *ngIf="networkColumnVisible" class="tskmgr-img" [src]="'osdrive/icons/chkmark32.png'"/></figure></span>
+                            <span class="tskmgr-span head" [class.active]="networkColumnVisible"><figure class="tskmgr-figure"><img *ngIf="networkColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
                             <span class="tskmgr-span mid">Network</span>
                             <span class="tskmgr-span tail"><figure></figure></span>
                           </div>
     
                           <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('GPU')">
-                            <span class="tskmgr-span head" [class.active]="gpuColumnVisible"><figure class="tskmgr-figure"><img *ngIf="gpuColumnVisible" class="tskmgr-img" [src]="'osdrive/icons/chkmark32.png'"/></figure></span>
+                            <span class="tskmgr-span head" [class.active]="gpuColumnVisible"><figure class="tskmgr-figure"><img *ngIf="gpuColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
                             <span class="tskmgr-span mid">GPU</span>
                             <span class="tskmgr-span tail"><figure></figure></span>
                           </div>
     
                           <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Power usage')">
-                            <span class="tskmgr-span head" [class.active]="powerColumnVisible"><figure class="tskmgr-figure"><img *ngIf="powerColumnVisible" class="tskmgr-img" [src]="'osdrive/icons/chkmark32.png'"/></figure></span>
+                            <span class="tskmgr-span head" [class.active]="powerColumnVisible"><figure class="tskmgr-figure"><img *ngIf="powerColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
                             <span class="tskmgr-span mid">Power usage</span>
                             <span class="tskmgr-span tail"><figure></figure></span>
                           </div>
@@ -292,7 +292,7 @@
                             <td>
                                 <figure class="tskmgr-figcaption0" *ngIf = 'process.getProcessStatus === "Suspended"' style="top: 1px; position: relative; right: -75% ;"> 
                                     <!-- <figcaption style="font-size:12px; ">{{ process.getProcessStatus}}</figcaption> -->
-                                    <img class="tskmgr-img0" style="height: 14px; width: 14px;" [src]="'osdrive/icons/econo.png'">
+                                    <img class="tskmgr-img0" style="height: 14px; width: 14px;" [src]="'osdrive/Cheetah/System/Imageres/econo.png'">
                                 </figure>
                             </td>
                             <td style="text-align:right">{{ process.getProcessId}}</td>
@@ -311,7 +311,7 @@
                 <div class="tsksmgr-footer-div-cntnr">
                   <div class="tsksmgr-footer-div-cntnt">
                       <figure class="tskmgr-figure0" (click)="onFewerDetailsBtnClick()" style="position: relative; left: 5px;"> 
-                        <img class="tskmgr-img0" [src]="'osdrive/icons/arrow_up.png'">
+                        <img class="tskmgr-img0" [src]="'osdrive/Cheetah/System/Imageres/arrow_up.png'">
                         <figcaption class="tskmgr-figcaption0 just-for-one-span">Fewer details</figcaption>
                       </figure>
                   </div>
@@ -362,7 +362,7 @@
       <div class="tsksmgr-footer-div-cntnr">
         <div class="tsksmgr-footer-div-cntnt">
             <figure class="tskmgr-figure0" (click)="onMoreDetailsBtnClick()"  style="position: relative; left: 5px;"> 
-              <img class="tskmgr-img0" [src]="'osdrive/icons/arrow_down.png'">
+              <img class="tskmgr-img0" [src]="'osdrive/Cheetah/System/Imageres/arrow_down.png'">
               <figcaption class="tskmgr-figcaption0 just-for-one-span">More details</figcaption>
             </figure>
         </div>

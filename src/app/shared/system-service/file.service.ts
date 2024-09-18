@@ -63,27 +63,18 @@ export class FileService{
         }
     }
 
-    private changeFolderIcon(fileName:string, iconPath:string):string{
+    private changeFolderIcon(fileName:string, iconPath:string, path:string):string{
 
-        if(fileName === 'Music'){
-            return '/osdrive/icons/music_folder.ico';
-        }else if(fileName === 'Videos'){
-            return '/osdrive/icons/video_folder.ico';
 
-        }else if(fileName === 'Pictures'){
-            return '/osdrive/icons/picture_folder.ico';
-        }
-        else if(fileName === 'Desktop'){
-            return '/osdrive/icons/desktop_folder.ico';
-        }
-        else if(fileName === 'Documents'){
-            return '/osdrive/icons/documents_folder.ico';
-        }
-        else if(fileName === 'Downloads'){
-            return '/osdrive/icons/downloads_folder.ico';
-        }
+        console.log('iconPath:',iconPath);
 
-        return iconPath;
+        const baseUrl = '/osdrive';
+		const iconMaybe = `/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder.png`;
+
+        if(path !== `/Users/${fileName}`)
+            return iconPath;
+
+		return this._fileSystem.existsSync(iconMaybe) ? `${baseUrl}${iconMaybe}` : iconPath;
     }
 
     public async checkIfDirectory(path: string):Promise<boolean> {
@@ -357,7 +348,7 @@ export class FileService{
             const sc = await this.setFolderValuesAsync(path) as ShortCut;
             const fileMetaData = await this.getExtraFileMetaDataAsync(path) as FileMetaData;
 
-            this._fileInfo.setIconPath = this.changeFolderIcon(sc.geFileName,sc.getIconPath);
+            this._fileInfo.setIconPath = this.changeFolderIcon(sc.geFileName,sc.getIconPath, path);
             this._fileInfo.setCurrentPath = path;
             this._fileInfo.setFileType = sc.getFileType;
             this._fileInfo.setFileName = sc.geFileName;
@@ -397,7 +388,7 @@ export class FileService{
             }
             else if(this._consts.VIDEO_FILE_EXTENSIONS.includes(extension)){    
                 const sc = await this.getShortCutFromB64DataUrlAsync(path, 'video');
-                this._fileInfo.setIconPath = '/osdrive/icons/video_file.ico';
+                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/video_file.png';
                 this._fileInfo.setCurrentPath = path;
                 this._fileInfo.setContentPath = sc.getContentPath;
                 this._fileInfo.setFileType = extension;
@@ -408,7 +399,7 @@ export class FileService{
                 this._fileInfo.setMode = fileMetaData.getMode;
             }else if(this._consts.AUDIO_FILE_EXTENSIONS.includes(extension)){    
                 const sc = await this.getShortCutFromB64DataUrlAsync(path, 'audio');
-                this._fileInfo.setIconPath = '/osdrive/icons/music_file.ico';
+                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/music_file.png';
                 this._fileInfo.setCurrentPath = path;
                 this._fileInfo.setContentPath = sc.getContentPath;
                 this._fileInfo.setFileType = extension;
@@ -418,7 +409,7 @@ export class FileService{
                 this._fileInfo.setSize = fileMetaData.getSize;
                 this._fileInfo.setMode = fileMetaData.getMode;
             }else if(extension == '.txt' || extension == '.properties'){
-                this._fileInfo.setIconPath = '/osdrive/icons/file.ico';
+                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/file.png';
                 this._fileInfo.setCurrentPath = path;
                 this._fileInfo.setFileType = extname(path);
                 this._fileInfo.setFileName = basename(path, extname(path));
@@ -427,7 +418,7 @@ export class FileService{
                 this._fileInfo.setSize = fileMetaData.getSize;
                 this._fileInfo.setMode = fileMetaData.getMode;
             }else if(extension == '.md'){
-                this._fileInfo.setIconPath = '/osdrive/icons/markdown-file_50.png';
+                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/markdown-file_50.png';
                 this._fileInfo.setCurrentPath = path;
                 this._fileInfo.setFileType = extname(path);
                 this._fileInfo.setFileName = basename(path, extname(path));
@@ -436,7 +427,7 @@ export class FileService{
                 this._fileInfo.setSize = fileMetaData.getSize;
                 this._fileInfo.setMode = fileMetaData.getMode;
             }else if(extension == '.jsdos'){
-                this._fileInfo.setIconPath = '/osdrive/icons/emulator-2.png';
+                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/emulator_2.png';
                 this._fileInfo.setCurrentPath = path;
                 this._fileInfo.setFileType = extname(path);
                 this._fileInfo.setFileName = basename(path, extname(path));
@@ -446,7 +437,7 @@ export class FileService{
                 this._fileInfo.setMode = fileMetaData.getMode;
             }
             else if(extension == '.swf'){
-                this._fileInfo.setIconPath = '/osdrive/icons/flash_67.png';
+                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/lightning_flash.png';
                 this._fileInfo.setCurrentPath = path;
                 this._fileInfo.setFileType = extname(path);
                 this._fileInfo.setFileName = basename(path, extname(path));
@@ -456,7 +447,7 @@ export class FileService{
                 this._fileInfo.setMode = fileMetaData.getMode;
             }
              else{
-                this._fileInfo.setIconPath='/osdrive/icons/unknown.ico';
+                this._fileInfo.setIconPath='/osdrive/Cheetah/System/Imageres/unknown.png';
                 this._fileInfo.setCurrentPath = path;
                 this._fileInfo.setFileName = basename(path, extname(path));
                 this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
@@ -750,7 +741,7 @@ export class FileService{
                         }
         
                         const isDirectory = (stats)? stats.isDirectory(): false;
-                        const iconFile = `/osdrive/icons/${isDirectory ? 'folder.ico' : 'unknown.ico'}`
+                        const iconFile = `/osdrive/Cheetah/System/Imageres/${isDirectory ? 'folder.png' : 'unknown.png'}`
                         const fileType = 'folder';
                         const opensWith ='fileexplorer'
                         resolve(new ShortCut(iconFile, basename(path, extname(path)),fileType,basename(path, extname(path)) ,opensWith ));

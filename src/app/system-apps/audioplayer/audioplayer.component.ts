@@ -69,7 +69,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   name= 'audioplayer';
   hasWindow = true;
-  icon = '/osdrive/icons/audioplayer.png';
+  icon = '/osdrive/Cheetah/System/Imageres/audioplayer.png';
   processId = 0;
   type = ComponentType.User;
   displayName = 'Howlerjs';

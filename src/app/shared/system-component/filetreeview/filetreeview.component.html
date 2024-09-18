@@ -19,7 +19,7 @@
                         </div>
                     </figure>
                 </div>
-                <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/icons/this_pc_94.png'"/></figure></div>
+                <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/Cheetah/System/Imageres/this_pc.png'"/></figure></div>
                 <div class="span fxtreeview-tail"><p class="fxtreeview-nested-p"> This PC</p></div>
             </div>
         </ng-container>
@@ -39,9 +39,14 @@
                                 </div>
                             </figure>
                         </div>
-                        <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]=" node.name.toLowerCase() === 'downloads' ? 'osdrive/icons/downloads_folder.png' :  
-                                                                                                                                 node.name.toLowerCase() === 'music'? 'osdrive/icons/music.png': 
-                                                                                                                                 node.name.toLowerCase() === 'icons'? 'osdrive/icons/folder.ico' :'osdrive/icons/'+ node.name.toLowerCase() + '.ico'"/></figure></div>
+                        <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]=" node.name === '3D-Objects' && node.path === '/Users/3D-Objects'  ? 'osdrive/Cheetah/System/Imageres/3d_objects_folder_small.png' : 
+                                                                                                                                 node.name === 'Desktop' && node.path === '/Users/Desktop'  ? 'osdrive/Cheetah/System/Imageres/desktop_folder_small.png' :  
+                                                                                                                                 node.name === 'Documents' && node.path === '/Users/Documents' ? 'osdrive/Cheetah/System/Imageres/documents_folder_small.png' :
+                                                                                                                                 node.name === 'Downloads' && node.path === '/Users/Downloads' ? 'osdrive/Cheetah/System/Imageres/downloads_folder_small.png' :
+                                                                                                                                 node.name === 'Games' && node.path === '/Users/Games' ? 'osdrive/Cheetah/System/Imageres/games_folder_small.png' :
+                                                                                                                                 node.name === 'Music' && node.path === '/Users/Music' ? 'osdrive/Cheetah/System/Imageres/music_folder_small.png' : 
+                                                                                                                                 node.name === 'Pictures' && node.path === '/Users/Pictures '? 'osdrive/Cheetah/System/Imageres/picture_folder_small.png':
+                                                                                                                                 node.name === 'Videos' && node.path === '/Users/Videos' ? 'osdrive/Cheetah/System/Imageres/videos_folder_small.png': 'osdrive/Cheetah/System/Imageres/folder_folder_small.png'"/></figure></div>
                         <div class="span fxtreeview-tail"><p class="fxtreeview-nested-p">{{node.name}}</p></div>
                     </div>
 
@@ -61,7 +66,7 @@
                                                 </div>
                                             </figure>
                                         </div>
-                                        <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/icons/empty_folder.ico'"/></figure></div>
+                                        <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/Cheetah/System/Imageres/folder_folder_small.png'"/></figure></div>
                                         <div class="span fxtreeview-tail"><p class="fxtreeview-nested-p"> {{child.name}}</p></div>
                                     </div>
 

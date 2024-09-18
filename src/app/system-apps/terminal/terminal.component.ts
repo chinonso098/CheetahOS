@@ -70,7 +70,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   traversalDepth = 0;
 
   hasWindow = true;
-  icon = '/osdrive/icons/terminal_48.png';
+  icon = '/osdrive/Cheetah/System/Imageres/terminal_48.png';
   name = 'terminal';
   processId = 0;
   type = ComponentType.System;
