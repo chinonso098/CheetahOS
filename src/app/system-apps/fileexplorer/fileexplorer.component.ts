@@ -188,7 +188,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   hasWindow = true;
 
 
-
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileInfoService:FileService, triggerProcessService:TriggerProcessService, 
               fileManagerService:FileManagerService, formBuilder: FormBuilder, stateManagmentService:StateManagmentService, sessionManagmentService:SessionManagmentService,        
               menuService:MenuService ) { 
@@ -708,14 +707,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   private async loadFileTreeAsync():Promise<void>{
 
-    console.log('loadFileTreeAsync callled');
+    console.log('loadFileTreeAsync called');
     const directory = '/Users/';
     this.fileTreeNode = [];
     this._fileService.resetDirectoryFiles();
     const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(directory);
 
     const osDrive:FileTreeNode = {
-      name : 'OSDisk (C:)', path : '/', isFolder: true, children: []
+      name : 'OSDisk (C:)', path : '/', isFolder: true, children:[]
     }
 
    // this.directory, will not be correct for all cases. Make sure to check
