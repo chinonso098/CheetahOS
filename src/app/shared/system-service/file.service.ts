@@ -27,8 +27,9 @@ export class FileService{
     private _fileExistsMap!:Map<string,number>; 
     private _eventOriginator = '';
 
-    dirFilesReadyNotify: Subject<void> = new Subject<void>();
     dirFilesUpdateNotify: Subject<void> = new Subject<void>();
+    fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
+    goToDirectoryNotify: Subject<string[]> = new Subject<string[]>();
 
     SECONDS_DELAY = 200;
 
@@ -57,7 +58,7 @@ export class FileService{
                         reject(); 
                     }
                 });
-                this._fileSystem = BrowserFS.BFSRequire('fs')
+                this._fileSystem = BrowserFS.BFSRequire('fs');
                 resolve();
             });
         }

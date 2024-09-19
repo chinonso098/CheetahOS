@@ -36,7 +36,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   unPinned = "unPinned";
   
   hasWindow = false;
-  icon = 'osdrive/Cheetah/System/Imageres/generic-program.ico';
+  icon = 'osdrive/Cheetah/System/Imageres/generic_program.png';
   name = 'taskbarentry';
   processId = 0;
   type = ComponentType.System;

@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, OnChanges } from '@angular/core';
+import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
+import { FileService } from '../../system-service/file.service';
 
 @Component({
   selector: 'cos-filetreeview',
@@ -12,17 +13,17 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   @Input() showRoot = true;
   @Input() isHoverActive = false;
   @Input() treeData: FileTreeNode[] = [];
-  @Output() updateFileTreeData = new EventEmitter<string>();
-  @Output() navigateToPath = new EventEmitter<string[]>();
+  private _fileService:FileService;
 
   chevronBtnStyle:Record<string, unknown> = {};
   expandedViews:string[]= [];
   selectedElementId = '';
   processId = 0;
   nextLevel = 0;
+  name = 'filetreeview';
 
-  constructor( ){
-1
+  constructor(fileService:FileService){
+    this._fileService = fileService;
   }
 
   ngOnInit():void{
@@ -44,9 +45,9 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     ulId = `fileExplrTreeView-${this.pid}-${this.level}`;
     imgId = `fileExplrTreeView-img-${this.pid}-${this.level}`;
 
-    console.log('passed id:', ulId);
-    console.log('passed imgId:', imgId);
-    console.log('passed name:', name);
+    console.log('SC--passed id:', ulId);
+    console.log('SC--passed imgId:', imgId);
+    console.log('SC--passed name:', name);
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
@@ -66,14 +67,14 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   showGrandChildren(path:string, id:number,):void{
     const ulId = `fileExplrTreeView-${this.pid}-${this.level}-${id}`;
     const imgId = `fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
-    console.log('passed id:', ulId);
-    console.log('passed imgId:', imgId);
+    console.log('SGC--passed id:', ulId);
+    console.log('SGC--passed imgId:', imgId);
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
 
     if(toggler){
-      console.log('toggler:', toggler);
+      console.log('SGC--toggler:', toggler);
      // toggler.parentElement?.querySelector(".nested")?.classList.toggle("active");
     
 
@@ -90,7 +91,10 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
       }
 
       //pass event to the parent
-      this.updateFileTreeData.emit(path);
+      //this.updateFileTreeData.emit(path);
+      const uid = `${this.name}-${this.pid}`;
+      this._fileService.addEventOriginator(uid);
+      this._fileService.fetchDirectoryDataNotify.next(path);
 
       setTimeout(()=>{ this.showExpandedViews();}, 2000);
     }
@@ -118,14 +122,14 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const ulId = `fileExplrTreeView-${this.pid}-${this.level}-${id}-${id1}`;
     const imgId = `fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
 
-    console.log('passed id:', ulId);
-    console.log('passed imgId:', imgId);
+    console.log('SGGC--passed id:', ulId);
+    console.log('SGGC--passed imgId:', imgId);
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
 
     if(toggler){
-      console.log('toggler:', toggler);
+      console.log('SGGC--toggler:', toggler);
       //toggler.parentElement?.querySelector(".nested")?.classList.toggle("active");
     
 
@@ -141,7 +145,10 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
       }
 
       //pass event to the parent
-      this.updateFileTreeData.emit(path);
+      //this.updateFileTreeData.emit(path);
+      const uid = `${this.name}-${this.pid}`;
+      this._fileService.addEventOriginator(uid);
+      this._fileService.fetchDirectoryDataNotify.next(path);
 
       setTimeout(()=>{ this.showExpandedViews();}, 2000);
     }
@@ -181,8 +188,11 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   navigateToSelectedPath(name:string, path:string):void{
-    const data:string[] = [name, path]
-    this.navigateToPath.emit(data);
+    const data:string[] = [name, path];
+
+    const uid = `filetreeview-1-${this.pid}`;
+    this._fileService.addEventOriginator(uid);
+    this._fileService.goToDirectoryNotify.next(data);
   }
 
   setcolorChevron(isHoverActive:boolean):void{

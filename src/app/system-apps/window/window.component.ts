@@ -272,11 +272,11 @@ import { Process } from 'src/app/system-files/process';
 
     setHeaderActive(pid:number):void{
 
-      //console.log('setHeaderActive:',pid);
+      //console.log('setHeaderActive:',pid);//TBD
       if(this.processId == pid){
 
 
-      //console.log('setHeaderActive 1:',pid);
+      //console.log('setHeaderActive 1:',pid);//TBD
         this.headerActiveStyles = {
           'background-color':'blue'
         };
@@ -370,7 +370,7 @@ import { Process } from 'src/app/system-files/process';
     }
 
     onDragStart(pid:number):void{
-      console.log('i am trouble');
+      //console.log('i am trouble'); //TBD
       //this.setFocusOnWindow(pid);
     }
 
@@ -572,7 +572,7 @@ import { Process } from 'src/app/system-files/process';
       if(windowState !== undefined){
         if((windowState.pid == pid) && (!z_index) || (windowState.pid == pid) && (windowState.z_index <= z_index)){
 
-          //console.log('setWindowToFocusById --- i got in here');
+          //console.log('setWindowToFocusById --- i got in here');//TBD
 
           z_index = this.MAX_Z_INDEX;
           this._stateManagmentService.addState(this.z_index, z_index);
@@ -597,8 +597,8 @@ import { Process } from 'src/app/system-files/process';
           const z_index = this.TMP_Z_INDEX;
 
           if(!windowState.is_visible){
-            //console.log('window:',uid + ' is currently hidden');
-            console.log(`translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`);
+            //console.log('window:',uid + ' is currently hidden');//TBD
+            //console.log(`translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`); //TBD
             this.currentStyles = {
               'z-index':z_index,
               'opacity': 1,

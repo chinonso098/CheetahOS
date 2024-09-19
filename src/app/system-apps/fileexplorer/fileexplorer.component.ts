@@ -36,6 +36,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   @ViewChild('fileExplorerMainContainer', {static: true}) fileExplrMainCntnr!: ElementRef; 
   @ViewChild('fileExplorerRootContainer', {static: true}) fileExplorerRootContainer!: ElementRef; 
   @ViewChild('fileExplorerContentContainer', {static: true}) fileExplrCntntCntnr!: ElementRef;
+  @ViewChild('navExplorerContainer', {static: true}) navExplorerCntnr!: ElementRef; 
  
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -55,6 +56,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _autoArrangeIconsNotifySub!:Subscription;
   private _autoAlignIconsNotifyBySub!:Subscription;
   private _dirFilesUpdatedSub!: Subscription;
+  private _fetchDirectoryDataSub!: Subscription;
+  private _goToDirectoryDataSub!: Subscription;
   private _hideContextMenuSub!:Subscription;
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;
@@ -151,7 +154,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   searchForm!: FormGroup;
 
   searchHistory =['Java','ProgramFile', 'Perenne'];
-  pathHistory =['/icons','/Games', '/Videos'];
+  pathHistory =['/Users/Vidoes','/Users/Games', '/Users/Music'];
 
   menuData = [
     {icon:'', label: 'Open', action: this.onTriggerRunProcess.bind(this) },
@@ -188,12 +191,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   hasWindow = true;
 
 
-  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileInfoService:FileService, triggerProcessService:TriggerProcessService, 
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, triggerProcessService:TriggerProcessService, 
               fileManagerService:FileManagerService, formBuilder: FormBuilder, stateManagmentService:StateManagmentService, sessionManagmentService:SessionManagmentService,        
               menuService:MenuService ) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
-    this._fileService = fileInfoService;
+    this._fileService = fileService;
     this._triggerProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
@@ -210,6 +213,23 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this._fileService.removeEventOriginator();
       }
     });
+    this._fetchDirectoryDataSub = this._fileService.fetchDirectoryDataNotify.subscribe((p) => {
+      const name = 'filetreeview';
+      const uid = `${name}-${this.processId}`;
+      if(this._fileService.getEventOrginator() === uid){
+        this.updateFileTreeAsync(p);
+        this._fileService.removeEventOriginator();
+      }
+    })
+
+    this._goToDirectoryDataSub = this._fileService.goToDirectoryNotify.subscribe((p) => {
+      const name = 'filetreeview-1';
+      const uid = `${name}-${this.processId}`;
+      if(this._fileService.getEventOrginator() === uid){
+        this.navigateToFolder(p);
+        this._fileService.removeEventOriginator();
+      }
+    })
 
     this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
     this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
@@ -271,6 +291,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._hideContextMenuSub?.unsubscribe();
     this._maximizeWindowSub?.unsubscribe();
     this._minimizeWindowSub?.unsubscribe();
+    this._fetchDirectoryDataSub?.unsubscribe();
+    this._goToDirectoryDataSub?.unsubscribe();
   }
 
   captureComponentImg():void{
@@ -684,7 +706,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._fileService.resetDirectoryFiles();
     let directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
 
-    console.log('directoryEntries:',directoryEntries);
+    //console.log('directoryEntries:',directoryEntries); //TBD
 
     if(this.directory === '/'){
       if(!showUrlFiles){
@@ -731,7 +753,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         children: []
       }
 
-      console.log('ftn:', ftn);
+      //console.log('ftn:', ftn); //TBD
       this.fileTreeNode.push(ftn);
     }
 
@@ -750,20 +772,20 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       // this.directory, will not be correct for all cases. Make sure to check
       for(const dirEntry of directoryEntries){
   
-        const isFile =  await this._fileService.checkIfDirectory(`${path}/${dirEntry}`);
+        const isFile =  await this._fileService.checkIfDirectory(`${path}/${dirEntry}`.replace('//','/'));
         const ftn:FileTreeNode = {
           name : dirEntry,
-          path: `${path}/${dirEntry}`,
+          path: `${path}/${dirEntry}`.replace('//','/'),
           isFolder: isFile,
           children: []
         }
   
-        console.log('update-ftn:', ftn);
+        //console.log('update-ftn:', ftn); //TBD
         tmpFileTreeNode.push(ftn);
       }
   
       const res =  this.addChildrenToNode(this.fileTreeNode, path, tmpFileTreeNode);
-      console.log('updatedTreeData:', res);
+      //console.log('updatedTreeData:', res);
       this.fileTreeNode = res;
       this.fileTreeHistory.push(path);
     }
@@ -874,7 +896,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   setNavPathIcon(fileName:string, directory:string){
-
     console.log(`fileexplorer - setNavPathIcon: fileName:${fileName} -----  directory:${directory}`)
 
     if(directory === `/Users/${fileName}`){
@@ -1484,9 +1505,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   populateHopsList():void{
-    const tmpArray = this.directory.split('/');
-    tmpArray.shift();
-    tmpArray.unshift('This PC');
+    const tmpArray = this.directory.split('/').filter(x => x !== '');
+    if(tmpArray.length === 0){ tmpArray[0]='This PC'; }
+    else{ tmpArray.unshift('This PC'); }
 
     if(this.directory.includes('/Users')){
       this._directoryHops = tmpArray;
@@ -1702,6 +1723,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       this.fileExplrMainCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
       this.fileExplrCntntCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
+      this.navExplorerCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
+      
     }
   }
 
@@ -1719,6 +1742,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       this.fileExplrMainCntnr.nativeElement.style.height = `${res}px`;
       this.fileExplrCntntCntnr.nativeElement.style.height = `${res}px`;
+      this.navExplorerCntnr.nativeElement.style.height = `${res}px`;
     }
   }
 
