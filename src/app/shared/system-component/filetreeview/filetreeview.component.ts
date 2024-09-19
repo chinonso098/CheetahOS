@@ -250,8 +250,11 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   onBtnClick(elmntId:string):void{
+    // remove style on previous btn
+    this.removeBtnStyle(this.selectedElementId);
+    // update id
     this.selectedElementId = elmntId
-    //this.setBtnStyle(id, true);
+    this.setBtnStyle(elmntId, true);
   }
 
   onMouseEnter(elmntId:string):void{
@@ -286,7 +289,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
         //   btnElement.style.backgroundColor ='#787474'
         // }
 
-        if(isMouseHover ){
+        if(!isMouseHover){
           btnElement.style.backgroundColor = '#4c4c4c';
         }
 

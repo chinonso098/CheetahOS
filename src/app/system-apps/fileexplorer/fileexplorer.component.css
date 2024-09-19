@@ -28,6 +28,7 @@
 /* Styles for the tabbed window container */
 .fileexp-header-tab-container {
     width: 100%;
+    min-width: 610px;
     /* border:0.5px solid #9d9d9d; */
 }
   
