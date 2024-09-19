@@ -107,7 +107,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   prevPathEntries:string[] = [];
   nextPathEntries:string[] = [];
   recentPathEntries:string[] = [];
-  upPathEntries:string[] = ['/Desktop'];
+  upPathEntries:string[] = ['/Users/Desktop'];
   _directoryHops:string[] = ['This PC'];
   fileTreeHistory:string[] = [];
   SECONDS_DELAY:number[] = [100, 1500, 6000, 12000, 250];
@@ -652,7 +652,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   showExpandTreeIconBtn():void{
-    this.showExpandTreeIcon = !this.showExpandTreeIcon;
+    this.showExpandTreeIcon = true;
+  }
+
+  hideExpandTreeIconBtn():void{
+    this.showExpandTreeIcon = false;
   }
   onDragOver(event:DragEvent):void{
     event.stopPropagation();
@@ -876,9 +880,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(directory === `/Users/${fileName}`){
       this.navPathIcon = `osdrive/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder_small.png`;
     }
-    else if((fileName === 'fileexplorer' && directory === '/') || fileName === '' && directory === '/'){
+    else if((fileName === 'OSDisk (C:)' && directory === '/')){
+      this.navPathIcon = 'osdrive/Cheetah/System/Imageres/os_disk.png';
+    }
+    else if((fileName === 'fileexplorer' && directory === '/') || (fileName === '' && directory === '/')){
       this.navPathIcon = 'osdrive/Cheetah/System/Imageres/this_pc.png';
-    }else{
+    }
+    else{
       this.navPathIcon = 'osdrive/Cheetah/System/Imageres/folder_folder_small.png';
     }
   }
@@ -1478,7 +1486,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   populateHopsList():void{
     const tmpArray = this.directory.split('/');
     tmpArray.shift();
-    this._directoryHops = tmpArray;
+    tmpArray.unshift('This PC');
+
+    if(this.directory.includes('/Users')){
+      this._directoryHops = tmpArray;
+    }else{
+      tmpArray[1] = 'OSDisk (C:)';
+      this._directoryHops = tmpArray;
+    }
+
     console.log('this._directoryHops:', this._directoryHops);
   }
 

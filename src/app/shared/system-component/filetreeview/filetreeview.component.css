@@ -12,7 +12,7 @@
   
   .li-file-tree-view0{
     margin:0;
-    padding:0 0 0 0px; /* Each nested li will be padded incrementally */
+    padding:0 0 0 0; /* Each nested li will be padded incrementally */
   }
 
   .li-file-tree-view{

@@ -4,9 +4,10 @@
     </svg> -->
 
 <ul class="ul-file-tree-view" id="fileExplrTreeView">
-    <li class="li-file-tree-view0" id="li-{{pid}}-{{level}}" (click)="onBtnClick('li-'+pid+'-'+level)" (mouseenter)="onMouseEnter('li-'+pid+'-'+level)" (mouseleave)="onMouseLeave('li-'+pid+'-'+level)">
+    <li class="li-file-tree-view0" id="li-{{pid}}-{{level}}">
         <ng-container *ngIf="showRoot">
-            <div class="tree-view-cntnr"  id="fileExplrTreeView-{{pid}}-{{level}}" (click)="navigateToSelectedPath('This-PC','This-PC')">
+            <div class="tree-view-cntnr"  id="fileExplrTreeView-{{pid}}-{{level}}" (click)="navigateToSelectedPath('This-PC','This-PC')" 
+                (click)="onBtnClick('fileExplrTreeView-'+pid+'-'+level)" (mouseenter)="onMouseEnter('fileExplrTreeView-'+pid+'-'+level)" (mouseleave)="onMouseLeave('fileExplrTreeView-'+pid+'-'+level)">
                 <div class="span fxtreeview-head"> 
                     <figure class="fxtreeview-figure">  
                         <div class="fxtreeview-img" >
@@ -25,8 +26,9 @@
 
         <ul class="ul-file-tree-view ">
             <ng-container *ngFor="let node of treeData; let i = index">
-                <li class="li-file-tree-view" id="li-{{pid}}-{{level}}-{{i}}" (click)="onBtnClick('li-'+pid+'-'+level+'-'+i)" (mouseenter)="onMouseEnter('li-'+pid+'-'+level+'-'+i)" (mouseleave)="onMouseLeave('li-'+pid+'-'+level+'-'+i)"> 
-                    <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="fileExplrTreeView-{{pid}}-{{level}}-{{i}}" (click)="navigateToSelectedPath(node.name, node.path)">
+                <li class="li-file-tree-view" id="li-{{pid}}-{{level}}-{{i}}"> 
+                    <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="fileExplrTreeView-{{pid}}-{{level}}-{{i}}" (click)="navigateToSelectedPath(node.name, node.path)" 
+                        (click)="onBtnClick('fileExplrTreeView-'+pid+'-'+level+'-'+i)" (mouseenter)="onMouseEnter('fileExplrTreeView-'+pid+'-'+level+'-'+i)" (mouseleave)="onMouseLeave('fileExplrTreeView-'+pid+'-'+level+'-'+i)">
                         <div class="span fxtreeview-head"> 
                             <figure class="fxtreeview-figure">  
                                 <div class="fxtreeview-img" >
@@ -53,8 +55,9 @@
                     <ng-container *ngIf="node.children && node.children.length">
                         <ul class="ul-file-tree-view">
                             <ng-container *ngFor="let child of node.children; let j = index">
-                                <li class="li-file-tree-view" id="li-{{pid}}-{{level}}-{{i}}-{{j}}" (click)="onBtnClick('li-'+pid+'-'+level+'-'+i+'-'+j)" (mouseenter)="onMouseEnter('li-'+pid+'-'+level+'-'+i+'-'+j)" (mouseleave)="onMouseLeave('li-'+pid+'-'+level+'-'+i+'-'+j)"> 
-                                    <div class="tree-view-cntnr" *ngIf="child.isFolder"  id="fileExplrTreeView-{{pid}}-{{level}}-{{i}}-{{j}}" (click)="navigateToSelectedPath(child.name, child.path)">
+                                <li class="li-file-tree-view" id="li-{{pid}}-{{level}}-{{i}}-{{j}}"> 
+                                    <div class="tree-view-cntnr" *ngIf="child.isFolder"  id="fileExplrTreeView-{{pid}}-{{level}}-{{i}}-{{j}}" (click)="navigateToSelectedPath(child.name, child.path)"
+                                        (click)="onBtnClick('fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)" (mouseenter)="onMouseEnter('fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)" (mouseleave)="onMouseLeave('fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)">
                                         <div class="span fxtreeview-head"> 
                                             <figure class="fxtreeview-figure">  
                                                 <div class="fxtreeview-img" >

@@ -225,13 +225,13 @@
         <div class="header-empty-line-container2"></div>
         <div class="fileexp-main-container" #fileExplorerMainContainer>
             <div class="fileexp-content-container">
-                <div class="navigation-content-container"  (mouseenter)="showExpandTreeIconBtn()" (mouseleave)="showExpandTreeIconBtn()" #navExplorerContainer>
+                <div class="navigation-content-container"  (mouseenter)="showExpandTreeIconBtn()" (mouseleave)="hideExpandTreeIconBtn()" #navExplorerContainer>
                     <div style="height: 10px; width: 100%;"></div>
                     <cos-filetreeview [pid] ="this.processId" [isHoverActive]="showExpandTreeIcon" [treeData]="fileTreeNode"  (updateFileTreeData)="updateFileTreeAsync($event)"   (navigateToPath)="navigateToFolder($event)" ></cos-filetreeview>
                 </div>
                 <div class="file-content-container" #fileExplorerContentContainer>
+
                 <!-- ngResizable [rzHandles]="'w'" [rzMinWidth]="270" -->
-    
                 <!-- ngDraggable  [inBounds]="true" zIndex="1" [preventDefaultEvent]="true"
                     (stopped)="onDragEnd($event)" (started)="onDragStart($event)" -->
                 

@@ -17,7 +17,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
   chevronBtnStyle:Record<string, unknown> = {};
   expandedViews:string[]= [];
-  selectedElementId = 0;
+  selectedElementId = '';
   processId = 0;
   nextLevel = 0;
 
@@ -112,7 +112,6 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
     }
   }
-
 
   showGreatGrandChildren( path:string, id:number, id1:number):void{
 
@@ -241,56 +240,57 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   onBtnClick(elmntId:string):void{
+    this.selectedElementId = elmntId
     //this.setBtnStyle(id, true);
   }
 
   onMouseEnter(elmntId:string):void{
     console.log('onMouseEnter-elmntId:',elmntId);
-    //this.setBtnStyle(id, true);
+    this.setBtnStyle(elmntId, true);
   }
 
   onMouseLeave(elmntId:string):void{
     console.log('onMouseLeave-elmntId:',elmntId);
-    // if(id != this.selectedElementId){
-    //   this.removeBtnStyle(id);
-    // }
-    // else if((id == this.selectedElementId) && this.isIconInFocusDueToPriorAction){
-    //   this.setBtnStyle(id,false);
-    // }
+    if(elmntId != this.selectedElementId){
+      this.removeBtnStyle(elmntId);
+    }
+    else if((elmntId == this.selectedElementId)){
+      this.setBtnStyle(elmntId,false);
+    }
   }
 
-  setBtnStyle(id:number, isMouseHover:boolean):void{
+  setBtnStyle(elmntId:string, isMouseHover:boolean):void{
 
-    // const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
-    // if(btnElement){
-    //   btnElement.style.backgroundColor = '#4c4c4c';
-    //   btnElement.style.border = '1px solid #3c3c3c';
+    const btnElement = document.getElementById(elmntId) as HTMLElement;
+    if(btnElement){
+      btnElement.style.backgroundColor = '#4c4c4c';
+      // btnElement.style.border = '1px solid #3c3c3c';
 
-    //   if(this.selectedElementId == id){
+      if(this.selectedElementId == elmntId){
 
-    //     if(isMouseHover && this.isIconInFocusDueToCurrentAction){
-    //       btnElement.style.backgroundColor ='#787474'
-    //     }
+        if(isMouseHover){
+          btnElement.style.backgroundColor ='#787474'
+        }
 
-    //     if(!isMouseHover && this.isIconInFocusDueToCurrentAction){
-    //       btnElement.style.backgroundColor ='#787474'
-    //     }
+        // if(!isMouseHover && this.isIconInFocusDueToCurrentAction){
+        //   btnElement.style.backgroundColor ='#787474'
+        // }
 
-    //     if(isMouseHover && this.isIconInFocusDueToPriorAction){
-    //       btnElement.style.backgroundColor = '#4c4c4c';
-    //     }
+        if(isMouseHover ){
+          btnElement.style.backgroundColor = '#4c4c4c';
+        }
 
-    //     if(!isMouseHover && this.isIconInFocusDueToPriorAction){
-    //       btnElement.style.backgroundColor = 'transparent';
-    //       btnElement.style.border = '0.5px solid white'
-    //     }
-    //   }
-    // }
+        // if(!isMouseHover && this.isIconInFocusDueToPriorAction){
+        //   btnElement.style.backgroundColor = 'transparent';
+        //   btnElement.style.border = '0.5px solid white'
+        // }
+      }
+    }
 
   }
 
-  removeBtnStyle(id:number):void{
-    const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
+  removeBtnStyle(elmntId:string):void{
+    const btnElement = document.getElementById(elmntId) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = 'transparent';
       btnElement.style.border = 'none'
