@@ -18,7 +18,7 @@
                 <div class="view-tab-pane-container">
                     <div class="tab-empty-line-container "></div>
                     <div class="view-tab-pane-top-cntnr">
-                        <div class="view-tab-pane-top1">
+                        <div class="view-tab-pane-top1" (click) = "onNavPaneBtnClick()" (mouseenter) ="onNavPaneBtnEnter()" (mouseleave)="onNavPaneBtnLeave()"  id="navPaneIconCntnr-{{this.processId}}">
                             <div class="tab-empty-space"></div>
                             <figure class="figure-tab-view-pane">
                                 <img class="img-tab-view-pane" [src]="'osdrive/Cheetah/System/Imageres/navigation_pane.png' | safeResourceUrl"/>
@@ -32,7 +32,7 @@
                         </div>
                         <div class="view-tab-pane-top2">
                             <div class="tab-empty-space"></div>
-                            <div class="tab-pane-top2-1">
+                            <div class="tab-pane-top2-1" (click) = "onPrevPaneBtnClick()" (mouseenter) ="onPrevPaneBtnEnter()" (mouseleave)="onPrevPaneBtnLeave()"  id="prevPaneIconCntnr-{{this.processId}}-1">
                                 <span class="span-tab-pane-cntnr">
                                     <figure class="figure-tab-view-pane1">
                                         <img class="img-tab-view-pane1" [src]="'osdrive/Cheetah/System/Imageres/preview_pane.png' | safeResourceUrl"/>
@@ -41,7 +41,7 @@
                                 </span>
                             </div>
                             <div class="tab-empty-space1"></div>
-                            <div class="tab-pane-top2-2">
+                            <div class="tab-pane-top2-2" (click) = "onDetailPaneBtnClick()" (mouseenter) ="onDetailPaneBtnEnter()" (mouseleave)="onDetailPaneBtnLeave()"  id="detailsPaneIconCntnr-{{this.processId}}">
                                 <span class="span-tab-pane-cntnr">
                                     <figure class="figure-tab-view-pane1">
                                         <img class="img-tab-view-pane1" [src]="'osdrive/Cheetah/System/Imageres/details_pane.png' | safeResourceUrl"/>
@@ -61,7 +61,7 @@
                     <div class="view-tab-layout-top-cntnr">
                         <div class="view-tab-layout-top1" (mouseenter)="colorTabLayoutContainer()" (mouseleave)="unColorTabLayoutContainer()" [style]="tabLayoutCntnrStyle">
                             <div class="view-tab-layout-content">
-                                <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.extraLargeIconsView, 1)" (mouseleave)="onMouseLeaveTabLayoutBtn(1)" (click)="onClickTabLayoutBtn(this.extraLargeIconsView, 1)"     id="tabLayoutIconCntnr-{{this.processId}}-1">
+                                <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.extraLargeIconsView, 1)" (mouseleave)="onMouseLeaveTabLayoutBtn(1)" (click)="onClickTabLayoutBtn(this.extraLargeIconsView, 1)"  id="tabLayoutIconCntnr-{{this.processId}}-1">
                                     <figure class="figure-tab-view-layout">
                                         <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/extra_large_image.png' | safeResourceUrl"/>
                                     </figure>
@@ -237,10 +237,13 @@
         <div class="header-empty-line-container2"></div>
         <div class="fileexp-main-container" #fileExplorerMainContainer>
             <div class="fileexp-content-container">
-                <div class="navigation-content-container"  (mouseenter)="showExpandTreeIconBtn()" (mouseleave)="hideExpandTreeIconBtn()" #navExplorerContainer>
-                    <div style="height: 10px; width: 100%;"></div>
-                    <cos-filetreeview [pid] ="this.processId" [isHoverActive]="showExpandTreeIcon" [treeData]="fileTreeNode"></cos-filetreeview>
-                </div>
+                <ng-container *ngIf="showNavigationPane">
+                    <div class="navigation-content-container"  (mouseenter)="showExpandTreeIconBtn()" (mouseleave)="hideExpandTreeIconBtn()" #navExplorerContainer>
+                        <div style="height: 10px; width: 100%;"></div>
+                        <cos-filetreeview [pid] ="this.processId" [isHoverActive]="showExpandTreeIcon" [treeData]="fileTreeNode"></cos-filetreeview>
+                    </div>
+                </ng-container>
+
                 <div class="file-content-container" #fileExplorerContentContainer>
 
                 <!-- ngResizable [rzHandles]="'w'" [rzMinWidth]="270" -->
@@ -397,10 +400,20 @@
                         </div>
                     </ol>
                 </div>
-                <div class="previewOrdetails-content-container">
-                <!-- ngResizable [rzHandles]="'w'" [rzMinWidth]="200" -->
-                    <p>hide/show</p>
-                </div>
+                <ng-container *ngIf="showPreviewPane">
+                    <div class="previewOrdetails-content-container">
+                        <!-- ngResizable [rzHandles]="'w'" [rzMinWidth]="200" -->
+                            <p>hide/show</p>
+                    </div>
+                </ng-container>
+
+                <ng-container *ngIf="showDetailsPane">
+                    <div class="previewOrdetails-content-container" >
+                        <!-- ngResizable [rzHandles]="'w'" [rzMinWidth]="200" -->
+                            <p>Details</p>
+                    </div>
+                </ng-container>
+
             </div>
         </div>
         <div class="fileexp-footer-container" >

@@ -273,33 +273,19 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   setBtnStyle(elmntId:string, isMouseHover:boolean):void{
-
     const btnElement = document.getElementById(elmntId) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = '#4c4c4c';
-      // btnElement.style.border = '1px solid #3c3c3c';
-
       if(this.selectedElementId == elmntId){
-
         if(isMouseHover){
           btnElement.style.backgroundColor ='#787474'
         }
 
-        // if(!isMouseHover && this.isIconInFocusDueToCurrentAction){
-        //   btnElement.style.backgroundColor ='#787474'
-        // }
-
         if(!isMouseHover){
           btnElement.style.backgroundColor = '#4c4c4c';
         }
-
-        // if(!isMouseHover && this.isIconInFocusDueToPriorAction){
-        //   btnElement.style.backgroundColor = 'transparent';
-        //   btnElement.style.border = '0.5px solid white'
-        // }
       }
     }
-
   }
 
   removeBtnStyle(elmntId:string):void{

@@ -147,7 +147,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   isSortBySize = false;
   isSortByDateModified = false;
 
-  showExpandTreeIcon = false;
+  showExpandTreeIcon = true;
+  showNavigationPane = true;
+  showPreviewPane = false;
+  showDetailsPane = false;
+
 
   renameForm!: FormGroup;
   pathForm!: FormGroup;
@@ -307,7 +311,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     })
   }
   
-
   colorTabLayoutContainer():void{
     this.tabLayoutCntnrStyle ={
       'background-color': '#403c3c'
@@ -388,7 +391,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }    
     }
   }
-
 
   changeLayoutCss(iconSize:string):void{
 
@@ -672,6 +674,35 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       await this.loadFilesInfoAsync();
     }
   }
+
+  onNavPaneBtnClick():void{
+    this.showNavigationPane = !this.showNavigationPane;
+  }
+
+  onNavPaneBtnEnter():void{
+    const btnElement = document.getElementById(`navPaneIconCntnr-${this.processId}`) as HTMLDivElement;
+    if(btnElement){
+      btnElement.style.border = '0.5px solid #ccc';
+      btnElement.style.backgroundColor = '#807c7c';
+    }
+
+  }
+
+  onNavPaneBtnLeave():void{
+    const btnElement = document.getElementById(`navPaneIconCntnr-${this.processId}`) as HTMLDivElement;
+    if(btnElement){
+      btnElement.style.backgroundColor = 'transparent';
+      btnElement.style.border = 'none'
+    }
+  }
+
+  onPrevPaneBtnClick():void{1}
+  onPrevPaneBtnEnter():void{1}
+  onPrevPaneBtnLeave():void{1}
+
+  onDetailPaneBtnClick():void{1}
+  onDetailPaneBtnEnter():void{1}
+  onDetailPaneBtnLeave():void{1}
 
   showExpandTreeIconBtn():void{
     this.showExpandTreeIcon = true;
