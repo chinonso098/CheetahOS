@@ -201,7 +201,7 @@ import { Process } from 'src/app/system-files/process';
 
       if(this.windowHide){
         if(windowState.pid == this.processId){
-          console.log(`setHideAndShow-Window app_name: ${windowState.app_name} ----  Window pid:${windowState.pid}  ---------- ${this.processId}`);
+          //console.log(`setHideAndShow-Window app_name: ${windowState.app_name} ----  Window pid:${windowState.pid}  ---------- ${this.processId}`);//TBD
           windowState.is_visible = false;
           windowState.z_index = this.MIN_Z_INDEX;
           this.currentStyles = { 'z-index':this.MIN_Z_INDEX };
@@ -272,11 +272,11 @@ import { Process } from 'src/app/system-files/process';
 
     setHeaderActive(pid:number):void{
 
-      console.log('setHeaderActive:',pid);
+      //console.log('setHeaderActive:',pid);
       if(this.processId == pid){
 
 
-      console.log('setHeaderActive 1:',pid);
+      //console.log('setHeaderActive 1:',pid);
         this.headerActiveStyles = {
           'background-color':'blue'
         };
@@ -302,7 +302,7 @@ import { Process } from 'src/app/system-files/process';
     }
 
     updateWindowZIndex(window: WindowState, zIndex:number):void{
-      console.log(`updateWindowZIndex-Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);
+      //console.log(`updateWindowZIndex-Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);//TBD
       if(this.processId == window.pid){
         this.currentStyles = {
           'z-index':zIndex
@@ -314,7 +314,7 @@ import { Process } from 'src/app/system-files/process';
     }
 
     setWindowToPriorHiddenState(window: WindowState, zIndex:number):void{
-      console.log(`setWindowToPriorHiddenState-Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);
+      //console.log(`setWindowToPriorHiddenState-Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);//TBD
       if(this.processId == window.pid){
         this.currentStyles = {
           'z-index':zIndex,
@@ -427,17 +427,17 @@ import { Process } from 'src/app/system-files/process';
        * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
        */
 
-      console.log('windows hideState:', this.windowHide +'---' + pid);
+      // console.log('windows hideState:', this.windowHide +'---' + pid);//TBD
       const uid = `${this.name}-${pid}`;
-      console.log('setFocusOnWindow --- uid:',uid);
-      console.log('setFocusOnWindow --- uniqueId:', this.uniqueId);
+      // console.log('setFocusOnWindow --- uid:',uid);//TBD
+      // console.log('setFocusOnWindow --- uniqueId:', this.uniqueId);//TBD
 
       if(this.uniqueId === uid){
 
         if(!this.windowHide){
 
-          console.log('setFocusOnWindow --- uid:',uid);
-          console.log('setFocusOnWindow --- uniqueId:', this.uniqueId);
+          // console.log('setFocusOnWindow --- uid:',uid);//TBD
+          // console.log('setFocusOnWindow --- uniqueId:', this.uniqueId);//TBD
 
           this._runningProcessService.addEventOriginator(this.uniqueId);
           this._runningProcessService.removeFocusOnOtherProcessesNotify.next(pid);
@@ -471,10 +471,10 @@ import { Process } from 'src/app/system-files/process';
      */
     removeFocusOnWindow(pid:number):void{
 
-      // console.log('removeFocusOnWindow --- i was called 0');
-      // console.log('removeFocusOnWindow --- evt orig:', this._runningProcessService.getEventOrginator());
-      // console.log('removeFocusOnWindow --- this.uniqueId:', this.uniqueId);
-      // console.log('removeFocusOnWindow --- pid:', pid);
+      // console.log('removeFocusOnWindow --- i was called 0');//TBD
+      // console.log('removeFocusOnWindow --- evt orig:', this._runningProcessService.getEventOrginator());//TBD
+      // console.log('removeFocusOnWindow --- this.uniqueId:', this.uniqueId);//TBD
+      // console.log('removeFocusOnWindow --- pid:', pid);//TBD
 
       const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow == true && p.getProcessId != pid);
 
@@ -495,7 +495,7 @@ import { Process } from 'src/app/system-files/process';
      */
     moveWindowsOutOfSight(pid:number):void{
 
-      console.log('i was called 1');
+      //console.log('i was called 1');
       if(this._runningProcessService.getEventOrginator() === this.uniqueId){
         const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow === true && p.getProcessId !== pid);
 
@@ -520,7 +520,7 @@ import { Process } from 'src/app/system-files/process';
 
     restorePriorFocusOnWindows():void{
 
-      console.log('i was called 2');
+      //console.log('i was called 2');
       const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow === true);
 
       for(let i = 0; i < processWithWindows.length; i++){
@@ -541,7 +541,7 @@ import { Process } from 'src/app/system-files/process';
 
     restorePriorFocusOnWindow(pid:number):void{
 
-      console.log('i was called 3');
+      //console.log('i was called 3');
       const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow === true && p.getProcessId === pid);
 
       const process = processWithWindows[0];
@@ -567,12 +567,12 @@ import { Process } from 'src/app/system-files/process';
       const uid = `${this.name}-${pid}`;
       const windowState = this._stateManagmentService.getState(uid,StateType.Window) as WindowState;
 
-      console.log(`setWindowToFocusById-Window app_name: ${windowState.app_name} ----  Window pid:${windowState.pid}  ---------- ${this.processId}`);
+      //console.log(`setWindowToFocusById-Window app_name: ${windowState.app_name} ----  Window pid:${windowState.pid}  ---------- ${this.processId}`);//TBD
 
       if(windowState !== undefined){
         if((windowState.pid == pid) && (!z_index) || (windowState.pid == pid) && (windowState.z_index <= z_index)){
 
-          console.log('setWindowToFocusById --- i got in here');
+          //console.log('setWindowToFocusById --- i got in here');
 
           z_index = this.MAX_Z_INDEX;
           this._stateManagmentService.addState(this.z_index, z_index);
@@ -597,14 +597,14 @@ import { Process } from 'src/app/system-files/process';
           const z_index = this.TMP_Z_INDEX;
 
           if(!windowState.is_visible){
-            console.log('window:',uid + ' is currently hidden');
+            //console.log('window:',uid + ' is currently hidden');
             console.log(`translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`);
             this.currentStyles = {
               'z-index':z_index,
               'opacity': 1,
               'transform': `translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`
             };
-            console.log('window:',uid + ' should be visible');
+            //console.log('window:',uid + ' should be visible');
           }else{
             this.currentStyles = {
               'z-index':z_index
@@ -625,7 +625,7 @@ import { Process } from 'src/app/system-files/process';
         const window = this._stateManagmentService.getState(`${process.getProcessName}-${process.getProcessId}`,StateType.Window) as WindowState;
           
         if(window != undefined && window.is_visible){
-          console.log('setNextWindowToFocus-process:',process.getProcessId +'----'+process.getProcessName); //TBD
+          //console.log('setNextWindowToFocus-process:',process.getProcessId +'----'+process.getProcessName); //TBD
           this.setWindowToFocusById(process.getProcessId);
           break;
         }
