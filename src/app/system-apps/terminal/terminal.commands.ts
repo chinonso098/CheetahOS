@@ -524,7 +524,7 @@ usage: mkdir direcotry_name [-v]
         if(result){
             const result = await this.rm('-rf', sourceArg);
             if(result === ''){
-                if(destinationArg.includes('/Desktop')){
+                if(destinationArg.includes('/Users/Desktop')){
                     this.sendDirectoryUpdateNotification(sourceArg);
                     this.sendDirectoryUpdateNotification(destinationArg);
                 }

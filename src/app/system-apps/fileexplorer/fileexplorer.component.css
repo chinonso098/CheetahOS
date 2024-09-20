@@ -78,6 +78,22 @@
 .fileexp-tab-pane.active {
     display: flex;
 }
+
+.figure-header-toggle{
+    position: fixed;
+    right: 2%;
+}
+
+.figure-header-tab{
+    position: relative;
+    width: 10px;
+    place-items:center;
+}
+
+.img-header-tab{
+    height: 10px; 
+    width: 10px;
+}
   
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Header Tabs View Ended@@@@@@@@@@@@@@@@@@@@@@@@@@*/
 

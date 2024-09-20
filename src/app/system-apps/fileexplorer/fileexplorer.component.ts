@@ -102,6 +102,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   upNavBtnStyle:Record<string, unknown> = {};
   upNavBtnCntnrStyle:Record<string, unknown> = {};
   tabLayoutCntnrStyle:Record<string, unknown> = {};
+  ribbonMenuBtnStyle:Record<string, unknown> = {};
   olClassName = 'ol-icon-size-view';
 
   files:FileInfo[] = [];
@@ -151,6 +152,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showNavigationPane = true;
   showPreviewPane = false;
   showDetailsPane = false;
+  showRibbonMenu = false;
 
 
   renameForm!: FormGroup;
@@ -547,6 +549,22 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.populateHopsList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFilesInfoAsync();
+    }
+  }
+
+  toggleRibbobMenu():void{
+    this.showRibbonMenu = !this.showRibbonMenu
+  }
+
+  colorRibbonMenuBtn():void{
+    this.ribbonMenuBtnStyle ={
+      'background-color': '#605c5c'
+    }
+  }
+
+  uncolorRibbonMenuBtn():void{
+    this.ribbonMenuBtnStyle ={
+      'background-color': 'transparent'
     }
   }
 

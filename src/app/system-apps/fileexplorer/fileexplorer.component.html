@@ -6,129 +6,148 @@
               <div class="fileexp-tab highlight-default">File</div>
               <div class="fileexp-tab">Home</div>
               <div class="fileexp-tab active">View</div>
-            </div>
-            <div class="fileexp-header-tab-content-container">
-              <div class="fileexp-tab-pane">
-                <!-- Content for Tab 1 -->
-              </div>
-              <div class="fileexp-tab-pane">
-                <!-- Content for Tab 2 -->
-              </div>
-              <div class="fileexp-tab-pane active">
-                <div class="view-tab-pane-container">
-                    <div class="tab-empty-line-container "></div>
-                    <div class="view-tab-pane-top-cntnr">
-                        <div class="view-tab-pane-top1" (click) = "onNavPaneBtnClick()" (mouseenter) ="onNavPaneBtnEnter()" (mouseleave)="onNavPaneBtnLeave()"  id="navPaneIconCntnr-{{this.processId}}">
-                            <div class="tab-empty-space"></div>
-                            <figure class="figure-tab-view-pane">
-                                <img class="img-tab-view-pane" [src]="'osdrive/Cheetah/System/Imageres/navigation_pane.png' | safeResourceUrl"/>
-                            </figure>
-                            <span class="span-tab-view-pane">
-                                Navigation
-                            </span>
-                            <span class="span-tab-view-pane1">
-                                 pane
-                            </span>
-                        </div>
-                        <div class="view-tab-pane-top2">
-                            <div class="tab-empty-space"></div>
-                            <div class="tab-pane-top2-1" (click) = "onPrevPaneBtnClick()" (mouseenter) ="onPrevPaneBtnEnter()" (mouseleave)="onPrevPaneBtnLeave()"  id="prevPaneIconCntnr-{{this.processId}}">
-                                <span class="span-tab-pane-cntnr">
-                                    <figure class="figure-tab-view-pane1">
-                                        <img class="img-tab-view-pane1" [src]="'osdrive/Cheetah/System/Imageres/preview_pane.png' | safeResourceUrl"/>
-                                    </figure>
-                                    <div class="div-tab-view-pane"><span class="span-tab-view-pane-cntnt"> Preview pane</span></div>
-                                </span>
-                            </div>
-                            <div class="tab-empty-space1"></div>
-                            <div class="tab-pane-top2-2" (click) = "onDetailPaneBtnClick()" (mouseenter) ="onDetailPaneBtnEnter()" (mouseleave)="onDetailPaneBtnLeave()"  id="detailsPaneIconCntnr-{{this.processId}}">
-                                <span class="span-tab-pane-cntnr">
-                                    <figure class="figure-tab-view-pane1">
-                                        <img class="img-tab-view-pane1" [src]="'osdrive/Cheetah/System/Imageres/details_pane.png' | safeResourceUrl"/>
-                                    </figure>
-                                    <div class="div-tab-view-pane"><span class="span-tab-view-pane-cntnt"> Details pane </span></div>
-                                </span>
-                            </div>
-                        </div>
+              <div class="figure-header-toggle" (click)="toggleRibbobMenu()" (mouseenter)="colorRibbonMenuBtn()" (mouseleave)="uncolorRibbonMenuBtn()" [style]="ribbonMenuBtnStyle" >
+                <figure class="figure-header-tab">  
+                    <div class="img-header-tab">
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                            height="10" width="10" 
+                            viewBox="0 0 512 512" *ngIf="!showRibbonMenu">
+                            <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/>
+                        </svg>
+
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                            height="10" width="10" 
+                            viewBox="0 0 512 512" *ngIf="showRibbonMenu">
+                            <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                       </svg>
                     </div>
-                    <div class="view-tab-pane-bottom">
-                        Panes
-                    </div>
-                </div>
-    
-                <div class="view-tab-layout-container">
-                    <div class="tab-empty-line-container"></div>
-                    <div class="view-tab-layout-top-cntnr">
-                        <div class="view-tab-layout-top1" (mouseenter)="colorTabLayoutContainer()" (mouseleave)="unColorTabLayoutContainer()" [style]="tabLayoutCntnrStyle">
-                            <div class="view-tab-layout-content">
-                                <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.extraLargeIconsView, 1)" (mouseleave)="onMouseLeaveTabLayoutBtn(1)" (click)="onClickTabLayoutBtn(this.extraLargeIconsView, 1)"  id="tabLayoutIconCntnr-{{this.processId}}-1">
-                                    <figure class="figure-tab-view-layout">
-                                        <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/extra_large_image.png' | safeResourceUrl"/>
-                                    </figure>
-                                    <div class="div-tab-view-layout">Extra large icons</div>
-                                </span>
-    
-                                <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.largeIconsView, 2)" (mouseleave)="onMouseLeaveTabLayoutBtn(2)" (click)="onClickTabLayoutBtn(this.largeIconsView, 2)" id="tabLayoutIconCntnr-{{this.processId}}-2">
-                                    <figure class="figure-tab-view-layout">
-                                        <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/large_image.png' | safeResourceUrl"/>
-                                    </figure>
-                                    <div class="div-tab-view-layout">Large icons</div>
-                                </span>
-    
-                                <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.mediumIconsView, 3)" (mouseleave)="onMouseLeaveTabLayoutBtn(3)" (click)="onClickTabLayoutBtn(this.mediumIconsView, 3)" id="tabLayoutIconCntnr-{{this.processId}}-3">
-                                    <figure class="figure-tab-view-layout">
-                                        <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/medium_icons_view.png' | safeResourceUrl"/>
-                                    </figure>
-                                    <div class="div-tab-view-layout">Medium icons</div>
-                                </span>
-                            </div>
-                            <div class="view-tab-layout-content1">
-                                <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.smallIconsView, 4)" (mouseleave)="onMouseLeaveTabLayoutBtn(4)" (click)="onClickTabLayoutBtn(this.smallIconsView, 4)"  id="tabLayoutIconCntnr-{{this.processId}}-4">
-                                    <figure class="figure-tab-view-layout">
-                                        <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/small_icons_view.png' | safeResourceUrl"/>
-                                    </figure>
-                                    <div class="div-tab-view-layout">Small icons</div>
-                                </span>
-    
-                                <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.listView, 5)" (mouseleave)="onMouseLeaveTabLayoutBtn(5)" (click)="onClickTabLayoutBtn(this.listView, 5)" id="tabLayoutIconCntnr-{{this.processId}}-5">
-                                    <figure class="figure-tab-view-layout">
-                                        <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/list_of_thumbnails_view.png' | safeResourceUrl"/>
-                                    </figure>
-                                    <div class="div-tab-view-layout">List</div>
-                                </span>
-    
-                                <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.detailsView, 6)" (mouseleave)="onMouseLeaveTabLayoutBtn(6)" (click)="onClickTabLayoutBtn(this.detailsView, 6)" id="tabLayoutIconCntnr-{{this.processId}}-6">
-                                    <figure class="figure-tab-view-layout">
-                                        <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/details_view.png' | safeResourceUrl"/>
-                                    </figure>
-                                    <div class="div-tab-view-layout">Details</div>
-                                </span>
-                            </div>
-                            <div class="view-tab-layout-content2">
-                                <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.tilesView, 7)" (mouseleave)="onMouseLeaveTabLayoutBtn(7)" (click)="onClickTabLayoutBtn(this.tilesView, 7)" id="tabLayoutIconCntnr-{{this.processId}}-7">
-                                    <figure class="figure-tab-view-layout">
-                                        <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/tiles_view.png' | safeResourceUrl"/>
-                                    </figure>
-                                    <div class="div-tab-view-layout">Tiles</div>
-                                </span>
-    
-                                <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.contentView, 8)" (mouseleave)="onMouseLeaveTabLayoutBtn(8)" (click)="onClickTabLayoutBtn(this.contentView, 8)" id="tabLayoutIconCntnr-{{this.processId}}-8">
-                                    <figure class="figure-tab-view-layout">
-                                        <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/content_view.png' | safeResourceUrl"/>
-                                    </figure>
-                                    <div class="div-tab-view-layout">Content</div>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="view-tab-layout-top2"> </div>
-                    </div>
-                    <div class="view-tab-layout-bottom">
-                        Layout
-                    </div>
-                </div>
-                <div class="view-tab-current-view-container"> </div>
+                </figure>
               </div>
             </div>
+            <ng-container *ngIf="showRibbonMenu">
+                <div class="fileexp-header-tab-content-container">
+                    <div class="fileexp-tab-pane">
+                      <!-- Content for Tab 1 -->
+                    </div>
+                    <div class="fileexp-tab-pane">
+                      <!-- Content for Tab 2 -->
+                    </div>
+                    <div class="fileexp-tab-pane active">
+                      <div class="view-tab-pane-container">
+                          <div class="tab-empty-line-container "></div>
+                          <div class="view-tab-pane-top-cntnr">
+                              <div class="view-tab-pane-top1" (click) = "onNavPaneBtnClick()" (mouseenter) ="onNavPaneBtnEnter()" (mouseleave)="onNavPaneBtnLeave()"  id="navPaneIconCntnr-{{this.processId}}">
+                                  <div class="tab-empty-space"></div>
+                                  <figure class="figure-tab-view-pane">
+                                      <img class="img-tab-view-pane" [src]="'osdrive/Cheetah/System/Imageres/navigation_pane.png' | safeResourceUrl"/>
+                                  </figure>
+                                  <span class="span-tab-view-pane">
+                                      Navigation
+                                  </span>
+                                  <span class="span-tab-view-pane1">
+                                       pane
+                                  </span>
+                              </div>
+                              <div class="view-tab-pane-top2">
+                                  <div class="tab-empty-space"></div>
+                                  <div class="tab-pane-top2-1" (click) = "onPrevPaneBtnClick()" (mouseenter) ="onPrevPaneBtnEnter()" (mouseleave)="onPrevPaneBtnLeave()"  id="prevPaneIconCntnr-{{this.processId}}">
+                                      <span class="span-tab-pane-cntnr">
+                                          <figure class="figure-tab-view-pane1">
+                                              <img class="img-tab-view-pane1" [src]="'osdrive/Cheetah/System/Imageres/preview_pane.png' | safeResourceUrl"/>
+                                          </figure>
+                                          <div class="div-tab-view-pane"><span class="span-tab-view-pane-cntnt"> Preview pane</span></div>
+                                      </span>
+                                  </div>
+                                  <div class="tab-empty-space1"></div>
+                                  <div class="tab-pane-top2-2" (click) = "onDetailPaneBtnClick()" (mouseenter) ="onDetailPaneBtnEnter()" (mouseleave)="onDetailPaneBtnLeave()"  id="detailsPaneIconCntnr-{{this.processId}}">
+                                      <span class="span-tab-pane-cntnr">
+                                          <figure class="figure-tab-view-pane1">
+                                              <img class="img-tab-view-pane1" [src]="'osdrive/Cheetah/System/Imageres/details_pane.png' | safeResourceUrl"/>
+                                          </figure>
+                                          <div class="div-tab-view-pane"><span class="span-tab-view-pane-cntnt"> Details pane </span></div>
+                                      </span>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="view-tab-pane-bottom">
+                              Panes
+                          </div>
+                      </div>
+          
+                      <div class="view-tab-layout-container">
+                          <div class="tab-empty-line-container"></div>
+                          <div class="view-tab-layout-top-cntnr">
+                              <div class="view-tab-layout-top1" (mouseenter)="colorTabLayoutContainer()" (mouseleave)="unColorTabLayoutContainer()" [style]="tabLayoutCntnrStyle">
+                                  <div class="view-tab-layout-content">
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.extraLargeIconsView, 1)" (mouseleave)="onMouseLeaveTabLayoutBtn(1)" (click)="onClickTabLayoutBtn(this.extraLargeIconsView, 1)"  id="tabLayoutIconCntnr-{{this.processId}}-1">
+                                          <figure class="figure-tab-view-layout">
+                                              <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/extra_large_image.png' | safeResourceUrl"/>
+                                          </figure>
+                                          <div class="div-tab-view-layout">Extra large icons</div>
+                                      </span>
+          
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.largeIconsView, 2)" (mouseleave)="onMouseLeaveTabLayoutBtn(2)" (click)="onClickTabLayoutBtn(this.largeIconsView, 2)" id="tabLayoutIconCntnr-{{this.processId}}-2">
+                                          <figure class="figure-tab-view-layout">
+                                              <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/large_image.png' | safeResourceUrl"/>
+                                          </figure>
+                                          <div class="div-tab-view-layout">Large icons</div>
+                                      </span>
+          
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.mediumIconsView, 3)" (mouseleave)="onMouseLeaveTabLayoutBtn(3)" (click)="onClickTabLayoutBtn(this.mediumIconsView, 3)" id="tabLayoutIconCntnr-{{this.processId}}-3">
+                                          <figure class="figure-tab-view-layout">
+                                              <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/medium_icons_view.png' | safeResourceUrl"/>
+                                          </figure>
+                                          <div class="div-tab-view-layout">Medium icons</div>
+                                      </span>
+                                  </div>
+                                  <div class="view-tab-layout-content1">
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.smallIconsView, 4)" (mouseleave)="onMouseLeaveTabLayoutBtn(4)" (click)="onClickTabLayoutBtn(this.smallIconsView, 4)"  id="tabLayoutIconCntnr-{{this.processId}}-4">
+                                          <figure class="figure-tab-view-layout">
+                                              <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/small_icons_view.png' | safeResourceUrl"/>
+                                          </figure>
+                                          <div class="div-tab-view-layout">Small icons</div>
+                                      </span>
+          
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.listView, 5)" (mouseleave)="onMouseLeaveTabLayoutBtn(5)" (click)="onClickTabLayoutBtn(this.listView, 5)" id="tabLayoutIconCntnr-{{this.processId}}-5">
+                                          <figure class="figure-tab-view-layout">
+                                              <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/list_of_thumbnails_view.png' | safeResourceUrl"/>
+                                          </figure>
+                                          <div class="div-tab-view-layout">List</div>
+                                      </span>
+          
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.detailsView, 6)" (mouseleave)="onMouseLeaveTabLayoutBtn(6)" (click)="onClickTabLayoutBtn(this.detailsView, 6)" id="tabLayoutIconCntnr-{{this.processId}}-6">
+                                          <figure class="figure-tab-view-layout">
+                                              <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/details_view.png' | safeResourceUrl"/>
+                                          </figure>
+                                          <div class="div-tab-view-layout">Details</div>
+                                      </span>
+                                  </div>
+                                  <div class="view-tab-layout-content2">
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.tilesView, 7)" (mouseleave)="onMouseLeaveTabLayoutBtn(7)" (click)="onClickTabLayoutBtn(this.tilesView, 7)" id="tabLayoutIconCntnr-{{this.processId}}-7">
+                                          <figure class="figure-tab-view-layout">
+                                              <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/tiles_view.png' | safeResourceUrl"/>
+                                          </figure>
+                                          <div class="div-tab-view-layout">Tiles</div>
+                                      </span>
+          
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.contentView, 8)" (mouseleave)="onMouseLeaveTabLayoutBtn(8)" (click)="onClickTabLayoutBtn(this.contentView, 8)" id="tabLayoutIconCntnr-{{this.processId}}-8">
+                                          <figure class="figure-tab-view-layout">
+                                              <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/content_view.png' | safeResourceUrl"/>
+                                          </figure>
+                                          <div class="div-tab-view-layout">Content</div>
+                                      </span>
+                                  </div>
+                              </div>
+                              <div class="view-tab-layout-top2"> </div>
+                          </div>
+                          <div class="view-tab-layout-bottom">
+                              Layout
+                          </div>
+                      </div>
+                      <div class="view-tab-current-view-container"> </div>
+                    </div>
+                  </div>
+            </ng-container>
         </div>  
         <div class="header-empty-line-container"></div>
         <div class="fileexp-header-container">
@@ -419,9 +438,9 @@
         <div class="fileexp-footer-container" >
             <span class="span-footer"> </span>
             <span class="span-footer">{{files.length}} items</span>
-            <span class="span-footer">|</span>
+            <!-- <span class="span-footer">|</span>
             <span class="span-footer">{{files.length - files.length}} items selected</span>
-            <span class="span-footer">|</span>
+            <span class="span-footer">|</span> -->
         </div>
     </div>
 
