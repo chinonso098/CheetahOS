@@ -1,6 +1,6 @@
 [InternetShortcut]
-FileName=File Explorer
+FileName=Desktop
 IconPath=/osdrive/Cheetah/System/Imageres/desktop_folder.png
 FileType=folder
-ContentPath=Users/Desktop
+ContentPath=/Users/Desktop
 OpensWith=fileexplorer

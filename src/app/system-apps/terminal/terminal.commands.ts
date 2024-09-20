@@ -7,6 +7,7 @@ import { StateManagmentService } from "src/app/shared/system-service/state.manag
 import {extname, basename, resolve, dirname} from 'path';
 import { FileService } from "src/app/shared/system-service/file.service";
 import { FileEntry } from 'src/app/system-files/file.entry';
+import { Constants } from 'src/app/system-files/constants';
 
 
 export interface OctalRepresentation {
@@ -22,12 +23,13 @@ export class TerminalCommands{
     private _fileService:FileService;
     private _directoryFilesEntries!:FileEntry[];
     private _appDirctory = new AppDirectory();
+    private _consts:Constants = new Constants();
     
     private  permissionChart!:Map<number, OctalRepresentation>;
     private closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton","clock","taskbarentry"];
     private files:FileInfo[] = [];
-    private readonly defaultDirectoryPath = '/';
-    private currentDirectoryPath = '/';
+    private readonly defaultDirectoryPath = this._consts.ROOT;
+    private currentDirectoryPath = this._consts.ROOT;
     private fallBackDirPath = '';
 
     constructor() { 
@@ -352,7 +354,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         const filePathRegex = /^(\.\.\/)+([a-zA-Z0-9_-]+\/?)*$|^(\.\/|\/)([a-zA-Z0-9_-]+\/?)+$|^\.\.$|^\.\.\/$/;
 
         if(filePathRegex.test(arg0)){
-           const cmdArg = arg0.split('/');
+           const cmdArg = arg0.split(this._consts.ROOT);
       
            //console.log('CMDARG:', cmdArg);
            const moveUps = (cmdArg.length > 1)? cmdArg.filter(x => x == "..") : ['..'] ;
@@ -360,13 +362,13 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
            this.fallBackDirPath = impliedPath;
            const explicitPath = (arg0 !== '..')? arg0.split("../").splice(-1)[0] : '';
 
-           directory = `${impliedPath}/${explicitPath}`.replace('//','/');
+           directory = `${impliedPath}/${explicitPath}`.replace(this._consts.DOUBLE_SLASH,this._consts.ROOT);
 
         //    console.log('IMPLIEDPATH:', impliedPath);
         //    console.log('EXPLICITPATH:', explicitPath);
         //    console.log('DIRECTORY:', directory);
         }else{
-            directory = `${this.currentDirectoryPath}/${arg0}`.replace('//','/');
+            directory = `${this.currentDirectoryPath}/${arg0}`.replace(this._consts.DOUBLE_SLASH,this._consts.ROOT);
             this.fallBackDirPath = this.getFallBackPath(directory);
         }
 
@@ -410,12 +412,12 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         let directory = '';
         let dirPath = '';
         let cnt = 0;
-        const tmpTraversedPath = this.currentDirectoryPath.split('/');
+        const tmpTraversedPath = this.currentDirectoryPath.split(this._consts.ROOT);
         tmpTraversedPath.shift();
         const traversedPath = tmpTraversedPath.filter(x => x !== '');
         
         if(traversedPath.length == 0){
-            return '/';
+            return this._consts.ROOT;
         } else if(traversedPath.length == 1){
             directory = traversedPath[0];
             return `/${directory}`;
@@ -461,7 +463,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         *this.fallBackDirPath = this.currentDirectoryPath;  /osdrive/Documents 
         */
 
-        const tmpTraversedPath = arg0.split('/');
+        const tmpTraversedPath = arg0.split(this._consts.ROOT);
         const tmpStr:string[] = [];
         let dirPath = '';
 
@@ -475,7 +477,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         traversedPath.forEach(el =>{
             tmpStr.push(`/${el}`);
         })
-        tmpStr.push('/');
+        tmpStr.push(this._consts.ROOT);
 
         dirPath = tmpStr.join('');
         return dirPath.replace(',','');
@@ -669,7 +671,7 @@ Mandatory argument to long options are mandotory for short options too.
     }
 
     private sendDirectoryUpdateNotification(arg0:string):void{
-        if(arg0.includes('/Desktop')){
+        if(arg0.includes('/Users/Desktop')){
             this._fileService.addEventOriginator('filemanager');
         }else{
             this._fileService.addEventOriginator('fileexplorer');

@@ -1,6 +1,6 @@
 [InternetShortcut]
-FileName=File Explorer
+FileName=Games
 IconPath=/osdrive/Cheetah/System/Imageres/games_folder.png
 FileType=folder
-ContentPath=Users/Games
+ContentPath=/Users/Games
 OpensWith=fileexplorer

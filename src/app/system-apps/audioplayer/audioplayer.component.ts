@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component';
 import { ComponentType } from 'src/app/system-files/component.types';
-import {extname, basename} from 'path';
+import {extname} from 'path';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';

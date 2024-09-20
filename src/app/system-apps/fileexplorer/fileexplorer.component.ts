@@ -80,7 +80,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private hideCntxtMenuEvtCnt = 0;
   private btnClickCnt = 0;
   private renameFileTriggerCnt = 0; 
-  private currentIconName = '';
+  private currentIconName = this._consts.EMPTY_STRING;
 
   isSearchBoxNotEmpty = false;
   showPathHistory = false;
@@ -161,14 +161,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   pathHistory =['/Users/Vidoes','/Users/Games', '/Users/Music'];
 
   menuData = [
-    {icon:'', label: 'Open', action: this.onTriggerRunProcess.bind(this) },
-    {icon:'', label: 'Open in new window', action: this.doNothing.bind(this) },
-    {icon:'', label: 'Pin to Start', action: this.doNothing.bind(this) },
-    {icon:'', label: 'Cut', action: this.onCut.bind(this) },
-    {icon:'', label: 'Copy', action: this.onCopy.bind(this) },
-    {icon:'', label: 'Delete', action: this.onDeleteFile.bind(this) },
-    {icon:'', label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
-    {icon:'', label: 'Properties', action: this.doNothing.bind(this) }
+    {icon:this._consts.EMPTY_STRING, label: 'Open', action: this.onTriggerRunProcess.bind(this) },
+    {icon:this._consts.EMPTY_STRING, label: 'Open in new window', action: this.doNothing.bind(this) },
+    {icon:this._consts.EMPTY_STRING, label: 'Pin to Start', action: this.doNothing.bind(this) },
+    {icon:this._consts.EMPTY_STRING, label: 'Cut', action: this.onCut.bind(this) },
+    {icon:this._consts.EMPTY_STRING, label: 'Copy', action: this.onCopy.bind(this) },
+    {icon:this._consts.EMPTY_STRING, label: 'Delete', action: this.onDeleteFile.bind(this) },
+    {icon:this._consts.EMPTY_STRING, label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
+    {icon:this._consts.EMPTY_STRING, label: 'Properties', action: this.doNothing.bind(this) }
   ];
 
   fileExplrMenu:NestedMenu[] = [];
@@ -176,21 +176,21 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileExplrMngrMenuOption = "file-explorer-file-manager-menu";
   fileExplrMenuOption = "nested-menu";
 
-  fileInfoTipData = [{label:'', data:''}];
+  fileInfoTipData = [{label:this._consts.EMPTY_STRING, data:this._consts.EMPTY_STRING}];
 
-  fileType = '';
-  fileAuthor = '';
-  fileSize = '';
-  fileDimesions = '';
-  fileDateModified = '';
+  fileType = this._consts.EMPTY_STRING;
+  fileAuthor = this._consts.EMPTY_STRING;
+  fileSize = this._consts.EMPTY_STRING;
+  fileDimesions = this._consts.EMPTY_STRING;
+  fileDateModified = this._consts.EMPTY_STRING;
 
 
-  icon = 'osdrive/Cheetah/System/Imageres/file_explorer.png';
-  navPathIcon = 'osdrive/Cheetah/System/Imageres/this_pc.png'
+  icon = `${this._consts.IMAGE_BASE_PATH}file_explorer.png`;
+  navPathIcon = `${this._consts.IMAGE_BASE_PATH}this_pc.png`;
   name = 'fileexplorer';
   processId = 0;
   type = ComponentType.System;
-  directory ='/';
+  directory =this._consts.ROOT;
   displayName = 'fileexplorer';
   hasWindow = true;
 
@@ -225,7 +225,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this._fileService.removeEventOriginator();
       }
     })
-
     this._goToDirectoryDataSub = this._fileService.goToDirectoryNotify.subscribe((p) => {
       const name = 'filetreeview-1';
       const uid = `${name}-${this.processId}`;
@@ -252,13 +251,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
 
     this.renameForm = this._formBuilder.nonNullable.group({
-      renameInput: '',
+      renameInput: this._consts.EMPTY_STRING,
     });
     this.pathForm = this._formBuilder.nonNullable.group({
-      pathInput: '',
+      pathInput: this._consts.EMPTY_STRING,
     });
     this.searchForm = this._formBuilder.nonNullable.group({
-      searchInput: '',
+      searchInput: this._consts.EMPTY_STRING,
     });
 
     this.setNavButtonsColor();
@@ -273,7 +272,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.changeTabLayoutIconCntnrCSS(this.currentViewOptionId,false);
 
     this.pathForm.setValue({
-      pathInput: (this.directory !== '/')? this.directory : '/'
+      pathInput: (this.directory !== this._consts.ROOT)? this.directory : this._consts.ROOT
     })
   
     await this.loadFileTreeAsync();
@@ -319,7 +318,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   unColorTabLayoutContainer():void{
     this.tabLayoutCntnrStyle ={
-      'background-color': ''
+      'background-color': this._consts.EMPTY_STRING
     }
   }
 
@@ -384,8 +383,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           btnElement.style.border = '0.5px solid #ccc';
           // btnElement.style.margin = '-0.5px';
         }else{
-          btnElement.style.backgroundColor = '';
-          btnElement.style.border = '';
+          btnElement.style.backgroundColor = this._consts.EMPTY_STRING;
+          btnElement.style.border = this._consts.EMPTY_STRING;
           btnElement.style.margin = '0';
         }
       }    
@@ -496,14 +495,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   uncolorUpNavBtn():void{
     this.upNavBtnCntnrStyle ={
-      'background-color': ''
+      'background-color': this._consts.EMPTY_STRING
     }
   }
 
   colorUpNavBtn():void{
     if(!this.isUpBtnActive){
       this.upNavBtnCntnrStyle ={
-        'background-color': ''
+        'background-color': this._consts.EMPTY_STRING
       }
     }else{
       this.upNavBtnCntnrStyle ={
@@ -526,9 +525,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }
 
-      let nextDirPath = this.upPathEntries.pop() ?? '';
+      let nextDirPath = this.upPathEntries.pop() ?? this._consts.EMPTY_STRING;
       if(currentDirPath === nextDirPath){
-        nextDirPath = this.upPathEntries.pop() ?? '';
+        nextDirPath = this.upPathEntries.pop() ?? this._consts.EMPTY_STRING;
         this.directory = nextDirPath;
         this.prevPathEntries.push(nextDirPath);
       }else{
@@ -594,9 +593,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         'fill': '#fff'
       }
 
-      let nextDirPath = this.prevPathEntries.pop() ?? '';
+      let nextDirPath = this.prevPathEntries.pop() ?? this._consts.EMPTY_STRING;
       if(currentDirPath === nextDirPath){
-        nextDirPath = this.prevPathEntries.pop() ?? '';
+        nextDirPath = this.prevPathEntries.pop() ?? this._consts.EMPTY_STRING;
         this.directory = nextDirPath;
       }else{
         this.directory = nextDirPath;
@@ -645,7 +644,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         'fill': '#fff'
       }
 
-      const nextDirPath = this.directory = this.nextPathEntries.pop() ?? '';
+      const nextDirPath = this.directory = this.nextPathEntries.pop() ?? this._consts.EMPTY_STRING;
       const idx = this.upPathEntries.indexOf(nextDirPath)
 
       if (idx !== -1) {
@@ -700,6 +699,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.showDetailsPane = false;
 
     this.removePaneBtnStyle(`detailsPaneIconCntnr-${this.processId}`);
+    this.setPaneBtnStyle(`prevPaneIconCntnr-${this.processId}`);
   }
 
   onPrevPaneBtnEnter():void{
@@ -707,10 +707,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(btnElement){
       if(!this.showPreviewPane){
         btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#807c7c';
+        btnElement.style.backgroundColor = '#605c5c ';
       }else{
         btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#605c5c';
+        btnElement.style.backgroundColor = '#807c7c';
       }
     }
   }
@@ -723,7 +723,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         btnElement.style.borderColor = 'transparent';
       }else{
         btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#807c7c';
+        btnElement.style.backgroundColor = '#605c5c';
       }
     }
   }
@@ -733,6 +733,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.showPreviewPane = false;
 
     this.removePaneBtnStyle(`prevPaneIconCntnr-${this.processId}`);
+    this.setPaneBtnStyle(`detailsPaneIconCntnr-${this.processId}`);
   }
 
   onDetailPaneBtnEnter():void{
@@ -740,13 +741,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(btnElement){
       if(!this.showDetailsPane){
         btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#807c7c';
+        btnElement.style.backgroundColor = '#605c5c';
       }else{
         btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#605c5c';
+        btnElement.style.backgroundColor = '#807c7c';
       }
     }
   }
+
   onDetailPaneBtnLeave():void{
     const btnElement = document.getElementById(`detailsPaneIconCntnr-${this.processId}`) as HTMLDivElement;
     if(btnElement){
@@ -755,7 +757,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         btnElement.style.borderColor = 'transparent';
       }else{
         btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#807c7c';
+        btnElement.style.backgroundColor = '#605c5c';
       }
     }
   }
@@ -768,6 +770,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+  setPaneBtnStyle(id:string):void{
+    const btnElement = document.getElementById(id) as HTMLDivElement;
+    if(btnElement){
+      btnElement.style.borderColor = '#ccc';
+      btnElement.style.backgroundColor = '#807c7c';
+    }
+  }
+
   showExpandTreeIconBtn():void{
     this.showExpandTreeIcon = true;
   }
@@ -775,6 +785,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   hideExpandTreeIconBtn():void{
     this.showExpandTreeIcon = false;
   }
+
   onDragOver(event:DragEvent):void{
     event.stopPropagation();
     event.preventDefault();
@@ -803,14 +814,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     //console.log('directoryEntries:',directoryEntries); //TBD
 
-    if(this.directory === '/'){
+    if(this.directory === this._consts.ROOT){
       if(!showUrlFiles){
-        const filteredDirectoryEntries = directoryEntries.filter(x => !x.includes('.url'));
+        const filteredDirectoryEntries = directoryEntries.filter(x => !x.includes(this._consts.URL));
         directoryEntries = filteredDirectoryEntries;
         this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(filteredDirectoryEntries,this.directory);
       }
       else{
-        const filteredDirectoryEntries = directoryEntries.filter(x => x.includes('.url'));
+        const filteredDirectoryEntries = directoryEntries.filter(x => x.includes(this._consts.URL));
         directoryEntries = filteredDirectoryEntries;
         this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(filteredDirectoryEntries,this.directory); 
       }
@@ -829,21 +840,21 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private async loadFileTreeAsync():Promise<void>{
 
     console.log('loadFileTreeAsync called');
-    const directory = '/Users/';
+    const usersDir = '/Users/';
     this.fileTreeNode = [];
     this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(directory);
+    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(usersDir);
 
     const osDrive:FileTreeNode = {
-      name : 'OSDisk (C:)', path : '/', isFolder: true, children:[]
+      name : 'OSDisk (C:)', path : this._consts.ROOT, isFolder: true, children:[]
     }
 
    // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
-      const isFile =  await this._fileService.checkIfDirectory(directory + dirEntry);
+      const isFile =  await this._fileService.checkIfDirectory(usersDir + dirEntry);
       const ftn:FileTreeNode = {
         name : dirEntry,
-        path : `${directory}${dirEntry}`,
+        path : `${usersDir}${dirEntry}`,
         isFolder: isFile,
         children: []
       }
@@ -867,10 +878,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       // this.directory, will not be correct for all cases. Make sure to check
       for(const dirEntry of directoryEntries){
   
-        const isFile =  await this._fileService.checkIfDirectory(`${path}/${dirEntry}`.replace('//','/'));
+        const isFile =  await this._fileService.checkIfDirectory(`${path}/${dirEntry}`.replace(this._consts.DOUBLE_SLASH,this._consts.ROOT));
         const ftn:FileTreeNode = {
           name : dirEntry,
-          path: `${path}/${dirEntry}`.replace('//','/'),
+          path: `${path}/${dirEntry}`.replace(this._consts.DOUBLE_SLASH,this._consts.ROOT),
           isFolder: isFile,
           children: []
         }
@@ -886,7 +897,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  private addChildrenToNode(treeData: FileTreeNode[], nodePath: string, newChildren: FileTreeNode[] ): FileTreeNode[] {
+  private addChildrenToNode(treeData: FileTreeNode[], nodePath: string, newChildren: FileTreeNode[]): FileTreeNode[] {
     // Create a new array for the updated treeData
     const updatedTreeData: FileTreeNode[] = [];
 
@@ -932,7 +943,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       this.isPrevBtnActive = true;
-      this.directory = file.getCurrentPath;
+
+      if(file.getCurrentPath.includes(this._consts.URL)){
+        this.directory = file.getContentPath;
+      }
+      else{
+        this.directory = file.getCurrentPath;
+      }
+
       this.displayName = file.getFileName;
       this.icon = file.getIconPath;
 
@@ -966,12 +984,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.isPrevBtnActive = true;
     this.displayName = fileName;
-    this.directory = (path === thisPC)? '/' : path;
+    this.directory = (path === thisPC)? this._consts.ROOT : path;
 
     if(path === `/Users/${fileName}`)
-      this.icon = `osdrive/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder.png`;
+      this.icon = `${this._consts.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png`;
     else
-      this.icon = `osdrive/Cheetah/System/Imageres/folder.png`;
+      this.icon = `${this._consts.IMAGE_BASE_PATH}folder.png`;
 
     this.prevPathEntries.push(this.directory);
     this.upPathEntries.push(this.directory);
@@ -984,26 +1002,25 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.setNavPathIcon(fileName, path);
     this.storeAppState(path);
 
-    if(path === thisPC || path !== '/')
+    if(path === thisPC || path !== this._consts.ROOT)
       await this.loadFilesInfoAsync();
-    else if(path === '/')
+    else if(path === this._consts.ROOT)
       await this.loadFilesInfoAsync(false);
   }
 
-  setNavPathIcon(fileName:string, directory:string){
+  setNavPathIcon(fileName:string, directory:string):void{
     console.log(`fileexplorer - setNavPathIcon: fileName:${fileName} -----  directory:${directory}`)
 
     if(directory === `/Users/${fileName}`){
-      this.navPathIcon = `osdrive/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder_small.png`;
+      this.navPathIcon = `${this._consts.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder_small.png`;
     }
-    else if((fileName === 'OSDisk (C:)' && directory === '/')){
-      this.navPathIcon = 'osdrive/Cheetah/System/Imageres/os_disk.png';
+    else if((fileName === 'OSDisk (C:)' && directory === this._consts.ROOT)){
+      this.navPathIcon = `${this._consts.IMAGE_BASE_PATH}os_disk.png`;
     }
-    else if((fileName === 'fileexplorer' && directory === '/') || (fileName === '' && directory === '/')){
-      this.navPathIcon = 'osdrive/Cheetah/System/Imageres/this_pc.png';
-    }
-    else{
-      this.navPathIcon = 'osdrive/Cheetah/System/Imageres/folder_folder_small.png';
+    else if((fileName === 'fileexplorer' && directory === this._consts.ROOT) || (fileName === this._consts.EMPTY_STRING && directory === this._consts.ROOT)){
+      this.navPathIcon = `${this._consts.IMAGE_BASE_PATH}this_pc.png`;
+    }else{
+      this.navPathIcon = `${this._consts.IMAGE_BASE_PATH}folder_folder_small.png`;
     }
   }
 
@@ -1370,7 +1387,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   setInformationTipInfo(file:FileInfo):void{
-
     const infoTipFields = ['Author:', 'Item type:','Date created:','Date modified:', 'Dimesions:', 'General', 'Size:','Type:'];
     const fileAuthor = 'Relampago Del Catatumbo';
     const fileType = file.getFileType;
@@ -1388,7 +1404,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const height = img?.naturalHeight;
       const imgDimesions = `${width} x ${height}`;
 
-      this.fileInfoTipData.push({label:infoTipFields[1], data:`${file.getFileType.replace('.','').toLocaleUpperCase()} File`});
+      this.fileInfoTipData.push({label:infoTipFields[1], data:`${file.getFileType.replace('.',this._consts.EMPTY_STRING).toLocaleUpperCase()} File`});
       this.fileInfoTipData.push({label:infoTipFields[4], data:imgDimesions })
       this.fileInfoTipData.push({label:infoTipFields[6], data:fileSize })
     }
@@ -1403,11 +1419,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(fileName === 'Desktop' || fileName === 'Documents' || fileName === 'Downloads'){
         this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified })
       }else if(fileName === 'Music'){
-        this.fileInfoTipData.push({label:'', data:'Contains music and other audio files' })
+        this.fileInfoTipData.push({label:this._consts.EMPTY_STRING, data:'Contains music and other audio files' })
       }else if(fileName === 'Videos'){
-        this.fileInfoTipData.push({label:'', data:'Contains movies and other video files' })
+        this.fileInfoTipData.push({label:this._consts.EMPTY_STRING, data:'Contains movies and other video files' })
       }else if(fileName === 'Pictures' ){
-        this.fileInfoTipData.push({label:'', data:'Contains digital photos, images and graphic files'})
+        this.fileInfoTipData.push({label:this._consts.EMPTY_STRING, data:'Contains digital photos, images and graphic files'})
       }else{
         this.fileInfoTipData.push({label:infoTipFields[7], data:fileType });
         this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified });
@@ -1466,7 +1482,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onClearSearchTextBox():void{
     const SearchTxtBox = document.getElementById(`searchTxtBox-${this.processId}`) as HTMLInputElement;
-    SearchTxtBox.value = '';
+    SearchTxtBox.value = this._consts.EMPTY_STRING;
     this.isSearchBoxNotEmpty = false;
 
     this.resetSearchIconHiglight();
@@ -1549,9 +1565,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       pathTxtBoxElement.style.display = 'block';
 
       if(this.showPathHistory){
-        if(this.directory === '/'){
+        if(this.directory === this._consts.ROOT){
           this.pathForm.setValue({
-            pathInput:'/'
+            pathInput:this._consts.ROOT
           })
         }
       }else{
@@ -1600,14 +1616,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   populateHopsList():void{
-    const tmpArray = this.directory.split('/').filter(x => x !== '');
-    if(tmpArray.length === 0){ tmpArray[0]='This PC'; }
-    else{ tmpArray.unshift('This PC'); }
+    const tmpArray = this.directory.split(this._consts.ROOT).filter(x => x !== this._consts.EMPTY_STRING);
+    if(tmpArray.length === 0){ tmpArray[0]= this._consts.THISPC; }
+    else{ tmpArray.unshift(this._consts.THISPC); }
 
     if(this.directory.includes('/Users')){
       this._directoryHops = tmpArray;
     }else{
-      tmpArray[1] = 'OSDisk (C:)';
+      tmpArray[1] = this._consts.OSDISK;
       this._directoryHops = tmpArray;
     }
 
@@ -1690,7 +1706,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const renameContainerElement= document.getElementById(`renameContainer-${this.processId}-${this.selectedElementId}`) as HTMLElement;
     const renameText = this.renameForm.value.renameInput as string;
 
-    if(renameText !== '' && renameText.length !== 0 && renameText !== this.currentIconName){
+    if(renameText !== this._consts.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName){
       const result = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
 
       if(result){
@@ -1792,12 +1808,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   retrievePastSessionData():void{
     const pickUpKey = this._sessionManagmentService._pickUpKey;
     if(this._sessionManagmentService.hasTempSession(pickUpKey)){
-      const tmpSessKey = this._sessionManagmentService.getTempSession(pickUpKey) || ''; 
+      const tmpSessKey = this._sessionManagmentService.getTempSession(pickUpKey) || this._consts.EMPTY_STRING; 
       const retrievedSessionData = this._sessionManagmentService.getSession(tmpSessKey) as BaseState[];
 
       if(retrievedSessionData !== undefined){
         const appSessionData = retrievedSessionData[0] as AppState;
-        if(appSessionData !== undefined  && appSessionData.app_data != ''){
+        if(appSessionData !== undefined  && appSessionData.app_data != this._consts.EMPTY_STRING){
           this.directory = appSessionData.app_data as string;
         }
       }
@@ -1890,25 +1906,25 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   buildViewMenu():NestedMenuItem[]{
 
-    const extraLargeIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Extra Large icons', action: () => this.isExtraLargeIcon = !this.isExtraLargeIcon,  variables:this.isExtraLargeIcon, 
+    const extraLargeIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Extra Large icons', action: () => this.isExtraLargeIcon = !this.isExtraLargeIcon,  variables:this.isExtraLargeIcon, 
       emptyline:false, styleOption:'A' }
 
-    const largeIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Large icons', action: () => this.isLargeIcon = !this.isLargeIcon,  variables:this.isMediumIcon, 
+    const largeIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Large icons', action: () => this.isLargeIcon = !this.isLargeIcon,  variables:this.isMediumIcon, 
       emptyline:false, styleOption:'A' }
 
-    const mediumIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Medium icons', action: () => this.isMediumIcon = !this.isMediumIcon, variables:this.isLargeIcon,
+    const mediumIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Medium icons', action: () => this.isMediumIcon = !this.isMediumIcon, variables:this.isLargeIcon,
       emptyline:false, styleOption:'A' }
 
-    const smallIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Small icons', action: () => this.isSmallIcon = !this.isSmallIcon, variables:this.isLargeIcon,
+    const smallIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Small icons', action: () => this.isSmallIcon = !this.isSmallIcon, variables:this.isLargeIcon,
     emptyline:false, styleOption:'A' }
 
-    const listIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'List icons', action: () => this.isListIcon = !this.isListIcon, variables:this.isListIcon,
+    const listIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'List icons', action: () => this.isListIcon = !this.isListIcon, variables:this.isListIcon,
     emptyline:false, styleOption:'A' }
 
-    const detailsIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Details icons', action: () => this.isDetailsIcon = !this.isDetailsIcon, variables:this.isDetailsIcon,
+    const detailsIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Details icons', action: () => this.isDetailsIcon = !this.isDetailsIcon, variables:this.isDetailsIcon,
       emptyline:false, styleOption:'A' }
 
-    const titlesIcon:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Titles icons', action: () => this.isTitleIcon = !this.isTitleIcon, variables:this.isTitleIcon,
+    const titlesIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Titles icons', action: () => this.isTitleIcon = !this.isTitleIcon, variables:this.isTitleIcon,
         emptyline:false, styleOption:'A' }
 
     const viewByMenu = [extraLargeIcon, largeIcon, mediumIcon, smallIcon, listIcon, detailsIcon, titlesIcon];
@@ -1918,16 +1934,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   buildSortByMenu(): NestedMenuItem[]{
 
-    const sortByName:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Name',  action: this.sortByNameM.bind(this),  variables:this.isSortByName , 
+    const sortByName:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Name',  action: this.sortByNameM.bind(this),  variables:this.isSortByName , 
       emptyline:false, styleOption:'A' }
 
-    const sortBySize:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Size',  action: this.sortBySizeM.bind(this),  variables:this.isSortBySize , 
+    const sortBySize:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Size',  action: this.sortBySizeM.bind(this),  variables:this.isSortBySize , 
       emptyline:false, styleOption:'A' }
 
-    const sortByItemType:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Item type',  action: this.sortByItemTypeM.bind(this),  variables:this.isSortByItemType, 
+    const sortByItemType:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Item type',  action: this.sortByItemTypeM.bind(this),  variables:this.isSortByItemType, 
       emptyline:false, styleOption:'A' }
 
-    const sortByDateModified:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/circle.png', label:'Date modified',  action: this.sortByDateModifiedM.bind(this),  variables:this.isSortByDateModified, 
+    const sortByDateModified:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Date modified',  action: this.sortByDateModifiedM.bind(this),  variables:this.isSortByDateModified, 
       emptyline:false, styleOption:'A' }
 
     const sortByMenu = [sortByName, sortBySize, sortByItemType, sortByDateModified ]
@@ -1936,10 +1952,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   buildNewMenu(): NestedMenuItem[]{
-    const newFolder:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/empty_folder.png', label:'Folder',  action:()=> console.log(),  variables:true , 
+    const newFolder:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action:()=> console.log(),  variables:true , 
       emptyline:false, styleOption:'C' }
 
-    const textEditor:NestedMenuItem={ icon:'osdrive/Cheetah/System/Imageres/text-editor_48.png', label:'Rich Text',  action:  ()=> console.log(),  variables:true , 
+    const textEditor:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}text-editor_48.png`, label:'Rich Text',  action:  ()=> console.log(),  variables:true , 
       emptyline:false, styleOption:'C' }
 
     const sortByMenu = [newFolder, textEditor ]
@@ -1949,14 +1965,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   getFileExplorerMenuData():void{
     this.fileExplrMenu = [
-          {icon1:'',  icon2: 'osdrive/Cheetah/System/Imageres/arrow_next_1.png', label:'View', nest:this.buildViewMenu(), action: ()=> '', action1: this.shiftViewSubMenu.bind(this), emptyline:false},
-          {icon1:'',  icon2:'osdrive/Cheetah/System/Imageres/arrow_next_1.png', label:'Sort by', nest:this.buildSortByMenu(), action: ()=> '', action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
-          {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:() => console.log('Refresh'), action1: ()=> '', emptyline:true},
-          {icon1:'',  icon2:'', label: 'Paste', nest:[], action: () => console.log('Paste!! Paste!!'), action1: ()=> '', emptyline:false},
-          {icon1:'/osdrive/Cheetah/System/Imageres/terminal_48.png', icon2:'', label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), action1: ()=> '', emptyline:false},
-          {icon1:'osdrive/Cheetah/System/Imageres/vs-code_48.png', icon2:'', label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> '', emptyline:true},
-          {icon1:'',  icon2:'osdrive/Cheetah/System/Imageres/arrow_next_1.png', label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
-          {icon1:'',  icon2:'', label:'Properties', nest:[], action: () => console.log('Properties'), action1: ()=> '', emptyline:false}
+          {icon1:this._consts.EMPTY_STRING,  icon2: `${this._consts.IMAGE_BASE_PATH}arrow_next_1.png`, label:'View', nest:this.buildViewMenu(), action: ()=> this._consts.EMPTY_STRING, action1: this.shiftViewSubMenu.bind(this), emptyline:false},
+          {icon1:this._consts.EMPTY_STRING,  icon2:`${this._consts.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=> this._consts.EMPTY_STRING, action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
+          {icon1:this._consts.EMPTY_STRING,  icon2:this._consts.EMPTY_STRING, label: 'Refresh', nest:[], action:() => console.log('Refresh'), action1: ()=> this._consts.EMPTY_STRING, emptyline:true},
+          {icon1:this._consts.EMPTY_STRING,  icon2:this._consts.EMPTY_STRING, label: 'Paste', nest:[], action: () => console.log('Paste!! Paste!!'), action1: ()=> this._consts.EMPTY_STRING, emptyline:false},
+          {icon1:`${this._consts.IMAGE_BASE_PATH}terminal_48.png`, icon2:this._consts.EMPTY_STRING, label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), action1: ()=> this._consts.EMPTY_STRING, emptyline:false},
+          {icon1:`${this._consts.IMAGE_BASE_PATH}vs-code_48.png`, icon2:this._consts.EMPTY_STRING, label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> this._consts.EMPTY_STRING, emptyline:true},
+          {icon1:this._consts.EMPTY_STRING,  icon2:`${this._consts.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> this._consts.EMPTY_STRING, action1: this.shiftNewSubMenu.bind(this), emptyline:true},
+          {icon1:this._consts.EMPTY_STRING,  icon2:this._consts.EMPTY_STRING, label:'Properties', nest:[], action: () => console.log('Properties'), action1: ()=> this._consts.EMPTY_STRING, emptyline:false}
       ]
   }
 
