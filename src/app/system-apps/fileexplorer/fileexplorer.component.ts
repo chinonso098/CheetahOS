@@ -682,27 +682,91 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onNavPaneBtnEnter():void{
     const btnElement = document.getElementById(`navPaneIconCntnr-${this.processId}`) as HTMLDivElement;
     if(btnElement){
-      btnElement.style.border = '0.5px solid #ccc';
+      btnElement.style.borderColor = '#ccc';
       btnElement.style.backgroundColor = '#807c7c';
     }
-
   }
 
   onNavPaneBtnLeave():void{
     const btnElement = document.getElementById(`navPaneIconCntnr-${this.processId}`) as HTMLDivElement;
     if(btnElement){
       btnElement.style.backgroundColor = 'transparent';
-      btnElement.style.border = 'none'
+      btnElement.style.borderColor = 'transparent';
     }
   }
 
-  onPrevPaneBtnClick():void{1}
-  onPrevPaneBtnEnter():void{1}
-  onPrevPaneBtnLeave():void{1}
+  onPrevPaneBtnClick():void{
+    this.showPreviewPane = !this.showPreviewPane;
+    this.showDetailsPane = false;
 
-  onDetailPaneBtnClick():void{1}
-  onDetailPaneBtnEnter():void{1}
-  onDetailPaneBtnLeave():void{1}
+    this.removePaneBtnStyle(`detailsPaneIconCntnr-${this.processId}`);
+  }
+
+  onPrevPaneBtnEnter():void{
+    const btnElement = document.getElementById(`prevPaneIconCntnr-${this.processId}`) as HTMLDivElement;
+    if(btnElement){
+      if(!this.showPreviewPane){
+        btnElement.style.borderColor = '#ccc';
+        btnElement.style.backgroundColor = '#807c7c';
+      }else{
+        btnElement.style.borderColor = '#ccc';
+        btnElement.style.backgroundColor = '#605c5c';
+      }
+    }
+  }
+
+  onPrevPaneBtnLeave():void{
+    const btnElement = document.getElementById(`prevPaneIconCntnr-${this.processId}`) as HTMLDivElement;
+    if(btnElement){
+      if(!this.showPreviewPane){
+        btnElement.style.backgroundColor = 'transparent';
+        btnElement.style.borderColor = 'transparent';
+      }else{
+        btnElement.style.borderColor = '#ccc';
+        btnElement.style.backgroundColor = '#807c7c';
+      }
+    }
+  }
+
+  onDetailPaneBtnClick():void{
+    this.showDetailsPane = !this.showDetailsPane;
+    this.showPreviewPane = false;
+
+    this.removePaneBtnStyle(`prevPaneIconCntnr-${this.processId}`);
+  }
+
+  onDetailPaneBtnEnter():void{
+    const btnElement = document.getElementById(`detailsPaneIconCntnr-${this.processId}`) as HTMLDivElement;
+    if(btnElement){
+      if(!this.showDetailsPane){
+        btnElement.style.borderColor = '#ccc';
+        btnElement.style.backgroundColor = '#807c7c';
+      }else{
+        btnElement.style.borderColor = '#ccc';
+        btnElement.style.backgroundColor = '#605c5c';
+      }
+    }
+  }
+  onDetailPaneBtnLeave():void{
+    const btnElement = document.getElementById(`detailsPaneIconCntnr-${this.processId}`) as HTMLDivElement;
+    if(btnElement){
+      if(!this.showDetailsPane){
+        btnElement.style.backgroundColor = 'transparent';
+        btnElement.style.borderColor = 'transparent';
+      }else{
+        btnElement.style.borderColor = '#ccc';
+        btnElement.style.backgroundColor = '#807c7c';
+      }
+    }
+  }
+
+  removePaneBtnStyle(id:string):void{
+    const btnElement = document.getElementById(id) as HTMLDivElement;
+    if(btnElement){
+      btnElement.style.backgroundColor = 'transparent';
+      btnElement.style.borderColor = 'transparent';
+    }
+  }
 
   showExpandTreeIconBtn():void{
     this.showExpandTreeIcon = true;

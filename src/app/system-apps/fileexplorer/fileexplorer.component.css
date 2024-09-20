@@ -113,7 +113,8 @@
 }
 
 .view-tab-pane-top1{
-    padding-left: 5px;
+    padding-left: 4.5px;
+    border: 0.5px solid transparent;
 }
 
 .figure-tab-view-pane{
@@ -154,7 +155,9 @@
     position: relative;
     width: fit-content;
     height: fit-content;
-    top: 2px;
+    top: 1.5px;
+    border: 0.5px solid transparent;
+    
 }
 .tab-pane-top2-2{
     top: 0px;
