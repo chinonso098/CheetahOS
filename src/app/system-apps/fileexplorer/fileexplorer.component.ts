@@ -103,6 +103,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   upNavBtnCntnrStyle:Record<string, unknown> = {};
   tabLayoutCntnrStyle:Record<string, unknown> = {};
   ribbonMenuBtnStyle:Record<string, unknown> = {};
+  ribbonMenuCntnrStyle:Record<string, unknown> = {};
   olClassName = 'ol-icon-size-view';
 
   files:FileInfo[] = [];
@@ -481,6 +482,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.upNavBtnStyle ={
       'fill': '#fff'
     }
+
+    this.ribbonMenuBtnStyle ={
+      'fill': '#fff'
+    }
   }
 
   colorChevron():void{
@@ -556,15 +561,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.showRibbonMenu = !this.showRibbonMenu
   }
 
-  colorRibbonMenuBtn():void{
-    this.ribbonMenuBtnStyle ={
-      'background-color': '#605c5c'
+  colorRibbonMenuCntnr():void{
+    this.ribbonMenuCntnrStyle ={
+      'background-color': '#ccc'
     }
   }
 
-  uncolorRibbonMenuBtn():void{
-    this.ribbonMenuBtnStyle ={
-      'background-color': 'transparent'
+  uncolorRibbonMenuCntnr():void{
+    this.ribbonMenuCntnrStyle ={
+      'background-color': '#080404'
     }
   }
 

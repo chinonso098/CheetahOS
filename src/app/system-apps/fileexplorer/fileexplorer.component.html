@@ -6,18 +6,18 @@
               <div class="fileexp-tab highlight-default">File</div>
               <div class="fileexp-tab">Home</div>
               <div class="fileexp-tab active">View</div>
-              <div class="figure-header-toggle" (click)="toggleRibbobMenu()" (mouseenter)="colorRibbonMenuBtn()" (mouseleave)="uncolorRibbonMenuBtn()" [style]="ribbonMenuBtnStyle" >
+              <div class="figure-header-toggle" (click)="toggleRibbobMenu()" (mouseenter)="colorRibbonMenuCntnr()" (mouseleave)="uncolorRibbonMenuCntnr()" [style]="ribbonMenuCntnrStyle">
                 <figure class="figure-header-tab">  
                     <div class="img-header-tab">
                         <svg xmlns="http://www.w3.org/2000/svg" 
                             height="10" width="10" 
-                            viewBox="0 0 512 512" *ngIf="!showRibbonMenu">
-                            <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/>
+                            viewBox="0 0 512 512" *ngIf="!showRibbonMenu" [style]="ribbonMenuBtnStyle">
+                            <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
                         </svg>
 
                         <svg xmlns="http://www.w3.org/2000/svg" 
                             height="10" width="10" 
-                            viewBox="0 0 512 512" *ngIf="showRibbonMenu">
+                            viewBox="0 0 512 512" *ngIf="showRibbonMenu" [style]="ribbonMenuBtnStyle">
                             <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
                        </svg>
                     </div>
