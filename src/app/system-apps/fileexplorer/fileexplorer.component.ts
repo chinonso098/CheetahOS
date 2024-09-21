@@ -17,7 +17,7 @@ import {basename} from 'path';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
-import { NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.item';
+import { GeneralMenu, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.item';
 import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
@@ -155,7 +155,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showDetailsPane = false;
   showRibbonMenu = false;
 
-
   renameForm!: FormGroup;
   pathForm!: FormGroup;
   searchForm!: FormGroup;
@@ -163,21 +162,27 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   searchHistory =['Java','ProgramFile', 'Perenne'];
   pathHistory =['/Users/Vidoes','/Users/Games', '/Users/Music'];
 
-  menuData = [
+  sourceData:GeneralMenu[] = [
     {icon:this._consts.EMPTY_STRING, label: 'Open', action: this.onTriggerRunProcess.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Open in new window', action: this.doNothing.bind(this) },
+    {icon:this._consts.EMPTY_STRING, label: 'Pin to Quick access', action: this.doNothing.bind(this) },
+    {icon:this._consts.EMPTY_STRING, label: 'Open in Terminal', action: this.doNothing.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Pin to Start', action: this.doNothing.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Cut', action: this.onCut.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Copy', action: this.onCopy.bind(this) },
+    {icon:this._consts.EMPTY_STRING, label: 'Create shortcut', action: this.doNothing.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Delete', action: this.onDeleteFile.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Properties', action: this.doNothing.bind(this) }
   ];
 
+  menuData:GeneralMenu[] = [];
+
   fileExplrMenu:NestedMenu[] = [];
 
   fileExplrMngrMenuOption = "file-explorer-file-manager-menu";
   fileExplrMenuOption = "nested-menu";
+  menuOrder = '';
 
   fileInfoTipData = [{label:this._consts.EMPTY_STRING, data:this._consts.EMPTY_STRING}];
 
@@ -869,7 +874,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(usersDir);
 
     const osDrive:FileTreeNode = {
-      name : 'OSDisk (C:)', path : this._consts.ROOT, isFolder: true, children:[]
+      name:this._consts.OSDISK, path: this._consts.ROOT, isFolder: true, children:[]
     }
 
    // this.directory, will not be correct for all cases. Make sure to check
@@ -990,7 +995,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
       await this.loadFilesInfoAsync();
     }else{
+      //APPS opened from the fileexplore do not have their windows in focus,
+      // and this is due to the mouse click event that causes fileexplorer to trigger setFocusOnWindow event
+      setTimeout(() => {
         this._triggerProcessService.startApplication(file);
+      }, this.SECONDS_DELAY[4]);
     }
   }
 
@@ -1069,6 +1078,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
 
+    this.adjustContextMenuData(file);
     this.selectedFile = file;
     this.isIconInFocusDueToPriorAction = false;
     this.showInformationTip = false;
@@ -1087,6 +1097,36 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
 
     evt.preventDefault();
+  }
+
+  adjustContextMenuData(file:FileInfo):void{
+    this.menuData = [];
+    const editNotAllowed:string[] = ['3D-Objects.url','Desktop.url','Documents.url','Downloads.url','Games.url','Music.url','Pictures.url','Videos.url'];
+
+    console.log('adjustContextMenuData - filename:',file.getCurrentPath);
+   if(file.getIsFile){
+      if(editNotAllowed.includes(file.getCurrentPath.replace('/', this._consts.EMPTY_STRING))){
+        this.menuOrder = this._consts.FILE_EXPLORER_UNIQUE_MENU_ORDER ;
+        for(const x of this.sourceData) {
+          if(x.label === 'Cut' || x.label === 'Delete' || x.label === 'Rename'){ /*nothing*/}
+          else{
+            this.menuData.push(x);
+          }
+        }
+      }else{
+        //files can not be opened in terminal, pinned to start, opened in new window, pin to Quick access
+        this.menuOrder = this._consts.FILE_EXPLORER_FILE_MENU_ORDER;
+        for(const x of this.sourceData) {
+          if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Open in new window' || x.label === 'Pin to Start'){ /*nothing*/}
+          else{
+            this.menuData.push(x);
+          }
+        }
+      }
+    }else{
+      this.menuOrder = this._consts.FILE_EXPLORER_FOLDER_MENU_ORDER;
+      this.menuData = this.sourceData;
+    }
   }
 
   onShowFileExplorerContextMenu(evt:MouseEvent):void{

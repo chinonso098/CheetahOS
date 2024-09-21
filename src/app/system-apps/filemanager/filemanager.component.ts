@@ -12,6 +12,7 @@ import { TriggerProcessService } from 'src/app/shared/system-service/trigger.pro
 import { FileManagerService } from 'src/app/shared/system-service/file.manager.services';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
+import { Constants } from 'src/app/system-files/constants';
 
 
 @Component({
@@ -28,7 +29,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private _directoryFilesEntries!:FileEntry[];
   private _triggerProcessService:TriggerProcessService;
   private _menuService:MenuService;
-  private _formBuilder;
+  private _formBuilder:FormBuilder;
+  _consts:Constants = new Constants();
 
   private _viewByNotifySub!:Subscription;
   private _sortByNotifySub!:Subscription;
@@ -66,7 +68,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   renameForm!: FormGroup;
 
   hasWindow = false;
-  icon = 'osdrive/Cheetah/System/Imageres/generic_program.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
   name = 'filemanager';
   processId = 0;
   type = ComponentType.System;
@@ -85,7 +87,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     {icon:'', label: 'Properties', action: this.doNothing.bind(this) }
   ];
   
-  fileExplrMngrMenuOption = "file-explorer-file-manager-menu";
+  fileExplrMngrMenuOption = this._consts.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
+  menuOrder = this._consts.DEFAULT_FILE_MENU_ORDER;
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileInfoService:FileService,
               triggerProcessService:TriggerProcessService, fileManagerService:FileManagerService, formBuilder: FormBuilder, menuService:MenuService) { 

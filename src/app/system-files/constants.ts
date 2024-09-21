@@ -8,6 +8,17 @@ export class Constants{
     readonly URL = '.url';
     readonly IMAGE_BASE_PATH = 'osdrive/Cheetah/System/Imageres/';
 
+    readonly DEFAULT_MENU_ORDER = 'DefaultMenuOrder';
+    readonly DEFAULT_FILE_MENU_ORDER = 'DefaultFileMenuOrder';
+    readonly DEFAULT_FOLDER_MENU_ORDER = 'DefaultFolderMenuOrder';
+    readonly FILE_EXPLORER_FILE_MENU_ORDER = 'FileExplorerFolderMenuOrder';
+    readonly FILE_EXPLORER_FOLDER_MENU_ORDER = 'FileExplorerfolderMenuOrder';
+    readonly FILE_EXPLORER_UNIQUE_MENU_ORDER = 'FileExploreruniqueMenuOrder';
+
+    readonly TASK_BAR_MENU_OPTION =  "taskbar-menu";
+    readonly NESTED_MENU_OPTION =  "nested-menu";
+    readonly FILE_EXPLORER_FILE_MANAGER_MENU_OPTION = "file-explorer-file-manager-menu";
+
     readonly IMAGE_FILE_EXTENSIONS = [
         '.jpg',
         '.png',

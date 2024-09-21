@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/
 import {NestedMenu, GeneralMenu } from './menu.item';
 import { MenuService } from '../../system-service/menu.services';
 import { Subscription } from 'rxjs';
+import { Constants } from 'src/app/system-files/constants';
 
 @Component({
   selector: 'cos-menu',
@@ -14,18 +15,23 @@ export class MenuComponent implements OnChanges, OnDestroy{
   @Input() nestedMenu: NestedMenu[] = [];
   @Input() fileExplorerMenu: NestedMenu[] = [];
   @Input() menuType = '';
+  @Input() menuOrder = '';  
 
   private _menuService:MenuService;
   private _storeDataSub!:Subscription;
-  isPasteActive!:boolean;
+  private _consts:Constants = new Constants();
 
-  menuOption = '';
-  tskBarMenuOption =  "taskbar-menu";
-  nestedMenuOption =  "nested-menu";
-  fileExplrMngrMenuOption = "file-explorer-file-manager-menu";
-
-  keys: string[] = [];
   readonly paste = 'Paste';
+  readonly fileExplrMngrMenuOption = this._consts.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
+  readonly tskBarMenuOption = this._consts.TASK_BAR_MENU_OPTION;
+  readonly defaultFileMenuOrder = this._consts.DEFAULT_FILE_MENU_ORDER;
+  readonly defaultFolderMenuOrder = this._consts.DEFAULT_FILE_MENU_ORDER;
+  readonly fileExplrFolderMenuOrder = this._consts.FILE_EXPLORER_FOLDER_MENU_ORDER;
+  readonly fileExplrFileMenuOrder = this._consts.FILE_EXPLORER_FILE_MENU_ORDER;
+  readonly fileExplrUniqueMenuOrder = this._consts.FILE_EXPLORER_UNIQUE_MENU_ORDER;
+
+  isPasteActive!:boolean;
+  keys: string[] = [];
 
   constructor(menuService:MenuService) { 
     this._menuService = menuService;
@@ -46,7 +52,8 @@ export class MenuComponent implements OnChanges, OnDestroy{
   }
 
   ngOnChanges(changes: SimpleChanges):void{
-    this.menuOption = this.menuType;
+    1
+    // this.menuOption = this.menuType;
   }
 
   onMenuItemClick(action: () => void): void {

@@ -6,6 +6,6 @@
     
     <cos-menu [nestedMenu]="deskTopMenu" *ngIf="showDesktopCntxtMenu" [style]="dskTopCntxtMenuStyle" [menuType]="deskTopMenuOption"> </cos-menu>
     <cos-taskbarpreview  [fadeState]="tskBarPreviewWindowState" [name]="appToPreview" [icon]="appToPreviewIcon" *ngIf="showTskBarPreviewWindow"  [ngStyle]="tskBarPrevWindowStyle">  </cos-taskbarpreview>
-    <cos-menu [generalMenu]="taskBarMenuData" *ngIf="showTskBarCntxtMenu" [style]="tskBarCntxtMenuStyle" [menuType]="tskBarMenuOption"> </cos-menu>
+    <cos-menu [generalMenu]="taskBarMenuData" *ngIf="showTskBarCntxtMenu" [style]="tskBarCntxtMenuStyle" [menuType]="tskBarMenuOption" [menuOrder]="menuOrder"> </cos-menu>
     <ng-content> </ng-content>
 </main>

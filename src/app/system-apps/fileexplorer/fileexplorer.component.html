@@ -409,7 +409,7 @@
                         </div>
                 
     
-                        <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption"> </cos-menu>
+                        <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
                         <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
     
                         <div class="fx-information-tip-container" id="fx-information-tip-{{this.processId}}"  *ngIf="showInformationTip">
