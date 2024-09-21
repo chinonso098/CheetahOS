@@ -25,6 +25,12 @@
           <div class="dm-empty-line-container" *ngIf="i === 3 || i === 4 || i === 6 || i === 9"></div>
         </ng-container>
 
+        <ng-container *ngIf="menuOrder === fileExplrFileMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 0 || i === 2 || i === 5"></div>
+          <div class="dm-line-container" *ngIf="i === 0 || i === 2 || i === 5"><div class="dm-line"></div></div>
+          <div class="dm-empty-line-container" *ngIf="i === 0 || i === 2 || i === 5"></div>
+        </ng-container>
+
         <ng-container *ngIf="menuOrder === defaultFileMenuOrder">
           <div class="dm-empty-line-container" *ngIf="i === 2 || i === 4 || i === 6"></div>
           <div class="dm-line-container" *ngIf="i === 2 || i === 4 || i === 6"><div class="dm-line"></div></div>
