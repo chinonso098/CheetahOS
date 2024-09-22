@@ -16,6 +16,7 @@ import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 
+
 @Component({
   selector: 'cos-photoviewer',
   templateUrl: './photoviewer.component.html',
@@ -39,14 +40,14 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   SECONDS_DELAY = 250;
   name= 'photoviewer';
   hasWindow = true;
-  icon = '/osdrive/Cheetah/System/Imageres/photoviewer.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}photoviewer.png`;
   isMaximizable = false;
   processId = 0;
   type = ComponentType.System;
   displayName = 'PhotoViewer';
   private defaultImg = '/osdrive/Pictures/Samples/no_img.jpeg';
-  private tst_imageList:string[] = ['/osdrive/Pictures/Samples/Chill on the Moon.jpg', '/osdrive/Pictures/Samples/Mystical.jpg',
-                        '/osdrive/Pictures/Samples/Sparkling Water.jpg']
+  private tst_imageList:string[] = [`${this._consts.IMAGE_BASE_PATH}Chill on the Moon.jpg`, `${this._consts.IMAGE_BASE_PATH}Mystical.jpg`,
+                        `${this._consts.IMAGE_BASE_PATH}Sparkling Water.jpg`]
                       
   imageList:string[] = []            
         

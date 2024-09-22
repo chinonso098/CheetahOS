@@ -37,6 +37,12 @@
           <div class="dm-empty-line-container" *ngIf="i === 2 || i === 4 || i === 6"></div>
         </ng-container>
 
+        <ng-container *ngIf="menuOrder === defaultFolderMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 4 || i === 6 || i === 8"></div>
+          <div class="dm-line-container" *ngIf="i === 4 || i === 6 || i === 8"><div class="dm-line"></div></div>
+          <div class="dm-empty-line-container" *ngIf="i === 4 || i === 6 || i === 8"></div>
+        </ng-container>
+
     </div>
     <div class="dm-empty-line-container"></div>
 </div>

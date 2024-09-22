@@ -1323,12 +1323,24 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     let horizontalShift = false;
     let verticalShift = false;
 
-    if((horizontalDiff) >= 0 && (horizontalDiff) <= 10){
-      this.isShiftSubMenuLeft = true;
-      horizontalShift = true;
+    const menuWidth = 210;
+    const subMenuWidth = 205;
 
-      xAxis = evt.clientX - rect.left - horizontalDiff;
+    // if((horizontalDiff) >= 0 && (horizontalDiff) <= 10){
+    //   this.isShiftSubMenuLeft = true;
+    //   horizontalShift = true;
+
+    //   xAxis = evt.clientX - rect.left - horizontalDiff;
+    // }
+
+    if((horizontalDiff) < menuWidth){
+      horizontalShift = true;
+      this.isShiftSubMenuLeft = true;
+      const diff = menuWidth - horizontalDiff;
+      xAxis = evt.clientX - rect.left - diff;
     }
+
+    
 
     if((verticalDiff) >= 40 && (verticalDiff) <= menuHeight){
       const shifMenuUpBy = menuHeight - verticalDiff;

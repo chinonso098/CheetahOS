@@ -25,7 +25,7 @@ export class MenuComponent implements OnChanges, OnDestroy{
   readonly fileExplrMngrMenuOption = this._consts.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
   readonly tskBarMenuOption = this._consts.TASK_BAR_MENU_OPTION;
   readonly defaultFileMenuOrder = this._consts.DEFAULT_FILE_MENU_ORDER;
-  readonly defaultFolderMenuOrder = this._consts.DEFAULT_FILE_MENU_ORDER;
+  readonly defaultFolderMenuOrder = this._consts.DEFAULT_FOLDER_MENU_ORDER;
   readonly fileExplrFolderMenuOrder = this._consts.FILE_EXPLORER_FOLDER_MENU_ORDER;
   readonly fileExplrFileMenuOrder = this._consts.FILE_EXPLORER_FILE_MENU_ORDER;
   readonly fileExplrUniqueMenuOrder = this._consts.FILE_EXPLORER_UNIQUE_MENU_ORDER;

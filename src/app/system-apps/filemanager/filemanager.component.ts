@@ -13,6 +13,7 @@ import { FileManagerService } from 'src/app/shared/system-service/file.manager.s
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
+import { GeneralMenu } from 'src/app/shared/system-component/menu/menu.item';
 
 
 @Component({
@@ -76,19 +77,24 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   directory ='/Users/Desktop';
   files:FileInfo[] = [];
 
-  menuData = [
+  sourceData:GeneralMenu[] = [
     {icon:'', label: 'Open', action: this.onTriggerRunProcess.bind(this) },
+    {icon:'', label: 'Pin to Quick access', action: this.doNothing.bind(this) },
+    {icon:'', label: 'Open in Terminal', action: this.doNothing.bind(this) },
     {icon:'', label: 'Pin to Start', action: this.doNothing.bind(this) },
     {icon:'', label: 'Pin to Taskbar', action: this.pinIconToTaskBar.bind(this) },
     {icon:'', label: 'Cut', action: this.onCut.bind(this) },
-    {icon:'', label: 'Copy', action: this.onCopy.bind(this) },
+    {icon:'', label: 'Copy', action: this.onCopy.bind(this)},
+    {icon:'', label: 'Create shortcut', action: this.doNothing.bind(this)},
     {icon:'', label: 'Delete', action: this.onDeleteFile.bind(this) },
     {icon:'', label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
     {icon:'', label: 'Properties', action: this.doNothing.bind(this) }
   ];
+
+  menuData:GeneralMenu[] =[];
   
   fileExplrMngrMenuOption = this._consts.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
-  menuOrder = this._consts.DEFAULT_FILE_MENU_ORDER;
+  menuOrder = '';
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileInfoService:FileService,
               triggerProcessService:TriggerProcessService, fileManagerService:FileManagerService, formBuilder: FormBuilder, menuService:MenuService) { 
@@ -210,6 +216,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this._runningProcessService.addEventOriginator(uid);
     this._menuService.hideContextMenus.next();
 
+    this.adjustContextMenuData(file);
     this.selectedFile = file;
     this.showCntxtMenu = !this.showCntxtMenu;
 
@@ -223,6 +230,25 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
 
     evt.preventDefault();
+  }
+
+  adjustContextMenuData(file:FileInfo):void{
+    this.menuData = [];
+  
+    console.log('adjustContextMenuData - filename:',file.getCurrentPath);
+    if(file.getIsFile){
+          //files can not be opened in terminal, pinned to start, opened in new window, pin to Quick access
+          this.menuOrder = this._consts.DEFAULT_FILE_MENU_ORDER;
+          for(const x of this.sourceData) {
+            if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Pin to Start'){ /*nothing*/}
+            else{
+              this.menuData.push(x);
+            }
+          }
+      }else{
+        this.menuOrder = this._consts.DEFAULT_FOLDER_MENU_ORDER;
+        this.menuData = this.sourceData;
+      }
   }
 
   doNothing():void{

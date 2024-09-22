@@ -16,6 +16,7 @@ import { Subscription } from 'rxjs';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
+
 // eslint-disable-next-line no-var
 declare const Howl:any;
 declare const SiriWave:any;
@@ -69,7 +70,8 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   name= 'audioplayer';
   hasWindow = true;
-  icon = '/osdrive/Cheetah/System/Imageres/audioplayer.png';
+  
+  icon = `${this._consts.IMAGE_BASE_PATH}audioplayer.png`;
   processId = 0;
   type = ComponentType.User;
   displayName = 'Howlerjs';
