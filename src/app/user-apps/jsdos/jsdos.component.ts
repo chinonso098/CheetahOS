@@ -49,7 +49,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   name= 'jsdos';
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}js-dos.png`;
+  icon = `${this._consts.IMAGE_BASE_PATH}js-dos_emulator.png`;
   isMaximizable = false;
   processId = 0;
   type = ComponentType.User;

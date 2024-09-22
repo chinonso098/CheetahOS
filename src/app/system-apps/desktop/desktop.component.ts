@@ -590,10 +590,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const newFolder:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action: this.createFolder.bind(this),  variables:true , 
       emptyline:false, styleOption:'C' }
 
-    const textEditor:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}text-editor_48.png`, label:'Rich Text',  action: this.openTextEditor.bind(this),  variables:true , 
+    const textEditor:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}text_editor.png`, label:'Rich Text',  action: this.openTextEditor.bind(this),  variables:true , 
       emptyline:false, styleOption:'C' }
 
-    const codeEditor:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}vs-code.png`, label:'Code Editor',  action: this.openCodeEditor.bind(this),  variables:true , 
+    const codeEditor:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}vs_code.png`, label:'Code Editor',  action: this.openCodeEditor.bind(this),  variables:true , 
         emptyline:false, styleOption:'C' }
 
     const sortByMenu = [newFolder, textEditor, codeEditor ]

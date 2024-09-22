@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import {NestedMenu, GeneralMenu } from './menu.item';
 import { MenuService } from '../../system-service/menu.services';
 import { Subscription } from 'rxjs';
@@ -9,7 +9,7 @@ import { Constants } from 'src/app/system-files/constants';
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.css']
 })
-export class MenuComponent implements OnChanges, OnDestroy{
+export class MenuComponent implements OnDestroy{
 
   @Input() generalMenu: GeneralMenu[] = [];
   @Input() nestedMenu: NestedMenu[] = [];
@@ -49,11 +49,6 @@ export class MenuComponent implements OnChanges, OnDestroy{
 
   ngOnDestroy(): void {
     this._storeDataSub?.unsubscribe();
-  }
-
-  ngOnChanges(changes: SimpleChanges):void{
-    1
-    // this.menuOption = this.menuType;
   }
 
   onMenuItemClick(action: () => void): void {

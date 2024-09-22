@@ -180,8 +180,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   fileExplrMenu:NestedMenu[] = [];
 
-  fileExplrMngrMenuOption = "file-explorer-file-manager-menu";
-  fileExplrMenuOption = "nested-menu";
+  fileExplrMngrMenuOption = this._consts.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
+  fileExplrMenuOption = this._consts.NESTED_MENU_OPTION;
   menuOrder = '';
 
   fileInfoTipData = [{label:this._consts.EMPTY_STRING, data:this._consts.EMPTY_STRING}];
@@ -2030,7 +2030,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const newFolder:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action:()=> console.log(),  variables:true , 
       emptyline:false, styleOption:'C' }
 
-    const textEditor:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}text-editor_48.png`, label:'Rich Text',  action:  ()=> console.log(),  variables:true , 
+    const textEditor:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}text_editor.png`, label:'Rich Text',  action:  ()=> console.log(),  variables:true , 
       emptyline:false, styleOption:'C' }
 
     const sortByMenu = [newFolder, textEditor ]
@@ -2045,7 +2045,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           {icon1:this._consts.EMPTY_STRING,  icon2:this._consts.EMPTY_STRING, label: 'Refresh', nest:[], action:() => console.log('Refresh'), action1: ()=> this._consts.EMPTY_STRING, emptyline:true},
           {icon1:this._consts.EMPTY_STRING,  icon2:this._consts.EMPTY_STRING, label: 'Paste', nest:[], action: () => console.log('Paste!! Paste!!'), action1: ()=> this._consts.EMPTY_STRING, emptyline:false},
           {icon1:`${this._consts.IMAGE_BASE_PATH}terminal.png`, icon2:this._consts.EMPTY_STRING, label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), action1: ()=> this._consts.EMPTY_STRING, emptyline:false},
-          {icon1:`${this._consts.IMAGE_BASE_PATH}vs-code.png`, icon2:this._consts.EMPTY_STRING, label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> this._consts.EMPTY_STRING, emptyline:true},
+          {icon1:`${this._consts.IMAGE_BASE_PATH}vs_code.png`, icon2:this._consts.EMPTY_STRING, label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> this._consts.EMPTY_STRING, emptyline:true},
           {icon1:this._consts.EMPTY_STRING,  icon2:`${this._consts.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> this._consts.EMPTY_STRING, action1: this.shiftNewSubMenu.bind(this), emptyline:true},
           {icon1:this._consts.EMPTY_STRING,  icon2:this._consts.EMPTY_STRING, label:'Properties', nest:[], action: () => console.log('Properties'), action1: ()=> this._consts.EMPTY_STRING, emptyline:false}
       ]

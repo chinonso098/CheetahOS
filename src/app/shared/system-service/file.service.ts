@@ -373,7 +373,7 @@ export class FileService{
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'markdownviewer', 'markdown_file.png');
         }
         else if(extension == '.jsdos'){
-            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'jsdos', 'js-dos.png');
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'jsdos', 'js-dos_file.png');
         }
         else if(extension == '.swf'){
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'ruffle', 'swf_file.png');
