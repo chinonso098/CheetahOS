@@ -47,7 +47,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   name= 'jsdos';
   hasWindow = true;
-  icon = '/osdrive/Cheetah/System/Imageres/js-dos-logo.png';
+  icon = '/osdrive/Cheetah/System/Imageres/js-dos.png';
   isMaximizable = false;
   processId = 0;
   type = ComponentType.User;

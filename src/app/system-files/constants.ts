@@ -6,6 +6,7 @@ export class Constants{
     readonly OSDISK = 'OSDisk (C:)';
     readonly THISPC = 'This PC';
     readonly URL = '.url';
+    readonly BASE = 'osdrive';
     readonly IMAGE_BASE_PATH = 'osdrive/Cheetah/System/Imageres/';
 
     readonly DEFAULT_MENU_ORDER = 'DefaultMenuOrder';
@@ -15,9 +16,9 @@ export class Constants{
     readonly FILE_EXPLORER_FOLDER_MENU_ORDER = 'FileExplorerfolderMenuOrder';
     readonly FILE_EXPLORER_UNIQUE_MENU_ORDER = 'FileExploreruniqueMenuOrder';
 
-    readonly TASK_BAR_MENU_OPTION =  "taskbar-menu";
-    readonly NESTED_MENU_OPTION =  "nested-menu";
-    readonly FILE_EXPLORER_FILE_MANAGER_MENU_OPTION = "file-explorer-file-manager-menu";
+    readonly TASK_BAR_MENU_OPTION =  'taskbar-menu';
+    readonly NESTED_MENU_OPTION =  'nested-menu';
+    readonly FILE_EXPLORER_FILE_MANAGER_MENU_OPTION = 'file-explorer-file-manager-menu';
 
     readonly IMAGE_FILE_EXTENSIONS = [
         '.jpg',

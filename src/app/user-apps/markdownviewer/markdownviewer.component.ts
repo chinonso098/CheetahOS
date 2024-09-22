@@ -50,7 +50,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   SECONDS_DELAY = 250;
 
   hasWindow = true;
-  icon = 'osdrive/Cheetah/System/Imageres/markdown-2_50.png';
+  icon = 'osdrive/Cheetah/System/Imageres/markdown.png';
   name = 'markdownviewer';
   processId = 0;
   type = ComponentType.System;

@@ -39,7 +39,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
 
   name= 'ruffle';
   hasWindow = true;
-  icon = '/osdrive/Cheetah/System/Imageres/emulator_1.png';
+  icon = '/osdrive/Cheetah/System/Imageres/ruffle.png';
   isMaximizable = false;
   processId = 0;
   type = ComponentType.User;
@@ -118,7 +118,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
     if(this.checkForExt(pathOne,pathTwo)){
       gameSrc = '/' + this._fileInfo.getContentPath;
     }else{
-      gameSrc =  this._fileInfo.getCurrentPath;
+      gameSrc =  'osdrive' +this._fileInfo.getCurrentPath;
     }
 
     return gameSrc;

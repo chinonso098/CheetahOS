@@ -65,17 +65,12 @@ export class FileService{
     }
 
     private changeFolderIcon(fileName:string, iconPath:string, path:string):string{
-
-
-        console.log('iconPath:',iconPath);
-
-        const baseUrl = '/osdrive';
 		const iconMaybe = `/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder.png`;
 
         if(path !== `/Users/${fileName}`)
             return iconPath;
 
-		return this._fileSystem.existsSync(iconMaybe) ? `${baseUrl}${iconMaybe}` : iconPath;
+		return this._fileSystem.existsSync(iconMaybe) ? `${this._consts.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png` : iconPath;
     }
 
     public async checkIfDirectory(path: string):Promise<boolean> {
@@ -341,6 +336,64 @@ export class FileService{
         return `${basename(path, extname(path))}${ extname(path)}`;
     }
 
+
+    public async getFileInfoAsync1(path:string):Promise<FileInfo>{
+        const extension = extname(path);
+        this._fileInfo = new FileInfo();
+        const fileMetaData = await this.getExtraFileMetaDataAsync(path) as FileMetaData;
+        if(!extension){
+            const sc = await this.setFolderValuesAsync(path) as ShortCut;
+
+
+            // this._fileInfo.setIconPath = this.changeFolderIcon(sc.geFileName,sc.getIconPath, path);
+            // this._fileInfo.setCurrentPath = path;
+            // this._fileInfo.setFileType = sc.getFileType;
+            // this._fileInfo.setFileName = sc.geFileName;
+            // this._fileInfo.setOpensWith = sc.getOpensWith;
+            // this._fileInfo.setIsFile = false;
+            // this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
+            // this._fileInfo.setSize = fileMetaData.getSize;
+            // this._fileInfo.setMode = fileMetaData.getMode;
+
+            this._fileInfo = this.populateFileInfo(path,fileMetaData,false, this._consts.EMPTY_STRING,sc);
+            this._fileInfo.setIconPath = this.changeFolderIcon(sc.geFileName,sc.getIconPath, path);
+        }
+        else if(extension == this._consts.URL){
+            const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
+            this._fileInfo = this.populateFileInfo(path,fileMetaData,false, this._consts.EMPTY_STRING,sc);
+        }
+        else if(this._consts.IMAGE_FILE_EXTENSIONS.includes(extension)){
+            const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
+            this._fileInfo = this.populateFileInfo(path,fileMetaData,true,'photoviewer',sc);
+        }
+        else if(this._consts.VIDEO_FILE_EXTENSIONS.includes(extension)){
+            const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
+            this._fileInfo = this.populateFileInfo(path,fileMetaData,true, this._consts.EMPTY_STRING,sc);
+        }
+        else if(this._consts.AUDIO_FILE_EXTENSIONS.includes(extension)){
+            const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
+            this._fileInfo = this.populateFileInfo(path,fileMetaData,true, this._consts.EMPTY_STRING,sc);
+        }
+
+        return this._fileInfo;
+    }
+
+    populateFileInfo(path:string, fileMetaData:FileMetaData, isFile =true, opensWith:string, shortCut?:ShortCut, imageName?:string):FileInfo{
+        const fileInfo = new FileInfo();
+
+        this._fileInfo.setIconPath = shortCut?.getIconPath || `${this._consts.IMAGE_BASE_PATH}${imageName}.png`;
+        fileInfo.setCurrentPath = path;
+        fileInfo.setFileType = shortCut?.getFileType || extname(path);
+        fileInfo.setFileName = shortCut?.geFileName || basename(path, extname(path));
+        fileInfo.setOpensWith = shortCut?.getOpensWith || opensWith;
+        fileInfo.setIsFile = isFile;
+        fileInfo.setDateModified = fileMetaData.getModifiedDate;
+        fileInfo.setSize = fileMetaData.getSize;
+        fileInfo.setMode = fileMetaData.getMode;
+
+        return fileInfo;
+    }
+
     public async getFileInfoAsync(path:string):Promise<FileInfo>{
         const extension = extname(path);
         this._fileInfo = new FileInfo();
@@ -377,7 +430,7 @@ export class FileService{
             }
              else if(this._consts.IMAGE_FILE_EXTENSIONS.includes(extension)){    
                 const sc = await this.getShortCutFromB64DataUrlAsync(path,'image');
-                this._fileInfo.setIconPath = sc.getIconPath;
+                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}image_file.png`;
                 this._fileInfo.setCurrentPath = path;
                 this._fileInfo.setContentPath = sc.getContentPath;
                 this._fileInfo.setFileType = extension;
@@ -389,7 +442,7 @@ export class FileService{
             }
             else if(this._consts.VIDEO_FILE_EXTENSIONS.includes(extension)){    
                 const sc = await this.getShortCutFromB64DataUrlAsync(path, 'video');
-                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/video_file.png';
+                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}video_file.png`;
                 this._fileInfo.setCurrentPath = path;
                 this._fileInfo.setContentPath = sc.getContentPath;
                 this._fileInfo.setFileType = extension;
@@ -400,7 +453,7 @@ export class FileService{
                 this._fileInfo.setMode = fileMetaData.getMode;
             }else if(this._consts.AUDIO_FILE_EXTENSIONS.includes(extension)){    
                 const sc = await this.getShortCutFromB64DataUrlAsync(path, 'audio');
-                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/music_file.png';
+                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}music_file.png`;
                 this._fileInfo.setCurrentPath = path;
                 this._fileInfo.setContentPath = sc.getContentPath;
                 this._fileInfo.setFileType = extension;
@@ -410,27 +463,27 @@ export class FileService{
                 this._fileInfo.setSize = fileMetaData.getSize;
                 this._fileInfo.setMode = fileMetaData.getMode;
             }else if(extension == '.txt' || extension == '.properties'){
-                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/file.png';
+                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}file.png`;
                 this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setFileType = extname(path);
+                this._fileInfo.setFileType = extension
                 this._fileInfo.setFileName = basename(path, extname(path));
                 this._fileInfo.setOpensWith = 'texteditor';
                 this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
                 this._fileInfo.setSize = fileMetaData.getSize;
                 this._fileInfo.setMode = fileMetaData.getMode;
             }else if(extension == '.md'){
-                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/markdown-file_50.png';
+                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}markdown_file.png`;
                 this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setFileType = extname(path);
+                this._fileInfo.setFileType = extension
                 this._fileInfo.setFileName = basename(path, extname(path));
                 this._fileInfo.setOpensWith = 'markdownviewer';
                 this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
                 this._fileInfo.setSize = fileMetaData.getSize;
                 this._fileInfo.setMode = fileMetaData.getMode;
             }else if(extension == '.jsdos'){
-                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/emulator_2.png';
+                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}js-dos.png`;
                 this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setFileType = extname(path);
+                this._fileInfo.setFileType = extension
                 this._fileInfo.setFileName = basename(path, extname(path));
                 this._fileInfo.setOpensWith = 'jsdos';
                 this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
@@ -438,9 +491,9 @@ export class FileService{
                 this._fileInfo.setMode = fileMetaData.getMode;
             }
             else if(extension == '.swf'){
-                this._fileInfo.setIconPath = '/osdrive/Cheetah/System/Imageres/lightning_flash.png';
+                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}swf_file.png`;
                 this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setFileType = extname(path);
+                this._fileInfo.setFileType = extension
                 this._fileInfo.setFileName = basename(path, extname(path));
                 this._fileInfo.setOpensWith = 'ruffle';
                 this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
@@ -448,7 +501,7 @@ export class FileService{
                 this._fileInfo.setMode = fileMetaData.getMode;
             }
              else{
-                this._fileInfo.setIconPath='/osdrive/Cheetah/System/Imageres/unknown.png';
+                this._fileInfo.setIconPath=`${this._consts.IMAGE_BASE_PATH}/unknown.png`;
                 this._fileInfo.setCurrentPath = path;
                 this._fileInfo.setFileName = basename(path, extname(path));
                 this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
