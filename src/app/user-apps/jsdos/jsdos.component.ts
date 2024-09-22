@@ -18,6 +18,7 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
+import { Constants } from "src/app/system-files/constants";
 
 declare const Dos: DosPlayerFactoryType;
 declare const emulators:Emulators
@@ -37,6 +38,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
+  private _consts:Constants = new Constants();
   
   private _ci!: CommandInterface;
   private _fileInfo!:FileInfo;
@@ -47,7 +49,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   name= 'jsdos';
   hasWindow = true;
-  icon = '/osdrive/Cheetah/System/Imageres/js-dos.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}js-dos.png`;
   isMaximizable = false;
   processId = 0;
   type = ComponentType.User;

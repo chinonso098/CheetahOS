@@ -14,6 +14,7 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
+import { Constants } from "src/app/system-files/constants";
 
 
 @Component({
@@ -31,6 +32,9 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
+
+  private _consts:Constants = new Constants();
+  
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private gameSrc = '';
@@ -39,7 +43,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
 
   name= 'ruffle';
   hasWindow = true;
-  icon = '/osdrive/Cheetah/System/Imageres/ruffle.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}ruffle.png`;
   isMaximizable = false;
   processId = 0;
   type = ComponentType.User;
