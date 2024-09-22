@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Subject } from "rxjs";
 import { FileInfo } from "src/app/system-files/file.info";
+import { FileTreeNode } from "src/app/system-files/file.tree.node";
 import { Process } from "src/app/system-files/process";
 
 
@@ -25,6 +26,7 @@ export class MenuService{
     keepTaskBarMenu: Subject<void> = new Subject<void>();
     hideContextMenus: Subject<void> = new Subject<void>();
     storeData: Subject<string[]> = new Subject<string[]>();
+    addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();
 
 
     setPasteState(isActive:boolean):void{

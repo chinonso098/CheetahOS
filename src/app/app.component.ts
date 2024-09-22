@@ -13,6 +13,7 @@ import { ComponentType } from './system-files/component.types';
 import { NotificationType } from './system-files/notification.type';
 import { Process } from './system-files/process';
 import { AppDirectory } from './system-files/app.directory';
+import { Constants } from 'src/app/system-files/constants';
 
 import { BaseComponent } from './system-base/base/base.component';
 import { TitleComponent } from './user-apps/title/title.component';
@@ -53,6 +54,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private _stateManagmentService:StateManagmentService;
   private _componentRefView!:ViewRef;
   private _appDirectory:AppDirectory;
+  private _consts:Constants = new Constants();
 
   private _closeProcessSub!:Subscription;
   private _closeMsgDialogSub!:Subscription;
@@ -69,7 +71,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private SECONDS_DELAY:number[] =[1500, 1500];
 
   hasWindow = false;
-  icon = 'osdrive/Cheetah/System/Imageres/generic_program.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
   name = 'system';
   processId = 0;
   type = ComponentType.System;

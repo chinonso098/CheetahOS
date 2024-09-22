@@ -31,7 +31,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private _triggerProcessService:TriggerProcessService;
   private _menuService:MenuService;
   private _formBuilder:FormBuilder;
-  _consts:Constants = new Constants();
+  private _consts:Constants = new Constants();
 
   private _viewByNotifySub!:Subscription;
   private _sortByNotifySub!:Subscription;

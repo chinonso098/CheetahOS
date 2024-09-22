@@ -13,14 +13,21 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   @Input() showRoot = true;
   @Input() isHoverActive = false;
   @Input() treeData: FileTreeNode[] = [];
+ 
+  quickAccessData: FileTreeNode[] = [];
   private _fileService:FileService;
 
   chevronBtnStyle:Record<string, unknown> = {};
   expandedViews:string[]= [];
   selectedElementId = '';
+  isClicked = false;
   processId = 0;
   nextLevel = 0;
+  negTen = -10;
   name = 'filetreeview';
+
+  readonly quickAccess = 'Quick access';
+  readonly thisPC = 'This PC';
 
   constructor(fileService:FileService){
     this._fileService = fileService;
@@ -28,45 +35,70 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
   ngOnInit():void{
     this.setcolorChevron(this.isHoverActive);
+
+    this.quickAccessData = this.genStaticData();
   }
 
+  genStaticData():FileTreeNode[]{
+    const ftn:FileTreeNode = {name:'Documents', path:'/Users/Documents', isFolder:true, children:[]}
+    const ftn1:FileTreeNode = {name:'Pictures', path:'/Users/Pictures', isFolder:true, children:[]}
+    const ftn2:FileTreeNode = {name:'Videos', path:'/Users/Videos', isFolder:true, children:[]}
+
+    return [ftn, ftn1, ftn2];
+  }
   ngOnChanges():void{
     //console.log('FILETREE onCHANGES:',this.isHoverActive);
+    console.log('isHoverActive:', this.isHoverActive);
     console.log('fileTreeViewPid:', this.pid);
     console.log('fileTreeViewLvl:', this.level);
     this.processId = this.pid;
     this.nextLevel = this.level + 1;
-    this.setcolorChevron(this.isHoverActive);
+
+    if(!this.isClicked)
+      this.setcolorChevron(this.isHoverActive);
   }
 
-  showChildren(name?:string):void{
-    let ulId = '';   let imgId = ''
+  hasClass(el:HTMLElement, className:string) {
+    const re = new RegExp('(^|\\s+)' + className + '(\\s+|$)');
+    return re.test(el.className);
+  }
 
-    ulId = `fileExplrTreeView-${this.pid}-${this.level}`;
-    imgId = `fileExplrTreeView-img-${this.pid}-${this.level}`;
+  showChildren(name:string):void{
+    let ulId = '';   let imgId = ''; const lvl = 0;
 
-    console.log('SC--passed id:', ulId);
-    console.log('SC--passed imgId:', imgId);
-    console.log('SC--passed name:', name);
+    if(name === 'tp-fileExplrTreeView'){
+      ulId = `ul-${this.pid}-${lvl}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}`;
+    }else{
+      ulId = `qa-ul-${this.pid}`;
+      imgId = `qa-fileExplrTreeView-img-${this.pid}`;
+    }
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
 
-    if(toggler){
-      console.log('toggler:', toggler);
-      toggler.parentElement?.querySelector(".nested")?.classList.toggle("active");
-    
-      if(imgDiv){
-        console.log('imgDiv:', imgDiv);
-        imgDiv.style.transform = 'rotate(90deg)';
-        imgDiv.style.position = 'relative';
+    if(toggler && imgDiv){
+
+      const hasNestedClass = this.hasClass(toggler,'nested');
+      const hasActiveClass = this.hasClass(toggler,'active');
+
+      if(hasActiveClass && !hasNestedClass){
+        toggler.classList.remove('active');
+        imgDiv.classList.remove('caret-active');
+        toggler.classList.add('nested');
+        imgDiv.classList.add('caret-nested');
+      }else{
+        toggler.classList.remove('nested');
+        imgDiv.classList.remove('caret-nested');
+        toggler.classList.add('active');
+        imgDiv.classList.add('caret-active');
       }
     }
   }
 
   showGrandChildren(path:string, id:number,):void{
-    const ulId = `fileExplrTreeView-${this.pid}-${this.level}-${id}`;
-    const imgId = `fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
+    const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}`;
+    const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
     console.log('SGC--passed id:', ulId);
     console.log('SGC--passed imgId:', imgId);
 
@@ -101,8 +133,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   showGrandChildren_B(id:number):void{
-    const ulId = `fileExplrTreeView-${this.pid}-${this.level}-${id}`;
-    const imgId = `fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
+    const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}`;
+    const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
@@ -119,8 +151,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
   showGreatGrandChildren( path:string, id:number, id1:number):void{
 
-    const ulId = `fileExplrTreeView-${this.pid}-${this.level}-${id}-${id1}`;
-    const imgId = `fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
+    const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}-${id1}`;
+    const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
 
     console.log('SGGC--passed id:', ulId);
     console.log('SGGC--passed imgId:', imgId);
@@ -156,8 +188,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
   showGreatGrandChildren_B(id:number, id1:number):void{
 
-    const ulId = `fileExplrTreeView-${this.pid}-${this.level}-${id}-${id1}`;
-    const imgId = `fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
+    const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}-${id1}`;
+    const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
@@ -195,8 +227,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     this._fileService.goToDirectoryNotify.next(data);
   }
 
-  setcolorChevron(isHoverActive:boolean):void{
-    if(!isHoverActive){
+  setcolorChevron(isActive:boolean):void{
+    if(!isActive){
       this.chevronBtnStyle ={
         'fill': '#191919',
         'transition': 'fill 0.75s ease'
@@ -212,18 +244,21 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   colorChevron(id?:number, id1?:number):void{
     let imgId = ''
 
+    if(id === this.negTen && id1 === this.negTen ){
+      imgId = `qa-fileExplrTreeView-img-${this.pid}`;
+    }
+
     if(id === undefined && id1 === undefined ){
-      imgId = `fileExplrTreeView-img-${this.pid}-${this.level}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}`;
     }
 
     if(id !== undefined && id1 === undefined )
-      imgId = `fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
 
     if(id !== undefined && id1 !== undefined )
-      imgId = `fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
 
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
-
     if(imgDiv){
       imgDiv.style.fill = 'rgb(18, 107, 240)';
     }
@@ -232,15 +267,19 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   unColorChevron(id?:number, id1?:number):void{
     let imgId = ''
 
+    if(id === this.negTen && id1 === this.negTen ){
+      imgId = `qa-fileExplrTreeView-img-${this.pid}`;
+    }
+
     if(id === undefined && id1 === undefined ){
-      imgId = `fileExplrTreeView-img-${this.pid}-${this.level}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}`;
     }
 
     if(id !== undefined && id1 === undefined )
-      imgId = `fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
 
     if(id !== undefined && id1 !== undefined )
-      imgId = `fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
 
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
 
@@ -253,7 +292,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     // remove style on previous btn
     this.removeBtnStyle(this.selectedElementId);
     // update id
-    this.selectedElementId = elmntId
+    this.selectedElementId = elmntId;
+    this.isClicked = true;
     this.setBtnStyle(elmntId, true);
   }
 

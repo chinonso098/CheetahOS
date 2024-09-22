@@ -149,7 +149,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   isSortBySize = false;
   isSortByDateModified = false;
 
-  showExpandTreeIcon = true;
+  showExpandTreeIcon = false;
   showNavigationPane = true;
   showPreviewPane = false;
   showDetailsPane = false;
@@ -1130,7 +1130,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   onShowFileExplorerContextMenu(evt:MouseEvent):void{
-
+    this.showExpandTreeIcon = false;
     this.fileExplrCntxtCntr++;
     if(this.iconCntxtCntr >= this.fileExplrCntxtCntr)
         return;
@@ -1162,6 +1162,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isShiftSubMenuLeft = false;
     this.iconCntxtCntr = 0;
     this.fileExplrCntxtCntr = 0;
+    this.showExpandTreeIcon = false;
 
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){
