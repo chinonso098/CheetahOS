@@ -337,52 +337,65 @@ export class FileService{
     }
 
 
-    public async getFileInfoAsync1(path:string):Promise<FileInfo>{
+    public async getFileInfoAsync(path:string):Promise<FileInfo>{
         const extension = extname(path);
         this._fileInfo = new FileInfo();
         const fileMetaData = await this.getExtraFileMetaDataAsync(path) as FileMetaData;
+     
         if(!extension){
             const sc = await this.setFolderValuesAsync(path) as ShortCut;
-
-
-            // this._fileInfo.setIconPath = this.changeFolderIcon(sc.geFileName,sc.getIconPath, path);
-            // this._fileInfo.setCurrentPath = path;
-            // this._fileInfo.setFileType = sc.getFileType;
-            // this._fileInfo.setFileName = sc.geFileName;
-            // this._fileInfo.setOpensWith = sc.getOpensWith;
-            // this._fileInfo.setIsFile = false;
-            // this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-            // this._fileInfo.setSize = fileMetaData.getSize;
-            // this._fileInfo.setMode = fileMetaData.getMode;
-
-            this._fileInfo = this.populateFileInfo(path,fileMetaData,false, this._consts.EMPTY_STRING,sc);
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, false, this._consts.EMPTY_STRING, this._consts.EMPTY_STRING, false, sc);
             this._fileInfo.setIconPath = this.changeFolderIcon(sc.geFileName,sc.getIconPath, path);
         }
         else if(extension == this._consts.URL){
             const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
-            this._fileInfo = this.populateFileInfo(path,fileMetaData,false, this._consts.EMPTY_STRING,sc);
+            if(sc)
+                this._fileInfo = this.populateFileInfo(path, fileMetaData, true, this._consts.EMPTY_STRING, this._consts.EMPTY_STRING, true, sc);
         }
         else if(this._consts.IMAGE_FILE_EXTENSIONS.includes(extension)){
-            const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
-            this._fileInfo = this.populateFileInfo(path,fileMetaData,true,'photoviewer',sc);
+            const sc = await this.getShortCutFromB64DataUrlAsync(path, 'image') as ShortCut;
+            if(sc)
+                this._fileInfo = this.populateFileInfo(path, fileMetaData, true,'photoviewer', 'image_file.png', false, sc);
         }
         else if(this._consts.VIDEO_FILE_EXTENSIONS.includes(extension)){
-            const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
-            this._fileInfo = this.populateFileInfo(path,fileMetaData,true, this._consts.EMPTY_STRING,sc);
+            const sc = await this.getShortCutFromB64DataUrlAsync(path, 'video') as ShortCut;
+                this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'videoplayer', 'video_file.png', false, sc);
         }
         else if(this._consts.AUDIO_FILE_EXTENSIONS.includes(extension)){
-            const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
-            this._fileInfo = this.populateFileInfo(path,fileMetaData,true, this._consts.EMPTY_STRING,sc);
+            const sc = await this.getShortCutFromB64DataUrlAsync(path, 'audio') as ShortCut;
+            if(sc)
+                this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'audioplayer', 'music_file.png', false, sc);
         }
+        else if(extension == '.txt' || extension == '.properties'){
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'texteditor', 'file.png');
+        }
+        else if(extension == '.md'){
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'markdownviewer', 'markdown_file.png');
+        }
+        else if(extension == '.jsdos'){
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'jsdos', 'js-dos.png');
+        }
+        else if(extension == '.swf'){
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'ruffle', 'swf_file.png');
+        }else{
+            this._fileInfo.setIconPath=`${this._consts.IMAGE_BASE_PATH}/unknown.png`;
+            this._fileInfo.setCurrentPath = path;
+            this._fileInfo.setFileName = basename(path, extname(path));
+            this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
+            this._fileInfo.setSize = fileMetaData.getSize;
+            this._fileInfo.setMode = fileMetaData.getMode;
+        }
+        
 
         return this._fileInfo;
     }
 
-    populateFileInfo(path:string, fileMetaData:FileMetaData, isFile =true, opensWith:string, shortCut?:ShortCut, imageName?:string):FileInfo{
+    populateFileInfo(path:string, fileMetaData:FileMetaData, isFile =true, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut):FileInfo{
         const fileInfo = new FileInfo();
 
-        this._fileInfo.setIconPath = shortCut?.getIconPath || `${this._consts.IMAGE_BASE_PATH}${imageName}.png`;
+        fileInfo.setIconPath = (useImage)? shortCut?.getIconPath || `${this._consts.IMAGE_BASE_PATH}${imageName}` : `${this._consts.IMAGE_BASE_PATH}${imageName}`;
         fileInfo.setCurrentPath = path;
+        fileInfo.setContentPath = shortCut?.getContentPath || this._consts.EMPTY_STRING;
         fileInfo.setFileType = shortCut?.getFileType || extname(path);
         fileInfo.setFileName = shortCut?.geFileName || basename(path, extname(path));
         fileInfo.setOpensWith = shortCut?.getOpensWith || opensWith;
@@ -392,124 +405,6 @@ export class FileService{
         fileInfo.setMode = fileMetaData.getMode;
 
         return fileInfo;
-    }
-
-    public async getFileInfoAsync(path:string):Promise<FileInfo>{
-        const extension = extname(path);
-        this._fileInfo = new FileInfo();
-
-        if(!extension){
-            const sc = await this.setFolderValuesAsync(path) as ShortCut;
-            const fileMetaData = await this.getExtraFileMetaDataAsync(path) as FileMetaData;
-
-            this._fileInfo.setIconPath = this.changeFolderIcon(sc.geFileName,sc.getIconPath, path);
-            this._fileInfo.setCurrentPath = path;
-            this._fileInfo.setFileType = sc.getFileType;
-            this._fileInfo.setFileName = sc.geFileName;
-            this._fileInfo.setOpensWith = sc.getOpensWith;
-            this._fileInfo.setIsFile = false;
-            this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-            this._fileInfo.setSize = fileMetaData.getSize;
-            this._fileInfo.setMode = fileMetaData.getMode;
-        }
-        else{
-
-            const fileMetaData = await this.getExtraFileMetaDataAsync(path) as FileMetaData;
-
-            if(extension == '.url'){
-                const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
-                this._fileInfo.setIconPath = sc.getIconPath;
-                this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setContentPath = sc.getContentPath;
-                this._fileInfo.setFileType = sc.getFileType;
-                this._fileInfo.setFileName = basename(path, extname(path));
-                this._fileInfo.setOpensWith = sc.getOpensWith;
-                this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-                this._fileInfo.setSize = fileMetaData.getSize;
-                this._fileInfo.setMode = fileMetaData.getMode;
-            }
-             else if(this._consts.IMAGE_FILE_EXTENSIONS.includes(extension)){    
-                const sc = await this.getShortCutFromB64DataUrlAsync(path,'image');
-                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}image_file.png`;
-                this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setContentPath = sc.getContentPath;
-                this._fileInfo.setFileType = extension;
-                this._fileInfo.setFileName = sc.geFileName;
-                this._fileInfo.setOpensWith = 'photoviewer';
-                this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-                this._fileInfo.setSize = fileMetaData.getSize;
-                this._fileInfo.setMode = fileMetaData.getMode;
-            }
-            else if(this._consts.VIDEO_FILE_EXTENSIONS.includes(extension)){    
-                const sc = await this.getShortCutFromB64DataUrlAsync(path, 'video');
-                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}video_file.png`;
-                this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setContentPath = sc.getContentPath;
-                this._fileInfo.setFileType = extension;
-                this._fileInfo.setFileName = sc.geFileName;
-                this._fileInfo.setOpensWith = 'videoplayer';
-                this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-                this._fileInfo.setSize = fileMetaData.getSize;
-                this._fileInfo.setMode = fileMetaData.getMode;
-            }else if(this._consts.AUDIO_FILE_EXTENSIONS.includes(extension)){    
-                const sc = await this.getShortCutFromB64DataUrlAsync(path, 'audio');
-                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}music_file.png`;
-                this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setContentPath = sc.getContentPath;
-                this._fileInfo.setFileType = extension;
-                this._fileInfo.setFileName = sc.geFileName;
-                this._fileInfo.setOpensWith = 'audioplayer';
-                this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-                this._fileInfo.setSize = fileMetaData.getSize;
-                this._fileInfo.setMode = fileMetaData.getMode;
-            }else if(extension == '.txt' || extension == '.properties'){
-                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}file.png`;
-                this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setFileType = extension
-                this._fileInfo.setFileName = basename(path, extname(path));
-                this._fileInfo.setOpensWith = 'texteditor';
-                this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-                this._fileInfo.setSize = fileMetaData.getSize;
-                this._fileInfo.setMode = fileMetaData.getMode;
-            }else if(extension == '.md'){
-                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}markdown_file.png`;
-                this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setFileType = extension
-                this._fileInfo.setFileName = basename(path, extname(path));
-                this._fileInfo.setOpensWith = 'markdownviewer';
-                this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-                this._fileInfo.setSize = fileMetaData.getSize;
-                this._fileInfo.setMode = fileMetaData.getMode;
-            }else if(extension == '.jsdos'){
-                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}js-dos.png`;
-                this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setFileType = extension
-                this._fileInfo.setFileName = basename(path, extname(path));
-                this._fileInfo.setOpensWith = 'jsdos';
-                this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-                this._fileInfo.setSize = fileMetaData.getSize;
-                this._fileInfo.setMode = fileMetaData.getMode;
-            }
-            else if(extension == '.swf'){
-                this._fileInfo.setIconPath = `${this._consts.IMAGE_BASE_PATH}swf_file.png`;
-                this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setFileType = extension
-                this._fileInfo.setFileName = basename(path, extname(path));
-                this._fileInfo.setOpensWith = 'ruffle';
-                this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-                this._fileInfo.setSize = fileMetaData.getSize;
-                this._fileInfo.setMode = fileMetaData.getMode;
-            }
-             else{
-                this._fileInfo.setIconPath=`${this._consts.IMAGE_BASE_PATH}/unknown.png`;
-                this._fileInfo.setCurrentPath = path;
-                this._fileInfo.setFileName = basename(path, extname(path));
-                this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-                this._fileInfo.setSize = fileMetaData.getSize;
-                this._fileInfo.setMode = fileMetaData.getMode;
-            }
-        }
-        return this._fileInfo;
     }
 
     public async getShortCutFromB64DataUrlAsync(path:string, contentType:string):Promise<ShortCut> {
