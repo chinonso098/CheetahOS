@@ -22,7 +22,7 @@
                     </figure>
                 </div>
                 <div class="fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/Cheetah/System/Imageres/quick_access_small.png'"/></figure></div>
-                <div class="fxtreeview-tail"><p class="fxtreeview-nested-p"> {{quickAccess}}</p></div>
+                <div class="fxtreeview-tail"><p class="fxtreeview-nested-p"> {{Quick_ACCESS}}</p></div>
             </div>
 
             <ul class="ul-file-tree-view" id="qa-ul-{{pid}}">
@@ -52,9 +52,7 @@
 </ng-container>
 
 
-
-
-<ul class="ul-file-tree-view" id="tp-fileExplrTreeView">
+<ul class="ul-file-tree-view" id="{{nextLevelSrcId}}">
     <li class="li-file-tree-view0" id="li-{{pid}}-{{level}}">
         <ng-container *ngIf="showRoot">
             <div class="tree-view-cntnr"  id="tp-fileExplrTreeView-{{pid}}-{{level}}" (click)="navigateToSelectedPath('This-PC','This-PC')" 
@@ -71,7 +69,7 @@
                     </figure>
                 </div>
                 <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/Cheetah/System/Imageres/this_pc.png'"/></figure></div>
-                <div class="span fxtreeview-tail"><p class="fxtreeview-nested-p">{{thisPC}}</p></div>
+                <div class="span fxtreeview-tail"><p class="fxtreeview-nested-p">{{THIS_PC}}</p></div>
             </div>
         </ng-container>
 
@@ -130,7 +128,7 @@
                                     </div>
 
                                     <ng-container *ngIf="child.children && child.children.length">
-                                        <cos-filetreeview [level]="this.nextLevel" [pid]="this.processId" [showRoot]="false" [treeData]="child.children"></cos-filetreeview>
+                                        <cos-filetreeview [level]="this.nextLevel" [pid]="this.processId" [showRoot]="false" [levelSrcId]="'newtree-'+pid+'-'+level+'-'+i+'-'+j" [treeData]="child.children"></cos-filetreeview>
                                     </ng-container>
                                 </li>
                             </ng-container>

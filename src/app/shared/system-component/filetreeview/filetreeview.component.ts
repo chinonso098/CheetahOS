@@ -3,6 +3,7 @@
 import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
 import { FileService } from '../../system-service/file.service';
+import { Constants } from 'src/app/system-files/constants';
 
 @Component({
   selector: 'cos-filetreeview',
@@ -14,10 +15,12 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   @Input() level = 0;
   @Input() showRoot = true;
   @Input() isHoverActive = false;
+  @Input() levelSrcId = '';
   @Input() treeData: FileTreeNode[] = [];
  
   quickAccessData: FileTreeNode[] = [];
   private _fileService:FileService;
+  private _consts:Constants = new Constants();
 
   chevronBtnStyle:Record<string, unknown> = {};
   expandedViews:string[]= [];
@@ -25,11 +28,13 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   isClicked = false;
   processId = 0;
   nextLevel = 0;
+  nextLevelSrcId = this._consts.EMPTY_STRING;
   negTen = -10;
   name = 'filetreeview';
 
-  readonly quickAccess = 'Quick access';
-  readonly thisPC = 'This PC';
+  readonly Quick_ACCESS = 'Quick access';
+  readonly THIS_PC = 'This PC';
+  SECONDS_DELAY = 350;
 
   constructor(fileService:FileService){
     this._fileService = fileService;
@@ -54,8 +59,10 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     // console.log('isHoverActive:', this.isHoverActive); //TBD
     // console.log('fileTreeViewPid:', this.pid); //TBD
     // console.log('fileTreeViewLvl:', this.level); //TBD
+
     this.processId = this.pid;
     this.nextLevel = this.level + 1;
+    this.nextLevelSrcId = this.levelSrcId;
 
     // if(!this.isClicked)
      this.setcolorChevron(this.isHoverActive);
@@ -109,16 +116,15 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
     const cntntId =`ul-${this.pid}-${this.level}-${id}`;
 
-    console.log('SGC--passed id:', ulId);
-    console.log('SGC--passed imgId:', imgId);
+    // console.log('SGC--passed id:', ulId);//TBD
+    // console.log('SGC--passed imgId:', imgId);//TBD
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
     const cntntUl =  document.getElementById(cntntId) as HTMLElement;
 
-
     if(toggler  && imgDiv){
-      console.log('SGC--toggler:', toggler);
+      // console.log('SGC--toggler:', toggler);//TBD
 
       const hasNestedClass = this.hasClass(toggler,'nested');
       const hasActiveClass = this.hasClass(toggler,'active');
@@ -155,26 +161,22 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
         const uid = `${this.name}-${this.pid}`;
         this._fileService.addEventOriginator(uid);
         this._fileService.fetchDirectoryDataNotify.next(path);
-        setTimeout(()=>{ this.showExpandedViews();}, 100);
+        setTimeout(()=>{ this.showExpandedViews();}, this.SECONDS_DELAY);
       }
     }
   }
 
   showGrandChildren_B(id:number):void{
 
-    console.log('SGC--treeData:', this.treeData);
-
-
+    // console.log('SGC--treeData:', this.treeData);//TBD
     const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}`;
     const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
 
-    console.log('SGC_B toggler:', toggler);
-    console.log('SGC_B imgDiv:', imgDiv);
-
-
+    // console.log('SGC_B toggler:', toggler);//TBD
+    // console.log('SGC_B imgDiv:', imgDiv);//TBD
     if(toggler && imgDiv){
       toggler.classList.add('active');
       imgDiv.classList.add('caret-active');
@@ -185,15 +187,31 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
     const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}-${id1}`;
     const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
+    const ulId1 =`newtree-${this.pid}-${this.level}-${id}-${id1}`;
 
-    console.log('SGGC--passed id:', ulId);
-    console.log('SGGC--passed imgId:', imgId);
+    // console.log('SGGC--passed id:', ulId);//TBD
+    // console.log('SGGC--passed imgId:', imgId);//TBD
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
+    const newTree =  document.getElementById(ulId1) as HTMLElement;
+
+    if(newTree){
+      const hasNestedClass = this.hasClass(newTree,'nested');
+      const hasActiveClass = this.hasClass(newTree,'active');
+      if(!hasActiveClass && !hasNestedClass){
+        newTree.classList.add('nested');
+      }else if(hasActiveClass && !hasNestedClass){
+        newTree.classList.remove('active');
+        newTree.classList.add('nested');
+      }else{
+        newTree.classList.remove('nested');
+        newTree.classList.add('active');
+      }
+    }
 
     if(toggler  && imgDiv){
-      console.log('SGGC--toggler:', toggler);
+      //console.log('SGGC--toggler:', toggler);
 
       const hasNestedClass = this.hasClass(toggler,'nested');
       const hasActiveClass = this.hasClass(toggler,'active');
@@ -220,7 +238,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
         const uid = `${this.name}-${this.pid}`;
         this._fileService.addEventOriginator(uid);
         this._fileService.fetchDirectoryDataNotify.next(path);
-        setTimeout(()=>{ this.showExpandedViews();}, 100);
+        setTimeout(()=>{ this.showExpandedViews();}, this.SECONDS_DELAY);
       }
     }
     
@@ -234,8 +252,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
 
-    console.log('SGGC_B toggler:', toggler);
-    console.log('SGGC_B imgDiv:', imgDiv);
+    // console.log('SGGC_B toggler:', toggler); //TBD
+    // console.log('SGGC_B imgDiv:', imgDiv); //TBD
 
     if(toggler && imgDiv){
       toggler.classList.add('active');
