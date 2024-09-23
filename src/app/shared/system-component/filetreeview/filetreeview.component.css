@@ -30,9 +30,20 @@
     display: block;
   }
 
+
+  .root-caret-active{
+    position: 'relative';
+    transform: rotate(0deg);
+  }
+
   .caret-active {
     position: 'relative';
     transform: rotate(90deg);
+  }
+
+  .root-caret-nested{
+    position: 'relative';
+    transform: rotate(270deg);
   }
 
   .caret-nested {

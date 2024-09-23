@@ -1,3 +1,5 @@
+//Option A
+
 import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
 import { FileService } from '../../system-service/file.service';
@@ -40,22 +42,26 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   genStaticData():FileTreeNode[]{
-    const ftn:FileTreeNode = {name:'Documents', path:'/Users/Documents', isFolder:true, children:[]}
-    const ftn1:FileTreeNode = {name:'Pictures', path:'/Users/Pictures', isFolder:true, children:[]}
-    const ftn2:FileTreeNode = {name:'Videos', path:'/Users/Videos', isFolder:true, children:[]}
+    const ftn:FileTreeNode = {name:'Pictures', path:'/Users/Pictures', isFolder:true, children:[]}
+    const ftn1:FileTreeNode = {name:'Videos', path:'/Users/Videos', isFolder:true, children:[]}
+    const ftn2:FileTreeNode = {name:'PDFs', path:'/Users/Documents/PDFs', isFolder:true, children:[]}
 
     return [ftn, ftn1, ftn2];
   }
+
   ngOnChanges():void{
-    //console.log('FILETREE onCHANGES:',this.isHoverActive);
-    console.log('isHoverActive:', this.isHoverActive);
-    console.log('fileTreeViewPid:', this.pid);
-    console.log('fileTreeViewLvl:', this.level);
+    //console.log('FILETREE onCHANGES:',this.isHoverActive);//TBD
+    // console.log('isHoverActive:', this.isHoverActive); //TBD
+    // console.log('fileTreeViewPid:', this.pid); //TBD
+    // console.log('fileTreeViewLvl:', this.level); //TBD
     this.processId = this.pid;
     this.nextLevel = this.level + 1;
 
-    if(!this.isClicked)
-      this.setcolorChevron(this.isHoverActive);
+    // if(!this.isClicked)
+     this.setcolorChevron(this.isHoverActive);
+    // else if(this.isClicked && !this.isHoverActive){
+    //   this.setcolorChevron(this.isHoverActive);
+    // }
   }
 
   hasClass(el:HTMLElement, className:string) {
@@ -78,20 +84,22 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
 
     if(toggler && imgDiv){
-
       const hasNestedClass = this.hasClass(toggler,'nested');
       const hasActiveClass = this.hasClass(toggler,'active');
 
-      if(hasActiveClass && !hasNestedClass){
-        toggler.classList.remove('active');
-        imgDiv.classList.remove('caret-active');
+      if(!hasActiveClass && !hasNestedClass){
         toggler.classList.add('nested');
-        imgDiv.classList.add('caret-nested');
+        imgDiv.classList.add('root-caret-nested');
+      }else if(hasActiveClass && !hasNestedClass){
+        toggler.classList.remove('active');
+        imgDiv.classList.remove('root-caret-active');
+        toggler.classList.add('nested');
+        imgDiv.classList.add('root-caret-nested');
       }else{
         toggler.classList.remove('nested');
-        imgDiv.classList.remove('caret-nested');
+        imgDiv.classList.remove('root-caret-nested');
         toggler.classList.add('active');
-        imgDiv.classList.add('caret-active');
+        imgDiv.classList.add('root-caret-active');
       }
     }
   }
@@ -99,53 +107,77 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   showGrandChildren(path:string, id:number,):void{
     const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}`;
     const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
+    const cntntId =`ul-${this.pid}-${this.level}-${id}`;
+
     console.log('SGC--passed id:', ulId);
     console.log('SGC--passed imgId:', imgId);
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
+    const cntntUl =  document.getElementById(cntntId) as HTMLElement;
 
-    if(toggler){
+
+    if(toggler  && imgDiv){
       console.log('SGC--toggler:', toggler);
-     // toggler.parentElement?.querySelector(".nested")?.classList.toggle("active");
-    
 
-      //toggler.classList.remove("nested");
-      //toggler.classList.remove("active");
-      //toggler.classList.toggle("caret-down");
+      const hasNestedClass = this.hasClass(toggler,'nested');
+      const hasActiveClass = this.hasClass(toggler,'active');
 
-      if(imgDiv){
+      if(!hasActiveClass && !hasNestedClass){
+        toggler.classList.add('active');
+        imgDiv.classList.add('caret-active');
+      }else if(hasActiveClass && !hasNestedClass){
+        toggler.classList.remove('active');
+        imgDiv.classList.remove('caret-active');
+        toggler.classList.add('nested');
+        imgDiv.classList.add('caret-nested');
 
-        this.expandedViews.push(`SGC-${this.pid}-${this.level}-${id}`);
-        console.log('imgDiv:', imgDiv);
-        imgDiv.style.transform = 'rotate(90deg)';
-        imgDiv.style.position = 'relative';
+        if(cntntUl){
+          cntntUl.classList.remove('active');
+          cntntUl.classList.add('nested');
+        }
+      }else{
+        toggler.classList.remove('nested');
+        imgDiv.classList.remove('caret-nested');
+        toggler.classList.add('active');
+        imgDiv.classList.add('caret-active');
+
+        if(cntntUl){
+          cntntUl.classList.remove('nested');
+          toggler.classList.add('active');
+        }
       }
 
-      //pass event to the parent
-      //this.updateFileTreeData.emit(path);
-      const uid = `${this.name}-${this.pid}`;
-      this._fileService.addEventOriginator(uid);
-      this._fileService.fetchDirectoryDataNotify.next(path);
+      if(!this.expandedViews.includes(`SGC-${this.pid}-${this.level}-${id}`)){
+        this.expandedViews.push(`SGC-${this.pid}-${this.level}-${id}`);
 
-      setTimeout(()=>{ this.showExpandedViews();}, 2000);
+        //pass event to the parent
+        const uid = `${this.name}-${this.pid}`;
+        this._fileService.addEventOriginator(uid);
+        this._fileService.fetchDirectoryDataNotify.next(path);
+        setTimeout(()=>{ this.showExpandedViews();}, 100);
+      }
     }
   }
 
   showGrandChildren_B(id:number):void{
+
+    console.log('SGC--treeData:', this.treeData);
+
+
     const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}`;
     const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
 
-    if(toggler){
-      if(imgDiv){
-        console.log('imgDiv:', imgDiv);
-        imgDiv.style.transform = 'rotate(90deg)';
-        imgDiv.style.position = 'relative';
-      }
+    console.log('SGC_B toggler:', toggler);
+    console.log('SGC_B imgDiv:', imgDiv);
 
+
+    if(toggler && imgDiv){
+      toggler.classList.add('active');
+      imgDiv.classList.add('caret-active');
     }
   }
 
@@ -160,30 +192,38 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
 
-    if(toggler){
+    if(toggler  && imgDiv){
       console.log('SGGC--toggler:', toggler);
-      //toggler.parentElement?.querySelector(".nested")?.classList.toggle("active");
-    
 
-      //toggler.classList.remove("nested");
-      //toggler.classList.remove("active");
-      //toggler.classList.toggle("caret-down");
+      const hasNestedClass = this.hasClass(toggler,'nested');
+      const hasActiveClass = this.hasClass(toggler,'active');
 
-      if(imgDiv){
-        this.expandedViews.push(`SGGC-${this.pid}-${this.level}-${id}-${id1}`);
-        console.log('imgDiv:', imgDiv);
-        imgDiv.style.transform = 'rotate(90deg)';
-        imgDiv.style.position = 'relative';
+      if(!hasActiveClass && !hasNestedClass){
+        toggler.classList.add('active');
+        imgDiv.classList.add('caret-active');
+      }else if(hasActiveClass && !hasNestedClass){
+        toggler.classList.remove('active');
+        imgDiv.classList.remove('caret-active');
+        toggler.classList.add('nested');
+        imgDiv.classList.add('caret-nested');
+      }else{
+        toggler.classList.remove('nested');
+        imgDiv.classList.remove('caret-nested');
+        toggler.classList.add('active');
+        imgDiv.classList.add('caret-active');
       }
 
-      //pass event to the parent
-      //this.updateFileTreeData.emit(path);
-      const uid = `${this.name}-${this.pid}`;
-      this._fileService.addEventOriginator(uid);
-      this._fileService.fetchDirectoryDataNotify.next(path);
+      if(!this.expandedViews.includes(`SGGC-${this.pid}-${this.level}-${id}-${id1}`)){
+        this.expandedViews.push(`SGGC-${this.pid}-${this.level}-${id}-${id1}`);
 
-      setTimeout(()=>{ this.showExpandedViews();}, 2000);
+        //pass event to the parent
+        const uid = `${this.name}-${this.pid}`;
+        this._fileService.addEventOriginator(uid);
+        this._fileService.fetchDirectoryDataNotify.next(path);
+        setTimeout(()=>{ this.showExpandedViews();}, 100);
+      }
     }
+    
   }
 
   showGreatGrandChildren_B(id:number, id1:number):void{
@@ -194,13 +234,12 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
 
-    if(toggler){
-      if(imgDiv){
-        console.log('imgDiv:', imgDiv);
-        imgDiv.style.transform = 'rotate(90deg)';
-        imgDiv.style.position = 'relative';
-      }
+    console.log('SGGC_B toggler:', toggler);
+    console.log('SGGC_B imgDiv:', imgDiv);
 
+    if(toggler && imgDiv){
+      toggler.classList.add('active');
+      imgDiv.classList.add('caret-active');
     }
   }
 
@@ -209,11 +248,11 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
       const arr = el.split('-');
       console.log('arr:', arr);
       if(arr[0] == 'SGC'){
-        const id = Number(arr[2]);
+        const id = Number(arr[3]);
         this.showGrandChildren_B(id);
       }else{
-        const id = Number(arr[2]);
-        const id1 = Number(arr[3]);
+        const id = Number(arr[3]);
+        const id1 = Number(arr[4]);
         this.showGreatGrandChildren_B(id, id1);
       }
     }
