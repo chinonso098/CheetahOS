@@ -1,1 +1,25 @@
-<p>properties works!</p>
+
+
+<cos-window [runningProcessID]="0" [processAppIcon]="''" [processAppName]="''" >
+    <div class="main-properties-container">
+        <div style="width: 100%; height: 5px;"> </div>
+
+        <div class="fileexp-header-tab-container">
+            <div class="fileexp-header-tabs">
+              <div class="fileexp-tab active">General</div>
+              <div class="fileexp-tab">Details</div>
+            </div>
+
+            <ng-container>
+                <div class="fileexp-header-tab-content-container">
+                    <div class="fileexp-tab-pane active">
+                      <!-- Content for Tab 1 -->
+                    </div>
+                    <div class="fileexp-tab-pane">
+                      <!-- Content for Tab 2 -->
+                    </div>
+                </div>
+            </ng-container>
+        </div> 
+    </div>
+</cos-window>
