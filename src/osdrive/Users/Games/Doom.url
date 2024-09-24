@@ -2,5 +2,5 @@
 FileName=Doom
 IconPath=/osdrive/Users/Games/icons/doom.png
 FileType=.jsdos
-ContentPath=/osdrive/Users/Games/Data/Doom.jsdos
+ContentPath=/Users/Games/Data/Doom.jsdos
 OpensWith=jsdos

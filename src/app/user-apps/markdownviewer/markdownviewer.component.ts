@@ -92,7 +92,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
     this.fileSrc = (this.fileSrc !=='')? 
     this.fileSrc : this.getFileSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    this._scriptService.loadScript("markedjs","assets/marked/marked.min.js").then(async() =>{  
+    this._scriptService.loadScript("markedjs","osdrive/Program-Files/Marked/marked.min.js").then(async() =>{  
      const mkd = marked.setOptions({
         gfm: true,
         breaks: true

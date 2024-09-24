@@ -75,7 +75,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
     this.gameSrc = (this.gameSrc !=='')? 
     this.gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    this._scriptService.loadScript("ruffle","assets/ruffle/ruffle.js").then(()=>{
+    this._scriptService.loadScript("ruffle","osdrive/Program-Files/Ruffle/ruffle.js").then(()=>{
       this.rufflePlayer = (window as any).RufflePlayer.newest();
       this.loadSWF('ruffleWindow',this.gameSrc);
       this.storeAppState(this.gameSrc);

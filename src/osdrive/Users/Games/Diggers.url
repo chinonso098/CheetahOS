@@ -2,5 +2,5 @@
 FileName=Diggers
 IconPath=/osdrive/Users/Games/icons/diggers.png
 FileType=.jsdos
-ContentPath=/osdrive/Users/Games/Data/Digger.jsdos
+ContentPath=/Users/Games/Data/Digger.jsdos
 OpensWith=jsdos

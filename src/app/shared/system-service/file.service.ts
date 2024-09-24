@@ -365,6 +365,9 @@ export class FileService{
             const sc = await this.getShortCutFromB64DataUrlAsync(path, 'audio') as ShortCut;
             if(sc)
                 this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'audioplayer', 'music_file.png', false, sc);
+        }else if(this._consts.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension) || extension === '.wasm'){
+            const img_file = (extension === '.wasm')? 'wasm_file.png' : 'code_file.png';
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'codeeditor', img_file );
         }
         else if(extension == '.txt' || extension == '.properties'){
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'texteditor', 'file.png');
@@ -690,7 +693,7 @@ export class FileService{
                         }
         
                         const isDirectory = (stats)? stats.isDirectory(): false;
-                        const iconFile = `/osdrive/Cheetah/System/Imageres/${isDirectory ? 'folder.png' : 'unknown.png'}`
+                        const iconFile = `${this._consts.IMAGE_BASE_PATH}${isDirectory ? 'folder.png' : 'unknown.png'}`
                         const fileType = 'folder';
                         const opensWith ='fileexplorer'
                         resolve(new ShortCut(iconFile, basename(path, extname(path)),fileType,basename(path, extname(path)) ,opensWith ));

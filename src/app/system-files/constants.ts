@@ -56,4 +56,18 @@ export class Constants{
         '.weba',
         '.webm'
     ]
+
+    readonly PROGRAMING_LANGUAGE_FILE_EXTENSIONS = [
+        '.js',
+        '.js.map',
+        '.map',
+        '.mjs',
+        '.ts',
+        '.cs',
+        '.java',
+        '.py',
+        '.c',
+        '.cpp',
+        '.html'
+    ]
 }

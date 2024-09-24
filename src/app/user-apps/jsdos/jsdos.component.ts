@@ -97,7 +97,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     this.gameSrc = (this.gameSrc !=='')? 
       this.gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    this._scriptService.loadScript("js-dos", "assets/js-dos/js-dos.js").then(async() =>{
+    this._scriptService.loadScript("js-dos", "osdrive/Program-Files/JS-DOS/js-dos.js").then(async() =>{
 
       emulators.pathPrefix= '/';
 

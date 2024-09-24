@@ -110,9 +110,9 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.audioSrc = (this.audioSrc !== '')? 
       this.audioSrc :this.getAudioSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-      this._scriptService.loadScript("howler","assets/howler/howler.min.js").then(()=>{
+      this._scriptService.loadScript("howler","osdrive/Program-Files/Howler/howler.min.js").then(()=>{
 
-        this._scriptService.loadScript("siriwave","assets/howler/siriwave.umd.min.js").then(()=>{
+        this._scriptService.loadScript("siriwave","osdrive/Program-Files/Howler/siriwave.umd.min.js").then(()=>{
 
           this.siriWave = new SiriWave({
             container: this.waveForm.nativeElement,

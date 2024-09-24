@@ -166,7 +166,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   ngOnInit():void{
-    this._scriptService.loadScript("vanta-waves","assets/backgrounds/vanta.waves.min.js").then(() =>{
+    this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
       this._vantaEffect = VANTA.WAVES({
         el: '#vanta',
         color:this.defaultColor, //this._numSequence,
@@ -188,8 +188,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   loadOtherBackgrounds():void{
     const names:string[] = ["rings","halo", "globe", "birds"]
-    const bkgrounds:string[] = [ "assets/backgrounds/vanta.rings.min.js","assets/backgrounds/vanta.halo.min.js","assets/backgrounds/vanta.globe.min.js",
-                          "assets/backgrounds/vanta.birds.min.js"];
+    const bkgrounds:string[] = [ "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
+                                 "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
         
     for(let i =0; i <= bkgrounds.length - 1; i++){
       this._scriptService.loadScript(names[i], bkgrounds[i]);

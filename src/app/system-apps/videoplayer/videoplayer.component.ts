@@ -52,7 +52,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   name= 'videoplayer';
   hasWindow = true;
-  icon = '/osdrive/Cheetah/System/Imageres/videoplayer.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}videoplayer.png`;
   processId = 0;
   type = ComponentType.System;
   displayName = 'Video-js';
@@ -124,7 +124,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     const appData:string[] = [this.fileType, this.videoSrc];
     this.storeAppState(appData);
 
-    this._scriptService.loadScript("videojs","assets/videojs/video.min.js").then(() =>{
+    this._scriptService.loadScript("videojs","osdrive/Program-Files/Videojs/video.min.js").then(() =>{
       this.player = videojs(this.videowindow.nativeElement, options, function onPlayerReady(){
         console.log('onPlayerReady:', "player is read");
       });
