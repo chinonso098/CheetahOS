@@ -1,10 +1,39 @@
-import { Component } from '@angular/core';
-
+import {ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import { ComponentType } from 'src/app/system-files/component.types';
 @Component({
   selector: 'cos-properties',
   templateUrl: './properties.component.html',
   styleUrl: './properties.component.css'
 })
-export class PropertiesComponent {
+
+export class PropertiesComponent implements OnChanges {
+
+  @Input() inputMsg = '';
+
+  propertyId = 0;
+  type = ComponentType.System;
+  displayMgs = '';
+
+
+  constructor(private changeDetectorRef: ChangeDetectorRef){
+    this.propertyId = this.generatePropertyId();
+  }
+
+
+  ngOnChanges(changes: SimpleChanges):void{
+    //console.log('DIALOG onCHANGES:',changes);
+    this.displayMgs = this.inputMsg;
+  }
+
+
+  onCloseDialogBox():void{
+    //this._notificationServices.closeDialogBoxNotify.next(this.propertyId);
+  }
+
+  private generatePropertyId(): number{
+    const min = Math.ceil(500);
+    const max = Math.floor(999);
+    return Math.floor(Math.random() * (max - min + 1)) + min; 
+  }
 
 }
