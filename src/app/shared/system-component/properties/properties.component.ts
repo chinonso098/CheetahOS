@@ -10,13 +10,13 @@ export class PropertiesComponent implements OnChanges {
 
   @Input() inputMsg = '';
 
-  propertyId = 0;
+  propertiesId = 0;
   type = ComponentType.System;
-  displayMgs = '';
-
+  displayMgs = 'Test Test Properties';
+  name = 'Test Test';
 
   constructor(private changeDetectorRef: ChangeDetectorRef){
-    this.propertyId = this.generatePropertyId();
+    this.propertiesId = this.generatePropertyId();
   }
 
 

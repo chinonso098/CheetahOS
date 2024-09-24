@@ -30,6 +30,7 @@ import { DialogComponent } from './shared/system-component/dialog/dialog.compone
 import { TextEditorComponent } from './system-apps/texteditor/texteditor.component';
 import { CodeEditorComponent } from './user-apps/codeeditor/codeeditor.component';
 import { MarkDownViewerComponent } from './user-apps/markdownviewer/markdownviewer.component';
+import { PropertiesComponent } from './shared/system-component/properties/properties.component';
 
 @Component({
   selector: 'cos-root',
@@ -134,11 +135,13 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   ngAfterViewInit():void{
     // This quiets the - Expression has changed after it was checked.
     //TODO: change detection is the better solution TBD
-      setTimeout(()=> {
-         const priorSessionInfo = this.fetchPriorSessionInfo();
-         const sessionKeys = this.getSessionKey(priorSessionInfo);
-         this.restorePriorSession(sessionKeys);
+    setTimeout(()=> {
+        const priorSessionInfo = this.fetchPriorSessionInfo();
+        const sessionKeys = this.getSessionKey(priorSessionInfo);
+        this.restorePriorSession(sessionKeys);
     }, this.SECONDS_DELAY[0]);
+
+    this.showPropertiesWindow();
   }
 
   async loadApps(appName:string):Promise<void>{
@@ -168,6 +171,13 @@ export class AppComponent implements OnDestroy, AfterViewInit {
       componentRef.setInput('inputMsg', msg);
       componentRef.setInput('notificationType', dialogMsgType);
     }
+  }
+
+  private showPropertiesWindow():void{
+    const componentRef = this.itemViewContainer.createComponent(PropertiesComponent);
+    const propertyId = componentRef.instance.propertiesId;
+    this._componentReferenceService.addComponentReference(propertyId, componentRef);
+
   }
 
   private closeDialogMsgBox(dialogId:number):void{
