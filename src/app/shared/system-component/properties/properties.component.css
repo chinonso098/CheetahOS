@@ -11,7 +11,7 @@
     outline: 1px hsl(0deg 0% 20%/70%);
     z-index: 2;
     width: 325px;
-    height: 500px;
+    height: 460px;
 }
 
 
@@ -91,7 +91,6 @@
     right: 0;
     height: 30px;
 }
-
 
 
 .properties-body-container{
@@ -211,8 +210,11 @@
 .general-tab-p{
     position: relative;
     top: 30%;
+    font-size:11px;
+    font-weight:normal;
     text-align: left;
-    border: 1px solid #333;
+    padding: 3px 0;
+    border: 0.5px solid #000;
 }
 
 .general-tab-p1{
@@ -227,26 +229,36 @@
 .general-tab-figure{
     align-items: center;
     display:inline-flex;
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
 }
   
 .general-tab-img{
-    height: 38px;
-    width: 38px;
+    height: 36px;
+    width: 36px;
     image-rendering:optimizeQuality;
     position: relative;
     margin: 0 0;
     left: -12px;
 }
 
-
-
-
 .properties-footer-container{
     width: 100%;
+    height: 40px;
+    background-color: #f0f0f0;
+
 }
 
-
+/* Custom styles for .btn.btn-primary */
+.btn.btn-primary {
+    background-color: #e5e5e5; /* Primary button background color */
+    color: #000; /* Text color for the primary button */
+    border: 2px solid #0265ce; /* Border color for the primary button */
+    padding: 2px 20px; /* Padding for the primary button (adjust as needed) */
+    font-size: 12px; /* Font size for the text */
+    font-weight: normal;
+    height: 24px;
+    width: 65px;
+}
 
 

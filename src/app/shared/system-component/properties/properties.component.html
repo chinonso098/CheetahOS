@@ -24,7 +24,6 @@
         <div class="properties-header-tab-container">
             <div class="properties-header-tabs">
               <div class="properties-tab active">General</div>
-              <div class="properties-tab">Details</div>
             </div>
     
             <div class="properties-header-tab-content-container">
@@ -98,15 +97,19 @@
                             </div>
                         </div>
                         <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+                        <div class="general-tab-section2">
+                            <div style="width: 100%; height: 60px;"> </div>
+                        </div>
                     </div>
-                </div>
-                <div class="properties-tab-pane">
-                  <!-- Content for Tab 2 -->
                 </div>
             </div>
         </div> 
     </div>
     <div class="properties-footer-container">
-
+        <span style="position: fixed; margin-top:9px; right:4%;">
+            <button class="btn btn-primary" (click)="onCloseDialogBox()" >
+              OK
+            </button>
+        </span>
     </div>
 </div>

@@ -177,8 +177,8 @@ right: 0;
     height: 45px;
 }
 
-  /* Custom styles for .btn.btn-primary */
-  .btn.btn-primary {
+/* Custom styles for .btn.btn-primary */
+.btn.btn-primary {
     background-color: #e5e5e5; /* Primary button background color */
     color: #000; /* Text color for the primary button */
     border: 2px solid #0265ce; /* Border color for the primary button */
@@ -187,12 +187,9 @@ right: 0;
     font-weight: normal;
     height: 24px;
     width: 65px;
-  }
-
-
+}
 
   /*Info Notifivation*/
-
 .info-dialog-main-container{
     width: 400px;
     height: 130px;
@@ -205,7 +202,6 @@ right: 0;
 }
 
   /*Mid Info */
-
 .info-dialog-mid-img1{
     width: fit-content;
     height: 80px;
