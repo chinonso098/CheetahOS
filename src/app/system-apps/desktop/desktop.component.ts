@@ -178,7 +178,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     //   });
     // })
 
-    // this.getDesktopMenuData();
+    this.getDesktopMenuData();
   }
 
   ngAfterViewInit():void{
