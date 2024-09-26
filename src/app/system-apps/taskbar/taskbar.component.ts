@@ -4,6 +4,7 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ComponentType } from 'src/app/system-files/component.types';
 import { Process } from 'src/app/system-files/process';
+import { Constants } from 'src/app/system-files/constants';
 
 @Component({
   selector: 'cos-taskbar',
@@ -16,10 +17,12 @@ export class TaskbarComponent implements AfterViewInit{
   private _runningProcessService:RunningProcessService;
   private _menuService:MenuService;
   private _el: ElementRef;
+  private _consts:Constants = new Constants();
+  
   SECONDS_DELAY = 1000;
 
   hasWindow = false;
-  icon = 'osdrive/Cheetah/System/Imageres/generic_program.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
   name = 'taskbar';
   processId = 0;
   type = ComponentType.System

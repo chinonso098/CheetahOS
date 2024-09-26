@@ -16,7 +16,7 @@ import { TaskBarPreviewComponent } from './system-apps/taskbarpreview/taskbarpre
 import { TaskBarEntriesComponent } from './system-apps/taskbarentries/taskbarentries.component';
 import { TaskBarEntryComponent } from './system-apps/taskbarentry/taskbarentry.component';
 import { FileExplorerComponent } from './system-apps/fileexplorer/fileexplorer.component';
-import { WindowComponent } from './system-apps/window/window.component';
+import { WindowComponent } from './shared/system-component/window/window.component';
 import { FileManagerComponent } from './system-apps/filemanager/filemanager.component';
 import { GreetingComponent } from './user-apps/greeting/greeting.component';
 import { TaskmanagerComponent } from './system-apps/taskmanager/taskmanager.component';
@@ -38,7 +38,7 @@ import { FileTreeViewComponent } from './shared/system-component/filetreeview/fi
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
 
-import { HighlightDirective } from './system-apps/window/window.btn.highlight.directives';
+import { HighlightDirective } from './shared/system-component/window/window.btn.highlight.directives';
 import { TaskBarEntryHighlightDirective } from './system-apps/taskbarentries/taskbar.entry.highlight.directives';
 import { LongPressDirective } from './system-apps/audioplayer/long.press.directive';
 import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.column-resize.directive';

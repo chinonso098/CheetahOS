@@ -12,6 +12,7 @@ import { AppState, BaseState } from 'src/app/system-files/state/state.interface'
 import { StateType } from 'src/app/system-files/state/state.type';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 
@@ -35,6 +36,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _appState!:AppState;
+  private _consts:Constants = new Constants();
 
   private msgPosCounter = 0;
   private scrollCounter = 0
@@ -70,7 +72,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   traversalDepth = 0;
 
   hasWindow = true;
-  icon = '/osdrive/Cheetah/System/Imageres/terminal_48.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}terminal.png`;
   name = 'terminal';
   processId = 0;
   type = ComponentType.System;
