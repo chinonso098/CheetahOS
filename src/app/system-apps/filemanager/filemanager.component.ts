@@ -59,11 +59,14 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private btnClickCnt = 0;
   private renameFileTriggerCnt = 0; 
 
+  propertiesViewFile!:FileInfo
+
   iconCntxtMenuStyle:Record<string, unknown> = {};
   iconSizeStyle:Record<string, unknown> = {};
   btnStyle:Record<string, unknown> = {};
 
   showCntxtMenu = false;
+  showPropertiesView = false;
   gridSize = 90; //column size of grid = 90px
   SECONDS_DELAY = 6000;
   renameForm!: FormGroup;
@@ -88,7 +91,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     {icon:'', label: 'Create shortcut', action: this.doNothing.bind(this)},
     {icon:'', label: 'Delete', action: this.onDeleteFile.bind(this) },
     {icon:'', label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
-    {icon:'', label: 'Properties', action: this.doNothing.bind(this) }
+    {icon:'', label: 'Properties', action: this.showPropertiesWindow.bind(this) }
   ];
 
   menuData:GeneralMenu[] =[];
@@ -218,6 +221,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
     this.adjustContextMenuData(file);
     this.selectedFile = file;
+    this.propertiesViewFile = file;
     this.showCntxtMenu = !this.showCntxtMenu;
 
     // show IconContexMenu is still a btn click, just a different type
@@ -230,6 +234,10 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
 
     evt.preventDefault();
+  }
+
+  showPropertiesWindow():void{
+    this.showPropertiesView = true;
   }
 
   adjustContextMenuData(file:FileInfo):void{

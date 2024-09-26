@@ -141,7 +141,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
         this.restorePriorSession(sessionKeys);
     }, this.SECONDS_DELAY[0]);
 
-    this.showPropertiesWindow();
+    //this.showPropertiesWindow();
   }
 
   async loadApps(appName:string):Promise<void>{

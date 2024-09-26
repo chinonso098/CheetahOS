@@ -1,5 +1,6 @@
 import {ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/component.types';
+import { FileInfo } from 'src/app/system-files/file.info';
 @Component({
   selector: 'cos-properties',
   templateUrl: './properties.component.html',
@@ -7,13 +8,12 @@ import { ComponentType } from 'src/app/system-files/component.types';
 })
 
 export class PropertiesComponent implements OnChanges {
-
-  @Input() inputMsg = '';
+  @Input() fileInput!:FileInfo;
 
   propertiesId = 0;
   type = ComponentType.System;
-  displayMgs = 'Test Test Properties';
-  name = 'Test Test';
+  displayMgs = '';
+  name = '';
 
   constructor(private changeDetectorRef: ChangeDetectorRef){
     this.propertiesId = this.generatePropertyId();
@@ -22,7 +22,8 @@ export class PropertiesComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges):void{
     //console.log('DIALOG onCHANGES:',changes);
-    this.displayMgs = this.inputMsg;
+    this.displayMgs = `${this.fileInput.getFileName} Properties`;
+    this.name = this.fileInput.getFileName;
   }
 
 
