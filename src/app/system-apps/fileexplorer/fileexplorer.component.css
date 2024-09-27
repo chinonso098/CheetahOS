@@ -354,7 +354,7 @@
     height: 16px;
     width: 16px;
     top:5px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -368,7 +368,7 @@
 .img-alt-chevron{
     height: 9px;
     width: 9px;
-    image-rendering:optimizeQuality;
+
     position: relative;
     top: 5px
 }
@@ -391,7 +391,7 @@
     height: 16px;
     width: 16px;
     top:6px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 /*++++++++++++++++++++++++++++++++Header navigation btn section Ended++++++++++++++++++++++++++++++++*/
@@ -416,7 +416,7 @@
     height: 18px;
     width: 15px;
     margin: 0 3px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -495,7 +495,7 @@ span.mid-nav-path-gen-cntnr{
     height: 11px;
     width: 11px;
     /* margin: 0 4px; */
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -508,7 +508,7 @@ span.mid-nav-path-gen-cntnr{
     height: 10px;
     width: 10px;
     margin: 0 6px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -543,7 +543,7 @@ span.head-nav-path-cntnr1:hover{
     height: 12px;
     width: 12px;
     margin: 0 6px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -612,7 +612,7 @@ span.head-nav-path-cntnr2:hover{
     width: 12px;
     top:0px;
     margin: 0 8px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -665,7 +665,7 @@ span.mid-nav-path-entry{
     height: 12px;
     width: 12px;
     margin: 0 8px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -728,7 +728,7 @@ span.head-search-cntnr2.active{
     width: 12px;
     top:0px;
     margin: 0 8px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 

@@ -82,7 +82,7 @@
   .fxtreeview-img{
     height: 10px;
     width: 10px;
-    image-rendering:optimizeQuality;
+
     position: relative;
   }
 
@@ -98,7 +98,7 @@
   .fxtreeview-img1{
     height: 17px;
     width: 17px;
-    image-rendering:optimizeQuality;
+
     position: relative;
   }
 

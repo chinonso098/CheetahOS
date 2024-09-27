@@ -8,7 +8,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "npm run build:fs && ng build",
-    "build:fs": "cd src/osdrive && node ../../node_modules/browserfs/dist/scripts/make_http_index.js > ../osdrive.json",
+    "build:fs": "cd src/osdrive && node Cheetah/System/BrowserFS/scripts/make_http_index.js > ../osdrive.json",
     "clean": "rm -rf node_modules",
     "reinstall": "npm run clean && npm install",
     "rebuild": "npm run clean && npm install && npm run build",

@@ -78,7 +78,7 @@ span.dm-tail{
 .dm-img-alt{
     height: 16px;
     width: 16px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -138,7 +138,7 @@ span.dm-tail{
 .dm-tskbar-img-alt{
     height: 18px;
     width: 18px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -275,7 +275,7 @@ span.dm-tail{
 .dm-nested-img{
     height: 18px;
     width: 18px;
-    image-rendering:optimizeQuality;
+
     position: relative;
     margin: 0 0;
 }
@@ -283,7 +283,7 @@ span.dm-tail{
 .dm-nested-img-alt{
     height: 8px;
     width: 8px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -300,7 +300,7 @@ span.dm-tail{
 .dm-nested-img-alt2{
     height: 16px;
     width: 16px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 

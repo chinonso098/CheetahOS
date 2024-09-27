@@ -3,7 +3,6 @@ import { FileInfo } from "src/app/system-files/file.info";
 import { ShortCut } from "src/app/system-files/shortcut";
 import {extname, basename, resolve, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
-//import { FSModule } from "browserfs/dist/node/core/FS";
 import { FSModule } from "src/osdrive/Cheetah/System/BrowserFS/node/core/FS";
 import { FileEntry } from 'src/app/system-files/file.entry';
 import { FileMetaData } from "src/app/system-files/file.metadata";
@@ -26,6 +25,7 @@ export class FileService{
     private _fileSystem!:FSModule;
     private _directoryFileEntires:FileEntry[]=[];
     private _fileExistsMap!:Map<string,number>; 
+    private _fileAndAppIconAssociation!:Map<string,string>; 
     private _eventOriginator = '';
 
     dirFilesUpdateNotify: Subject<void> = new Subject<void>();
@@ -36,6 +36,7 @@ export class FileService{
 
     constructor(){ 
         this._fileExistsMap =  new Map<string, number>();
+        this._fileAndAppIconAssociation =  new Map<string, string>();
         FileService.instace = this;
     }
 
@@ -175,7 +176,6 @@ export class FileService{
 
         return true
     }
-
 
     public async createFolderAsync(directory:string, fileName:string):Promise<boolean>{
         return new Promise<boolean>((resolve, reject) =>{
@@ -337,7 +337,6 @@ export class FileService{
         return `${basename(path, extname(path))}${ extname(path)}`;
     }
 
-
     public async getFileInfoAsync(path:string):Promise<FileInfo>{
         const extension = extname(path);
         this._fileInfo = new FileInfo();
@@ -368,7 +367,7 @@ export class FileService{
                 this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'audioplayer', 'music_file.png', false, sc);
         }else if(this._consts.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension) || extension === '.wasm'){
             const img_file = (extension === '.wasm')? 'wasm_file.png' : 'code_file.png';
-            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'codeeditor', img_file );
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'codeeditor', img_file);
         }
         else if(extension == '.txt' || extension == '.properties'){
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'texteditor', 'file.png');
@@ -388,16 +387,17 @@ export class FileService{
             this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
             this._fileInfo.setSize = fileMetaData.getSize;
             this._fileInfo.setMode = fileMetaData.getMode;
+            this._fileInfo.setFileExtension = extension;
         }
-        
-
+        this.addAppAssociaton(this._fileInfo.getOpensWith, this._fileInfo.getIconPath);
         return this._fileInfo;
     }
 
     populateFileInfo(path:string, fileMetaData:FileMetaData, isFile =true, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut):FileInfo{
         const fileInfo = new FileInfo();
+        const img = `${this._consts.IMAGE_BASE_PATH}${imageName}`;
 
-        fileInfo.setIconPath = (useImage)? shortCut?.getIconPath || `${this._consts.IMAGE_BASE_PATH}${imageName}` : `${this._consts.IMAGE_BASE_PATH}${imageName}`;
+        fileInfo.setIconPath = (useImage)? shortCut?.getIconPath || img : img;
         fileInfo.setCurrentPath = path;
         fileInfo.setContentPath = shortCut?.getContentPath || this._consts.EMPTY_STRING;
         fileInfo.setFileType = shortCut?.getFileType || extname(path);
@@ -407,6 +407,7 @@ export class FileService{
         fileInfo.setDateModified = fileMetaData.getModifiedDate;
         fileInfo.setSize = fileMetaData.getSize;
         fileInfo.setMode = fileMetaData.getMode;
+        fileInfo.setFileExtension = extname(path);
 
         return fileInfo;
     }
@@ -568,7 +569,6 @@ export class FileService{
         });
     }
 
-
     public async removeHandler(arg0: string, sourceArg: string): Promise<boolean> {
         const loadedDirectoryEntries = await this.getEntriesFromDirectoryAsync(sourceArg);
     
@@ -706,6 +706,15 @@ export class FileService{
            });
             
         });
+    }
+
+    private addAppAssociaton(appname:string, img:string):void{
+        if(!this._fileAndAppIconAssociation.get(appname))
+            this._fileAndAppIconAssociation.set(appname,img);
+    }
+
+    getAppAssociaton(appname:string):string{
+        return this._fileAndAppIconAssociation.get(appname) || '';
     }
 
     private bufferToUrl(buffer:Buffer):string{

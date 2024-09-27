@@ -3,7 +3,7 @@
         <div #leftHS1 class="properties-left-header-section">
             <h1 class="properties-h1">
                 <figure class="properties-figure">
-                    <img class="properties-img" [src]="'osdrive/Cheetah/System/Imageres/camera.png'" [alt]="''"/>
+                    <img class="properties-img" [src]="fileInput.getIconPath" [alt]="''"/>
                     <figcaption class="properties-figcaption"> {{this.displayMgs}} </figcaption>
                 </figure>
             </h1>
@@ -33,33 +33,53 @@
 
                         <div class="general-tab-section">
                             <div class="general-tab-content">
-                                <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="'osdrive/Cheetah/System/Imageres/camera.png'"/></figure></div>
+                                <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="fileInput.getIconPath"/></figure></div>
                                 <div class="general-tab-mid"></div>
-                                <div class="general-tab-tail"><p class="general-tab-p"> {{this.name}}</p></div>
+                                <div class="general-tab-tail"><p class="general-tab-p">{{this.name}}</p></div>
                             </div>
 
                         </div>
                         <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+
                        <div class="general-tab-section2">
                             <div class="general-tab-content">
                                 <div class="general-tab-head"><p class="general-tab-p1"> Type of file:</p></div>
                                 <div class="general-tab-mid"></div>
-                                <div class="general-tab-tail"><p class="general-tab-p1"> .url</p></div>
+                                <div class="general-tab-tail"><p class="general-tab-p1"> {{fileInput.getFileExtension}}</p></div>
                             </div>
 
-                            <div class="general-tab-content">
-                                <div class="general-tab-head"><p class="general-tab-p1"> Description:</p></div>
-                                <div class="general-tab-mid"></div>
-                                <div class="general-tab-tail"><p class="general-tab-p1"> camera </p></div>
-                            </div>
+                            <ng-container *ngIf="fileInput.getFileExtension === URL">
+                                <div class="general-tab-content" style="height: 13px;">
+                                    <div class="general-tab-head"><p class="general-tab-p1"> Opens with:</p></div>
+                                    <div class="general-tab-mid"></div>
+                                    <div class="general-tab-tail">
+                                        <div class="openswith-container">
+                                            <div class="openswith-head">
+                                                <figure class="openswith-tab-figure"><img class="openswith-tab-img" [src]="icon"/></figure>
+                                            </div>
+                                            <div class="openswith-mid"></div>
+                                            <div class="openswith-tail"><p class="general-tab-p1"> {{fileInput.getOpensWith}}</p></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+                            
+                            <ng-container *ngIf="fileInput.getFileExtension !== URL">
+                                <div class="general-tab-content" style="height: 13px;">
+                                    <div class="general-tab-head"><p class="general-tab-p1"> Description:</p></div>
+                                    <div class="general-tab-mid"></div>
+                                    <div class="general-tab-tail"><p class="general-tab-p1"> camera </p></div>
+                                </div>
+                            </ng-container>
                         </div>
+
                         <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
                         <div class="general-tab-section2">
 
                             <div class="general-tab-content">
                                 <div class="general-tab-head"><p class="general-tab-p1"> Location:</p></div>
                                 <div class="general-tab-mid"></div>
-                                <div class="general-tab-tail"><p class="general-tab-p1"> C:\Cheetah\System\Imageres</p></div>
+                                <div class="general-tab-tail"><p class="general-tab-p1"> {{location}}</div>
                             </div>
 
 

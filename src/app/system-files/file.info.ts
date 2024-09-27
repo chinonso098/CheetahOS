@@ -2,6 +2,7 @@ export class FileInfo{
     private _IconPath:string;
     private _currentPath:string;
     private _contentPath:string;
+    private _fileExtension:string;
     private _fileType:string;
     private _fileName:string;
     private _opensWith:string;
@@ -16,6 +17,7 @@ export class FileInfo{
         this._IconPath = '';
         this._currentPath = '';
         this._contentPath = '';
+        this._fileExtension = '';
         this._fileType = '';
         this._fileName = '';
         this._opensWith = '';
@@ -45,6 +47,13 @@ export class FileInfo{
     }
     set setContentPath(contentPath:string){
          this._contentPath = contentPath;
+    }
+
+    get getFileExtension(){
+        return this._fileExtension;
+    }
+    set setFileExtension(fileExtension:string){
+        this._fileExtension = fileExtension;
     }
 
     get getFileType(){
