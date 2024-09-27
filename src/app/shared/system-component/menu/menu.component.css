@@ -83,13 +83,6 @@ span.dm-tail{
 }
 
 .dm-figure-alt{
-    /* position: relative;
-    align-items: center;
-    display: inline-flex;
-    min-width: 18px;
-    top: 0;
-    left: 15%; */
-
     align-items: center;
     display:inline-flex;
     min-width: 18px;

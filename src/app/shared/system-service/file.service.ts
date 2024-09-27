@@ -709,8 +709,13 @@ export class FileService{
     }
 
     private addAppAssociaton(appname:string, img:string):void{
-        if(!this._fileAndAppIconAssociation.get(appname))
-            this._fileAndAppIconAssociation.set(appname,img);
+        if(!this._fileAndAppIconAssociation.get(appname)){
+            if(appname === 'photoviewer' || appname === 'videoplayer' || appname === 'audioplayer'){
+                this._fileAndAppIconAssociation.set(appname,`${this._consts.IMAGE_BASE_PATH}${appname}.png`);
+            }else{
+                this._fileAndAppIconAssociation.set(appname,img);
+            }
+        }
     }
 
     getAppAssociaton(appname:string):string{
