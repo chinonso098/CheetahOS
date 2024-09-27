@@ -3,12 +3,13 @@ import { FileInfo } from "src/app/system-files/file.info";
 import { ShortCut } from "src/app/system-files/shortcut";
 import {extname, basename, resolve, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
-import { FSModule } from "browserfs/dist/node/core/FS";
+//import { FSModule } from "browserfs/dist/node/core/FS";
+import { FSModule } from "src/osdrive/Cheetah/System/BrowserFS/node/core/FS";
 import { FileEntry } from 'src/app/system-files/file.entry';
 import { FileMetaData } from "src/app/system-files/file.metadata";
 
 import { Subject } from "rxjs";
-import * as BrowserFS from 'browserfs';
+import * as BrowserFS from 'src/osdrive/Cheetah/System/BrowserFS/browserfs'
 import { Buffer } from 'buffer';
 import osDriveFileSystemIndex from '../../../osdrive.json';
 import ini  from 'ini';
