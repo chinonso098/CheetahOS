@@ -29,8 +29,4 @@
     <ng-container  *ngIf="showCntxtMenu">
         <cos-menu [generalMenu]="menuData" [style]="iconCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
     </ng-container>
-
-    <ng-container *ngIf="showPropertiesView">
-        <cos-properties  [fileInput]="propertiesViewFile"></cos-properties>
-    </ng-container>
 </ol>

@@ -10,7 +10,7 @@
         </div>
         <div class="properties-right-header-section">
             <nav class="properties-nav">
-                <button class="properties-button" id="closeBtn" appHighlight (click)="onCloseDialogBox()"  title="Close" >
+                <button class="properties-button" id="closeBtn" appHighlight (click)="onClosePropertyView()"  title="Close" >
                     <svg class="properties-svg" width="10" viewBox="0 0 10 10">
                         <path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z" fill = "#FFFFF"/>
                     </svg>
@@ -127,7 +127,7 @@
     </div>
     <div class="properties-footer-container">
         <span style="position: fixed; margin-top:6px; right:2%;">
-            <button class="btn btn-primary" (click)="onCloseDialogBox()" >
+            <button class="btn btn-primary" (click)="onClosePropertyView()" >
               OK
             </button>
         </span>

@@ -53,20 +53,20 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private isHideCntxtMenuEvt= false;
 
   private selectedFile!:FileInfo;
+  private propertiesViewFile!:FileInfo
   private selectedElementId = -1;
   private prevSelectedElementId = -1; 
   private hideCntxtMenuEvtCnt = 0;
   private btnClickCnt = 0;
   private renameFileTriggerCnt = 0; 
 
-  propertiesViewFile!:FileInfo
+
 
   iconCntxtMenuStyle:Record<string, unknown> = {};
   iconSizeStyle:Record<string, unknown> = {};
   btnStyle:Record<string, unknown> = {};
 
   showCntxtMenu = false;
-  showPropertiesView = false;
   gridSize = 90; //column size of grid = 90px
   SECONDS_DELAY = 6000;
   renameForm!: FormGroup;
@@ -237,7 +237,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   showPropertiesWindow():void{
-    this.showPropertiesView = true;
+    this._menuService.showPropertiesView.next(this.propertiesViewFile);
   }
 
   adjustContextMenuData(file:FileInfo):void{

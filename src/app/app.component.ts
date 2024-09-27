@@ -31,6 +31,8 @@ import { TextEditorComponent } from './system-apps/texteditor/texteditor.compone
 import { CodeEditorComponent } from './user-apps/codeeditor/codeeditor.component';
 import { MarkDownViewerComponent } from './user-apps/markdownviewer/markdownviewer.component';
 import { PropertiesComponent } from './shared/system-component/properties/properties.component';
+import { MenuService } from './shared/system-service/menu.services';
+import { FileInfo } from './system-files/file.info';
 
 @Component({
   selector: 'cos-root',
@@ -53,6 +55,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private _sessionMangamentServices:SessionManagmentService;
   private _notificationServices:NotificationService;
   private _stateManagmentService:StateManagmentService;
+  private _menuService:MenuService;
   private _componentRefView!:ViewRef;
   private _appDirectory:AppDirectory;
   private _consts:Constants = new Constants();
@@ -64,6 +67,8 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private _appIsRunningSub!:Subscription;  
   private _errorNotifySub!:Subscription;
   private _infoNotifySub!:Subscription;  
+  private _showPropertiesViewSub!:Subscription;
+  private _closePropertiesViewSub!:Subscription;
 
   private userOpenedAppsList:string[] = [];
   private retreivedKeys:string[] = [];
@@ -99,7 +104,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
 
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService,componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService,
-    sessionMangamentServices:SessionManagmentService, notificationServices:NotificationService, stateManagmentService:StateManagmentService){
+    sessionMangamentServices:SessionManagmentService, notificationServices:NotificationService, stateManagmentService:StateManagmentService, menuService:MenuService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
@@ -109,6 +114,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this._sessionMangamentServices = sessionMangamentServices;
     this._notificationServices = notificationServices;
     this._stateManagmentService = stateManagmentService;
+    this._menuService = menuService;
 
     this._startProcessSub = this._triggerProcessService.startProcessNotify.subscribe((appName) =>{this.loadApps(appName)})
     this._appNotFoundSub = this._triggerProcessService.appNotFoundNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Error,appName)})
@@ -116,7 +122,9 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this._errorNotifySub = this._notificationServices.errorNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Error,appName)})
     this._infoNotifySub = this._notificationServices.InfoNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Info,appName)})
     this._closeProcessSub = this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.onCloseBtnClicked(p)})
-    this._closeMsgDialogSub = this._notificationServices.closeDialogBoxNotify.subscribe((i) =>{this.closeDialogMsgBox(i)})
+    this._closeMsgDialogSub = this._notificationServices.closeDialogBoxNotify.subscribe((i) =>{this.closeDialogMsgBoxOrPropertiesView(i)})
+    this._showPropertiesViewSub = this._menuService.showPropertiesView.subscribe((p) => this.showPropertiesWindow(p));
+    this._closePropertiesViewSub = this._menuService.closePropertiesView.subscribe((p) => this.closeDialogMsgBoxOrPropertiesView(p));
     this._runningProcessService.addProcess(this.getComponentDetail());
 
     this._appDirectory = new AppDirectory();
@@ -130,6 +138,8 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this._appIsRunningSub?.unsubscribe();
     this._errorNotifySub?.unsubscribe();
     this._infoNotifySub?.unsubscribe();
+    this._showPropertiesViewSub?.unsubscribe();
+    this._closePropertiesViewSub?.unsubscribe();
   }
 
   ngAfterViewInit():void{
@@ -173,14 +183,14 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  private showPropertiesWindow():void{
+  private showPropertiesWindow(fileInput:FileInfo):void{
     const componentRef = this.itemViewContainer.createComponent(PropertiesComponent);
-    const propertyId = componentRef.instance.propertiesId;
+    const propertyId = componentRef.instance.propertyId;
     this._componentReferenceService.addComponentReference(propertyId, componentRef);
-
+    componentRef.setInput('fileInput',fileInput);
   }
 
-  private closeDialogMsgBox(dialogId:number):void{
+  private closeDialogMsgBoxOrPropertiesView(dialogId:number):void{
     const componentToDelete = this._componentReferenceService.getComponentReference(dialogId);
     this._componentRefView = componentToDelete.hostView;
     const iVCntr  = this.itemViewContainer.indexOf(this._componentRefView);

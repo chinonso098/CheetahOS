@@ -27,6 +27,8 @@ export class MenuService{
     hideContextMenus: Subject<void> = new Subject<void>();
     storeData: Subject<string[]> = new Subject<string[]>();
     addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();
+    showPropertiesView: Subject<FileInfo> = new Subject<FileInfo>();
+    closePropertiesView: Subject<number> = new Subject<number>();
 
 
     setPasteState(isActive:boolean):void{

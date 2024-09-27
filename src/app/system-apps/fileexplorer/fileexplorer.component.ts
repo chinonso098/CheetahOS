@@ -75,6 +75,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isShiftSubMenuLeft = false;
 
   private selectedFile!:FileInfo;
+  private propertiesViewFile!:FileInfo
   private selectedElementId = -1;
   private prevSelectedElementId = -1; 
   private hideCntxtMenuEvtCnt = 0;
@@ -173,7 +174,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     {icon:this._consts.EMPTY_STRING, label: 'Create shortcut', action: this.doNothing.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Delete', action: this.onDeleteFile.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
-    {icon:this._consts.EMPTY_STRING, label: 'Properties', action: this.doNothing.bind(this) }
+    {icon:this._consts.EMPTY_STRING, label: 'Properties', action: this.showPropertiesWindow.bind(this) }
   ];
 
   menuData:GeneralMenu[] = [];
@@ -1080,6 +1081,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.adjustContextMenuData(file);
     this.selectedFile = file;
+    this.propertiesViewFile = file
     this.isIconInFocusDueToPriorAction = false;
     this.showInformationTip = false;
 
@@ -1103,7 +1105,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.menuData = [];
     const editNotAllowed:string[] = ['3D-Objects.url','Desktop.url','Documents.url','Downloads.url','Games.url','Music.url','Pictures.url','Videos.url'];
 
-    console.log('adjustContextMenuData - filename:',file.getCurrentPath);
+    //console.log('adjustContextMenuData - filename:',file.getCurrentPath); //TBD
    if(file.getIsFile){
       if(editNotAllowed.includes(file.getCurrentPath.replace('/', this._consts.EMPTY_STRING))){
         this.menuOrder = this._consts.FILE_EXPLORER_UNIQUE_MENU_ORDER ;
@@ -1154,6 +1156,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       'z-index': 2,
     }
     evt.preventDefault();
+  }
+
+
+  showPropertiesWindow():void{
+    this._menuService.showPropertiesView.next(this.propertiesViewFile);
   }
 
   hideIconContextMenu(caller?:string):void{
