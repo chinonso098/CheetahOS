@@ -2059,6 +2059,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       ]
   }
 
+
+
+  createShortCut():void{
+   //
+  }
+
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type);
   }
