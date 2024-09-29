@@ -1,4 +1,5 @@
-<ng-container [ngTemplateOutlet]="notificationOption === errorNotification ? errorNotice :  infoNotice ">
+<ng-container [ngTemplateOutlet]="notificationOption === errorNotification ? errorNotice :
+                                  notificationOption === warnNotification ? warningNotice :  infoNotice ">
 </ng-container>
 
 <ng-template #errorNotice>
@@ -72,3 +73,33 @@
     </div>
 </ng-template>
 
+
+<ng-template #warningNotice>
+    <div ngDraggable [handle]="leftHS2" class="warning-dialog-main-container">   
+        <div style="position: absolute; left: 5%;"><p>Shortcut</p></div> 
+        <div #leftHS2 class="warning-dialog-mid-container" tabindex="0">
+            <div class="warning-dialog-mid-section1">
+                <div class="warning-dialog-mid-img1">
+                    <figure class="warning-dialog-figure1">
+                        <img class="warning-dialog-img1" [src]="'/osdrive/Cheetah/System/Imageres/warning.png'"/>
+                    </figure>
+                </div>
+                <div class="warning-dialog-mid-txt1">
+                    <span class="warning-dialog-mid-section1-msg">{{this.displayMgs}}</span>
+                </div>
+            </div>
+        </div>
+    
+        <div class="warning-dialog-tail-container">
+            <span style="position: fixed; margin-top:10px; right:4%;">
+                <button class="btn btn-primary" (click)="onCloseDialogBox()" >
+                  Yes
+                </button>
+                <div style="padding-left: 5px; display: inline;"></div>
+                <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
+                  No
+                </button>
+            </span>
+        </div>
+    </div>
+</ng-template>

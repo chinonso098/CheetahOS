@@ -19,6 +19,7 @@ export class DialogComponent implements OnChanges {
 
   notificationOption = '';
   errorNotification = NotificationType.Error;
+  warnNotification = NotificationType.Warning;
   infoNotification =  NotificationType.Info;
 
 

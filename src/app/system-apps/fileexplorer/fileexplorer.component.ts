@@ -24,6 +24,7 @@ import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { SortBys } from '../desktop/desktop.enums';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
+import { NotificationService } from 'src/app/shared/system-service/notification.service';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -45,6 +46,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _triggerProcessService:TriggerProcessService;
   private _stateManagmentService: StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
+  private _notificationService:NotificationService;
   private _menuService:MenuService;
   private _formBuilder;
   private _appState!:AppState;
@@ -171,7 +173,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     {icon:this._consts.EMPTY_STRING, label: 'Pin to Start', action: this.doNothing.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Cut', action: this.onCut.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Copy', action: this.onCopy.bind(this) },
-    {icon:this._consts.EMPTY_STRING, label: 'Create shortcut', action: this.doNothing.bind(this) },
+    {icon:this._consts.EMPTY_STRING, label: 'Create shortcut', action: this.createShortCut.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Delete', action: this.onDeleteFile.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
     {icon:this._consts.EMPTY_STRING, label: 'Properties', action: this.showPropertiesWindow.bind(this) }
@@ -206,7 +208,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, triggerProcessService:TriggerProcessService, 
               fileManagerService:FileManagerService, formBuilder: FormBuilder, stateManagmentService:StateManagmentService, sessionManagmentService:SessionManagmentService,        
-              menuService:MenuService ) { 
+              menuService:MenuService, notificationService:NotificationService ) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileService = fileService;
@@ -214,6 +216,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
     this._menuService = menuService;
+    this._notificationService = notificationService;
     this._formBuilder = formBuilder;
 
     this.processId = this._processIdService.getNewProcessId();
@@ -2059,10 +2062,39 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       ]
   }
 
+  async createShortCut(): Promise<void>{
+    const selectedFile = this.selectedFile;
+    const shortCut:FileInfo = new FileInfo();
+    let fileContent = '';
+    const directory = '/';//(inputDir)? inputDir : this.directory;
+
+    if(directory === this._consts.ROOT){
+
+      const msg = `Cheetah can't create a shortcut here.
+Do you want the shortcut to be placed on the desktop instead?`;
+      this._notificationService.warningNotify.next(msg);
+      return;
+    }
 
 
-  createShortCut():void{
-   //
+    if(selectedFile.getIsFile){
+      fileContent = `[InternetShortcut]
+FileName=${selectedFile.getFileName} - ${this._consts.SHORTCUT}
+IconPath=${selectedFile.getIconPath}
+FileType=${selectedFile.getFileType}
+ContentPath=${selectedFile.getContentPath}
+OpensWith=${selectedFile.getOpensWith}
+`;
+    }else{
+      //
+    }
+
+    shortCut.setContentPath = fileContent
+    shortCut.setFileName= `${selectedFile.getFileName} - ${this._consts.SHORTCUT}${this._consts.URL}`;
+    const result = await this._fileService.writeFileAsync(this.directory, shortCut);
+    if(result){
+      await this.loadFilesInfoAsync();
+    }
   }
 
   private getComponentDetail():Process{

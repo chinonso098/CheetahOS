@@ -6,6 +6,7 @@ export class Constants{
     readonly OSDISK = 'OSDisk (C:)';
     readonly THISPC = 'This PC';
     readonly URL = '.url';
+    readonly SHORTCUT = 'Shortcut';
     readonly BASE = 'osdrive';
     readonly IMAGE_BASE_PATH = 'osdrive/Cheetah/System/Imageres/';
 

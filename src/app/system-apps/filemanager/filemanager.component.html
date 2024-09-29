@@ -7,7 +7,9 @@
         id="iconBtn{{i}}"  [style]="btnStyle">
             <figure>
                 <img [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconSizeStyle"/>
-                <img class="shortcut-img" [src]="'osdrive/Cheetah/System/Imageres/shortcut.png'"  id="shortCut{{i}}"/>
+                <ng-container *ngIf="file.getIsShortCut">
+                    <img class="shortcut-img" [src]="'osdrive/Cheetah/System/Imageres/shortcut.png'"  id="shortCut{{i}}"/>
+                </ng-container>
                 <figcaption  id="figCap{{i}}">
                         {{file.getFileName}}
                 </figcaption>

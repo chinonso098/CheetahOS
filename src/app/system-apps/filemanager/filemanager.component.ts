@@ -88,7 +88,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     {icon:'', label: 'Pin to Taskbar', action: this.pinIconToTaskBar.bind(this) },
     {icon:'', label: 'Cut', action: this.onCut.bind(this) },
     {icon:'', label: 'Copy', action: this.onCopy.bind(this)},
-    {icon:'', label: 'Create shortcut', action: this.doNothing.bind(this)},
+    {icon:'', label: 'Create shortcut', action: this.createShortCut.bind(this)},
     {icon:'', label: 'Delete', action: this.onDeleteFile.bind(this) },
     {icon:'', label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
     {icon:'', label: 'Properties', action: this.showPropertiesWindow.bind(this) }
@@ -482,6 +482,31 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       result = await this._fileService.deleteFolderAsync(this.selectedFile.getCurrentPath)
     }
 
+    if(result){
+      await this.loadFilesInfoAsync();
+    }
+  }
+
+  async createShortCut(): Promise<void>{
+    const selectedFile = this.selectedFile;
+    const shortCut:FileInfo = new FileInfo();
+    let fileContent = '';
+
+    if(selectedFile.getIsFile){
+      fileContent = `[InternetShortcut]
+FileName=${selectedFile.getFileName} - ${this._consts.SHORTCUT}
+IconPath=${selectedFile.getIconPath}
+FileType=${selectedFile.getFileType}
+ContentPath=${selectedFile.getContentPath}
+OpensWith=${selectedFile.getOpensWith}
+`;
+    }else{
+      //
+    }
+
+    shortCut.setContentPath = fileContent
+    shortCut.setFileName= `${selectedFile.getFileName} - ${this._consts.SHORTCUT}${this._consts.URL}`;
+    const result = await this._fileService.writeFileAsync(this.directory, shortCut);
     if(result){
       await this.loadFilesInfoAsync();
     }

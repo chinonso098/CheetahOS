@@ -9,6 +9,7 @@ export class FileInfo{
     private _dateModified:Date;
     private _size:number;
     private _isFile:boolean;
+    private _isShortCut:boolean;
     private _fileSizeUnit:string;
     private _mode:number;
 
@@ -24,6 +25,7 @@ export class FileInfo{
         this._dateModified = new Date('1990-01-01');
         this._size = 0;
         this._isFile = true;
+        this._isShortCut = false;
         this._fileSizeUnit = 'B';
         this._mode = 0;
     }
@@ -97,6 +99,7 @@ export class FileInfo{
 
         return this._dateModified.toLocaleString("en-US", options).replace(',', '');
     }
+    
     set setDateModified(dateModified:any){
 
         if(typeof dateModified === "string")
@@ -138,6 +141,13 @@ export class FileInfo{
         this._isFile = isFile;
     }
 
+    get getIsShortCut(){
+        return this._isShortCut;
+    }
+    set setIsShortCut(isShortCut:boolean){
+        this._isShortCut = isShortCut;
+    }
+
     get getFileSizeUnit(){
 
         if( this._size >= 0 && this._size <= 999){
@@ -154,7 +164,6 @@ export class FileInfo{
 
         return this._fileSizeUnit;
     }
-
 
     get getMode(){
         return '0' + (this._mode & parseInt('777', 8)).toString(8);

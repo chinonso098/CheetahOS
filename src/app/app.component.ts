@@ -67,6 +67,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private _appIsRunningSub!:Subscription;  
   private _errorNotifySub!:Subscription;
   private _infoNotifySub!:Subscription;  
+  private _warnNotifySub!:Subscription;  
   private _showPropertiesViewSub!:Subscription;
   private _closePropertiesViewSub!:Subscription;
 
@@ -121,6 +122,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this._appIsRunningSub = this._triggerProcessService.appIsRunningNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Info,appName)})
     this._errorNotifySub = this._notificationServices.errorNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Error,appName)})
     this._infoNotifySub = this._notificationServices.InfoNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Info,appName)})
+    this._warnNotifySub = this._notificationServices.warningNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Warning,appName)})
     this._closeProcessSub = this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.onCloseBtnClicked(p)})
     this._closeMsgDialogSub = this._notificationServices.closeDialogBoxNotify.subscribe((i) =>{this.closeDialogMsgBoxOrPropertiesView(i)})
     this._showPropertiesViewSub = this._menuService.showPropertiesView.subscribe((p) => this.showPropertiesWindow(p));
@@ -138,6 +140,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this._appIsRunningSub?.unsubscribe();
     this._errorNotifySub?.unsubscribe();
     this._infoNotifySub?.unsubscribe();
+    this._warnNotifySub?.unsubscribe();
     this._showPropertiesViewSub?.unsubscribe();
     this._closePropertiesViewSub?.unsubscribe();
   }
@@ -178,6 +181,9 @@ export class AppComponent implements OnDestroy, AfterViewInit {
       componentRef.setInput('inputMsg', msg);
       componentRef.setInput('notificationType', dialogMsgType);
     }else if(dialogMsgType === NotificationType.Info){
+      componentRef.setInput('inputMsg', msg);
+      componentRef.setInput('notificationType', dialogMsgType);
+    }else{
       componentRef.setInput('inputMsg', msg);
       componentRef.setInput('notificationType', dialogMsgType);
     }

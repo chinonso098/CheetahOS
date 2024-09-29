@@ -12,6 +12,7 @@ import * as BrowserFS from 'src/osdrive/Cheetah/System/BrowserFS/browserfs'
 import { Buffer } from 'buffer';
 import osDriveFileSystemIndex from '../../../osdrive.json';
 import ini  from 'ini';
+import { FileContent } from "src/app/system-files/file.content";
 
 @Injectable({
     providedIn: 'root'
@@ -107,7 +108,7 @@ export class FileService{
 
     public async copyFileAsync(sourcePath:string, destinationPath:string):Promise<boolean>{
         const fileName = this.getFileName(sourcePath);
-        //console.log(`Destination: ${destinationPath}/${fileName}`);
+        console.log(`Destination: ${destinationPath}/${fileName}`);
         return new Promise<boolean>((resolve, reject) =>{
              this._fileSystem.readFile(sourcePath,(err, contents = Buffer.from('')) =>{
                 if(err){
@@ -343,42 +344,41 @@ export class FileService{
         const fileMetaData = await this.getExtraFileMetaDataAsync(path) as FileMetaData;
      
         if(!extension){
-            const sc = await this.setFolderValuesAsync(path) as ShortCut;
-            this._fileInfo = this.populateFileInfo(path, fileMetaData, false, this._consts.EMPTY_STRING, this._consts.EMPTY_STRING, false, sc);
-            this._fileInfo.setIconPath = this.changeFolderIcon(sc.geFileName,sc.getIconPath, path);
+            const fc = await this.setFolderValuesAsync(path) as FileContent;
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, false, this._consts.EMPTY_STRING, this._consts.EMPTY_STRING, false, undefined, fc);
+            this._fileInfo.setIconPath = this.changeFolderIcon(fc.geFileName,fc.getIconPath, path);
         }
-        else if(extension == this._consts.URL){
+        else if(extension === this._consts.URL){
             const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
-            if(sc)
-                this._fileInfo = this.populateFileInfo(path, fileMetaData, true, this._consts.EMPTY_STRING, this._consts.EMPTY_STRING, true, sc);
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, this._consts.EMPTY_STRING, this._consts.EMPTY_STRING, true, sc);
+            this._fileInfo.setIsShortCut = true;
         }
         else if(this._consts.IMAGE_FILE_EXTENSIONS.includes(extension)){
-            const sc = await this.getShortCutFromB64DataUrlAsync(path, 'image') as ShortCut;
-            if(sc)
-                this._fileInfo = this.populateFileInfo(path, fileMetaData, true,'photoviewer', 'image_file.png', false, sc);
+            const fc = await this.getFileConetentFromB64DataUrlAsync(path, 'image') as FileContent;
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true,'photoviewer', 'image_file.png', false,undefined, fc);
         }
         else if(this._consts.VIDEO_FILE_EXTENSIONS.includes(extension)){
-            const sc = await this.getShortCutFromB64DataUrlAsync(path, 'video') as ShortCut;
-                this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'videoplayer', 'video_file.png', false, sc);
+            const fc = await this.getFileConetentFromB64DataUrlAsync(path, 'video') as FileContent;
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'videoplayer', 'video_file.png', false,undefined, fc);
         }
         else if(this._consts.AUDIO_FILE_EXTENSIONS.includes(extension)){
-            const sc = await this.getShortCutFromB64DataUrlAsync(path, 'audio') as ShortCut;
-            if(sc)
-                this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'audioplayer', 'music_file.png', false, sc);
+            const fc = await this.getFileConetentFromB64DataUrlAsync(path, 'audio') as FileContent;
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'audioplayer', 'music_file.png', false, undefined, fc);
+
         }else if(this._consts.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension) || extension === '.wasm'){
             const img_file = (extension === '.wasm')? 'wasm_file.png' : 'code_file.png';
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'codeeditor', img_file);
         }
-        else if(extension == '.txt' || extension == '.properties'){
+        else if(extension === '.txt' || extension === '.properties'){
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'texteditor', 'file.png');
         }
-        else if(extension == '.md'){
+        else if(extension === '.md'){
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'markdownviewer', 'markdown_file.png');
         }
-        else if(extension == '.jsdos'){
+        else if(extension === '.jsdos'){
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'jsdos', 'js-dos_file.png');
         }
-        else if(extension == '.swf'){
+        else if(extension === '.swf'){
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'ruffle', 'swf_file.png');
         }else{
             this._fileInfo.setIconPath=`${this._consts.IMAGE_BASE_PATH}/unknown.png`;
@@ -393,16 +393,24 @@ export class FileService{
         return this._fileInfo;
     }
 
-    populateFileInfo(path:string, fileMetaData:FileMetaData, isFile =true, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut):FileInfo{
+    populateFileInfo(path:string, fileMetaData:FileMetaData, isFile =true, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut, fileCntnt?:FileContent):FileInfo{
         const fileInfo = new FileInfo();
         const img = `${this._consts.IMAGE_BASE_PATH}${imageName}`;
 
-        fileInfo.setIconPath = (useImage)? shortCut?.getIconPath || img : img;
         fileInfo.setCurrentPath = path;
-        fileInfo.setContentPath = shortCut?.getContentPath || this._consts.EMPTY_STRING;
-        fileInfo.setFileType = shortCut?.getFileType || extname(path);
-        fileInfo.setFileName = shortCut?.geFileName || basename(path, extname(path));
-        fileInfo.setOpensWith = shortCut?.getOpensWith || opensWith;
+        if(shortCut !== undefined){
+            fileInfo.setIconPath = (useImage)? shortCut?.getIconPath || img : img;
+            fileInfo.setContentPath = shortCut?.getContentPath || this._consts.EMPTY_STRING;
+            fileInfo.setFileType = shortCut?.getFileType || extname(path);
+            fileInfo.setFileName = shortCut?.geFileName || basename(path, extname(path));
+            fileInfo.setOpensWith = shortCut?.getOpensWith || opensWith;
+        }else{
+            fileInfo.setIconPath = (useImage)? fileCntnt?.getIconPath || img : img;
+            fileInfo.setContentPath = fileCntnt?.getContentPath || this._consts.EMPTY_STRING;
+            fileInfo.setFileType = fileCntnt?.getFileType || extname(path);
+            fileInfo.setFileName = fileCntnt?.geFileName || basename(path, extname(path));
+            fileInfo.setOpensWith = fileCntnt?.getOpensWith || opensWith;
+        }
         fileInfo.setIsFile = isFile;
         fileInfo.setDateModified = fileMetaData.getModifiedDate;
         fileInfo.setSize = fileMetaData.getSize;
@@ -412,12 +420,12 @@ export class FileService{
         return fileInfo;
     }
 
-    public async getShortCutFromB64DataUrlAsync(path:string, contentType:string):Promise<ShortCut> {
+    public async getFileConetentFromB64DataUrlAsync(path:string, contentType:string):Promise<FileContent> {
 
         return new Promise((resolve, reject) =>{
             this._fileSystem.readFile(path, (err, contents = Buffer.from('')) =>{
                 if(err){
-                    console.log('getShortCutFromB64DataUrlAsync error:',err)
+                    console.log('getFileConetentFromB64DataUrlAsync error:',err)
                     reject(err)
                 }
 
@@ -434,18 +442,18 @@ export class FileService{
                         const fileUrl =  this.bufferToUrl(cntntData);
 
                         if(stringData.substring(0, 10) == 'data:image')
-                            resolve(new ShortCut(fileUrl, basename(path, extname(path)),'',fileUrl,''));
+                            resolve(new FileContent(fileUrl, basename(path, extname(path)),'',fileUrl,''));
                         else
-                            resolve(new ShortCut('', basename(path, extname(path)),'',fileUrl,''));
+                            resolve(new FileContent('', basename(path, extname(path)),'',fileUrl,''));
                     }else{
                         const fileUrl = this.bufferToUrl2(contents)
                         if(contentType === 'image')
-                            resolve(new ShortCut(fileUrl, basename(path, extname(path)),'',fileUrl,''));
+                            resolve(new FileContent(fileUrl, basename(path, extname(path)),'',fileUrl,''));
                         else
-                            resolve(new ShortCut('', basename(path, extname(path)),'',fileUrl,''));
+                            resolve(new FileContent('', basename(path, extname(path)),'',fileUrl,''));
                     }
                 }else{
-                    resolve(new ShortCut('', basename(path, extname(path)),'',this.bufferToUrl2(contents),''));
+                    resolve(new FileContent('', basename(path, extname(path)),'',this.bufferToUrl2(contents),''));
                 }
             });
         });
@@ -526,6 +534,8 @@ export class FileService{
                 fileReader.onload = (evt) =>{
                     
                     this._fileSystem.writeFile(`${directory}/${file.name}`,evt.target?.result, {flag: 'wx'}, (err) =>{  
+
+                        console.log(`fileName:${directory}/${file.name}`);
                         if(err?.code === 'EEXIST' ){
                             console.log('writeFileAsync Error: file already exists',err);
     
@@ -550,6 +560,8 @@ export class FileService{
     public async writeFileAsync(directory:string, file:FileInfo):Promise<boolean>{
         return new Promise<boolean>((resolve, reject) =>{
             this._fileSystem.writeFile(`${directory}/${file.getFileName}`, file.getContentPath, {flag: 'wx'}, (err) =>{  
+                console.log(`FileName:${directory}/${file.getFileName}`);
+
                 if(err?.code === 'EEXIST' ){
                     console.log('writeFileAsync Error: file already exists',err);
 
@@ -682,26 +694,26 @@ export class FileService{
         return `${dirname(path)}/${filename} (${count})${extension}`;
     }
 
-    public async setFolderValuesAsync(path: string):Promise<ShortCut>{
-        return new Promise<ShortCut>((resolve, reject) =>{
+    public async setFolderValuesAsync(path: string):Promise<FileContent>{
+        return new Promise<FileContent>((resolve, reject) =>{
 
             this._fileSystem.exists(`${path}`,(exits) =>{
                 if(exits){
                     this._fileSystem.stat(path,(err, stats) =>{
                         if(err){
                             console.log('setFolderValuesAsync error:',err)
-                            reject(new ShortCut('','','','',''));
+                            reject(new FileContent('','','','',''));
                         }
         
                         const isDirectory = (stats)? stats.isDirectory(): false;
                         const iconFile = `${this._consts.IMAGE_BASE_PATH}${isDirectory ? 'folder.png' : 'unknown.png'}`
                         const fileType = 'folder';
                         const opensWith ='fileexplorer'
-                        resolve(new ShortCut(iconFile, basename(path, extname(path)),fileType,basename(path, extname(path)) ,opensWith ));
+                        resolve(new FileContent(iconFile, basename(path, extname(path)),fileType,basename(path, extname(path)) ,opensWith ));
                     });
                 }else{
                    console.log('setFolderValuesAsync :Does not exists',exits);
-                   resolve(new ShortCut('','','','','' ));
+                   resolve(new FileContent('','','','','' ));
                 }
            });
             
