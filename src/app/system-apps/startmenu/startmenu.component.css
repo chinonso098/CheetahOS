@@ -11,10 +11,10 @@
 
 .start-menu-main-overlay-content{
     display: flex;
+    /* background-color: red; */
     width: 48px;
     height: 500px;
 }
-
 
 .start-menu-main-overlay-icon-content{
     width: 100%;
@@ -55,15 +55,17 @@
 
 .start-menu-main-content-container{
     display:flex;
-    width: 450px;
+    width: 315px;
     height: 500px;
     background-color: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(5px);
 }
 
-
-
-.start-menu-main-base-conatiner{
+.start-menu-main-content-empty{
+    width: 15.2%;
+    /* background-color: aquamarine; */
+}
+.start-menu-main-content-list{
     width: 85%;
 }
 
