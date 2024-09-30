@@ -12,6 +12,7 @@ import { DesktopComponent } from './system-apps/desktop/desktop.component';
 import { TaskbarComponent } from './system-apps/taskbar/taskbar.component';
 import { ClockComponent } from './system-apps/clock/clock.component';
 import { StartButtonComponent } from './system-apps/startbutton/startbutton.component';
+import { StartMenuComponent } from './system-apps/startmenu/startmenu.component';
 import { TaskBarPreviewComponent } from './system-apps/taskbarpreview/taskbarpreview.component';
 import { TaskBarEntriesComponent } from './system-apps/taskbarentries/taskbarentries.component';
 import { TaskBarEntryComponent } from './system-apps/taskbarentry/taskbarentry.component';
@@ -53,6 +54,7 @@ import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.captu
     TaskbarComponent,
     ClockComponent,
     StartButtonComponent,
+    StartMenuComponent,
     TaskBarPreviewComponent,
     TaskBarEntriesComponent,
     TaskBarEntryComponent,

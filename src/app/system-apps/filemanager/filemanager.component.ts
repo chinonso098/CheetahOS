@@ -27,6 +27,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _fileService:FileService;
+  private _elRef:ElementRef;
   private _directoryFilesEntries!:FileEntry[];
   private _triggerProcessService:TriggerProcessService;
   private _menuService:MenuService;
@@ -68,7 +69,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
   showCntxtMenu = false;
   gridSize = 90; //column size of grid = 90px
-  SECONDS_DELAY = 6000;
+  SECONDS_DELAY:number[] = [6000,250];
   renameForm!: FormGroup;
 
   hasWindow = false;
@@ -100,13 +101,14 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   menuOrder = '';
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileInfoService:FileService,
-              triggerProcessService:TriggerProcessService, fileManagerService:FileManagerService, formBuilder: FormBuilder, menuService:MenuService) { 
+              triggerProcessService:TriggerProcessService, fileManagerService:FileManagerService, formBuilder: FormBuilder, menuService:MenuService, elRef: ElementRef) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileService = fileInfoService;
     this._triggerProcessService = triggerProcessService;
     this._menuService = menuService;
     this._formBuilder = formBuilder;
+    this._elRef = elRef;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -135,6 +137,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
   async ngAfterViewInit():Promise<void>{
     await this.loadFilesInfoAsync();
+    this.removeVantaJSSideEffect();
   }
 
   ngOnDestroy(): void {
@@ -185,6 +188,17 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
   }
 
+
+  removeVantaJSSideEffect(): void {
+    // VANTA js wallpaper is adding an unwanted style position:relative and z-index:1
+    setTimeout(()=> {
+      const elfRef = this._elRef.nativeElement;
+      if(elfRef) {
+        elfRef.style.position = '';
+        elfRef.style.zIndex = '';
+      }
+    }, this.SECONDS_DELAY[1]);
+  }
   async runProcess(file:FileInfo):Promise<void>{
 
     console.log('filemanager-runProcess:',file)
@@ -523,7 +537,7 @@ OpensWith=${selectedFile.getOpensWith}
 
       setTimeout(()=>{ // hide after 6 secs
         this.hideInvalidCharsToolTip();
-      },this.SECONDS_DELAY) 
+      },this.SECONDS_DELAY[0]) 
 
       return res;
     }

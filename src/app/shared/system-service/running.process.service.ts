@@ -30,6 +30,8 @@ export class RunningProcessService{
     restoreOrMinimizeProcessWindowNotify: Subject<number> = new Subject<number>();
     restoreProcessWindowNotify: Subject<number> = new Subject<number>();
     restoreProcessesWindowNotify: Subject<void> = new Subject<void>();
+    showProcessNotify: Subject<void> = new Subject<void>();
+    hideProcessNotify: Subject<void> = new Subject<void>();
 
     constructor(){
         this._runningProcesses = [];

@@ -57,6 +57,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _showTaskBarPreviewWindowSub!:Subscription;
   private _hideTaskBarPreviewWindowSub!:Subscription;
   private _keepTaskBarPreviewWindowSub!:Subscription;
+  private _showStartMenuSub!:Subscription;
+  private _hideStartMenuSub!:Subscription;
 
   private _vantaEffect: any;
 
@@ -83,6 +85,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   autoArrangeIcons = true;
   showDesktopIcons = true;
   showDesktopScreenShotPreview = false;
+  showStartMenu = false;
   dsktpPrevImg = '';
   slideState = 'slideIn';
 
@@ -158,6 +161,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
     this._hideTaskBarPreviewWindowSub = this._runningProcessService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
     this._keepTaskBarPreviewWindowSub = this._runningProcessService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
+    this._showStartMenuSub = this._runningProcessService.showProcessNotify.subscribe(() => { this.showStartMenuM()});
+    this._hideStartMenuSub = this._runningProcessService.hideProcessNotify.subscribe(() => { this.hideStartMenu()});
 
 
     this.processId = this._processIdService.getNewProcessId()
@@ -172,8 +177,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         color:this.defaultColor, //this._numSequence,
         waveHeight:20,
         shininess: 50,
-        waveSpeed:0.5,
-        zoom:0.75,     
+        waveSpeed:0.20,
+        // zoom:0.75,     
       });
     })
 
@@ -215,6 +220,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._showTaskBarPreviewWindowSub?.unsubscribe();
     this._hideTaskBarPreviewWindowSub?.unsubscribe();
     this._keepTaskBarPreviewWindowSub?.unsubscribe();
+    this._showStartMenuSub?.unsubscribe();
+    this._hideStartMenuSub?.unsubscribe();
 
     cancelAnimationFrame(this.animationId);
     this._vantaEffect?.destroy();
@@ -315,6 +322,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     return {xAxis, yAxis};
   }
 
+  showStartMenuM():void{
+    setTimeout(() => {
+      this.showStartMenu = true;
+    }, 150);
+  }
+
+  hideStartMenu():void{
+    this.showStartMenu = false;
+  }
+
   captureComponentImg():void{
     const directory ='/Users/Documents/Screen-Shots';
     htmlToImage.toPng(this.desktopContainer.nativeElement).then(htmlImg =>{
@@ -360,6 +377,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.showDesktopCntxtMenu = false;
     this.showTskBarCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
+    this.showStartMenu = false;
 
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){

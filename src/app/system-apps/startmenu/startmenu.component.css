@@ -1,0 +1,13 @@
+.start-menu-main-container{
+    position: absolute;
+    width: 100;
+    z-index: 2;
+    bottom: 3.7%;
+}
+
+.start-menu-main-content-container{
+    width: 450px;
+    height: 500px;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+}
