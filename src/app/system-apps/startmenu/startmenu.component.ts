@@ -4,7 +4,6 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { ComponentType } from 'src/app/system-files/component.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
-import { transition } from '@angular/animations';
 
 @Component({
   selector: 'cos-startmenu',
@@ -17,6 +16,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
   private _elRef:ElementRef;
   private _consts:Constants = new Constants();
+  txtOverlayMenuStyle:Record<string, unknown> = {};
   private SECONDS_DELAY = 250;
 
   hasWindow = false;
@@ -81,6 +81,25 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
       setTimeout(() => {
           smTxtOverlay.style.transition = 'left 1s ease'; // Set the transition for left
           smTxtOverlay.style.left = '48px'; // Animate to 48px
+      }, 0); // Use a small timeout to ensure styles are applied in the correct order
+    } 
+  }
+
+  slideIn2(): void {
+    const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
+  
+    if (smIconTxtOverlay) {
+      // Set initial position and visibility
+      smIconTxtOverlay.style.width = '48px';
+      // Allow the browser to calculate the layout before applying the animation
+      setTimeout(() => {
+        smIconTxtOverlay.style.transition = 'width 0.4s ease'; // Set the transition for left
+        smIconTxtOverlay.style.width = '250px'; // Animate to 250px
+        smIconTxtOverlay.style.boxShadow = '2px 0px 4px rgba(0, 0, 0, 0.6)';
+
+        this.txtOverlayMenuStyle = {
+          'display': 'block'
+        }
       }, 0); // Use a small timeout to ensure styles are applied in the correct order
     } 
   }
