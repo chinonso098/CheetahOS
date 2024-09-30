@@ -4,6 +4,7 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { ComponentType } from 'src/app/system-files/component.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
+import { transition } from '@angular/animations';
 
 @Component({
   selector: 'cos-startmenu',
@@ -55,6 +56,53 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
       }
     }, this.SECONDS_DELAY);
   }
+
+
+
+  // slideIn():void{
+  //   const smTxtOverlay = document.getElementById('sm-Text-Overlay') as HTMLElement;
+  //   if(smTxtOverlay){
+  //     smTxtOverlay.style.display = 'block';
+  //     smTxtOverlay.style.left = '48px';
+  //     smTxtOverlay.style.transition = '1s ease';
+  //   }
+  // }
+
+
+  slideIn(): void {
+    const smTxtOverlay = document.getElementById('sm-Text-Overlay') as HTMLElement;
+    
+    if (smTxtOverlay) {
+      // Set initial position and visibility
+      smTxtOverlay.style.left = '-152px';
+      smTxtOverlay.style.display = 'block'; // Make it visible first
+
+      // Allow the browser to calculate the layout before applying the animation
+      setTimeout(() => {
+          smTxtOverlay.style.transition = 'left 1s ease'; // Set the transition for left
+          smTxtOverlay.style.left = '48px'; // Animate to 48px
+      }, 0); // Use a small timeout to ensure styles are applied in the correct order
+    } 
+  }
+
+  slideOut(): void {
+    const smTxtOverlay = document.getElementById('sm-Text-Overlay') as HTMLElement;
+
+    if (smTxtOverlay) {
+      // Ensure the element has the transition property set for smooth animation
+      smTxtOverlay.style.transition = 'left 1s ease';
+
+      // Move the element back to its original position
+      smTxtOverlay.style.left = '-152px';
+
+      // After the transition ends, hide the element
+      setTimeout(() => {
+          smTxtOverlay.style.display = 'none'; // Hide the element after animation
+      }, 1000); // Set this to match the transition duration (1s)
+    }
+ }
+
+
 
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)

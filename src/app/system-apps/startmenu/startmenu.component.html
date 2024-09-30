@@ -3,7 +3,7 @@
     <div class="start-menu-main-overlay-container">
         <div class="start-menu-main-overlay-content">
             <div class="start-menu-main-overlay-icon-content">
-                <div class="start-menu-overlay-icon">
+                <div class="start-menu-overlay-icon" (mouseenter)="slideIn()"  >
                     <figure class="start-menu-overlay-figure">
                         <img class="start-menu-overlay-img" [src]="'osdrive/Cheetah/System/Imageres/sm_hamburger_menu.png'"/>
                     </figure>
@@ -11,30 +11,45 @@
 
                 <div style="height: 280px;"> </div>
 
-                <div class="start-menu-overlay-icon">
+                <div class="start-menu-overlay-icon" (mouseenter)="slideIn()" (mouseleave)="slideOut()">
                     <figure class="start-menu-overlay-figure">
                         <img class="start-menu-overlay-img" [src]="'osdrive/Cheetah/System/Imageres/sm_file.png'"/>
                     </figure>
                 </div>
-                <div class="start-menu-overlay-icon">
+                <div class="start-menu-overlay-icon" (mouseenter)="slideIn()" (mouseleave)="slideOut()">
                     <figure class="start-menu-overlay-figure">
                         <img class="start-menu-overlay-img" [src]="'osdrive/Cheetah/System/Imageres/sm_picture.png'"/>
                     </figure>
                 </div>
-                <div class="start-menu-overlay-icon">
+                <div class="start-menu-overlay-icon" (mouseenter)="slideIn()" (mouseleave)="slideOut()">
                     <figure class="start-menu-overlay-figure">
                         <img class="start-menu-overlay-img" [src]="'osdrive/Cheetah/System/Imageres/sm_settings.png'"/>
                     </figure>
                 </div>
-                <div class="start-menu-overlay-icon">
+                <div class="start-menu-overlay-icon" (mouseenter)="slideIn()" (mouseleave)="slideOut()">
                     <figure class="start-menu-overlay-figure">
                         <img class="start-menu-overlay-img" [src]="'osdrive/Cheetah/System/Imageres/sm_power.png'"/>
                     </figure>
                 </div>
             </div>
 
-            <div class="start-menu-main-overlay-text-content">
-
+            <div  class="start-menu-main-overlay-text-content"  id="sm-Text-Overlay">
+                <div class="start-menu-overlay-text" >
+                    <p class="start-menu-overlay-text-p" style="font-weight: bold;">START</p>
+                </div>
+                <div style="height: 280px;"> </div>
+                <div class="start-menu-overlay-text">
+                    <p class="start-menu-overlay-text-p">Documents</p>
+                </div>
+                <div class="start-menu-overlay-text">
+                    <p class="start-menu-overlay-text-p">Pictures</p>
+                </div>
+                <div class="start-menu-overlay-text">
+                    <p class="start-menu-overlay-text-p">Settings</p>
+                </div>
+                <div class="start-menu-overlay-text">
+                    <p class="start-menu-overlay-text-p">Power</p>
+                </div>
             </div>
         </div>
     </div>
