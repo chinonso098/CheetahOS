@@ -53,7 +53,7 @@ right: 0;
     height: 18px;
     width: 18px;
     margin: 0 6px 0 8px;
-    image-rendering: optimizeQuality;
+    
 }
   
 .error-dialog-figure{
@@ -130,7 +130,7 @@ right: 0;
     height: 38px;
     width: 38px;
     margin: 0 8px;
-    image-rendering: optimizeQuality;
+    
 }
   
 .error-dialog-figure1{
@@ -224,7 +224,7 @@ right: 0;
     height: 38px;
     width: 38px;
     margin: 0 14px;
-    image-rendering: optimizeQuality;
+    
 }
   
 .info-dialog-figure1{
@@ -288,7 +288,7 @@ right: 0;
     height: 38px;
     width: 38px;
     margin: 0 14px;
-    image-rendering: optimizeQuality;
+    
 }
   
 .warning-dialog-figure1{
