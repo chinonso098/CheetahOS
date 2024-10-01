@@ -57,34 +57,6 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     }, this.SECONDS_DELAY);
   }
 
-
-
-  // slideIn():void{
-  //   const smTxtOverlay = document.getElementById('sm-Text-Overlay') as HTMLElement;
-  //   if(smTxtOverlay){
-  //     smTxtOverlay.style.display = 'block';
-  //     smTxtOverlay.style.left = '48px';
-  //     smTxtOverlay.style.transition = '1s ease';
-  //   }
-  // }
-
-
-  // slideIn(): void {
-  //   const smTxtOverlay = document.getElementById('sm-Text-Overlay') as HTMLElement;
-    
-  //   if (smTxtOverlay) {
-  //     // Set initial position and visibility
-  //     smTxtOverlay.style.left = '-152px';
-  //     smTxtOverlay.style.display = 'block'; // Make it visible first
-
-  //     // Allow the browser to calculate the layout before applying the animation
-  //     setTimeout(() => {
-  //         smTxtOverlay.style.transition = 'left 1s ease'; // Set the transition for left
-  //         smTxtOverlay.style.left = '48px'; // Animate to 48px
-  //     }, 0); // Use a small timeout to ensure styles are applied in the correct order
-  //   } 
-  // }
-
   startMenuOverlaySlideOut(): void {
     const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
   
@@ -94,12 +66,11 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
       // Allow the browser to calculate the layout before applying the animation
       setTimeout(() => {
         smIconTxtOverlay.style.transition = 'width 0.45s ease'; // Set the transition for left
-        smIconTxtOverlay.style.width = '250px'; // Animate to 250px
+        smIconTxtOverlay.style.width = '248px'; // Animate to 250px
         smIconTxtOverlay.style.boxShadow = '0px 2px 4px rgba(0, 0, 0, 0.6)';
-        //smIconTxtOverlay.style.clipPath = 'inset(0px -10px -10px -10px)';
 
         this.txtOverlayMenuStyle = {
-          'display': 'block'
+          'display': 'flex'
         }
       }, 0); // Use a small timeout to ensure styles are applied in the correct order
     } 
