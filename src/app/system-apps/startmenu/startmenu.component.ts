@@ -69,23 +69,23 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   // }
 
 
-  slideIn(): void {
-    const smTxtOverlay = document.getElementById('sm-Text-Overlay') as HTMLElement;
+  // slideIn(): void {
+  //   const smTxtOverlay = document.getElementById('sm-Text-Overlay') as HTMLElement;
     
-    if (smTxtOverlay) {
-      // Set initial position and visibility
-      smTxtOverlay.style.left = '-152px';
-      smTxtOverlay.style.display = 'block'; // Make it visible first
+  //   if (smTxtOverlay) {
+  //     // Set initial position and visibility
+  //     smTxtOverlay.style.left = '-152px';
+  //     smTxtOverlay.style.display = 'block'; // Make it visible first
 
-      // Allow the browser to calculate the layout before applying the animation
-      setTimeout(() => {
-          smTxtOverlay.style.transition = 'left 1s ease'; // Set the transition for left
-          smTxtOverlay.style.left = '48px'; // Animate to 48px
-      }, 0); // Use a small timeout to ensure styles are applied in the correct order
-    } 
-  }
+  //     // Allow the browser to calculate the layout before applying the animation
+  //     setTimeout(() => {
+  //         smTxtOverlay.style.transition = 'left 1s ease'; // Set the transition for left
+  //         smTxtOverlay.style.left = '48px'; // Animate to 48px
+  //     }, 0); // Use a small timeout to ensure styles are applied in the correct order
+  //   } 
+  // }
 
-  slideIn2(): void {
+  startMenuOverlaySlideOut(): void {
     const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
   
     if (smIconTxtOverlay) {
@@ -93,9 +93,10 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
       smIconTxtOverlay.style.width = '48px';
       // Allow the browser to calculate the layout before applying the animation
       setTimeout(() => {
-        smIconTxtOverlay.style.transition = 'width 0.4s ease'; // Set the transition for left
+        smIconTxtOverlay.style.transition = 'width 0.45s ease'; // Set the transition for left
         smIconTxtOverlay.style.width = '250px'; // Animate to 250px
-        smIconTxtOverlay.style.boxShadow = '2px 0px 4px rgba(0, 0, 0, 0.6)';
+        smIconTxtOverlay.style.boxShadow = '0px 2px 4px rgba(0, 0, 0, 0.6)';
+        //smIconTxtOverlay.style.clipPath = 'inset(0px -10px -10px -10px)';
 
         this.txtOverlayMenuStyle = {
           'display': 'block'
@@ -104,22 +105,23 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     } 
   }
 
-  slideOut(): void {
-    const smTxtOverlay = document.getElementById('sm-Text-Overlay') as HTMLElement;
+  startMenuOverlaySlideIn(): void {
+    const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
 
-    if (smTxtOverlay) {
+    if (smIconTxtOverlay) {
       // Ensure the element has the transition property set for smooth animation
-      smTxtOverlay.style.transition = 'left 1s ease';
-
-      // Move the element back to its original position
-      smTxtOverlay.style.left = '-152px';
+      smIconTxtOverlay.style.transition = 'width 0.75s ease';
+      smIconTxtOverlay.style.width = '48px';
+      smIconTxtOverlay.style.boxShadow = 'none';
 
       // After the transition ends, hide the element
       setTimeout(() => {
-          smTxtOverlay.style.display = 'none'; // Hide the element after animation
-      }, 1000); // Set this to match the transition duration (1s)
+        this.txtOverlayMenuStyle = {
+          'display': 'none'
+        }
+      }, 300); // Set this to match the transition duration (1s)
     }
- }
+  }
 
 
 
