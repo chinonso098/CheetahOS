@@ -1,7 +1,7 @@
 .start-menu-main-container, .start-menu-main-overlay-container{
     position: absolute;
     z-index: 2;
-    bottom: 3.7%;
+    bottom: 40px;
     left: 0;
 }
 
