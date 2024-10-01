@@ -109,7 +109,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   ribbonMenuCntnrStyle:Record<string, unknown> = {};
   olClassName = 'ol-icon-size-view';
 
-  files:FileInfo[] = [];
+  fileExplrFiles:FileInfo[] = [];
   fileTreeNode:FileTreeNode[] = [];
   _fileInfo!:FileInfo;
   prevPathEntries:string[] = [];
@@ -432,7 +432,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const iconIdx = icon_sizes.indexOf(iconSize);
     const btnIdx = (iconIdx <= 2) ? 0 : 1;
 
-    for(let i = 0; i < this.files.length; i++){
+    for(let i = 0; i < this.fileExplrFiles.length; i++){
       const btnElmnt = document.getElementById(`btnElmnt-${this.processId}-${i}`) as HTMLElement;
       const imgElmnt = document.getElementById(`imgElmnt-${this.processId}-${i}`) as HTMLElement;
 
@@ -840,7 +840,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   private async loadFilesInfoAsync(showUrlFiles=true):Promise<void>{
-    this.files = [];
+    this.fileExplrFiles = [];
     this._fileService.resetDirectoryFiles();
     let directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
 
@@ -865,7 +865,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const fileEntry = this._directoryFilesEntires[i];
       const fileInfo = await this._fileService.getFileInfoAsync(fileEntry.getPath);
 
-      this.files.push(fileInfo)
+      this.fileExplrFiles.push(fileInfo)
     }
   }
 
@@ -1426,15 +1426,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   sortIcons(sortBy:string): void {
     if(sortBy === "Size"){
-      this.files = this.files.sort((objA, objB) => objB.getSize - objA.getSize);
+      this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => objB.getSize - objA.getSize);
     }else if(sortBy === "Date Modified"){
-      this.files = this.files.sort((objA, objB) => objB.getDateModified.getTime() - objA.getDateModified.getTime());
+      this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => objB.getDateModified.getTime() - objA.getDateModified.getTime());
     }else if(sortBy === "Name"){
-      this.files = this.files.sort((objA, objB) => {
+      this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => {
         return objA.getFileName < objB.getFileName ? -1 : 1;
       });
     }else if(sortBy === "Item Type"){
-      this.files = this.files.sort((objA, objB) => {
+      this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => {
         return objA.getFileType < objB.getFileType ? -1 : 1;
       });
     }
@@ -1797,10 +1797,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
-        const fileIdx = this.files.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));
+        const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));
         this.selectedFile.setFileName = renameText;
         this.selectedFile.setDateModified = Date.now();
-        this.files[fileIdx] = this.selectedFile;
+        this.fileExplrFiles[fileIdx] = this.selectedFile;
 
         this.renameForm.reset();
         await this.loadFilesInfoAsync();

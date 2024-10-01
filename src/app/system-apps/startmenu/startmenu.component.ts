@@ -52,7 +52,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
     setTimeout(async () => {
       await this.loadFilesInfoAsync();
-    }, 1500);
+    }, 100);
     // 
     this.removeVantaJSSideEffect();
   }
@@ -80,7 +80,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
       // Allow the browser to calculate the layout before applying the animation
       smIconTxtOverlay.style.transition = 'width 0.4s ease'; // Set the transition for left
-      smIconTxtOverlay.style.width = '248px'; // Animate to 250px
+      smIconTxtOverlay.style.width = '248px'; // Animate to 248px
       smIconTxtOverlay.style.transitionDelay = '1s';
       //smIconTxtOverlay.style.backgroundColor = 'rgba(33,33, 33, 0.6)';
 
@@ -108,7 +108,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
         this.txtOverlayMenuStyle = {
           'display': 'none'
         }
-      }, 300); // Set this to match the transition duration (1s)
+      }, 300); // Set this to match the transition duration (.3s)
     }
   }
 
