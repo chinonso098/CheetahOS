@@ -8,6 +8,8 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { FileEntry } from 'src/app/system-files/file.entry';
 
+import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
+
 @Component({
   selector: 'cos-startmenu',
   templateUrl: './startmenu.component.html',
@@ -110,6 +112,30 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
         }
       }, 300); // Set this to match the transition duration (.3s)
     }
+  }
+
+  onBtnHover():void{
+    // applyEffect('.start-menu-list-btn', {
+    //   lightColor: 'rgba(255,255,255,0.1)',
+    //   gradientSize: 150,
+    // });
+
+    applyEffect('.start-menu-list-ol', {
+      clickEffect: true,
+      lightColor: 'rgba(255,255,255,0.6)',
+      gradientSize: 40,
+      isContainer: true,
+      children: {
+        borderSelector: '.start-menu-list-li',
+        elementSelector: '.start-menu-list-btn',
+        lightColor: 'rgba(255,255,255,0.3)',
+        gradientSize: 150
+      }
+    })
+  }
+
+  onBtnExit():void{
+//
   }
 
   private async loadFilesInfoAsync():Promise<void>{

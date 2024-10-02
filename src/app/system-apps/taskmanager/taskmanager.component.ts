@@ -89,7 +89,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   powerUtil = 'Very low';
 
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}taskmanger.png`;
+  icon = `${this._consts.IMAGE_BASE_PATH}taskmanager.png`;
   name = 'taskmanager';
   processId = 0;
   type = ComponentType.System;

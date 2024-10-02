@@ -64,7 +64,7 @@
     display:flex;
     width: 315px;
     height: 500px;
-    background-color: rgba(33,33, 33, 0.6);
+    background-color: rgba(51,51, 51, 1);
     backdrop-filter: blur(12px);
 }
 
@@ -94,11 +94,14 @@
     border: 2px solid transparent;
 }
 
-.start-menu-list-li:hover{
-    border: 2px solid white;
-}
 
 .start-menu-list-btn{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    /* padding: 1rem 2rem; */
+    background-color: rgba(51, 51, 51, 1);
+    color: #fff;
+    border: 0;
+    transition: all 200ms ease;
     display: flex;
     width: 100%;
     height: 32px;
