@@ -83,27 +83,15 @@
     padding:0px 12px;
 }
 
-
 .start-menu-list-ol{
-    /* column-gap: 1px; */
-    /* display: grid;
-    grid-auto-flow: column;
-    grid-template-columns:  repeat(auto-fill,90px);
-    grid-template-rows: repeat(auto-fill,70px);
-    height: calc(100% - 40px); */
     width: 100%;
     padding: 10px 0;
-    /* row-gap: 20px; */
 }
-
 
 .start-menu-list-li{
     display: flex;
     justify-content: center;
-    padding: 3px 0;
     border: 2px solid transparent;
-     /* height: min-content;
-    z-index: 1; */
 }
 
 .start-menu-list-li:hover{
@@ -117,61 +105,41 @@
 }
 
 .start-menu-list-fig{
-    align-items: center;
-    display:inline-flex;
-    min-width: 32px;
+    position: relative;
+    display:inline-flex;    
+    width: 27px;
+    height: 27px;
+    top: 2.5px;
 }
 
 .start-menu-list-img{
-    height: 32px;
-    width: 32px;
+    height: 27px;
+    width: 27px;
     position: relative;
 }
 
 /*Star Menu List CSS*/
 .start-menu-list-head{
-    max-width: 15%;
-    /* padding-left: 5px; */
-    padding-top: 2px;
-    padding-bottom: 2px;
+    width: 32px;
+    height: 32px;
 }
 
 .start-menu-list-mid{
-    min-width: 70%;
+    width: 175px;
+    height: 32px;
     padding-left: 10px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    color: white; /* Black text color */
-    text-align: left;
-    font-size: 11px;
-    font-weight: normal;
 }
 
 .start-menu-list-p{
     position: relative;
-    top: 10px;
+    top: 8px;
     font-size: 12px;
+    color: white; /* Black text color */
+    text-align: left;
+    font-weight: normal;
 }
 
 .start-menu-list-tail{
-    max-width: 15%;
-    /* padding-left: 10px; */
-    padding-top: 2px;
-    padding-bottom: 2px;
+    width: 32px;
+    height: 32px;
 }
-
-/* .dm-tskbar-fig-cntxt-menu{
-    position: relative;
-    align-items: center;
-    display: inline-flex;
-    min-width: 18px;
-    top: 0;
-    left: 15%;
-}
-
-.dm-tskbar-img-alt{
-    height: 18px;
-    width: 18px;
-
-    position: relative;
-} */
