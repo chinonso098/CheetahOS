@@ -10,6 +10,7 @@ import { RefreshRates, RefreshRatesIntervals, TableColumns,DisplayViews } from '
 import { NotificationService } from 'src/app/shared/system-service/notification.service';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import * as htmlToImage from 'html-to-image';
+import { Constants } from 'src/app/system-files/constants';
 
 
 @Component({
@@ -29,6 +30,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   private _runningProcessService:RunningProcessService;
   private _notificationService:NotificationService;
   private _renderer: Renderer2;
+  private _consts:Constants = new Constants();
 
   private _processListChangeSub!: Subscription;
   private _taskmgrRefreshIntervalSub!: Subscription;
@@ -87,7 +89,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   powerUtil = 'Very low';
 
   hasWindow = true;
-  icon = 'osdrive/Cheetah/System/Imageres/taskmanger.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}taskmanger.png`;
   name = 'taskmanager';
   processId = 0;
   type = ComponentType.System;

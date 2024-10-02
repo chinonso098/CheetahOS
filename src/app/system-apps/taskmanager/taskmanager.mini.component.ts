@@ -25,7 +25,7 @@ export class TaskmanagerMiniComponent implements BaseComponent,OnInit,OnDestroy 
   processes:Process[] =[];
 
   hasWindow = true;
-  icon = 'osdrive/Cheetah/System/Imageres/taskmanger.png';
+  icon = 'osdrive/Cheetah/System/Imageres/taskmanager.png';
   name = 'taskmanager';
   processId = 0;
   type = ComponentType.System;
