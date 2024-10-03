@@ -25,6 +25,9 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   txtOverlayMenuStyle:Record<string, unknown> = {};
   private SECONDS_DELAY = 250;
 
+  delayStartMenuOverlayHideTimeoutId!: NodeJS.Timeout;
+  delayStartMenuOverlayShowTimeoutId!: NodeJS.Timeout;
+
   startMenuFiles:FileInfo[] = [];
   private _startMenuDirectoryFilesEntries!:FileEntry[];
   directory ='/AppData/StartMenu';
@@ -54,7 +57,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
     setTimeout(async () => {
       await this.loadFilesInfoAsync();
-    }, 100);
+    }, 1000);
     // 
     this.removeVantaJSSideEffect();
   }
@@ -73,46 +76,65 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     }, this.SECONDS_DELAY);
   }
 
+ 
+
+  // Show Overlay Function
   startMenuOverlaySlideOut(): void {
+    console.log('IN');
+
+
+    clearTimeout(this.delayStartMenuOverlayHideTimeoutId);
+
     const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
-  
-    if (smIconTxtOverlay) {
-      // Set initial position and visibility
-      smIconTxtOverlay.style.width = '48px';
 
-      // Allow the browser to calculate the layout before applying the animation
-      smIconTxtOverlay.style.transition = 'width 0.4s ease'; // Set the transition for left
-      smIconTxtOverlay.style.width = '248px'; // Animate to 248px
-      smIconTxtOverlay.style.transitionDelay = '1s';
-      //smIconTxtOverlay.style.backgroundColor = 'rgba(33,33, 33, 0.6)';
+    // Clear the show timeout as well if needed
+    clearTimeout(this.delayStartMenuOverlayShowTimeoutId);
 
-      setTimeout(() => {
-        smIconTxtOverlay.style.boxShadow = '0px 2px 4px rgba(0, 0, 0, 0.6)';
-        this.txtOverlayMenuStyle = {
-          'display': 'flex'
-        }
-      }, 1400); // Use a small timeout to ensure styles are applied in the correct order
-    } 
+    // Begin the show process
+    this.delayStartMenuOverlayShowTimeoutId = setTimeout(() => {
+      if (smIconTxtOverlay) {
+        // Set initial position and visibility
+        smIconTxtOverlay.style.width = '48px';
+        smIconTxtOverlay.style.transition = 'width 0.3s ease'; // Set transition
+        smIconTxtOverlay.style.width = '248px'; // Animate to 248px
+        smIconTxtOverlay.style.transitionDelay = '0.75s';
+
+        // Box-shadow animation after expansion
+        smIconTxtOverlay.addEventListener('transitionend', () => {
+          smIconTxtOverlay.style.boxShadow = '0px 2px 4px rgba(0, 0, 0, 0.6)';
+          this.txtOverlayMenuStyle = { 'display': 'flex' }; // Make visible after slide out
+        }, { once: true });
+      }
+    }, 500); // Delay the start of the animation
   }
 
+  // Hide Overlay Function
   startMenuOverlaySlideIn(): void {
+    console.log('OUT');
+
+    clearTimeout(this.delayStartMenuOverlayShowTimeoutId);
+
     const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
 
-    if (smIconTxtOverlay) {
-      // Ensure the element has the transition property set for smooth animation
-      smIconTxtOverlay.style.transition = 'width 0.75s ease';
-      smIconTxtOverlay.style.width = '48px';
-      smIconTxtOverlay.style.boxShadow = 'none';
-      //smIconTxtOverlay.style.backgroundColor = 'transparent';
+    // Clear the hide timeout if necessary
+    clearTimeout(this.delayStartMenuOverlayHideTimeoutId);
 
-      // After the transition ends, hide the element
-      setTimeout(() => {
-        this.txtOverlayMenuStyle = {
-          'display': 'none'
-        }
-      }, 300); // Set this to match the transition duration (.3s)
-    }
+    // Begin the hide process
+    this.delayStartMenuOverlayHideTimeoutId = setTimeout(() => {
+      if (smIconTxtOverlay ) {
+        // Start shrinking animation
+        smIconTxtOverlay.style.transition = 'width 0.3s ease';
+        smIconTxtOverlay.style.width = '48px';
+        smIconTxtOverlay.style.boxShadow = 'none';
+
+        // Once transition ends, hide the overlay
+        smIconTxtOverlay.addEventListener('transitionstart', () => {
+          this.txtOverlayMenuStyle = { 'display': 'none' }; // Hide after slide in
+        }, { once: true });
+      }
+    }, 250); // Add a slight delay to match the UX behavior
   }
+
 
   onBtnHover():void{
     // applyEffect('.start-menu-list-btn', {
@@ -120,18 +142,18 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     //   gradientSize: 150,
     // });
 
-    applyEffect('.start-menu-list-ol', {
-      clickEffect: true,
-      lightColor: 'rgba(255,255,255,0.6)',
-      gradientSize: 40,
-      isContainer: true,
-      children: {
-        borderSelector: '.start-menu-list-li',
-        elementSelector: '.start-menu-list-btn',
-        lightColor: 'rgba(255,255,255,0.3)',
-        gradientSize: 150
-      }
-    })
+    // applyEffect('.start-menu-list-ol', {
+    //   clickEffect: true,
+    //   lightColor: 'rgba(255,255,255,0.6)',
+    //   gradientSize: 40,
+    //   isContainer: true,
+    //   children: {
+    //     borderSelector: '.start-menu-list-li',
+    //     elementSelector: '.start-menu-list-btn',
+    //     lightColor: 'rgba(255,255,255,0.3)',
+    //     gradientSize: 150
+    //   }
+    // })
   }
 
   onBtnExit():void{
