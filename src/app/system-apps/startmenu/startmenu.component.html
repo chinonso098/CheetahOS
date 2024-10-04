@@ -67,9 +67,9 @@
         <div class="start-menu-main-content-empty"></div>
         <div class="start-menu-main-content-list-container">
             <div class="start-menu-main-content-list-content">
-                <ol class="start-menu-list-ol"> 
-                    <li  class="start-menu-list-li"  *ngFor="let file of startMenuFiles; let i = index"  >
-                        <button class="start-menu-list-btn" (mouseenter)="onBtnHover()" (mouseleave)="onBtnExit()">
+                <ol class="start-menu-list-ol" (mouseenter)="onBtnHover()"> 
+                    <li  class="start-menu-list-li"  *ngFor="let file of startMenuFiles; let i = index"  id="start-menu-list-li-{{i}}">
+                        <button class="start-menu-list-btn">
                             <div class="start-menu-list-head"> <figure class="start-menu-list-fig"><img class="start-menu-list-img" [src]="file.getIconPath"/></figure></div>
                             <div class="start-menu-list-mid"><p class="start-menu-list-p">{{file.getFileName}}</p></div>
                             <div class="start-menu-list-tail"> <figure class="start-menu-list-fig"></figure> </div>

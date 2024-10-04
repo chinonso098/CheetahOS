@@ -23,6 +23,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   private _elRef:ElementRef;
   private _consts:Constants = new Constants();
   txtOverlayMenuStyle:Record<string, unknown> = {};
+
   private SECONDS_DELAY = 250;
 
   delayStartMenuOverlayHideTimeoutId!: NodeJS.Timeout;
@@ -80,13 +81,9 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
   // Show Overlay Function
   startMenuOverlaySlideOut(): void {
-    console.log('IN');
-
 
     clearTimeout(this.delayStartMenuOverlayHideTimeoutId);
-
     const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
-
     // Clear the show timeout as well if needed
     clearTimeout(this.delayStartMenuOverlayShowTimeoutId);
 
@@ -110,12 +107,10 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
   // Hide Overlay Function
   startMenuOverlaySlideIn(): void {
-    console.log('OUT');
+
 
     clearTimeout(this.delayStartMenuOverlayShowTimeoutId);
-
     const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
-
     // Clear the hide timeout if necessary
     clearTimeout(this.delayStartMenuOverlayHideTimeoutId);
 
@@ -137,28 +132,46 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
 
   onBtnHover():void{
-    // applyEffect('.start-menu-list-btn', {
+
+    // applyEffect('.start-menu-main-overlay-content', {
     //   lightColor: 'rgba(255,255,255,0.1)',
     //   gradientSize: 150,
     // });
 
-    // applyEffect('.start-menu-list-ol', {
-    //   clickEffect: true,
-    //   lightColor: 'rgba(255,255,255,0.6)',
-    //   gradientSize: 40,
-    //   isContainer: true,
-    //   children: {
-    //     borderSelector: '.start-menu-list-li',
-    //     elementSelector: '.start-menu-list-btn',
-    //     lightColor: 'rgba(255,255,255,0.3)',
-    //     gradientSize: 150
-    //   }
-    // })
+    // applyEffect('.start-menu-main-overlay-content', {
+    //   lightColor: 'rgba(255,255,255,0.1)',
+    //   gradientSize: 150,
+    // });
+
+    applyEffect('.start-menu-list-ol', {
+      clickEffect: true,
+      lightColor: 'rgba(255,255,255,0.6)',
+      gradientSize: 80,
+      isContainer: true,
+      children: {
+        borderSelector: '.start-menu-list-li',
+        elementSelector: '.start-menu-list-btn',
+        lightColor: 'rgba(255,255,255,0.3)',
+        gradientSize: 150
+      }
+    })
+
+
+    applyEffect('.start-menu-main-overlay-container', {
+      clickEffect: true,
+      lightColor: 'rgba(255,255,255,0.6)',
+      gradientSize: 80,
+      isContainer: true,
+      children: {
+        borderSelector: '.start-menu-main-overlay-icon-text-content',
+        elementSelector: '.start-menu-overlay-icon',
+        lightColor: 'rgba(255,255,255,0.3)',
+        gradientSize: 150
+      }
+    })
   }
 
-  onBtnExit():void{
-//
-  }
+
 
   private async loadFilesInfoAsync():Promise<void>{
     this.startMenuFiles = [];
