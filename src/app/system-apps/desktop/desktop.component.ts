@@ -171,16 +171,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   ngOnInit():void{
-    // this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
-    //   this._vantaEffect = VANTA.WAVES({
-    //     el: '#vanta',
-    //     color:this.defaultColor, //this._numSequence,
-    //     waveHeight:20,
-    //     shininess: 50,
-    //     waveSpeed:0.20,
-    //     // zoom:0.75,     
-    //   });
-    // })
+    this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
+      this._vantaEffect = VANTA.WAVES({
+        el: '#vanta',
+        color:this.defaultColor, //this._numSequence,
+        waveHeight:20,
+        shininess: 50,
+        waveSpeed:0.20,
+        // zoom:0.75,     
+      });
+    })
 
     this.getDesktopMenuData();
   }
@@ -552,8 +552,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     file.setOpensWith = arg0;
 
     if(arg0 ==  this.markDownViewerApp){
-      file.setCurrentPath = '/Desktop';
-      file.setContentPath = '/Documents/Credits.md';
+      file.setCurrentPath = '/Users/Desktop';
+      file.setContentPath = '/Users/Documents/Credits.md';
     }
 
     this._triggerProcessService.startApplication(file);
@@ -677,13 +677,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.tskBarCntxtMenuStyle = {
         'position':'absolute',
         'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 68.5)}px)`,
-        'z-index': 2,
+        'z-index': 5,
       }
     }else {
       this.tskBarCntxtMenuStyle = {
         'position':'absolute',
         'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 97.5)}px)`,
-        'z-index': 2,
+        'z-index': 5,
       }
     }
   }

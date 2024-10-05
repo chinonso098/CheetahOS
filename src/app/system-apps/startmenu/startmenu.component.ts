@@ -9,6 +9,7 @@ import { FileService } from 'src/app/shared/system-service/file.service';
 import { FileEntry } from 'src/app/system-files/file.entry';
 
 import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
+import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 
 @Component({
   selector: 'cos-startmenu',
@@ -18,6 +19,7 @@ import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
 export class StartMenuComponent implements OnInit, AfterViewInit {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
+  private _triggerProcessService:TriggerProcessService;
   private _fileService:FileService;
 
   private _elRef:ElementRef;
@@ -40,11 +42,13 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   type = ComponentType.System
   displayName = '';
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, elRef: ElementRef, fileService:FileService) { 
+  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
+              elRef: ElementRef, fileService:FileService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._elRef = elRef;
     this._fileService = fileService;
+    this._triggerProcessService = triggerProcessService;
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -145,8 +149,8 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
     applyEffect('.start-menu-list-ol', {
       clickEffect: true,
-      lightColor: 'rgba(255,255,255,0.6)',
-      gradientSize: 80,
+      lightColor: 'rgba(255,255,255,0.1)',
+      gradientSize: 35,
       isContainer: true,
       children: {
         borderSelector: '.start-menu-list-li',
@@ -157,18 +161,18 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     })
 
 
-    applyEffect('.start-menu-main-overlay-container', {
-      clickEffect: true,
-      lightColor: 'rgba(255,255,255,0.6)',
-      gradientSize: 80,
-      isContainer: true,
-      children: {
-        borderSelector: '.start-menu-main-overlay-icon-text-content',
-        elementSelector: '.start-menu-overlay-icon',
-        lightColor: 'rgba(255,255,255,0.3)',
-        gradientSize: 150
-      }
-    })
+    // applyEffect('.start-menu-main-overlay-container', {
+    //   clickEffect: true,
+    //   lightColor: 'rgba(255,255,255,0.6)',
+    //   gradientSize: 80,
+    //   isContainer: true,
+    //   children: {
+    //     borderSelector: '.start-menu-main-overlay-icon-text-content',
+    //     elementSelector: '.start-menu-overlay-icon',
+    //     lightColor: 'rgba(255,255,255,0.3)',
+    //     gradientSize: 150
+    //   }
+    // })
   }
 
 
@@ -186,6 +190,11 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     }
   }
 
+  async runProcess(file:FileInfo):Promise<void>{
+    console.log('startmanager-runProcess:',file)
+    this._triggerProcessService.startApplication(file);
+
+  }
 
 
   private getComponentDetail():Process{

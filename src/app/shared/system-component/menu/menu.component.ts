@@ -46,6 +46,7 @@ export class MenuComponent implements OnDestroy{
       this._menuService.setPasteState(true);
     })
   }
+  
 
   ngOnDestroy(): void {
     this._storeDataSub?.unsubscribe();

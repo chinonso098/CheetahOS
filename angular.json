@@ -60,7 +60,7 @@
               "node_modules/angular2-draggable/css/resizable.min.css"
             ],
             "scripts": [
-              "./src/scripts/backgrounds/three.min.js"
+              "src/osdrive/Cheetah/System/ThreeJS/three.min.js"
             ]
           },
           "configurations": {
