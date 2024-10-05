@@ -1,8 +1,8 @@
  <ol (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)"  (click)="handleIconHighLightState()"  #myBounds> 
-    <li *ngFor="let file of files; let i = index">
+    <li *ngFor="let file of files; let i = index" id="liIconBtn{{i}}">
         <button (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter(i)" (mouseleave)="onMouseLeave(i)"
         ngDraggable [bounds]="myBounds" [inBounds]="true" [gridSize]="gridSize" zIndex="1" [preventDefaultEvent]="true"
-        (stopped)="onDragEnd($event)" (started)="onDragStart($event)"
+        (stopped)="onDragEnd($event)" (started)="onDragStart($event, i)"
         (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick(i)"
         id="iconBtn{{i}}"  [style]="btnStyle">
             <figure>

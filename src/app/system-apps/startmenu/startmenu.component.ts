@@ -62,7 +62,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
     setTimeout(async () => {
       await this.loadFilesInfoAsync();
-    }, 1000);
+    }, this.SECONDS_DELAY);
     // 
     this.removeVantaJSSideEffect();
   }

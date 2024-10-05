@@ -65,7 +65,7 @@ img{
 
 .shortcut-img{
     position: absolute;
-    display: none;
+    /* display: none; */
     height: 24px; 
     width: 24px;
     top: 32%;

@@ -199,7 +199,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       }
     }, this.SECONDS_DELAY[1]);
   }
-  
+
   async runProcess(file:FileInfo):Promise<void>{
 
     console.log('filemanager-runProcess:',file)
@@ -365,8 +365,14 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     console.log('TODO:FileManagerComponent, Upgrade the basic state tracking/management logic:',transform);
   }
 
-  onDragStart(evt:any):void{
-      //
+  onDragStart(evt:any, i:number):void{
+    const btnIcon = document.getElementById(`liIconBtn${i}`) as HTMLElement
+    console.log('DragStart:',btnIcon);
+    if(btnIcon){
+      // btnIcon.style.position = 'absolute';
+      btnIcon.style.zIndex = '4';
+    }
+    console.log('DragStart:',btnIcon);
   }
 
   onMouseEnter(id:number):void{
