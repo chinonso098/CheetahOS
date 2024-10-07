@@ -16,7 +16,7 @@ export interface OctalRepresentation {
     permission: string;
 }
 
-export class TerminalCommands{
+export class TerminalCommandProcessor{
 
     private _triggerProcessService:TriggerProcessService;
     private _runningProcessService:RunningProcessService;
@@ -26,7 +26,7 @@ export class TerminalCommands{
     private _consts:Constants = new Constants();
     
     private  permissionChart!:Map<number, OctalRepresentation>;
-    private closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton","clock","taskbarentry"];
+    private closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton","clock","taskbarentry","startmenu"];
     private files:FileInfo[] = [];
     private readonly defaultDirectoryPath = this._consts.ROOT;
     private currentDirectoryPath = this._consts.ROOT;

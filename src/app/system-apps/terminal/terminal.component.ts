@@ -7,7 +7,7 @@ import { BaseComponent } from 'src/app/system-base/base/base.component';
 import { ComponentType } from 'src/app/system-files/component.types';
 import { Process } from 'src/app/system-files/process';
 import { TerminalCommand } from './model/terminal.command';
-import { TerminalCommands } from './terminal.commands';
+import { TerminalCommandProcessor } from './terminal.commands';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
@@ -32,7 +32,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;
   private _formBuilder;
-  private _terminaCommandsImpl!:TerminalCommands;
+  private _terminaCommandsProc!:TerminalCommandProcessor;
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _appState!:AppState;
@@ -85,7 +85,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     this._formBuilder = formBuilder;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
-    this._terminaCommandsImpl = new TerminalCommands();
+    this._terminaCommandsProc = new TerminalCommandProcessor();
 
     this.retrievePastSessionData();
 
@@ -554,71 +554,71 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       } 
 
       if(rootCmd == "curl"){
-        const result = await this._terminaCommandsImpl.curl(cmdStringArr);
+        const result = await this._terminaCommandsProc.curl(cmdStringArr);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
 
       if(rootCmd == "close"){
-        const result = this._terminaCommandsImpl.close(cmdStringArr[1], cmdStringArr[2]);
+        const result = this._terminaCommandsProc.close(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
 
       if(rootCmd == "date"){
-        const result = this._terminaCommandsImpl.date();
+        const result = this._terminaCommandsProc.date();
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
 
       if(rootCmd == "download"){
-        this._terminaCommandsImpl.download(cmdStringArr[1], cmdStringArr[2]);
+        this._terminaCommandsProc.download(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = 'downloading ..';
       } 
 
       if(rootCmd == "exit"){
-        this._terminaCommandsImpl.exit(this.processId);
+        this._terminaCommandsProc.exit(this.processId);
       } 
 
       if(rootCmd == "help"){
-        const result = this._terminaCommandsImpl.help(this.echoCommands, this.utilityCommands, cmdStringArr[1]);
+        const result = this._terminaCommandsProc.help(this.echoCommands, this.utilityCommands, cmdStringArr[1]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
 
       if(rootCmd == "open"){
-        const result = this._terminaCommandsImpl.open(cmdStringArr[1], cmdStringArr[2]);
+        const result = this._terminaCommandsProc.open(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
 
       if(rootCmd == "version"){
-        const result = this._terminaCommandsImpl.version(this.versionNum);
+        const result = this._terminaCommandsProc.version(this.versionNum);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
 
       if(rootCmd == "whoami"){
-        const result = this._terminaCommandsImpl.whoami();
+        const result = this._terminaCommandsProc.whoami();
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
 
       if(rootCmd == "weather"){
-        const result = await this._terminaCommandsImpl.weather(cmdStringArr[1]);
+        const result = await this._terminaCommandsProc.weather(cmdStringArr[1]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
 
       if(rootCmd == "list"){
-        const result = this._terminaCommandsImpl.list(cmdStringArr[1], cmdStringArr[2]);
+        const result = this._terminaCommandsProc.list(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
 
       if(rootCmd == "pwd"){
-        const result = this._terminaCommandsImpl.pwd();
+        const result = this._terminaCommandsProc.pwd();
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
@@ -626,7 +626,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       if(rootCmd == "cd"){
         const str = 'string';
         const strArr = 'string[]';
-        const result = await this._terminaCommandsImpl.cd(cmdStringArr[1], key);
+        const result = await this._terminaCommandsProc.cd(cmdStringArr[1], key);
 
         if(result.type === str || result.type === strArr)
           terminalCmd.setResponseCode = this.Success;
@@ -647,7 +647,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       if(rootCmd == "ls"){
         const str = 'string';
         const strArr = 'string[]';
-        const result = await this._terminaCommandsImpl.ls(cmdStringArr[1]);
+        const result = await this._terminaCommandsProc.ls(cmdStringArr[1]);
         terminalCmd.setResponseCode = this.Success;
 
 
@@ -664,13 +664,13 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       } 
 
       if(rootCmd == "mkdir"){
-        const result = await this._terminaCommandsImpl.mkdir(cmdStringArr[1], cmdStringArr[2]);
+        const result = await this._terminaCommandsProc.mkdir(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       }
 
       if(rootCmd == "rm"){
-        const result = await this._terminaCommandsImpl.rm(cmdStringArr[1], cmdStringArr[2]);
+        const result = await this._terminaCommandsProc.rm(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       }
@@ -678,7 +678,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
 
       if(rootCmd == "mv"){
-        const result = await this._terminaCommandsImpl.mv(cmdStringArr[1], cmdStringArr[2]);
+        const result = await this._terminaCommandsProc.mv(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       }
@@ -691,7 +691,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         const source = cmdStringArr[2];
         const destination = cmdStringArr[3];
       
-        const result = await this._terminaCommandsImpl.cp(option, source, destination);
+        const result = await this._terminaCommandsProc.cp(option, source, destination);
 
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;

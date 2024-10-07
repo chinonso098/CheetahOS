@@ -55,7 +55,9 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     this._triggerProcessService = triggerProcessService;
 
     this.processId = this._processIdService.getNewProcessId()
-    this._runningProcessService.addProcess(this.getComponentDetail());
+    if(this._runningProcessService.getProcesses().findIndex(x => x.getProcessName === this.name) === -1){
+      this._runningProcessService.addProcess(this.getComponentDetail());
+    }
   }
 
   ngOnInit(): void {

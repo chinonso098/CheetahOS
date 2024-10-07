@@ -77,7 +77,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   SECONDS_DELAY = 250
 
   processes:Process[] =[];
-  closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry"];
+  closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu"];
   groupedData: any = {};
   selectedRefreshRate = 0;
 
