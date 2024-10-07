@@ -141,3 +141,12 @@ input::selection{
     left: 20px;
     transform: rotate(180deg);
 }
+
+
+.clone-container{
+    width: fit-content;
+    height: fit-content;
+    background-color: #ccc;
+    z-index:  5;
+    position: absolute;
+}

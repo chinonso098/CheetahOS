@@ -1,11 +1,11 @@
  <ol (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)"  (click)="handleIconHighLightState()"  #myBounds> 
-    <li *ngFor="let file of files; let i = index" id="liIconBtn{{i}}">
+    <li *ngFor="let file of files; let i = index">
         <button (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter(i)" (mouseleave)="onMouseLeave(i)"
-        ngDraggable [bounds]="myBounds" [inBounds]="true" [gridSize]="gridSize" zIndex="1" [preventDefaultEvent]="true"
+        [ngDraggable]="isDraggable" [bounds]="myBounds" [inBounds]="true" [gridSize]="gridSize" zIndex="1" [preventDefaultEvent]="true"
         (stopped)="onDragEnd($event)" (started)="onDragStart($event, i)"
-        (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick(i)"
+        (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)"
         id="iconBtn{{i}}"  [style]="btnStyle">
-            <figure>
+            <figure   id="filemngr_fig{{i}}">
                 <img [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconSizeStyle"/>
                 <ng-container *ngIf="file.getIsShortCut">
                     <img class="shortcut-img" [src]="'osdrive/Cheetah/System/Imageres/shortcut.png'"  id="shortCut{{i}}"/>
@@ -29,7 +29,15 @@
         </div>
     </div>
 
+    <div  class="clone-container"  id="filemngr_clone_cntnr"> </div>
+
     <ng-container  *ngIf="showCntxtMenu">
         <cos-menu [generalMenu]="menuData" [style]="iconCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
     </ng-container>
 </ol>
+
+
+<!--
+    This is the method for drag n drop
+ (dragstart)="onDragStart($event, i)" 
+ -->

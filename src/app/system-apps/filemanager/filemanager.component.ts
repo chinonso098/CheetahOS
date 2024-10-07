@@ -53,6 +53,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private isBtnClickEvt= false;
   private isHideCntxtMenuEvt= false;
 
+  isDraggable = true;
+
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
   private selectedElementId = -1;
@@ -60,8 +62,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private hideCntxtMenuEvtCnt = 0;
   private btnClickCnt = 0;
   private renameFileTriggerCnt = 0; 
-
-
 
   iconCntxtMenuStyle:Record<string, unknown> = {};
   iconSizeStyle:Record<string, unknown> = {};
@@ -220,9 +220,10 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     // }
   }
 
-  onBtnClick(id:number):void{
+  onBtnClick(evt:MouseEvent, id:number):void{
     this.doBtnClickThings(id);
     this.setBtnStyle(id, true);
+
   }
 
   onTriggerRunProcess():void{
@@ -365,15 +366,48 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     console.log('TODO:FileManagerComponent, Upgrade the basic state tracking/management logic:',transform);
   }
 
-  onDragStart(evt:any, i:number):void{
+  onDragStart(evt:DragEvent, i:number):void{
+    //this.isDraggable = true
     const btnIcon = document.getElementById(`liIconBtn${i}`) as HTMLElement
-    console.log('DragStart:',btnIcon);
-    if(btnIcon){
-      // btnIcon.style.position = 'absolute';
-      btnIcon.style.zIndex = '4';
-    }
-    console.log('DragStart:',btnIcon);
+    // console.log('DragStart:',btnIcon);
+    // if(btnIcon){
+    //   // btnIcon.style.position = 'absolute';
+    //   btnIcon.style.zIndex = '4';
+    // }
+    // console.log('DragStart:',btnIcon);
   }
+
+  onDragStart_Off(evt:DragEvent, i: number): void {
+ 
+    /**
+     * This method is mimick the functionality of Windows should a user attempt to drag n drop content from the 
+     * desktop to the FileExplorer, or another application that support DnD
+     * 
+     * The issue at the moment, is that it collide with the angular2-draggable functionailty. 
+     * for the time being, it is Off
+     */
+  
+    const iconA = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
+  
+    // Get the cloneIcon container
+    const elementId = 'filemngr_clone_cntnr';
+    const cloneIcon = document.getElementById(elementId);
+  
+    if(cloneIcon){
+      // Clear any previous content in the clone container
+      cloneIcon.innerHTML = '';
+      cloneIcon.appendChild(iconA.cloneNode(true));
+  
+      cloneIcon.style.left = '-9999px';  // Move it out of view initially
+      cloneIcon.style.opacity = '0.2';
+  
+      // Set the cloned icon as the drag image
+      if (evt.dataTransfer) {
+        evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
+      }
+    }
+  }
+  
 
   onMouseEnter(id:number):void{
     this.setBtnStyle(id, true);
