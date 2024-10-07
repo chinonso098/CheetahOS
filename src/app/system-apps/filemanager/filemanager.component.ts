@@ -200,7 +200,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }, this.SECONDS_DELAY[1]);
   }
 
-  async runProcess(file:FileInfo):Promise<void>{
+  runProcess(file:FileInfo):void{
 
     console.log('filemanager-runProcess:',file)
     this._triggerProcessService.startApplication(file);

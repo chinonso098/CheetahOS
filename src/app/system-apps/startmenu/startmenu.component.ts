@@ -28,6 +28,10 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
   private SECONDS_DELAY = 250;
 
+  Documents= 'Documents';
+  Pictures = 'Pictures'
+  Music = 'Music';
+
   delayStartMenuOverlayHideTimeoutId!: NodeJS.Timeout;
   delayStartMenuOverlayShowTimeoutId!: NodeJS.Timeout;
 
@@ -190,10 +194,26 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     }
   }
 
-  async runProcess(file:FileInfo):Promise<void>{
+  runProcess(file:FileInfo):void{
     console.log('startmanager-runProcess:',file)
     this._triggerProcessService.startApplication(file);
+  }
 
+
+  openFolderPath(folderName:string):void{
+   const path = `/Users/${folderName}`;
+
+   const file = new FileInfo();
+   file.setFileName = folderName;
+   file.setOpensWith = 'fileexplorer';
+   file.setIsFile = false;
+   file.setCurrentPath = path;
+
+  this.runProcess(file);
+  }
+
+  power():void{
+    location.reload();
   }
 
 

@@ -365,7 +365,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async createFolder():Promise<void>{
-    const folderName = 'New Folder';
+    const folderName = this._consts.NEW_FOLDER;
     const result =  await this._fileService.createFolderAsync(this.directory, folderName);
     if(result){
       this._fileService.addEventOriginator('filemanager');

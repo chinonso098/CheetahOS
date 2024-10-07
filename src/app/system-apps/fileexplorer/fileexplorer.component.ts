@@ -258,8 +258,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(this._fileInfo){
       // is this a URL or and Actual Folder
-      if(this._fileInfo.getOpensWith === 'fileexplorer' && !this._fileInfo.getIsFile) //Actual Folder
-         this.directory = this._fileInfo.getCurrentPath;
+      if(this._fileInfo.getOpensWith === 'fileexplorer' && !this._fileInfo.getIsFile){ //Actual Folder
+        this.directory = this._fileInfo.getCurrentPath;
+        const fileName = (this._fileInfo.getFileName === this._consts.EMPTY_STRING)? this._consts.NEW_FOLDER : this._fileInfo.getFileName;
+
+        this.populateHopsList();
+        this.setNavPathIcon(fileName, this._fileInfo.getCurrentPath);
+        this.storeAppState(this._fileInfo.getCurrentPath);
+      }
     }
 
     this.renameForm = this._formBuilder.nonNullable.group({
