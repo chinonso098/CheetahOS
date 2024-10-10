@@ -64,20 +64,29 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit {
   }
 
   keepTaskBarPreviewWindow():void{
-    this._runningProcessService.keepPreviewWindowNotify.next();
+    this._runningProcessService.keepProcessPreviewWindowNotify.next();
   }
 
-  hideTaskBarPreviewWindow():void{
-    this._runningProcessService.hidePreviewWindowNotify.next();
+  hideTaskBarPreviewWindowAndRestoreDesktop():void{
+    this._runningProcessService.hideProcessPreviewWindowNotify.next();
+
+    this._runningProcessService.restoreProcessesWindowNotify.next();
   }
 
   showTaskBarPreviewContextMenu(evt:MouseEvent, pid:number):void{
     console.log('I will implement the TaskBarPreview Context Window.........later');
   }
 
-
   setWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._runningProcessService.showOnlyCurrentProcessWindowNotify.next(pid);
+  }
+
+  restoreWindow(pid:number):void{
+    this._runningProcessService.restoreProcessWindowNotify.next(pid);
+  }
+
+  showWindow(pid:number):void{
+    this._runningProcessService.restoreProcessWindowNotify.next(pid);
   }
 
 }

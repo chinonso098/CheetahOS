@@ -5,8 +5,9 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { ComponentType } from 'src/app/system-files/component.types';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { Process } from 'src/app/system-files/process';
+import { Constants } from 'src/app/system-files/constants';
 
 @Component({
   selector: 'cos-taskbarentries',
@@ -19,6 +20,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   private _runningProcessService:RunningProcessService;
   private _triggerProcessService:TriggerProcessService;
   private _menuService:MenuService;
+  private _consts:Constants = new Constants();
 
   private _processListChangeSub!: Subscription;
   private _addIconToTaskbarSub!: Subscription;
@@ -36,7 +38,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   unPinned = "unPinned";
   
   hasWindow = false;
-  icon = 'osdrive/icons/generic-program.ico';
+  icon =  `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
   name = 'taskbarentry';
   processId = 0;
   type = ComponentType.System;
@@ -179,7 +181,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
       return;
     }else{
       const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.getOpensWith);
-      this._runningProcessService.restoreOrMinimizeWindowNotify.next(process[0].getProcessId);
+      this._runningProcessService.restoreOrMinimizeProcessWindowNotify.next(process[0].getProcessId);
     }
   }
 
@@ -236,15 +238,15 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     const data:unknown[] = [rect, appName, iconPath];
 
     if(this._runningProcessService.isProcessRunning(appName))
-      this._runningProcessService.showPreviewWindowNotify.next(data);
+      this._runningProcessService.showProcessPreviewWindowNotify.next(data);
   }
 
   onMouseLeave():void{
-    this._runningProcessService.hidePreviewWindowNotify.next();
+    this._runningProcessService.hideProcessPreviewWindowNotify.next();
   }
 
   restoreOrMinizeWindow(processId:number){
-    this._runningProcessService.restoreOrMinimizeWindowNotify.next(processId)
+    this._runningProcessService.restoreOrMinimizeProcessWindowNotify.next(processId)
   }
 
   private getComponentDetail():Process{

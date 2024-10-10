@@ -24,7 +24,7 @@ figure{
 img{
     height: 25px;
     width: 25px;
-    image-rendering:optimizeQuality;
+
     position: relative;
     top: 1px
 }

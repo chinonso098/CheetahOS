@@ -35,18 +35,18 @@
               "src/osdrive",
               {
                 "glob": "**/*",
-                "input": "src/assets/js-dos",
+                "input": "src/osdrive/Program-Files/JS-DOS",
                 "output": "/"
               },
               {
                 "glob": "**/*",
-                "input": "src/assets/ruffle",
-                "output": "/assets/ruffle"
+                "input": "src/osdrive/Program-Files/Ruffle",
+                "output": "/osdrive/Program-Files/Ruffle"
               },
               {
                 "glob": "**/*",
-                "input": "src/assets/pdf",
-                "output": "/assets/pdf"
+                "input": "src/osdrive/Program-Files/PDF-JS",
+                "output": "/osdrive/Program-Files/PDF-JS"
               },
               { "glob": "**/*", 
                 "input": "node_modules/monaco-editor", 
@@ -60,7 +60,7 @@
               "node_modules/angular2-draggable/css/resizable.min.css"
             ],
             "scripts": [
-              "./src/scripts/backgrounds/three.min.js"
+              "src/osdrive/Cheetah/System/ThreeJS/three.min.js"
             ]
           },
           "configurations": {

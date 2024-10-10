@@ -1,7 +1,8 @@
 <button 
     [style]=" hover ?  {'background-color': 'hsla(0,0%,25%,60%)'}: {'color': ''}" 
-    (mouseover)="hover=true" (mouseleave)="hover=false"> 
-        <svg width="20"   [style]="hover? {'fill':'#76B9ED'}:{'fill': '#fff'}" 
+    (mouseover)="hover=true" (mouseleave)="hover=false"  (click)="showStarMenu()"> 
+        <svg [style]="hover? {'fill':'#76B9ED'}:{'fill': '#fff'}" 
+            height="17" width="17" 
             viewBox="0 0 488 512">
             <path d="M0 93.7l183.6-25.3v177.4H0V93.7zm0 324.6l183.6 25.3V268.4H0v149.9zm203.8 28L448 480V268.4H203.8v177.9zm0-380.6v180.1H448V32L203.8 65.7z" />
         </svg>

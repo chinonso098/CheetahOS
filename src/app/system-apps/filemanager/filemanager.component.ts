@@ -5,13 +5,15 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { ComponentType } from 'src/app/system-files/component.types';
 import { BaseComponent } from 'src/app/system-base/base/base.component';
 import { Process } from 'src/app/system-files/process';
-import { FileEntry } from 'src/app/system-files/fileentry';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileEntry } from 'src/app/system-files/file.entry';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { Subscription } from 'rxjs';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { FileManagerService } from 'src/app/shared/system-service/file.manager.services';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
+import { Constants } from 'src/app/system-files/constants';
+import { GeneralMenu } from 'src/app/shared/system-component/menu/menu.item';
 
 
 @Component({
@@ -25,10 +27,12 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _fileService:FileService;
+  private _elRef:ElementRef;
   private _directoryFilesEntries!:FileEntry[];
   private _triggerProcessService:TriggerProcessService;
   private _menuService:MenuService;
-  private _formBuilder;
+  private _formBuilder:FormBuilder;
+  private _consts:Constants = new Constants();
 
   private _viewByNotifySub!:Subscription;
   private _sortByNotifySub!:Subscription;
@@ -49,7 +53,10 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private isBtnClickEvt= false;
   private isHideCntxtMenuEvt= false;
 
+  isDraggable = true;
+
   private selectedFile!:FileInfo;
+  private propertiesViewFile!:FileInfo
   private selectedElementId = -1;
   private prevSelectedElementId = -1; 
   private hideCntxtMenuEvtCnt = 0;
@@ -62,39 +69,46 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
   showCntxtMenu = false;
   gridSize = 90; //column size of grid = 90px
-  SECONDS_DELAY = 6000;
+  SECONDS_DELAY:number[] = [6000,250];
   renameForm!: FormGroup;
 
   hasWindow = false;
-  icon = 'osdrive/icons/generic-program.ico';
+  icon = `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
   name = 'filemanager';
   processId = 0;
   type = ComponentType.System;
   displayName = '';
-  directory ='/Desktop';
+  directory ='/Users/Desktop';
   files:FileInfo[] = [];
 
-  menuData = [
+  sourceData:GeneralMenu[] = [
     {icon:'', label: 'Open', action: this.onTriggerRunProcess.bind(this) },
+    {icon:'', label: 'Pin to Quick access', action: this.doNothing.bind(this) },
+    {icon:'', label: 'Open in Terminal', action: this.doNothing.bind(this) },
     {icon:'', label: 'Pin to Start', action: this.doNothing.bind(this) },
     {icon:'', label: 'Pin to Taskbar', action: this.pinIconToTaskBar.bind(this) },
     {icon:'', label: 'Cut', action: this.onCut.bind(this) },
-    {icon:'', label: 'Copy', action: this.onCopy.bind(this) },
+    {icon:'', label: 'Copy', action: this.onCopy.bind(this)},
+    {icon:'', label: 'Create shortcut', action: this.createShortCut.bind(this)},
     {icon:'', label: 'Delete', action: this.onDeleteFile.bind(this) },
     {icon:'', label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
-    {icon:'', label: 'Properties', action: this.doNothing.bind(this) }
+    {icon:'', label: 'Properties', action: this.showPropertiesWindow.bind(this) }
   ];
+
+  menuData:GeneralMenu[] =[];
   
-  fileExplrMngrMenuOption = "file-explorer-file-manager-menu";
+  fileExplrMngrMenuOption = this._consts.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
+  menuOrder = '';
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileInfoService:FileService,
-              triggerProcessService:TriggerProcessService, fileManagerService:FileManagerService, formBuilder: FormBuilder, menuService:MenuService) { 
+              triggerProcessService:TriggerProcessService, fileManagerService:FileManagerService, formBuilder: FormBuilder, menuService:MenuService, elRef: ElementRef) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileService = fileInfoService;
     this._triggerProcessService = triggerProcessService;
     this._menuService = menuService;
     this._formBuilder = formBuilder;
+    this._elRef = elRef;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -112,7 +126,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this._autoAlignIconsNotifyBySub = fileManagerService.alignIconsToGridNotify.subscribe((p) => {this.toggleAutoAlignIconsToGrid(p)});
     this._refreshNotifySub = fileManagerService.refreshNotify.subscribe(()=>{this.refreshIcons()});
     this._showDesktopIconNotifySub = fileManagerService.showDesktopIconsNotify.subscribe((p) =>{this.toggleDesktopIcons(p)});
-    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.onHideIconContextMenu()});
+    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideIconContextMenu()});
   }
 
   ngOnInit():void{
@@ -123,6 +137,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
   async ngAfterViewInit():Promise<void>{
     await this.loadFilesInfoAsync();
+    this.removeVantaJSSideEffect();
   }
 
   ngOnDestroy(): void {
@@ -173,7 +188,19 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
   }
 
-  async runProcess(file:FileInfo):Promise<void>{
+
+  removeVantaJSSideEffect(): void {
+    // VANTA js wallpaper is adding an unwanted style position:relative and z-index:1
+    setTimeout(()=> {
+      const elfRef = this._elRef.nativeElement;
+      if(elfRef) {
+        elfRef.style.position = '';
+        elfRef.style.zIndex = '';
+      }
+    }, this.SECONDS_DELAY[1]);
+  }
+
+  runProcess(file:FileInfo):void{
 
     console.log('filemanager-runProcess:',file)
     this._triggerProcessService.startApplication(file);
@@ -193,9 +220,10 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     // }
   }
 
-  onBtnClick(id:number):void{
+  onBtnClick(evt:MouseEvent, id:number):void{
     this.doBtnClickThings(id);
     this.setBtnStyle(id, true);
+
   }
 
   onTriggerRunProcess():void{
@@ -207,7 +235,9 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this._runningProcessService.addEventOriginator(uid);
     this._menuService.hideContextMenus.next();
 
+    this.adjustContextMenuData(file);
     this.selectedFile = file;
+    this.propertiesViewFile = file;
     this.showCntxtMenu = !this.showCntxtMenu;
 
     // show IconContexMenu is still a btn click, just a different type
@@ -220,6 +250,29 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
 
     evt.preventDefault();
+  }
+
+  showPropertiesWindow():void{
+    this._menuService.showPropertiesView.next(this.propertiesViewFile);
+  }
+
+  adjustContextMenuData(file:FileInfo):void{
+    this.menuData = [];
+  
+    console.log('adjustContextMenuData - filename:',file.getCurrentPath);
+    if(file.getIsFile){
+          //files can not be opened in terminal, pinned to start, opened in new window, pin to Quick access
+          this.menuOrder = this._consts.DEFAULT_FILE_MENU_ORDER;
+          for(const x of this.sourceData) {
+            if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Pin to Start'){ /*nothing*/}
+            else{
+              this.menuData.push(x);
+            }
+          }
+      }else{
+        this.menuOrder = this._consts.DEFAULT_FOLDER_MENU_ORDER;
+        this.menuData = this.sourceData;
+      }
   }
 
   doNothing():void{
@@ -255,9 +308,17 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
   }
 
-  onHideIconContextMenu(caller?:string):void{
+  hideIconContextMenu(caller?:string):void{
     this.showCntxtMenu = false;
 
+    // to prevent an endless loop of calls,
+    if(caller !== undefined && caller === this.name){
+      this._menuService.hideContextMenus.next();
+    }
+  }
+
+  handleIconHighLightState():void{
+ 
     //First case - I'm clicking only on the desktop icons
     if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt == 0)){  
       if(this.isRenameActive){
@@ -285,11 +346,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt > 1))
         this.btnStyleAndValuesReset();
     }
-
-    // to prevent an endless loop of calls,
-    if(caller !== undefined && caller === this.name){
-      this._menuService.hideContextMenus.next();
-    }
   }
 
   onDragEnd(evt:any):void{
@@ -310,9 +366,48 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     console.log('TODO:FileManagerComponent, Upgrade the basic state tracking/management logic:',transform);
   }
 
-  onDragStart(evt:any):void{
-      //
+  onDragStart(evt:DragEvent, i:number):void{
+    //this.isDraggable = true
+    const btnIcon = document.getElementById(`liIconBtn${i}`) as HTMLElement
+    // console.log('DragStart:',btnIcon);
+    // if(btnIcon){
+    //   // btnIcon.style.position = 'absolute';
+    //   btnIcon.style.zIndex = '4';
+    // }
+    // console.log('DragStart:',btnIcon);
   }
+
+  onDragStart_Off(evt:DragEvent, i: number): void {
+ 
+    /**
+     * This method is mimick the functionality of Windows should a user attempt to drag n drop content from the 
+     * desktop to the FileExplorer, or another application that support DnD
+     * 
+     * The issue at the moment, is that it collide with the angular2-draggable functionailty. 
+     * for the time being, it is Off
+     */
+  
+    const iconA = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
+  
+    // Get the cloneIcon container
+    const elementId = 'filemngr_clone_cntnr';
+    const cloneIcon = document.getElementById(elementId);
+  
+    if(cloneIcon){
+      // Clear any previous content in the clone container
+      cloneIcon.innerHTML = '';
+      cloneIcon.appendChild(iconA.cloneNode(true));
+  
+      cloneIcon.style.left = '-9999px';  // Move it out of view initially
+      cloneIcon.style.opacity = '0.2';
+  
+      // Set the cloned icon as the drag image
+      if (evt.dataTransfer) {
+        evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
+      }
+    }
+  }
+  
 
   onMouseEnter(id:number):void{
     this.setBtnStyle(id, true);
@@ -421,14 +516,12 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   toggleAutoArrangeIcons(arrangeIcon:boolean):void{
-
     this.autoArrange = arrangeIcon;
 
     if(this.autoArrange){
       // clear (x,y) position of icons in memory
       this.refreshIcons();
     }
-    
   }
 
   async refreshIcons():Promise<void>{
@@ -449,6 +542,31 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
   }
 
+  async createShortCut(): Promise<void>{
+    const selectedFile = this.selectedFile;
+    const shortCut:FileInfo = new FileInfo();
+    let fileContent = '';
+
+    if(selectedFile.getIsFile){
+      fileContent = `[InternetShortcut]
+FileName=${selectedFile.getFileName} - ${this._consts.SHORTCUT}
+IconPath=${selectedFile.getIconPath}
+FileType=${selectedFile.getFileType}
+ContentPath=${selectedFile.getContentPath}
+OpensWith=${selectedFile.getOpensWith}
+`;
+    }else{
+      //
+    }
+
+    shortCut.setContentPath = fileContent
+    shortCut.setFileName= `${selectedFile.getFileName} - ${this._consts.SHORTCUT}${this._consts.URL}`;
+    const result = await this._fileService.writeFileAsync(this.directory, shortCut);
+    if(result){
+      await this.loadFilesInfoAsync();
+    }
+  }
+
   onInputChange(evt:KeyboardEvent):boolean{
     const regexStr = '^[a-zA-Z0-9_.]+$';
     const res = new RegExp(regexStr).test(evt.key)
@@ -460,7 +578,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
       setTimeout(()=>{ // hide after 6 secs
         this.hideInvalidCharsToolTip();
-      },this.SECONDS_DELAY) 
+      },this.SECONDS_DELAY[0]) 
 
       return res;
     }

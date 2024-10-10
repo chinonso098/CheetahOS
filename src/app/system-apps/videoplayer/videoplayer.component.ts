@@ -6,7 +6,7 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { Constants } from "src/app/system-files/constants";
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
@@ -52,7 +52,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   name= 'videoplayer';
   hasWindow = true;
-  icon = '/osdrive/icons/videoplayer.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}videoplayer.png`;
   processId = 0;
   type = ComponentType.System;
   displayName = 'Video-js';
@@ -72,8 +72,8 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   
     this.retrievePastSessionData();
 
-    this._maximizeWindowSub = this._runningProcessService.maximizeWindowNotify.subscribe(() =>{this.maximizeWindow()})
-    this._minimizeWindowSub = this._runningProcessService.minimizeWindowNotify.subscribe((p) =>{this.minmizeWindow(p)})
+    this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
+    this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minmizeWindow(p)})
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
@@ -124,7 +124,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     const appData:string[] = [this.fileType, this.videoSrc];
     this.storeAppState(appData);
 
-    this._scriptService.loadScript("videojs","assets/videojs/video.min.js").then(() =>{
+    this._scriptService.loadScript("videojs","osdrive/Program-Files/Videojs/video.min.js").then(() =>{
       this.player = videojs(this.videowindow.nativeElement, options, function onPlayerReady(){
         console.log('onPlayerReady:', "player is read");
       });

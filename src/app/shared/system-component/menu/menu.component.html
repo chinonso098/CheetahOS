@@ -1,5 +1,5 @@
-<ng-container [ngTemplateOutlet]="menuOption === fileExplrMngrMenuOption ? fileExplrMngrMenu :
-                                  menuOption === tskBarMenuOption ? tskBarMenu : nestedMenu0  ">
+<ng-container [ngTemplateOutlet]="menuType === fileExplrMngrMenuOption ? fileExplrMngrMenu :
+                                  menuType === tskBarMenuOption ? tskBarMenu : nestedMenu0 ">
 </ng-container>
 
 <ng-template #fileExplrMngrMenu>
@@ -13,28 +13,54 @@
             <span class="span dm-tail"> <figure class="dm-fig-cntxt-menu"> </figure> </span>
         </div>
 
-        <div class="dm-empty-line-container" *ngIf="i === 2 || i === 4 || i === 6"></div>
-        <div class="dm-line-container" *ngIf="i === 2 || i === 4 || i === 6"><div class="dm-line"></div></div>
-        <div class="dm-empty-line-container" *ngIf="i === 2 || i === 4 || i === 6"></div>
-    </div>
+        <ng-container *ngIf="menuOrder === fileExplrUniqueMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 3 || i === 4  || i === 5 || i === 6"></div>
+          <div class="dm-line-container" *ngIf="i  === 3 || i === 4  || i === 5 || i === 6"><div class="dm-line"></div></div>
+          <div class="dm-empty-line-container" *ngIf="i  === 3 || i === 4  || i === 5 || i === 6"></div>
+        </ng-container>
 
+        <ng-container *ngIf="menuOrder === fileExplrFolderMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 3 || i === 4 || i === 6 || i === 9"></div>
+          <div class="dm-line-container" *ngIf="i === 3 || i === 4 || i === 6 || i === 9"><div class="dm-line"></div></div>
+          <div class="dm-empty-line-container" *ngIf="i === 3 || i === 4 || i === 6 || i === 9"></div>
+        </ng-container>
+
+        <ng-container *ngIf="menuOrder === fileExplrFileMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 0 || i === 2 || i === 5"></div>
+          <div class="dm-line-container" *ngIf="i === 0 || i === 2 || i === 5"><div class="dm-line"></div></div>
+          <div class="dm-empty-line-container" *ngIf="i === 0 || i === 2 || i === 5"></div>
+        </ng-container>
+
+        <ng-container *ngIf="menuOrder === defaultFileMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 2 || i === 4 || i === 6"></div>
+          <div class="dm-line-container" *ngIf="i === 2 || i === 4 || i === 6"><div class="dm-line"></div></div>
+          <div class="dm-empty-line-container" *ngIf="i === 2 || i === 4 || i === 6"></div>
+        </ng-container>
+
+        <ng-container *ngIf="menuOrder === defaultFolderMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 4 || i === 6 || i === 8"></div>
+          <div class="dm-line-container" *ngIf="i === 4 || i === 6 || i === 8"><div class="dm-line"></div></div>
+          <div class="dm-empty-line-container" *ngIf="i === 4 || i === 6 || i === 8"></div>
+        </ng-container>
+
+    </div>
     <div class="dm-empty-line-container"></div>
 </div>
 </ng-template>
 
 <ng-template #tskBarMenu>
-  <div class="dm-vertical-menu">
-    <div class="dm-empty-line-container"></div>
+  <div class="dm-tskbar-vertical-menu">
+    <div class="dm-tskbar-empty-line-container"></div>
   
-    <div lass="dm-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
-        <div class="dm-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action)">
+    <div lass="dm-tskbar-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
+        <div class="dm-tskbar-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action)">
             <div class="dm-tskbar-head"> <figure class="dm-tskbar-fig-cntxt-menu"><img *ngIf="menuItem.icon.length > 0" class="dm-tskbar-img-alt" [src]="menuItem.icon"/></figure></div>
             <div class="dm-tskbar-mid"><p class="dm-p">{{menuItem.label}}</p></div>
             <div class="dm-tskbar-tail"> <figure class="dm-tskbar-fig-cntxt-menu"> </figure> </div>
         </div>
     </div>
   
-    <div class="dm-empty-line-container"></div>
+    <div class="dm-tskbar-empty-line-container"></div>
   </div>
   
 </ng-template>

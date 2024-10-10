@@ -1,13 +1,13 @@
 /*Head Section*/
 
-.error-dialog-main-container, .info-dialog-main-container{
+.error-dialog-main-container, .info-dialog-main-container, .warning-dialog-main-container{
     font-size: 1rem;
     text-align: center;
     background-color: #fff;
     box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%);
     position: absolute;
-    top: 40%;
-    left: 15%;
+    top: 25%;
+    left: 25%;
     transform: translate(-50%, -50%); /* Move the element back by 50% of its own width and height */
     outline: 1px hsl(0deg 0% 20%/70%);
     z-index: 2;
@@ -53,7 +53,7 @@ right: 0;
     height: 18px;
     width: 18px;
     margin: 0 6px 0 8px;
-    image-rendering: optimizeQuality;
+    
 }
   
 .error-dialog-figure{
@@ -98,7 +98,7 @@ right: 0;
 
 /*Mid Section ERROR & INFO*/
 
-.error-dialog-mid-container, .info-dialog-mid-container{
+.error-dialog-mid-container, .info-dialog-mid-container, .warning-dialog-mid-container{
     display: block;
     width: 100%;
     height: 95px;
@@ -110,12 +110,12 @@ right: 0;
     width: 100%;
 }
 
-.error-dialog-mid-section2, .info-dialog-mid-section2{
+.error-dialog-mid-section2, .info-dialog-mid-section2, .warning-dialog-mid-section2{
     height: 42.5px;
     width: 100%;
 }
 
-.error-dialog-mid-section2-msg, .info-dialog-mid-section2-msg{
+.error-dialog-mid-section2-msg, .info-dialog-mid-section2-msg, .warning-dialog-mid-section2-msg{
     position: relative;
 }
 
@@ -130,7 +130,7 @@ right: 0;
     height: 38px;
     width: 38px;
     margin: 0 8px;
-    image-rendering: optimizeQuality;
+    
 }
   
 .error-dialog-figure1{
@@ -177,8 +177,8 @@ right: 0;
     height: 45px;
 }
 
-  /* Custom styles for .btn.btn-primary */
-  .btn.btn-primary {
+/* Custom styles for .btn.btn-primary */
+.btn.btn-primary {
     background-color: #e5e5e5; /* Primary button background color */
     color: #000; /* Text color for the primary button */
     border: 2px solid #0265ce; /* Border color for the primary button */
@@ -187,12 +187,20 @@ right: 0;
     font-weight: normal;
     height: 24px;
     width: 65px;
-  }
+}
 
+.btn.btn-secondary {
+    background-color: #e5e5e5; /* Primary button background color */
+    color: #000; /* Text color for the primary button */
+    border: 2px solid #ccc; /* Border color for the primary button */
+    padding: 2px 20px; /* Padding for the primary button (adjust as needed) */
+    font-size: 12px; /* Font size for the text */
+    font-weight: normal;
+    height: 24px;
+    width: 65px;
+}
 
-
-  /*Info Notifivation*/
-
+  /*Info Notification*/
 .info-dialog-main-container{
     width: 400px;
     height: 130px;
@@ -205,7 +213,6 @@ right: 0;
 }
 
   /*Mid Info */
-
 .info-dialog-mid-img1{
     width: fit-content;
     height: 80px;
@@ -217,7 +224,7 @@ right: 0;
     height: 38px;
     width: 38px;
     margin: 0 14px;
-    image-rendering: optimizeQuality;
+    
 }
   
 .info-dialog-figure1{
@@ -250,6 +257,70 @@ right: 0;
 
 /*Tail Section*/
 .info-dialog-tail-container{
+    display: flex;
+    background-color: #e5e5e5;
+    width: 100%;
+    height: 45px;
+}
+
+
+/*Info Notification*/
+.warning-dialog-main-container{
+    width: 400px;
+    height: 130px;
+}
+
+.warning-dialog-mid-section1{
+    display: flex;
+    height: 80px;
+    width: 100%;
+}
+
+  /*Mid warning */
+.warning-dialog-mid-img1{
+    width: fit-content;
+    height: 80px;
+}
+
+.warning-dialog-img1{
+    position: relative;
+    top: 25px;
+    height: 38px;
+    width: 38px;
+    margin: 0 14px;
+    
+}
+  
+.warning-dialog-figure1{
+    display: flex;
+    align-items: center;
+    height: 38px;
+}
+  
+.warning-dialog-figcaption1{
+    color: #000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.warning-dialog-mid-txt1{
+    width: calc(100% - 54px);
+}
+
+.warning-dialog-mid-section1-msg{
+    padding-left: 10px;
+    left: -30px;
+    top: 34px;
+    position: relative;
+    font-size: 13px;
+    width: 100%;
+    font-weight: normal;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/*Tail Section*/
+.warning-dialog-tail-container{
     display: flex;
     background-color: #e5e5e5;
     width: 100%;

@@ -6,7 +6,7 @@ import { StateManagmentService } from 'src/app/shared/system-service/state.manag
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component';
 import { ComponentType } from 'src/app/system-files/component.types';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { Process } from 'src/app/system-files/process';
 
 @Component({
@@ -25,7 +25,7 @@ export class TaskmanagerMiniComponent implements BaseComponent,OnInit,OnDestroy 
   processes:Process[] =[];
 
   hasWindow = true;
-  icon = 'osdrive/icons/taskmanger.png';
+  icon = 'osdrive/Cheetah/System/Imageres/taskmanager.png';
   name = 'taskmanager';
   processId = 0;
   type = ComponentType.System;
@@ -53,7 +53,7 @@ export class TaskmanagerMiniComponent implements BaseComponent,OnInit,OnDestroy 
 
   onMoreDetailsBtnClick():void{
     const file:FileInfo = new FileInfo();
-    file.setIconPath = '/osdrive/icons/taskmanger.png';
+    file.setIconPath = '/osdrive/Cheetah/System/Imageres/taskmanger.png';
     file.setOpensWith = 'taskmanager';
     file.setFileType ='.png';
 

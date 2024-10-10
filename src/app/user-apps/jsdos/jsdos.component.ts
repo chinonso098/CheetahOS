@@ -10,7 +10,7 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
@@ -18,6 +18,7 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
+import { Constants } from "src/app/system-files/constants";
 
 declare const Dos: DosPlayerFactoryType;
 declare const emulators:Emulators
@@ -37,6 +38,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
+  private _consts:Constants = new Constants();
   
   private _ci!: CommandInterface;
   private _fileInfo!:FileInfo;
@@ -47,7 +49,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   name= 'jsdos';
   hasWindow = true;
-  icon = '/osdrive/icons/js-dos-logo.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}js-dos_emulator.png`;
   isMaximizable = false;
   processId = 0;
   type = ComponentType.User;
@@ -95,7 +97,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     this.gameSrc = (this.gameSrc !=='')? 
       this.gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    this._scriptService.loadScript("js-dos", "assets/js-dos/js-dos.js").then(async() =>{
+    this._scriptService.loadScript("js-dos", "osdrive/Program-Files/JS-DOS/js-dos.js").then(async() =>{
 
       emulators.pathPrefix= '/';
 

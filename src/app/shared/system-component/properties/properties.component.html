@@ -1,1 +1,135 @@
-<p>properties works!</p>
+<div ngDraggable [handle]="leftHS1"  class="properties-main-container">
+    <div class="properties-header-container" tabindex="0">
+        <div #leftHS1 class="properties-left-header-section">
+            <h1 class="properties-h1">
+                <figure class="properties-figure">
+                    <img class="properties-img" [src]="fileInput.getIconPath" [alt]="''"/>
+                    <figcaption class="properties-figcaption"> {{this.displayMgs}} </figcaption>
+                </figure>
+            </h1>
+        </div>
+        <div class="properties-right-header-section">
+            <nav class="properties-nav">
+                <button class="properties-button" id="closeBtn" appHighlight (click)="onClosePropertyView()"  title="Close" >
+                    <svg class="properties-svg" width="10" viewBox="0 0 10 10">
+                        <path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z" fill = "#FFFFF"/>
+                    </svg>
+                </button>
+            </nav>
+        </div>
+    </div>
+    <div class="properties-body-container">
+        <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
+        
+        <div class="properties-header-tab-container">
+            <div class="properties-header-tabs">
+              <div class="properties-tab active">General</div>
+            </div>
+    
+            <div class="properties-header-tab-content-container">
+                <div class="properties-tab-pane active">
+                    <div class="general-tab-containter">
+                        <div style="width: 100%; height: 5px;"> </div>
+
+                        <div class="general-tab-section">
+                            <div class="general-tab-content">
+                                <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="fileInput.getIconPath"/></figure></div>
+                                <div class="general-tab-mid"></div>
+                                <div class="general-tab-tail"><p class="general-tab-p">{{this.name}}</p></div>
+                            </div>
+
+                        </div>
+                        <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+
+                       <div class="general-tab-section2">
+                            <div class="general-tab-content">
+                                <div class="general-tab-head"><p class="general-tab-p1"> Type of file:</p></div>
+                                <div class="general-tab-mid"></div>
+                                <div class="general-tab-tail"><p class="general-tab-p1"> {{fileInput.getFileExtension}}</p></div>
+                            </div>
+
+                            <ng-container *ngIf="fileInput.getFileExtension === URL">
+                                <div class="general-tab-content" style="height: 13px;">
+                                    <div class="general-tab-head"><p class="general-tab-p1"> Opens with:</p></div>
+                                    <div class="general-tab-mid"></div>
+                                    <div class="general-tab-tail">
+                                        <div class="openswith-container">
+                                            <div class="openswith-head">
+                                                <figure class="openswith-tab-figure"><img class="openswith-tab-img" [src]="icon"/></figure>
+                                            </div>
+                                            <div class="openswith-mid"></div>
+                                            <div class="openswith-tail"><p class="general-tab-p1"> {{fileInput.getOpensWith}}</p></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+                            
+                            <ng-container *ngIf="fileInput.getFileExtension !== URL">
+                                <div class="general-tab-content" style="height: 13px;">
+                                    <div class="general-tab-head"><p class="general-tab-p1"> Description:</p></div>
+                                    <div class="general-tab-mid"></div>
+                                    <div class="general-tab-tail"><p class="general-tab-p1"> camera </p></div>
+                                </div>
+                            </ng-container>
+                        </div>
+
+                        <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+                        <div class="general-tab-section2">
+
+                            <div class="general-tab-content">
+                                <div class="general-tab-head"><p class="general-tab-p1"> Location:</p></div>
+                                <div class="general-tab-mid"></div>
+                                <div class="general-tab-tail"><p class="general-tab-p1"> {{location}}</div>
+                            </div>
+
+
+                            <div class="general-tab-content">
+                                <div class="general-tab-head"><p class="general-tab-p1"> Size:</p></div>
+                                <div class="general-tab-mid"></div>
+                                <div class="general-tab-tail"><p class="general-tab-p1"> 1.44 KB(1,482 bytes)</p></div>
+                            </div>
+
+                            <div class="general-tab-content">
+                                <div class="general-tab-head"><p class="general-tab-p1"> Size on disk:</p></div>
+                                <div class="general-tab-mid"></div>
+                                <div class="general-tab-tail"><p class="general-tab-p1"> 4.00 KB (4,096 bytes) </p></div>
+                            </div>
+                        </div>
+                        <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+                        <div class="general-tab-section2">
+
+                            <div class="general-tab-content">
+                                <div class="general-tab-head"><p class="general-tab-p1">Created:</p></div>
+                                <div class="general-tab-mid"></div>
+                                <div class="general-tab-tail"><p class="general-tab-p1">Thur, Sep 19,2024, 9:22.26 PM</p></div>
+                            </div>
+
+                            <div class="general-tab-content">
+                                <div class="general-tab-head"><p class="general-tab-p1">Modified:</p></div>
+                                <div class="general-tab-mid"></div>
+                                <div class="general-tab-tail"><p class="general-tab-p1">Thur, Sep 19,2024, 9:22.26 PM</p></div>
+                            </div>
+
+                            <div class="general-tab-content">
+                                <div class="general-tab-head"><p class="general-tab-p1"> Accessed:</p></div>
+                                <div class="general-tab-mid"></div>
+                                <div class="general-tab-tail"><p class="general-tab-p1"> Thur, Sep 19,2024, 9:22.26 PM </p></div>
+                            </div>
+                        </div>
+                        <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+                        <div class="general-tab-section2">
+                            <div style="width: 100%; height: 60px;"> </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </div>
+    <div class="properties-footer-container">
+        <span style="position: fixed; margin-top:6px; right:2%;">
+            <button class="btn btn-primary" (click)="onClosePropertyView()" >
+              OK
+            </button>
+        </span>
+    </div>
+</div>

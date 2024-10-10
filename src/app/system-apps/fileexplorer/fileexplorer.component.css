@@ -28,6 +28,7 @@
 /* Styles for the tabbed window container */
 .fileexp-header-tab-container {
     width: 100%;
+    min-width: 700px;
     /* border:0.5px solid #9d9d9d; */
 }
   
@@ -77,6 +78,24 @@
 .fileexp-tab-pane.active {
     display: flex;
 }
+
+.figure-header-toggle{
+    position: fixed;
+    right: 2%;
+}
+
+.figure-header-tab{
+    position: relative;
+    width: 15px;
+    height: 21.5px;
+    place-items:center;
+}
+
+.img-header-tab{
+    padding-left: 2.5px;
+    height: 10px; 
+    width: 10px;
+}
   
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Header Tabs View Ended@@@@@@@@@@@@@@@@@@@@@@@@@@*/
 
@@ -112,7 +131,8 @@
 }
 
 .view-tab-pane-top1{
-    padding-left: 5px;
+    padding-left: 4.5px;
+    border: 0.5px solid transparent;
 }
 
 .figure-tab-view-pane{
@@ -153,7 +173,9 @@
     position: relative;
     width: fit-content;
     height: fit-content;
-    top: 2px;
+    top: 1.5px;
+    border: 0.5px solid transparent;
+    
 }
 .tab-pane-top2-2{
     top: 0px;
@@ -332,7 +354,7 @@
     height: 16px;
     width: 16px;
     top:5px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -346,7 +368,7 @@
 .img-alt-chevron{
     height: 9px;
     width: 9px;
-    image-rendering:optimizeQuality;
+
     position: relative;
     top: 5px
 }
@@ -369,7 +391,7 @@
     height: 16px;
     width: 16px;
     top:6px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 /*++++++++++++++++++++++++++++++++Header navigation btn section Ended++++++++++++++++++++++++++++++++*/
@@ -394,7 +416,7 @@
     height: 18px;
     width: 15px;
     margin: 0 3px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -473,7 +495,7 @@ span.mid-nav-path-gen-cntnr{
     height: 11px;
     width: 11px;
     /* margin: 0 4px; */
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -486,7 +508,7 @@ span.mid-nav-path-gen-cntnr{
     height: 10px;
     width: 10px;
     margin: 0 6px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -521,7 +543,7 @@ span.head-nav-path-cntnr1:hover{
     height: 12px;
     width: 12px;
     margin: 0 6px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -590,7 +612,7 @@ span.head-nav-path-cntnr2:hover{
     width: 12px;
     top:0px;
     margin: 0 8px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -643,7 +665,7 @@ span.mid-nav-path-entry{
     height: 12px;
     width: 12px;
     margin: 0 8px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -706,7 +728,7 @@ span.head-search-cntnr2.active{
     width: 12px;
     top:0px;
     margin: 0 8px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -731,52 +753,12 @@ span.mid-search-entry{
 /*****************************navigation pane view Started*****************************/
 
 .navigation-content-container{
-    min-width: 150px;
-     background-color: #191919;
-     /* background-color: whitef; */
+    min-width: 160px;
+    background-color: #191919;
+    overflow-y: auto;
+    height: 350px;
 }
 
-
-/* Remove default bullets */
-ul, #myUL {
-  list-style-type: none;
-}
-
-/* Remove margins and padding from the parent ul */
-#myUL {
-  margin: 0;
-  padding: 0;
-}
-
-/* Style the caret/arrow */
-.caret {
-  cursor: pointer; 
-  user-select: none; /* Prevent text selection */
-  color: white;
-}
-
-/* Create the caret/arrow with a unicode, and style it */
-.caret::before {
-  content: "\25B6";
-  color: #ccc;
-  display: inline-block;
-  margin-right: 6px;
-}
-
-/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
-.caret-down::before {
-  transform: rotate(90deg); 
-}
-
-/* Hide the nested list */
-.nested {
-  display: none;
-}
-
-/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
-.nav-active {
-  display: block;
-}
 
 /*****************************navigation pane view Ended*****************************/
 

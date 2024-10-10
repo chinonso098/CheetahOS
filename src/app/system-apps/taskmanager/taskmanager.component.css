@@ -277,7 +277,7 @@ span {
 .tskmgr-img0{
     height: 18px;
     width: 18px;
-    image-rendering:optimizeQuality;
+
     position: relative;
     margin: 0 4px 0 0;
 }
@@ -541,7 +541,7 @@ span {
 .tskmgr-nav-img{
   height: 12px;
   width: 12px;
-  image-rendering:optimizeQuality;
+ 
   position: relative;
 }
 
@@ -567,7 +567,7 @@ span {
 .tskmgr-nav-sub-menu-img{
   height: 8px;
   width: 8px;
-  image-rendering:optimizeQuality;
+ 
   position: relative;
 }
 
@@ -630,7 +630,7 @@ span {
 .tskmgr-img{
   height: 16px;
   width: 16px;
-  image-rendering:optimizeQuality;
+ 
   position: relative;
 }
 

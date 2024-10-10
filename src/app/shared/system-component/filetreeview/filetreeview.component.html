@@ -1,0 +1,141 @@
+    <!--down-chevron<svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512">
+        <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+    </svg>
+    right-chevron<svg xmlns="http://www.w3.org/2000/svg" height="16" width="10" viewBox="0 0 320 512">
+        <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+    </svg> -->
+
+<ng-container  *ngIf="showRoot"> 
+    <ul class="ul-file-tree-view" id="qa-FileExplrTreeView">
+        <li class="li-file-tree-view0" id="qa-li-{{pid}}">
+            <div class="tree-view-cntnr"  id="qa-fileExplrTreeView-{{pid}}" 
+                (click)="onBtnClick('qa-fileExplrTreeView-'+pid)" (mouseenter)="onMouseEnter('qa-fileExplrTreeView-'+pid)" (mouseleave)="onMouseLeave('qa-fileExplrTreeView-'+pid)">
+                <div class="fxtreeview-head"> 
+                    <figure class="fxtreeview-figure">  
+                        <div class="fxtreeview-img" >
+                            <svg xmlns="http://www.w3.org/2000/svg" (click)="showChildren('qa-fileExplrTreeView')" (mouseenter)="colorChevron(negTen,negTen)" (mouseleave)="unColorChevron(negTen,negTen)" [style]="chevronBtnStyle"
+                                height="10" width="10" 
+                                viewBox="0 0 512 512"  id="qa-fileExplrTreeView-img-{{pid}}">
+                                <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                            </svg>
+                        </div>
+                    </figure>
+                </div>
+                <div class="fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/Cheetah/System/Imageres/quick_access_small.png'"/></figure></div>
+                <div class="fxtreeview-tail"><p class="fxtreeview-nested-p"> {{Quick_ACCESS}}</p></div>
+            </div>
+
+            <ul class="ul-file-tree-view" id="qa-ul-{{pid}}">
+                <ng-container *ngFor="let node of quickAccessData; let i = index">
+                    <li class="li-file-tree-view" id="qa-li-{{pid}}-{{i}}"> 
+                        <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="qa-fileExplrTreeView-{{pid}}-{{i}}" (click)="navigateToSelectedPath(node.name, node.path)" 
+                            (click)="onBtnClick('qa-fileExplrTreeView-'+pid+'-'+i)" (mouseenter)="onMouseEnter('qa-fileExplrTreeView-'+pid+'-'+i)" (mouseleave)="onMouseLeave('qa-fileExplrTreeView-'+pid+'-'+i)">
+                            
+                            <div class="fxtreeview-head"> <figure class="fxtreeview-figure"></figure></div>
+
+                            <div class="fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]=" node.name === '3D-Objects' && node.path === '/Users/3D-Objects'  ? 'osdrive/Cheetah/System/Imageres/3d-objects_folder_small.png' : 
+                                                                                                                                node.name === 'Desktop' && node.path === '/Users/Desktop'  ? 'osdrive/Cheetah/System/Imageres/desktop_folder_small.png' :  
+                                                                                                                                node.name === 'Documents' && node.path === '/Users/Documents' ? 'osdrive/Cheetah/System/Imageres/documents_folder_small.png' :
+                                                                                                                                node.name === 'Downloads' && node.path === '/Users/Downloads' ? 'osdrive/Cheetah/System/Imageres/downloads_folder_small.png' :
+                                                                                                                                node.name === 'Games' && node.path === '/Users/Games' ? 'osdrive/Cheetah/System/Imageres/games_folder_small.png' :
+                                                                                                                                node.name === 'Music' && node.path === '/Users/Music' ? 'osdrive/Cheetah/System/Imageres/music_folder_small.png' : 
+                                                                                                                                node.name === 'Pictures' && node.path === '/Users/Pictures'? 'osdrive/Cheetah/System/Imageres/pictures_folder_small.png':
+                                                                                                                                node.name === 'Videos' && node.path === '/Users/Videos' ? 'osdrive/Cheetah/System/Imageres/videos_folder_small.png': 'osdrive/Cheetah/System/Imageres/folder_folder_small.png'"/></figure></div>
+                            <div class="fxtreeview-tail"><p class="fxtreeview-nested-p">{{node.name}}</p></div>
+                        </div>
+                    </li>
+                </ng-container>
+            </ul> 
+        </li>
+    </ul>
+    <div style="height:10px; width:100%;"></div>
+</ng-container>
+
+
+<ul class="ul-file-tree-view" id="{{nextLevelSrcId}}">
+    <li class="li-file-tree-view0" id="li-{{pid}}-{{level}}">
+        <ng-container *ngIf="showRoot">
+            <div class="tree-view-cntnr"  id="tp-fileExplrTreeView-{{pid}}-{{level}}" (click)="navigateToSelectedPath('This-PC','This-PC')" 
+                (click)="onBtnClick('tp-fileExplrTreeView-'+pid+'-'+level)" (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level)" (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level)">
+                <div class="span fxtreeview-head"> 
+                    <figure class="fxtreeview-figure">  
+                        <div class="fxtreeview-img" >
+                            <svg xmlns="http://www.w3.org/2000/svg" (click)="showChildren('tp-fileExplrTreeView')" (mouseenter)="colorChevron()" (mouseleave)="unColorChevron()" [style]="chevronBtnStyle"
+                                height="10" width="10" 
+                                viewBox="0 0 512 512"  id="tp-fileExplrTreeView-img-{{pid}}-{{level}}">
+                                <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                            </svg>
+                        </div>
+                    </figure>
+                </div>
+                <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/Cheetah/System/Imageres/this_pc.png'"/></figure></div>
+                <div class="span fxtreeview-tail"><p class="fxtreeview-nested-p">{{THIS_PC}}</p></div>
+            </div>
+        </ng-container>
+
+        <ul class="ul-file-tree-view" id="ul-{{pid}}-{{level}}">
+            <ng-container *ngFor="let node of treeData; let i = index">
+                <li class="li-file-tree-view" id="li-{{pid}}-{{level}}-{{i}}"> 
+                                                                            <!--here is the id-->
+                    <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="tp-fileExplrTreeView-{{pid}}-{{level}}-{{i}}"  
+                        (click)="navigateToSelectedPath(node.name, node.path)" 
+                        (click)="onBtnClick('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)" (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)" (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)">
+                        <div class="span fxtreeview-head"> 
+                            <figure class="fxtreeview-figure">  
+                                <div class="fxtreeview-img" >
+                                    <svg xmlns="http://www.w3.org/2000/svg" (click)="showGrandChildren(node.path, i)" (mouseenter)="colorChevron(i)" (mouseleave)="unColorChevron(i)" [style]="chevronBtnStyle"
+                                        height="10" width="10" 
+                                        viewBox="0 0 512 512"  id="tp-fileExplrTreeView-img-{{pid}}-{{level}}-{{i}}"> <!--here is the id-->
+                                        <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+                                    </svg>
+                                </div>
+                            </figure>
+                        </div>
+                        <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]=" node.name === '3D-Objects' && node.path === '/Users/3D-Objects'  ? 'osdrive/Cheetah/System/Imageres/3d-objects_folder_small.png' : 
+                                                                                                                                 node.name === 'Desktop' && node.path === '/Users/Desktop'  ? 'osdrive/Cheetah/System/Imageres/desktop_folder_small.png' :  
+                                                                                                                                 node.name === 'Documents' && node.path === '/Users/Documents' ? 'osdrive/Cheetah/System/Imageres/documents_folder_small.png' :
+                                                                                                                                 node.name === 'Downloads' && node.path === '/Users/Downloads' ? 'osdrive/Cheetah/System/Imageres/downloads_folder_small.png' :
+                                                                                                                                 node.name === 'Games' && node.path === '/Users/Games' ? 'osdrive/Cheetah/System/Imageres/games_folder_small.png' :
+                                                                                                                                 node.name === 'Music' && node.path === '/Users/Music' ? 'osdrive/Cheetah/System/Imageres/music_folder_small.png' : 
+                                                                                                                                 node.name === 'Pictures' && node.path === '/Users/Pictures'? 'osdrive/Cheetah/System/Imageres/pictures_folder_small.png':
+                                                                                                                                 node.name === 'Videos' && node.path === '/Users/Videos' ? 'osdrive/Cheetah/System/Imageres/videos_folder_small.png':
+                                                                                                                                 node.name === 'OSDisk (C:)' && node.path === '/' ? 'osdrive/Cheetah/System/Imageres/os_disk.png': 'osdrive/Cheetah/System/Imageres/folder_folder_small.png'"/></figure></div>
+                        <div class="span fxtreeview-tail"><p class="fxtreeview-nested-p">{{node.name}}</p></div>
+                    </div>
+
+                    <ng-container *ngIf="node.children && node.children.length">
+                        <ul class="ul-file-tree-view" id="ul-{{pid}}-{{level}}-{{i}}">
+                            
+                            <ng-container *ngFor="let child of node.children; let j = index">
+                                <li class="li-file-tree-view" id="li-{{pid}}-{{level}}-{{i}}-{{j}}"> 
+                                                                                                                <!--here is the id1-->
+                                    <div class="tree-view-cntnr" *ngIf="child.isFolder"  id="tp-fileExplrTreeView-{{pid}}-{{level}}-{{i}}-{{j}}" 
+                                         (click)="navigateToSelectedPath(child.name, child.path)"
+                                        (click)="onBtnClick('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)" (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)" (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)">
+                                        <div class="span fxtreeview-head"> 
+                                            <figure class="fxtreeview-figure">  
+                                                <div class="fxtreeview-img" >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" (click)="showGreatGrandChildren(child.path, i, j)" (mouseenter)="colorChevron(i,j)" (mouseleave)="unColorChevron(i,j)" [style]="chevronBtnStyle"
+                                                        height="10" width="10" 
+                                                        viewBox="0 0 512 512"  id="tp-fileExplrTreeView-img-{{pid}}-{{level}}-{{i}}-{{j}}"> <!--here is the id1-->
+                                                        <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+                                                    </svg>
+                                                </div>
+                                            </figure>
+                                        </div>
+                                        <div class="span fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="'osdrive/Cheetah/System/Imageres/folder_folder_small.png'"/></figure></div>
+                                        <div class="span fxtreeview-tail"><p class="fxtreeview-nested-p"> {{child.name}}</p></div>
+                                    </div>
+
+                                    <ng-container *ngIf="child.children && child.children.length">
+                                        <cos-filetreeview [level]="this.nextLevel" [pid]="this.processId" [showRoot]="false" [levelSrcId]="'newtree-'+pid+'-'+level+'-'+i+'-'+j" [treeData]="child.children"></cos-filetreeview>
+                                    </ng-container>
+                                </li>
+                            </ng-container>
+                        </ul>
+                    </ng-container>
+                </li>
+            </ng-container>
+        </ul> 
+    </li>
+</ul>

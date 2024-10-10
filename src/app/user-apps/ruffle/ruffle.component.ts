@@ -6,7 +6,7 @@ import { Process } from 'src/app/system-files/process';
 import {extname} from 'path';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
@@ -14,6 +14,7 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
+import { Constants } from "src/app/system-files/constants";
 
 
 @Component({
@@ -31,6 +32,9 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
+
+  private _consts:Constants = new Constants();
+  
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private gameSrc = '';
@@ -39,7 +43,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
 
   name= 'ruffle';
   hasWindow = true;
-  icon = '/osdrive/icons/emulator-1.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}ruffle.png`;
   isMaximizable = false;
   processId = 0;
   type = ComponentType.User;
@@ -71,7 +75,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
     this.gameSrc = (this.gameSrc !=='')? 
     this.gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    this._scriptService.loadScript("ruffle","assets/ruffle/ruffle.js").then(()=>{
+    this._scriptService.loadScript("ruffle","osdrive/Program-Files/Ruffle/ruffle.js").then(()=>{
       this.rufflePlayer = (window as any).RufflePlayer.newest();
       this.loadSWF('ruffleWindow',this.gameSrc);
       this.storeAppState(this.gameSrc);
@@ -118,7 +122,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
     if(this.checkForExt(pathOne,pathTwo)){
       gameSrc = '/' + this._fileInfo.getContentPath;
     }else{
-      gameSrc =  this._fileInfo.getCurrentPath;
+      gameSrc =  'osdrive' +this._fileInfo.getCurrentPath;
     }
 
     return gameSrc;

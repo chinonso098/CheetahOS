@@ -81,7 +81,7 @@ sudo n lts| stable | latest  --(pick one)
 
 32.) Aligon icond to grid on the desktop  is broken
 
-33.) Windows z-indexing is BROOOOKEN.
+33.) Windows z-indexing is BROOOOKEN -- done.
 
 34.) Creating a new folder from the termial/fileexplorer has broken back navigation
 

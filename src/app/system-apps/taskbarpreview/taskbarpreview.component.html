@@ -1,4 +1,4 @@
-<div  [@fadeAnimation]="fadeState" class="taskbar-preview-main-container" (mouseenter)="keepTaskBarPreviewWindow()" (mouseleave)="hideTaskBarPreviewWindow()">
+<div  [@fadeAnimation]="fadeState" class="taskbar-preview-main-container" (mouseenter)="keepTaskBarPreviewWindow()" (mouseleave)="hideTaskBarPreviewWindowAndRestoreDesktop()">
     <div class="taskbar-preview-content" *ngFor="let cmpntImage of componentImages" >
         <div class="taskbar-preview-header-container" tabindex="0">
             <div class="taskbar-preview-left-header-section">
@@ -19,7 +19,7 @@
                 </nav>
             </div>
         </div>
-        <div class="taskbar-preview-image-container"  (contextmenu)="showTaskBarPreviewContextMenu($event, cmpntImage.pid)" (mouseenter)="setWindowToFocus(cmpntImage.pid)">
+        <div class="taskbar-preview-image-container"  (contextmenu)="showTaskBarPreviewContextMenu($event, cmpntImage.pid)" (mouseenter)="setWindowToFocus(cmpntImage.pid)" (mouseleave)="restoreWindow(cmpntImage.pid)"  (click)="showWindow(cmpntImage.pid)">
             <figure class="taskbar-preview-figure1">
                 <img  [ngClass]="cmpntImage.imageData ? 'taskbar-preview-img1-sec':'taskbar-preview-img1-pri'" [src]="cmpntImage.imageData || icon"/>
             </figure>

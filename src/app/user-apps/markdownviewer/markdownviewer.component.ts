@@ -15,9 +15,11 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { FileService } from 'src/app/shared/system-service/file.service';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Constants } from "src/app/system-files/constants";
+
 declare const marked:any;
 
 @Component({
@@ -38,6 +40,8 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   private _scriptService: ScriptService;
   private _fileService:FileService;
 
+  private _consts:Constants = new Constants();
+
   private _sanitizer: DomSanitizer;
   private _renderer: Renderer2;
 
@@ -50,7 +54,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   SECONDS_DELAY = 250;
 
   hasWindow = true;
-  icon = 'osdrive/icons/markdown-2_50.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}markdown.png`;
   name = 'markdownviewer';
   processId = 0;
   type = ComponentType.System;
@@ -88,7 +92,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
     this.fileSrc = (this.fileSrc !=='')? 
     this.fileSrc : this.getFileSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    this._scriptService.loadScript("markedjs","assets/marked/marked.min.js").then(async() =>{  
+    this._scriptService.loadScript("markedjs","osdrive/Program-Files/Marked/marked.min.js").then(async() =>{  
      const mkd = marked.setOptions({
         gfm: true,
         breaks: true

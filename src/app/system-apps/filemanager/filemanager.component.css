@@ -35,6 +35,7 @@ figcaption{
     display: -webkit-box;
     font-size: 12px;
     letter-spacing: 0.1px;
+    line-clamp:2;
     -webkit-line-clamp:2;
     position: relative;
     text-overflow: ellipsis;
@@ -60,6 +61,15 @@ figcaption{
 img{
     height: 45px; 
     width: 45px;
+}
+
+.shortcut-img{
+    position: absolute;
+    /* display: none; */
+    height: 24px; 
+    width: 24px;
+    top: 32%;
+    left: 24%;
 }
 
 button{
@@ -130,4 +140,13 @@ input::selection{
     border-color: #FFFFFF transparent transparent transparent; 
     left: 20px;
     transform: rotate(180deg);
+}
+
+
+.clone-container{
+    width: fit-content;
+    height: fit-content;
+    background-color: #ccc;
+    z-index:  5;
+    position: absolute;
 }

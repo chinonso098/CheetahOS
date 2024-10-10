@@ -1,12 +1,12 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component';
 import { ComponentType } from 'src/app/system-files/component.types';
-import {extname, basename} from 'path';
+import {extname} from 'path';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { Constants } from "src/app/system-files/constants";
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
@@ -16,6 +16,7 @@ import { Subscription } from 'rxjs';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
+
 // eslint-disable-next-line no-var
 declare const Howl:any;
 declare const SiriWave:any;
@@ -69,7 +70,8 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   name= 'audioplayer';
   hasWindow = true;
-  icon = '/osdrive/icons/audioplayer.png';
+  
+  icon = `${this._consts.IMAGE_BASE_PATH}audioplayer.png`;
   processId = 0;
   type = ComponentType.User;
   displayName = 'Howlerjs';
@@ -92,8 +94,8 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.retrievePastSessionData();
 
     this._runningProcessService = runningProcessService;
-    this._maximizeWindowSub = this._runningProcessService.maximizeWindowNotify.subscribe(() =>{this.maximizeWindow()});
-    this._minimizeWindowSub = this._runningProcessService.minimizeWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
+    this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
+    this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
@@ -108,9 +110,9 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.audioSrc = (this.audioSrc !== '')? 
       this.audioSrc :this.getAudioSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-      this._scriptService.loadScript("howler","assets/howler/howler.min.js").then(()=>{
+      this._scriptService.loadScript("howler","osdrive/Program-Files/Howler/howler.min.js").then(()=>{
 
-        this._scriptService.loadScript("siriwave","assets/howler/siriwave.umd.min.js").then(()=>{
+        this._scriptService.loadScript("siriwave","osdrive/Program-Files/Howler/siriwave.umd.min.js").then(()=>{
 
           this.siriWave = new SiriWave({
             container: this.waveForm.nativeElement,

@@ -11,6 +11,7 @@ import { Process } from 'src/app/system-files/process';
 
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
+import { Constants } from "src/app/system-files/constants";
 // import { DiffEditorModel } from 'ngx-monaco-editor-v2';
 
 
@@ -27,6 +28,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   private _runningProcessService:RunningProcessService;
   private _stateManagmentService:StateManagmentService;
   private _triggerProcessService:TriggerProcessService;
+  private _consts:Constants = new Constants();
 
   private _maximizeWindowSub!: Subscription;
   SECONDS_DELAY = 250;
@@ -40,7 +42,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
 
 
   hasWindow = true;
-  icon = 'osdrive/icons/vs-code_48.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}vs_code.png`;
   name = 'codeeditor';
   processId = 0;
   type = ComponentType.User;

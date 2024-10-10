@@ -19,6 +19,7 @@ export class DialogComponent implements OnChanges {
 
   notificationOption = '';
   errorNotification = NotificationType.Error;
+  warnNotification = NotificationType.Warning;
   infoNotification =  NotificationType.Info;
 
 
@@ -45,7 +46,7 @@ export class DialogComponent implements OnChanges {
 
   private generateNotificationId(): number{
     const min = Math.ceil(0);
-    const max = Math.floor(999);
+    const max = Math.floor(499);
     return Math.floor(Math.random() * (max - min + 1)) + min; 
   }
 

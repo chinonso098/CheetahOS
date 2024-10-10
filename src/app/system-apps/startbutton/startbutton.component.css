@@ -6,8 +6,8 @@ button{
     place-items: center;
     position: absolute;
     height: 100%;
-    width: 60px;
-    left: 0;
+    width: 50px;
+    left: -2px;
     background-color: unset;
     /* bottom: 0; */
 }

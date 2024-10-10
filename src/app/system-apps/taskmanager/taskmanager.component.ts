@@ -10,6 +10,7 @@ import { RefreshRates, RefreshRatesIntervals, TableColumns,DisplayViews } from '
 import { NotificationService } from 'src/app/shared/system-service/notification.service';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import * as htmlToImage from 'html-to-image';
+import { Constants } from 'src/app/system-files/constants';
 
 
 @Component({
@@ -29,6 +30,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   private _runningProcessService:RunningProcessService;
   private _notificationService:NotificationService;
   private _renderer: Renderer2;
+  private _consts:Constants = new Constants();
 
   private _processListChangeSub!: Subscription;
   private _taskmgrRefreshIntervalSub!: Subscription;
@@ -75,7 +77,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   SECONDS_DELAY = 250
 
   processes:Process[] =[];
-  closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry"];
+  closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu"];
   groupedData: any = {};
   selectedRefreshRate = 0;
 
@@ -87,7 +89,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   powerUtil = 'Very low';
 
   hasWindow = true;
-  icon = 'osdrive/icons/taskmanger.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}taskmanager.png`;
   name = 'taskmanager';
   processId = 0;
   type = ComponentType.System;
@@ -105,7 +107,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._processListChangeSub = this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess();})
-    this._maximizeWindowSub = this._runningProcessService.maximizeWindowNotify.subscribe(() =>{this.maximizeWindow();})
+    this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow();})
     this._currentSortingOrder = this._sorting.order;
 
     this._chnageTaskmgrRefreshIntervalSub = new Subject<number>();

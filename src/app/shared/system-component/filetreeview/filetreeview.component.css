@@ -1,0 +1,112 @@
+  /* Remove default bullets */
+  /* ul, #fileExplrTreeView {
+      list-style-type: none;
+  } */
+    
+  /* Remove margins and padding from the parent ul */
+  .ul-file-tree-view{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .li-file-tree-view0{
+    margin:0;
+    padding:0 0 0 0; /* Each nested li will be padded incrementally */
+  }
+
+  .li-file-tree-view{
+    margin:0;
+    padding:0 0 0 10px; /* Each nested li will be padded incrementally */
+  }
+    
+  /* Hide the nested list */
+  .nested {
+    display: none;
+  }
+
+  /* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+  .active {
+    display: block;
+  }
+
+
+  .root-caret-active{
+    position: 'relative';
+    transform: rotate(0deg);
+  }
+
+  .caret-active {
+    position: 'relative';
+    transform: rotate(90deg);
+  }
+
+  .root-caret-nested{
+    position: 'relative';
+    transform: rotate(270deg);
+  }
+
+  .caret-nested {
+    position: 'relative';
+    transform: rotate(0);
+  }
+
+  .tree-view-cntnr{
+    display: inline-flex;
+    width: 100%;
+    padding: 2px 0px;
+  }
+
+  .fxtreeview-nested-p{
+    position: relative;
+    top: 10%;
+  }
+
+  .fxtreeview-head{
+    padding-left: 5px;
+  }
+
+  .fxtreeview-mid{
+    padding-left: 2px;
+    padding-right: 3px;
+  }
+
+  .fxtreeview-tail{
+    padding: 0 5px;
+    color: white;
+    text-align: left;
+    font-size: 12px;
+    font-weight:200;
+  }
+
+  .fxtreeview-img{
+    height: 10px;
+    width: 10px;
+
+    position: relative;
+  }
+
+  .fxtreeview-figure{
+    position: relative;
+    align-items: center;
+    display: inline-flex;
+    min-width: 10px;
+    top: 0;
+    left: 15%;
+  }
+
+  .fxtreeview-img1{
+    height: 17px;
+    width: 17px;
+
+    position: relative;
+  }
+
+  .fxtreeview-figure1{
+    position: relative;
+    align-items: center;
+    display: inline-flex;
+    min-width: 17px;
+    top: 0;
+    left: 15%;
+  }

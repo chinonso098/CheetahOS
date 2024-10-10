@@ -1,5 +1,5 @@
 
-.dm-vertical-menu{
+.dm-vertical-menu, .dm-tskbar-vertical-menu{
     position: absolute;
     width: 205px;
     box-shadow: 2px 2px rgba(0, 0, 0, 0.3);
@@ -11,7 +11,8 @@
     width: 100%;
 }
 
-.dm-vertical-menu-item{
+
+.dm-vertical-menu-item, .dm-tskbar-vertical-menu-item{
     height: fit-content;
     padding: 2px 0;
     background-color: #2b2b2b;
@@ -39,7 +40,7 @@
     margin: 0 8px;
 }
 
-.dm-empty-line-container {
+.dm-empty-line-container , .dm-tskbar-empty-line-container {
     max-height: 3px;
     min-height: 3px;
     background-color: #2b2b2b;
@@ -78,24 +79,38 @@ span.dm-tail{
 .dm-img-alt{
     height: 16px;
     width: 16px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
 .dm-figure-alt{
-    /* position: relative;
-    align-items: center;
-    display: inline-flex;
-    min-width: 18px;
-    top: 0;
-    left: 15%; */
-
     align-items: center;
     display:inline-flex;
     min-width: 18px;
 }
 
 /*Taskbar Menu CSS*/
+
+.dm-tskbar-empty-line-container{
+    background-color: transparent;
+}
+
+.dm-tskbar-vertical-menu{
+    background-color: rgba(41,41, 41, 0.7);
+    backdrop-filter: blur(30px);
+    z-index: 5;
+}
+
+.dm-tskbar-vertical-menu-cntnr{
+    width: 100%;
+}
+
+.dm-tskbar-vertical-menu-item{
+    background-color: transparent;
+    z-index: 5;
+}
+
+
 .dm-tskbar-head{
     max-width: 27%;
     padding-left: 5px;
@@ -138,7 +153,6 @@ span.dm-tail{
 .dm-tskbar-img-alt{
     height: 18px;
     width: 18px;
-    image-rendering:optimizeQuality;
     position: relative;
 }
 
@@ -275,7 +289,7 @@ span.dm-tail{
 .dm-nested-img{
     height: 18px;
     width: 18px;
-    image-rendering:optimizeQuality;
+
     position: relative;
     margin: 0 0;
 }
@@ -283,7 +297,7 @@ span.dm-tail{
 .dm-nested-img-alt{
     height: 8px;
     width: 8px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 
@@ -300,7 +314,7 @@ span.dm-tail{
 .dm-nested-img-alt2{
     height: 16px;
     width: 16px;
-    image-rendering:optimizeQuality;
+
     position: relative;
 }
 

@@ -7,7 +7,7 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
@@ -15,6 +15,7 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
+
 
 @Component({
   selector: 'cos-photoviewer',
@@ -39,14 +40,14 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   SECONDS_DELAY = 250;
   name= 'photoviewer';
   hasWindow = true;
-  icon = '/osdrive/icons/photos_48.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}photoviewer.png`;
   isMaximizable = false;
   processId = 0;
   type = ComponentType.System;
   displayName = 'PhotoViewer';
   private defaultImg = '/osdrive/Pictures/Samples/no_img.jpeg';
-  private tst_imageList:string[] = ['/osdrive/Pictures/Samples/Chill on the Moon.jpg', '/osdrive/Pictures/Samples/Mystical.jpg',
-                        '/osdrive/Pictures/Samples/Sparkling Water.jpg']
+  private tst_imageList:string[] = [`${this._consts.IMAGE_BASE_PATH}Chill on the Moon.jpg`, `${this._consts.IMAGE_BASE_PATH}Mystical.jpg`,
+                        `${this._consts.IMAGE_BASE_PATH}Sparkling Water.jpg`]
                       
   imageList:string[] = []            
         

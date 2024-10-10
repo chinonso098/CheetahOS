@@ -6,11 +6,12 @@ import { TriggerProcessService } from 'src/app/shared/system-service/trigger.pro
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
+import { Constants } from "src/app/system-files/constants";
 
 import { BaseComponent } from 'src/app/system-base/base/base.component';
 import { ComponentType } from 'src/app/system-files/component.types';
 import { Process } from 'src/app/system-files/process';
-import { FileInfo } from 'src/app/system-files/fileinfo';
+import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
@@ -40,6 +41,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   private _scriptService: ScriptService;
   private _fileService:FileService;
 
+  private _consts:Constants = new Constants();
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private _maximizeWindowSub!: Subscription;
@@ -49,7 +51,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   SECONDS_DELAY = 250;
 
   hasWindow = true;
-  icon = 'osdrive/icons/text-editor_48.png';
+  icon = `${this._consts.IMAGE_BASE_PATH}text-editor.png`;
   name = 'texteditor';
   processId = 0;
   type = ComponentType.System;
@@ -92,7 +94,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
       placeholder: 'Compose an epic...',
       theme: 'snow'
     };
-    this._scriptService.loadScript("quilljs","assets/quill/quill.js").then( async() =>{
+    this._scriptService.loadScript("quilljs","osdrive/Program-Files/Quill/quill.js").then( async() =>{
   
       const textCntnt = await this._fileService.getFileAsync(this.fileSrc);
       const index = 0;
