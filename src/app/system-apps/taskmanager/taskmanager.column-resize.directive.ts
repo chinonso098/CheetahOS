@@ -41,9 +41,11 @@ export class ColumnResizeDirective {
           const newWidth = this.initialWidth + deltaX;
 
           // Update the width of the current column
+          this.renderer.setStyle(this.el.nativeElement, 'min-width', newWidth + 'px');
           this.renderer.setStyle(this.el.nativeElement, 'width', newWidth + 'px');
 
           // Update the width of the corresponding header and cell in each row
+          columns[this.columnIndex].style.minWidth = `${newWidth}px`;
           columns[this.columnIndex].style.width = `${newWidth}px`;
 
           const rows = this.table?.querySelectorAll('tr');
