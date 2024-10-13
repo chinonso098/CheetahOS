@@ -1,6 +1,6 @@
 [InternetShortcut]
 FileName=Audio Player
-IconPath=/osdrive/Cheetah/System/Imageres/audioplayer.png
+IconPath=osdrive/Cheetah/System/Imageres/audioplayer.png
 FileType=.url
 ContentPath=
 OpensWith=audioplayer

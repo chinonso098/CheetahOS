@@ -1,6 +1,6 @@
 [InternetShortcut]
 FileName=VS Code
-IconPath=/osdrive/Cheetah/System/Imageres/vs_code.png
+IconPath=osdrive/Cheetah/System/Imageres/vs_code.png
 FileType=.url
 ContentPath=
 OpensWith=codeeditor

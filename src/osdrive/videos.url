@@ -1,6 +1,6 @@
 [InternetShortcut]
 FileName=Videos
-IconPath=/osdrive/Cheetah/System/Imageres/videos_folder.png
+IconPath=osdrive/Cheetah/System/Imageres/videos_folder.png
 FileType=folder
 ContentPath=/Users/Videos
 OpensWith=fileexplorer

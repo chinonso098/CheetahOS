@@ -1,6 +1,6 @@
 [InternetShortcut]
 FileName=Task Manager
-IconPath=/osdrive/Cheetah/System/Imageres/taskmanager.png
+IconPath=osdrive/Cheetah/System/Imageres/taskmanager.png
 FileType=.png
 ContentPath=Task Manager
 OpensWith=taskmanager
