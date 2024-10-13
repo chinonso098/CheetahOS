@@ -1,4 +1,6 @@
 import { Component, ElementRef, OnInit, AfterViewInit } from '@angular/core';
+import { animate, keyframes, style, transition, trigger } from '@angular/animations';
+
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ComponentType } from 'src/app/system-files/component.types';
@@ -11,11 +13,21 @@ import { FileEntry } from 'src/app/system-files/file.entry';
 import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 
+
 @Component({
   selector: 'cos-startmenu',
   templateUrl: './startmenu.component.html',
-  styleUrls: ['./startmenu.component.css']
+  styleUrls: ['./startmenu.component.css'],
+  animations: [
+    trigger('slideUpToggle', [
+      transition(':enter', [
+        style({ transform: 'translateY(-100%)'  }), // Start from 100% down
+        animate('0.3s ease-out', style({ transform: 'translateY(0%)' })) // Slide up to its original position
+      ]),
+    ])
+  ]
 })
+
 export class StartMenuComponent implements OnInit, AfterViewInit {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -31,6 +43,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   Documents= 'Documents';
   Pictures = 'Pictures'
   Music = 'Music';
+
 
   delayStartMenuOverlayHideTimeoutId!: NodeJS.Timeout;
   delayStartMenuOverlayShowTimeoutId!: NodeJS.Timeout;
@@ -65,7 +78,6 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   }
   
   async ngAfterViewInit():Promise<void>{
-
     setTimeout(async () => {
       await this.loadFilesInfoAsync();
     }, this.SECONDS_DELAY);

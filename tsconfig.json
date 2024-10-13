@@ -20,13 +20,12 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "es2022",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "es2022",
+    "moduleResolution": "node",
     "lib": [
       "es2022",
       "dom",
-      "DOM.Iterable",
-      "ESNext.Promise"
+      "DOM.Iterable"
     ],
     "resolveJsonModule": true,
     "esModuleInterop": true
