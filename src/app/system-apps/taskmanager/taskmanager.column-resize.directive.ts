@@ -1,5 +1,3 @@
-// column-resize.directive.ts
-
 import { Directive, ElementRef, HostListener, Renderer2 } from '@angular/core';
 
 @Directive({
@@ -57,36 +55,8 @@ export class ColumnResizeDirective {
               cells[this.columnIndex].style.width = `${newWidth}px`;
             }
           });
-
-          // Adjust the width of the table if it has a fixed width
-        //   const tableWidth = this.table?.offsetWidth || 0;
-        //   if (tableWidth > 0) {
-        //     this.renderer.setStyle(this.table, 'width', tableWidth + deltaX + 'px');
-        //   }
         }
       };
-
-
-
-      // const onMouseMove1 = (moveEvent: MouseEvent) => {
-      //   if (this.isResizing) {
-  
-      //   const deltaX = moveEvent.pageX - this.startX;
-      //   const newWidth = this.initialWidth + deltaX;
-
-      //     let width =  0;
-      //     let right = 0;
-      //      const thElmnt = this.el.nativeElement.closest("th")?.getBoundingClientRect();
-      //      width = thElmnt.width;
-      //      right = thElmnt.right;
-
-      //      const newWidth1 = width + moveEvent.clientX - right;
-      //      const tableWidth = this.table?.offsetWidth || 0;
-      //      console.log('table width:',tableWidth);
-      //     //  this.renderer.setStyle(this.table, 'width', tableWidth + deltaX + 'px');
-      //      this.renderer.setStyle(this.el.nativeElement, 'width', `${newWidth}px`);
-      //   }
-      // };
 
       const onMouseUp = () => {
         this.isResizing = false;
