@@ -47,11 +47,12 @@ export class ColumnResizeDirective {
           columns[this.columnIndex].style.width = `${newWidth}px`;
 
           const rows = this.table?.querySelectorAll('tr');
-          console.log("row count:", rows);
+          //console.log("row count:", rows);
 
           rows?.forEach((row) => {
             const cells = row.querySelectorAll('td');
             if (cells[this.columnIndex]) {
+              cells[this.columnIndex].style.minWidth = `${newWidth}px`;
               cells[this.columnIndex].style.width = `${newWidth}px`;
             }
           });
