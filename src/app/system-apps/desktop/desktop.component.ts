@@ -254,7 +254,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         'position':'absolute',
         'width': '210px', 
         'transform':`translate(${String(axis.xAxis + 2)}px, ${String(axis.yAxis)}px)`,
-        'z-index': 2,
+        'z-index': 3,
         'opacity':1
       }
       evt.preventDefault();
