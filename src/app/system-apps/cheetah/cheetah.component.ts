@@ -17,15 +17,15 @@ export class CheetahComponent implements BaseComponent {
   hasWindow = true;
   icon = `${this._consts.IMAGE_BASE_PATH}cheetah.png`;
   cheetahIcon = `${this._consts.IMAGE_BASE_PATH}cheetah-midsprint-dash.jpg`;
-  processId = 0;
+  processId = 11000;
   type = ComponentType.System;
   displayName = 'CheetahOS';
   name = 'CheetahOS';
+  version = 'Version: 2.10.27';
   year = `\u00A9 ${new Date().getFullYear()}`;
 
   constructor( menuService:MenuService) { 
     this._menuService = menuService;
-    this.processId = 11000;
   }
 
   onClosePropertyView():void{
