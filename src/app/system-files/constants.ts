@@ -10,6 +10,7 @@ export class Constants{
     readonly BASE = 'osdrive';
     readonly IMAGE_BASE_PATH = 'osdrive/Cheetah/System/Imageres/';
     readonly NEW_FOLDER = 'New Folder';
+    readonly CHEETAH = 'cheetah';
 
     readonly DEFAULT_MENU_ORDER = 'DefaultMenuOrder';
     readonly DEFAULT_FILE_MENU_ORDER = 'DefaultFileMenuOrder';

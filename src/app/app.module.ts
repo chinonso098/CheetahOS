@@ -21,7 +21,6 @@ import { WindowComponent } from './shared/system-component/window/window.compone
 import { FileManagerComponent } from './system-apps/filemanager/filemanager.component';
 import { GreetingComponent } from './user-apps/greeting/greeting.component';
 import { TaskmanagerComponent } from './system-apps/taskmanager/taskmanager.component';
-import { TaskmanagerMiniComponent } from './system-apps/taskmanager/taskmanager.mini.component';
 import { JSdosComponent } from './user-apps/jsdos/jsdos.component';
 import { VideoPlayerComponent } from './system-apps/videoplayer/videoplayer.component';
 import { AudioPlayerComponent } from './system-apps/audioplayer/audioplayer.component';
@@ -64,7 +63,6 @@ import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.captu
     FileManagerComponent,
     GreetingComponent,
     TaskmanagerComponent,
-    TaskmanagerMiniComponent,
     JSdosComponent,
     VideoPlayerComponent,
     AudioPlayerComponent,
@@ -79,7 +77,6 @@ import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.captu
     MarkDownViewerComponent,
     FileTreeViewComponent,
     CheetahComponent,
- 
 
     HighlightDirective,
     TaskBarEntryHighlightDirective,
