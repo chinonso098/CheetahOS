@@ -1,6 +1,6 @@
 [InternetShortcut]
 FileName=Terminal
 IconPath=osdrive/Cheetah/System/Imageres/terminal.png
-FileType=.png
+FileType=.url
 ContentPath=Terminal
 OpensWith=terminal
