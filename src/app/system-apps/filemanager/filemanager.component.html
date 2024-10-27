@@ -1,11 +1,13 @@
  <ol (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)"  (click)="handleIconHighLightState()"  #myBounds> 
     <li *ngFor="let file of files; let i = index">
-        <button (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter(i)" (mouseleave)="onMouseLeave(i)"
-        [ngDraggable]="isDraggable" [bounds]="myBounds" [inBounds]="true" [gridSize]="gridSize" zIndex="1" [preventDefaultEvent]="true"
-        (stopped)="onDragEnd($event)" (started)="onDragStart($event, i)"
-        (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)"
+        <button class="filemngr_btn" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter(i)" 
+         (mouseleave)="onMouseLeave(i)" [ngDraggable]="isDraggable" 
+         [bounds]="myBounds" [inBounds]="true" 
+         [gridSize]="gridSize" zIndex="1"   [preventDefaultEvent]="true"
+         (stopped)="onDragEnd($event)" (started)="onDragStart($event, i)"
+         (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)"
         id="iconBtn{{i}}"  [style]="btnStyle">
-            <figure   id="filemngr_fig{{i}}">
+            <figure  id="filemngr_fig{{i}}">
                 <img [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconSizeStyle"/>
                 <ng-container *ngIf="file.getIsShortCut">
                     <img class="shortcut-img" [src]="'osdrive/Cheetah/System/Imageres/shortcut.png'"  id="shortCut{{i}}"/>

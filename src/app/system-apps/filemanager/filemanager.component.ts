@@ -437,7 +437,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = 'transparent';
-      btnElement.style.border = 'none'
+      btnElement.style.borderColor = 'transparent'
     }
   }
 
@@ -445,7 +445,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
-      btnElement.style.border = '2px solid hsla(0,0%,50%,25%)'
+      btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
 
       if(this.selectedElementId == id){
         (isMouseHover)? btnElement.style.backgroundColor ='#607c9c' : 

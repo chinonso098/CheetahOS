@@ -68,12 +68,13 @@ img{
     /* display: none; */
     height: 24px; 
     width: 24px;
-    top: 32%;
-    left: 24%;
+    top: 31.5%;
+    left: 23.5%;
 }
 
-button{
+.filemngr_btn{
     background-color: transparent;
+    border: 2px solid transparent;
     width: 90px;
     height: 70px; 
 }
