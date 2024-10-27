@@ -1,6 +1,6 @@
 [InternetShortcut]
 FileName=hello
-IconPath=osdrive/Users/Pictures/favicon_nice.png
-FileType=.ico
-ContentPath=hello
+IconPath=osdrive/Cheetah/System/Imageres/angular.png
+FileType=.png
+ContentPath=
 OpensWith=hello

@@ -10,12 +10,12 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
 import { Constants } from "src/app/system-files/constants";
 
 @Component({
-  selector:'cos-title',
-  templateUrl: './title.component.html',
-  styleUrls: ["./title.component.css"]
+  selector:'cos-about',
+  templateUrl: './about.component.html',
+  styleUrls: ["./about.component.css"]
 })
 
-export class TitleComponent implements BaseComponent, OnDestroy, AfterViewInit{
+export class AboutComponent implements BaseComponent, OnDestroy, AfterViewInit{
 
   @ViewChild('titleContent', {static: true}) titleContent!: ElementRef;
 
@@ -28,7 +28,7 @@ export class TitleComponent implements BaseComponent, OnDestroy, AfterViewInit{
 
 
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}angular.png`;
+  icon = `${this._consts.IMAGE_BASE_PATH}cheetah.png`;
   name = 'hello';
   processId = 0;
   type = ComponentType.User;
