@@ -45,7 +45,7 @@ export interface WAVE{
     minWidth?: 200.00,
     scale?: 1.00,
     scaleMobile?: 1.00,
-    color?:0x5588,
+    color?:0x274c,
     shininess?:30,
     waveHeight?:15,
     waveSpeed?:1,

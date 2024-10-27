@@ -116,8 +116,15 @@
     text-align: center;
     color: #000;
 }
+
 .os-version{
     font-size: 15px;
+    text-align: center;
+    color: #000;
+}
+
+.os-year{
+    font-size: 12px;
     text-align: center;
     color: #000;
 }
