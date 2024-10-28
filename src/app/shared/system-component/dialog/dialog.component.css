@@ -264,10 +264,17 @@ right: 0;
 }
 
 
-/*Info Notification*/
+/*Warning Notification*/
 .warning-dialog-main-container{
     width: 400px;
     height: 130px;
+}
+
+.warning-dialog-heading-text{
+    position: absolute; 
+    left: 2%; 
+    top: 5px; 
+    font-size: 11px;
 }
 
 .warning-dialog-mid-section1{
@@ -318,6 +325,7 @@ right: 0;
     width: 100%;
     font-weight: normal;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    white-space: pre;
 }
 
 /*Tail Section*/

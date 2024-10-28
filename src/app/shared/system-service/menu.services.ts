@@ -14,6 +14,7 @@ export class MenuService{
     private _isPasteActive = false;
     private _path = 'NOPATH';
     private _actions = '';
+    private _stageData = '';
 
     pinToTaskBar: Subject<FileInfo> = new Subject<FileInfo>();
     unPinFromTaskBar: Subject<FileInfo> = new Subject<FileInfo>();
@@ -53,5 +54,13 @@ export class MenuService{
 
     getActions():string{
         return this._actions;
+    }
+
+    setStageData(stageData:string):void{
+        this._stageData = stageData;
+    }
+
+    getStageData():string{
+        return this._stageData;
     }
 }
