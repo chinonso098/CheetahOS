@@ -63,6 +63,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _hideContextMenuSub!:Subscription;
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;
+  private _creatShortCutOnDesktopSub!: Subscription;
   
 
   private isPrevBtnActive = false;
@@ -247,10 +248,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     })
 
     this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
-    this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
+    this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)});
     this._sortByNotifySub = fileManagerService.sortByNotify.subscribe((p)=>{this.sortIcons(p)});
     this._refreshNotifySub = fileManagerService.refreshNotify.subscribe(()=>{this.refreshIcons()});
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideIconContextMenu()});
+    this._creatShortCutOnDesktopSub = this._menuService.createDesktopShortcut.subscribe(()=>{this.createShortCutOnDesktop()});
   }
 
   ngOnInit():void{
@@ -314,6 +316,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._minimizeWindowSub?.unsubscribe();
     this._fetchDirectoryDataSub?.unsubscribe();
     this._goToDirectoryDataSub?.unsubscribe();
+    this._creatShortCutOnDesktopSub?.unsubscribe();
   }
 
   captureComponentImg():void{
@@ -2072,15 +2075,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const selectedFile = this.selectedFile;
     const shortCut:FileInfo = new FileInfo();
     let fileContent = '';
-    const directory = '/';//(inputDir)? inputDir : this.directory;
-
-    if(directory === this._consts.ROOT){
-
-      const msg = `Cheetah can't create a shortcut here.
-Do you want the shortcut to be placed on the desktop instead?`;
-      this._notificationService.warningNotify.next(msg);
-      return;
-    }
+    //const directory = '/';//(inputDir)? inputDir : this.directory;
+    const directory = this.directory;
 
 
     if(selectedFile.getIsFile){
@@ -2095,11 +2091,35 @@ OpensWith=${selectedFile.getOpensWith}
       //
     }
 
+
+    if(directory === this._consts.ROOT){
+      const msg = `Cheetah can't create a shortcut here.
+Do you want the shortcut to be placed on the desktop instead?`;
+
+      this._menuService.setStageData(fileContent);
+      this._notificationService.warningNotify.next(msg);
+      return;
+    }
+
     shortCut.setContentPath = fileContent
     shortCut.setFileName= `${selectedFile.getFileName} - ${this._consts.SHORTCUT}${this._consts.URL}`;
     const result = await this._fileService.writeFileAsync(this.directory, shortCut);
     if(result){
       await this.loadFilesInfoAsync();
+    }
+  }
+
+  async createShortCutOnDesktop(): Promise<void>{
+    const shortCut:FileInfo = new FileInfo();
+    const fileContent = this._menuService.getStageData();
+    const dsktpPath = '/Users/Desktop';
+
+    shortCut.setContentPath = fileContent
+    shortCut.setFileName= `${this.selectedFile.getFileName} - ${this._consts.SHORTCUT}${this._consts.URL}`;
+    const result = await this._fileService.writeFileAsync(dsktpPath, shortCut);
+    if(result){
+      this._fileService.addEventOriginator('filemanager');
+      this._fileService.dirFilesUpdateNotify.next();
     }
   }
 

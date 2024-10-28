@@ -30,6 +30,7 @@ export class MenuService{
     addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();
     showPropertiesView: Subject<FileInfo> = new Subject<FileInfo>();
     closePropertiesView: Subject<number> = new Subject<number>();
+    createDesktopShortcut: Subject<void> = new Subject<void>();
 
 
     setPasteState(isActive:boolean):void{
