@@ -20,7 +20,7 @@ import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 @Component({
   selector: 'cos-photoviewer',
   templateUrl: './photoviewer.component.html',
-  styleUrls: ['./photoviewer.component.css']
+  styleUrls: ['./photoviewer.component.css'],
 })
 export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
 
@@ -45,7 +45,8 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   processId = 0;
   type = ComponentType.System;
   displayName = 'PhotoViewer';
-  private defaultImg = '/osdrive/Pictures/Samples/no_img.jpeg';
+  private defaultPath = '/Users/Pictures/';
+  private defaultImg = '/Users/Pictures/Samples/no_img.jpeg';
   private tst_imageList:string[] = [`${this._consts.IMAGE_BASE_PATH}Chill on the Moon.jpg`, `${this._consts.IMAGE_BASE_PATH}Mystical.jpg`,
                         `${this._consts.IMAGE_BASE_PATH}Sparkling Water.jpg`]
                       
@@ -70,13 +71,13 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
 
-  ngOnInit(): void {
+  async ngOnInit():Promise<void> {
     this._fileInfo = this._triggerProcessService.getLastProcessTrigger();
 
     if(this.imageList.length > 0)
       this.currentImg = this.imageList[0];
     else
-      this.currentImg = this.defaultImg
+      this.currentImg = ''; //await this._fileService.getFileBlobAsync(this.defaultImg);
   }
 
   ngOnDestroy(): void {
@@ -94,7 +95,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     if(this.imageList.length > 0){
         this.currentImg = this.imageList[0];
     }else{
-      this.currentImg = this.picSrc || this.defaultImg;
+      this.currentImg = this.picSrc || ''; // await this._fileService.getFileBlobAsync(this.defaultImg);
     }
 
     const appData = (this.imageList.length > 0)? this.imageList : this.picSrc;
@@ -165,18 +166,29 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
 
   async getCurrentPicturePathAndSearchForOthers():Promise<void>{
+    let imgCount = 0;
+
     // if stuff was reutrned from session, then use it.
-    if(this.imageList.length == 0  && !this.picSrc.includes('blob:http')){
+    if(this.imageList.length == 0){
         // else, go fetch.
-        const dirPath = dirname(this.picSrc);
+        const dirPath = dirname(this._fileInfo.getCurrentPath);
         //console.log('dirPath:', dirPath);
         const entries:string[] = await this._fileService.getEntriesFromDirectoryAsync(dirPath);
 
         //check for images
-        for(let i = 0; i <= entries.length - 1; i++){
-          if(this._consts.IMAGE_FILE_EXTENSIONS.includes(extname(entries[i]))){
-            this.imageList.push(`${dirPath}/${entries[i]}`);
+        for(const entry of entries){
+          if(this._consts.IMAGE_FILE_EXTENSIONS.includes(extname(entry)) ){
+            imgCount = imgCount +  1;
+
+            if(`${dirPath}/${entry}` !== this._fileInfo.getCurrentPath){
+              const blobPath = await this._fileService.getFileBlobAsync(`${dirPath}/${entry}`);
+              this.imageList.push(blobPath);
+            }
           }
+        }
+
+        if(imgCount > 1){
+          this.imageList.unshift(this._fileInfo.getContentPath);
         }
     }
   }
