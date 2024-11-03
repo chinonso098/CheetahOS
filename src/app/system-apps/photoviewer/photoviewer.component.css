@@ -31,6 +31,9 @@
     padding: 4em 0em;
     margin: auto;
     overflow: hidden;
+    aspect-ratio: 3 / 2;
+    display: grid;
+    place-items: center;
 }
 
 .photo-viewer img{

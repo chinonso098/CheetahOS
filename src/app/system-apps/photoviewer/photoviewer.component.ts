@@ -232,9 +232,12 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     if(pathOne.includes('blob:http')){
       return pathOne;
     }else if(this.checkForExt(pathOne,pathTwo)){
-      pictureSrc = '/' + this._fileInfo.getContentPath;
+      pictureSrc =  `${this._consts.ROOT}${this._fileInfo.getContentPath}`;
     }else{
       pictureSrc =  this._fileInfo.getCurrentPath;
+      if(pictureSrc.includes(this._consts.URL)){
+        pictureSrc = this._consts.EMPTY_STRING
+      }
     }
     return pictureSrc;
   }
