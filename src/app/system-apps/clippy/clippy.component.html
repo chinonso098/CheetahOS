@@ -1,13 +1,12 @@
 <div class="main-clippy-container">
     <div class="clippy-content-container">
         <div class="clippy-tooltip-container">
-            <div class="clippy-tooltip">
-                <div class="clippy-tooltip-text">Tooltip text</div>
+            <div class="clippy-tooltip" (click)="onToolTipCntnrClick()" #clippyToolTip>
+                <div class="clippy-tooltip-text" #clippyToolTipText>{{toolTipText}}</div>
             </div>
-
         </div>
-        <div class="clippy-gif-container">
-            <figure class="clippy-gif-figure">
+        <div class="clippy-gif-container" (click)="onClippyGifCntnrClick()">
+            <figure class="clippy-gif-figure" #clippyGifFigure>
                 <img class="clippy-gif-img" [src]= 'gifPath'/>
             </figure>
         </div>
