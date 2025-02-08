@@ -17,6 +17,7 @@ import { Constants } from 'src/app/system-files/constants';
 
 import { BaseComponent } from './system-base/base/base.component';
 import { CheetahComponent } from './system-apps/cheetah/cheetah.component';
+import { ClippyComponent } from './system-apps/clippy/clippy.component';
 import { TitleComponent } from './user-apps/title/title.component';
 import { GreetingComponent } from './user-apps/greeting/greeting.component';
 import { FileExplorerComponent } from './system-apps/fileexplorer/fileexplorer.component';
@@ -90,6 +91,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private apps: {type: Type<BaseComponent>}[] =[
     {type: AudioPlayerComponent},
     {type: CheetahComponent},
+    {type: ClippyComponent},
     {type: FileExplorerComponent},
     {type: TaskmanagerComponent},
     {type: TerminalComponent},

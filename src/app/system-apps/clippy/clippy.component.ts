@@ -22,16 +22,28 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, AfterV
 
   gifPath = `${Constants.GIF_BASE_PATH}clippy_hey_you.gif`;
   SHOW_TOOL_TIP_DELAY = 500; 
-  MAX_TOOL_TIP_DISPLAY_DURATION =4500; 
+  MAX_TOOL_TIP_DISPLAY_DURATION = 4500; 
   MIN_GIF_DISPLAY_DURATION = 6000;
   PID = 20000;
+  randomSelection = -1;
+  selectedDuration = -1;
+  selectedAnimation = '';
+
+
   clippyDurations:number[] = [4400,2400,13600,7500,1800,5500,8400,4100,6600,2200,3500,2800,3000,3000,5000,4500,1900,2600,8100,4800];
 
   clippyAnimations:string[] = ['clippy_correct','clippy_listen_music','clippy_relax','clippy_melt','clippy_look_down','clippy_boxed',
     'clippy_silly','clippy_goodbye','clippy_reading','clippy_point_here','clippy_hi_there','clippy_point_up','clippy_point_right',
     'clippy_point_left','clippy_file_vortex', 'clippy_atomic','clippy_puzzled','clippy_hey_you','clippy_searching','clippy_no'];
 
-  clippyTextTips:string[] = ['Do not interrupt me!!'];
+  clippyTextTips:string[] = ['Do not interrupt me!!','Some tasty grooves'];
+
+  clippyTextQuotes:string[] = ['The grass is greener where you water it','Be the change that you wish to see in the world',
+    'Genius is 1% inspiration, 99% perspiration', 'fortune favors the prepared', 'Sometimes you win, sometimes you learn', 'consistency trumps intensity',
+    'Alone, we can do so little; together we can do so much', 'It wasn’t raining when Noah built the ark','The successful warrior is the average man, with laser-like focus',
+    'Speak less than you know; have more than you show', 'Reading is to the mind, as exercise is to the body','The man who has confidence in himself gains the confidence of others',
+    'Knowing is not enough; we must apply', 'This,too, shall pass', 'What we achieve inwardly will change outer reality','We can’t help everyone, but everyone can help someone'
+  ];
 
 
   isToolTipVisible = false;
@@ -52,7 +64,10 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   
 
   ngOnInit(): void {
-   1
+   //gen number between (0 - 19)
+   this.randomSelection = this.randomIntFromInterval(0, 19);
+   this.selectedDuration = this.clippyDurations[this.randomSelection];
+   this.selectedAnimation = this.clippyAnimations[this.randomSelection];
   }
 
   ngAfterViewInit():void{   
@@ -63,6 +78,11 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, AfterV
     1
   }
 
+  randomIntFromInterval(min:number, max:number):number{ 
+    // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+  
   onToolTipCntnrClick():void{
     this.toolTipText = this.clippyTextTips[0];
     this.gifPath = `${Constants.GIF_BASE_PATH}clippy_no.gif`;
@@ -74,7 +94,6 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   }
 
   private showClippyToolTip():void{
-
     setTimeout(()=>{
       this.clippyToolTip.nativeElement.style.visibility = 'visible';
       this.clippyToolTip.nativeElement.style.opacity = 1;
@@ -95,6 +114,10 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, AfterV
     this.clippyToolTipText.nativeElement.style.visibility = 'hidden';
     this.clippyToolTipText.nativeElement.style.opacity = 0;
     this.clippyToolTipText.nativeElement.style.transition = 'opacity 0.3s ease-out';
+  }
+
+  private selfDestruct():void{
+  1
   }
   
   private getComponentDetail():Process{

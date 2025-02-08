@@ -122,6 +122,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private MIN_NUMS_OF_DESKTOPS = 0;
   private MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - 1;
   private CURRENT_DESTOP_NUM = 0;
+  private CLIPPY_INIT_DELAY = 40000;
 
   private MIN_DEG = 0;
   private MAX_DEG = 360;
@@ -189,6 +190,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     //this.animationId = requestAnimationFrame(this.changeAnimationColor.bind(this));  
      this.hideContextMenu();
      this.loadOtherBackgrounds();
+     //this.initClippy();
   }
 
   loadOtherBackgrounds():void{
@@ -225,6 +227,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     cancelAnimationFrame(this.animationId);
     this._vantaEffect?.destroy();
+  }
+
+
+
+  initClippy():void{
+    const interval =  setInterval(() =>{
+      const appName = 'clippy';
+      this.openApplication(appName);
+    },this.CLIPPY_INIT_DELAY);
   }
 
   getRandomInt(min:number, max:number):number{
