@@ -56,7 +56,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
   private _fileInfo!:FileInfo;
-  private _consts:Constants = new Constants();
+
   private _appState!:AppState;
 
   SECONDS_DELAY = 250;
@@ -71,7 +71,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   name= 'audioplayer';
   hasWindow = true;
   
-  icon = `${this._consts.IMAGE_BASE_PATH}audioplayer.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}audioplayer.png`;
   processId = 0;
   type = ComponentType.User;
   displayName = 'Howlerjs';
@@ -465,9 +465,9 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     const currentPathExt = extname(currentPath);
     let res = false;
 
-    if(this._consts.AUDIO_FILE_EXTENSIONS.includes(contentExt)){
+    if(Constants.AUDIO_FILE_EXTENSIONS.includes(contentExt)){
       res = true;
-    }else if(this._consts.AUDIO_FILE_EXTENSIONS.includes(currentPathExt)){
+    }else if(Constants.AUDIO_FILE_EXTENSIONS.includes(currentPathExt)){
       res = false;
     }
     return res;
@@ -478,9 +478,9 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     const currentPathExt = extname(currentPath);
     let res = '';
 
-    if(this._consts.AUDIO_FILE_EXTENSIONS.includes(contentExt)){
+    if(Constants.AUDIO_FILE_EXTENSIONS.includes(contentExt)){
       res = contentExt;
-    }else if(this._consts.AUDIO_FILE_EXTENSIONS.includes(currentPathExt)){
+    }else if(Constants.AUDIO_FILE_EXTENSIONS.includes(currentPathExt)){
       res = currentPathExt;
     }
 

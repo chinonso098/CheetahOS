@@ -63,13 +63,13 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private picSrc = '';
-  private _consts:Constants = new Constants();
+
 
 
   SECONDS_DELAY = 250;
   name= 'photoviewer';
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}photoviewer.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}photoviewer.png`;
   isMaximizable = false;
   processId = 0;
   type = ComponentType.System;
@@ -206,7 +206,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
         //check for images
         for(const entry of entries){
-          if(this._consts.IMAGE_FILE_EXTENSIONS.includes(extname(entry)) ){
+          if(Constants.IMAGE_FILE_EXTENSIONS.includes(extname(entry)) ){
             imgCount = imgCount +  1;
 
             if(`${dirPath}/${entry}` !== this._fileInfo.getCurrentPath){
@@ -232,11 +232,11 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     if(pathOne.includes('blob:http')){
       return pathOne;
     }else if(this.checkForExt(pathOne,pathTwo)){
-      pictureSrc =  `${this._consts.ROOT}${this._fileInfo.getContentPath}`;
+      pictureSrc =  `${Constants.ROOT}${this._fileInfo.getContentPath}`;
     }else{
       pictureSrc =  this._fileInfo.getCurrentPath;
-      if(pictureSrc.includes(this._consts.URL)){
-        pictureSrc = this._consts.EMPTY_STRING
+      if(pictureSrc.includes(Constants.URL)){
+        pictureSrc = Constants.EMPTY_STRING
       }
     }
     return pictureSrc;
@@ -247,9 +247,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     const currentPathExt = extname(currentPath);
     let res = false;
 
-    if(this._consts.IMAGE_FILE_EXTENSIONS.includes(contentExt)){
+    if(Constants.IMAGE_FILE_EXTENSIONS.includes(contentExt)){
       res = true;
-    }else if(this._consts.IMAGE_FILE_EXTENSIONS.includes(currentPathExt)){
+    }else if(Constants.IMAGE_FILE_EXTENSIONS.includes(currentPathExt)){
       res = false;
     }
     return res;

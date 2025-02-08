@@ -33,7 +33,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
 
-  private _consts:Constants = new Constants();
+
   
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
@@ -43,7 +43,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
 
   name= 'ruffle';
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}ruffle.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}ruffle.png`;
   isMaximizable = false;
   processId = 0;
   type = ComponentType.User;

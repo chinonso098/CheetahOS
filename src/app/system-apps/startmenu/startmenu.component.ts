@@ -35,7 +35,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   private _fileService:FileService;
 
   private _elRef:ElementRef;
-  private _consts:Constants = new Constants();
+
   txtOverlayMenuStyle:Record<string, unknown> = {};
 
   private SECONDS_DELAY = 250;
@@ -53,7 +53,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   directory ='/AppData/StartMenu';
 
   hasWindow = false;
-  icon = `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'startmenu';
   processId = 0;
   type = ComponentType.System

@@ -14,13 +14,13 @@ export class StartButtonComponent implements OnInit {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
 
-  private _consts:Constants = new Constants();
+
 
   private isStartMenuVisible = false;
 
   hasWindow = false;
   hover = false;
-  icon = `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'startbutton';
   processId = 0;
   type = ComponentType.System

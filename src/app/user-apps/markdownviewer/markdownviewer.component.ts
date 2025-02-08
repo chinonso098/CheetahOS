@@ -40,7 +40,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   private _scriptService: ScriptService;
   private _fileService:FileService;
 
-  private _consts:Constants = new Constants();
+
 
   private _sanitizer: DomSanitizer;
   private _renderer: Renderer2;
@@ -54,7 +54,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   SECONDS_DELAY = 250;
 
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}markdown.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}markdown.png`;
   name = 'markdownviewer';
   processId = 0;
   type = ComponentType.System;

@@ -59,7 +59,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private _menuService:MenuService;
   private _componentRefView!:ViewRef;
   private _appDirectory:AppDirectory;
-  private _consts:Constants = new Constants();
+
 
   private _closeProcessSub!:Subscription;
   private _closeMsgDialogSub!:Subscription;
@@ -79,7 +79,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private SECONDS_DELAY:number[] =[1500, 1500];
 
   hasWindow = false;
-  icon = `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'system';
   processId = 0;
   type = ComponentType.System;

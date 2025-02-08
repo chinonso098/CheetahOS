@@ -49,7 +49,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _triggerProcessService:TriggerProcessService;
   private _scriptService: ScriptService;
   private _menuService: MenuService;
-  private _consts:Constants = new Constants();
+
   
   private _timerSubscription!: Subscription;
   private _showTaskBarMenuSub!:Subscription;
@@ -92,13 +92,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   dskTopCntxtMenuStyle:Record<string, unknown> = {};
   tskBarCntxtMenuStyle:Record<string, unknown> = {};
   tskBarPrevWindowStyle:Record<string, unknown> = {};
-  deskTopMenuOption =  this._consts.NESTED_MENU_OPTION;
+  deskTopMenuOption =  Constants.NESTED_MENU_OPTION;
   showDesktopCntxtMenu = false;
   showTskBarCntxtMenu = false;
   showTskBarPreviewWindow = false;
   tskBarPreviewWindowState = 'in';
-  tskBarMenuOption =  this._consts.TASK_BAR_MENU_OPTION;
-  menuOrder = this._consts.DEFAULT_MENU_ORDER;
+  tskBarMenuOption =  Constants.TASK_BAR_MENU_OPTION;
+  menuOrder = Constants.DEFAULT_MENU_ORDER;
   selectedFileFromTaskBar!:FileInfo;
   appToPreview = '';
   appToPreviewIcon = '';
@@ -139,7 +139,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
 
   hasWindow = false;
-  icon = `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'desktop';
   processId = 0;
   type = ComponentType.System;
@@ -365,7 +365,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async createFolder():Promise<void>{
-    const folderName = this._consts.NEW_FOLDER;
+    const folderName = Constants.NEW_FOLDER;
     const result =  await this._fileService.createFolderAsync(this.directory, folderName);
     if(result){
       this._fileService.addEventOriginator('filemanager');
@@ -561,22 +561,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   buildViewByMenu():NestedMenuItem[]{
 
-    const smallIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Small icons',  action: this.viewBySmallIcon.bind(this),  variables:this.isSmallIcon, 
+    const smallIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Small icons',  action: this.viewBySmallIcon.bind(this),  variables:this.isSmallIcon, 
       emptyline:false, styleOption:'A' }
 
-    const mediumIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Medium icons',  action: this.viewByMediumIcon.bind(this),  variables:this.isMediumIcon, 
+    const mediumIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Medium icons',  action: this.viewByMediumIcon.bind(this),  variables:this.isMediumIcon, 
       emptyline:false, styleOption:'A' }
 
-    const largeIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Large icons', action: this.viewByLargeIcon.bind(this), variables:this.isLargeIcon,
+    const largeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Large icons', action: this.viewByLargeIcon.bind(this), variables:this.isLargeIcon,
       emptyline:true, styleOption:'A' }
 
-    const autoArrageIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}chkmark32.png`, label:'Auto arrange icons',  action: this.autoArrangeIcon.bind(this),  variables:this.autoArrangeIcons, 
+    const autoArrageIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Auto arrange icons',  action: this.autoArrangeIcon.bind(this),  variables:this.autoArrangeIcons, 
       emptyline:false, styleOption:'B' }
 
-    const autoAlign:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}chkmark32.png`, label:'Align icons to grid',  action: this.autoAlignIcon.bind(this),  variables:this.autoAlignIcons, 
+    const autoAlign:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Align icons to grid',  action: this.autoAlignIcon.bind(this),  variables:this.autoAlignIcons, 
       emptyline:true, styleOption:'B' }
 
-    const showDesktopIcons:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}chkmark32.png`, label:'Show desktop icons',  action: this.showDesktopIcon.bind(this), variables:this.showDesktopIcons,
+    const showDesktopIcons:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Show desktop icons',  action: this.showDesktopIcon.bind(this), variables:this.showDesktopIcons,
       emptyline:false,  styleOption:'B'}
 
     const viewByMenu = [smallIcon,mediumIcon,largeIcon, autoArrageIcon, autoAlign,showDesktopIcons];
@@ -586,16 +586,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   buildSortByMenu(): NestedMenuItem[]{
 
-    const sortByName:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Name',  action: this.sortByNameM.bind(this),  variables:this.isSortByName , 
+    const sortByName:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Name',  action: this.sortByNameM.bind(this),  variables:this.isSortByName , 
       emptyline:false, styleOption:'A' }
 
-    const sortBySize:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Size',  action: this.sortBySizeM.bind(this),  variables:this.isSortBySize , 
+    const sortBySize:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Size',  action: this.sortBySizeM.bind(this),  variables:this.isSortBySize , 
       emptyline:false, styleOption:'A' }
 
-    const sortByItemType:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Item type',  action: this.sortByItemTypeM.bind(this),  variables:this.isSortByItemType, 
+    const sortByItemType:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Item type',  action: this.sortByItemTypeM.bind(this),  variables:this.isSortByItemType, 
       emptyline:false, styleOption:'A' }
 
-    const sortByDateModified:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Date modified',  action: this.sortByDateModifiedM.bind(this),  variables:this.isSortByDateModified, 
+    const sortByDateModified:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Date modified',  action: this.sortByDateModifiedM.bind(this),  variables:this.isSortByDateModified, 
       emptyline:false, styleOption:'A' }
 
     const sortByMenu = [sortByName, sortBySize, sortByItemType, sortByDateModified ]
@@ -605,13 +605,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   buildNewMenu(): NestedMenuItem[]{
 
-    const newFolder:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action: this.createFolder.bind(this),  variables:true , 
+    const newFolder:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action: this.createFolder.bind(this),  variables:true , 
       emptyline:false, styleOption:'C' }
 
-    const textEditor:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}quill.png`, label:'Rich Text',  action: this.openTextEditor.bind(this),  variables:true , 
+    const textEditor:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}quill.png`, label:'Rich Text',  action: this.openTextEditor.bind(this),  variables:true , 
       emptyline:false, styleOption:'C' }
 
-    const codeEditor:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}vs_code.png`, label:'Code Editor',  action: this.openCodeEditor.bind(this),  variables:true , 
+    const codeEditor:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}vs_code.png`, label:'Code Editor',  action: this.openCodeEditor.bind(this),  variables:true , 
         emptyline:false, styleOption:'C' }
 
     const sortByMenu = [newFolder, textEditor, codeEditor ]
@@ -621,15 +621,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   getDesktopMenuData():void{
     this.deskTopMenu = [
-          {icon1:'',  icon2: `${this._consts.IMAGE_BASE_PATH}arrow_next_1.png`, label:'View', nest:this.buildViewByMenu(), action: ()=>'', action1: this.shiftViewSubMenu.bind(this), emptyline:false},
-          {icon1:'',  icon2:`${this._consts.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=>'', action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
+          {icon1:'',  icon2: `${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'View', nest:this.buildViewByMenu(), action: ()=>'', action1: this.shiftViewSubMenu.bind(this), emptyline:false},
+          {icon1:'',  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=>'', action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
           {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:this.refresh.bind(this), action1: ()=> '', emptyline:true},
           {icon1:'',  icon2:'', label: 'Paste', nest:[], action:this.onPaste.bind(this), action1: ()=> '', emptyline:false},
-          {icon1:`${this._consts.IMAGE_BASE_PATH}terminal.png`, icon2:'', label:'Open in Terminal', nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
-          {icon1:`${this._consts.IMAGE_BASE_PATH}camera.png`, icon2:'', label:'Screen Shot', nest:[], action: this.captureComponentImg.bind(this), action1: ()=> '', emptyline:false},
+          {icon1:`${Constants.IMAGE_BASE_PATH}terminal.png`, icon2:'', label:'Open in Terminal', nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
+          {icon1:`${Constants.IMAGE_BASE_PATH}camera.png`, icon2:'', label:'Screen Shot', nest:[], action: this.captureComponentImg.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'',  icon2:'', label:'Next Background', nest:[], action: this.nextBackground.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'',  icon2:'', label:'Previous Background', nest:[], action: this.previousBackground.bind(this), action1: ()=> '', emptyline:true},
-          {icon1:'',  icon2:`${this._consts.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
+          {icon1:'',  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
           {icon1:'',  icon2:'', label:'Many Thanks', nest:[], action: this.openMarkDownViewer.bind(this), action1: ()=> '', emptyline:false}
       ]
   }
@@ -698,14 +698,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   switchBetweenPinAndUnpin(isAppPinned:boolean):void{
     if(isAppPinned){
-      const menuEntry = {icon:`${this._consts.IMAGE_BASE_PATH}unpin_24.png`, label:'Unpin from taskbar', action: this.unPinApplicationFromTaskBar.bind(this)}
+      const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}unpin_24.png`, label:'Unpin from taskbar', action: this.unPinApplicationFromTaskBar.bind(this)}
       const rowOne = this.taskBarMenuData[1];
       rowOne.icon = menuEntry.icon;
       rowOne.label = menuEntry.label;
       rowOne.action = menuEntry.action;
       this.taskBarMenuData[1] = rowOne;
     }else if(!isAppPinned){
-      const menuEntry = {icon:`${this._consts.IMAGE_BASE_PATH}pin_24.png`, label:'Pin to taskbar', action: this.pinApplicationFromTaskBar.bind(this)}
+      const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}pin_24.png`, label:'Pin to taskbar', action: this.pinApplicationFromTaskBar.bind(this)}
       const rowOne = this.taskBarMenuData[1];
       rowOne.icon = menuEntry.icon;
       rowOne.label = menuEntry.label;
@@ -726,7 +726,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     if(processCount == 1){
       if(this.taskBarMenuData.length == 2){
-        const menuEntry = {icon:`${this._consts.IMAGE_BASE_PATH}x_32.png`, label: 'Close window', action:this.closeApplicationFromTaskBar.bind(this)};
+        const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}x_32.png`, label: 'Close window', action:this.closeApplicationFromTaskBar.bind(this)};
         this.taskBarMenuData.push(menuEntry);
       }else{
         const rowTwo = this.taskBarMenuData[2];

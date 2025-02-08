@@ -12,11 +12,11 @@ import { BaseComponent } from 'src/app/system-base/base/base.component';
 
 export class CheetahComponent implements BaseComponent {
   private _menuService:MenuService;
-  private _consts:Constants = new Constants();
+
 
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}cheetah.png`;
-  cheetahIcon = `${this._consts.IMAGE_BASE_PATH}cheetah-midsprint-dash.jpg`;
+  icon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
+  cheetahIcon = `${Constants.IMAGE_BASE_PATH}cheetah-midsprint-dash.jpg`;
   processId = 11000;
   type = ComponentType.System;
   displayName = 'CheetahOS';

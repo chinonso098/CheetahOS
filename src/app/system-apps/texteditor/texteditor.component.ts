@@ -41,7 +41,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   private _scriptService: ScriptService;
   private _fileService:FileService;
 
-  private _consts:Constants = new Constants();
+
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private _maximizeWindowSub!: Subscription;
@@ -51,7 +51,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   SECONDS_DELAY = 250;
 
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}text-editor.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}text-editor.png`;
   name = 'texteditor';
   processId = 0;
   type = ComponentType.System;

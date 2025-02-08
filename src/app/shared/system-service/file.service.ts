@@ -22,7 +22,7 @@ export class FileService{
 
     static instace:FileService;
     private _fileInfo!:FileInfo;
-    private _consts:Constants = new Constants();
+  
     private _fileSystem!:FSModule;
     private _directoryFileEntires:FileEntry[]=[];
     private _fileExistsMap!:Map<string,number>; 
@@ -73,7 +73,7 @@ export class FileService{
         if(path !== `/Users/${fileName}`)
             return iconPath;
 
-		return this._fileSystem.existsSync(iconMaybe) ? `${this._consts.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png` : iconPath;
+		return this._fileSystem.existsSync(iconMaybe) ? `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png` : iconPath;
     }
 
     public async checkIfDirectory(path: string):Promise<boolean> {
@@ -345,27 +345,27 @@ export class FileService{
      
         if(!extension){
             const fc = await this.setFolderValuesAsync(path) as FileContent;
-            this._fileInfo = this.populateFileInfo(path, fileMetaData, false, this._consts.EMPTY_STRING, this._consts.EMPTY_STRING, false, undefined, fc);
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, false, Constants.EMPTY_STRING, Constants.EMPTY_STRING, false, undefined, fc);
             this._fileInfo.setIconPath = this.changeFolderIcon(fc.geFileName,fc.getIconPath, path);
         }
-        else if(extension === this._consts.URL){
+        else if(extension === Constants.URL){
             const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
-            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, this._consts.EMPTY_STRING, this._consts.EMPTY_STRING, true, sc);
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, Constants.EMPTY_STRING, Constants.EMPTY_STRING, true, sc);
             this._fileInfo.setIsShortCut = true;
         }
-        else if(this._consts.IMAGE_FILE_EXTENSIONS.includes(extension)){
+        else if(Constants.IMAGE_FILE_EXTENSIONS.includes(extension)){
             const fc = await this.getFileConetentFromB64DataUrlAsync(path, 'image') as FileContent;
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true,'photoviewer', 'image_file.png', false,undefined, fc);
         }
-        else if(this._consts.VIDEO_FILE_EXTENSIONS.includes(extension)){
+        else if(Constants.VIDEO_FILE_EXTENSIONS.includes(extension)){
             const fc = await this.getFileConetentFromB64DataUrlAsync(path, 'video') as FileContent;
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'videoplayer', 'video_file.png', false,undefined, fc);
         }
-        else if(this._consts.AUDIO_FILE_EXTENSIONS.includes(extension)){
+        else if(Constants.AUDIO_FILE_EXTENSIONS.includes(extension)){
             const fc = await this.getFileConetentFromB64DataUrlAsync(path, 'audio') as FileContent;
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'audioplayer', 'music_file.png', false, undefined, fc);
 
-        }else if(this._consts.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension) || extension === '.wasm'){
+        }else if(Constants.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension) || extension === '.wasm'){
             const img_file = (extension === '.wasm')? 'wasm_file.png' : 'code_file.png';
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'codeeditor', img_file);
         }
@@ -381,7 +381,7 @@ export class FileService{
         else if(extension === '.swf'){
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'ruffle', 'swf_file.png');
         }else{
-            this._fileInfo.setIconPath=`${this._consts.IMAGE_BASE_PATH}/unknown.png`;
+            this._fileInfo.setIconPath=`${Constants.IMAGE_BASE_PATH}/unknown.png`;
             this._fileInfo.setCurrentPath = path;
             this._fileInfo.setFileName = basename(path, extname(path));
             this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
@@ -395,18 +395,18 @@ export class FileService{
 
     populateFileInfo(path:string, fileMetaData:FileMetaData, isFile =true, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut, fileCntnt?:FileContent):FileInfo{
         const fileInfo = new FileInfo();
-        const img = `${this._consts.IMAGE_BASE_PATH}${imageName}`;
+        const img = `${Constants.IMAGE_BASE_PATH}${imageName}`;
 
         fileInfo.setCurrentPath = path;
         if(shortCut !== undefined){
             fileInfo.setIconPath = (useImage)? shortCut?.getIconPath || img : img;
-            fileInfo.setContentPath = shortCut?.getContentPath || this._consts.EMPTY_STRING;
+            fileInfo.setContentPath = shortCut?.getContentPath || Constants.EMPTY_STRING;
             fileInfo.setFileType = shortCut?.getFileType || extname(path);
             fileInfo.setFileName = shortCut?.geFileName || basename(path, extname(path));
             fileInfo.setOpensWith = shortCut?.getOpensWith || opensWith;
         }else{
             fileInfo.setIconPath = (useImage)? fileCntnt?.getIconPath || img : img;
-            fileInfo.setContentPath = fileCntnt?.getContentPath || this._consts.EMPTY_STRING;
+            fileInfo.setContentPath = fileCntnt?.getContentPath || Constants.EMPTY_STRING;
             fileInfo.setFileType = fileCntnt?.getFileType || extname(path);
             fileInfo.setFileName = fileCntnt?.geFileName || basename(path, extname(path));
             fileInfo.setOpensWith = fileCntnt?.getOpensWith || opensWith;
@@ -706,7 +706,7 @@ export class FileService{
                         }
         
                         const isDirectory = (stats)? stats.isDirectory(): false;
-                        const iconFile = `${this._consts.IMAGE_BASE_PATH}${isDirectory ? 'folder.png' : 'unknown.png'}`
+                        const iconFile = `${Constants.IMAGE_BASE_PATH}${isDirectory ? 'folder.png' : 'unknown.png'}`
                         const fileType = 'folder';
                         const opensWith ='fileexplorer'
                         resolve(new FileContent(iconFile, basename(path, extname(path)),fileType,basename(path, extname(path)) ,opensWith ));
@@ -723,7 +723,7 @@ export class FileService{
     private addAppAssociaton(appname:string, img:string):void{
         if(!this._fileAndAppIconAssociation.get(appname)){
             if(appname === 'photoviewer' || appname === 'videoplayer' || appname === 'audioplayer' || appname === 'ruffle'){
-                this._fileAndAppIconAssociation.set(appname,`${this._consts.IMAGE_BASE_PATH}${appname}.png`);
+                this._fileAndAppIconAssociation.set(appname,`${Constants.IMAGE_BASE_PATH}${appname}.png`);
             }else{
                 this._fileAndAppIconAssociation.set(appname,img);
             }

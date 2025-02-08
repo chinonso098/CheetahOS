@@ -20,7 +20,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   private _runningProcessService:RunningProcessService;
   private _triggerProcessService:TriggerProcessService;
   private _menuService:MenuService;
-  private _consts:Constants = new Constants();
+
 
   private _processListChangeSub!: Subscription;
   private _addIconToTaskbarSub!: Subscription;
@@ -38,7 +38,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   unPinned = "unPinned";
   
   hasWindow = false;
-  icon =  `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
+  icon =  `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'taskbarentry';
   processId = 0;
   type = ComponentType.System;
