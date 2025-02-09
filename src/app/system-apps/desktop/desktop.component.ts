@@ -233,9 +233,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     //Vanta wave
     if(this.CURRENT_DESTOP_NUM === 0){
       const animateColorTransition = (time: number) => {
-        // eslint-disable-next-line prefer-const
         const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
-        // eslint-disable-next-line prefer-const
         const interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
   
         this._vantaEffect.setOptions({ color: interpolatedColor });
