@@ -35,9 +35,21 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
       transition('slideIn => slideOut', [
         animate('2s ease-out')
       ]),
+    ]),
+
+    trigger('slideStartMenuAnimation', [
+      transition(':enter', [
+        style({transform: 'translateY(100%)'}), 
+        animate('500ms ease-in', style({ transform: 'translateY(0)'}))
+      ]),
+      transition(':leave', [
+        style({transform: 'translateY(0)'}),
+        animate('500ms ease-in', style({ transform: 'translateY(100%)'}))
+      ]),
     ])
   ]
 })
+
 export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   @ViewChild('desktopContainer', {static: true}) desktopContainer!: ElementRef; 
@@ -164,8 +176,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
     this._hideTaskBarPreviewWindowSub = this._runningProcessService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
     this._keepTaskBarPreviewWindowSub = this._runningProcessService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
-    this._showStartMenuSub = this._runningProcessService.showProcessNotify.subscribe(() => { this.showStartMenuM()});
-    this._hideStartMenuSub = this._runningProcessService.hideProcessNotify.subscribe(() => { this.hideStartMenu()});
+    this._showStartMenuSub = this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
+    this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
 
 
     this.processId = this._processIdService.getNewProcessId()
@@ -357,13 +369,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     return {xAxis, yAxis};
   }
 
-  showStartMenuM():void{
-    setTimeout(() => {
+  showTheStartMenu():void{
+    // I'm not sure why the delay is needed for the start menu to be displayed
+    const Delay = 40;
+    setTimeout(()=>{
       this.showStartMenu = true;
-    }, 150);
+    },Delay)
   }
 
-  hideStartMenu():void{
+  hideTheStartMenu():void{
     this.showStartMenu = false;
   }
 
@@ -416,6 +430,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){
       this._menuService.hideContextMenus.next();
+      this._menuService.hideStartMenu.next();
     }
   }
 

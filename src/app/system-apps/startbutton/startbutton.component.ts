@@ -1,20 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ComponentType } from 'src/app/system-files/component.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
+import { MenuService } from 'src/app/shared/system-service/menu.services';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'cos-startbutton',
   templateUrl: './startbutton.component.html',
   styleUrls: ['./startbutton.component.css']
 })
-export class StartButtonComponent implements OnInit {
+export class StartButtonComponent implements OnDestroy {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-
-
+  private _menuService:MenuService;
+    private _hideStartMenuSub!:Subscription;
 
   private isStartMenuVisible = false;
 
@@ -26,27 +28,33 @@ export class StartButtonComponent implements OnInit {
   type = ComponentType.System
   displayName = '';
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService) { 
+  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
+    this._menuService = menuService;
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
+    this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => { this.hideStarMenu()});
   }
 
-  ngOnInit(): void {
-    1 
+  ngOnDestroy(): void {
+    this._hideStartMenuSub?.unsubscribe();
   }
 
   showStarMenu():void{
     if(!this.isStartMenuVisible){
-      this._runningProcessService.showProcessNotify.next();
+      this._menuService.showStartMenu.next();
       this.isStartMenuVisible = true;
     }
     else{
-      this._runningProcessService.hideProcessNotify.next();
+      this._menuService.hideStartMenu.next();
       this.isStartMenuVisible = false;
     }
 
+  }
+
+  hideStarMenu():void{
+    this.isStartMenuVisible = false;
   }
   
   private getComponentDetail():Process{
