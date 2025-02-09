@@ -17,12 +17,12 @@ export class TaskbarComponent implements AfterViewInit{
   private _runningProcessService:RunningProcessService;
   private _menuService:MenuService;
   private _el: ElementRef;
-  private _consts:Constants = new Constants();
+
   
   SECONDS_DELAY = 250;
 
   hasWindow = false;
-  icon = `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'taskbar';
   processId = 0;
   type = ComponentType.System

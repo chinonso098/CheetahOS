@@ -1,6 +1,6 @@
 [InternetShortcut]
 FileName=Ruffle
-IconPath=/osdrive/Cheetah/System/Imageres/ruffle.png
+IconPath=osdrive/Cheetah/System/Imageres/ruffle.png
 FileType=.url
 ContentPath=
 OpensWith=ruffle

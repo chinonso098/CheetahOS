@@ -17,9 +17,9 @@ export class PropertiesComponent implements OnChanges{
 
   private _fileService:FileService;
   private _menuService:MenuService;
-  private _consts:Constants = new Constants();
 
-  URL = this._consts.URL;
+
+  URL = Constants.URL;
 
   propertyId = 0;
   type = ComponentType.System;

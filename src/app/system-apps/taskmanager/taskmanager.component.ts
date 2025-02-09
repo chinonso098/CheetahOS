@@ -30,7 +30,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   private _runningProcessService:RunningProcessService;
   private _notificationService:NotificationService;
   private _renderer: Renderer2;
-  private _consts:Constants = new Constants();
+
 
   private _processListChangeSub!: Subscription;
   private _taskmgrRefreshIntervalSub!: Subscription;
@@ -89,7 +89,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   powerUtil = 'Very low';
 
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}taskmanager.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}taskmanager.png`;
   name = 'taskmanager';
   processId = 0;
   type = ComponentType.System;

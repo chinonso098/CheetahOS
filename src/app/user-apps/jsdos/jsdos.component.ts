@@ -38,7 +38,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
-  private _consts:Constants = new Constants();
+
   
   private _ci!: CommandInterface;
   private _fileInfo!:FileInfo;
@@ -49,7 +49,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   name= 'jsdos';
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}js-dos_emulator.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}js-dos_emulator.png`;
   isMaximizable = false;
   processId = 0;
   type = ComponentType.User;

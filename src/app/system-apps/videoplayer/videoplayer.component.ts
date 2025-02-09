@@ -42,7 +42,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   private _fileInfo!:FileInfo;
   private player: any;
-  private _consts:Constants = new Constants();
+
   private _appState!:AppState;
   private videoSrc = '';
   private fileType = '';
@@ -52,7 +52,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   name= 'videoplayer';
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}videoplayer.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}videoplayer.png`;
   processId = 0;
   type = ComponentType.System;
   displayName = 'Video-js';
@@ -196,9 +196,9 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     const currentPathExt = extname(currentPath);
     let res = false;
 
-    if(this._consts.VIDEO_FILE_EXTENSIONS.includes(contentExt)){
+    if(Constants.VIDEO_FILE_EXTENSIONS.includes(contentExt)){
       res = true;
-    }else if(this._consts.VIDEO_FILE_EXTENSIONS.includes(currentPathExt)){
+    }else if(Constants.VIDEO_FILE_EXTENSIONS.includes(currentPathExt)){
       res = false;
     }
     return res;

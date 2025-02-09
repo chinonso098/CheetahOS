@@ -405,6 +405,10 @@ import { Process } from 'src/app/system-files/process';
       this.yAxis100p =  `translate(${String(x_axis)}px , ${String(y_axis + 100)}px)`;
     }
 
+    createGlassPane():void{
+      //Every window has a hidden glass pane that is revealed when the window is hidden
+    }
+
     onCloseBtnClick():void{
       this.windowOpenCloseAction = 'close';
       this.generateCloseAnimationValues(this.xAxisTmp, this.yAxisTmp);

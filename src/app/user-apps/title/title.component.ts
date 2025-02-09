@@ -7,6 +7,7 @@ import { ComponentType } from 'src/app/system-files/component.types';
 import { Process } from 'src/app/system-files/process';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
+import { Constants } from "src/app/system-files/constants";
 
 @Component({
   selector:'cos-title',
@@ -21,10 +22,13 @@ export class TitleComponent implements BaseComponent, OnDestroy, AfterViewInit{
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _maximizeWindowSub!: Subscription;
+
+
   SECONDS_DELAY = 250;
 
+
   hasWindow = true;
-  icon = 'osdrive/Pictures/favicon_nice.png';
+  icon = `${Constants.IMAGE_BASE_PATH}angular.png`;
   name = 'hello';
   processId = 0;
   type = ComponentType.User;

@@ -1,5 +1,5 @@
 import { AfterViewInit, OnInit,OnDestroy, Component, ElementRef, ViewChild} from '@angular/core';
-import { Subscription} from 'rxjs';
+import { Subscription, interval} from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ComponentType } from 'src/app/system-files/component.types';
@@ -49,7 +49,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _triggerProcessService:TriggerProcessService;
   private _scriptService: ScriptService;
   private _menuService: MenuService;
-  private _consts:Constants = new Constants();
+
   
   private _timerSubscription!: Subscription;
   private _showTaskBarMenuSub!:Subscription;
@@ -59,8 +59,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _keepTaskBarPreviewWindowSub!:Subscription;
   private _showStartMenuSub!:Subscription;
   private _hideStartMenuSub!:Subscription;
-
   private _vantaEffect: any;
+  private _numSequence = 0;
+  private _charSequence = 'a';
+  private _charSequenceCount = 0;
 
   readonly largeIcons = IconsSizes.LARGE_ICONS;
   readonly mediumIcons = IconsSizes.MEDIUM_ICONS;
@@ -92,13 +94,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   dskTopCntxtMenuStyle:Record<string, unknown> = {};
   tskBarCntxtMenuStyle:Record<string, unknown> = {};
   tskBarPrevWindowStyle:Record<string, unknown> = {};
-  deskTopMenuOption =  this._consts.NESTED_MENU_OPTION;
+  deskTopMenuOption =  Constants.NESTED_MENU_OPTION;
   showDesktopCntxtMenu = false;
   showTskBarCntxtMenu = false;
   showTskBarPreviewWindow = false;
   tskBarPreviewWindowState = 'in';
-  tskBarMenuOption =  this._consts.TASK_BAR_MENU_OPTION;
-  menuOrder = this._consts.DEFAULT_MENU_ORDER;
+  tskBarMenuOption =  Constants.TASK_BAR_MENU_OPTION;
+  menuOrder = Constants.DEFAULT_MENU_ORDER;
   selectedFileFromTaskBar!:FileInfo;
   appToPreview = '';
   appToPreviewIcon = '';
@@ -106,11 +108,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   removeTskBarPrevWindowFromDOMTimeoutId!: NodeJS.Timeout;
   hideTskBarPrevWindowTimeoutId!: NodeJS.Timeout;
 
-  directory ='/Users/Desktop';
-  terminalApp ="terminal";
-  textEditorApp ="texteditor";
-  codeEditorApp ="codeeditor";
-  markDownViewerApp ="markdownviewer";
+  readonly DESKTOP_DIRECTORY ='/Users/Desktop';
+  readonly DESKTOP_SCREEN_SHOT_DIRECTORY ='/Users/Documents/Screen-Shots';
+  readonly TERMINAL_APP ="terminal";
+  readonly TEXT_EDITOR_APP ="texteditor";
+  readonly CODE_EDITOR_APP ="codeeditor";
+  readonly MARKDOWN_VIEWER_APP ="markdownviewer";
 
   waveBkgrnd:WAVE =  {el:'#vanta'}
   ringsBkgrnd:RINGS =  {el:'#vanta'}
@@ -122,14 +125,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private MIN_NUMS_OF_DESKTOPS = 0;
   private MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - 1;
   private CURRENT_DESTOP_NUM = 0;
+  private CLIPPY_INIT_DELAY = 180000; // every 3mins is fine
+  private COLOR_CHANGE_DELAY = 8000; // every 8sec is fine
+  private COLOR_TRANSITION_DURATION = 2000; // 2sec
 
-  private MIN_DEG = 0;
-  private MAX_DEG = 360;
-  private CURRENT_DEG = 0;
-  private defaultColor = 0x274c;
-  private nextColor:Colors = new Colors();
-  private animationId:any;
-
+  private MIN_NUM_COLOR_RANGE = 200;
+  private MAX_NUM_COLOR_RANGE = 9999;
+  private DEFAULT_COLOR = 0x274c;
+  
   taskBarMenuData = [
     {icon:'', label: '', action: this.openApplicationFromTaskBar.bind(this)},
     {icon:'', label: '', action: ()=> console.log() },
@@ -137,17 +140,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   deskTopMenu:NestedMenu[] = [];
 
-
   hasWindow = false;
-  icon = `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'desktop';
   processId = 0;
   type = ComponentType.System;
   displayName = '';
 
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService,fileManagerServices:FileManagerService,
+  constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService,fileManagerServices:FileManagerService,
               triggerProcessService:TriggerProcessService, scriptService: ScriptService, menuService: MenuService, fileService:FileService) { 
+
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileManagerServices = fileManagerServices;
@@ -167,50 +170,31 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
-    this.CURRENT_DEG = this.getRandomInt(0, 360);
+    this._numSequence = this.getRandomInt(this.MIN_NUM_COLOR_RANGE, this.MAX_NUM_COLOR_RANGE);
   }
 
   ngOnInit():void{
     this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
       this._vantaEffect = VANTA.WAVES({
         el: '#vanta',
-        color:this.defaultColor, //this._numSequence,
+        color:this.DEFAULT_COLOR, 
         waveHeight:20,
-        shininess: 50,
+        shininess:45,
         waveSpeed:0.20,
-        // zoom:0.75,     
+        zoom:0.9,     
       });
     })
-
     this.getDesktopMenuData();
   }
 
   ngAfterViewInit():void{
-    //this.animationId = requestAnimationFrame(this.changeAnimationColor.bind(this));  
-     this.hideContextMenu();
-     this.loadOtherBackgrounds();
-  }
-
-  loadOtherBackgrounds():void{
-    const names:string[] = ["rings","halo", "globe", "birds"]
-    const bkgrounds:string[] = [ "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
-                                 "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
-        
-    for(let i =0; i <= bkgrounds.length - 1; i++){
-      this._scriptService.loadScript(names[i], bkgrounds[i]);
-    }
-  }
-
-  changeAnimationColor():void{
-    this.CURRENT_DEG = (this.CURRENT_DEG > this.MAX_DEG) ? this.MIN_DEG : this.CURRENT_DEG + 1;
-
-    console.log('nextColor:', Number(this.nextColor.changeHue('#4f32c2',this.CURRENT_DEG)?.replace('#','0x')))
-    this._vantaEffect.setOptions({
-      color: Number(this.nextColor.changeHue('#4f32c2',this.CURRENT_DEG)?.replace('#','0x')),
+    this._timerSubscription = interval(this.COLOR_CHANGE_DELAY).subscribe(() => {
+      this.transitionToNextColor();
     });
-
-    // this ain't working 
-    //this.animationId = requestAnimationFrame(this.changeAnimationColor.bind(this)); 
+    
+    this.hideContextMenu();
+    this.loadOtherBackgrounds();
+    this.initClippy();
   }
 
   ngOnDestroy(): void {
@@ -222,14 +206,65 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._keepTaskBarPreviewWindowSub?.unsubscribe();
     this._showStartMenuSub?.unsubscribe();
     this._hideStartMenuSub?.unsubscribe();
-
-    cancelAnimationFrame(this.animationId);
     this._vantaEffect?.destroy();
   }
 
+
+ /** Generates the next color dynamically */
+  getNextColor(): number {
+    const charSet = ['a', 'b', 'c', 'd', 'e', 'f'];
+    if (this._numSequence < this.MAX_NUM_COLOR_RANGE) {
+      this._numSequence++;
+    } else {
+      this._numSequence = this.MIN_NUM_COLOR_RANGE;
+      this._charSequenceCount = (this._charSequenceCount + 1) % charSet.length;
+      this._charSequence = charSet[this._charSequenceCount];
+    }
+
+    return Number(`0x${this._numSequence}${this._charSequence}`);
+  }
+
+  /** Smoothly transitions to the next color */
+  private transitionToNextColor(): void {
+    const startColor = this._vantaEffect.options.color;
+    const endColor = this.getNextColor();
+    const startTime = performance.now();
+
+    const animateColorTransition = (time: number) => {
+      // eslint-disable-next-line prefer-const
+      const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
+      // eslint-disable-next-line prefer-const
+      const interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
+
+      this._vantaEffect.setOptions({ color: interpolatedColor });
+
+      if (progress < 1) {
+        requestAnimationFrame(animateColorTransition);
+      }
+    };
+
+    requestAnimationFrame(animateColorTransition);
+  }
+
+
+  loadOtherBackgrounds():void{
+    const names:string[] = ["rings","halo", "globe", "birds"]
+    const bkgrounds:string[] = [ "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
+                                 "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
+        
+    for(let i =0; i <= bkgrounds.length - 1; i++){
+      this._scriptService.loadScript(names[i], bkgrounds[i]);
+    }
+  }
+
+  initClippy():void{
+    setInterval(() =>{
+      const appName = 'clippy';
+      this.openApplication(appName);
+    },this.CLIPPY_INIT_DELAY);
+  }
+
   getRandomInt(min:number, max:number):number{
-    min = Math.ceil(min);
-    max = Math.floor(max);
     return Math.floor(Math.random() * (max - min) + min);
   }
 
@@ -254,7 +289,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         'position':'absolute',
         'width': '210px', 
         'transform':`translate(${String(axis.xAxis + 2)}px, ${String(axis.yAxis)}px)`,
-        'z-index': 2,
+        'z-index': 3,
         'opacity':1
       }
       evt.preventDefault();
@@ -333,13 +368,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   captureComponentImg():void{
-    const directory ='/Users/Documents/Screen-Shots';
     htmlToImage.toPng(this.desktopContainer.nativeElement).then(htmlImg =>{
       //console.log('img data:',htmlImg);
 
       const screenShot:FileInfo = new FileInfo();
       screenShot.setFileName = 'screen_shot.png'
-      screenShot.setCurrentPath = `${directory}/screen_shot.png`;
+      screenShot.setCurrentPath = `${this.DESKTOP_SCREEN_SHOT_DIRECTORY}/screen_shot.png`;
       screenShot.setContentPath = htmlImg;
       screenShot.setIconPath = htmlImg;
 
@@ -353,7 +387,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
       setTimeout(()=>{
         this.slideState = 'slideOut';
-        this._fileService.writeFileAsync(directory, screenShot);
+        this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
         this._fileService.addEventOriginator('fileexplorer');
         this._fileService.dirFilesUpdateNotify.next();
       },4000);
@@ -365,8 +399,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async createFolder():Promise<void>{
-    const folderName = this._consts.NEW_FOLDER;
-    const result =  await this._fileService.createFolderAsync(this.directory, folderName);
+    const folderName = Constants.NEW_FOLDER;
+    const result =  await this._fileService.createFolderAsync(this.DESKTOP_DIRECTORY, folderName);
     if(result){
       this._fileService.addEventOriginator('filemanager');
       this._fileService.dirFilesUpdateNotify.next();
@@ -510,19 +544,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   openTerminal():void{
-    this.openApplication(this.terminalApp);
+    this.openApplication(this.TERMINAL_APP);
   }
 
   openTextEditor():void{
-    this.openApplication(this.textEditorApp);
+    this.openApplication(this.TEXT_EDITOR_APP);
   }
 
   openCodeEditor():void{
-    this.openApplication(this.codeEditorApp);
+    this.openApplication(this.CODE_EDITOR_APP);
   }
 
   openMarkDownViewer():void{
-    this.openApplication(this.markDownViewerApp);
+    this.openApplication(this.MARKDOWN_VIEWER_APP);
   }
 
   async onPaste():Promise<void>{
@@ -533,13 +567,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     console.log(`action: ${action}`);
 
     if(action === 'copy'){
-      const result = await this._fileService.copyHandler('',cntntPath,this.directory);
+      const result = await this._fileService.copyHandler('',cntntPath,this.DESKTOP_DIRECTORY);
       if(result){
         this.refresh();
       }
     }
     else if(action === 'cut'){
-      const result = await this._fileService.movehandler(this.directory, [cntntPath]);
+      const result = await this._fileService.movehandler(this.DESKTOP_DIRECTORY, [cntntPath]);
       if(result){
         this.refresh();
       }
@@ -551,7 +585,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     file.setOpensWith = arg0;
 
-    if(arg0 ==  this.markDownViewerApp){
+    if(arg0 ==  this.MARKDOWN_VIEWER_APP){
       file.setCurrentPath = '/Users/Desktop';
       file.setContentPath = '/Users/Documents/Credits.md';
     }
@@ -561,22 +595,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   buildViewByMenu():NestedMenuItem[]{
 
-    const smallIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Small icons',  action: this.viewBySmallIcon.bind(this),  variables:this.isSmallIcon, 
+    const smallIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Small icons',  action: this.viewBySmallIcon.bind(this),  variables:this.isSmallIcon, 
       emptyline:false, styleOption:'A' }
 
-    const mediumIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Medium icons',  action: this.viewByMediumIcon.bind(this),  variables:this.isMediumIcon, 
+    const mediumIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Medium icons',  action: this.viewByMediumIcon.bind(this),  variables:this.isMediumIcon, 
       emptyline:false, styleOption:'A' }
 
-    const largeIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Large icons', action: this.viewByLargeIcon.bind(this), variables:this.isLargeIcon,
+    const largeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Large icons', action: this.viewByLargeIcon.bind(this), variables:this.isLargeIcon,
       emptyline:true, styleOption:'A' }
 
-    const autoArrageIcon:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}chkmark32.png`, label:'Auto arrange icons',  action: this.autoArrangeIcon.bind(this),  variables:this.autoArrangeIcons, 
+    const autoArrageIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Auto arrange icons',  action: this.autoArrangeIcon.bind(this),  variables:this.autoArrangeIcons, 
       emptyline:false, styleOption:'B' }
 
-    const autoAlign:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}chkmark32.png`, label:'Align icons to grid',  action: this.autoAlignIcon.bind(this),  variables:this.autoAlignIcons, 
+    const autoAlign:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Align icons to grid',  action: this.autoAlignIcon.bind(this),  variables:this.autoAlignIcons, 
       emptyline:true, styleOption:'B' }
 
-    const showDesktopIcons:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}chkmark32.png`, label:'Show desktop icons',  action: this.showDesktopIcon.bind(this), variables:this.showDesktopIcons,
+    const showDesktopIcons:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Show desktop icons',  action: this.showDesktopIcon.bind(this), variables:this.showDesktopIcons,
       emptyline:false,  styleOption:'B'}
 
     const viewByMenu = [smallIcon,mediumIcon,largeIcon, autoArrageIcon, autoAlign,showDesktopIcons];
@@ -586,16 +620,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   buildSortByMenu(): NestedMenuItem[]{
 
-    const sortByName:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Name',  action: this.sortByNameM.bind(this),  variables:this.isSortByName , 
+    const sortByName:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Name',  action: this.sortByNameM.bind(this),  variables:this.isSortByName , 
       emptyline:false, styleOption:'A' }
 
-    const sortBySize:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Size',  action: this.sortBySizeM.bind(this),  variables:this.isSortBySize , 
+    const sortBySize:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Size',  action: this.sortBySizeM.bind(this),  variables:this.isSortBySize , 
       emptyline:false, styleOption:'A' }
 
-    const sortByItemType:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Item type',  action: this.sortByItemTypeM.bind(this),  variables:this.isSortByItemType, 
+    const sortByItemType:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Item type',  action: this.sortByItemTypeM.bind(this),  variables:this.isSortByItemType, 
       emptyline:false, styleOption:'A' }
 
-    const sortByDateModified:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}circle.png`, label:'Date modified',  action: this.sortByDateModifiedM.bind(this),  variables:this.isSortByDateModified, 
+    const sortByDateModified:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Date modified',  action: this.sortByDateModifiedM.bind(this),  variables:this.isSortByDateModified, 
       emptyline:false, styleOption:'A' }
 
     const sortByMenu = [sortByName, sortBySize, sortByItemType, sortByDateModified ]
@@ -605,13 +639,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   buildNewMenu(): NestedMenuItem[]{
 
-    const newFolder:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action: this.createFolder.bind(this),  variables:true , 
+    const newFolder:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action: this.createFolder.bind(this),  variables:true , 
       emptyline:false, styleOption:'C' }
 
-    const textEditor:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}text_editor.png`, label:'Rich Text',  action: this.openTextEditor.bind(this),  variables:true , 
+    const textEditor:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}quill.png`, label:'Rich Text',  action: this.openTextEditor.bind(this),  variables:true , 
       emptyline:false, styleOption:'C' }
 
-    const codeEditor:NestedMenuItem={ icon:`${this._consts.IMAGE_BASE_PATH}vs_code.png`, label:'Code Editor',  action: this.openCodeEditor.bind(this),  variables:true , 
+    const codeEditor:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}vs_code.png`, label:'Code Editor',  action: this.openCodeEditor.bind(this),  variables:true , 
         emptyline:false, styleOption:'C' }
 
     const sortByMenu = [newFolder, textEditor, codeEditor ]
@@ -621,15 +655,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   getDesktopMenuData():void{
     this.deskTopMenu = [
-          {icon1:'',  icon2: `${this._consts.IMAGE_BASE_PATH}arrow_next_1.png`, label:'View', nest:this.buildViewByMenu(), action: ()=>'', action1: this.shiftViewSubMenu.bind(this), emptyline:false},
-          {icon1:'',  icon2:`${this._consts.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=>'', action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
+          {icon1:'',  icon2: `${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'View', nest:this.buildViewByMenu(), action: ()=>'', action1: this.shiftViewSubMenu.bind(this), emptyline:false},
+          {icon1:'',  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=>'', action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
           {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:this.refresh.bind(this), action1: ()=> '', emptyline:true},
           {icon1:'',  icon2:'', label: 'Paste', nest:[], action:this.onPaste.bind(this), action1: ()=> '', emptyline:false},
-          {icon1:`${this._consts.IMAGE_BASE_PATH}terminal.png`, icon2:'', label:'Open in Terminal', nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
-          {icon1:`${this._consts.IMAGE_BASE_PATH}camera.png`, icon2:'', label:'Screen Shot', nest:[], action: this.captureComponentImg.bind(this), action1: ()=> '', emptyline:false},
+          {icon1:`${Constants.IMAGE_BASE_PATH}terminal.png`, icon2:'', label:'Open in Terminal', nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
+          {icon1:`${Constants.IMAGE_BASE_PATH}camera.png`, icon2:'', label:'Screen Shot', nest:[], action: this.captureComponentImg.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'',  icon2:'', label:'Next Background', nest:[], action: this.nextBackground.bind(this), action1: ()=> '', emptyline:false},
           {icon1:'',  icon2:'', label:'Previous Background', nest:[], action: this.previousBackground.bind(this), action1: ()=> '', emptyline:true},
-          {icon1:'',  icon2:`${this._consts.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
+          {icon1:'',  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
           {icon1:'',  icon2:'', label:'Many Thanks', nest:[], action: this.openMarkDownViewer.bind(this), action1: ()=> '', emptyline:false}
       ]
   }
@@ -698,14 +732,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   switchBetweenPinAndUnpin(isAppPinned:boolean):void{
     if(isAppPinned){
-      const menuEntry = {icon:`${this._consts.IMAGE_BASE_PATH}unpin_24.png`, label:'Unpin from taskbar', action: this.unPinApplicationFromTaskBar.bind(this)}
+      const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}unpin_24.png`, label:'Unpin from taskbar', action: this.unPinApplicationFromTaskBar.bind(this)}
       const rowOne = this.taskBarMenuData[1];
       rowOne.icon = menuEntry.icon;
       rowOne.label = menuEntry.label;
       rowOne.action = menuEntry.action;
       this.taskBarMenuData[1] = rowOne;
     }else if(!isAppPinned){
-      const menuEntry = {icon:`${this._consts.IMAGE_BASE_PATH}pin_24.png`, label:'Pin to taskbar', action: this.pinApplicationFromTaskBar.bind(this)}
+      const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}pin_24.png`, label:'Pin to taskbar', action: this.pinApplicationFromTaskBar.bind(this)}
       const rowOne = this.taskBarMenuData[1];
       rowOne.icon = menuEntry.icon;
       rowOne.label = menuEntry.label;
@@ -726,7 +760,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     if(processCount == 1){
       if(this.taskBarMenuData.length == 2){
-        const menuEntry = {icon:`${this._consts.IMAGE_BASE_PATH}x_32.png`, label: 'Close window', action:this.closeApplicationFromTaskBar.bind(this)};
+        const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}x_32.png`, label: 'Close window', action:this.closeApplicationFromTaskBar.bind(this)};
         this.taskBarMenuData.push(menuEntry);
       }else{
         const rowTwo = this.taskBarMenuData[2];

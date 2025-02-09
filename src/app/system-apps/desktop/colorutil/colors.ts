@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 
-export class Colors{
+export namespace Colors{
 
-
- changeHue(hexColor:string, degree:number) {
+  export function changeHue(hexColor:string, degree:number) {
     // Ensure the input is a valid hexadecimal color
     const hexRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
     if (!hexRegex.test(hexColor)) {
@@ -18,7 +18,7 @@ export class Colors{
     const b = bigint & 255;
   
     // Convert RGB to HSL
-    const hslColor = this.rgbToHsl(r, g, b);
+    const hslColor = rgbToHsl(r, g, b);
   
     // Shift the hue
     hslColor.h += degree;
@@ -27,16 +27,16 @@ export class Colors{
     hslColor.h = (hslColor.h + 360) % 360;
   
     // Convert HSL back to RGB
-    const finalRgbColor = this.hslToRgb(hslColor.h, hslColor.s, hslColor.l);
+    const finalRgbColor = hslToRgb(hslColor.h, hslColor.s, hslColor.l);
   
     // Convert RGB back to hexadecimal
-    const finalHexColor = this.rgbToHex(finalRgbColor.r, finalRgbColor.g, finalRgbColor.b);
+    const finalHexColor = rgbToHex_(finalRgbColor.r, finalRgbColor.g, finalRgbColor.b);
   
     return `#${finalHexColor}`;
   }
   
   // Convert RGB to HSL
-   rgbToHsl(r:number, g:number, b:number) {
+  export function rgbToHsl(r:number, g:number, b:number) {
     r /= 255;
     g /= 255;
     b /= 255;
@@ -65,7 +65,7 @@ export class Colors{
   }
   
   // Convert HSL to RGB
-   hslToRgb(h:number, s:number, l:number) {
+  export function hslToRgb(h:number, s:number, l:number) {
     h /= 360;
     s /= 100;
     l /= 100;
@@ -95,7 +95,7 @@ export class Colors{
   }
   
   // Convert RGB to Hex
-   rgbToHex(r:number, g:number, b:number) {
+  export function rgbToHex_(r:number, g:number, b:number) {
     const toHex = (value:number) => {
       const hex = Math.round(value).toString(16);
       return hex.length === 1 ? '0' + hex : hex;
@@ -103,4 +103,28 @@ export class Colors{
   
     return toHex(r) + toHex(g) + toHex(b);
   }  
+
+
+  /** Interpolates between two hex colors */
+  export function interpolateHexColor(start: number, end: number, progress: number): number {
+    const startRGB = hexToRgb(start);
+    const endRGB = hexToRgb(end);
+
+    const interpolatedRGB = startRGB.map((startVal, i) =>
+      Math.round(startVal + (endRGB[i] - startVal) * progress)
+    );
+
+    return rgbToHex(interpolatedRGB);
+  }
+
+  /** Converts hex color to RGB array */
+  export function hexToRgb(hex: number): number[] {
+    return [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255];
+  }
+
+  /** Converts RGB array to hex number */
+  export function rgbToHex(rgb: number[]): number {
+    return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+  }
+
 }

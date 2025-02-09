@@ -20,7 +20,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
  
   quickAccessData: FileTreeNode[] = [];
   private _fileService:FileService;
-  private _consts:Constants = new Constants();
+
 
   chevronBtnStyle:Record<string, unknown> = {};
   expandedViews:string[]= [];
@@ -28,7 +28,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   isClicked = false;
   processId = 0;
   nextLevel = 0;
-  nextLevelSrcId = this._consts.EMPTY_STRING;
+  nextLevelSrcId = Constants.EMPTY_STRING;
   negTen = -10;
   name = 'filetreeview';
 

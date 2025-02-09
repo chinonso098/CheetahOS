@@ -32,7 +32,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private _triggerProcessService:TriggerProcessService;
   private _menuService:MenuService;
   private _formBuilder:FormBuilder;
-  private _consts:Constants = new Constants();
+
 
   private _viewByNotifySub!:Subscription;
   private _sortByNotifySub!:Subscription;
@@ -73,7 +73,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   renameForm!: FormGroup;
 
   hasWindow = false;
-  icon = `${this._consts.IMAGE_BASE_PATH}generic_program.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'filemanager';
   processId = 0;
   type = ComponentType.System;
@@ -97,7 +97,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
   menuData:GeneralMenu[] =[];
   
-  fileExplrMngrMenuOption = this._consts.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
+  fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
   menuOrder = '';
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileInfoService:FileService,
@@ -262,7 +262,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     console.log('adjustContextMenuData - filename:',file.getCurrentPath);
     if(file.getIsFile){
           //files can not be opened in terminal, pinned to start, opened in new window, pin to Quick access
-          this.menuOrder = this._consts.DEFAULT_FILE_MENU_ORDER;
+          this.menuOrder = Constants.DEFAULT_FILE_MENU_ORDER;
           for(const x of this.sourceData) {
             if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Pin to Start'){ /*nothing*/}
             else{
@@ -270,7 +270,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
             }
           }
       }else{
-        this.menuOrder = this._consts.DEFAULT_FOLDER_MENU_ORDER;
+        this.menuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
         this.menuData = this.sourceData;
       }
   }
@@ -437,7 +437,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = 'transparent';
-      btnElement.style.border = 'none'
+      btnElement.style.borderColor = 'transparent'
     }
   }
 
@@ -445,7 +445,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
-      btnElement.style.border = '2px solid hsla(0,0%,50%,25%)'
+      btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
 
       if(this.selectedElementId == id){
         (isMouseHover)? btnElement.style.backgroundColor ='#607c9c' : 
@@ -549,7 +549,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
     if(selectedFile.getIsFile){
       fileContent = `[InternetShortcut]
-FileName=${selectedFile.getFileName} - ${this._consts.SHORTCUT}
+FileName=${selectedFile.getFileName} - ${Constants.SHORTCUT}
 IconPath=${selectedFile.getIconPath}
 FileType=${selectedFile.getFileType}
 ContentPath=${selectedFile.getContentPath}
@@ -560,7 +560,7 @@ OpensWith=${selectedFile.getOpensWith}
     }
 
     shortCut.setContentPath = fileContent
-    shortCut.setFileName= `${selectedFile.getFileName} - ${this._consts.SHORTCUT}${this._consts.URL}`;
+    shortCut.setFileName= `${selectedFile.getFileName} - ${Constants.SHORTCUT}${Constants.URL}`;
     const result = await this._fileService.writeFileAsync(this.directory, shortCut);
     if(result){
       await this.loadFilesInfoAsync();

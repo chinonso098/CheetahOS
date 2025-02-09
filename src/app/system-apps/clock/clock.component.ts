@@ -5,6 +5,7 @@ import { ComponentType } from 'src/app/system-files/component.types';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { Process } from 'src/app/system-files/process';
+import { Constants } from 'src/app/system-files/constants';
 
 @Component({
   selector: 'cos-clock',
@@ -15,6 +16,7 @@ export class ClockComponent implements AfterViewInit,OnDestroy {
 
   private _processIdService;
   private _runningProcessService;
+  
   private _taskBarClock:Clock;
   private _timerSubscription!:Subscription;
   private _dateSubscription!:Subscription;
@@ -24,7 +26,7 @@ export class ClockComponent implements AfterViewInit,OnDestroy {
 
   hasWindow = false;
   hover = false;
-  icon = 'osdrive/Cheetah/System/Imageres/generic_program.png';
+  icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'clock';
   processId = 0;
   type = ComponentType.System

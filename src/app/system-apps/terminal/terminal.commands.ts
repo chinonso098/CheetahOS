@@ -23,13 +23,13 @@ export class TerminalCommandProcessor{
     private _fileService:FileService;
     private _directoryFilesEntries!:FileEntry[];
     private _appDirctory = new AppDirectory();
-    private _consts:Constants = new Constants();
+  
     
     private  permissionChart!:Map<number, OctalRepresentation>;
     private closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton","clock","taskbarentry","startmenu"];
     private files:FileInfo[] = [];
-    private readonly defaultDirectoryPath = this._consts.ROOT;
-    private currentDirectoryPath = this._consts.ROOT;
+    private readonly defaultDirectoryPath = Constants.ROOT;
+    private currentDirectoryPath = Constants.ROOT;
     private fallBackDirPath = '';
 
     constructor() { 
@@ -125,7 +125,18 @@ All commands:
     }
 
     version(arg:string):string{
-        return `Terminal version: ${arg}`;
+
+        const banner =  `
+███████ ██ ███    ███ ██████  ██      ███████     ████████ ███████ ██████  ███    ███ ██ ███    ██  █████  ██      
+██      ██ ████  ████ ██   ██ ██      ██             ██    ██      ██   ██ ████  ████ ██ ████   ██ ██   ██ ██      
+███████ ██ ██ ████ ██ ██████  ██      █████          ██    █████   ██████  ██ ████ ██ ██ ██ ██  ██ ███████ ██      
+     ██ ██ ██  ██  ██ ██      ██      ██             ██    ██      ██   ██ ██  ██  ██ ██ ██  ██ ██ ██   ██ ██      
+███████ ██ ██      ██ ██      ███████ ███████        ██    ███████ ██   ██ ██      ██ ██ ██   ████ ██   ██ ███████
+
+                                                                                            [Version ${arg}] \u00A9 ${new Date().getFullYear()}                                                                                                                              
+        `
+
+        return banner;
     }
 
     list(arg1:string, arg2:string):string{
@@ -354,7 +365,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         const filePathRegex = /^(\.\.\/)+([a-zA-Z0-9_-]+\/?)*$|^(\.\/|\/)([a-zA-Z0-9_-]+\/?)+$|^\.\.$|^\.\.\/$/;
 
         if(filePathRegex.test(arg0)){
-           const cmdArg = arg0.split(this._consts.ROOT);
+           const cmdArg = arg0.split(Constants.ROOT);
       
            //console.log('CMDARG:', cmdArg);
            const moveUps = (cmdArg.length > 1)? cmdArg.filter(x => x == "..") : ['..'] ;
@@ -362,13 +373,13 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
            this.fallBackDirPath = impliedPath;
            const explicitPath = (arg0 !== '..')? arg0.split("../").splice(-1)[0] : '';
 
-           directory = `${impliedPath}/${explicitPath}`.replace(this._consts.DOUBLE_SLASH,this._consts.ROOT);
+           directory = `${impliedPath}/${explicitPath}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT);
 
         //    console.log('IMPLIEDPATH:', impliedPath);
         //    console.log('EXPLICITPATH:', explicitPath);
         //    console.log('DIRECTORY:', directory);
         }else{
-            directory = `${this.currentDirectoryPath}/${arg0}`.replace(this._consts.DOUBLE_SLASH,this._consts.ROOT);
+            directory = `${this.currentDirectoryPath}/${arg0}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT);
             this.fallBackDirPath = this.getFallBackPath(directory);
         }
 
@@ -412,12 +423,12 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         let directory = '';
         let dirPath = '';
         let cnt = 0;
-        const tmpTraversedPath = this.currentDirectoryPath.split(this._consts.ROOT);
+        const tmpTraversedPath = this.currentDirectoryPath.split(Constants.ROOT);
         tmpTraversedPath.shift();
         const traversedPath = tmpTraversedPath.filter(x => x !== '');
         
         if(traversedPath.length == 0){
-            return this._consts.ROOT;
+            return Constants.ROOT;
         } else if(traversedPath.length == 1){
             directory = traversedPath[0];
             return `/${directory}`;
@@ -463,7 +474,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         *this.fallBackDirPath = this.currentDirectoryPath;  /osdrive/Documents 
         */
 
-        const tmpTraversedPath = arg0.split(this._consts.ROOT);
+        const tmpTraversedPath = arg0.split(Constants.ROOT);
         const tmpStr:string[] = [];
         let dirPath = '';
 
@@ -477,7 +488,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         traversedPath.forEach(el =>{
             tmpStr.push(`/${el}`);
         })
-        tmpStr.push(this._consts.ROOT);
+        tmpStr.push(Constants.ROOT);
 
         dirPath = tmpStr.join('');
         return dirPath.replace(',','');

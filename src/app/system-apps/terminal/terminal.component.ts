@@ -36,7 +36,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _appState!:AppState;
-  private _consts:Constants = new Constants();
+
 
   private msgPosCounter = 0;
   private scrollCounter = 0
@@ -72,7 +72,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   traversalDepth = 0;
 
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}terminal.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}terminal.png`;
   name = 'terminal';
   processId = 0;
   type = ComponentType.System;

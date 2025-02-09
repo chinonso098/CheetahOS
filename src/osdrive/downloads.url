@@ -1,6 +1,6 @@
 [InternetShortcut]
 FileName=Downloads
-IconPath=/osdrive/Cheetah/System/Imageres/downloads_folder.png
+IconPath=osdrive/Cheetah/System/Imageres/downloads_folder.png
 FileType=folder
 ContentPath=/Users/Downloads
 OpensWith=fileexplorer

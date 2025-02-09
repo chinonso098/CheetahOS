@@ -21,7 +21,6 @@ import { WindowComponent } from './shared/system-component/window/window.compone
 import { FileManagerComponent } from './system-apps/filemanager/filemanager.component';
 import { GreetingComponent } from './user-apps/greeting/greeting.component';
 import { TaskmanagerComponent } from './system-apps/taskmanager/taskmanager.component';
-import { TaskmanagerMiniComponent } from './system-apps/taskmanager/taskmanager.mini.component';
 import { JSdosComponent } from './user-apps/jsdos/jsdos.component';
 import { VideoPlayerComponent } from './system-apps/videoplayer/videoplayer.component';
 import { AudioPlayerComponent } from './system-apps/audioplayer/audioplayer.component';
@@ -35,6 +34,8 @@ import { CodeEditorComponent } from './user-apps/codeeditor/codeeditor.component
 import { PropertiesComponent } from './shared/system-component/properties/properties.component'; 
 import { MarkDownViewerComponent } from './user-apps/markdownviewer/markdownviewer.component';
 import { FileTreeViewComponent } from './shared/system-component/filetreeview/filetreeview.component';
+import { CheetahComponent } from './system-apps/cheetah/cheetah.component';
+import { ClippyComponent } from "./system-apps/clippy/clippy.component";
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
@@ -63,7 +64,6 @@ import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.captu
     FileManagerComponent,
     GreetingComponent,
     TaskmanagerComponent,
-    TaskmanagerMiniComponent,
     JSdosComponent,
     VideoPlayerComponent,
     AudioPlayerComponent,
@@ -77,7 +77,8 @@ import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.captu
     CodeEditorComponent,
     MarkDownViewerComponent,
     FileTreeViewComponent,
- 
+    CheetahComponent,
+    ClippyComponent,
 
     HighlightDirective,
     TaskBarEntryHighlightDirective,
@@ -95,8 +96,8 @@ import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.captu
     BrowserAnimationsModule,
     ReactiveFormsModule,
     FormsModule,
-    MonacoEditorModule.forRoot(), // use forRoot() in main app module only.
-  ],
+    MonacoEditorModule.forRoot()
+],
   providers: [],
   bootstrap: [AppComponent]
 })

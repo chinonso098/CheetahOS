@@ -14,13 +14,17 @@
                             viewBox="0 0 512 512" *ngIf="showRibbonMenu" [style]="ribbonMenuBtnStyle">
                             <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
                         </svg>
-
                         <svg xmlns="http://www.w3.org/2000/svg" 
                             height="10" width="10" 
                             viewBox="0 0 512 512" *ngIf="!showRibbonMenu" [style]="ribbonMenuBtnStyle">
                             <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
                        </svg>
                     </div>
+                </figure>
+              </div>
+              <div class="question-header-cntnr" (click)="toggleRibbobMenu()" (mouseenter)="colorRibbonMenuCntnr()" (mouseleave)="uncolorRibbonMenuCntnr()" [style]="ribbonMenuCntnrStyle">
+                <figure class="question-figure-header-tab">  
+                    <img class="question-img-header-tab" [src]="'osdrive/Cheetah/System/Imageres/question.png'"/>
                 </figure>
               </div>
             </div>
@@ -441,6 +445,18 @@
             <span class="span-footer">|</span>
             <!-- <span class="span-footer">{{fileExplrFiles.length - fileExplrFiles.length}} items selected</span>
             <span class="span-footer">|</span> -->
+
+
+            <div class="footer-img-cntnr-1" (click)="toggleRibbobMenu()" (mouseenter)="colorRibbonMenuCntnr()" (mouseleave)="uncolorRibbonMenuCntnr()" [style]="ribbonMenuCntnrStyle">
+                <figure class="footer-figure-header-tab">  
+                    <img class="footer-img-header-tab" [src]="'osdrive/Cheetah/System/Imageres/details_view.png'"/>
+                </figure>
+              </div>
+              <div class="footer-img-cntnr-2" (click)="toggleRibbobMenu()" (mouseenter)="colorRibbonMenuCntnr()" (mouseleave)="uncolorRibbonMenuCntnr()" [style]="ribbonMenuCntnrStyle">
+                <figure class="footer-figure-header-tab">  
+                    <img class="footer-img-header-tab" [src]="'osdrive/Cheetah/System/Imageres/large_image.png'"/>
+                </figure>
+              </div> 
         </div>
     </div>
 

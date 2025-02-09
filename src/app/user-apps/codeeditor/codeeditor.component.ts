@@ -28,7 +28,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   private _runningProcessService:RunningProcessService;
   private _stateManagmentService:StateManagmentService;
   private _triggerProcessService:TriggerProcessService;
-  private _consts:Constants = new Constants();
+
 
   private _maximizeWindowSub!: Subscription;
   SECONDS_DELAY = 250;
@@ -42,7 +42,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
 
 
   hasWindow = true;
-  icon = `${this._consts.IMAGE_BASE_PATH}vs_code.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}vs_code.png`;
   name = 'codeeditor';
   processId = 0;
   type = ComponentType.User;

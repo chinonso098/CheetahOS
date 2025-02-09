@@ -1,0 +1,133 @@
+.cheetah-main-container{
+    font-size: 1rem;
+    text-align: center;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%);
+    position: absolute;
+    top: 25%;
+    left: 25%;
+   /*  transform: translate(-50%, -50%); Move the element back by 50% of its own width and height */
+    transform: translate(431px, -914px); /* Move the element back by 50% of its own width and height */
+    outline: 1px hsl(0deg 0% 20%/70%);
+    z-index: 2;
+    height: fit-content;
+    width: fit-content;
+}
+
+/*Head Section*/
+.cheetah-header-container{
+    background-color: #ffffff;
+    width: 100%;
+    position: relative;
+    display: flex;
+}
+
+.cheetah-left-header-section{
+    width:calc(100% - 45px);
+    height: 30px;
+    left: 0;
+}
+  
+.cheetah-right-header-section{
+    height: 30px;
+    right: 0;
+}
+
+.cheetah-h1{
+    color: #fff;
+    font-size: 13px;
+    font-weight: normal;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 29px;
+    border-bottom: 1px transparent blue;  
+    width: fit-content;
+    flex-grow: 1;
+    display: flex;
+    left: 0;
+}
+  
+.cheetah-img{
+    height: 18px;
+    width: 18px;
+    position: relative;
+    left: -5px;
+    margin: 0 6px 0 8px;   
+}
+  
+.cheetah-figure{
+    padding-left: 6px;
+    display: flex;
+    align-items: center;
+    height: 30px;
+}
+  
+.cheetah-figcaption{
+    color: #000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+  
+.cheetah-button{
+    border-left: 1px transparent blue;
+    box-sizing: content-box;
+    color: #fff;
+    display: flex;
+    font-size: 20px;
+    width: 45px;
+    place-content: center;
+    place-items: center;
+}
+  
+.cheetah-svg{
+    fill: #ababab;
+    margin-bottom: 2px;
+    /* width: 10px; */
+}
+  
+.cheetah-nav{
+    display: flex;
+    position: absolute;
+    width: fit-content;
+    right: 0;
+    height: 30px;
+}
+
+
+.cheetah-body-container{
+    height: 100%;
+    width: 100%;
+    background-color: #f0f0f0;
+}
+
+.cheetah-div{
+    width: 100%;
+}
+.os-info{
+    height: 100%;
+    width: 100%;
+    padding:8px 8px 4px 8px;
+}
+
+.os-image{
+    width: 626px;
+    height: 235px;
+    margin-inline: auto;
+}
+
+.os-name{
+    font-size: 30px;
+    text-align: center;
+    color: #000;
+}
+
+.os-version{
+    font-size: 15px;
+    text-align: center;
+    color: #000;
+}
+
+.os-year{
+    font-size: 12px;
+    text-align: center;
+    color: #000;
+}

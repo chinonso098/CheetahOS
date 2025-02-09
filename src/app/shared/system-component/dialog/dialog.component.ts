@@ -2,6 +2,7 @@ import {ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges} from '@an
 import { ComponentType } from 'src/app/system-files/component.types';
 import { NotificationService } from '../../system-service/notification.service';
 import { NotificationType } from 'src/app/system-files/notification.type';
+import { MenuService } from '../../system-service/menu.services';
 
 @Component({
   selector: 'cos-dialog',
@@ -9,13 +10,13 @@ import { NotificationType } from 'src/app/system-files/notification.type';
   styleUrls: ['./dialog.component.css']
 })
 
-
 export class DialogComponent implements OnChanges {
 
   @Input() inputMsg = '';
   @Input() notificationType = '';
 
   private _notificationServices:NotificationService;
+  private _menuService:MenuService;
 
   notificationOption = '';
   errorNotification = NotificationType.Error;
@@ -27,11 +28,11 @@ export class DialogComponent implements OnChanges {
   type = ComponentType.System;
   displayMgs = '';
 
-  constructor(private changeDetectorRef: ChangeDetectorRef, notificationServices:NotificationService){
+  constructor(private changeDetectorRef: ChangeDetectorRef, notificationServices:NotificationService, menuService:MenuService){
     this._notificationServices = notificationServices;
+    this._menuService = menuService;
     this.notificationId = this.generateNotificationId();
   }
-
 
   ngOnChanges(changes: SimpleChanges):void{
     //console.log('DIALOG onCHANGES:',changes);
@@ -39,6 +40,9 @@ export class DialogComponent implements OnChanges {
     this.notificationOption =this.notificationType;
   }
 
+  onYesDialogBox():void{
+    this._menuService.createDesktopShortcut.next();
+  }
 
   onCloseDialogBox():void{
     this._notificationServices.closeDialogBoxNotify.next(this.notificationId);
