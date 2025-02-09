@@ -35,6 +35,7 @@ import { PropertiesComponent } from './shared/system-component/properties/proper
 import { MarkDownViewerComponent } from './user-apps/markdownviewer/markdownviewer.component';
 import { FileTreeViewComponent } from './shared/system-component/filetreeview/filetreeview.component';
 import { CheetahComponent } from './system-apps/cheetah/cheetah.component';
+import { ClippyComponent } from "./system-apps/clippy/clippy.component";
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
@@ -44,7 +45,6 @@ import { TaskBarEntryHighlightDirective } from './system-apps/taskbarentries/tas
 import { LongPressDirective } from './system-apps/audioplayer/long.press.directive';
 import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.column-resize.directive';
 import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.capture.directive';
-import { ClippyComponent } from "./system-apps/clippy/clippy.component";
 
 
 @NgModule({
@@ -78,6 +78,7 @@ import { ClippyComponent } from "./system-apps/clippy/clippy.component";
     MarkDownViewerComponent,
     FileTreeViewComponent,
     CheetahComponent,
+    ClippyComponent,
 
     HighlightDirective,
     TaskBarEntryHighlightDirective,
@@ -95,8 +96,7 @@ import { ClippyComponent } from "./system-apps/clippy/clippy.component";
     BrowserAnimationsModule,
     ReactiveFormsModule,
     FormsModule,
-    MonacoEditorModule.forRoot(),
-    ClippyComponent
+    MonacoEditorModule.forRoot()
 ],
   providers: [],
   bootstrap: [AppComponent]

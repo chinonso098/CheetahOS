@@ -108,11 +108,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   removeTskBarPrevWindowFromDOMTimeoutId!: NodeJS.Timeout;
   hideTskBarPrevWindowTimeoutId!: NodeJS.Timeout;
 
-  directory ='/Users/Desktop';
-  terminalApp ="terminal";
-  textEditorApp ="texteditor";
-  codeEditorApp ="codeeditor";
-  markDownViewerApp ="markdownviewer";
+  readonly DESKTOP_DIRECTORY ='/Users/Desktop';
+  readonly DESKTOP_SCREEN_SHOT_DIRECTORY ='/Users/Documents/Screen-Shots';
+  readonly TERMINAL_APP ="terminal";
+  readonly TEXT_EDITOR_APP ="texteditor";
+  readonly CODE_EDITOR_APP ="codeeditor";
+  readonly MARKDOWN_VIEWER_APP ="markdownviewer";
 
   waveBkgrnd:WAVE =  {el:'#vanta'}
   ringsBkgrnd:RINGS =  {el:'#vanta'}
@@ -125,7 +126,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - 1;
   private CURRENT_DESTOP_NUM = 0;
   private CLIPPY_INIT_DELAY = 180000; // every 3mins is fine
-  private COLOR_CHANGE_DELAY = 15000; // every 15sec is fine
+  private COLOR_CHANGE_DELAY = 8000; // every 8sec is fine
   private COLOR_TRANSITION_DURATION = 2000; // 2sec
 
   private MIN_NUM_COLOR_RANGE = 200;
@@ -138,7 +139,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   ];
 
   deskTopMenu:NestedMenu[] = [];
-
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -232,9 +232,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     const animateColorTransition = (time: number) => {
       // eslint-disable-next-line prefer-const
-      let progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
+      const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
       // eslint-disable-next-line prefer-const
-      let interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
+      const interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
 
       this._vantaEffect.setOptions({ color: interpolatedColor });
 
@@ -258,7 +258,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   initClippy():void{
-    const interval =  setInterval(() =>{
+    setInterval(() =>{
       const appName = 'clippy';
       this.openApplication(appName);
     },this.CLIPPY_INIT_DELAY);
@@ -368,13 +368,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   captureComponentImg():void{
-    const directory ='/Users/Documents/Screen-Shots';
     htmlToImage.toPng(this.desktopContainer.nativeElement).then(htmlImg =>{
       //console.log('img data:',htmlImg);
 
       const screenShot:FileInfo = new FileInfo();
       screenShot.setFileName = 'screen_shot.png'
-      screenShot.setCurrentPath = `${directory}/screen_shot.png`;
+      screenShot.setCurrentPath = `${this.DESKTOP_SCREEN_SHOT_DIRECTORY}/screen_shot.png`;
       screenShot.setContentPath = htmlImg;
       screenShot.setIconPath = htmlImg;
 
@@ -388,7 +387,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
       setTimeout(()=>{
         this.slideState = 'slideOut';
-        this._fileService.writeFileAsync(directory, screenShot);
+        this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
         this._fileService.addEventOriginator('fileexplorer');
         this._fileService.dirFilesUpdateNotify.next();
       },4000);
@@ -401,7 +400,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async createFolder():Promise<void>{
     const folderName = Constants.NEW_FOLDER;
-    const result =  await this._fileService.createFolderAsync(this.directory, folderName);
+    const result =  await this._fileService.createFolderAsync(this.DESKTOP_DIRECTORY, folderName);
     if(result){
       this._fileService.addEventOriginator('filemanager');
       this._fileService.dirFilesUpdateNotify.next();
@@ -545,19 +544,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   openTerminal():void{
-    this.openApplication(this.terminalApp);
+    this.openApplication(this.TERMINAL_APP);
   }
 
   openTextEditor():void{
-    this.openApplication(this.textEditorApp);
+    this.openApplication(this.TEXT_EDITOR_APP);
   }
 
   openCodeEditor():void{
-    this.openApplication(this.codeEditorApp);
+    this.openApplication(this.CODE_EDITOR_APP);
   }
 
   openMarkDownViewer():void{
-    this.openApplication(this.markDownViewerApp);
+    this.openApplication(this.MARKDOWN_VIEWER_APP);
   }
 
   async onPaste():Promise<void>{
@@ -568,13 +567,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     console.log(`action: ${action}`);
 
     if(action === 'copy'){
-      const result = await this._fileService.copyHandler('',cntntPath,this.directory);
+      const result = await this._fileService.copyHandler('',cntntPath,this.DESKTOP_DIRECTORY);
       if(result){
         this.refresh();
       }
     }
     else if(action === 'cut'){
-      const result = await this._fileService.movehandler(this.directory, [cntntPath]);
+      const result = await this._fileService.movehandler(this.DESKTOP_DIRECTORY, [cntntPath]);
       if(result){
         this.refresh();
       }
@@ -586,7 +585,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     file.setOpensWith = arg0;
 
-    if(arg0 ==  this.markDownViewerApp){
+    if(arg0 ==  this.MARKDOWN_VIEWER_APP){
       file.setCurrentPath = '/Users/Desktop';
       file.setContentPath = '/Users/Documents/Credits.md';
     }

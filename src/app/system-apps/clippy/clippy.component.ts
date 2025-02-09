@@ -7,11 +7,10 @@ import { Process } from 'src/app/system-files/process';
 
 @Component({
   selector: 'cos-clippy',
-  standalone: true,
-  imports: [],
   templateUrl: './clippy.component.html',
   styleUrl: './clippy.component.css'
 })
+
 export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChanges, AfterViewInit {
 
   @ViewChild('clippyToolTip', {static: true}) clippyToolTip!: ElementRef;
@@ -23,11 +22,6 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
 
   toolTipText = '';
   gifPath = '';
-  SHOW_TOOL_TIP_DELAY = 500;
-  CLEAN_UP_DELAY = 1000;  
-  MAX_TOOL_TIP_DISPLAY_DURATION = 4500; 
-  MIN_GIF_DISPLAY_DURATION = 6000;
-  PID = 20000;
   randomSelection = -1;
   selectedDuration = -1;
   selectedAnimation = '';
@@ -54,7 +48,7 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
   name= 'clippy';
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
-  processId = 0;
+  readonly processId = 20000;
   type = ComponentType.User;
   displayName = Constants.EMPTY_STRING;
 
@@ -62,7 +56,6 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
     this._runningProcessService = runningProcessService;
     this._changeDetectorRef = changeDetectorRef;
 
-    this.processId = this.PID;
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
   
@@ -106,6 +99,9 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
   }
 
   private showClippyToolTip():void{
+    const showToolTipDelay = 500;
+    const minToolTipDisplayDuration = 4500;
+
     setTimeout(()=>{
       this.clippyToolTip.nativeElement.style.visibility = 'visible';
       this.clippyToolTip.nativeElement.style.opacity = 1;
@@ -117,9 +113,9 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
 
       setTimeout(()=>{
         this.hideClippyToolTip();
-      },this.MAX_TOOL_TIP_DISPLAY_DURATION) 
+      },minToolTipDisplayDuration) 
 
-    },this.SHOW_TOOL_TIP_DELAY) 
+    },showToolTipDelay) 
   }
 
   private hideClippyToolTip():void{
@@ -138,10 +134,12 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
   }
 
   private selfDestruct():void{
-    while(this.selectedDuration < this.MIN_GIF_DISPLAY_DURATION){
-      const durationRatio = (this.selectedDuration / this.MIN_GIF_DISPLAY_DURATION);      
+    const cleanUpDelay = 1000;
+    const minGIFDisplayDuration = 6000;
+    while(this.selectedDuration < minGIFDisplayDuration){
+      const durationRatio = (this.selectedDuration / minGIFDisplayDuration);      
       const remainingRatio = 1 - durationRatio;      
-      const durationIncrease = (remainingRatio * this.MIN_GIF_DISPLAY_DURATION);
+      const durationIncrease = (remainingRatio * minGIFDisplayDuration);
       this.selectedDuration += durationIncrease;
     }
 
@@ -152,8 +150,7 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
         if(processToClose){
           this._runningProcessService.closeProcessNotify.next(processToClose);
         }
-      },this.CLEAN_UP_DELAY) 
-
+      },cleanUpDelay) 
     },this.selectedDuration) 
   }
   
