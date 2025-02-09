@@ -1,5 +1,5 @@
 import { AfterViewInit, OnInit,OnDestroy, Component, ElementRef, ViewChild} from '@angular/core';
-import { Subscription} from 'rxjs';
+import { Subscription, interval} from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ComponentType } from 'src/app/system-files/component.types';
@@ -59,8 +59,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _keepTaskBarPreviewWindowSub!:Subscription;
   private _showStartMenuSub!:Subscription;
   private _hideStartMenuSub!:Subscription;
-
   private _vantaEffect: any;
+  private _numSequence = 0;
+  private _charSequence = 'a';
+  private _charSequenceCount = 0;
 
   readonly largeIcons = IconsSizes.LARGE_ICONS;
   readonly mediumIcons = IconsSizes.MEDIUM_ICONS;
@@ -122,15 +124,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private MIN_NUMS_OF_DESKTOPS = 0;
   private MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - 1;
   private CURRENT_DESTOP_NUM = 0;
-  private CLIPPY_INIT_DELAY = 95000;
+  private CLIPPY_INIT_DELAY = 180000; // every 3mins is fine
+  private COLOR_CHANGE_DELAY = 15000; // every 15sec is fine
+  private COLOR_TRANSITION_DURATION = 2000; // 2sec
 
-  private MIN_DEG = 0;
-  private MAX_DEG = 360;
-  private CURRENT_DEG = 0;
-  private defaultColor = 0x274c;
-  private nextColor:Colors = new Colors();
-  private animationId:any;
-
+  private MIN_NUM_COLOR_RANGE = 200;
+  private MAX_NUM_COLOR_RANGE = 9999;
+  private DEFAULT_COLOR = 0x274c;
+  
   taskBarMenuData = [
     {icon:'', label: '', action: this.openApplicationFromTaskBar.bind(this)},
     {icon:'', label: '', action: ()=> console.log() },
@@ -147,8 +148,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   displayName = '';
 
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService,fileManagerServices:FileManagerService,
+  constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService,fileManagerServices:FileManagerService,
               triggerProcessService:TriggerProcessService, scriptService: ScriptService, menuService: MenuService, fileService:FileService) { 
+
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileManagerServices = fileManagerServices;
@@ -168,51 +170,31 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
-    this.CURRENT_DEG = this.getRandomInt(0, 360);
+    this._numSequence = this.getRandomInt(this.MIN_NUM_COLOR_RANGE, this.MAX_NUM_COLOR_RANGE);
   }
 
   ngOnInit():void{
-    // this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
-    //   this._vantaEffect = VANTA.WAVES({
-    //     el: '#vanta',
-    //     color:this.defaultColor, //this._numSequence,
-    //     waveHeight:20,
-    //     shininess: 50,
-    //     waveSpeed:0.20,
-    //     // zoom:0.75,     
-    //   });
-    // })
-
+    this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
+      this._vantaEffect = VANTA.WAVES({
+        el: '#vanta',
+        color:this.DEFAULT_COLOR, 
+        waveHeight:20,
+        shininess:45,
+        waveSpeed:0.20,
+        zoom:0.9,     
+      });
+    })
     this.getDesktopMenuData();
   }
 
   ngAfterViewInit():void{
-    //this.animationId = requestAnimationFrame(this.changeAnimationColor.bind(this));  
+    this._timerSubscription = interval(this.COLOR_CHANGE_DELAY).subscribe(() => {
+      this.transitionToNextColor();
+    });
+    
     this.hideContextMenu();
     this.loadOtherBackgrounds();
     this.initClippy();
-  }
-
-  loadOtherBackgrounds():void{
-    const names:string[] = ["rings","halo", "globe", "birds"]
-    const bkgrounds:string[] = [ "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
-                                 "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
-        
-    for(let i =0; i <= bkgrounds.length - 1; i++){
-      this._scriptService.loadScript(names[i], bkgrounds[i]);
-    }
-  }
-
-  changeAnimationColor():void{
-    this.CURRENT_DEG = (this.CURRENT_DEG > this.MAX_DEG) ? this.MIN_DEG : this.CURRENT_DEG + 1;
-
-    console.log('nextColor:', Number(this.nextColor.changeHue('#4f32c2',this.CURRENT_DEG)?.replace('#','0x')))
-    this._vantaEffect.setOptions({
-      color: Number(this.nextColor.changeHue('#4f32c2',this.CURRENT_DEG)?.replace('#','0x')),
-    });
-
-    // this ain't working 
-    //this.animationId = requestAnimationFrame(this.changeAnimationColor.bind(this)); 
   }
 
   ngOnDestroy(): void {
@@ -224,12 +206,56 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._keepTaskBarPreviewWindowSub?.unsubscribe();
     this._showStartMenuSub?.unsubscribe();
     this._hideStartMenuSub?.unsubscribe();
-
-    cancelAnimationFrame(this.animationId);
     this._vantaEffect?.destroy();
   }
 
 
+ /** Generates the next color dynamically */
+  getNextColor(): number {
+    const charSet = ['a', 'b', 'c', 'd', 'e', 'f'];
+    if (this._numSequence < this.MAX_NUM_COLOR_RANGE) {
+      this._numSequence++;
+    } else {
+      this._numSequence = this.MIN_NUM_COLOR_RANGE;
+      this._charSequenceCount = (this._charSequenceCount + 1) % charSet.length;
+      this._charSequence = charSet[this._charSequenceCount];
+    }
+
+    return Number(`0x${this._numSequence}${this._charSequence}`);
+  }
+
+  /** Smoothly transitions to the next color */
+  private transitionToNextColor(): void {
+    const startColor = this._vantaEffect.options.color;
+    const endColor = this.getNextColor();
+    const startTime = performance.now();
+
+    const animateColorTransition = (time: number) => {
+      // eslint-disable-next-line prefer-const
+      let progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
+      // eslint-disable-next-line prefer-const
+      let interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
+
+      this._vantaEffect.setOptions({ color: interpolatedColor });
+
+      if (progress < 1) {
+        requestAnimationFrame(animateColorTransition);
+      }
+    };
+
+    requestAnimationFrame(animateColorTransition);
+  }
+
+
+  loadOtherBackgrounds():void{
+    const names:string[] = ["rings","halo", "globe", "birds"]
+    const bkgrounds:string[] = [ "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
+                                 "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
+        
+    for(let i =0; i <= bkgrounds.length - 1; i++){
+      this._scriptService.loadScript(names[i], bkgrounds[i]);
+    }
+  }
 
   initClippy():void{
     const interval =  setInterval(() =>{
@@ -239,8 +265,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   getRandomInt(min:number, max:number):number{
-    min = Math.ceil(min);
-    max = Math.floor(max);
     return Math.floor(Math.random() * (max - min) + min);
   }
 
