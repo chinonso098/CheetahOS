@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, OnChanges, ViewChild, ChangeDetectorRef, SimpleChanges  } from '@angular/core';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component';
 import { ComponentType } from 'src/app/system-files/component.types';
@@ -12,16 +12,19 @@ import { Process } from 'src/app/system-files/process';
   templateUrl: './clippy.component.html',
   styleUrl: './clippy.component.css'
 })
-export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
+export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChanges, AfterViewInit {
 
   @ViewChild('clippyToolTip', {static: true}) clippyToolTip!: ElementRef;
   @ViewChild('clippyToolTipText', {static: true}) clippyToolTipText!: ElementRef;
-  @ViewChild('clippyGifFigure', {static: true}) clippyGifFigure!: ElementRef; 
+  @ViewChild('clippyGifImg', {static: true}) clippyGifImg!: ElementRef; 
 
   private _runningProcessService:RunningProcessService;
+  private _changeDetectorRef: ChangeDetectorRef
 
-  gifPath = `${Constants.GIF_BASE_PATH}clippy_hey_you.gif`;
-  SHOW_TOOL_TIP_DELAY = 500; 
+  toolTipText = '';
+  gifPath = '';
+  SHOW_TOOL_TIP_DELAY = 500;
+  CLEAN_UP_DELAY = 1000;  
   MAX_TOOL_TIP_DISPLAY_DURATION = 4500; 
   MIN_GIF_DISPLAY_DURATION = 6000;
   PID = 20000;
@@ -29,6 +32,7 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   selectedDuration = -1;
   selectedAnimation = '';
 
+  isToolTipVisible = false;
 
   clippyDurations:number[] = [4400,2400,13600,7500,1800,5500,8400,4100,6600,2200,3500,2800,3000,3000,5000,4500,1900,2600,8100,4800];
 
@@ -39,15 +43,13 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   clippyTextTips:string[] = ['Do not interrupt me!!','Some tasty grooves'];
 
   clippyTextQuotes:string[] = ['The grass is greener where you water it','Be the change that you wish to see in the world',
-    'Genius is 1% inspiration, 99% perspiration', 'fortune favors the prepared', 'Sometimes you win, sometimes you learn', 'consistency trumps intensity',
-    'Alone, we can do so little; together we can do so much', 'It wasn’t raining when Noah built the ark','The successful warrior is the average man, with laser-like focus',
-    'Speak less than you know; have more than you show', 'Reading is to the mind, as exercise is to the body','The man who has confidence in himself gains the confidence of others',
-    'Knowing is not enough; we must apply', 'This,too, shall pass', 'What we achieve inwardly will change outer reality','We can’t help everyone, but everyone can help someone'
+    'Genius is 1% inspiration, 99% perspiration', 'fortune favors the prepared', 'Sometimes you win, sometimes you learn', 
+    'consistency trumps intensity', 'Alone, we can do so little; together we can do so much',
+    'It wasn’t raining when Noah built the ark','The successful warrior is the average man, with laser-like focus',
+    'Speak less than you know; have more than you show', 'Reading is to the mind, as exercise is to the body',
+    'The man who has confidence in himself gains the confidence of others', 'Knowing is not enough; we must apply', 
+    'This,too, shall pass', 'What we achieve inwardly will change outer reality','We can’t help everyone, but everyone can help someone'
   ];
-
-
-  isToolTipVisible = false;
-  toolTipText = 'This is a test of the emergency broadcast system';
 
   name= 'clippy';
   hasWindow = false;
@@ -56,22 +58,32 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   type = ComponentType.User;
   displayName = Constants.EMPTY_STRING;
 
-  constructor(runningProcessService:RunningProcessService) {       
+  constructor(runningProcessService:RunningProcessService, changeDetectorRef: ChangeDetectorRef) {       
     this._runningProcessService = runningProcessService;
+    this._changeDetectorRef = changeDetectorRef;
+
     this.processId = this.PID;
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
   
-
   ngOnInit(): void {
-   //gen number between (0 - 19)
-   this.randomSelection = this.randomIntFromInterval(0, 19);
-   this.selectedDuration = this.clippyDurations[this.randomSelection];
-   this.selectedAnimation = this.clippyAnimations[this.randomSelection];
+    //gen number between (0 - 19)
+    this.randomSelection = this.randomIntFromInterval(0, 19);
+    this.selectedDuration = this.clippyDurations[this.randomSelection];
+    this.selectedAnimation = this.clippyAnimations[this.randomSelection];
+    this.toolTipText = this.clippyTextQuotes[this.randomIntFromInterval(0, 15)];
+  }
+
+  ngOnChanges(changes: SimpleChanges):void{
+    console.log('CLIPPY onCHANGES:',changes);
   }
 
   ngAfterViewInit():void{   
+    this.gifPath = `${Constants.GIF_BASE_PATH}${this.selectedAnimation}.gif`;
+    //tell angular to run additional detection cycle after 
+    this._changeDetectorRef.detectChanges();
     this.showClippyToolTip();
+    this.selfDestruct();
   }
 
   ngOnDestroy():void{
@@ -103,21 +115,46 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, AfterV
       this.clippyToolTipText.nativeElement.style.opacity = 1;
       this.clippyToolTipText.nativeElement.style.transition = 'opacity 0.3s ease-in';
 
+      setTimeout(()=>{
+        this.hideClippyToolTip();
+      },this.MAX_TOOL_TIP_DISPLAY_DURATION) 
+
     },this.SHOW_TOOL_TIP_DELAY) 
   }
 
   private hideClippyToolTip():void{
-    this.clippyToolTip.nativeElement.style.visibility = 'hidden';
     this.clippyToolTip.nativeElement.style.opacity = 0;
     this.clippyToolTip.nativeElement.style.transition = 'opacity 0.3s ease-out';
+    this.clippyToolTip.nativeElement.style.visibility = 'hidden';
 
-    this.clippyToolTipText.nativeElement.style.visibility = 'hidden';
     this.clippyToolTipText.nativeElement.style.opacity = 0;
     this.clippyToolTipText.nativeElement.style.transition = 'opacity 0.3s ease-out';
+    this.clippyToolTipText.nativeElement.style.visibility = 'hidden';
+  }
+
+  private rotateClippyGif():void{
+    this.clippyGifImg.nativeElement.style.transform = 'rotate(360deg)';
+    this.clippyGifImg.nativeElement.style.transition = 'transform 0.99s linear';
   }
 
   private selfDestruct():void{
-  1
+    while(this.selectedDuration < this.MIN_GIF_DISPLAY_DURATION){
+      const durationRatio = (this.selectedDuration / this.MIN_GIF_DISPLAY_DURATION);      
+      const remainingRatio = 1 - durationRatio;      
+      const durationIncrease = (remainingRatio * this.MIN_GIF_DISPLAY_DURATION);
+      this.selectedDuration += durationIncrease;
+    }
+
+    setTimeout(()=>{
+      this.rotateClippyGif();
+      setTimeout(()=>{
+        const processToClose = this._runningProcessService.getProcess(this.processId);
+        if(processToClose){
+          this._runningProcessService.closeProcessNotify.next(processToClose);
+        }
+      },this.CLEAN_UP_DELAY) 
+
+    },this.selectedDuration) 
   }
   
   private getComponentDetail():Process{

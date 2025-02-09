@@ -122,7 +122,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private MIN_NUMS_OF_DESKTOPS = 0;
   private MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - 1;
   private CURRENT_DESTOP_NUM = 0;
-  private CLIPPY_INIT_DELAY = 40000;
+  private CLIPPY_INIT_DELAY = 95000;
 
   private MIN_DEG = 0;
   private MAX_DEG = 360;
@@ -188,9 +188,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   ngAfterViewInit():void{
     //this.animationId = requestAnimationFrame(this.changeAnimationColor.bind(this));  
-     this.hideContextMenu();
-     this.loadOtherBackgrounds();
-     //this.initClippy();
+    this.hideContextMenu();
+    this.loadOtherBackgrounds();
+    this.initClippy();
   }
 
   loadOtherBackgrounds():void{

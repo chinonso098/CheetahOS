@@ -6,8 +6,8 @@
             </div>
         </div>
         <div class="clippy-gif-container" (click)="onClippyGifCntnrClick()">
-            <figure class="clippy-gif-figure" #clippyGifFigure>
-                <img class="clippy-gif-img" [src]= 'gifPath'/>
+            <figure class="clippy-gif-figure">
+                <img class="clippy-gif-img" [src]= 'gifPath'  #clippyGifImg/>
             </figure>
         </div>
     </div>
