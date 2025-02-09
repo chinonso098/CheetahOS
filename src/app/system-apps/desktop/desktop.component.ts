@@ -126,7 +126,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - 1;
   private CURRENT_DESTOP_NUM = 0;
   private CLIPPY_INIT_DELAY = 180000; // every 3mins is fine
-  private COLOR_CHANGE_DELAY = 8000; // every 8sec is fine
+  private COLOR_CHANGE_DELAY = 10000; // every 10sec is fine
   private COLOR_TRANSITION_DURATION = 2000; // 2sec
 
   private MIN_NUM_COLOR_RANGE = 200;
@@ -230,22 +230,24 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const endColor = this.getNextColor();
     const startTime = performance.now();
 
-    const animateColorTransition = (time: number) => {
-      // eslint-disable-next-line prefer-const
-      const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
-      // eslint-disable-next-line prefer-const
-      const interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
-
-      this._vantaEffect.setOptions({ color: interpolatedColor });
-
-      if (progress < 1) {
-        requestAnimationFrame(animateColorTransition);
-      }
-    };
-
-    requestAnimationFrame(animateColorTransition);
+    //Vanta wave
+    if(this.CURRENT_DESTOP_NUM === 0){
+      const animateColorTransition = (time: number) => {
+        // eslint-disable-next-line prefer-const
+        const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
+        // eslint-disable-next-line prefer-const
+        const interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
+  
+        this._vantaEffect.setOptions({ color: interpolatedColor });
+  
+        if (progress < 1) {
+          requestAnimationFrame(animateColorTransition);
+        }
+      };
+  
+      requestAnimationFrame(animateColorTransition);
+    }
   }
-
 
   loadOtherBackgrounds():void{
     const names:string[] = ["rings","halo", "globe", "birds"]
