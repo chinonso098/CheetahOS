@@ -17,17 +17,7 @@ import { TriggerProcessService } from 'src/app/shared/system-service/trigger.pro
 @Component({
   selector: 'cos-startmenu',
   templateUrl: './startmenu.component.html',
-  styleUrls: ['./startmenu.component.css'],
-  // animations: [
-
-  //   trigger('slideUpToggle', [
-  //     transition(':enter', [
-  //       style({transform: 'translateY(-100%)'}), // Start from 100% down
-  //       animate('0.3s ease-in', style({ transform: 'translateY(0)' })) // Slide up to its original position
-  //     ]),
-  //   ])
-
-  // ]
+  styleUrls: ['./startmenu.component.css']
 })
 
 export class StartMenuComponent implements OnInit, AfterViewInit {
