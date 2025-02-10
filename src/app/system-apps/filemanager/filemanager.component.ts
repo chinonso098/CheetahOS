@@ -157,6 +157,9 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   async onDrop(event:DragEvent):Promise<void>{
+
+   //Some about z-index is causing the drop to desktop to act funny.
+
     event.preventDefault();
     let droppedFiles:File[] = [];
 

@@ -16,8 +16,11 @@ export class RunningProcessService{
     private _eventOriginator = '';
 
     closeProcessNotify: Subject<Process> = new Subject<Process>();
+    changeProcessContentNotify:Subject<void> = new Subject<void>();
     focusOnNextProcessNotify: Subject<void> = new Subject<void>();
     focusOnCurrentProcessNotify: Subject<number> = new Subject<number>();
+    //WWC - without window component
+    focusOnCurrentProcess_WWC_Notify: Subject<number> = new Subject<number>();
     removeFocusOnOtherProcessesNotify: Subject<number> = new Subject<number>();
     hideProcessPreviewWindowNotify: Subject<void> = new Subject<void>();
     hideOtherProcessNotify: Subject<number> = new Subject<number>();

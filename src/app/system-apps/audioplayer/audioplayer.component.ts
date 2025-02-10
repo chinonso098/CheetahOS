@@ -48,6 +48,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;
+  private _changeContentSub!: Subscription;
   
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -96,6 +97,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._runningProcessService = runningProcessService;
     this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
     this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
+    this._changeContentSub = this._runningProcessService.changeProcessContentNotify.subscribe(() =>{this.changeContent()})
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
@@ -146,6 +148,13 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     // }
   }
 
+  ngOnDestroy():void{
+    this.audioPlayer?.unload();
+    this._maximizeWindowSub?.unsubscribe();
+    this._minimizeWindowSub?.unsubscribe(); 
+    this._changeContentSub?.unsubscribe(); 
+  }
+
   captureComponentImg():void{
     htmlToImage.toPng(this.audioContainer.nativeElement).then(htmlImg =>{
 
@@ -157,10 +166,44 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     })
   }
 
-  ngOnDestroy():void{
-    this.audioPlayer?.unload();
-    this._maximizeWindowSub?.unsubscribe();
-    this._minimizeWindowSub?.unsubscribe(); 
+  changeContent():void{
+    const uid = `${this.name}-${this.processId}`;
+    const delay = 2000;
+
+    console.log('previous audio source:',  this.audioSrc);
+    this.audioSrc = Constants.EMPTY_STRING;
+    console.log('previous audio source-1:',  this.audioSrc);
+    if(this._runningProcessService.getEventOrginator() === uid){
+
+      this._fileInfo = this._triggerProcessService.getLastProcessTrigger();
+
+      console.log('new this._fileInfo:',  this._fileInfo);
+
+  
+      this.audioSrc = (this.audioSrc !== '')? 
+      this.audioSrc :this.getAudioSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+
+      this.siriWave.stop();
+      this.audioPlayer.stop();
+
+      //this.audioPlayer?.unload();
+      console.log('new audio source:',  this.audioSrc);
+
+      setTimeout(async()=> {
+        this.loadHowlSingleTrackObjectAsync()
+          .then(howl => { this.audioPlayer = howl; 
+            // this.siriWave.start();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+            // this.audioPlayer.play();
+
+            this.onPlayBtnClicked();
+          })
+          .catch(error => { console.error('Error loading track:', error); });
+
+        this.storeAppState(this.audioSrc);
+      }, delay);
+
+      this._runningProcessService.removeEventOriginator();
+    }
   }
 
   showMenu(): void{
@@ -273,7 +316,6 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.isSliderDown = false;
   }
 
-
   onVolumeMouseMove(evt:MouseEvent):void{
     if(this.isSliderDown){
       const rect =  this.audioContainer.nativeElement.getBoundingClientRect();
@@ -286,7 +328,6 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       this.changeVolume(per);
     }
   }
-
 
   formatTime(seconds:number):string{
     const mins = Math.floor(seconds / 60) || 0;
@@ -340,7 +381,6 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       this.audioPlayer.seek(this.audioPlayer.duration() * per);
     }
   }
-
 
   async loadHowlSingleTrackObjectAsync(): Promise<any> {
 
