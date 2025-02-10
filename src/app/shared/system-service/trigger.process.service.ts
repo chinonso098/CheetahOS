@@ -13,7 +13,7 @@ export class TriggerProcessService{
     private _runningProcessService:RunningProcessService;
     private _appDirectory:AppDirectory;
     private _TriggerList:FileInfo[];
-    private _onlyOneInstanceAllowed:string[] = ["taskmanager"];
+    private _onlyOneInstanceAllowed:string[] = ["audioplayer", "photoviewer", "runsystem", "taskmanager", "videoplayer"];
     static instance: TriggerProcessService;
 
     startProcessNotify: Subject<string> = new Subject<string>();
@@ -39,12 +39,17 @@ export class TriggerProcessService{
                 return;
             }else{
                 if(this._onlyOneInstanceAllowed.includes(file.getOpensWith)){
-                    msg = `Only one instance of ${file.getOpensWith} is allowed to run.`;
-                    this.appIsRunningNotify.next(msg);
+                   const process = this._runningProcessService.getProcessByName(file.getOpensWith);
+                    // msg = `Only one instance of ${file.getOpensWith} is allowed to run.`;
+                    // this.appIsRunningNotify.next(msg);
+                    if(process){
+                        this._runningProcessService.focusOnCurrentProcessNotify.next(process.getProcessId);
+                    }
                     return;
                 }             
             }
         }
+        
         msg = `Osdrive:/App Directory/${file.getOpensWith}`;
         this.appNotFoundNotify.next(msg);
         return;

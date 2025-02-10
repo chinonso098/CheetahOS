@@ -100,6 +100,23 @@ export class RunningProcessService{
         return process!;
     }
 
+    /**
+     * 
+     * @param appName 
+     * @returns Process
+     * 
+     * This method will return the first of a given process with matching name, or null
+     * if proccess does not exsist
+     */
+    getProcessByName(appName:string):Process | null{
+        const process = this._runningProcesses.find((process) => {
+            return process.getProcessName === appName;
+        });
+
+     
+        return process || null;
+    }
+
     getProcessImages(appName:string):TaskBarPreviewImage[]{
         if(this._runningProcessesImages.has(appName))
            return this._runningProcessesImages.get(appName) || [];
