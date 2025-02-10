@@ -76,7 +76,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   detailedView = DisplayViews.DETAILED_VIEW;
   viewOptions = '';
 
-  SECONDS_DELAY = 250
+  SECONDS_DELAY = 250;
 
   processes:Process[] =[];
   closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu"];
@@ -141,7 +141,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this.setTaskMangrWindowToFocus(this.processId); 
     this.hideContextMenu();
 
-    this.applyDefaultColumnStyle();
+
+    this.applyDefaultColumnVisibility();
+    this.alignHeaderAndBodyWidth();
+
+
     //Initial delay 1 seconds and interval countdown also 2 second
     this._taskmgrRefreshIntervalSub = interval(this.refreshRateInterval).subscribe(() => {
       this.generateLies();
@@ -161,13 +165,9 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     });
 
 
-    setTimeout(()=>{
-      this.captureComponentImg();
-    },this.SECONDS_DELAY) 
-  }
-
-  matcheHeaderAndBodyWidth(){
-    1
+    // setTimeout(()=>{
+    //   this.captureComponentImg();
+    // },this.SECONDS_DELAY) 
   }
 
   synchronizeHeaderAndBodyWidth(columnId: string) {
@@ -208,7 +208,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this.processes = this._runningProcessService.getProcesses();
 
     setTimeout(()=>{
-      this.applyDefaultColumnStyle();
+      this.applyDefaultColumnVisibility();
     }, 10);
  
   }
@@ -601,31 +601,29 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.powerColumnVisible = !this.powerColumnVisible;
     }
  
-    this.applyColumnBodyStyles(column);
+    this.applyColumnHeaderVisibility(column);
+    this.applyColumnBodyVisibility(column);
   }
 
-  applyDefaultColumnStyle():void{
+  applyDefaultColumnVisibility():void{
     const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
       TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
 
       for(let i = 0; i < tableColumns.length; i++){
-        this.applyColumnHeaderStyles(tableColumns[i], i);
-        this.applyColumnBodyStyles(tableColumns[i]);
+        this.applyColumnHeaderVisibility(tableColumns[i]);
+        this.applyColumnBodyVisibility(tableColumns[i]);
       }
   }
 
 
-  applyColumnHeaderStyles(column: string, columnIdx:number) {
+  applyColumnHeaderVisibility(column: string) {
     const tableHeader = this.tskMgrTableHeaderCntnr.nativeElement;
-
-    // console.log('table - body:', tableHeader);
-    // console.log('table - bodyRow:', tableHeader.rows);
-    // console.log('table - bodyRow.r0:', tableHeader.rows[0]);
-    // console.log('table - bodyRow.r0.c1:', tableHeader.rows[0].cells[1]);
-
+    const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
+      TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
 
     const rowNum = 0;
-    const colNum = columnIdx;
+    const colNum = tableColumns.indexOf(column);
+
     if(column === TableColumns.TYPE){
       this.typeColumnVisible
       ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
@@ -687,14 +685,9 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     }
   }
 
-  applyColumnBodyStyles(column: string) {
-    //const tableHeader = this.tskMgrTableHeaderCntnr.nativeElement;
+  applyColumnBodyVisibility(column: string) {
     const tableBody = this.tskMgrTableBodyCntnr.nativeElement;
 
-    // console.log('table - body:', tableHeader);
-    // console.log('table - bodyRow:', tableHeader.rows);
-    // console.log('table - bodyRow.r0:', tableHeader.rows[0]);
-    // console.log('table - bodyRow.r0.c1:', tableHeader.rows[0].cells[1]);
     const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
                                     TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
     
@@ -762,6 +755,20 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
         : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
     }
+  }
+
+  alignHeaderAndBodyWidth() {
+    const tableHeader = this.tskMgrTableHeaderCntnr.nativeElement;
+    const tableBody = this.tskMgrTableBodyCntnr.nativeElement;
+
+    // console.log('table - bodyRow.r0:', tableBody.rows[0] );
+    // console.log('table - bodyRow.r0.c1:', tableBody.rows[0].cells[0]);
+    // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].offsetWidth);
+    // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].getBoundingClientRect().width);
+
+    const cellWidth = tableBody.rows[0].cells[0].offsetWidth;
+    this._renderer.setStyle(tableHeader.rows[0].cells[0], 'min-width', cellWidth + 'px');
+    this._renderer.setStyle(tableHeader.rows[0].cells[0], 'width', cellWidth + 'px');
   }
 
   activeFocus(){
@@ -895,6 +902,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   
       // this.tskMgrTable.nativeElement.style.height = `${mainWindow?.offsetHeight || 0 - 84}px`;
       this.tskMgrTable.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      this.tskMgrTableHeaderCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      this.tskMgrTableBodyCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
     }
   }
 

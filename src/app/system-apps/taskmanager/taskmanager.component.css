@@ -61,7 +61,7 @@
 /* Custom styles for .table-responsive (Optional) */
 .tskmgr-table-cntnr {
   width: 680px;
-  height:280px;
+  height:265px;
   /* overflow: auto; Enable horizontal/vertical scrolling when needed */
   border-top:  none;
   /* padding-bottom: 10px; */
@@ -109,7 +109,7 @@
 
 .tskmgr-table-body-cntnr{  
   width: 680px;
-  height:230px;
+  height:215px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -128,11 +128,17 @@ tbody{
 .tskmgr-table tr:nth-child(even) {
   background-color: #ffffff; 
 }
+
+
+/* Custom styles for table cells */
+.tskmgr-table th {
+  min-width: 81px;
+}
   
 /* Custom styles for table cells */
 .tskmgr-table td {
   padding: 3px 5px; /* Cell padding */
-  min-width: 80px;
+  min-width: 81px;
   margin-left: 5px;
   margin-right: 5px;
   font-size: 12px;
@@ -290,19 +296,19 @@ span {
 }
 
 .tskmgr-img0{
-    height: 18px;
-    width: 18px;
+  height: 18px;
+  width: 18px;
 
-    position: relative;
-    margin: 0 4px 0 0;
+  position: relative;
+  margin: 0 4px 0 0;
 }
 
 /* Styles for the tabbed window container */
 .tskmgr-tabbed-window {
-    min-width: 150px; /* Adjust the width as needed */
-    border: 1px solid #ccc; /**/
-    /* border-radius: 5px;
-    overflow: scroll;  */
+  min-width: 150px; /* Adjust the width as needed */
+  border: 1px solid #ccc; /**/
+  /* border-radius: 5px;
+  overflow: scroll;  */
 }
 
 .tskmgr-tabbed-window:first-child .tskmgr-tabbed-window:last-child {
@@ -315,7 +321,7 @@ span {
   display: flex;
   background-color: #ffffff;
   color: #000;
-  border-bottom: none;
+  border-bottom: 0.5px solid #ccc;
 }
 
 .tskmgr-tab {

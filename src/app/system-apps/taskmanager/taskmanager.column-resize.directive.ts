@@ -10,7 +10,6 @@ export class ColumnResizeDirective {
   private initialWidth!: number;
   private columnIndex!: number;
   private table: HTMLElement | null = null; // Initialize table as null
-
   @Output() dataEvent = new EventEmitter<string>();
 
   constructor(private el: ElementRef, private renderer: Renderer2) {}
@@ -21,13 +20,14 @@ export class ColumnResizeDirective {
     this.startX = event.pageX;
     this.isResizing = true;
     this.initialWidth = this.el.nativeElement.offsetWidth;
+    const minimumWidth = this.el.nativeElement.offsetWidth;
+
+  
 
     // Find the index of the current column
     const row = this.el.nativeElement.parentElement;
     const cells = Array.from(row.children);
     this.columnIndex = cells.indexOf(this.el.nativeElement);
-
-  
 
     this.renderer.addClass(this.el.nativeElement, 'resizing');
     this.renderer.addClass(document.body, 'resizing');
@@ -39,31 +39,32 @@ export class ColumnResizeDirective {
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         if(this.isResizing) {
-
           //emit column being resized
           this.dataEvent.emit(`th-${this.columnIndex}`);
 
           const deltaX = moveEvent.pageX - this.startX;
           const newWidth = this.initialWidth + deltaX;
 
-          // Update the width of the current column
-          this.renderer.setStyle(this.el.nativeElement, 'min-width', newWidth + 'px');
-          this.renderer.setStyle(this.el.nativeElement, 'width', newWidth + 'px');
+          if(newWidth >= minimumWidth){
+            // Update the width of the current column
+            this.renderer.setStyle(this.el.nativeElement, 'min-width', newWidth + 'px');
+            this.renderer.setStyle(this.el.nativeElement, 'width', newWidth + 'px');
 
-          // Update the width of the corresponding header and cell in each row
-          columns[this.columnIndex].style.minWidth = `${newWidth}px`;
-          columns[this.columnIndex].style.width = `${newWidth}px`;
+            // Update the width of the corresponding header and cell in each row
+            columns[this.columnIndex].style.minWidth = `${newWidth}px`;
+            columns[this.columnIndex].style.width = `${newWidth}px`;
 
-          const rows = this.table?.querySelectorAll('tr');
-          //console.log("row count:", rows);
+            const rows = this.table?.querySelectorAll('tr');
+            //console.log("row count:", rows);
 
-          rows?.forEach((row) => {
-            const cells = row.querySelectorAll('td');
-            if (cells[this.columnIndex]) {
-              cells[this.columnIndex].style.minWidth = `${newWidth}px`;
-              cells[this.columnIndex].style.width = `${newWidth}px`;
-            }
-          });
+            rows?.forEach((row) => {
+              const cells = row.querySelectorAll('td');
+              if (cells[this.columnIndex]) {
+                cells[this.columnIndex].style.minWidth = `${newWidth}px`;
+                cells[this.columnIndex].style.width = `${newWidth}px`;
+              }
+            });
+          }
         }
       };
 
