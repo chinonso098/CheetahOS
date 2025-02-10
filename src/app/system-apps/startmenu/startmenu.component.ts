@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, AfterViewInit } from '@angular/core';
-import { animate, keyframes, style, transition, trigger } from '@angular/animations';
+//import { animate, style, transition, trigger } from '@angular/animations';
 
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -17,15 +17,7 @@ import { TriggerProcessService } from 'src/app/shared/system-service/trigger.pro
 @Component({
   selector: 'cos-startmenu',
   templateUrl: './startmenu.component.html',
-  styleUrls: ['./startmenu.component.css'],
-  animations: [
-    trigger('slideUpToggle', [
-      transition(':enter', [
-        style({ transform: 'translateY(-100%)'  }), // Start from 100% down
-        animate('0.3s ease-out', style({ transform: 'translateY(0%)' })) // Slide up to its original position
-      ]),
-    ])
-  ]
+  styleUrls: ['./startmenu.component.css']
 })
 
 export class StartMenuComponent implements OnInit, AfterViewInit {
@@ -33,24 +25,20 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   private _runningProcessService:RunningProcessService;
   private _triggerProcessService:TriggerProcessService;
   private _fileService:FileService;
-
   private _elRef:ElementRef;
 
   txtOverlayMenuStyle:Record<string, unknown> = {};
-
-  private SECONDS_DELAY = 250;
-
-  Documents= 'Documents';
-  Pictures = 'Pictures'
-  Music = 'Music';
-
-
   delayStartMenuOverlayHideTimeoutId!: NodeJS.Timeout;
   delayStartMenuOverlayShowTimeoutId!: NodeJS.Timeout;
 
   startMenuFiles:FileInfo[] = [];
   private _startMenuDirectoryFilesEntries!:FileEntry[];
-  directory ='/AppData/StartMenu';
+  private SECONDS_DELAY = 250;
+  readonly START_MENU_DIRECTORY ='/AppData/StartMenu';
+  readonly Documents= 'Documents';
+  readonly Pictures = 'Pictures'
+  readonly Music = 'Music';
+
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -198,8 +186,8 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   private async loadFilesInfoAsync():Promise<void>{
     this.startMenuFiles = [];
     this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
-    this._startMenuDirectoryFilesEntries = this._fileService.getFileEntriesFromDirectory(directoryEntries,this.directory);
+    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.START_MENU_DIRECTORY);
+    this._startMenuDirectoryFilesEntries = this._fileService.getFileEntriesFromDirectory(directoryEntries,this.START_MENU_DIRECTORY);
 
     for(let i = 0; i < directoryEntries.length; i++){
       const fileEntry = this._startMenuDirectoryFilesEntries[i];

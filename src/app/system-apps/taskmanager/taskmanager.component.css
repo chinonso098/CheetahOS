@@ -2,7 +2,8 @@
 .card {
   width: 100%;
   height: 100%;
-  border: 1px solid #ccc; /* Add a border to the card */
+  background-color: #ffffff;
+  border-bottom: 1px solid #ccc; /* Add a border to the card */
 }
   
 /* Custom styles for the card-body */
@@ -60,10 +61,12 @@
 /* Custom styles for .table-responsive (Optional) */
 .tskmgr-table-cntnr {
   width: 680px;
-  height:260px;
-  overflow: auto; /* Enable horizontal/vertical scrolling when needed */
+  height:265px;
+  /* overflow: auto; Enable horizontal/vertical scrolling when needed */
   border-top:  none;
   /* padding-bottom: 10px; */
+  overflow-y: hidden;
+  overflow-x: auto;
 }
 
 /* Custom styles for the table */
@@ -85,6 +88,11 @@
   table-layout: auto;
 }
 
+.tskmgr-table-header-cntnr{ 
+  width: 680px;
+  height: 50px ;
+}
+
 /* Custom styles for table headers */
 .tskmgr-table th {
   background-color: #ffffff; /* Header background color */
@@ -94,9 +102,16 @@
   font-weight:lighter;  /* Header text bold */
   height: 40px;
   min-width: 80px;
-  border: 1px solid #ccc;   /* Cell border */
+  border: 0.5px solid #ccc;   /* Cell border */
   border-top: none;
   vertical-align: middle;
+}
+
+.tskmgr-table-body-cntnr{  
+  width: 680px;
+  height:215px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 tbody{
@@ -113,18 +128,25 @@ tbody{
 .tskmgr-table tr:nth-child(even) {
   background-color: #ffffff; 
 }
+
+
+/* Custom styles for table cells */
+.tskmgr-table th {
+  min-width: 81px;
+}
   
 /* Custom styles for table cells */
 .tskmgr-table td {
   padding: 3px 5px; /* Cell padding */
-  min-width: 80px;
+  min-width: 81px;
   margin-left: 5px;
   margin-right: 5px;
   font-size: 12px;
   font-weight:lighter; 
   text-align: left; /* Header text alignment */
-  border: 1px solid #ccc; /* Cell border  #1a127b*/
-  border-top:none; border-bottom:none;
+  border: 0.5px solid #ccc; /* Cell border  #1a127b*/
+  border-top:none; 
+  border-bottom:none;
 }
 
 .tskmgr-table td:first-child td:last-child{
@@ -275,19 +297,19 @@ span {
 }
 
 .tskmgr-img0{
-    height: 18px;
-    width: 18px;
+  height: 18px;
+  width: 18px;
 
-    position: relative;
-    margin: 0 4px 0 0;
+  position: relative;
+  margin: 0 4px 0 0;
 }
 
 /* Styles for the tabbed window container */
 .tskmgr-tabbed-window {
-    min-width: 150px; /* Adjust the width as needed */
-    border: 1px solid #ccc; /**/
-    /* border-radius: 5px;
-    overflow: scroll;  */
+  min-width: 150px; /* Adjust the width as needed */
+  border: 1px solid #ccc; /**/
+  /* border-radius: 5px;
+  overflow: scroll;  */
 }
 
 .tskmgr-tabbed-window:first-child .tskmgr-tabbed-window:last-child {
@@ -300,7 +322,7 @@ span {
   display: flex;
   background-color: #ffffff;
   color: #000;
-  border-bottom: none;
+  border-bottom: 0.5px solid #ccc;
 }
 
 .tskmgr-tab {
@@ -312,9 +334,9 @@ span {
   transition: background-color 0.3s;
   font-weight: normal;
   font-size: 12px;
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  border-top: 1px solid #ccc;
+  border-left: 0.5px solid #ccc;
+  border-right: 0.5px solid #ccc;
+  border-top: 0.5px solid #ccc;
   max-width: fit-content;
   max-height: fit-content;
 }
@@ -323,7 +345,7 @@ span {
   background-color: #ffffff; /*f2f2f2*/
   border-left: 0;
   border-right: 0;
-  border-top: 1px solid #ccc;
+  border-top: 0.5px solid #ccc;
   color: #000;
 }
 

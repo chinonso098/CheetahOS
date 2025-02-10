@@ -23,6 +23,10 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   @ViewChild('tskManagerRootContainer') tskManagerRootContainer!: ElementRef; 
   @ViewChild('tskMgrTable') tskMgrTable!: ElementRef;  
   @ViewChild('tskmgrTblCntnr') tskmgrTblCntnr!: ElementRef;
+  @ViewChild('tskMgrTableHeaderCntnr') tskMgrTableHeaderCntnr!: ElementRef;  
+  @ViewChild('tskMgrTableBodyCntnr') tskMgrTableBodyCntnr!: ElementRef;  
+  @ViewChild('tskMgrTableHeaderCntnt') tskMgrTableHeaderCntnt!: ElementRef;  
+  @ViewChild('tskMgrTableBodyCntnt') tskMgrTableBodyCntnt!: ElementRef;  
 
   private _maximizeWindowSub!: Subscription;
 
@@ -74,7 +78,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   detailedView = DisplayViews.DETAILED_VIEW;
   viewOptions = '';
 
-  SECONDS_DELAY = 250
+  SECONDS_DELAY = 250;
 
   processes:Process[] =[];
   closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu"];
@@ -139,7 +143,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this.setTaskMangrWindowToFocus(this.processId); 
     this.hideContextMenu();
 
-    this.applyDefaultColumnStyle();
+
+    this.applyDefaultColumnVisibility();
+    this.alignHeaderAndBodyWidth();
+
+
     //Initial delay 1 seconds and interval countdown also 2 second
     this._taskmgrRefreshIntervalSub = interval(this.refreshRateInterval).subscribe(() => {
       this.generateLies();
@@ -159,9 +167,9 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     });
 
 
-    setTimeout(()=>{
-      this.captureComponentImg();
-    },this.SECONDS_DELAY) 
+    // setTimeout(()=>{
+    //   this.captureComponentImg();
+    // },this.SECONDS_DELAY) 
   }
 
   captureComponentImg():void{
@@ -198,7 +206,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this.processes = this._runningProcessService.getProcesses();
 
     setTimeout(()=>{
-      this.applyDefaultColumnStyle();
+      this.applyDefaultColumnVisibility();
     }, 10);
  
   }
@@ -591,88 +599,181 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.powerColumnVisible = !this.powerColumnVisible;
     }
  
-    this.applyColumnStyles(column);
+    this.applyColumnHeaderVisibility(column);
+    this.applyColumnBodyVisibility(column);
   }
 
-  applyDefaultColumnStyle():void{
+  applyDefaultColumnVisibility():void{
     const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
       TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
 
       for(let i = 0; i < tableColumns.length; i++){
-        this.applyColumnStyles(tableColumns[i]);
+        this.applyColumnHeaderVisibility(tableColumns[i]);
+        this.applyColumnBodyVisibility(tableColumns[i]);
       }
   }
 
-  applyColumnStyles(column: string) {
-    const table = this.tskMgrTable.nativeElement;
+
+  applyColumnHeaderVisibility(column: string) {
+    const tableHeader = this.tskMgrTableHeaderCntnt.nativeElement;
+    const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
+      TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
+
+    const rowNum = 0;
+    const colNum = tableColumns.indexOf(column);
+
+    if(column === TableColumns.TYPE){
+      this.typeColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.STATUS){
+      this.statusColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.PID){
+      this.pidColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.PROCESS_NAME){
+      this.processNameColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.CPU){
+      this.cpuColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.MEMORY){
+      this.memoryColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.DISK){
+      this.diskColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.NETWORK){
+      this.networkColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.GPU){
+      this.gpuColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.POWER_USAGE){
+      this.powerColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+  }
+
+  applyColumnBodyVisibility(column: string) {
+    const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
+
     const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
                                     TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
     
     const colNum = tableColumns.indexOf(column);
 
-    for( let i = 0; i <= this.processes.length; i++){
+    for( let i = 0; i < this.processes.length; i++){
 
       if(column === TableColumns.TYPE){
         this.typeColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.STATUS){
         this.statusColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.PID){
         this.pidColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.PROCESS_NAME){
         this.processNameColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.CPU){
         this.cpuColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.MEMORY){
         this.memoryColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.DISK){
         this.diskColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.NETWORK){
         this.networkColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.GPU){
         this.gpuColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.POWER_USAGE){
         this.powerColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
-
     }
+  }
+
+  alignHeaderAndBodyWidth() {
+    const tableHeader = this.tskMgrTableHeaderCntnt.nativeElement;
+    const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
+
+    // console.log('table - bodyRow.r0:', tableBody.rows[0] );
+    // console.log('table - bodyRow.r0.c1:', tableBody.rows[0].cells[0]);
+    // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].offsetWidth);
+    // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].getBoundingClientRect().width);
+
+    const cellWidth = tableBody.rows[0].cells[0].getBoundingClientRect().width;
+    this._renderer.setStyle(tableHeader.rows[0].cells[0], 'min-width', cellWidth + 'px');
+    this._renderer.setStyle(tableHeader.rows[0].cells[0], 'width', cellWidth + 'px');
+  }
+
+  synchronizeHeaderAndBodyWidth(columnId: string) {
+    //console.log('Received from directive:', columnId);
+    const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
+    const tbodyWidth = tableBody.getBoundingClientRect().width;
+    this.tskMgrTableBodyCntnr.nativeElement.style.width = `${tbodyWidth}px`;
   }
 
   activeFocus(){
@@ -787,8 +888,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this._runningProcessService.removeEventOriginator();
       const mainWindow = document.getElementById('vanta'); 
 
-      // console.log('mainWindow?.offsetHeight:',mainWindow?.offsetHeight);
-      // console.log('mainWindow?.offsetWidth:',mainWindow?.offsetWidth);
+      console.log('mainWindow?.offsetHeight:',mainWindow?.offsetHeight);
+      console.log('mainWindow?.offsetWidth:',mainWindow?.offsetWidth);
   
       /*
       -45 (tskmgr footer)
@@ -803,9 +904,13 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.tskmgrTblCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelToSubtract}px`;
       this.tskmgrTblCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
   
-  
       // this.tskMgrTable.nativeElement.style.height = `${mainWindow?.offsetHeight || 0 - 84}px`;
       this.tskMgrTable.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+
+      this.tskMgrTableHeaderCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      this.tskMgrTableBodyCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      //this.tskMgrTableHeaderCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      //this.tskMgrTableBodyCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
     }
   }
 

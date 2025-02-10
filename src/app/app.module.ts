@@ -36,6 +36,7 @@ import { MarkDownViewerComponent } from './user-apps/markdownviewer/markdownview
 import { FileTreeViewComponent } from './shared/system-component/filetreeview/filetreeview.component';
 import { CheetahComponent } from './system-apps/cheetah/cheetah.component';
 import { ClippyComponent } from "./system-apps/clippy/clippy.component";
+import { ChatterComponent } from './system-apps/chatter/chatter.component';
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
@@ -79,6 +80,7 @@ import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.captu
     FileTreeViewComponent,
     CheetahComponent,
     ClippyComponent,
+    ChatterComponent,
 
     HighlightDirective,
     TaskBarEntryHighlightDirective,

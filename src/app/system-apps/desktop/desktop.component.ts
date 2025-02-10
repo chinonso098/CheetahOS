@@ -35,9 +35,21 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
       transition('slideIn => slideOut', [
         animate('2s ease-out')
       ]),
+    ]),
+
+    trigger('slideStartMenuAnimation', [
+      transition(':enter', [
+        style({transform: 'translateY(100%)'}), 
+        animate('200ms ease-out', style({ transform: 'translateY(0)'}))
+      ]),
+      transition(':leave', [
+        style({transform: 'translateY(0)'}),
+        animate('200ms ease-in', style({ transform: 'translateY(100%)'}))
+      ]),
     ])
   ]
 })
+
 export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   @ViewChild('desktopContainer', {static: true}) desktopContainer!: ElementRef; 
@@ -126,11 +138,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - 1;
   private CURRENT_DESTOP_NUM = 0;
   private CLIPPY_INIT_DELAY = 180000; // every 3mins is fine
-  private COLOR_CHANGE_DELAY = 8000; // every 8sec is fine
+  private COLOR_CHANGE_DELAY = 30000; // every 30sec is fine
   private COLOR_TRANSITION_DURATION = 2000; // 2sec
 
   private MIN_NUM_COLOR_RANGE = 200;
-  private MAX_NUM_COLOR_RANGE = 9999;
+  private MAX_NUM_COLOR_RANGE = 99999;
   private DEFAULT_COLOR = 0x274c;
   
   taskBarMenuData = [
@@ -164,8 +176,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
     this._hideTaskBarPreviewWindowSub = this._runningProcessService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
     this._keepTaskBarPreviewWindowSub = this._runningProcessService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
-    this._showStartMenuSub = this._runningProcessService.showProcessNotify.subscribe(() => { this.showStartMenuM()});
-    this._hideStartMenuSub = this._runningProcessService.hideProcessNotify.subscribe(() => { this.hideStartMenu()});
+    this._showStartMenuSub = this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
+    this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
 
 
     this.processId = this._processIdService.getNewProcessId()
@@ -230,22 +242,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const endColor = this.getNextColor();
     const startTime = performance.now();
 
-    const animateColorTransition = (time: number) => {
-      // eslint-disable-next-line prefer-const
-      const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
-      // eslint-disable-next-line prefer-const
-      const interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
-
-      this._vantaEffect.setOptions({ color: interpolatedColor });
-
-      if (progress < 1) {
-        requestAnimationFrame(animateColorTransition);
-      }
-    };
-
-    requestAnimationFrame(animateColorTransition);
+    //Vanta wave
+    if(this.CURRENT_DESTOP_NUM === 0){
+      const animateColorTransition = (time: number) => {
+        const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
+        const interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
+  
+        this._vantaEffect.setOptions({ color: interpolatedColor });
+  
+        if (progress < 1) {
+          requestAnimationFrame(animateColorTransition);
+        }
+      };
+  
+      requestAnimationFrame(animateColorTransition);
+    }
   }
-
 
   loadOtherBackgrounds():void{
     const names:string[] = ["rings","halo", "globe", "birds"]
@@ -357,17 +369,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     return {xAxis, yAxis};
   }
 
-  showStartMenuM():void{
-    setTimeout(() => {
+  showTheStartMenu():void{
+    // I'm not sure why the delay is needed for the start menu to be displayed
+    const Delay = 40;
+    setTimeout(()=>{
       this.showStartMenu = true;
-    }, 150);
+    },Delay)
   }
 
-  hideStartMenu():void{
+  hideTheStartMenu():void{
     this.showStartMenu = false;
   }
 
   captureComponentImg():void{
+    const slideOutDelay = 4000;
+    const hideDeskopScreenShotDelay = 6000;
+
     htmlToImage.toPng(this.desktopContainer.nativeElement).then(htmlImg =>{
       //console.log('img data:',htmlImg);
 
@@ -390,11 +407,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
         this._fileService.addEventOriginator('fileexplorer');
         this._fileService.dirFilesUpdateNotify.next();
-      },4000);
+      },slideOutDelay);
 
       setTimeout(()=>{
         this.showDesktopScreenShotPreview = false;
-      },6000);
+      },hideDeskopScreenShotDelay);
     })
   }
 
@@ -408,14 +425,31 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   hideContextMenu(caller?:string):void{
+
+    /**
+     * There is a doubling of responses to certain events that exist on the 
+     * desktop compoonent and any other component running at the time the event was triggered.
+     * The desktop will always respond to the event, but other components will only respond when they are in focus.
+     * If there is a count of 2 or more(highly unlikely) reponses for a given event, then, ignore the desktop's response
+     */
+
     this.showDesktopCntxtMenu = false;
     this.showTskBarCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
-    this.showStartMenu = false;
 
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){
       this._menuService.hideContextMenus.next();
+    }
+
+    //only if start menu is visible
+    if(this.showStartMenu){
+      this.showStartMenu = false;
+
+      const uid = `${this.name}-${this.processId}`;
+      this._runningProcessService.addEventOriginator(uid);
+
+      this._menuService.hideStartMenu.next();
     }
   }
 
@@ -804,6 +838,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   showTaskBarPreviewWindow(data:unknown[]):void{
+    const taskbarHideDelay = 400;
     const rect = data[0] as DOMRect;
     const appName = data[1] as string;
     const iconPath = data[2] as string;
@@ -819,7 +854,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       setTimeout(()=>{
         this.showTskBarPreviewWindow = true;
         this.tskBarPreviewWindowState = 'in';
-      },400);
+      },taskbarHideDelay);
     }else{
       this.showTskBarPreviewWindow = true;
       this.tskBarPreviewWindowState = 'in';

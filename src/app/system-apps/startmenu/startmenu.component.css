@@ -1,5 +1,6 @@
 .start-menu-main-container, .start-menu-main-overlay-container{
     position: absolute;
+    display: block;
     z-index: 2;
     bottom: 40px;
     left: 0;

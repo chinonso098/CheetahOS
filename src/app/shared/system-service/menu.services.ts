@@ -25,6 +25,8 @@ export class MenuService{
     showTaskBarMenu: Subject<unknown[]> = new Subject<unknown[]>();
     hideTaskBarMenu: Subject<void> = new Subject<void>();
     keepTaskBarMenu: Subject<void> = new Subject<void>();
+    hideStartMenu: Subject<void> = new Subject<void>();
+    showStartMenu: Subject<void> = new Subject<void>();
     hideContextMenus: Subject<void> = new Subject<void>();
     storeData: Subject<string[]> = new Subject<string[]>();
     addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();

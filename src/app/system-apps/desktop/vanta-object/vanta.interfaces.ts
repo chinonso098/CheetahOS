@@ -46,10 +46,10 @@ export interface WAVE{
     scale?: 1.00,
     scaleMobile?: 1.00,
     color?:0x274c,
-    shininess?:30,
-    waveHeight?:15,
-    waveSpeed?:1,
-    zoom?:1  
+    shininess?:45,
+    waveHeight?:20,
+    waveSpeed?:0.20,
+    zoom?:0.9  
 }
 
 export interface RINGS{

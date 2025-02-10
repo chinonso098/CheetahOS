@@ -33,6 +33,7 @@ import { TextEditorComponent } from './system-apps/texteditor/texteditor.compone
 import { CodeEditorComponent } from './user-apps/codeeditor/codeeditor.component';
 import { MarkDownViewerComponent } from './user-apps/markdownviewer/markdownviewer.component';
 import { PropertiesComponent } from './shared/system-component/properties/properties.component';
+import { ChatterComponent } from './system-apps/chatter/chatter.component';
 import { MenuService } from './shared/system-service/menu.services';
 import { FileInfo } from './system-files/file.info';
 
@@ -90,6 +91,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   //appname
   private apps: {type: Type<BaseComponent>}[] =[
     {type: AudioPlayerComponent},
+    {type: ChatterComponent},
     {type: CheetahComponent},
     {type: ClippyComponent},
     {type: FileExplorerComponent},
