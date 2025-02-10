@@ -22,9 +22,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   @ViewChild('tskManagerRootContainer') tskManagerRootContainer!: ElementRef; 
   @ViewChild('tskMgrTable') tskMgrTable!: ElementRef;  
+  @ViewChild('tskmgrTblCntnr') tskmgrTblCntnr!: ElementRef;
   @ViewChild('tskMgrTableHeaderCntnr') tskMgrTableHeaderCntnr!: ElementRef;  
   @ViewChild('tskMgrTableBodyCntnr') tskMgrTableBodyCntnr!: ElementRef;  
-  @ViewChild('tskmgrTblCntnr') tskmgrTblCntnr!: ElementRef;
+  @ViewChild('tskMgrTableHeaderCntnt') tskMgrTableHeaderCntnt!: ElementRef;  
+  @ViewChild('tskMgrTableBodyCntnt') tskMgrTableBodyCntnt!: ElementRef;  
 
   private _maximizeWindowSub!: Subscription;
 
@@ -613,7 +615,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
 
   applyColumnHeaderVisibility(column: string) {
-    const tableHeader = this.tskMgrTableHeaderCntnr.nativeElement;
+    const tableHeader = this.tskMgrTableHeaderCntnt.nativeElement;
     const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
       TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
 
@@ -682,7 +684,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   applyColumnBodyVisibility(column: string) {
-    const tableBody = this.tskMgrTableBodyCntnr.nativeElement;
+    const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
 
     const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
                                     TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
@@ -754,8 +756,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   alignHeaderAndBodyWidth() {
-    const tableHeader = this.tskMgrTableHeaderCntnr.nativeElement;
-    const tableBody = this.tskMgrTableBodyCntnr.nativeElement;
+    const tableHeader = this.tskMgrTableHeaderCntnt.nativeElement;
+    const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
 
     // console.log('table - bodyRow.r0:', tableBody.rows[0] );
     // console.log('table - bodyRow.r0.c1:', tableBody.rows[0].cells[0]);
@@ -768,7 +770,10 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   synchronizeHeaderAndBodyWidth(columnId: string) {
-    console.log('Received from directive:', columnId);
+    //console.log('Received from directive:', columnId);
+    const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
+    const tbodyWidth = tableBody.getBoundingClientRect().width;
+    this.tskMgrTableBodyCntnr.nativeElement.style.width = `${tbodyWidth}px`;
   }
 
   activeFocus(){
@@ -883,8 +888,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this._runningProcessService.removeEventOriginator();
       const mainWindow = document.getElementById('vanta'); 
 
-      // console.log('mainWindow?.offsetHeight:',mainWindow?.offsetHeight);
-      // console.log('mainWindow?.offsetWidth:',mainWindow?.offsetWidth);
+      console.log('mainWindow?.offsetHeight:',mainWindow?.offsetHeight);
+      console.log('mainWindow?.offsetWidth:',mainWindow?.offsetWidth);
   
       /*
       -45 (tskmgr footer)
@@ -899,11 +904,13 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.tskmgrTblCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelToSubtract}px`;
       this.tskmgrTblCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
   
-  
       // this.tskMgrTable.nativeElement.style.height = `${mainWindow?.offsetHeight || 0 - 84}px`;
       this.tskMgrTable.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+
       this.tskMgrTableHeaderCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
       this.tskMgrTableBodyCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      //this.tskMgrTableHeaderCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      //this.tskMgrTableBodyCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
     }
   }
 

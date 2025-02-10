@@ -80,8 +80,8 @@
                   <div class='tskmgr-table-cntnr' #tskmgrTblCntnr> 
 
                     <table class='tskmgr-table' *ngIf = 'processes.length > 0' #tskMgrTable>
-                      <div class='tskmgr-table-header-cntnr'>
-                        <thead #tskMgrTableHeaderCntnr>
+                      <div class='tskmgr-table-header-cntnr' #tskMgrTableHeaderCntnr>
+                        <thead #tskMgrTableHeaderCntnt>
                           <div style="height:10px; border-top: none;"></div>
                           <tr (contextmenu)="showContextMenu($event)" (click)="hideContextMenu()">             
                             <th [style]="thStyle" (click)="sortTable('Name', true)"  columnResize  (dataEvent)="synchronizeHeaderAndBodyWidth($event)" id="th-0">
@@ -284,8 +284,8 @@
 
                       <span style="height:1px; background-color: #ccc;"></span>
 
-                      <div class='tskmgr-table-body-cntnr' >
-                        <tbody #tskMgrTableBodyCntnr>
+                      <div class='tskmgr-table-body-cntnr'  #tskMgrTableBodyCntnr>
+                        <tbody #tskMgrTableBodyCntnt>
                           <tr *ngFor='let process of processes; let i = index'(click)="onProcessSelected(i,process.getProcessId)" [class.active]="i === selectedRow"  id="trElmnt-{{this.processId}}-{{i}}">
                               <td style="min-width:20%; padding-left:16px;" >
                                   <figure class="tskmgr-figure0"> 
