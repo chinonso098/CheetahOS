@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener, Renderer2 } from '@angular/core';
+import { Directive, Output, ElementRef, EventEmitter, HostListener, Renderer2 } from '@angular/core';
 
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector
@@ -10,6 +10,8 @@ export class ColumnResizeDirective {
   private initialWidth!: number;
   private columnIndex!: number;
   private table: HTMLElement | null = null; // Initialize table as null
+
+  @Output() dataEvent = new EventEmitter<string>();
 
   constructor(private el: ElementRef, private renderer: Renderer2) {}
 
@@ -25,6 +27,8 @@ export class ColumnResizeDirective {
     const cells = Array.from(row.children);
     this.columnIndex = cells.indexOf(this.el.nativeElement);
 
+  
+
     this.renderer.addClass(this.el.nativeElement, 'resizing');
     this.renderer.addClass(document.body, 'resizing');
 
@@ -35,6 +39,10 @@ export class ColumnResizeDirective {
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         if(this.isResizing) {
+
+          //emit column being resized
+          this.dataEvent.emit(`th-${this.columnIndex}`);
+
           const deltaX = moveEvent.pageX - this.startX;
           const newWidth = this.initialWidth + deltaX;
 

@@ -88,7 +88,7 @@
                         <thead #tskMgrTableHeaderCntnr>
                           <div style="height:10px; border-top: none;"></div>
                           <tr (contextmenu)="showContextMenu($event)" (click)="hideContextMenu()">             
-                            <th [style]="thStyle" (click)="sortTable('Name', true)"  columnResize  id="th-1">
+                            <th [style]="thStyle" (click)="sortTable('Name', true)"  columnResize  (dataEvent)="synchronizeHeaderAndBodyWidth($event)" id="th-0">
                               <div  class="tskmgr-sort-icon-cntnr-basic">
                                 <span class="tskmgr-sort-icon"  *ngIf="isDescSorting('Name')">v</span>
                                 <span class="tskmgr-sort-icon"  *ngIf="isAscSorting('Name')">ᴧ</span>
@@ -97,7 +97,7 @@
                                 <span class="tskmgr-th-span-name"> Name </span>
                               </div>
                             </th>
-                            <th [style]="thStyle1" (click)="sortTable('Type', true)" columnResize id="th-2">               
+                            <th [style]="thStyle1" (click)="sortTable('Type', true)" columnResize id="th-1">               
                               <div  class="tskmgr-sort-icon-cntnr-basic">
                                 <span *ngIf="isDescSorting('Type')">v</span>
                                 <span *ngIf="isAscSorting('Type')">ᴧ</span>
@@ -106,7 +106,7 @@
                                 <span class="tskmgr-th-span-name"> Type </span>
                               </div>
                             </th>
-                            <th columnResize  id="th-3">
+                            <th columnResize  id="th-2">
                               <div class="tskmgr-sort-icon-cntnr-basic">
                                 <span *ngIf="isDescSorting('Status')">v</span>
                                 <span *ngIf="isAscSorting('Status')">ᴧ</span>
@@ -115,7 +115,7 @@
                                 <span class="tskmgr-th-span-name"> Status </span>
                               </div>
                             </th>
-                            <th [style]="thStyle2" (click)="sortTable('PID', true)" columnResize id="th-4">               
+                            <th [style]="thStyle2" (click)="sortTable('PID', true)" columnResize id="th-3">               
                               <div class ="tskmgr-sort-icon-cntnr-basic">
                                 <span *ngIf="isDescSorting('PID')">v</span>
                                 <span *ngIf="isAscSorting('PID')">ᴧ</span>
@@ -124,7 +124,7 @@
                                 <span class="tskmgr-th-span-name"> PID </span>
                               </div>
                             </th>
-                            <th [style]="thStyle3" (click)="sortTable('Process name', true)" columnResize id="th-5">               
+                            <th [style]="thStyle3" (click)="sortTable('Process name', true)" columnResize id="th-4">               
                               <div class ="tskmgr-sort-icon-cntnr-basic">
                                 <span *ngIf="isDescSorting('Process name')">v</span>
                                 <span *ngIf="isAscSorting('Process name')">ᴧ</span>
@@ -210,7 +210,7 @@
                               </div>
                             </th>
     
-                            <th [style]="thStyle4" (click)="sortTable('Power usage', true)" columnResize>               
+                            <th [style]="thStyle4" (click)="sortTable('Power usage', true)">               
                               <div class ="tskmgr-sort-icon-cntnr-basic">
                                 <span *ngIf="isDescSorting('Power usage')">v</span>
                                 <span *ngIf="isAscSorting('Power usage')">ᴧ</span>

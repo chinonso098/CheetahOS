@@ -166,6 +166,14 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     },this.SECONDS_DELAY) 
   }
 
+  matcheHeaderAndBodyWidth(){
+    1
+  }
+
+  synchronizeHeaderAndBodyWidth(columnId: string) {
+    console.log('Received from directive:', columnId);
+  }
+
   captureComponentImg():void{
     htmlToImage.toPng(this.tskManagerRootContainer.nativeElement).then(htmlImg =>{
       //console.log('img data:',htmlImg);
