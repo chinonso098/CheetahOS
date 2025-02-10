@@ -170,10 +170,6 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     // },this.SECONDS_DELAY) 
   }
 
-  synchronizeHeaderAndBodyWidth(columnId: string) {
-    console.log('Received from directive:', columnId);
-  }
-
   captureComponentImg():void{
     htmlToImage.toPng(this.tskManagerRootContainer.nativeElement).then(htmlImg =>{
       //console.log('img data:',htmlImg);
@@ -766,9 +762,13 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].offsetWidth);
     // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].getBoundingClientRect().width);
 
-    const cellWidth = tableBody.rows[0].cells[0].offsetWidth;
+    const cellWidth = tableBody.rows[0].cells[0].getBoundingClientRect().width;
     this._renderer.setStyle(tableHeader.rows[0].cells[0], 'min-width', cellWidth + 'px');
     this._renderer.setStyle(tableHeader.rows[0].cells[0], 'width', cellWidth + 'px');
+  }
+
+  synchronizeHeaderAndBodyWidth(columnId: string) {
+    console.log('Received from directive:', columnId);
   }
 
   activeFocus(){

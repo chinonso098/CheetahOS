@@ -20,9 +20,9 @@ export class ColumnResizeDirective {
     this.startX = event.pageX;
     this.isResizing = true;
     this.initialWidth = this.el.nativeElement.offsetWidth;
-    const minimumWidth = this.el.nativeElement.offsetWidth;
+    const minimumWidths:number[] = [113.375, 81];
+    let minimumWidth = 0;
 
-  
 
     // Find the index of the current column
     const row = this.el.nativeElement.parentElement;
@@ -31,7 +31,6 @@ export class ColumnResizeDirective {
 
     this.renderer.addClass(this.el.nativeElement, 'resizing');
     this.renderer.addClass(document.body, 'resizing');
-
     this.table = this.findParentTable(this.el.nativeElement);
 
     if (this.table) {
@@ -41,7 +40,7 @@ export class ColumnResizeDirective {
         if(this.isResizing) {
           //emit column being resized
           this.dataEvent.emit(`th-${this.columnIndex}`);
-
+          minimumWidth = (this.columnIndex === 0)? minimumWidths[0] : minimumWidths[1]
           const deltaX = moveEvent.pageX - this.startX;
           const newWidth = this.initialWidth + deltaX;
 

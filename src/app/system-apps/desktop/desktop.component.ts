@@ -142,7 +142,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private COLOR_TRANSITION_DURATION = 2000; // 2sec
 
   private MIN_NUM_COLOR_RANGE = 200;
-  private MAX_NUM_COLOR_RANGE = 9999;
+  private MAX_NUM_COLOR_RANGE = 99999;
   private DEFAULT_COLOR = 0x274c;
   
   taskBarMenuData = [

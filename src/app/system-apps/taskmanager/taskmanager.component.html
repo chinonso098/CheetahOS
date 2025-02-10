@@ -65,7 +65,7 @@
     
       <div class="tskmgr-tabbed-window" (click)="hideShowNavMenu('')">
         <span style="height:3px; background-color: #ffffff;  border-top: none; "></span>
-        
+
         <div class="tskmgr-tabs">
           <div class="tskmgr-tab active">Processes</div>
           <div class="tskmgr-tab">Performance</div>
@@ -78,13 +78,9 @@
             <div class='card'>
                 <div class='card-body'>
                   <div class='tskmgr-table-cntnr' #tskmgrTblCntnr> 
-    
-                    <!-- add  class="data" data-rtc-resizable-table="table.one" to  the first <table> to activate resize.[ngClass]="
-                         add data-rtc-resizable=columnName to the first <th> of each column were resize is desired
-                      " -->
-                    <table class='tskmgr-table' *ngIf = 'processes.length > 0' #tskMgrTable>
 
-                      <div class='tskmgr-table-header-cntnr' >
+                    <table class='tskmgr-table' *ngIf = 'processes.length > 0' #tskMgrTable>
+                      <div class='tskmgr-table-header-cntnr'>
                         <thead #tskMgrTableHeaderCntnr>
                           <div style="height:10px; border-top: none;"></div>
                           <tr (contextmenu)="showContextMenu($event)" (click)="hideContextMenu()">             
@@ -286,6 +282,7 @@
                         </thead>
                       </div>
 
+                      <span style="height:1px; background-color: #ccc;"></span>
 
                       <div class='tskmgr-table-body-cntnr' >
                         <tbody #tskMgrTableBodyCntnr>

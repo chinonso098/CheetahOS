@@ -102,7 +102,7 @@
   font-weight:lighter;  /* Header text bold */
   height: 40px;
   min-width: 80px;
-  border: 1px solid #ccc;   /* Cell border */
+  border: 0.5px solid #ccc;   /* Cell border */
   border-top: none;
   vertical-align: middle;
 }
@@ -144,8 +144,9 @@ tbody{
   font-size: 12px;
   font-weight:lighter; 
   text-align: left; /* Header text alignment */
-  border: 1px solid #ccc; /* Cell border  #1a127b*/
-  border-top:none; border-bottom:none;
+  border: 0.5px solid #ccc; /* Cell border  #1a127b*/
+  border-top:none; 
+  border-bottom:none;
 }
 
 .tskmgr-table td:first-child td:last-child{
@@ -333,9 +334,9 @@ span {
   transition: background-color 0.3s;
   font-weight: normal;
   font-size: 12px;
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  border-top: 1px solid #ccc;
+  border-left: 0.5px solid #ccc;
+  border-right: 0.5px solid #ccc;
+  border-top: 0.5px solid #ccc;
   max-width: fit-content;
   max-height: fit-content;
 }
@@ -344,7 +345,7 @@ span {
   background-color: #ffffff; /*f2f2f2*/
   border-left: 0;
   border-right: 0;
-  border-top: 1px solid #ccc;
+  border-top: 0.5px solid #ccc;
   color: #000;
 }
 
