@@ -40,11 +40,11 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
     trigger('slideStartMenuAnimation', [
       transition(':enter', [
         style({transform: 'translateY(100%)'}), 
-        animate('500ms ease-in', style({ transform: 'translateY(0)'}))
+        animate('200ms ease-out', style({ transform: 'translateY(0)'}))
       ]),
       transition(':leave', [
         style({transform: 'translateY(0)'}),
-        animate('500ms ease-in', style({ transform: 'translateY(100%)'}))
+        animate('200ms ease-in', style({ transform: 'translateY(100%)'}))
       ]),
     ])
   ]
@@ -138,7 +138,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - 1;
   private CURRENT_DESTOP_NUM = 0;
   private CLIPPY_INIT_DELAY = 180000; // every 3mins is fine
-  private COLOR_CHANGE_DELAY = 10000; // every 10sec is fine
+  private COLOR_CHANGE_DELAY = 30000; // every 30sec is fine
   private COLOR_TRANSITION_DURATION = 2000; // 2sec
 
   private MIN_NUM_COLOR_RANGE = 200;
@@ -422,14 +422,30 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   hideContextMenu(caller?:string):void{
+
+    /**
+     * There is a doubling of responses to certain events that exist on the 
+     * desktop compoonent and any other component running at the time the event was triggered.
+     * The desktop will always respond to the event, but other components will only respond when they are in focus.
+     * If there is a count of 2 or more(highly unlikely) reponses for a given event, then, ignore the desktop's response
+     */
+
     this.showDesktopCntxtMenu = false;
     this.showTskBarCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
-    this.showStartMenu = false;
 
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){
       this._menuService.hideContextMenus.next();
+    }
+
+    //only if start menu is visible
+    if(this.showStartMenu){
+      this.showStartMenu = false;
+
+      const uid = `${this.name}-${this.processId}`;
+      this._runningProcessService.addEventOriginator(uid);
+
       this._menuService.hideStartMenu.next();
     }
   }

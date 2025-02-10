@@ -34,27 +34,33 @@ export class StartButtonComponent implements OnDestroy {
     this._menuService = menuService;
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
-    this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => { this.hideStarMenu()});
+    this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => { this.hideStartMenu()});
   }
 
   ngOnDestroy(): void {
     this._hideStartMenuSub?.unsubscribe();
   }
 
-  showStarMenu():void{
+  showStartMenu():void{
     if(!this.isStartMenuVisible){
       this._menuService.showStartMenu.next();
       this.isStartMenuVisible = true;
     }
     else{
+      const uid = `${this.name}-${this.processId}`;
+      this._runningProcessService.addEventOriginator(uid);
+
       this._menuService.hideStartMenu.next();
       this.isStartMenuVisible = false;
     }
-
   }
 
-  hideStarMenu():void{
-    this.isStartMenuVisible = false;
+  hideStartMenu():void{
+    const uid = `${this.name}-${this.processId}`;
+    const evtOriginator = this._runningProcessService.getEventOrginator();
+    if(evtOriginator !== uid){
+      this.isStartMenuVisible = false;
+    }
   }
   
   private getComponentDetail():Process{
