@@ -43,6 +43,10 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     1
   }
 
+  setChatterWindowToFocus(pid:number):void{
+    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+  }
+
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }

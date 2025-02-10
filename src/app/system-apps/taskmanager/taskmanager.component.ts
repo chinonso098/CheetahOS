@@ -22,6 +22,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   @ViewChild('tskManagerRootContainer') tskManagerRootContainer!: ElementRef; 
   @ViewChild('tskMgrTable') tskMgrTable!: ElementRef;  
+  @ViewChild('tskMgrTableHeaderCntnr') tskMgrTableHeaderCntnr!: ElementRef;  
+  @ViewChild('tskMgrTableBodyCntnr') tskMgrTableBodyCntnr!: ElementRef;  
   @ViewChild('tskmgrTblCntnr') tskmgrTblCntnr!: ElementRef;
 
   private _maximizeWindowSub!: Subscription;
@@ -591,7 +593,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.powerColumnVisible = !this.powerColumnVisible;
     }
  
-    this.applyColumnStyles(column);
+    this.applyColumnBodyStyles(column);
   }
 
   applyDefaultColumnStyle():void{
@@ -599,79 +601,158 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
 
       for(let i = 0; i < tableColumns.length; i++){
-        this.applyColumnStyles(tableColumns[i]);
+        this.applyColumnHeaderStyles(tableColumns[i], i);
+        this.applyColumnBodyStyles(tableColumns[i]);
       }
   }
 
-  applyColumnStyles(column: string) {
-    const table = this.tskMgrTable.nativeElement;
+
+  applyColumnHeaderStyles(column: string, columnIdx:number) {
+    const tableHeader = this.tskMgrTableHeaderCntnr.nativeElement;
+
+    // console.log('table - body:', tableHeader);
+    // console.log('table - bodyRow:', tableHeader.rows);
+    // console.log('table - bodyRow.r0:', tableHeader.rows[0]);
+    // console.log('table - bodyRow.r0.c1:', tableHeader.rows[0].cells[1]);
+
+
+    const rowNum = 0;
+    const colNum = columnIdx;
+    if(column === TableColumns.TYPE){
+      this.typeColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.STATUS){
+      this.statusColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.PID){
+      this.pidColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.PROCESS_NAME){
+      this.processNameColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.CPU){
+      this.cpuColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.MEMORY){
+      this.memoryColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.DISK){
+      this.diskColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.NETWORK){
+      this.networkColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.GPU){
+      this.gpuColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+
+    if(column === TableColumns.POWER_USAGE){
+      this.powerColumnVisible
+      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
+      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
+    }
+  }
+
+  applyColumnBodyStyles(column: string) {
+    //const tableHeader = this.tskMgrTableHeaderCntnr.nativeElement;
+    const tableBody = this.tskMgrTableBodyCntnr.nativeElement;
+
+    // console.log('table - body:', tableHeader);
+    // console.log('table - bodyRow:', tableHeader.rows);
+    // console.log('table - bodyRow.r0:', tableHeader.rows[0]);
+    // console.log('table - bodyRow.r0.c1:', tableHeader.rows[0].cells[1]);
     const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
                                     TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
     
     const colNum = tableColumns.indexOf(column);
 
-    for( let i = 0; i <= this.processes.length; i++){
+    for( let i = 0; i < this.processes.length; i++){
 
       if(column === TableColumns.TYPE){
         this.typeColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.STATUS){
         this.statusColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.PID){
         this.pidColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.PROCESS_NAME){
         this.processNameColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.CPU){
         this.cpuColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.MEMORY){
         this.memoryColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.DISK){
         this.diskColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.NETWORK){
         this.networkColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.GPU){
         this.gpuColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
 
       if(column === TableColumns.POWER_USAGE){
         this.powerColumnVisible
-        ? this._renderer.removeStyle(table.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(table.rows[i].cells[colNum], 'display', 'none');
+        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
+        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
-
     }
   }
 

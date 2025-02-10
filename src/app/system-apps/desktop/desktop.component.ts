@@ -382,6 +382,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   captureComponentImg():void{
+    const slideOutDelay = 4000;
+    const hideDeskopScreenShotDelay = 6000;
+
     htmlToImage.toPng(this.desktopContainer.nativeElement).then(htmlImg =>{
       //console.log('img data:',htmlImg);
 
@@ -404,11 +407,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
         this._fileService.addEventOriginator('fileexplorer');
         this._fileService.dirFilesUpdateNotify.next();
-      },4000);
+      },slideOutDelay);
 
       setTimeout(()=>{
         this.showDesktopScreenShotPreview = false;
-      },6000);
+      },hideDeskopScreenShotDelay);
     })
   }
 
@@ -835,6 +838,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   showTaskBarPreviewWindow(data:unknown[]):void{
+    const taskbarHideDelay = 400;
     const rect = data[0] as DOMRect;
     const appName = data[1] as string;
     const iconPath = data[2] as string;
@@ -850,7 +854,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       setTimeout(()=>{
         this.showTskBarPreviewWindow = true;
         this.tskBarPreviewWindowState = 'in';
-      },400);
+      },taskbarHideDelay);
     }else{
       this.showTskBarPreviewWindow = true;
       this.tskBarPreviewWindowState = 'in';
