@@ -168,7 +168,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   changeContent():void{
     const uid = `${this.name}-${this.processId}`;
-    const delay = 2000;
+    const delay = 1000;
 
     console.log('previous audio source:',  this.audioSrc);
     this.audioSrc = Constants.EMPTY_STRING;

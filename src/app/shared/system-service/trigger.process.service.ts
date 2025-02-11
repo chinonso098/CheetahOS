@@ -48,9 +48,7 @@ export class TriggerProcessService{
                             this._runningProcessService.focusOnCurrentProcess_WWC_Notify.next(runningProcess.getProcessId);
                         }else if(runningProcess.getProcessName ==="taskmanager"){
                             this._runningProcessService.focusOnCurrentProcessNotify.next(runningProcess.getProcessId);
-                        }
-                        else{
-
+                        }else{
                             const uid = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
                             this._runningProcessService.addEventOriginator(uid);
 

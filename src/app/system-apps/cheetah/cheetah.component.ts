@@ -16,12 +16,12 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 export class CheetahComponent implements BaseComponent {
   private _menuService:MenuService;
   private _processIdService:ProcessIDService;
-    private _runningProcessService:RunningProcessService;
+  private _runningProcessService:RunningProcessService;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   cheetahIcon = `${Constants.IMAGE_BASE_PATH}cheetah-midsprint-dash.jpg`;
-  processId = 11000;
+  processId = 0;
   type = ComponentType.System;
   displayName = 'CheetahOS';
   name = 'cheetah';
