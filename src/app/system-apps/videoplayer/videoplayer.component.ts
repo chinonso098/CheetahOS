@@ -32,6 +32,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;
+  private _changeContentSub!: Subscription;
   
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -74,6 +75,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
     this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minmizeWindow(p)})
+    this._changeContentSub = this._runningProcessService.changeProcessContentNotify.subscribe(() =>{this.changeContent()})
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
@@ -103,9 +105,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.videoSrc = (this.videoSrc !=='') ? 
       this.videoSrc : this.getVideoSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-   
-
-    const options = {
+    const videoOptions = {
         fluid: true,
         responsive: true,
         autoplay: true, 
@@ -125,7 +125,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.storeAppState(appData);
 
     this._scriptService.loadScript("videojs","osdrive/Program-Files/Videojs/video.min.js").then(() =>{
-      this.player = videojs(this.videowindow.nativeElement, options, function onPlayerReady(){
+      this.player = videojs(this.videowindow.nativeElement, videoOptions, function onPlayerReady(){
         console.log('onPlayerReady:', "player is read");
       });
   
@@ -138,13 +138,45 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   ngOnDestroy(): void {
-    if (this.player) {
+    if(this.player) {
       this.player.off('fullscreenchange', this.onFullscreenChange);
       this.player.dispose();
     }
     this._maximizeWindowSub?.unsubscribe();
     this._minimizeWindowSub?.unsubscribe();
   }
+
+  changeContent():void{
+    const uid = `${this.name}-${this.processId}`;
+    const delay = 1000;
+
+    this.videoSrc = Constants.EMPTY_STRING;
+    this.fileType = Constants.EMPTY_STRING;
+
+    if(this._runningProcessService.getEventOrginator() === uid){
+      this._fileInfo = this._triggerProcessService.getLastProcessTrigger();
+      //console.log('new this._fileInfo:',  this._fileInfo);
+
+      this.player.pause(); // Pause the video
+      this.player.currentTime(0); // Reset to the start (optional)
+
+      this.videoSrc = (this.videoSrc !== '')? 
+      this.videoSrc :this.getVideoSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+      this.fileType = 'video/'+this._fileInfo.getFileType.replace('.','');
+
+      setTimeout(async()=> {
+        if(this.player) {
+          this.player.src({ src: this.videoSrc, type: this.fileType }); // Update video source
+          this.player.load(); // Load the new video
+          this.player.play(); // Start playing
+        }
+        this.storeAppState(this.videoSrc);
+      }, delay);
+
+      this._runningProcessService.removeEventOriginator();
+    }
+  }
+
 
   captureComponentImg():void{
     htmlToImage.toPng(this.videowindow.nativeElement).then(htmlImg =>{
@@ -240,12 +272,23 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vanta');
+      const mainWindow = document.getElementById('vanta'); //1920 x 1080
 
       //window title and button bar, and windows taskbar height, video top menu bar
       const pixelTosubtract = 30 + 40;
       this.videoCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
       this.videoCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
+
+      // this.mainVideoCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      // this.mainVideoCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
+
+      // Resize video element
+      this.videowindow.nativeElement.style.width = '100%';
+      this.videowindow.nativeElement.style.height = '100%';
+      // this.videowindow.nativeElement.style.width = `1920px`;
+      // this.videowindow.nativeElement.style.height= `1080px`;
+
+      this._runningProcessService.removeEventOriginator();
     }
   }
 

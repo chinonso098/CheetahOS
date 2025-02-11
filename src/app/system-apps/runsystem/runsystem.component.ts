@@ -1,32 +1,29 @@
-import { Component} from '@angular/core';
-import { ComponentType } from 'src/app/system-files/component.types';
-import { Constants } from "src/app/system-files/constants";
+import { Component } from '@angular/core';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
-import { BaseComponent } from 'src/app/system-base/base/base.component';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
-import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { BaseComponent } from 'src/app/system-base/base/base.component';
+import { ComponentType } from 'src/app/system-files/component.types';
+import { Constants } from 'src/app/system-files/constants';
+import { Process } from 'src/app/system-files/process';
 
 @Component({
-  selector:'cos-cheetah',
-  templateUrl: './cheetah.component.html',
-  styleUrls: ["./cheetah.component.css"]
+  selector: 'cos-runsystem',
+  templateUrl: './runsystem.component.html',
+  styleUrl: './runsystem.component.css'
 })
+export class RunSystemComponent implements BaseComponent {
 
-export class CheetahComponent implements BaseComponent {
   private _menuService:MenuService;
   private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
+    private _runningProcessService:RunningProcessService;
 
-  hasWindow = false;
-  icon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
-  cheetahIcon = `${Constants.IMAGE_BASE_PATH}cheetah-midsprint-dash.jpg`;
+  hasWindow = true;
+  icon = `${Constants.IMAGE_BASE_PATH}run.png`;
   processId = 0;
   type = ComponentType.System;
-  displayName = 'CheetahOS';
-  name = 'cheetah';
-  version = 'Version: 2.10.27';
-  year = `\u00A9 ${new Date().getFullYear()}`;
+  displayName = 'Run';
+  name = 'runsystem';
 
   constructor( menuService:MenuService, processIdService:ProcessIDService,  runningProcessService:RunningProcessService) { 
     this._menuService = menuService;
@@ -45,4 +42,5 @@ export class CheetahComponent implements BaseComponent {
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type);
   }
+
 }

@@ -16,8 +16,11 @@ export class RunningProcessService{
     private _eventOriginator = '';
 
     closeProcessNotify: Subject<Process> = new Subject<Process>();
+    changeProcessContentNotify:Subject<void> = new Subject<void>();
     focusOnNextProcessNotify: Subject<void> = new Subject<void>();
     focusOnCurrentProcessNotify: Subject<number> = new Subject<number>();
+    //WWC - without window component
+    focusOnCurrentProcess_WWC_Notify: Subject<number> = new Subject<number>();
     removeFocusOnOtherProcessesNotify: Subject<number> = new Subject<number>();
     hideProcessPreviewWindowNotify: Subject<void> = new Subject<void>();
     hideOtherProcessNotify: Subject<number> = new Subject<number>();
@@ -98,6 +101,23 @@ export class RunningProcessService{
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return process!;
+    }
+
+    /**
+     * 
+     * @param appName 
+     * @returns Process
+     * 
+     * This method will return the first of a given process with matching name, or null
+     * if proccess does not exsist
+     */
+    getProcessByName(appName:string):Process | null{
+        const process = this._runningProcesses.find((process) => {
+            return process.getProcessName === appName;
+        });
+
+     
+        return process || null;
     }
 
     getProcessImages(appName:string):TaskBarPreviewImage[]{
