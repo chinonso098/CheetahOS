@@ -9,13 +9,13 @@ import { SessionManagmentService } from './shared/system-service/session.managem
 import { NotificationService } from './shared/system-service/notification.service';
 import { StateManagmentService } from './shared/system-service/state.management.service';
 
-import { ComponentType } from './system-files/component.types';
+import { ComponentType } from './system-files/system.types';
 import { NotificationType } from './system-files/notification.type';
 import { Process } from './system-files/process';
 import { AppDirectory } from './system-files/app.directory';
 import { Constants } from 'src/app/system-files/constants';
 
-import { BaseComponent } from './system-base/base/base.component';
+import { BaseComponent } from './system-base/base/base.component.interface';
 import { CheetahComponent } from './system-apps/cheetah/cheetah.component';
 import { ClippyComponent } from './system-apps/clippy/clippy.component';
 import { TitleComponent } from './user-apps/title/title.component';
@@ -112,7 +112,9 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   ];
 
 
-  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService,componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService,
+  // the order of the service init matter.
+  //runningProcesssService must come first
+  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService,
     sessionMangamentServices:SessionManagmentService, notificationServices:NotificationService, stateManagmentService:StateManagmentService, menuService:MenuService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()

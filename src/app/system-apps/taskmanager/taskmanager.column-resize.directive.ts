@@ -20,8 +20,10 @@ export class ColumnResizeDirective {
     this.startX = event.pageX;
     this.isResizing = true;
     this.initialWidth = this.el.nativeElement.offsetWidth;
-    const minimumWidths:number[] = [113.375, 81];
+    const minimumWidths:number[] = [146, 81];
     let minimumWidth = 0;
+
+    console.log("this.initialWidth:", this.initialWidth);
 
 
     // Find the index of the current column

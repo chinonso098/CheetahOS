@@ -3,6 +3,11 @@ import { Subject } from "rxjs";
 import { RunningProcessService } from "./running.process.service";
 import { AppDirectory } from "src/app/system-files/app.directory";
 import { FileInfo } from "src/app/system-files/file.info";
+import { Constants } from "src/app/system-files/constants";
+import { ProcessType } from "src/app/system-files/system.types";
+import { ProcessIDService } from "./process.id.service";
+import { Process } from "src/app/system-files/process";
+import { Service } from "src/app/system-files/service";
 
 @Injectable({
     providedIn: 'root'
@@ -11,6 +16,7 @@ import { FileInfo } from "src/app/system-files/file.info";
 export class TriggerProcessService{
 
     private _runningProcessService:RunningProcessService;
+    private _processIdService:ProcessIDService;
     private _appDirectory:AppDirectory;
     private _TriggerList:FileInfo[];
     private _onlyOneInstanceAllowed:string[] = ["audioplayer", "cheetah", "jsdos", "photoviewer", 
@@ -21,11 +27,27 @@ export class TriggerProcessService{
     appNotFoundNotify: Subject<string> = new Subject<string>();
     appIsRunningNotify: Subject<string> = new Subject<string>();
 
+    name = 'trgr_proc_svc';
+    icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
+    processId = 0;
+    type = ProcessType.Cheetah;
+    status  = Constants.SERVICES_STATE_RUNNING;
+    hasWindow = false;
+    description = 'inits componenets ';
+        
+
     constructor(runningProcessService:RunningProcessService){
         this._runningProcessService = runningProcessService;
         this._appDirectory = new AppDirectory();
         this._TriggerList = [];
         TriggerProcessService.instance = this; //I added this to access the service from a class, not component
+
+        this._processIdService = ProcessIDService.instance;
+        this._runningProcessService = RunningProcessService.instance;
+
+        this.processId = this._processIdService.getNewProcessId();
+        this._runningProcessService.addProcess(this.getProcessDetail());
+        this._runningProcessService.addService(this.getServiceDetail());
     }
 
 
@@ -78,4 +100,12 @@ export class TriggerProcessService{
         return new FileInfo;
     }
 
+
+    private getProcessDetail():Process{
+        return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
+    }
+
+    private getServiceDetail():Service{
+        return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
+    }
 }

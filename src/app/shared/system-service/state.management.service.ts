@@ -2,6 +2,12 @@ import {Injectable } from "@angular/core";
 import { AppState, BaseState, WindowState } from "src/app/system-files/state/state.interface";
 import { StateType } from "src/app/system-files/state/state.type";
 import { SessionManagmentService } from "./session.management.service";
+import { Constants } from "src/app/system-files/constants";
+import { ProcessType } from "src/app/system-files/system.types";
+import { ProcessIDService } from "./process.id.service";
+import { RunningProcessService } from "./running.process.service";
+import { Process } from "src/app/system-files/process";
+import { Service } from "src/app/system-files/service";
 @Injectable({
     providedIn: 'root'
 })
@@ -11,11 +17,29 @@ export class StateManagmentService{
     static instance: StateManagmentService;
     private _appStateManagmentService:Map<string, unknown>;  
     private _sessionManagmentService: SessionManagmentService 
-    
+    private _runningProcessService:RunningProcessService;
+    private _processIdService:ProcessIDService;
+
+    name = 'state_mgmt_svc';
+    icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
+    processId = 0;
+    type = ProcessType.Background;
+    status  = Constants.SERVICES_STATE_RUNNING;
+    hasWindow = false;
+    description = ' componenet reference mananger adds/remmoves component refs.. ';
+        
+
     constructor(){
         this._appStateManagmentService = new Map<string, unknown>();
         StateManagmentService.instance = this; //I added this to access the service from a class, not component
         this._sessionManagmentService = SessionManagmentService.instance;
+
+        this._processIdService = ProcessIDService.instance;
+        this._runningProcessService = RunningProcessService.instance;
+
+        this.processId = this._processIdService.getNewProcessId();
+        this._runningProcessService.addProcess(this.getProcessDetail());
+        this._runningProcessService.addService(this.getServiceDetail());
     }
 
     /**
@@ -114,6 +138,15 @@ export class StateManagmentService{
             keys.push(key)
         }
         return keys;
+    }
+
+
+    private getProcessDetail():Process{
+        return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
+    }
+
+    private getServiceDetail():Service{
+        return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
     }
 
 }

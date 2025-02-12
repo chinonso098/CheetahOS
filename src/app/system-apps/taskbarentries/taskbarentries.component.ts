@@ -4,7 +4,7 @@ import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { ComponentType } from 'src/app/system-files/system.types';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';

@@ -2,11 +2,11 @@ import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild, ElementRef, Vie
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { FileEntry } from 'src/app/system-files/file.entry';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { BaseComponent } from 'src/app/system-base/base/base.component';
+import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { Subscription } from 'rxjs';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
@@ -225,7 +225,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.retrievePastSessionData();
 
     this._dirFilesUpdatedSub = this._fileService.dirFilesUpdateNotify.subscribe(() =>{
-      if(this._fileService.getEventOrginator() === this.name){
+      if(this._fileService.getEventOriginator() === this.name){
         this.loadFilesInfoAsync();
         this._fileService.removeEventOriginator();
       }
@@ -233,7 +233,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._fetchDirectoryDataSub = this._fileService.fetchDirectoryDataNotify.subscribe((p) => {
       const name = 'filetreeview';
       const uid = `${name}-${this.processId}`;
-      if(this._fileService.getEventOrginator() === uid){
+      if(this._fileService.getEventOriginator() === uid){
         this.updateFileTreeAsync(p);
         this._fileService.removeEventOriginator();
       }
@@ -241,7 +241,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._goToDirectoryDataSub = this._fileService.goToDirectoryNotify.subscribe((p) => {
       const name = 'filetreeview-1';
       const uid = `${name}-${this.processId}`;
-      if(this._fileService.getEventOrginator() === uid){
+      if(this._fileService.getEventOriginator() === uid){
         this.navigateToFolder(p);
         this._fileService.removeEventOriginator();
       }

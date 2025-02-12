@@ -13,12 +13,18 @@ import { Buffer } from 'buffer';
 import osDriveFileSystemIndex from '../../../osdrive.json';
 import ini  from 'ini';
 import { FileContent } from "src/app/system-files/file.content";
+import { BaseService } from "./base.service.interface";
+import { ProcessType } from "src/app/system-files/system.types";
+import { ProcessIDService } from "./process.id.service";
+import { RunningProcessService } from "./running.process.service";
+import { Process } from "src/app/system-files/process";
+import { Service } from "src/app/system-files/service";
 
 @Injectable({
     providedIn: 'root'
 })
 
-export class FileService{
+export class FileService implements BaseService{ 
 
     static instace:FileService;
     private _fileInfo!:FileInfo;
@@ -29,16 +35,34 @@ export class FileService{
     private _fileAndAppIconAssociation!:Map<string,string>; 
     private _eventOriginator = '';
 
+    private _runningProcessService:RunningProcessService;
+    private _processIdService:ProcessIDService;
+
     dirFilesUpdateNotify: Subject<void> = new Subject<void>();
     fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
     goToDirectoryNotify: Subject<string[]> = new Subject<string[]>();
 
     SECONDS_DELAY = 200;
 
+    name = 'file_svc';
+    icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
+    processId = 0;
+    type = ProcessType.Cheetah;
+    status  = Constants.SERVICES_STATE_RUNNING;
+    hasWindow = false;
+    description = 'Mediates btwn ui & filesystem ';
+
     constructor(){ 
         this._fileExistsMap =  new Map<string, number>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
         FileService.instace = this;
+
+        this._processIdService = ProcessIDService.instance;
+        this._runningProcessService = RunningProcessService.instance;
+
+        this.processId = this._processIdService.getNewProcessId();
+        this._runningProcessService.addProcess(this.getProcessDetail());
+        this._runningProcessService.addService(this.getServiceDetail());
     }
 
     private async initBrowserFsAsync():Promise<void>{
@@ -763,11 +787,20 @@ export class FileService{
         this._eventOriginator = eventOrig;
     }
 
-    getEventOrginator():string{
+    getEventOriginator():string{
         return this._eventOriginator;
     }
 
     removeEventOriginator():void{
         this._eventOriginator = '';
+    }
+
+
+    private getProcessDetail():Process{
+        return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
+    }
+
+    private getServiceDetail():Service{
+        return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
     }
 }

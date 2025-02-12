@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef, signal, WritableSignal } from '@angular/core';
 import { FileService } from 'src/app/shared/system-service/file.service';
-import { BaseComponent } from 'src/app/system-base/base/base.component';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
+import { ComponentType } from 'src/app/system-files/system.types';
 import {extname, dirname} from 'path';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { Process } from 'src/app/system-files/process';

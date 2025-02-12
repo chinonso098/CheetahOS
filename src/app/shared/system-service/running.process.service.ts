@@ -1,7 +1,10 @@
 import { Injectable } from "@angular/core";
 import { Subject } from "rxjs";
 import { TaskBarPreviewImage } from "src/app/system-apps/taskbarpreview/taskbar.preview";
+import { Constants } from "src/app/system-files/constants";
 import { Process } from "src/app/system-files/process";
+import { Service } from "src/app/system-files/service";
+import { ProcessType } from "src/app/system-files/system.types";
 
 
 @Injectable({
@@ -12,6 +15,7 @@ export class RunningProcessService{
 
     static instance: RunningProcessService;
     private _runningProcesses:Process[];
+    private _runningServices:Service[];
     private _runningProcessesImages:Map<string, TaskBarPreviewImage[]>;
     private _eventOriginator = '';
 
@@ -34,14 +38,37 @@ export class RunningProcessService{
     restoreProcessWindowNotify: Subject<number> = new Subject<number>();
     restoreProcessesWindowNotify: Subject<void> = new Subject<void>();
 
+
+    name = 'rning_proc_svc';
+    icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
+    /**
+     * A little homage to Windows.
+     * On Windows, the "System" process always has the same PID, 
+     * which is 4; meaning that whenever the System process is running, it will always be associated with Process ID 4
+     */
+    processId = Constants.RESERVED_ID_RUNNING_PROCESS_SERVICE;
+    type = ProcessType.Cheetah;
+    status  = Constants.SERVICES_STATE_RUNNING;
+    hasWindow = false;
+    description = 'keeps track of all procs';
+
+
     constructor(){
         this._runningProcesses = [];
+        this._runningServices = [];
         this._runningProcessesImages = new Map<string, TaskBarPreviewImage[]>();
         RunningProcessService.instance = this; //I added this to access the service from a class, not component
+
+        this.addProcess(this.getProcessDetail());
+        this.addService(this.getServiceDetail());
     }
 
     addProcess(proccessToAdd:Process):void{
         this._runningProcesses.push(proccessToAdd)
+    }
+
+    addService(serviceToAdd:Service):void{
+        this._runningServices.push(serviceToAdd)
     }
 
     addProcessImage(appName:string, data:TaskBarPreviewImage):void{
@@ -146,7 +173,20 @@ export class RunningProcessService{
         return this._runningProcesses;
     }
 
+    getServices():Service[]{
+        return this._runningServices;
+    }
+
     processCount():number{
         return this._runningProcesses.length;
+    }
+
+
+    private getProcessDetail():Process{
+        return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
+    }
+
+    private getServiceDetail():Service{
+        return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
     }
 }

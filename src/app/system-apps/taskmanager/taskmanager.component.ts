@@ -2,11 +2,11 @@ import { Component, OnInit,OnDestroy, AfterViewInit, ViewChild, ElementRef, Rend
 import { Subject, Subscription, interval, switchMap } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { BaseComponent } from 'src/app/system-base/base/base.component';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
+import { ComponentType, ProcessType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { SortingInterface } from './sorting.interface';
-import { RefreshRates, RefreshRatesIntervals, TableColumns,DisplayViews } from './taskmanager.enum';
+import { RefreshRates, RefreshRatesIntervals, TableColumns,DisplayViews, ResourceUtilization } from './taskmanager.enum';
 import { NotificationService } from 'src/app/shared/system-service/notification.service';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import * as htmlToImage from 'html-to-image';
@@ -81,7 +81,9 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   SECONDS_DELAY = 250;
 
   processes:Process[] =[];
-  closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu"];
+  closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu",
+    "cmpnt_ref_svc", "file_mgr_svc", "file_svc", "menu_svc", "notification_svc", "pid_gen_svc", "rning_proc_svc", "scripts_svc",
+    "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc"];
   groupedData: any = {};
   selectedRefreshRate = 0;
 
@@ -430,86 +432,152 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   generateLies():void{
     const processes:Process[] = this._runningProcessService.getProcesses();
     const powerLevels:string[] = ['Very low','Low','Moderate','High','Very high'];
-    const maxUtilNum = 100;
-    const minUtilNum = 0;
+
+    const maxAppUtilNum = 30; // should be 100
+    const minAppUtilNum = 0;
+
+    const maxBkgrndProcUtilNum = 3;
+    const minBkgrndProcUtilNum = 0;
+
+    const maxCheetahProcUtilNum = 2;
+    const minCheetahProcUtilNum = 0;
+    const suspended = 'Suspended';
+
     const maxNum = 10;
     const minNum = 1;
-    const suspended = 'Suspended';
 
     this.sleepNumber == 0 ? 
       this.sleepNumber = this.getRandomNums(minNum, (maxNum*maxNum)*2) :  this.sleepNumber;
 
     this.processNumberToSuspend == 0 ? this.processNumberToSuspend =
-      processes[this.getRandomNums(minNum-1,processes.length-1)].getProcessId : this.processNumberToSuspend;
+      processes[this.getRandomNums(0,processes.length-1)].getProcessId : this.processNumberToSuspend;
 
     for(let i =0; i < processes.length; i++){
-      const tmpProcess = processes[i];
-      tmpProcess.setProcessStatus = '';
-      tmpProcess.setPowerUsage = powerLevels[0];
 
-      if(tmpProcess.getProcessId == this.processNumberToSuspend){
+      const currProcess = processes[i];
+      currProcess.setProcessStatus = '';
+      currProcess.setPowerUsage = powerLevels[0];
 
-        if(this.sleepCounter <= this.sleepNumber){
+      //background proc
+      if(currProcess.getType === ProcessType.Background){
 
-          tmpProcess.setProcessStatus = suspended;
-          tmpProcess.setCpuUsage = 0;
-          tmpProcess.setDiskUsage = 0;
-          tmpProcess.setMemoryUsage = 0;
-          tmpProcess.setNetworkUsage = 0;
-          tmpProcess.setGpuUsage = 0;
-          tmpProcess.setPowerUsage  = powerLevels[0];
-
-          this.sleepCounter++;
-        }else{
-          this.sleepCounter = 0;
-          this.processNumberToSuspend = 0;
-          this.sleepNumber = 0;
-          tmpProcess.setProcessStatus = '';
-          tmpProcess.setPowerUsage = powerLevels[0];
-        }
-      }else{
-        
         if(this.getRandomNums(minNum,maxNum) > 5){
-          tmpProcess.setCpuUsage = this.addTrailingZeros(this.getRandomFloatingNums(minUtilNum, maxUtilNum));
+          currProcess.setCpuUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minBkgrndProcUtilNum, maxBkgrndProcUtilNum));
         }
         if(this.getRandomNums(minNum,maxNum) <= 1){
-          tmpProcess.setDiskUsage = this.addTrailingZeros(this.getRandomFloatingNums(minUtilNum, maxUtilNum));
+          currProcess.setDiskUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minBkgrndProcUtilNum, maxBkgrndProcUtilNum));
         }
         if(this.getRandomNums(minNum,maxNum) > 7){
-          tmpProcess.setMemoryUsage = this.addTrailingZeros(this.getRandomFloatingNums(minUtilNum, maxUtilNum));
+          currProcess.setMemoryUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minBkgrndProcUtilNum, maxBkgrndProcUtilNum));
         }
         if(this.getRandomNums(minNum,maxNum) <= 2){
-          tmpProcess.setNetworkUsage = this.addTrailingZeros(this.getRandomFloatingNums(minUtilNum, maxUtilNum));
+          currProcess.setNetworkUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minBkgrndProcUtilNum, maxBkgrndProcUtilNum));
         } 
         if(this.getRandomNums(minNum,maxNum) <= 1){
-          tmpProcess.setGpuUsage = this.addTrailingZeros(this.getRandomFloatingNums(minUtilNum, maxUtilNum));
+          currProcess.setGpuUsage =  0; 
         } 
-        if(this.getRandomNums(minNum,maxNum) <= 1){
-          tmpProcess.setPowerUsage = powerLevels[this.getRandomNums(0,4)];
+        if(this.getRandomNums(minNum,maxNum) <= 9){
+          currProcess.setPowerUsage = powerLevels[this.getRandomNums(0,1)];
         } 
-      }
 
+      }else if(currProcess.getType === ProcessType.Cheetah){
+        if(this.getRandomNums(minNum,maxNum) > 5){
+          currProcess.setCpuUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minCheetahProcUtilNum, maxCheetahProcUtilNum));
+        }
+        if(this.getRandomNums(minNum,maxNum) <= 1){
+          currProcess.setDiskUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minCheetahProcUtilNum, maxCheetahProcUtilNum));
+        }
+        if(this.getRandomNums(minNum,maxNum) > 7){
+          currProcess.setMemoryUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minCheetahProcUtilNum, maxCheetahProcUtilNum));
+        }
+        if(this.getRandomNums(minNum,maxNum) <= 2){
+          currProcess.setNetworkUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minCheetahProcUtilNum, maxCheetahProcUtilNum));
+        } 
+        if(this.getRandomNums(minNum,maxNum) >= 1){
+          currProcess.setGpuUsage = 0;
+        } 
+        if(this.getRandomNums(minNum,maxNum) <= 9){
+          currProcess.setPowerUsage = powerLevels[this.getRandomNumsBiased(0,1)];
+        } 
+      }else{
+        if(currProcess.getProcessId == this.processNumberToSuspend){
+
+          if(this.sleepCounter <= this.sleepNumber){
+  
+            currProcess.setProcessStatus = suspended;
+            currProcess.setCpuUsage = 0;
+            currProcess.setDiskUsage = 0;
+            currProcess.setMemoryUsage = 0;
+            currProcess.setNetworkUsage = 0;
+            currProcess.setGpuUsage = 0;
+            currProcess.setPowerUsage  = powerLevels[0];
+  
+            this.sleepCounter++;
+          }else{
+            this.sleepCounter = 0;
+            this.processNumberToSuspend = 0;
+            this.sleepNumber = 0;
+            currProcess.setProcessStatus = '';
+            currProcess.setPowerUsage = powerLevels[0];
+          }
+        }else{
+
+          if(this.getRandomNums(minNum,maxNum) > 5 ){
+            currProcess.setCpuUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minAppUtilNum, maxAppUtilNum));
+          }
+          if(this.getRandomNums(minNum,maxNum) <= 1){
+            currProcess.setDiskUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minAppUtilNum, maxAppUtilNum));
+          }
+          if(this.getRandomNums(minNum,maxNum) > 7){
+            currProcess.setMemoryUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minAppUtilNum, maxAppUtilNum));
+          }
+          if(this.getRandomNums(minNum,maxNum) <= 2){
+            currProcess.setNetworkUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minAppUtilNum, maxAppUtilNum));
+          } 
+          if(this.getRandomNums(minNum,maxNum) <= 1){
+            currProcess.setGpuUsage = this.addTrailingZeros(this.getRandomFloatingNumsBiased(minAppUtilNum, maxAppUtilNum));
+          } 
+          if(this.getRandomNums(minNum,maxNum) <= 9){
+            currProcess.setPowerUsage = powerLevels[this.getRandomNumsBiased(0,4)];
+          } 
+
+        }
+      }
     }
     this.processes = processes;
     this.sumRowValues(processes);
   }
 
-  sumRowValues(processes:Process[]):void{
-    this.cpuUtil = Math.round(processes.reduce((n, {getCpuUsage}) => n + getCpuUsage, 0));
-    this.memUtil = Math.round(processes.reduce((n, {getMemoryUsage}) => n + getMemoryUsage, 0));
-    this.diskUtil = Math.round(processes.reduce((n, {getDiskUsage}) => n + getDiskUsage, 0));
-    this.networkUtil = Math.round(processes.reduce((n, {getNetworkUsage}) => n + getNetworkUsage, 0));
-    this.gpuUtil = Math.round(processes.reduce((n, {getGpuUsage}) => n + getGpuUsage, 0));
-  }
+  getRandomFloatingNumsBiased(min: number, max: number): number {
+    const rand = Math.random(); // Generates a number between 0 and 1
+
+    // Bias: Squaring the random value skews results toward lower numbers
+    // Can use Math.pow(rand, 8) for even stronger bias
+    const biasedRand = Math.pow(rand, 7); 
+
+    // Scale to the desired range
+    const num = min + biasedRand * (max - min);
+    return Math.round(num * 10) / 10; // Rounding to one decimal place
+}
 
   getRandomFloatingNums(min:number, max:number):number{
-    min = Math.floor(min);
-    max = Math.ceil(max);
-    return Math.floor(Math.random() * (max - min) + 10) / 10;
+    return Math.round((Math.random() * (max - min) + min) * 10) / 10;
   }
 
   getRandomNums(min:number, max:number) {
     return Math.floor(Math.random() * (max - min + 1) + min)
+  }
+
+  getRandomNumsBiased(min:number, max:number) {
+    const rand = Math.random(); // Generates a number between 0 and 1
+
+    // Bias: Squaring the random value skews results toward lower numbers
+    // Can use Math.pow(rand, 8) for even stronger bias
+    const biasedRand = Math.pow(rand, 7); 
+
+    // Scale to the desired range
+    const num = min + biasedRand * (max - min);
+    return Math.floor(Math.round(num * 10) / 10); // Rounding to one decimal place
   }
 
   addTrailingZeros(num:number):number {
@@ -521,6 +589,15 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     }
     return num;
   }
+
+  sumRowValues(processes:Process[]):void{
+    this.cpuUtil = Math.round(processes.reduce((n, {getCpuUsage}) => n + getCpuUsage, 0));
+    this.memUtil = Math.round(processes.reduce((n, {getMemoryUsage}) => n + getMemoryUsage, 0));
+    this.diskUtil = Math.round(processes.reduce((n, {getDiskUsage}) => n + getDiskUsage, 0));
+    this.networkUtil = Math.round(processes.reduce((n, {getNetworkUsage}) => n + getNetworkUsage, 0));
+    this.gpuUtil = Math.round(processes.reduce((n, {getGpuUsage}) => n + getGpuUsage, 0));
+  }
+
 
   groupTableBy() {
     const groupedData:Record<string, Process[]> = {};
@@ -561,7 +638,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this._runningProcessService.closeProcessNotify.next(processToClose);
     }else{
       //alert(`The app: ${processToClose.getProcessName} is not allowed to be closed`)
-      const msg = `The app:${processToClose.getProcessName} is not allowed to be closed`;
+      const msg = `The proc:${processToClose.getProcessName} is not allowed to be closed`;
       this._notificationService.InfoNotify.next(msg);
     }
   }
@@ -787,22 +864,22 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     let  baseStyle: Record<string, unknown> = {};
 
     if(typeof cellValue == "number"){
-      if(cellValue <= 2.5){
+      if(cellValue <= ResourceUtilization.LOW){
       return baseStyle = {
           'text-align':'right',
           'background-color': '#fff4c4'
         };
-      }else if(cellValue > 2.5 && cellValue <= 5){
+      }else if(cellValue > ResourceUtilization.LOW && cellValue <= ResourceUtilization.MEDIUM){
         return baseStyle = {
           'text-align':'right',
           'background-color': '#ffecac'
         };
-      }else if(cellValue > 5.0 && cellValue <= 7.5){
+      }else if(cellValue > ResourceUtilization.MEDIUM && cellValue <= ResourceUtilization.HIGH){
         return baseStyle = {
           'text-align':'right',
           'background-color': '#ffa41c'
         };
-      }else if (cellValue > 7.5){
+      }else if (cellValue > ResourceUtilization.HIGH){
         return baseStyle = {
           'text-align':'right',
           'background-color': '#fc6c30', 
@@ -838,24 +915,27 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   setThHeaderContainerColor(cellValue:number, cellName:string){
 
     const sortColoumn = this._sorting.column;
+    const maxHighUtil = 100;
+    const veryHighUtil = 90;
+    const lowUtil = 10;
     if(cellName == sortColoumn){
       const divElmnt =  document.getElementById(`${cellName.toLowerCase()}Div-${this.processId}`) as HTMLElement;  
       const divElmnt1 =  document.getElementById(`${cellName.toLowerCase()}Div1-${this.processId}`) as HTMLElement; 
       const utilDivElmnt =  document.getElementById(`${cellName.toLowerCase()}UtilDiv-${this.processId}`) as HTMLElement; 
 
-      if(cellValue < 10){
+      if(cellValue < lowUtil){
         divElmnt.style.backgroundColor = '#d0ecfc';
         divElmnt1.style.backgroundColor = '#d0ecfc';
         utilDivElmnt.style.right = '-40%';
-      }else if(cellValue >= 10){
-        divElmnt.style.backgroundColor = (cellValue >= 90)?  '#fcc4ac' : '#d0ecfc';
-        divElmnt1.style.backgroundColor = (cellValue >= 90)?  '#fcc4ac' : '#d0ecfc';
+      }else if(cellValue >= lowUtil){
+        divElmnt.style.backgroundColor = (cellValue >= veryHighUtil)?  '#fcc4ac' : '#d0ecfc';
+        divElmnt1.style.backgroundColor = (cellValue >= veryHighUtil)?  '#fcc4ac' : '#d0ecfc';
         
-        divElmnt.style.borderLeft = (cellValue >= 90)? '#fcc4ac': '';
-        divElmnt1.style.borderLeft = (cellValue >= 90)? '#fcc4ac': '';
-        divElmnt.style.borderRight = (cellValue >= 90)? '#fcc4ac': '';
-        divElmnt1.style.borderRight = (cellValue >= 90)? '#fcc4ac': '';
-        utilDivElmnt.style.right = (cellValue >= 100)? '-5%': '-20%';
+        divElmnt.style.borderLeft = (cellValue >= veryHighUtil)? '#fcc4ac': '';
+        divElmnt1.style.borderLeft = (cellValue >= veryHighUtil)? '#fcc4ac': '';
+        divElmnt.style.borderRight = (cellValue >= veryHighUtil)? '#fcc4ac': '';
+        divElmnt1.style.borderRight = (cellValue >= veryHighUtil)? '#fcc4ac': '';
+        utilDivElmnt.style.right = (cellValue >= maxHighUtil)? '-5%': '-20%';
       }
     } 
     else{
@@ -864,17 +944,17 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       const utilDivElmnt =  document.getElementById(`${cellName.toLowerCase()}UtilDiv-${this.processId}`) as HTMLElement; 
 
       if(divElmnt && divElmnt1 && utilDivElmnt){      
-        if(cellValue < 10){
+        if(cellValue < lowUtil){
           utilDivElmnt.style.right = '-40%';
-        }else if(cellValue >= 10){
-          divElmnt.style.backgroundColor = (cellValue >= 90)?  '#fcc4ac' : '#ffffff';
-          divElmnt1.style.backgroundColor = (cellValue >= 90)?  '#fcc4ac' : '#ffffff';
+        }else if(cellValue >= lowUtil){
+          divElmnt.style.backgroundColor = (cellValue >= veryHighUtil)?  '#fcc4ac' : '#ffffff';
+          divElmnt1.style.backgroundColor = (cellValue >= veryHighUtil)?  '#fcc4ac' : '#ffffff';
           
-          divElmnt.style.borderLeft = (cellValue >= 90)? '#fcc4ac': '';
-          divElmnt1.style.borderLeft = (cellValue >= 90)? '#fcc4ac': '';
-          divElmnt.style.borderRight = (cellValue >= 90)? '#fcc4ac': '';
-          divElmnt1.style.borderRight = (cellValue >= 90)? '#fcc4ac': '';
-          utilDivElmnt.style.right = (cellValue >= 100)? '-5%': '-20%';
+          divElmnt.style.borderLeft = (cellValue >= veryHighUtil)? '#fcc4ac': '';
+          divElmnt1.style.borderLeft = (cellValue >= veryHighUtil)? '#fcc4ac': '';
+          divElmnt.style.borderRight = (cellValue >= veryHighUtil)? '#fcc4ac': '';
+          divElmnt1.style.borderRight = (cellValue >= veryHighUtil)? '#fcc4ac': '';
+          utilDivElmnt.style.right = (cellValue >= maxHighUtil)? '-5%': '-20%';
         }
       }
     }

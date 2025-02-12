@@ -3,7 +3,7 @@ import { Component, ElementRef, OnInit, AfterViewInit } from '@angular/core';
 
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { FileInfo } from 'src/app/system-files/file.info';

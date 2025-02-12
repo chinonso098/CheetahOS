@@ -1,17 +1,38 @@
 import { Injectable } from "@angular/core";
+import { RunningProcessService } from "./running.process.service";
+import { Constants } from "src/app/system-files/constants";
+import { ProcessType } from "src/app/system-files/system.types";
+import { BaseService } from "./base.service.interface";
+import { Process } from "src/app/system-files/process";
+import { Service } from "src/app/system-files/service";
 
 @Injectable({
     providedIn: 'root'
 })
 
-export class ProcessIDService{
+export class ProcessIDService implements BaseService{
 
     private _activeProcessIds: number[];
     static instance: ProcessIDService;
 
+    private _runningProcessService:RunningProcessService;
+    
+    name = 'pid_gen_svc';
+    icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
+    processId = 0;
+    type = ProcessType.Cheetah;
+    status  = Constants.SERVICES_STATE_RUNNING;
+    hasWindow = false;
+    description = 'mananges adds/remmoves pids ';
+
     constructor(){
         this._activeProcessIds = [];
         ProcessIDService.instance = this; //I added this to access the service from a class, not component
+        this._runningProcessService = RunningProcessService.instance;
+
+        this.processId = this.getNewProcessId();
+        this._runningProcessService.addProcess(this.getProcessDetail());
+        this._runningProcessService.addService(this.getServiceDetail());
      }
 
     public getNewProcessId(): number{
@@ -42,5 +63,14 @@ export class ProcessIDService{
 
     public processCount():number{
         return this._activeProcessIds.length;
+    }
+
+
+    private getProcessDetail():Process{
+        return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
+    }
+
+    private getServiceDetail():Service{
+        return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
     }
 }

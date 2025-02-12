@@ -1,5 +1,5 @@
 import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { ComponentType } from 'src/app/system-files/system.types';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";

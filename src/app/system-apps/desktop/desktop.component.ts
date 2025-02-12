@@ -2,7 +2,7 @@ import { AfterViewInit, OnInit,OnDestroy, Component, ElementRef, ViewChild} from
 import { Subscription, interval} from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { BIRDS, GLOBE, HALO, RINGS, WAVE } from './vanta-object/vanta.interfaces';
 import { IconsSizes, SortBys } from './desktop.enums';
@@ -137,9 +137,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private MIN_NUMS_OF_DESKTOPS = 0;
   private MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - 1;
   private CURRENT_DESTOP_NUM = 0;
-  private CLIPPY_INIT_DELAY = 180000; // every 3mins is fine
-  private COLOR_CHANGE_DELAY = 35000; // every 35sec is fine
-  private COLOR_TRANSITION_DURATION = 5000; // 5sec
+  private CLIPPY_INIT_DELAY = 300000; // 5mins
+  private COLOR_CHANGE_DELAY = 60000; // 1min
+  private COLOR_TRANSITION_DURATION = 2000; // 2sec
 
   private MIN_NUM_COLOR_RANGE = 200;
   private MAX_NUM_COLOR_RANGE = 99999;
