@@ -30,7 +30,7 @@ export class TriggerProcessService{
     name = 'trgr_proc_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
     processId = 0;
-    type = ProcessType.Background;
+    type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
     description = 'inits componenets ';

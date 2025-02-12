@@ -47,7 +47,7 @@ export class RunningProcessService{
      * which is 4; meaning that whenever the System process is running, it will always be associated with Process ID 4
      */
     processId = Constants.RESERVED_ID_RUNNING_PROCESS_SERVICE;
-    type = ProcessType.Background;
+    type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
     description = 'keeps track of all procs';

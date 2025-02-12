@@ -112,7 +112,9 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   ];
 
 
-  constructor(runningProcessService:RunningProcessService ,  processIdService:ProcessIDService, componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService,
+  // the order of the service init matter.
+  //runningProcesssService must come first
+  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService,
     sessionMangamentServices:SessionManagmentService, notificationServices:NotificationService, stateManagmentService:StateManagmentService, menuService:MenuService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
