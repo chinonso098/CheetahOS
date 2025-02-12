@@ -2,8 +2,8 @@ import { Component, OnInit,OnDestroy, AfterViewInit, ViewChild, ElementRef, Rend
 import { Subject, Subscription, interval, switchMap } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { BaseComponent } from 'src/app/system-base/base/base.component';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
+import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { SortingInterface } from './sorting.interface';
 import { RefreshRates, RefreshRatesIntervals, TableColumns,DisplayViews } from './taskmanager.enum';
@@ -81,7 +81,9 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   SECONDS_DELAY = 250;
 
   processes:Process[] =[];
-  closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu"];
+  closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu",
+    "cmpnt_ref_svc", "file_mgr_svc", "file_svc", "menu_svc", "notification_svc", "pid_gen_svc", "rning_proc_svc", "scripts_svc",
+    "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc"];
   groupedData: any = {};
   selectedRefreshRate = 0;
 

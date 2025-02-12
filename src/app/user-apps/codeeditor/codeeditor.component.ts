@@ -5,8 +5,8 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 
-import { BaseComponent } from 'src/app/system-base/base/base.component';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
+import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 
 import * as htmlToImage from 'html-to-image';

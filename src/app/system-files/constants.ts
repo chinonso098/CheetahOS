@@ -25,6 +25,10 @@ export namespace Constants{
     export const NESTED_MENU_OPTION =  'nested-menu';
     export const FILE_EXPLORER_FILE_MANAGER_MENU_OPTION = 'file-explorer-file-manager-menu';
 
+    export const RESERVED_ID_RUNNING_PROCESS_SERVICE = 4;
+    export const SERVICES_STATE_RUNNING = 'Running';
+    export const SERVICES_STATE_STOPPED = 'Stopped';
+
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
         '.png',

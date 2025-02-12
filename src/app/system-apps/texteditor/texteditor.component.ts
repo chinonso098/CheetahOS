@@ -8,8 +8,8 @@ import { FileService } from 'src/app/shared/system-service/file.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { Constants } from "src/app/system-files/constants";
 
-import { BaseComponent } from 'src/app/system-base/base/base.component';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
+import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';

@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { ComponentType } from 'src/app/system-files/system.types';
 import { NotificationService } from '../../system-service/notification.service';
 import { NotificationType } from 'src/app/system-files/notification.type';
 import { MenuService } from '../../system-service/menu.services';

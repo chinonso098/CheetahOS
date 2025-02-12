@@ -61,7 +61,7 @@
 /* Custom styles for .table-responsive (Optional) */
 .tskmgr-table-cntnr {
   width: 680px;
-  height:265px;
+  height:270px;
   /* overflow: auto; Enable horizontal/vertical scrolling when needed */
   border-top:  none;
   /* padding-bottom: 10px; */
@@ -89,7 +89,7 @@
 }
 
 .tskmgr-table-header-cntnr{ 
-  width: 680px;
+  width:703px;
   height: 50px ;
 }
 
@@ -108,8 +108,8 @@
 }
 
 .tskmgr-table-body-cntnr{  
-  width: 680px;
-  height:215px;
+  width:703px;
+  height:220px;
   overflow-y: auto;
   overflow-x: hidden;
 }

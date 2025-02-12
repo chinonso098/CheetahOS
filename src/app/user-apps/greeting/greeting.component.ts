@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { BaseComponent } from 'src/app/system-base/base/base.component';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
+import { ComponentType } from 'src/app/system-files/system.types';
 
 @Component({
   selector: 'cos-greeting',

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { ComponentType } from 'src/app/system-files/system.types';
 
 @Component({
   selector: 'cos-taskbarentry',

@@ -2,8 +2,8 @@ import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild, ElementRef} fro
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { ComponentType } from 'src/app/system-files/component.types';
-import { BaseComponent } from 'src/app/system-base/base/base.component';
+import { ComponentType } from 'src/app/system-files/system.types';
+import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { Process } from 'src/app/system-files/process';
 import { FileEntry } from 'src/app/system-files/file.entry';
 import { FileInfo } from 'src/app/system-files/file.info';
@@ -114,7 +114,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this._runningProcessService.addProcess(this.getComponentDetail());
 
     this._dirFilesUpdatedSub = this._fileService.dirFilesUpdateNotify.subscribe(() =>{
-      if(this._fileService.getEventOrginator() === this.name){
+      if(this._fileService.getEventOriginator() === this.name){
         this.loadFilesInfoAsync();
         this._fileService.removeEventOriginator();
       }

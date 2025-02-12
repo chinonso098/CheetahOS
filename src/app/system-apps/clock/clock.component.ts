@@ -1,7 +1,7 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 import { Clock } from './clock';
 import { Subscription, timer } from 'rxjs';
-import { ComponentType } from 'src/app/system-files/component.types';
+import { ComponentType } from 'src/app/system-files/system.types';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { Process } from 'src/app/system-files/process';
