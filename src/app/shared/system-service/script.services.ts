@@ -83,10 +83,10 @@ export class ScriptService {
 
 
     private getProcessDetail():Process{
-        return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
+      return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
     }
 
     private getServiceDetail():Service{
-        return new Service(this.processId, this.name, this.icon, this.type, this.description)
+      return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
     }
 }

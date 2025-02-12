@@ -58,7 +58,7 @@ export class RunningProcessService{
         this._runningServices = [];
         this._runningProcessesImages = new Map<string, TaskBarPreviewImage[]>();
         RunningProcessService.instance = this; //I added this to access the service from a class, not component
-        
+
         this.addProcess(this.getProcessDetail());
         this.addService(this.getServiceDetail());
     }
@@ -187,6 +187,6 @@ export class RunningProcessService{
     }
 
     private getServiceDetail():Service{
-        return new Service(this.processId, this.name, this.icon, this.type, this.description)
+        return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
     }
 }

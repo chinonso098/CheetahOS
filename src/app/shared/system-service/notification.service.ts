@@ -45,6 +45,6 @@ export class NotificationService{
     }
 
     private getServiceDetail():Service{
-        return new Service(this.processId, this.name, this.icon, this.type, this.description)
+        return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
     }
 }

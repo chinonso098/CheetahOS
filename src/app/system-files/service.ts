@@ -9,14 +9,14 @@ export class Service{
     private _status:string;
 
 
-    constructor(processId:number, serviceName:string, icon:string, type:string, serviceDescription:string){
+    constructor(processId:number, serviceName:string, icon:string, type:string, serviceDescription:string, status:string){
         this._processId = processId;
         this._serviceName = serviceName;
         this._icon = icon;
         this._hasWindow = false;
         this._serviceDescription = serviceDescription
         this._type = type;
-        this._status = '';
+        this._status = status;
     }
 
     public get getProcessId(){
