@@ -12,6 +12,13 @@ export enum RefreshRatesIntervals {
     PAUSED = 36000000, //24hrs
  }
 
+ export enum ResourceUtilization { 
+   LOW = 25, 
+   MEDIUM = 50,
+   HIGH = 75,
+   VERY_HIGH = 1000,
+}
+
  export enum TableColumns { 
     NAME = 'Name',
     STATUS = 'Status',
