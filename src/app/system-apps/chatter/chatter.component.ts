@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { FormGroup, FormBuilder } from '@angular/forms';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -7,6 +8,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ChatterService } from 'src/app/shared/system-service/chatter.service';
+import { ChatMessage } from './chat.message';
 
 @Component({
   selector: 'cos-chatter',
@@ -22,6 +24,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _runningProcessService:RunningProcessService;
   private _windowService:WindowService;
   private _chatService:ChatterService;
+  chatterForm!: FormGroup;
+  private _formBuilder;
 
   userName = false;
   userNameValue = '';
@@ -32,6 +36,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   sendDisable = true;
   MSNExpand = { expand: false, show: false, x: 50, y: 120, hide: false, focusItem: false };
 
+  chatPrompt = 'Type a message';
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
   name = 'chatter';
@@ -39,17 +44,24 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   type = ComponentType.System;
   displayName = 'Chatter';
 
-  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, windowService:WindowService, chatService:ChatterService) { 
+  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
+    windowService:WindowService, chatService:ChatterService, formBuilder:FormBuilder) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
     this._chatService = chatService;
+    this._formBuilder = formBuilder
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
   }
 
   ngOnInit(): void {
+
+    this.chatterForm = this._formBuilder.nonNullable.group({
+      msgText: '',
+    });
+
     this._chatService.chatData$.subscribe(data => {
       this.chatData = data;
       this.loadedMessages = data.slice(-40);
@@ -64,6 +76,21 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   ngOnDestroy():void{
     1
+  }
+
+  onKeyDownOnWindow(evt:KeyboardEvent):void{
+    this.focusOnInput();
+    if (evt.key === "Tab") {
+      // Prevent tab from moving focus
+      evt.preventDefault();
+    }
+  }
+
+  focusOnInput():void{
+    const chatterMsgBoxElm= document.getElementById('chatterMsgBox') as HTMLInputElement;
+    if(chatterMsgBoxElm){
+      chatterMsgBoxElm?.focus();
+    }
   }
 
   scrollToBottom() {
@@ -98,12 +125,14 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   createChat() {
     if (this.chatValue.trim().length === 0) return;
   
-    const newMessage = {
-      name: this.userNameValue || 'Anonymous',
-      chat: this.chatValue,
-      date: new Date().toISOString(),
-      dev: false, // You can adjust this based on your app logic
-    };
+    const newMessage = new ChatMessage(this.chatValue, this.userNameValue, '')
+    
+    // {
+    //   name: this.userNameValue || 'Anonymous',
+    //   chat: this.chatValue,
+    //   date: new Date().toISOString(),
+    //   dev: false, // You can adjust this based on your app logic
+    // };
   
     // Update the chat data
     this._chatService.setChatData([...this.chatData, newMessage]);
