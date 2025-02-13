@@ -1,59 +1,39 @@
 <cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setChatterWindowToFocus(this.processId)">
     <div class="chatter-main-container" #chatterContainer>
-        <div class="folder_folder-MSN"
-        (click)="$event.stopPropagation()"
-        [ngStyle]="MSNExpand.expand ? { transform: 'scale(1.2)' } : {}"
-      >
-        <!-- Username Modal -->
-        <div *ngIf="userName" class="Username_input_div_active">
-          <div class="container_username">
-            <div class="form_banner">
-              <p class="username_text_banner">Username</p>
-              <div class="close_form_banner" (click)="userName = false">×</div>
+      <div class="chatter-content-container">
+
+        <div class="chatter-sidebar-container">
+          <div class="chatter-sidebar-content" (click)="1" (mouseenter)="1" (mouseleave)="1">
+            <div class="chatter-sidebar-icon">
+                <figure class="chatter-sidebar-figure">
+                    <img class="chatter-sidebar-img" [src]="'osdrive/Cheetah/System/Imageres/chatter_2.png'"/>
+                </figure>
             </div>
-            <form (submit)="$event.preventDefault()">
-              <p>Username:</p>
-              <input type="text" maxlength="20" placeholder="Enter your username here..."
-                [(ngModel)]="userNameValue" name="username">
-              <div class="ok_cancel_username">
-                <!-- <button (click)="userName = false; localStorage.setItem('username', userNameValue)">Ok</button>
-                <button (click)="userName = false; userNameValue = localStorage.getItem('username') || ''">Cancel</button> -->
-              </div>
-            </form>
           </div>
         </div>
-      
-        <!-- Chat Header -->
-        <div class="folder_dragbar-MSN"
-          (dblclick)="handleExpandStateToggle()"
-          (touchstart)="handleExpandStateToggleMobile()">
-          <div class="folder_barname-MSN">
-            <span>MSN</span>
+
+        <div class="chatter-chat-container">
+          <div class="chatter-user-info-container">
+            <div class="chatter-user-info-content" >
+              <span class="span chatter-head"> 
+                <div class="chatter-user-acronym"> HW </div>
+              </span>
+              <!-- 
+              this div will contain the textbox, that allows the user to change name. show onClick, hide onClickAway
+              <div></div> -->
+              <span class="span chatter-mid"> Hello, World </span>
+            </div>
+
+          </div>
+          <div class="chatter-chat-window-content">
+
+          </div>
+
+          <div class="chatter-chat-texbox-container">
+            <div class="chatter-chat-texbox"> </div>
+            <div class="chatter-chat-send"></div>
           </div>
         </div>
-      
-        <!-- Chat Content -->
-        <div class="folder_content-MSN">
-          <span *ngIf="chatData.length === 0">LOADING.......</span>
-          <div #topOfMessagesRef></div>
-          <div *ngFor="let chat of loadedMessages">
-            <p>
-              <span [style.color]="chat?.dev ? 'red' : 'blue'">&lt;{{ chat?.dev ? 'Dev' : chat.name }}&gt;</span>:
-              <span [style.color]="chat?.dev ? 'red' : '#171616'">{{ chat.chat }}</span>
-            </p>
-          </div>
-          <div #endOfMessagesRef></div>
-        </div>
-      
-        <!-- Chat Input -->
-        <div class="enter_text_div">
-          <textarea maxlength="100" placeholder="Enter your message here..."
-            [(ngModel)]="chatValue" name="chat"
-            (keydown.enter)="createChat()">
-          </textarea>
-          <button [disabled]="sendDisable" (click)="createChat()">Send</button>
-        </div>
-      </div>
-      
+      </div>      
     </div>
 </cos-window>
