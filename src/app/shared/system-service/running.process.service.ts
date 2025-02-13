@@ -22,8 +22,6 @@ export class RunningProcessService{
     processListChangeNotify: Subject<void> = new Subject<void>();
 
 
-
-
     name = 'rning_proc_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
     /**
@@ -70,7 +68,6 @@ export class RunningProcessService{
             this._runningProcesses.splice(procIndex, deleteCount)
         }
     }
-
 
     removeEventOriginator():void{
         this._eventOriginator = '';

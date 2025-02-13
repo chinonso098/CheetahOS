@@ -44,7 +44,7 @@ export class WindowService{
     
 
 
-    name = 'window_cmpnt_svc';
+    name = 'window_mgmt_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
     processId = 0;
     type = ProcessType.Cheetah;
