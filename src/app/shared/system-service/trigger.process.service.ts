@@ -9,12 +9,13 @@ import { ProcessIDService } from "./process.id.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { WindowService } from "./window.service";
+import { BaseService } from "./base.service.interface";
 
 @Injectable({
     providedIn: 'root'
 })
 
-export class TriggerProcessService{
+export class TriggerProcessService implements BaseService{
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;

@@ -8,13 +8,14 @@ import { ProcessType } from "src/app/system-files/system.types";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { Service } from "src/app/system-files/service";
+import { BaseService } from "./base.service.interface";
 
 
 @Injectable({
     providedIn: 'root'
 })
 
-export class MenuService{
+export class MenuService implements BaseService{
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;

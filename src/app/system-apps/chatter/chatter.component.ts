@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -6,6 +6,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { ChatterService } from 'src/app/shared/system-service/chatter.service';
 
 @Component({
   selector: 'cos-chatter',
@@ -14,9 +15,22 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 })
 export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
 
+  @ViewChild('endOfMessagesRef') endOfMessagesRef!: ElementRef;
+  @ViewChild('topOfMessagesRef') topOfMessagesRef!: ElementRef;
+
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-    private _windowService:WindowService;
+  private _windowService:WindowService;
+  private _chatService:ChatterService;
+
+  userName = false;
+  userNameValue = '';
+  chatValue = '';
+  chatData: any[] = [];
+  loadedMessages: any[] = [];
+  lastTapTime = 0;
+  sendDisable = true;
+  MSNExpand = { expand: false, show: false, x: 50, y: 120, hide: false, focusItem: false };
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
@@ -25,17 +39,23 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   type = ComponentType.System;
   displayName = 'Chatter';
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService ,windowService:WindowService) { 
+  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, windowService:WindowService, chatService:ChatterService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
+    this._chatService = chatService;
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
   }
 
   ngOnInit(): void {
-    1
+    this._chatService.chatData$.subscribe(data => {
+      this.chatData = data;
+      this.loadedMessages = data.slice(-40);
+    });
+
+    setTimeout(() => this.scrollToBottom(), 1500);
   }
 
   ngAfterViewInit(): void {
@@ -45,6 +65,56 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   ngOnDestroy():void{
     1
   }
+
+  scrollToBottom() {
+    setTimeout(() => {
+      if (this.endOfMessagesRef) {
+        this.endOfMessagesRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 1500);
+  }
+
+  loadMoreMessages() {
+    const currentLength = this.loadedMessages.length;
+    const moreMessages = this.chatData.slice(Math.max(this.chatData.length - currentLength - 20, 0), this.chatData.length - currentLength);
+    
+    setTimeout(() => {
+      this.loadedMessages = [...moreMessages, ...this.loadedMessages];
+    }, 1500);
+  }
+
+  handleExpandStateToggle() {
+    this.MSNExpand.expand = !this.MSNExpand.expand;
+  }
+
+  handleExpandStateToggleMobile() {
+    const now = Date.now();
+    if (now - this.lastTapTime < 300) {
+      this.handleExpandStateToggle();
+    }
+    this.lastTapTime = now;
+  }
+
+  createChat() {
+    if (this.chatValue.trim().length === 0) return;
+  
+    const newMessage = {
+      name: this.userNameValue || 'Anonymous',
+      chat: this.chatValue,
+      date: new Date().toISOString(),
+      dev: false, // You can adjust this based on your app logic
+    };
+  
+    // Update the chat data
+    this._chatService.setChatData([...this.chatData, newMessage]);
+  
+    // Reset input
+    this.chatValue = '';
+  
+    // Scroll to bottom
+    this.scrollToBottom();
+  }
+  
 
   setChatterWindowToFocus(pid:number):void{
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);

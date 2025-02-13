@@ -8,11 +8,12 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
+import { BaseService } from "./base.service.interface";
 @Injectable({
     providedIn: 'root'
 })
 
-export class StateManagmentService{
+export class StateManagmentService implements BaseService{
 
     static instance: StateManagmentService;
     private _appStateManagmentService:Map<string, unknown>;  

@@ -4,13 +4,14 @@ import { Constants } from "src/app/system-files/constants";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { ProcessType } from "src/app/system-files/system.types";
+import { BaseService } from "./base.service.interface";
 
 
 @Injectable({
     providedIn: 'root'
 })
 
-export class RunningProcessService{
+export class RunningProcessService implements BaseService{
 
     static instance: RunningProcessService;
     private _runningProcesses:Process[];
