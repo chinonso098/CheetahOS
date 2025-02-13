@@ -4,13 +4,14 @@ import { Constants } from "src/app/system-files/constants";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { ProcessType } from "src/app/system-files/system.types";
+import { BaseService } from "./base.service.interface";
 
 
 @Injectable({
     providedIn: 'root'
 })
 
-export class RunningProcessService{
+export class RunningProcessService implements BaseService{
 
     static instance: RunningProcessService;
     private _runningProcesses:Process[];
@@ -20,8 +21,6 @@ export class RunningProcessService{
     closeProcessNotify: Subject<Process> = new Subject<Process>();
     changeProcessContentNotify:Subject<void> = new Subject<void>();
     processListChangeNotify: Subject<void> = new Subject<void>();
-
-
 
 
     name = 'rning_proc_svc';
@@ -70,7 +69,6 @@ export class RunningProcessService{
             this._runningProcesses.splice(procIndex, deleteCount)
         }
     }
-
 
     removeEventOriginator():void{
         this._eventOriginator = '';

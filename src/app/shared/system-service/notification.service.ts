@@ -6,13 +6,14 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
+import { BaseService } from "./base.service.interface";
 
 
 @Injectable({
     providedIn: 'root'
 })
 
-export class NotificationService{
+export class NotificationService implements BaseService{
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;

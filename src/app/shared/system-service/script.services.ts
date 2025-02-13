@@ -5,6 +5,7 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
+import { BaseService } from "./base.service.interface";
 
 interface Script {
     name: string;
@@ -19,7 +20,7 @@ interface Scripts {
     providedIn: 'root'
 })
 
-export class ScriptService {
+export class ScriptService implements BaseService {
 
   private _runningProcessService:RunningProcessService;
   private _processIdService:ProcessIDService;
@@ -81,12 +82,11 @@ export class ScriptService {
     });
   }
 
+  private getProcessDetail():Process{
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
+  }
 
-    private getProcessDetail():Process{
-      return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
-    }
-
-    private getServiceDetail():Service{
-      return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
-    }
+  private getServiceDetail():Service{
+    return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
+  }
 }
