@@ -844,54 +844,49 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this.alignHeaderAndBodyWidth(colNum);
   }
 
-  // alignHeaderAndBodyWidth() {
-  //   const tableHeader = this.tskMgrTableHeaderCntnt.nativeElement;
-  //   const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
-
-  //   // console.log('table - bodyRow.r0:', tableBody.rows[0] );
-  //   // console.log('table - bodyRow.r0.c1:', tableBody.rows[0].cells[0]);
-  //   // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].offsetWidth);
-  //   // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].getBoundingClientRect().width);
-
-  //   const cellWidth = tableBody.rows[0].cells[0].getBoundingClientRect().width;
-  //   this._renderer.setStyle(tableHeader.rows[0].cells[0], 'min-width', cellWidth + 'px');
-  //   this._renderer.setStyle(tableHeader.rows[0].cells[0], 'width', cellWidth + 'px');
-  // }
-
   alignHeaderAndBodyWidth(hColIdx?:number) {
-    const hRow = 0;
-    let hCol = 0;
     const tableHeader = this.tskMgrTableHeaderCntnt.nativeElement;
     const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
-
-    hCol = (hColIdx === undefined)? hCol: hColIdx;
 
     // console.log('table - bodyRow.r0:', tableBody.rows[0] );
     // console.log('table - bodyRow.r0.c1:', tableBody.rows[0].cells[0]);
     // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].offsetWidth);
     // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].getBoundingClientRect().width);
 
+    const hRow = 0;
+    let hCol = 0;
+
+    hCol = (hColIdx === undefined)? hCol: hColIdx;
     const cellWidth = tableBody.rows[hRow].cells[hCol].getBoundingClientRect().width;
     this._renderer.setStyle(tableHeader.rows[hRow].cells[hCol], 'min-width', cellWidth + 'px');
     this._renderer.setStyle(tableHeader.rows[hRow].cells[hCol], 'width', cellWidth + 'px');
   }
 
-  synchronizeHeaderAndBodyWidth(data: string[]) {
+  synchronizeBodyCntntAndBodyCntnr(data:string[]) {
     //console.log('Received from directive:', columnId);
-    const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
-    const tbodyWidth = tableBody.getBoundingClientRect().width;
-    this.tskMgrTableBodyCntnr.nativeElement.style.width = `${tbodyWidth}px`;
+    /**
+     * on first load there is a mis-match between the body cntnr
+     * and the body content, causing a clipping
+     */
+    // const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
+    // const tbodyWidth = tableBody.getBoundingClientRect().width;
+    // this.tskMgrTableBodyCntnr.nativeElement.style.width = `${tbodyWidth}px`;
 
-
+    const tdId = data[0];
     for(let i =0; i <= this.processes.length; i++){    
-      const procName =  document.getElementById(`procName-${i}`) as HTMLElement;
-      if(procName){
-        const px_offSet = 44;
-        console.log(`new width: ${data[1]}px`);
-        console.log(`new width -  offset: ${Number(data[1]) - px_offSet}px`)
-        procName.style.width = `${Number(data[1]) - px_offSet}px`;
+      if(tdId === 'th-0') {
+        const procName =  document.getElementById(`procName-${i}`) as HTMLElement;
+        if(procName){
+          const px_offSet = 44;
+          procName.style.width = `${Number(data[1]) - px_offSet}px`;
+        }
+      }else if(tdId === 'th-1'){
+        const procType =  document.getElementById(`procType-${i}`) as HTMLElement;
+        if(procType){
+          const px_offSet = 10;
+          procType.style.width =`${Number(data[1]) - px_offSet}px`;
+        }
       }
-
     }
   }
 

@@ -83,8 +83,7 @@
                         <thead #tskMgrTableHeaderCntnt>
                           <div style="height:10px; border-top: none;"></div>
                           <tr (contextmenu)="showContextMenu($event)" (click)="hideContextMenu()">      
-                              <!-- style="min-width:146px;" -->        
-                            <th [style]="thStyle" (click)="sortTable('Name', true)"  columnResize  (dataEvent)="synchronizeHeaderAndBodyWidth($event)" id="th-0">
+                            <th [style]="thStyle" (click)="sortTable('Name', true)"  columnResize  (dataEvent)="synchronizeBodyCntntAndBodyCntnr($event)" id="th-0">
                               <div  class="tskmgr-sort-icon-cntnr-basic">
                                 <span class="tskmgr-sort-icon"  *ngIf="isDescSorting('Name')">v</span>
                                 <span class="tskmgr-sort-icon"  *ngIf="isAscSorting('Name')">ᴧ</span>
@@ -93,8 +92,7 @@
                                 <span class="tskmgr-th-span-name"> Name </span>
                               </div>
                             </th>
-                              <!-- style="min-width:123px;" --> 
-                            <th [style]="thStyle1" (click)="sortTable('Type', true)" columnResize id="th-1">               
+                            <th [style]="thStyle1" (click)="sortTable('Type', true)" columnResize (dataEvent)="synchronizeBodyCntntAndBodyCntnr($event)" id="th-1">               
                               <div  class="tskmgr-sort-icon-cntnr-basic">
                                 <span *ngIf="isDescSorting('Type')">v</span>
                                 <span *ngIf="isAscSorting('Type')">ᴧ</span>
@@ -294,10 +292,10 @@
                                       <figcaption class="tskmgr-figcaption0"><p class="truncate" id="procName-{{i}}">{{process.getProcessName}}</p></figcaption>
                                   </figure>
                               </td>
-                              <td> <p class="truncate" id="procType">{{process.getType}}</p></td>
+                              <td> <p class="truncate" id="procType-{{i}}">{{process.getType}}</p></td>
                               <td>
                                   <figure class="tskmgr-figcaption0" *ngIf = 'process.getProcessStatus === "Suspended"' style="top: 1px; position: relative; right: -75%;"> 
-                                      <img class="tskmgr-img0" style="height: 14px; width: 14px;" [src]="eco_icon">
+                                      <img class="tskmgr-img0" style="height: 14px; width: 14px;" [src]="'osdrive/Cheetah/System/Imageres/econo.png'">
                                   </figure>
                               </td>
                               <td style="text-align:right">{{ process.getProcessId}}</td>
