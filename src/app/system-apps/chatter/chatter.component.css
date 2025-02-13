@@ -1,10 +1,118 @@
 .chatter-main-container {
-    width: 880px;
-    height: 382px;
-    background-color: #171717;
+    width: 480px;
+    height: 100%;
+    /* background: #7b69f0; */
+    background: #ccc;
 }
 
-.folder_folder-MSN {
+.chatter-content-container{
+    width: 100%;
+    display: flex;
+    background-color: #202020;
+}
+
+.chatter-sidebar-container{
+    width: 50px;
+    background-color: #000;
+    border-right: 1px solid #a6a4a4;
+}
+
+.chatter-sidebar-content{ 
+    width: 100%;
+    height: 50px;
+}
+
+.chatter-sidebar-icon{
+    width: 48px;
+    padding: 12px 12px;
+    border: 2px solid transparent;
+}
+
+.chatter-sidebar-figure{
+    display: flex;
+    align-items: center;
+    height: 16px;
+}
+
+.chatter-sidebar-img{
+    position: relative;
+    height: 16px;
+    width: 16px;    
+}
+
+.chatter-chat-container{
+    width: 430px;
+    /* height:fit-content; */
+}
+
+.chatter-user-info-container{
+    width: 100%;
+    display: flex;
+    height: 50px;
+    padding: 5px 0px;
+    background-color: #201c1c;
+    border-bottom:  1px solid #a6a4a4;
+}
+
+.chatter-user-info-content{
+    height: fit-content;
+    padding: 5px 5px;
+    background-color: #201c1c;
+    display: inline-flex;
+    width: 100%;
+}
+
+span{
+    display: block;
+}
+
+span.chatter-head{
+    padding:5px 5px;
+}
+
+span.chatter-mid{
+    padding: 0 4px;
+    color: white; /* Black text color */
+    text-align: left;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.chatter-user-acronym{
+    position: relative;
+    align-items: center;
+    display: inline-flex;
+    width: 36px;
+    top: -2px;
+    border-radius:40%;
+    padding: 1px 5px;
+    font-weight: 500;
+    background-color: cadetblue;
+}
+
+.chatter-chat-window-content{
+    width: 100%;
+    height: 500px;
+    overflow-y: auto;
+    background-color: #201c1c;
+}
+.chatter-chat-texbox-container{
+    width: 100%;
+    display: flex;
+    height: 70px; /*to is to allow me pad top and bottom 10px each*/
+    border-top: 1px solid #a6a4a4;
+    background-color: #201c1c;
+}
+.chatter-chat-texbox{
+    width: 90%;
+    height: 100%;
+}
+.chatter-chat-send{
+    width: 10%;
+    height: 100%;
+}
+
+/* .folder_folder-MSN {
     width: 300px;
     height: 400px;
     background: white;
@@ -25,5 +133,5 @@
   
 button:disabled {
     color: grey;
-}
+} */
   
