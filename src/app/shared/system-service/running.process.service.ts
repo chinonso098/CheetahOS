@@ -1,6 +1,5 @@
 import { Injectable } from "@angular/core";
 import { Subject } from "rxjs";
-import { TaskBarPreviewImage } from "src/app/system-apps/taskbarpreview/taskbar.preview";
 import { Constants } from "src/app/system-files/constants";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
@@ -16,27 +15,13 @@ export class RunningProcessService{
     static instance: RunningProcessService;
     private _runningProcesses:Process[];
     private _runningServices:Service[];
-    private _runningProcessesImages:Map<string, TaskBarPreviewImage[]>;
     private _eventOriginator = '';
 
     closeProcessNotify: Subject<Process> = new Subject<Process>();
     changeProcessContentNotify:Subject<void> = new Subject<void>();
-    focusOnNextProcessNotify: Subject<void> = new Subject<void>();
-    focusOnCurrentProcessNotify: Subject<number> = new Subject<number>();
-    //WWC - without window component
-    focusOnCurrentProcess_WWC_Notify: Subject<number> = new Subject<number>();
-    removeFocusOnOtherProcessesNotify: Subject<number> = new Subject<number>();
-    hideProcessPreviewWindowNotify: Subject<void> = new Subject<void>();
-    hideOtherProcessNotify: Subject<number> = new Subject<number>();
-    keepProcessPreviewWindowNotify: Subject<void> = new Subject<void>();
-    maximizeProcessWindowNotify: Subject<void> = new Subject<void>();
-    minimizeProcessWindowNotify: Subject<number[]> = new Subject<number[]>();
-    showProcessPreviewWindowNotify: Subject<unknown[]> = new Subject<unknown[]>();
-    showOnlyCurrentProcessWindowNotify: Subject<number> = new Subject<number>();
     processListChangeNotify: Subject<void> = new Subject<void>();
-    restoreOrMinimizeProcessWindowNotify: Subject<number> = new Subject<number>();
-    restoreProcessWindowNotify: Subject<number> = new Subject<number>();
-    restoreProcessesWindowNotify: Subject<void> = new Subject<void>();
+
+
 
 
     name = 'rning_proc_svc';
@@ -56,7 +41,6 @@ export class RunningProcessService{
     constructor(){
         this._runningProcesses = [];
         this._runningServices = [];
-        this._runningProcessesImages = new Map<string, TaskBarPreviewImage[]>();
         RunningProcessService.instance = this; //I added this to access the service from a class, not component
 
         this.addProcess(this.getProcessDetail());
@@ -71,17 +55,6 @@ export class RunningProcessService{
         this._runningServices.push(serviceToAdd)
     }
 
-    addProcessImage(appName:string, data:TaskBarPreviewImage):void{
-        if(!this._runningProcessesImages.has(appName)){
-            const tmpArr:TaskBarPreviewImage[] = [data];
-            this._runningProcessesImages.set(appName, tmpArr);
-        }
-        else{
-            const currImages = this._runningProcessesImages.get(appName) || [];
-            currImages.push(data);
-            this._runningProcessesImages.set(appName, currImages);
-        }
-    }
 
     addEventOriginator(eventOrig:string):void{
         this._eventOriginator = eventOrig;
@@ -98,24 +71,6 @@ export class RunningProcessService{
         }
     }
 
-    removeProcessImages(appName:string):void{
-        if(this._runningProcessesImages.has(appName))
-            this._runningProcessesImages.delete(appName);
-    }
-
-    removeProcessImage(appName:string, pid:number):void{
-        const deleteCount = 1;
-        if(this._runningProcessesImages.has(appName)){
-            const currImages = this._runningProcessesImages.get(appName) || [];
-            const dataIndex = currImages.findIndex((d) => {
-                return d.pid  === pid;
-              });
-    
-            if(dataIndex != -1){
-                currImages.splice(dataIndex || 0, deleteCount)
-            }
-        }    
-    }
 
     removeEventOriginator():void{
         this._eventOriginator = '';
@@ -145,13 +100,6 @@ export class RunningProcessService{
 
      
         return process || null;
-    }
-
-    getProcessImages(appName:string):TaskBarPreviewImage[]{
-        if(this._runningProcessesImages.has(appName))
-           return this._runningProcessesImages.get(appName) || [];
-
-        return [];
     }
 
     getEventOrginator():string{

@@ -16,6 +16,7 @@ import { Subscription } from 'rxjs';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 // eslint-disable-next-line no-var
 declare const Howl:any;
@@ -56,8 +57,9 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
-  private _fileInfo!:FileInfo;
+  private _windowService:WindowService;
 
+  private _fileInfo!:FileInfo;
   private _appState!:AppState;
 
   SECONDS_DELAY = 250;
@@ -84,19 +86,20 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
  
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
-    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService) { 
+    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService,windowService:WindowService) { 
     this._processIdService = processIdService;
     this._triggerProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService= sessionManagmentService;
     this._scriptService = scriptService;
+    this._windowService = windowService;
     this.processId = this._processIdService.getNewProcessId();
     
     this.retrievePastSessionData();
 
     this._runningProcessService = runningProcessService;
-    this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
-    this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
+    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
     this._changeContentSub = this._runningProcessService.changeProcessContentNotify.subscribe(() =>{this.changeContent()})
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
@@ -162,7 +165,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
   }
 
@@ -341,7 +344,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   setAudioWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
   resizeSiriWave():void{

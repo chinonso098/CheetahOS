@@ -8,6 +8,7 @@ import { TriggerProcessService } from './shared/system-service/trigger.process.s
 import { SessionManagmentService } from './shared/system-service/session.management.service';
 import { NotificationService } from './shared/system-service/notification.service';
 import { StateManagmentService } from './shared/system-service/state.management.service';
+import { WindowService } from './shared/system-service/window.service';
 
 import { ComponentType } from './system-files/system.types';
 import { NotificationType } from './system-files/notification.type';
@@ -60,6 +61,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private _notificationServices:NotificationService;
   private _stateManagmentService:StateManagmentService;
   private _menuService:MenuService;
+  private _windowService:WindowService
   private _componentRefView!:ViewRef;
   private _appDirectory:AppDirectory;
 
@@ -115,7 +117,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   // the order of the service init matter.
   //runningProcesssService must come first
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService,
-    sessionMangamentServices:SessionManagmentService, notificationServices:NotificationService, stateManagmentService:StateManagmentService, menuService:MenuService){
+    sessionMangamentServices:SessionManagmentService, notificationServices:NotificationService, stateManagmentService:StateManagmentService, windowService:WindowService, menuService:MenuService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
@@ -125,6 +127,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this._sessionMangamentServices = sessionMangamentServices;
     this._notificationServices = notificationServices;
     this._stateManagmentService = stateManagmentService;
+    this._windowService = windowService;
     this._menuService = menuService;
 
     this._startProcessSub = this._triggerProcessService.startProcessNotify.subscribe((appName) =>{this.loadApps(appName)})
@@ -224,7 +227,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this._stateManagmentService.removeState(uid);
 
     this._runningProcessService.removeProcess(eventData);
-    this._runningProcessService.removeProcessImage(eventData.getProcessName, eventData.getProcessId);
+    this._windowService.removeProcessPreviewImage(eventData.getProcessName, eventData.getProcessId);
 
     this._componentReferenceService.removeComponentReference(eventData.getProcessId);
     this._processIdService.removeProcessId(eventData.getProcessId);

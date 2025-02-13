@@ -17,6 +17,7 @@ import * as htmlToImage from 'html-to-image';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Constants } from 'src/app/system-files/constants';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
@@ -61,6 +62,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _triggerProcessService:TriggerProcessService;
   private _scriptService: ScriptService;
   private _menuService: MenuService;
+  private _windowService:WindowService;
 
   
   private _timerSubscription!: Subscription;
@@ -161,7 +163,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService,fileManagerServices:FileManagerService,
-              triggerProcessService:TriggerProcessService, scriptService: ScriptService, menuService: MenuService, fileService:FileService) { 
+              triggerProcessService:TriggerProcessService, scriptService: ScriptService, menuService: MenuService, fileService:FileService, windowService:WindowService ) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -170,12 +172,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._scriptService = scriptService;
     this._menuService = menuService;
     this._fileService = fileService;
+    this._windowService = windowService;
 
     this._showTaskBarMenuSub = this._menuService.showTaskBarMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
-    this._showTaskBarPreviewWindowSub = this._runningProcessService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
+    this._showTaskBarPreviewWindowSub = this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
-    this._hideTaskBarPreviewWindowSub = this._runningProcessService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
-    this._keepTaskBarPreviewWindowSub = this._runningProcessService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
+    this._hideTaskBarPreviewWindowSub = this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
+    this._keepTaskBarPreviewWindowSub = this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
     this._showStartMenuSub = this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
     this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
 

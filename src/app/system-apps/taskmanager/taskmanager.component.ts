@@ -11,6 +11,7 @@ import { NotificationService } from 'src/app/shared/system-service/notification.
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import * as htmlToImage from 'html-to-image';
 import { Constants } from 'src/app/system-files/constants';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 
 @Component({
@@ -23,16 +24,19 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   @ViewChild('tskManagerRootContainer') tskManagerRootContainer!: ElementRef; 
   @ViewChild('tskMgrTable') tskMgrTable!: ElementRef;  
   @ViewChild('tskmgrTblCntnr') tskmgrTblCntnr!: ElementRef;
+  @ViewChild('tskmgrCardBody') tskmgrCardBody!: ElementRef; 
   @ViewChild('tskMgrTableHeaderCntnr') tskMgrTableHeaderCntnr!: ElementRef;  
   @ViewChild('tskMgrTableBodyCntnr') tskMgrTableBodyCntnr!: ElementRef;  
   @ViewChild('tskMgrTableHeaderCntnt') tskMgrTableHeaderCntnt!: ElementRef;  
   @ViewChild('tskMgrTableBodyCntnt') tskMgrTableBodyCntnt!: ElementRef;  
 
   private _maximizeWindowSub!: Subscription;
+  private _minimizeWindowSub!: Subscription;
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _notificationService:NotificationService;
+    private _windowService:WindowService;
   private _renderer: Renderer2;
 
 
@@ -96,6 +100,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}taskmanager.png`;
+  eco_icon = `${Constants.IMAGE_BASE_PATH}econo.png`;
   name = 'taskmanager';
   processId = 0;
   type = ComponentType.System;
@@ -103,17 +108,19 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService,
-               notificationService:NotificationService, renderer: Renderer2) { 
+               notificationService:NotificationService, renderer: Renderer2 ,windowService:WindowService) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._notificationService = notificationService;
+    this._windowService = windowService;
     this._renderer = renderer;
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._processListChangeSub = this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess();})
-    this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow();})
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow();})
+    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
     this._currentSortingOrder = this._sorting.order;
 
     this._chnageTaskmgrRefreshIntervalSub = new Subject<number>();
@@ -148,6 +155,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
     this.applyDefaultColumnVisibility();
     this.alignHeaderAndBodyWidth();
+    this.synchronizeBodyCntntAndBodyCntnr();
 
 
     //Initial delay 1 seconds and interval countdown also 2 second
@@ -168,10 +176,10 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.sortTable(this._sorting.column, false);
     });
 
-
-    // setTimeout(()=>{
-    //   this.captureComponentImg();
-    // },this.SECONDS_DELAY) 
+    this.synchronizeBodyCntntAndBodyCntnr();
+    setTimeout(()=>{
+      this.captureComponentImg();
+    },this.SECONDS_DELAY) 
   }
 
   captureComponentImg():void{
@@ -182,7 +190,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
 }
 
@@ -196,7 +204,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   setTaskMangrWindowToFocus(pid: number):void {
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
     this.hideContextMenu();
   }
 
@@ -830,9 +838,16 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
         : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
     }
+
+    /**
+     * due to order of operations, the header will be visible first, but it will default to the set width of 81px
+     * Depending on the column, this width might not suffice, and would lead to a mis-aligment betwen column header and
+     * column body
+     */
+    this.alignHeaderAndBodyWidth(colNum);
   }
 
-  alignHeaderAndBodyWidth() {
+  alignHeaderAndBodyWidth(hColIdx?:number) {
     const tableHeader = this.tskMgrTableHeaderCntnt.nativeElement;
     const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
 
@@ -841,16 +856,44 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].offsetWidth);
     // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].getBoundingClientRect().width);
 
-    const cellWidth = tableBody.rows[0].cells[0].getBoundingClientRect().width;
-    this._renderer.setStyle(tableHeader.rows[0].cells[0], 'min-width', cellWidth + 'px');
-    this._renderer.setStyle(tableHeader.rows[0].cells[0], 'width', cellWidth + 'px');
+    const hRow = 0;
+    let hCol = 0;
+
+    hCol = (hColIdx === undefined)? hCol: hColIdx;
+    const cellWidth = tableBody.rows[hRow].cells[hCol].getBoundingClientRect().width;
+    this._renderer.setStyle(tableHeader.rows[hRow].cells[hCol], 'min-width', cellWidth + 'px');
+    this._renderer.setStyle(tableHeader.rows[hRow].cells[hCol], 'width', cellWidth + 'px');
   }
 
-  synchronizeHeaderAndBodyWidth(columnId: string) {
-    //console.log('Received from directive:', columnId);
-    const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
-    const tbodyWidth = tableBody.getBoundingClientRect().width;
-    this.tskMgrTableBodyCntnr.nativeElement.style.width = `${tbodyWidth}px`;
+  updateTableFieldSize(data:string[]) {
+    const tdId = data[0];
+    for(let i =0; i <= this.processes.length; i++){    
+      if(tdId === 'th-0') {
+        const procName =  document.getElementById(`procName-${i}`) as HTMLElement;
+        if(procName){
+          const px_offSet = 44;
+          procName.style.width = `${Number(data[1]) - px_offSet}px`;
+        }
+      }else if(tdId === 'th-1'){
+        const procType =  document.getElementById(`procType-${i}`) as HTMLElement;
+        if(procType){
+          const px_offSet = 10;
+          procType.style.width =`${Number(data[1]) - px_offSet}px`;
+        }
+      }
+    }
+  }
+
+  synchronizeBodyCntntAndBodyCntnr() {
+     /**
+     * on first load there is a mis-match between the body cntnr
+     * and the body content, causing a clipping of a portion of the table
+     */
+    const tskmgrCardBody = this.tskmgrCardBody.nativeElement;
+    const tbodyWidth = tskmgrCardBody.getBoundingClientRect().width;
+    this.tskmgrTblCntnr.nativeElement.style.width = `${tbodyWidth}px`;
+
+    //console.log('synchronizeCntnrs from tskmgrCardBody tbodyWidth:', tbodyWidth);
   }
 
   activeFocus(){
@@ -967,9 +1010,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
       const mainWindow = document.getElementById('vanta'); 
-
+      const tskmgrCardBody = this.tskmgrCardBody.nativeElement;
+      const tbodyWidth = tskmgrCardBody.getBoundingClientRect().width;
       console.log('mainWindow?.offsetHeight:',mainWindow?.offsetHeight);
       console.log('mainWindow?.offsetWidth:',mainWindow?.offsetWidth);
+      console.log('maximizeWindow from tskmgrCardBody tbodyWidth:', tbodyWidth);
   
       /*
       -45 (tskmgr footer)
@@ -985,12 +1030,33 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.tskmgrTblCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
   
       // this.tskMgrTable.nativeElement.style.height = `${mainWindow?.offsetHeight || 0 - 84}px`;
-      this.tskMgrTable.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      // this.tskMgrTable.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
 
-      this.tskMgrTableHeaderCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-      this.tskMgrTableBodyCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+
+      //avoid setting these manu
+      // this.tskMgrTableHeaderCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      // this.tskMgrTableBodyCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+
+
+
       //this.tskMgrTableHeaderCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
       //this.tskMgrTableBodyCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+    }
+  }
+
+  minimizeWindow(arg:number[]):void{
+    const uid = `${this.name}-${this.processId}`;
+    const evtOriginator = this._runningProcessService.getEventOrginator();
+
+    if(uid === evtOriginator){
+      this._runningProcessService.removeEventOriginator();
+
+      console.log('Set windows backto this:', arg);
+
+      this.tskmgrTblCntnr.nativeElement.style.width = `${arg[0]}px`;
+      
+      // this.audioContainer.nativeElement.style.width = `${arg[0]}px`;
+      // this.audioContainer.nativeElement.style.height = `${arg[1]}px`;
     }
   }
 

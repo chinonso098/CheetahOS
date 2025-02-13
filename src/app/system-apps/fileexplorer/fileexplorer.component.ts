@@ -25,6 +25,7 @@ import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { SortBys } from '../desktop/desktop.enums';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
 import { NotificationService } from 'src/app/shared/system-service/notification.service';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -47,6 +48,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _stateManagmentService: StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _notificationService:NotificationService;
+    private _windowService:WindowService;
   private _menuService:MenuService;
   private _formBuilder;
   private _appState!:AppState;
@@ -209,7 +211,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, triggerProcessService:TriggerProcessService, 
               fileManagerService:FileManagerService, formBuilder: FormBuilder, stateManagmentService:StateManagmentService, sessionManagmentService:SessionManagmentService,        
-              menuService:MenuService, notificationService:NotificationService ) { 
+              menuService:MenuService, notificationService:NotificationService ,windowService:WindowService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileService = fileService;
@@ -218,6 +220,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._sessionManagmentService = sessionManagmentService;
     this._menuService = menuService;
     this._notificationService = notificationService;
+    this._windowService = windowService;
     this._formBuilder = formBuilder;
 
     this.processId = this._processIdService.getNewProcessId();
@@ -247,8 +250,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     })
 
-    this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
-    this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)});
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
+    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)});
     this._sortByNotifySub = fileManagerService.sortByNotify.subscribe((p)=>{this.sortIcons(p)});
     this._refreshNotifySub = fileManagerService.refreshNotify.subscribe(()=>{this.refreshIcons()});
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideIconContextMenu()});
@@ -327,7 +330,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
   }
   
@@ -1430,7 +1433,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   setFileExplorerWindowToFocus(pid: number):void {
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
   sortIcons(sortBy:string): void {

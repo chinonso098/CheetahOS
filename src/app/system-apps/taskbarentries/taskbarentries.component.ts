@@ -8,6 +8,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 @Component({
   selector: 'cos-taskbarentries',
@@ -20,6 +21,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   private _runningProcessService:RunningProcessService;
   private _triggerProcessService:TriggerProcessService;
   private _menuService:MenuService;
+  private _windowServices:WindowService;
 
 
   private _processListChangeSub!: Subscription;
@@ -46,11 +48,12 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   appProcessId = 0;
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService,
-              triggerProcessService:TriggerProcessService) { 
+              triggerProcessService:TriggerProcessService, windowServices:WindowService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._triggerProcessService = triggerProcessService;
     this._menuService = menuService;
+    this._windowServices = windowServices;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -181,7 +184,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
       return;
     }else{
       const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.getOpensWith);
-      this._runningProcessService.restoreOrMinimizeProcessWindowNotify.next(process[0].getProcessId);
+      this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process[0].getProcessId);
     }
   }
 
@@ -238,15 +241,15 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     const data:unknown[] = [rect, appName, iconPath];
 
     if(this._runningProcessService.isProcessRunning(appName))
-      this._runningProcessService.showProcessPreviewWindowNotify.next(data);
+      this._windowServices.showProcessPreviewWindowNotify.next(data);
   }
 
   onMouseLeave():void{
-    this._runningProcessService.hideProcessPreviewWindowNotify.next();
+    this._windowServices.hideProcessPreviewWindowNotify.next();
   }
 
   restoreOrMinizeWindow(processId:number){
-    this._runningProcessService.restoreOrMinimizeProcessWindowNotify.next(processId)
+    this._windowServices.restoreOrMinimizeProcessWindowNotify.next(processId)
   }
 
   private getComponentDetail():Process{
