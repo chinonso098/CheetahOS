@@ -76,14 +76,14 @@
         <div class="tskmgr-tab-content">
           <div class="tskmgr-tab-pane active">
             <div class='card'>
-                <div class='card-body'>
+                <div class='card-body' #tskmgrCardBody>
                   <div class='tskmgr-table-cntnr' #tskmgrTblCntnr> 
-
                     <table class='tskmgr-table' *ngIf = 'processes.length > 0' #tskMgrTable>
                       <div class='tskmgr-table-header-cntnr' #tskMgrTableHeaderCntnr>
                         <thead #tskMgrTableHeaderCntnt>
                           <div style="height:10px; border-top: none;"></div>
-                          <tr (contextmenu)="showContextMenu($event)" (click)="hideContextMenu()">             
+                          <tr (contextmenu)="showContextMenu($event)" (click)="hideContextMenu()">      
+                              <!-- style="min-width:146px;" -->        
                             <th [style]="thStyle" (click)="sortTable('Name', true)"  columnResize  (dataEvent)="synchronizeHeaderAndBodyWidth($event)" id="th-0">
                               <div  class="tskmgr-sort-icon-cntnr-basic">
                                 <span class="tskmgr-sort-icon"  *ngIf="isDescSorting('Name')">v</span>
@@ -93,6 +93,7 @@
                                 <span class="tskmgr-th-span-name"> Name </span>
                               </div>
                             </th>
+                              <!-- style="min-width:123px;" --> 
                             <th [style]="thStyle1" (click)="sortTable('Type', true)" columnResize id="th-1">               
                               <div  class="tskmgr-sort-icon-cntnr-basic">
                                 <span *ngIf="isDescSorting('Type')">v</span>
@@ -287,21 +288,20 @@
                       <div class='tskmgr-table-body-cntnr'  #tskMgrTableBodyCntnr>
                         <tbody #tskMgrTableBodyCntnt>
                           <tr *ngFor='let process of processes; let i = index'(click)="onProcessSelected(i,process.getProcessId)" [class.active]="i === selectedRow"  id="trElmnt-{{this.processId}}-{{i}}">
-                              <td style="min-width:20%; padding-left:16px;" >
+                            <td style="padding-left:16px;">
                                   <figure class="tskmgr-figure0"> 
                                       <img class="tskmgr-img0" [src]="process.getIcon">
-                                      <figcaption class="tskmgr-figcaption0">{{ process.getProcessName}}</figcaption>
+                                      <figcaption class="tskmgr-figcaption0"><p class="truncate" id="procName-{{i}}">{{process.getProcessName}}</p></figcaption>
                                   </figure>
                               </td>
-                              <td >{{ process.getType}}</td>
+                              <td> <p class="truncate" id="procType">{{process.getType}}</p></td>
                               <td>
-                                  <figure class="tskmgr-figcaption0" *ngIf = 'process.getProcessStatus === "Suspended"' style="top: 1px; position: relative; right: -75% ;"> 
-                                      <!-- <figcaption style="font-size:12px; ">{{ process.getProcessStatus}}</figcaption> -->
-                                      <img class="tskmgr-img0" style="height: 14px; width: 14px;" [src]="'osdrive/Cheetah/System/Imageres/econo.png'">
+                                  <figure class="tskmgr-figcaption0" *ngIf = 'process.getProcessStatus === "Suspended"' style="top: 1px; position: relative; right: -75%;"> 
+                                      <img class="tskmgr-img0" style="height: 14px; width: 14px;" [src]="eco_icon">
                                   </figure>
                               </td>
                               <td style="text-align:right">{{ process.getProcessId}}</td>
-                              <td >{{ process.getProcessName}}</td>
+                              <td>{{ process.getProcessName}}</td>
                               <td [style]="setUtilColoumnColors(process.getCpuUsage)" id="tdCpuElmnt-{{this.processId}}-{{i}}">{{ process.getCpuUsage}}%</td>
                               <td [style]="setUtilColoumnColors(process.getMemoryUsage)" #memoryId>{{ process.getMemoryUsage}} MB</td>
                               <td [style]="setUtilColoumnColors(process.getDiskUsage)" #diskId>{{ process.getDiskUsage}} MB/s</td>
@@ -315,6 +315,11 @@
                     </table>
                   </div>
                 </div>
+
+
+
+
+
                 <div class="tsksmgr-footer-div-cntnr">
                   <div class="tsksmgr-footer-div-cntnt">
                       <figure class="tskmgr-figure0" (click)="onFewerDetailsBtnClick()" style="position: relative; left: 5px;"> 

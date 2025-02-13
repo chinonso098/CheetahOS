@@ -23,12 +23,14 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   @ViewChild('tskManagerRootContainer') tskManagerRootContainer!: ElementRef; 
   @ViewChild('tskMgrTable') tskMgrTable!: ElementRef;  
   @ViewChild('tskmgrTblCntnr') tskmgrTblCntnr!: ElementRef;
+  @ViewChild('tskmgrCardBody') tskmgrCardBody!: ElementRef; 
   @ViewChild('tskMgrTableHeaderCntnr') tskMgrTableHeaderCntnr!: ElementRef;  
   @ViewChild('tskMgrTableBodyCntnr') tskMgrTableBodyCntnr!: ElementRef;  
   @ViewChild('tskMgrTableHeaderCntnt') tskMgrTableHeaderCntnt!: ElementRef;  
   @ViewChild('tskMgrTableBodyCntnt') tskMgrTableBodyCntnt!: ElementRef;  
 
   private _maximizeWindowSub!: Subscription;
+  private _minimizeWindowSub!: Subscription;
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -96,6 +98,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}taskmanager.png`;
+  eco_icon = `${Constants.IMAGE_BASE_PATH}econo.png`;
   name = 'taskmanager';
   processId = 0;
   type = ComponentType.System;
@@ -114,6 +117,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._processListChangeSub = this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess();})
     this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow();})
+    this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
     this._currentSortingOrder = this._sorting.order;
 
     this._chnageTaskmgrRefreshIntervalSub = new Subject<number>();
@@ -148,6 +152,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
     this.applyDefaultColumnVisibility();
     this.alignHeaderAndBodyWidth();
+    this.synchronizeCntnrs();
 
 
     //Initial delay 1 seconds and interval countdown also 2 second
@@ -168,7 +173,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.sortTable(this._sorting.column, false);
     });
 
-
+    this.synchronizeCntnrs();
     // setTimeout(()=>{
     //   this.captureComponentImg();
     // },this.SECONDS_DELAY) 
@@ -830,27 +835,73 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
         : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
       }
     }
+
+    /**
+     * due to order of operations, the header will be visible first, but it will default to the set width of 81px
+     * Depending on the column, this width might not suffice, and would lead to a mis-aligment betwen column header and
+     * column body
+     */
+    this.alignHeaderAndBodyWidth(colNum);
   }
 
-  alignHeaderAndBodyWidth() {
+  // alignHeaderAndBodyWidth() {
+  //   const tableHeader = this.tskMgrTableHeaderCntnt.nativeElement;
+  //   const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
+
+  //   // console.log('table - bodyRow.r0:', tableBody.rows[0] );
+  //   // console.log('table - bodyRow.r0.c1:', tableBody.rows[0].cells[0]);
+  //   // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].offsetWidth);
+  //   // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].getBoundingClientRect().width);
+
+  //   const cellWidth = tableBody.rows[0].cells[0].getBoundingClientRect().width;
+  //   this._renderer.setStyle(tableHeader.rows[0].cells[0], 'min-width', cellWidth + 'px');
+  //   this._renderer.setStyle(tableHeader.rows[0].cells[0], 'width', cellWidth + 'px');
+  // }
+
+  alignHeaderAndBodyWidth(hColIdx?:number) {
+    const hRow = 0;
+    let hCol = 0;
     const tableHeader = this.tskMgrTableHeaderCntnt.nativeElement;
     const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
+
+    hCol = (hColIdx === undefined)? hCol: hColIdx;
 
     // console.log('table - bodyRow.r0:', tableBody.rows[0] );
     // console.log('table - bodyRow.r0.c1:', tableBody.rows[0].cells[0]);
     // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].offsetWidth);
     // console.log('table - bodyRow.r0.c1 width:', tableBody.rows[0].cells[0].getBoundingClientRect().width);
 
-    const cellWidth = tableBody.rows[0].cells[0].getBoundingClientRect().width;
-    this._renderer.setStyle(tableHeader.rows[0].cells[0], 'min-width', cellWidth + 'px');
-    this._renderer.setStyle(tableHeader.rows[0].cells[0], 'width', cellWidth + 'px');
+    const cellWidth = tableBody.rows[hRow].cells[hCol].getBoundingClientRect().width;
+    this._renderer.setStyle(tableHeader.rows[hRow].cells[hCol], 'min-width', cellWidth + 'px');
+    this._renderer.setStyle(tableHeader.rows[hRow].cells[hCol], 'width', cellWidth + 'px');
   }
 
-  synchronizeHeaderAndBodyWidth(columnId: string) {
+  synchronizeHeaderAndBodyWidth(data: string[]) {
     //console.log('Received from directive:', columnId);
     const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
     const tbodyWidth = tableBody.getBoundingClientRect().width;
     this.tskMgrTableBodyCntnr.nativeElement.style.width = `${tbodyWidth}px`;
+
+
+    for(let i =0; i <= this.processes.length; i++){    
+      const procName =  document.getElementById(`procName-${i}`) as HTMLElement;
+      if(procName){
+        const px_offSet = 44;
+        console.log(`new width: ${data[1]}px`);
+        console.log(`new width -  offset: ${Number(data[1]) - px_offSet}px`)
+        procName.style.width = `${Number(data[1]) - px_offSet}px`;
+      }
+
+    }
+  }
+
+  synchronizeCntnrs() {
+    //console.log('Received from directive:', columnId);
+    const tskmgrCardBody = this.tskmgrCardBody.nativeElement;
+    const tbodyWidth = tskmgrCardBody.getBoundingClientRect().width;
+    this.tskmgrTblCntnr.nativeElement.style.width = `${tbodyWidth}px`;
+
+    console.log('synchronizeCntnrs from tskmgrCardBody tbodyWidth:', tbodyWidth);
   }
 
   activeFocus(){
@@ -967,9 +1018,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
       const mainWindow = document.getElementById('vanta'); 
-
+      const tskmgrCardBody = this.tskmgrCardBody.nativeElement;
+      const tbodyWidth = tskmgrCardBody.getBoundingClientRect().width;
       console.log('mainWindow?.offsetHeight:',mainWindow?.offsetHeight);
       console.log('mainWindow?.offsetWidth:',mainWindow?.offsetWidth);
+      console.log('maximizeWindow from tskmgrCardBody tbodyWidth:', tbodyWidth);
   
       /*
       -45 (tskmgr footer)
@@ -985,12 +1038,33 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.tskmgrTblCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
   
       // this.tskMgrTable.nativeElement.style.height = `${mainWindow?.offsetHeight || 0 - 84}px`;
-      this.tskMgrTable.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      // this.tskMgrTable.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
 
-      this.tskMgrTableHeaderCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-      this.tskMgrTableBodyCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+
+      //avoid setting these manu
+      // this.tskMgrTableHeaderCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      // this.tskMgrTableBodyCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+
+
+
       //this.tskMgrTableHeaderCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
       //this.tskMgrTableBodyCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+    }
+  }
+
+  minimizeWindow(arg:number[]):void{
+    const uid = `${this.name}-${this.processId}`;
+    const evtOriginator = this._runningProcessService.getEventOrginator();
+
+    if(uid === evtOriginator){
+      this._runningProcessService.removeEventOriginator();
+
+      console.log('Set windows backto this:', arg);
+
+      this.tskmgrTblCntnr.nativeElement.style.width = `${arg[0]}px`;
+      
+      // this.audioContainer.nativeElement.style.width = `${arg[0]}px`;
+      // this.audioContainer.nativeElement.style.height = `${arg[1]}px`;
     }
   }
 

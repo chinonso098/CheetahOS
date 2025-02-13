@@ -10,7 +10,7 @@ export class ColumnResizeDirective {
   private initialWidth!: number;
   private columnIndex!: number;
   private table: HTMLElement | null = null; // Initialize table as null
-  @Output() dataEvent = new EventEmitter<string>();
+  @Output() dataEvent = new EventEmitter<string[]>();
 
   constructor(private el: ElementRef, private renderer: Renderer2) {}
 
@@ -20,7 +20,7 @@ export class ColumnResizeDirective {
     this.startX = event.pageX;
     this.isResizing = true;
     this.initialWidth = this.el.nativeElement.offsetWidth;
-    const minimumWidths:number[] = [146, 81];
+    const minimumWidths:number[] = [124,91,81];
     let minimumWidth = 0;
 
     console.log("this.initialWidth:", this.initialWidth);
@@ -40,9 +40,16 @@ export class ColumnResizeDirective {
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         if(this.isResizing) {
-          //emit column being resized
-          this.dataEvent.emit(`th-${this.columnIndex}`);
           minimumWidth = (this.columnIndex === 0)? minimumWidths[0] : minimumWidths[1]
+
+          if(this.columnIndex === 0){
+            minimumWidth =  minimumWidths[0];
+          }else if(this.columnIndex === 1){
+            minimumWidth = minimumWidths[1];
+          }else{
+            minimumWidth = minimumWidths[3];
+          }
+
           const deltaX = moveEvent.pageX - this.startX;
           const newWidth = this.initialWidth + deltaX;
 
@@ -54,6 +61,9 @@ export class ColumnResizeDirective {
             // Update the width of the corresponding header and cell in each row
             columns[this.columnIndex].style.minWidth = `${newWidth}px`;
             columns[this.columnIndex].style.width = `${newWidth}px`;
+
+            //emit column being resized
+            this.dataEvent.emit([`th-${this.columnIndex}`, `${newWidth}`]);
 
             const rows = this.table?.querySelectorAll('tr');
             //console.log("row count:", rows);

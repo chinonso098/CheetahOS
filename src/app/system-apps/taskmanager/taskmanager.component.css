@@ -60,7 +60,8 @@
 /*----------------------------------------Table CSS START --------------------------*/
 /* Custom styles for .table-responsive (Optional) */
 .tskmgr-table-cntnr {
-  width: 715px;
+  /* width: 715px; */
+  width: 300px;
   height:270px;
   /* overflow: auto; Enable horizontal/vertical scrolling when needed */
   border-top:  none;
@@ -89,7 +90,8 @@
 }
 
 .tskmgr-table-header-cntnr{ 
-  width:715px;
+  /* width:715px; */
+  /* width: 400px; */
   height: 50px ;
 }
 
@@ -108,7 +110,8 @@
 }
 
 .tskmgr-table-body-cntnr{  
-  width:715px;
+  /* width:715px; */
+  /* width: 400px; */
   height:220px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -180,6 +183,13 @@ th[columnResize]::after {
   background-color: #f0f0f0; /* Handle background color */
 }
 
+
+.truncate {
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add "..." when text overflows */
+  width: 80px; /* Set a fixed width */
+}
 /*----------------------------------------Table CSS END --------------------------*/
 
 span {
