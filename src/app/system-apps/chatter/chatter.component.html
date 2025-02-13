@@ -25,15 +25,60 @@
             </div>
 
           </div>
-          <div class="chatter-chat-window-content">
+          <div class="chatter-chat-window-content"  #chatHistoryOutput>
+            *ngFor="let cmdHistory of commandHistory"
+            <ng-container > 
+              <div class="chat-output-container">
 
+                <!-- *ngIf="cmdHistory.getResponseCode === this.Fail" -->
+
+                  <ng-container >
+                      <div class="chat-output">
+                          <!-- <span class="prev-terminal-prompt terminal-prior">{{terminalPrompt}}:{{cmdHistory.getCommand.trim()}}</span>
+                          <div class="prev-terminal-output terminal-error">{{cmdHistory.getCommandOutput.trim()}}</div> -->
+                      </div>
+                  </ng-container>
+
+                  <!-- <ng-container *ngIf="cmdHistory.getResponseCode === this.Warning">
+                      <div class="terminal-command-output">
+                          <span class="prev-terminal-prompt terminal-prior">{{terminalPrompt}}:{{cmdHistory.getCommand.trim()}}</span>
+                          <div class="prev-terminal-output terminal-warning">{{cmdHistory.getCommandOutput.trim()}}</div>
+                      </div>
+                  </ng-container> -->
+
+              </div>
+          </ng-container>
           </div>
 
           <div class="chatter-chat-texbox-container">
-            <div class="chatter-chat-texbox"> </div>
-            <div class="chatter-chat-send"></div>
+
+            <div class="chatter-chat-texbox">
+              <form [formGroup]="chatterForm"  class="chatter-form">
+                <!-- <span class="chatter-msg"></span> -->
+                <input
+                  appKeyPressCapture
+                  class="chatter-input"
+                  formControlName="msgText"
+                  placeholder="{{chatPrompt}}"
+                  autofocus ="true" 
+                  spellcheck="false"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  id="chatterMsgBox"
+                  type="text"
+                />
+              </form>
+            </div>
+
+            <div class="chatter-chat-send">
+
+            </div>
           </div>
         </div>
       </div>      
     </div>
 </cos-window>
+
+
+<!-- (keydown)="onKeyDownInInputBox($event)"
+(keyDblPressed)="onKeyDoublePressed($event)"  -->
