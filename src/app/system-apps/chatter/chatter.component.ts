@@ -8,7 +8,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ChatterService } from 'src/app/shared/system-service/chatter.service';
-import { ChatMessage } from './chat.message';
+import { ChatMessage } from './model/chat.message';
 
 @Component({
   selector: 'cos-chatter',

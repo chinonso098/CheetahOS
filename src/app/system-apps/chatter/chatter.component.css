@@ -23,15 +23,18 @@
     }
 
     .chatter-sidebar-icon{
+        position: relative;
         width: 48px;
         padding: 4px 4px;
         border: 2px solid transparent;
+        top: 4px;
     }
 
     .chatter-sidebar-figure{
         display: flex;
         align-items: center;
         height: 24px;
+        padding-left: 4px;
     }
 
     .chatter-sidebar-img{
@@ -104,10 +107,12 @@
         border-top: 1px solid #a6a4a4;
         background-color: #201c1c;
     }
+
     .chatter-chat-texbox{
         width: 90%;
         height: 50px;
     }
+
     .chatter-chat-send{
         width: 10%;
         height: 50px;
@@ -118,20 +123,10 @@
         width: 100%;
         border-radius:5px;
         background-color: #302c2c;
+        border-bottom: 1.5px solid #ccc;
     }
   
-    /* .chatter-input-area {
-        bottom: 0;
-        left: 4px;
-        padding-top:4px;
-        position: fixed;
-        display: inline-flex;
-        width: 100%;
-        height: 100%;
-        align-items: center;
-    } */
-
-    .chatter-input {
+    .chatter-area {
         position: relative;
         left: 1.5%;
         font-family: monospace;
@@ -140,13 +135,49 @@
         color: #ccc;
         background: transparent;
         border: 0px;
-        outline: none; /* no highlight on focus */
+        outline: none;
         width: 99%;
-        height: 50px;
-        word-wrap: break-word;
-        word-break: break-all;
+        height: 50px; /* Allow it to grow */
+        /* min-height: 50px; Prevent it from becoming too small */
+        /* max-height: 10px; Prevent excessive growth */
+        resize: none; /* Disable manual resizing */
+        overflow-y: auto; /* Show scrollbar if needed */
+        white-space: pre-wrap; /* Preserve spaces and line breaks */
+        word-wrap: break-word; /* Break words at boundaries */
     }
 
+    
+    .chatter-send-msg-content{ 
+        position: relative;
+        width: 92%;
+        height: 50px;
+        border-radius:5px;
+        /* background-color: #302c2c; */
+        left: 4px;
+    }
+
+    .chatter-send-msg-icon{
+        position: relative;
+        width: 24px;
+        padding: 4px 0px 4px 2px;
+        border: 2px solid transparent;
+        top: 6px;
+    }
+
+    .chatter-send-msg-figure{
+        display: flex;
+        align-items: center;
+        height: 24px;
+        width: fit-content;
+        padding-left: 4px;
+    }
+
+    .chatter-send-msg-img{
+        position: relative;
+        height: 24px;
+        width: 24px;    
+    }
+    
     .chatter-msg {
         position: relative;
         color: #ccc;

@@ -1,6 +1,6 @@
 export class ChatMessage {
     private _msg: string;
-    private _userName:String;
+    private _userName:string;
     private _msgOutput: string;
     private _msgDate:string;
 

@@ -26,7 +26,7 @@
 
           </div>
           <div class="chatter-chat-window-content"  #chatHistoryOutput>
-            *ngFor="let cmdHistory of commandHistory"
+            <!-- *ngFor="let cmdHistory of commandHistory" -->
             <ng-container > 
               <div class="chat-output-container">
 
@@ -51,34 +51,49 @@
           </div>
 
           <div class="chatter-chat-texbox-container">
-
             <div class="chatter-chat-texbox">
               <form [formGroup]="chatterForm"  class="chatter-form">
-                <!-- <span class="chatter-msg"></span> -->
-                <input
+                <!-- <input
                   appKeyPressCapture
                   class="chatter-input"
                   formControlName="msgText"
                   placeholder="{{chatPrompt}}"
+                  (keydown)="onKeyDownOnWindow($event)"
                   autofocus ="true" 
                   spellcheck="false"
                   autocomplete="off"
                   autocapitalize="off"
                   id="chatterMsgBox"
                   type="text"
-                />
+                /> -->
+                <textarea
+                  appKeyPressCapture
+                  class="chatter-area"
+                  formControlName="msgText"
+                  placeholder="{{chatPrompt}}"
+                  (keydown)="onKeyDownOnWindow($event)"
+                  autofocus="true"
+                  spellcheck="false"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  id="chatterMsgBox"
+                  rows="2"
+                >
+                </textarea>
               </form>
             </div>
 
             <div class="chatter-chat-send">
-
+              <div class="chatter-send-msg-content" (click)="1" (mouseenter)="1" (mouseleave)="1">
+                <div class="chatter-send-msg-icon">
+                    <figure class="chatter-send-msg-figure">
+                        <img class="chatter-send-msg-img" [src]="'osdrive/Cheetah/System/Imageres/send_msg.png'"/>
+                    </figure>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>      
     </div>
 </cos-window>
-
-
-<!-- (keydown)="onKeyDownInInputBox($event)"
-(keyDblPressed)="onKeyDoublePressed($event)"  -->
