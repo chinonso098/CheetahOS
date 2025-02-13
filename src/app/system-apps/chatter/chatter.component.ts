@@ -5,6 +5,7 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 @Component({
   selector: 'cos-chatter',
@@ -15,6 +16,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
+    private _windowService:WindowService;
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
@@ -23,9 +25,10 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   type = ComponentType.System;
   displayName = 'Chatter';
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService) { 
+  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService ,windowService:WindowService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
+    this._windowService = windowService;
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
@@ -44,7 +47,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   setChatterWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
   private getComponentDetail():Process{

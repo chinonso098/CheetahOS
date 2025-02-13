@@ -15,6 +15,7 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 @Component({
   selector: 'cos-terminal',
@@ -35,6 +36,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private _terminaCommandsProc!:TerminalCommandProcessor;
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
+    private _windowService:WindowService;
   private _appState!:AppState;
 
 
@@ -79,20 +81,22 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   displayName = 'Terminal';
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, formBuilder:FormBuilder,
-               stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService) { 
+               stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService,windowService:WindowService ) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._formBuilder = formBuilder;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
+    this._windowService = windowService;
+    
     this._terminaCommandsProc = new TerminalCommandProcessor();
 
     this.retrievePastSessionData();
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
-    this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
-    this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
+    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
   }
 
   ngOnInit():void{
@@ -126,7 +130,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
 }
 
@@ -756,7 +760,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
 
   setTerminalWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
   storeAppState():void{

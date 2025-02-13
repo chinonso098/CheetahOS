@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges, AfterViewInit } from '@angu
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { TaskBarPreviewImage } from './taskbar.preview';
 import { trigger, state, style, animate, transition } from '@angular/animations'
+import { WindowService } from 'src/app/shared/system-service/window.service';
 @Component({
   selector: 'cos-taskbarpreview',
   templateUrl: './taskbarpreview.component.html',
@@ -22,6 +23,7 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
 export class TaskBarPreviewComponent implements OnChanges, AfterViewInit {
 
   private _runningProcessService:RunningProcessService;
+  private _windowServices:WindowService;
 
   @Input() name = '';
   @Input() icon = '';
@@ -31,8 +33,9 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit {
   appInfo = '';
   SECONDS_DELAY = 250;
 
-  constructor(runningProcessService:RunningProcessService){
+  constructor(runningProcessService:RunningProcessService, windowServices:WindowService){
     this._runningProcessService = runningProcessService
+    this._windowServices = windowServices;
     this.fadeState = 'in';
   }
 
@@ -45,7 +48,7 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit {
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.componentImages = this._runningProcessService.getProcessImages(this.name);
+      this.componentImages = this._windowServices.getProcessPreviewImages(this.name);
       this.shortAppInfo();
     }, this.SECONDS_DELAY);
   }
@@ -64,13 +67,13 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit {
   }
 
   keepTaskBarPreviewWindow():void{
-    this._runningProcessService.keepProcessPreviewWindowNotify.next();
+    this._windowServices.keepProcessPreviewWindowNotify.next();
   }
 
   hideTaskBarPreviewWindowAndRestoreDesktop():void{
-    this._runningProcessService.hideProcessPreviewWindowNotify.next();
+    this._windowServices.hideProcessPreviewWindowNotify.next();
 
-    this._runningProcessService.restoreProcessesWindowNotify.next();
+    this._windowServices.restoreProcessesWindowNotify.next();
   }
 
   showTaskBarPreviewContextMenu(evt:MouseEvent, pid:number):void{
@@ -78,15 +81,15 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit {
   }
 
   setWindowToFocus(pid:number):void{
-    this._runningProcessService.showOnlyCurrentProcessWindowNotify.next(pid);
+    this._windowServices.showOnlyCurrentProcessWindowNotify.next(pid);
   }
 
   restoreWindow(pid:number):void{
-    this._runningProcessService.restoreProcessWindowNotify.next(pid);
+    this._windowServices.restoreProcessWindowNotify.next(pid);
   }
 
   showWindow(pid:number):void{
-    this._runningProcessService.restoreProcessWindowNotify.next(pid);
+    this._windowServices.restoreProcessWindowNotify.next(pid);
   }
 
 }

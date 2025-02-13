@@ -12,6 +12,7 @@ import { Process } from 'src/app/system-files/process';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
+import { WindowService } from 'src/app/shared/system-service/window.service';
 // import { DiffEditorModel } from 'ngx-monaco-editor-v2';
 
 
@@ -28,6 +29,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   private _runningProcessService:RunningProcessService;
   private _stateManagmentService:StateManagmentService;
   private _triggerProcessService:TriggerProcessService;
+    private _windowService:WindowService;
 
 
   private _maximizeWindowSub!: Subscription;
@@ -49,12 +51,13 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   displayName = '';
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
-                stateManagmentService:StateManagmentService){
+                stateManagmentService:StateManagmentService ,windowService:WindowService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService = runningProcessService;
     this._stateManagmentService = stateManagmentService;
     this._triggerProcessService = triggerProcessService;
+    this._windowService = windowService;
 
 
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -84,7 +87,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
   }
 
@@ -116,7 +119,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
 
 
   setCodeEditorWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
   private getComponentDetail():Process{

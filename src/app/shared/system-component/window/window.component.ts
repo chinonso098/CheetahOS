@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChange
 
 import { ComponentType } from 'src/app/system-files/system.types';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 import { Subscription } from 'rxjs';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
 import { BaseState, WindowState } from 'src/app/system-files/state/state.interface';
@@ -30,6 +31,7 @@ import { Process } from 'src/app/system-files/process';
    private _runningProcessService:RunningProcessService;
    private _stateManagmentService: StateManagmentService;
    private _sessionManagmentService: SessionManagmentService;
+   private _windowService:WindowService;
    private _originalWindowsState!:WindowState;
 
    private _restoreOrMinSub!:Subscription
@@ -95,21 +97,22 @@ import { Process } from 'src/app/system-files/process';
   
 
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, 
-                stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService){
+                stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, windowService:WindowService){
       this._runningProcessService = runningProcessService;
       this._stateManagmentService = stateManagmentService;
       this._sessionManagmentService = sessionManagmentService;
+      this._windowService = windowService;
  
       this.retrievePastSessionData();
 
-      this._restoreOrMinSub = this._runningProcessService.restoreOrMinimizeProcessWindowNotify.subscribe((p) => {this.restoreHiddenWindow(p)});
-      this._focusOnNextProcessSub = this._runningProcessService.focusOnNextProcessNotify.subscribe(() => {this.setNextWindowToFocus()});
-      this._focusOnCurrentProcessSub = this._runningProcessService.focusOnCurrentProcessNotify.subscribe((p) => {this.setFocusOnWindow(p)});
-      this._removeFocusOnOtherProcessesSub = this._runningProcessService.removeFocusOnOtherProcessesNotify.subscribe((p) => {this.removeFocusOnWindow(p)});
-      this._showOnlyCurrentProcessSub = this._runningProcessService.showOnlyCurrentProcessWindowNotify.subscribe((p) => {this.showOnlyThisWindow(p)});
-      this._hideOtherProcessSub = this._runningProcessService.hideOtherProcessNotify.subscribe((p) => {this.moveWindowsOutOfSight(p)});
-      this._restoreProcessSub = this._runningProcessService.restoreProcessWindowNotify.subscribe((p) => {this.restorePriorFocusOnWindow(p)});
-      this._restoreProcessesSub = this._runningProcessService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
+      this._restoreOrMinSub = this._windowService.restoreOrMinimizeProcessWindowNotify.subscribe((p) => {this.restoreHiddenWindow(p)});
+      this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe(() => {this.setNextWindowToFocus()});
+      this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => {this.setFocusOnWindow(p)});
+      this._removeFocusOnOtherProcessesSub = this._windowService.removeFocusOnOtherProcessesWindowNotify.subscribe((p) => {this.removeFocusOnWindow(p)});
+      this._showOnlyCurrentProcessSub = this._windowService.showOnlyCurrentProcessWindowNotify.subscribe((p) => {this.showOnlyThisWindow(p)});
+      this._hideOtherProcessSub = this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.moveWindowsOutOfSight(p)});
+      this._restoreProcessSub = this._windowService.restoreProcessWindowNotify.subscribe((p) => {this.restorePriorFocusOnWindow(p)});
+      this._restoreProcessesSub = this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
     }
 
     get getDivWindowElement(): HTMLElement {
@@ -187,7 +190,7 @@ import { Process } from 'src/app/system-files/process';
           pid: this.processId,
           imageData: htmlImg
         }
-        this._runningProcessService.addProcessImage(this.name, cmpntImg);
+        this._windowService.addProcessPreviewImage(this.name, cmpntImg);
       })
     }
 
@@ -209,8 +212,8 @@ import { Process } from 'src/app/system-files/process';
 
           const nextProc = this.getNextProcess(this.processId);
           if(nextProc){
-            this._runningProcessService.addEventOriginator(`${nextProc.getProcessName}-${nextProc.getProcessId}`);
-            this._runningProcessService.focusOnNextProcessNotify.next();
+            this._windowService.addEventOriginator(`${nextProc.getProcessName}-${nextProc.getProcessId}`);
+            this._windowService.focusOnNextProcessWindowNotify.next();
           }
         }
       }
@@ -234,8 +237,8 @@ import { Process } from 'src/app/system-files/process';
         if(windowState.pid == this.processId){
           this.setWindowToFullScreen(this.processId, windowState.z_index);
 
-          this._runningProcessService.addEventOriginator(this.uniqueId);
-          this._runningProcessService.maximizeProcessWindowNotify.next();
+          this._windowService.addEventOriginator(this.uniqueId);
+          this._windowService.maximizeProcessWindowNotify.next();
         }
       }
       else if(!this.windowMaximize){
@@ -246,8 +249,8 @@ import { Process } from 'src/app/system-files/process';
           this.windowZIndex =   String(windowState.z_index);
 
           const windowTitleBarHeight = 30;
-          this._runningProcessService.addEventOriginator(this.uniqueId);
-          this._runningProcessService.minimizeProcessWindowNotify.next([windowState.width, windowState.height - windowTitleBarHeight]);
+          this._windowService.addEventOriginator(this.uniqueId);
+          this._windowService.minimizeProcessWindowNotify.next([windowState.width, windowState.height - windowTitleBarHeight]);
         }
       }
 
@@ -387,6 +390,8 @@ import { Process } from 'src/app/system-files/process';
       this.windowHeight = `${String(height)}px`;
 
       this._stateManagmentService.addState(this.uniqueId, windowState, StateType.Window);
+
+      //send window resize alert
     }
     
     generateCloseAnimationValues(x_axis:number, y_axis:number):void{
@@ -419,8 +424,8 @@ import { Process } from 'src/app/system-files/process';
 
         const nextProc = this.getNextProcess(this.processId);
         if(nextProc){
-          this._runningProcessService.addEventOriginator(`${nextProc.getProcessName}-${nextProc.getProcessId}`);
-          this._runningProcessService.focusOnNextProcessNotify.next();
+          this._windowService.addEventOriginator(`${nextProc.getProcessName}-${nextProc.getProcessId}`);
+          this._windowService.focusOnNextProcessWindowNotify.next();
         }
       },this.SECONDS_DELAY) ;
     }
@@ -443,8 +448,8 @@ import { Process } from 'src/app/system-files/process';
           // console.log('setFocusOnWindow --- uid:',uid);//TBD
           // console.log('setFocusOnWindow --- uniqueId:', this.uniqueId);//TBD
 
-          this._runningProcessService.addEventOriginator(this.uniqueId);
-          this._runningProcessService.removeFocusOnOtherProcessesNotify.next(pid);
+          this._windowService.addEventOriginator(this.uniqueId);
+          this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pid);
           
           if(this.processId == pid){
             this.setHeaderActive(pid);
@@ -460,8 +465,8 @@ import { Process } from 'src/app/system-files/process';
        * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
        */
 
-      this._runningProcessService.addEventOriginator(this.uniqueId);
-      this._runningProcessService.hideOtherProcessNotify.next(pid);
+      this._windowService.addEventOriginator(this.uniqueId);
+      this._windowService.hideOtherProcessesWindowNotify.next(pid);
       
       if(this.processId == pid){
         this.setHeaderActive(pid);

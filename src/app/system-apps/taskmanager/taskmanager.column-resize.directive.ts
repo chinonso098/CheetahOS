@@ -23,7 +23,7 @@ export class ColumnResizeDirective {
     const minimumWidths:number[] = [124,91,81];
     let minimumWidth = 0;
 
-    console.log("this.initialWidth:", this.initialWidth);
+    //console.log("this.initialWidth:", this.initialWidth);
 
 
     // Find the index of the current column

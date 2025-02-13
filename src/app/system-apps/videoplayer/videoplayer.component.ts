@@ -16,6 +16,7 @@ import { Subscription } from 'rxjs';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 declare const videojs: (arg0: any, arg1: object, arg2: () => void) => any;
 
 
@@ -40,6 +41,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
+    private _windowService:WindowService;
 
   private _fileInfo!:FileInfo;
   private player: any;
@@ -61,20 +63,21 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
-    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService) { 
+    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService ,windowService:WindowService) { 
     this._processIdService = processIdService;
     this._triggerProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._runningProcessService = runningProcessService;
     this._sessionManagmentService= sessionManagmentService;
     this._scriptService = scriptService;
+    this._windowService = windowService;
     this.processId = this._processIdService.getNewProcessId();
 
   
     this.retrievePastSessionData();
 
-    this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
-    this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minmizeWindow(p)})
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
+    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minmizeWindow(p)})
     this._changeContentSub = this._runningProcessService.changeProcessContentNotify.subscribe(() =>{this.changeContent()})
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
@@ -186,7 +189,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
 }
 
@@ -207,7 +210,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   setVideoWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
   getVideoSrc(pathOne:string, pathTwo:string):string{

@@ -19,6 +19,7 @@ import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 declare const Dos: DosPlayerFactoryType;
 declare const emulators:Emulators
@@ -38,7 +39,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
-
+  private _windowService:WindowService;
   
   private _ci!: CommandInterface;
   private _fileInfo!:FileInfo;
@@ -63,13 +64,14 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   }
 
   constructor(fileService:FileService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
-              stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService) { 
+              stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService ,windowService:WindowService) { 
     this._fileService = fileService
     this._processIdService = processIdService;
     this._triggerProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
     this._scriptService = scriptService;
+    this._windowService = windowService;
     this.processId = this._processIdService.getNewProcessId();
     
     this.retrievePastSessionData();
@@ -121,12 +123,12 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
   }
 
   setJSDosWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
   getGamesSrc(pathOne:string, pathTwo:string):string{

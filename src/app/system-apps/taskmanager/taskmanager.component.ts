@@ -11,6 +11,7 @@ import { NotificationService } from 'src/app/shared/system-service/notification.
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import * as htmlToImage from 'html-to-image';
 import { Constants } from 'src/app/system-files/constants';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 
 @Component({
@@ -35,6 +36,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _notificationService:NotificationService;
+    private _windowService:WindowService;
   private _renderer: Renderer2;
 
 
@@ -106,18 +108,19 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService,
-               notificationService:NotificationService, renderer: Renderer2) { 
+               notificationService:NotificationService, renderer: Renderer2 ,windowService:WindowService) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._notificationService = notificationService;
+    this._windowService = windowService;
     this._renderer = renderer;
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._processListChangeSub = this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess();})
-    this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow();})
-    this._minimizeWindowSub = this._runningProcessService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow();})
+    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
     this._currentSortingOrder = this._sorting.order;
 
     this._chnageTaskmgrRefreshIntervalSub = new Subject<number>();
@@ -174,9 +177,9 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     });
 
     this.synchronizeBodyCntntAndBodyCntnr();
-    // setTimeout(()=>{
-    //   this.captureComponentImg();
-    // },this.SECONDS_DELAY) 
+    setTimeout(()=>{
+      this.captureComponentImg();
+    },this.SECONDS_DELAY) 
   }
 
   captureComponentImg():void{
@@ -187,7 +190,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
 }
 
@@ -201,7 +204,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   setTaskMangrWindowToFocus(pid: number):void {
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
     this.hideContextMenu();
   }
 

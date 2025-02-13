@@ -23,6 +23,7 @@ import {
   query,
   group,
 } from '@angular/animations';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 
 @Component({
@@ -60,6 +61,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _triggerProcessService:TriggerProcessService;
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
+    private _windowService:WindowService;
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private picSrc = '';
@@ -86,12 +88,13 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   
 
   constructor(fileService:FileService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
-    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, private changeDetectorRef: ChangeDetectorRef,) { 
+    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, private changeDetectorRef: ChangeDetectorRef ,windowService:WindowService) { 
     this._fileService = fileService
     this._processIdService = processIdService;
     this._triggerProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
+    this._windowService = windowService;
     this.processId = this._processIdService.getNewProcessId();
 
     this.retrievePastSessionData();
@@ -152,7 +155,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
   }
 
@@ -223,7 +226,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   setImageViewerWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
   getPictureSrc(pathOne:string, pathTwo:string):string{

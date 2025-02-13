@@ -8,6 +8,7 @@ import { Process } from 'src/app/system-files/process';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 @Component({
   selector:'cos-title',
@@ -21,6 +22,7 @@ export class TitleComponent implements BaseComponent, OnDestroy, AfterViewInit{
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
+  private _windowService:WindowService;
   private _maximizeWindowSub!: Subscription;
 
 
@@ -34,14 +36,15 @@ export class TitleComponent implements BaseComponent, OnDestroy, AfterViewInit{
   type = ComponentType.User;
   displayName = 'Hello';
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService) { 
+  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService,windowService:WindowService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
+    this._windowService = windowService;
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
 
-    this._maximizeWindowSub = this._runningProcessService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
   }
 
 
@@ -65,7 +68,7 @@ export class TitleComponent implements BaseComponent, OnDestroy, AfterViewInit{
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
   }
 
@@ -87,7 +90,7 @@ export class TitleComponent implements BaseComponent, OnDestroy, AfterViewInit{
   }
 
   setTitleWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
   private getComponentDetail():Process{

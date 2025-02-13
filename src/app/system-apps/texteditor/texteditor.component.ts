@@ -19,6 +19,7 @@ import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import {extname} from 'path';
 import * as htmlToImage from 'html-to-image';
 import { Subscription } from 'rxjs';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 declare const Quill:any;
 
@@ -40,7 +41,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   private _triggerProcessService:TriggerProcessService;
   private _scriptService: ScriptService;
   private _fileService:FileService;
-
+  private _windowService:WindowService;
 
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
@@ -60,7 +61,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
               fileService:FileService,  sessionManagmentService: SessionManagmentService,  stateManagmentService:StateManagmentService, 
-              scriptService: ScriptService){
+              scriptService: ScriptService ,windowService:WindowService){
 
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
@@ -70,6 +71,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     this._sessionManagmentService = sessionManagmentService;
     this._scriptService = scriptService;
     this._fileService = fileService;
+    this._windowService = windowService;
 
 
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -123,7 +125,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
   }
 
@@ -145,7 +147,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   }
 
   setTextEditorWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
   getFileSrc(pathOne:string, pathTwo:string):string{

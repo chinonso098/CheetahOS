@@ -15,6 +15,7 @@ import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 
 @Component({
@@ -32,6 +33,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
+    private _windowService:WindowService;
 
 
   
@@ -50,13 +52,15 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   displayName = 'Ruffle-EM';
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
-    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService) { 
+    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService, windowService:WindowService) { 
     
     this._processIdService = processIdService;
     this._triggerProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
     this._scriptService = scriptService;
+    this._windowService = windowService;
+
     this.processId = this._processIdService.getNewProcessId();
 
     this.retrievePastSessionData();
@@ -101,7 +105,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
 
 
   setRuffleWindowToFocus(pid:number):void{
-    this._runningProcessService.focusOnCurrentProcessNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
   captureComponentImg():void{
@@ -112,7 +116,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
         pid: this.processId,
         imageData: htmlImg
       }
-      this._runningProcessService.addProcessImage(this.name, cmpntImg);
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
 }
 

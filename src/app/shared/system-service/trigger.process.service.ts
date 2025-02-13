@@ -8,6 +8,7 @@ import { ProcessType } from "src/app/system-files/system.types";
 import { ProcessIDService } from "./process.id.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
+import { WindowService } from "./window.service";
 
 @Injectable({
     providedIn: 'root'
@@ -17,6 +18,7 @@ export class TriggerProcessService{
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
+    private _windowService:WindowService;
     private _appDirectory:AppDirectory;
     private _TriggerList:FileInfo[];
     private _onlyOneInstanceAllowed:string[] = ["audioplayer", "cheetah", "jsdos", "photoviewer", 
@@ -44,6 +46,7 @@ export class TriggerProcessService{
 
         this._processIdService = ProcessIDService.instance;
         this._runningProcessService = RunningProcessService.instance;
+        this._windowService = WindowService.instance;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
@@ -67,15 +70,15 @@ export class TriggerProcessService{
                     // this.appIsRunningNotify.next(msg);
                     if(runningProcess){
                         if(runningProcess.getProcessName ==="runsystem" || runningProcess.getProcessName ==="cheetah"){
-                            this._runningProcessService.focusOnCurrentProcess_WWC_Notify.next(runningProcess.getProcessId);
+                            this._windowService.focusOnCurrentProcess_WWC_Notify.next(runningProcess.getProcessId);
                         }else if(runningProcess.getProcessName ==="taskmanager"){
-                            this._runningProcessService.focusOnCurrentProcessNotify.next(runningProcess.getProcessId);
+                            this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
                         }else{
                             const uid = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
                             this._runningProcessService.addEventOriginator(uid);
 
                             this._TriggerList.push(file);
-                            this._runningProcessService.focusOnCurrentProcessNotify.next(runningProcess.getProcessId);
+                            this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
                             this._runningProcessService.changeProcessContentNotify.next();
                         }
                     }
