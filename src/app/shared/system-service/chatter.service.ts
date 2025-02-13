@@ -28,7 +28,7 @@ export class ChatterService implements BaseService{
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
-    description = 'handles loading of js scripts ';
+    description = ' ';
 
     constructor() {
         this._processIdService = ProcessIDService.instance;
