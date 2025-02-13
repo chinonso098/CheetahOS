@@ -152,7 +152,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
     this.applyDefaultColumnVisibility();
     this.alignHeaderAndBodyWidth();
-    this.synchronizeCntnrs();
+    this.synchronizeBodyCntntAndBodyCntnr();
 
 
     //Initial delay 1 seconds and interval countdown also 2 second
@@ -173,7 +173,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.sortTable(this._sorting.column, false);
     });
 
-    this.synchronizeCntnrs();
+    this.synchronizeBodyCntntAndBodyCntnr();
     // setTimeout(()=>{
     //   this.captureComponentImg();
     // },this.SECONDS_DELAY) 
@@ -862,16 +862,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this._renderer.setStyle(tableHeader.rows[hRow].cells[hCol], 'width', cellWidth + 'px');
   }
 
-  synchronizeBodyCntntAndBodyCntnr(data:string[]) {
-    //console.log('Received from directive:', columnId);
-    /**
-     * on first load there is a mis-match between the body cntnr
-     * and the body content, causing a clipping
-     */
-    // const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
-    // const tbodyWidth = tableBody.getBoundingClientRect().width;
-    // this.tskMgrTableBodyCntnr.nativeElement.style.width = `${tbodyWidth}px`;
-
+  updateTableFieldSize(data:string[]) {
     const tdId = data[0];
     for(let i =0; i <= this.processes.length; i++){    
       if(tdId === 'th-0') {
@@ -890,13 +881,16 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     }
   }
 
-  synchronizeCntnrs() {
-    //console.log('Received from directive:', columnId);
+  synchronizeBodyCntntAndBodyCntnr() {
+     /**
+     * on first load there is a mis-match between the body cntnr
+     * and the body content, causing a clipping of a portion of the table
+     */
     const tskmgrCardBody = this.tskmgrCardBody.nativeElement;
     const tbodyWidth = tskmgrCardBody.getBoundingClientRect().width;
     this.tskmgrTblCntnr.nativeElement.style.width = `${tbodyWidth}px`;
 
-    console.log('synchronizeCntnrs from tskmgrCardBody tbodyWidth:', tbodyWidth);
+    //console.log('synchronizeCntnrs from tskmgrCardBody tbodyWidth:', tbodyWidth);
   }
 
   activeFocus(){

@@ -83,19 +83,43 @@
                         <thead #tskMgrTableHeaderCntnt>
                           <div style="height:10px; border-top: none;"></div>
                           <tr (contextmenu)="showContextMenu($event)" (click)="hideContextMenu()">      
-                            <th [style]="thStyle" (click)="sortTable('Name', true)"  columnResize  (dataEvent)="synchronizeBodyCntntAndBodyCntnr($event)" id="th-0">
+                            <th [style]="thStyle" (click)="sortTable('Name', true)"  columnResize  (dataEvent)="updateTableFieldSize($event)" id="th-0">
                               <div  class="tskmgr-sort-icon-cntnr-basic">
-                                <span class="tskmgr-sort-icon"  *ngIf="isDescSorting('Name')">v</span>
-                                <span class="tskmgr-sort-icon"  *ngIf="isAscSorting('Name')">ᴧ</span>
+                                <span class="tskmgr-sort-icon"  *ngIf="isDescSorting('Name')">
+                                  <svg xmlns="http://www.w3.org/2000/svg" 
+                                    height="10" width="10" 
+                                    viewBox="0 0 512 512" >
+                                    <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                                  </svg>
+                                </span>
+                                  <span class="tskmgr-sort-icon"  *ngIf="isAscSorting('Name')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                      height="10" width="10" 
+                                      viewBox="0 0 512 512">
+                                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                                    </svg>
+                                </span>
                               </div>
                               <div class="tskmgr-th-div-name-cntnr-l">
                                 <span class="tskmgr-th-span-name"> Name </span>
                               </div>
                             </th>
-                            <th [style]="thStyle1" (click)="sortTable('Type', true)" columnResize (dataEvent)="synchronizeBodyCntntAndBodyCntnr($event)" id="th-1">               
+                            <th [style]="thStyle1" (click)="sortTable('Type', true)" columnResize (dataEvent)="updateTableFieldSize($event)" id="th-1">               
                               <div  class="tskmgr-sort-icon-cntnr-basic">
-                                <span *ngIf="isDescSorting('Type')">v</span>
-                                <span *ngIf="isAscSorting('Type')">ᴧ</span>
+                                <span *ngIf="isDescSorting('Type')">
+                                  <svg xmlns="http://www.w3.org/2000/svg" 
+                                    height="10" width="10" 
+                                    viewBox="0 0 512 512" >
+                                    <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                                  </svg>
+                                </span>
+                                <span *ngIf="isAscSorting('Type')">
+                                  <svg xmlns="http://www.w3.org/2000/svg" 
+                                    height="10" width="10" 
+                                    viewBox="0 0 512 512">
+                                    <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                                  </svg>
+                                </span>
                               </div>
                               <div class="tskmgr-th-div-name-cntnr-l">
                                 <span class="tskmgr-th-span-name"> Type </span>
@@ -103,8 +127,20 @@
                             </th>
                             <th columnResize  id="th-2">
                               <div class="tskmgr-sort-icon-cntnr-basic">
-                                <span *ngIf="isDescSorting('Status')">v</span>
-                                <span *ngIf="isAscSorting('Status')">ᴧ</span>
+                                <span *ngIf="isDescSorting('Status')">
+                                  <svg xmlns="http://www.w3.org/2000/svg" 
+                                    height="10" width="10" 
+                                    viewBox="0 0 512 512" >
+                                    <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                                  </svg>
+                                </span>
+                                <span *ngIf="isAscSorting('Status')">
+                                  <svg xmlns="http://www.w3.org/2000/svg" 
+                                    height="10" width="10" 
+                                    viewBox="0 0 512 512">
+                                    <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                                  </svg>
+                                </span>
                               </div>
                               <div class="tskmgr-th-div-name-cntnr-l">
                                 <span class="tskmgr-th-span-name"> Status </span>
@@ -112,8 +148,20 @@
                             </th>
                             <th [style]="thStyle2" (click)="sortTable('PID', true)" columnResize id="th-3">               
                               <div class ="tskmgr-sort-icon-cntnr-basic">
-                                <span *ngIf="isDescSorting('PID')">v</span>
-                                <span *ngIf="isAscSorting('PID')">ᴧ</span>
+                                <span *ngIf="isDescSorting('PID')">
+                                  <svg xmlns="http://www.w3.org/2000/svg" 
+                                    height="10" width="10" 
+                                    viewBox="0 0 512 512" >
+                                    <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                                  </svg>
+                                </span>
+                                <span *ngIf="isAscSorting('PID')">
+                                  <svg xmlns="http://www.w3.org/2000/svg" 
+                                    height="10" width="10" 
+                                    viewBox="0 0 512 512">
+                                    <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                                  </svg>
+                                </span>
                               </div>
                               <div class="tskmgr-th-div-name-cntnr-r">
                                 <span class="tskmgr-th-span-name"> PID </span>
@@ -121,8 +169,20 @@
                             </th>
                             <th [style]="thStyle3" (click)="sortTable('Process name', true)" columnResize id="th-4">               
                               <div class ="tskmgr-sort-icon-cntnr-basic">
-                                <span *ngIf="isDescSorting('Process name')">v</span>
-                                <span *ngIf="isAscSorting('Process name')">ᴧ</span>
+                                <span *ngIf="isDescSorting('Process name')">
+                                  <svg xmlns="http://www.w3.org/2000/svg" 
+                                    height="10" width="10" 
+                                    viewBox="0 0 512 512" >
+                                    <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                                  </svg>
+                                </span>
+                                <span *ngIf="isAscSorting('Process name')">
+                                  <svg xmlns="http://www.w3.org/2000/svg" 
+                                    height="10" width="10" 
+                                    viewBox="0 0 512 512">
+                                    <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                                  </svg>
+                                </span>
                               </div>
                               <div class="tskmgr-th-div-name-cntnr-r">
                                 <span class="tskmgr-th-span-name"> Process name </span>
@@ -131,8 +191,20 @@
                             <th (click)="sortTable('CPU', true)" [style]="setThHeaderContainerColor(cpuUtil,'CPU')"  id="cpuTh-{{this.processId}}">
                               <div  class="tskmgr-numeric-th-div-cntnr"  id="cpuDiv-{{this.processId}}">
                                 <div class="tskmgr-sort-icon-cntnr">
-                                  <span class="tskmgr-sort-icon1"  *ngIf="isDescSorting('CPU')">v</span>
-                                  <span class="tskmgr-sort-icon1" *ngIf="isAscSorting('CPU')">ᴧ</span>
+                                  <span class="tskmgr-sort-icon1"  *ngIf="isDescSorting('CPU')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                      height="10" width="10" 
+                                      viewBox="0 0 512 512" >
+                                      <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                                    </svg>
+                                  </span>
+                                  <span class="tskmgr-sort-icon1" *ngIf="isAscSorting('CPU')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                      height="10" width="10" 
+                                      viewBox="0 0 512 512">
+                                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                                    </svg>
+                                  </span>
                                 </div>
                                 <div class="tskmgr-th-div-number-cntnr" id="cpuDiv-{{this.processId}}">
                                   <div class="tskmgr-th-div-number" id="cpuUtilDiv-{{this.processId}}"> {{cpuUtil}}</div>
@@ -146,8 +218,20 @@
                             <th (click)="sortTable('Memory', true)" [style]="setThHeaderContainerColor(memUtil,'Memory')"  id="memoryTh-{{this.processId}}">
                               <div  class="tskmgr-numeric-th-div-cntnr"  id="memoryDiv-{{this.processId}}">
                                 <div class="tskmgr-sort-icon-cntnr">
-                                  <span class="tskmgr-sort-icon1"  *ngIf="isDescSorting('Memory')">v</span>
-                                  <span class="tskmgr-sort-icon1" *ngIf="isAscSorting('Memory')">ᴧ</span>
+                                  <span class="tskmgr-sort-icon1"  *ngIf="isDescSorting('Memory')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                      height="10" width="10" 
+                                      viewBox="0 0 512 512" >
+                                      <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                                    </svg>
+                                  </span>
+                                  <span class="tskmgr-sort-icon1" *ngIf="isAscSorting('Memory')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                      height="10" width="10" 
+                                      viewBox="0 0 512 512">
+                                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                                    </svg>
+                                  </span>
                                 </div>
     
                                 <div class="tskmgr-th-div-number-cntnr" id="memoryDiv-{{this.processId}}">
@@ -162,8 +246,20 @@
                             <th (click)="sortTable('Disk', true)" [style]="setThHeaderContainerColor(diskUtil,'Disk')" id="diskTh-{{this.processId}}">
                               <div  class="tskmgr-numeric-th-div-cntnr"  id="diskDiv-{{this.processId}}">
                                 <div class="tskmgr-sort-icon-cntnr">
-                                  <span class="tskmgr-sort-icon1"  *ngIf="isDescSorting('Disk')">v</span>
-                                  <span class="tskmgr-sort-icon1" *ngIf="isAscSorting('Disk')">ᴧ</span>
+                                  <span class="tskmgr-sort-icon1"  *ngIf="isDescSorting('Disk')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                      height="10" width="10" 
+                                      viewBox="0 0 512 512" >
+                                      <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                                    </svg>
+                                  </span>
+                                  <span class="tskmgr-sort-icon1" *ngIf="isAscSorting('Disk')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                      height="10" width="10" 
+                                      viewBox="0 0 512 512">
+                                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                                    </svg>
+                                  </span>
                                 </div>
                                 <div class="tskmgr-th-div-number-cntnr">
                                   <div class="tskmgr-th-div-number" id="diskUtilDiv-{{this.processId}}"> {{diskUtil}}</div>
@@ -177,8 +273,20 @@
                             <th (click)="sortTable('Network', true)" [style]="setThHeaderContainerColor(networkUtil,'Network')" id="networkTh-{{this.processId}}">
                               <div  class="tskmgr-numeric-th-div-cntnr"  id="networkDiv-{{this.processId}}">
                                 <div class="tskmgr-sort-icon-cntnr">
-                                  <span class="tskmgr-sort-icon1"  *ngIf="isDescSorting('Network')">v</span>
-                                  <span class="tskmgr-sort-icon1" *ngIf="isAscSorting('Network')">ᴧ</span>
+                                  <span class="tskmgr-sort-icon1"  *ngIf="isDescSorting('Network')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                      height="10" width="10" 
+                                      viewBox="0 0 512 512" >
+                                      <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                                    </svg>
+                                  </span>
+                                  <span class="tskmgr-sort-icon1" *ngIf="isAscSorting('Network')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                      height="10" width="10" 
+                                      viewBox="0 0 512 512">
+                                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                                    </svg>
+                                  </span>
                                 </div>
                                 <div class="tskmgr-th-div-number-cntnr">
                                   <div class="tskmgr-th-div-number" id="networkUtilDiv-{{this.processId}}"> {{networkUtil}}</div>
@@ -192,8 +300,20 @@
                             <th (click)="sortTable('GPU', true)" [style]="setThHeaderContainerColor(gpuUtil,'GPU')"  id="gpuTh-{{this.processId}}">
                               <div  class="tskmgr-numeric-th-div-cntnr"  id="gpuDiv-{{this.processId}}">
                                 <div class="tskmgr-sort-icon-cntnr">
-                                  <span class="tskmgr-sort-icon1"  *ngIf="isDescSorting('GPU')">v</span>
-                                  <span class="tskmgr-sort-icon1" *ngIf="isAscSorting('GPU')">ᴧ</span>
+                                  <span class="tskmgr-sort-icon1"  *ngIf="isDescSorting('GPU')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                      height="10" width="10" 
+                                      viewBox="0 0 512 512" >
+                                      <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                                    </svg>
+                                  </span>
+                                  <span class="tskmgr-sort-icon1" *ngIf="isAscSorting('GPU')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                      height="10" width="10" 
+                                      viewBox="0 0 512 512">
+                                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                                    </svg>
+                                  </span>
                                 </div>
                                 <div class="tskmgr-th-div-number-cntnr">
                                   <div class="tskmgr-th-div-number" id="gpuUtilDiv-{{this.processId}}"> {{gpuUtil}}</div>
@@ -207,8 +327,20 @@
     
                             <th [style]="thStyle4" (click)="sortTable('Power usage', true)">               
                               <div class ="tskmgr-sort-icon-cntnr-basic">
-                                <span *ngIf="isDescSorting('Power usage')">v</span>
-                                <span *ngIf="isAscSorting('Power usage')">ᴧ</span>
+                                <span *ngIf="isDescSorting('Power usage')">
+                                  <svg xmlns="http://www.w3.org/2000/svg" 
+                                  height="10" width="10" 
+                                  viewBox="0 0 512 512" >
+                                  <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                                </svg>
+                                </span>
+                                <span *ngIf="isAscSorting('Power usage')">
+                                  <svg xmlns="http://www.w3.org/2000/svg" 
+                                    height="10" width="10" 
+                                    viewBox="0 0 512 512">
+                                    <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                                 </svg>
+                                </span>
                               </div>
                               <div class="tskmgr-th-div-name-cntnr-l">
                                 <span class="tskmgr-th-span-name"> Power usage</span>
