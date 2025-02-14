@@ -27,16 +27,16 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   chatterForm!: FormGroup;
   private _formBuilder;
 
-  userName = false;
-  userNameValue = '';
-  chatValue = '';
-  chatData: any[] = [];
-  loadedMessages: any[] = [];
+
+  userName = 'User01';
+  chatData: ChatMessage[] = [];
+  chatHistory: ChatMessage[] = [];
   lastTapTime = 0;
-  sendDisable = true;
-  MSNExpand = { expand: false, show: false, x: 50, y: 120, hide: false, focusItem: false };
+
+  
 
   chatPrompt = 'Type a message';
+  isMaximizable = false;
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
   name = 'chatter';
@@ -64,7 +64,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
     this._chatService.chatData$.subscribe(data => {
       this.chatData = data;
-      this.loadedMessages = data.slice(-40);
+      this.chatHistory = data.slice(-40);
     });
 
     setTimeout(() => this.scrollToBottom(), 1500);
@@ -102,16 +102,16 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   loadMoreMessages() {
-    const currentLength = this.loadedMessages.length;
+    const currentLength = this.chatHistory.length;
     const moreMessages = this.chatData.slice(Math.max(this.chatData.length - currentLength - 20, 0), this.chatData.length - currentLength);
     
     setTimeout(() => {
-      this.loadedMessages = [...moreMessages, ...this.loadedMessages];
+      this.chatHistory = [...moreMessages, ...this.chatHistory];
     }, 1500);
   }
 
   handleExpandStateToggle() {
-    this.MSNExpand.expand = !this.MSNExpand.expand;
+    //this.MSNExpand.expand = !this.MSNExpand.expand;
   }
 
   handleExpandStateToggleMobile() {
@@ -122,23 +122,46 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.lastTapTime = now;
   }
 
-  createChat() {
-    if (this.chatValue.trim().length === 0) return;
-  
-    const newMessage = new ChatMessage(this.chatValue, this.userNameValue, '')
+
+
+  async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
     
-    // {
-    //   name: this.userNameValue || 'Anonymous',
-    //   chat: this.chatValue,
-    //   date: new Date().toISOString(),
-    //   dev: false, // You can adjust this based on your app logic
-    // };
+    if(evt.key == "Enter"){
+
+      const chatInput = this.chatterForm.value.msgText as string;
+
+      if(chatInput.trim().length === 0) {
+        this.chatPrompt = 'message box can not be empty'
+        return;
+      }
+
+
+      const chatObj = new ChatMessage(chatInput, this.userName)
+      this.chatHistory.push(chatObj);
+      this.chatterForm.reset();
+
+
+      // Update the chat data
+     //this._chatService.setChatData([...this.chatData]);
+
+       // Scroll to bottom
+       this.scrollToBottom();
+    }
+  }
+
+  createChat() {
+    const chatInput = this.chatterForm.value.msgText as string;
+
+    if(chatInput.trim().length === 0) 
+      return;
+
+    const chatObj = new ChatMessage(chatInput, this.userName)
+    this.chatHistory.push(chatObj);
+    this.chatterForm.reset();
   
     // Update the chat data
-    this._chatService.setChatData([...this.chatData, newMessage]);
+    //this._chatService.setChatData([...this.chatData]);
   
-    // Reset input
-    this.chatValue = '';
   
     // Scroll to bottom
     this.scrollToBottom();

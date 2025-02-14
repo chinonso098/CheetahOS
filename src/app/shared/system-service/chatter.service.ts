@@ -7,12 +7,13 @@ import { ProcessIDService } from './process.id.service';
 import { RunningProcessService } from './running.process.service';
 import { Process } from 'src/app/system-files/process';
 import { Service } from 'src/app/system-files/service';
+import { ChatMessage } from 'src/app/system-apps/chatter/model/chat.message';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChatterService implements BaseService{
-    private chatData = new BehaviorSubject<any[]>([]);
+    private chatData = new BehaviorSubject<ChatMessage[]>([]);
     chatData$ = this.chatData.asObservable();
 
     private loadedMessages = new BehaviorSubject<any[]>([]);
@@ -39,7 +40,7 @@ export class ChatterService implements BaseService{
         this._runningProcessService.addService(this.getServiceDetail());
     }
 
-    setChatData(data: any[]) {
+    setChatData(data: ChatMessage[]) {
         this.chatData.next(data);
     }
 
@@ -47,13 +48,15 @@ export class ChatterService implements BaseService{
         this.loadedMessages.next(messages);
     }
 
+    
     public saveData(key: string, value: string) {
         localStorage.setItem(key, value);
     }
     
     public getData(key: string) {
-    return localStorage.getItem(key)
+        return localStorage.getItem(key)
     }
+
     public removeData(key: string) {
         localStorage.removeItem(key);
     }
@@ -61,6 +64,7 @@ export class ChatterService implements BaseService{
     public clearData() {
         localStorage.clear();
     }
+
     private getProcessDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
     }

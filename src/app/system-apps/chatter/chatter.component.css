@@ -1,5 +1,5 @@
     .chatter-main-container {
-        width: 480px;
+        width: 500px;
         height: 100%;
         /* background: #7b69f0; */
         background: #ccc;
@@ -44,7 +44,7 @@
     }
 
     .chatter-chat-container{
-        width: 430px;
+        width: 450px;
         /* height:fit-content; */
     }
 
@@ -98,7 +98,71 @@
         height: 500px;
         overflow-y: auto;
         background-color: #201c1c;
+        padding: 8px 12px;
     }
+
+    .chatter-chat-output-content{
+        display: flex;
+    }
+
+    .chat-user-txt-container{
+        position: relative;
+        width: auto;
+        min-width: 150px;
+        max-width: 360px;
+        height: fit-content;
+        padding-left: 4px;
+        top: 4px;
+    }
+
+    .chat-username-and-date{
+        display: flex;
+        padding: 3px 0;
+    }
+
+    .chat-username{
+        font-family: monospace;
+        font-weight: normal;
+        font-size: 11.5px;
+        color: #fff;
+        font-weight: bold;
+        padding-right: 12px;
+    }
+
+    .chat-date{
+        font-family: monospace;
+        font-weight: normal;
+        font-size: 11px;
+        color: #fff;
+        font-weight:200;
+    }
+
+    .chat-content{
+        font-family: monospace;
+        font-weight: normal;
+        font-size: 12px;
+        color: #848ada;
+        padding: 1px 2px;
+        outline: none;
+        width: 100%;
+        height: auto;
+        min-height: 50px;
+        max-height: 250px;
+        width: auto;
+        min-width: 150px;
+        max-width: 360px;
+        resize: none;
+        overflow-y: auto;
+        text-align: left;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        border: 1px solid #302c2c;
+        background-color: #302c2c;
+        border-radius: 3px;
+    }
+
+
     .chatter-chat-texbox-container{
         width: 100%;
         display: flex;
@@ -144,6 +208,7 @@
         overflow-y: auto; /* Show scrollbar if needed */
         white-space: pre-wrap; /* Preserve spaces and line breaks */
         word-wrap: break-word; /* Break words at boundaries */
+        line-height: 1.5;
     }
 
     
