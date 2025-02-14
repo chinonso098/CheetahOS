@@ -29,6 +29,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _chatService:ChatterService;
   chatUser: IUser | undefined;
 
+  userNameAcronymStyle:Record<string, unknown> = {};
+
   chatterForm!: FormGroup;
   chatUserForm!: FormGroup;
   private _formBuilder;
@@ -38,13 +40,13 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   showUserNameForm = false;
 
   userNameAcronym = '';
+  bkgrndIconColor = '';
   userName = '';
   chatData: ChatMessage[] = [];
   chatHistory: ChatMessage[] = [];
   lastTapTime = 0;
   messages: string[] = [];
   newMessage = '';
-  
 
   chatPrompt = 'Type a message';
   isMaximizable = false;
@@ -66,11 +68,16 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
-    this.userName = `User_${this.getRandomNums()}`;
+    this.userName = `User_${this.getRandomNum()}`;
     this.userNameAcronym = 'AU';
+    this.bkgrndIconColor = this.geIconColor();
   }
 
   ngOnInit(): void {
+    this.userNameAcronymStyle = {
+      'background-color': this.bkgrndIconColor
+    };
+
     this.chatterForm = this._formBuilder.nonNullable.group({
       msgText: '',
     });
@@ -182,7 +189,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       }
 
 
-      const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym)
+      const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym, this.bkgrndIconColor)
       this.chatHistory.push(chatObj);
       this.chatterForm.reset();
       setTimeout(() => {
@@ -205,7 +212,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     if(chatInput.trim().length === 0) 
       return;
 
-    const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym)
+    const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym, this.bkgrndIconColor)
     this.chatHistory.push(chatObj);
     this.chatterForm.reset();
   
@@ -217,10 +224,24 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     //this.scrollToBottom();
   }
   
-  getRandomNums():number {
-    const min = 0;
-    const max = 100000;
+  getRandomNum(min?:number, max?:number):number {
+    const defaultMin = 0;
+    const defaultMax = 100000;
+    min =(min === undefined)? defaultMin :min;
+    max =(max === undefined)? defaultMax : max;
     return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
+   /** Generates the next color dynamically */
+   geIconColor(): string {
+    const defaultMin = 0;
+    const defaultMax = 26;
+    const colorSet = ['#00FFFF', '#AAFF00', '#228B22', '#7CFC00', '#00A36C', '#32CD32', '#00FF7F','#FFBF00','#ECFFDC',
+      '#F88379', '#FF4433', '#FF00FF', '#FFB6C1', '#E30B5C', '#800080', '#D8BFD8', '#AA98A9', '#7F00FF',
+      '#0000FF', '#0047AB', '#3F00FF', '#7393B3', '#D27D2D', '#800020', '#8B0000', '#FFFF00', '#FFD700'];
+
+    const selectedColor = colorSet[this.getRandomNum(defaultMin,defaultMax)]
+    return selectedColor;
   }
 
   setChatterWindowToFocus(pid:number):void{

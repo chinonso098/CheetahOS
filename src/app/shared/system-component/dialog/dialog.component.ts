@@ -49,8 +49,10 @@ export class DialogComponent implements OnChanges {
   }
 
   private generateNotificationId(): number{
-    const min = Math.ceil(0);
-    const max = Math.floor(499);
+    //Yes! it is notification id, not process id. so why the range below 1000, 
+    // becuase PropertiesId range from 500 - 999. And it is still a component, compoenets are retrieved by id. 
+    const min = 10;
+    const max = 499;
     return Math.floor(Math.random() * (max - min + 1)) + min; 
   }
 

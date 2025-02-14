@@ -3,8 +3,9 @@ export class ChatMessage {
     private _userName:string;
     private _userNameAcronym:string;
     private _msgDate:string;
+    private _iconColor:string;
 
-    constructor(msg:string, userName:string, userNameAcronym:string ){
+    constructor(msg:string, userName:string, userNameAcronym:string, iconColor:string ){
         this._msg = msg;
         this._userName = userName;
 
@@ -16,6 +17,7 @@ export class ChatMessage {
             hour12: true // Use 12-hour format with AM/PM
         });
         this._userNameAcronym = userNameAcronym;
+        this._iconColor = iconColor;
     }
 
     get getMessage(){
@@ -38,5 +40,9 @@ export class ChatMessage {
 
     get getMsgDate(){
         return this._msgDate;
+    }
+
+    get getIconColor(){
+        return this._iconColor;
     }
   }

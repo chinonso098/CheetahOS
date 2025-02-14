@@ -17,8 +17,6 @@ export class PropertiesComponent implements OnChanges{
 
   private _fileService:FileService;
   private _menuService:MenuService;
-
-
   URL = Constants.URL;
 
   propertyId = 0;
@@ -47,8 +45,9 @@ export class PropertiesComponent implements OnChanges{
   }
 
   private generatePropertyId(): number{
-    const min = Math.ceil(500);
-    const max = Math.floor(999);
+    //This is still a component, compoenets are retrieved by id. 
+    const min = 500;
+    const max = 999;
     return Math.floor(Math.random() * (max - min + 1)) + min; 
   }
 }

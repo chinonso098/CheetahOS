@@ -85,7 +85,7 @@ span {
     height: 36px;
     border-radius: 50%;
     font-weight: 500;
-    background-color: cadetblue;
+    /* background-color: cadetblue; */
     color: white;
 }
 
@@ -112,7 +112,6 @@ span.chatter-mid:hover {
     top: 6px;
 }
 
-
 /* Chat Window */
 .chatter-chat-window-content {
     width: 100%;
@@ -123,8 +122,8 @@ span.chatter-mid:hover {
 }
 
 .chatter-empty-line-container {
-    max-height: 3px;
-    min-height: 3px;
+    max-height: 18px;
+    min-height: 18px;
     background-color: #201c1c;
 }
 

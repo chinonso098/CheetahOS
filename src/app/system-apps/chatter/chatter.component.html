@@ -16,7 +16,7 @@
           <div class="chatter-user-info-container">
             <div class="chatter-user-info-content" >
               <span class="span chatter-head"> 
-                <div class="chatter-user-acronym"> {{userNameAcronym}} </div>
+                <div class="chatter-user-acronym" [ngStyle]="userNameAcronymStyle"> {{userNameAcronym}} </div>
               </span>
 
               <ng-container *ngIf="this.showUserNameForm">
@@ -110,7 +110,7 @@
             <ng-container  *ngFor="let msg of chatHistory"> 
               <div class="chatter-chat-output-content">
                 <span class="span chatter-head"> 
-                  <div class="chatter-user-acronym"> {{msg.getUserNameAcronym}} </div>
+                  <div class="chatter-user-acronym"  [ngStyle]="{'background-color':'msg.getIconColor'}"> {{msg.getUserNameAcronym}} </div>
                 </span>
 
                 <div class="chat-user-txt-container">
@@ -122,6 +122,7 @@
                   </span>
                 </div>
               </div>
+              <div class="chatter-empty-line-container "> </div>
             </ng-container>
           </div>
           <div class="chatter-chat-texbox-container">
