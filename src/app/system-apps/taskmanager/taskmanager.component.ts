@@ -566,7 +566,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     // Scale to the desired range
     const num = min + biasedRand * (max - min);
     return Math.round(num * 10) / 10; // Rounding to one decimal place
-}
+ }
 
   getRandomFloatingNums(min:number, max:number):number{
     return Math.round((Math.random() * (max - min) + min) * 10) / 10;

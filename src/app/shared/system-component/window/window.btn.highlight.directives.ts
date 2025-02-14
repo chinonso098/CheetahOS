@@ -12,7 +12,7 @@ export class HighlightDirective {
   closeBtnColor = 'rgb(232,17,35)';
   focusedCloseBtnColor = 'rgb(139,10,20)';
   focusedWindowColor = 'blue';                       //'rgb(121, 163, 232)' --- not really feeling this rgb(16, 97, 230)
-  unfocusedWindowColor = 'rgb(121, 163, 232)';
+  unfocusedWindowColor = 'rgb(121, 163, 232)';  //rgb(24,60,124) this will be changing to the main color soon     #183c7c
 
   @HostListener('mouseenter') 
   onMouseEnter() {

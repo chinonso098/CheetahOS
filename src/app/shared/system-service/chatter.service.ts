@@ -13,11 +13,11 @@ import { ChatMessage } from 'src/app/system-apps/chatter/model/chat.message';
   providedIn: 'root',
 })
 export class ChatterService implements BaseService{
-    private chatData = new BehaviorSubject<ChatMessage[]>([]);
-    chatData$ = this.chatData.asObservable();
+    private _chatData = new BehaviorSubject<ChatMessage[]>([]);
+    chatData$ = this._chatData.asObservable();
 
-    private loadedMessages = new BehaviorSubject<any[]>([]);
-    loadedMessages$ = this.loadedMessages.asObservable();
+    private _loadedMessages = new BehaviorSubject<ChatMessage[]>([]);
+    loadedMessages$ = this._loadedMessages.asObservable();
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
@@ -41,14 +41,14 @@ export class ChatterService implements BaseService{
     }
 
     setChatData(data: ChatMessage[]) {
-        this.chatData.next(data);
+        this._chatData.next(data);
     }
 
-    setLoadedMessages(messages: any[]) {
-        this.loadedMessages.next(messages);
+    setLoadedMessages(messages: ChatMessage[]) {
+        this._loadedMessages.next(messages);
     }
 
-    
+
     public saveData(key: string, value: string) {
         localStorage.setItem(key, value);
     }

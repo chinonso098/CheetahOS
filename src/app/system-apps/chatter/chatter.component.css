@@ -116,6 +116,12 @@ span.chatter-mid {
     padding: 8px 12px;
 }
 
+.chatter-empty-line-container {
+    max-height: 3px;
+    min-height: 3px;
+    background-color: #201c1c;
+}
+
 /* Chat Messages */
 .chatter-chat-output-content {
     display: flex;
@@ -157,9 +163,9 @@ span.chatter-mid {
     color: #848ada;
     padding: 1px 2px;
     outline: none;
-    min-height: 50px;
+    min-height: 25px;
     max-height: 250px;
-    min-width: 150px;
+    min-width: 75px;
     max-width: 360px;
     resize: none;
     overflow-y: auto;
@@ -283,3 +289,116 @@ span.chatter-mid {
     font-weight: bold;
     white-space: pre;
 }
+
+
+/*Chat User Name Form*/
+.chat-user-form-card{
+    border: 1px solid #a6a4a4;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 8px;
+    background-color: #201c1c;
+    max-width: 250px;
+    margin: auto;
+    position: absolute;
+    z-index: 2;
+    left: 110px;
+  }
+  
+  .chat-user-form-body {
+    padding: 10px;
+  }
+  
+  .chat-user-form-footer {
+    padding: 5px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    padding-left: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 5px;
+    background-color: #302c2c;
+    border: 1px solid #a6a4a4;
+    color: #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  
+  .is-invalid {
+    border-color: #dc3545;
+  }
+  
+  .invalid-feedback {
+    color: #dc3545;
+    font-size: 13px;
+    margin-top: 5px;
+    display: block;
+  }
+  
+  .chatter_btn {
+    padding: 8px 6px;
+    font-size: 14px;
+    border-radius: 5px;
+  }
+  
+  .chatter_btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+  }
+  
+  .chatter_btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .chatter_btn-outline-primary {
+    border-color: #007bff;
+    color: #007bff;
+  }
+
+  .chatter_btn-outline-primary {
+    border-color: #007bff;
+    color: #007bff;
+  }
+
+  .chatter_btn-outline-primary:hover {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .chatter_btn-outline-disabled{
+    background-color: transparent;
+    border-color: transparent;
+    color: transparent;
+  }
+
+  .chatter_btn-outline-disabled:hover{
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+  }
+  
+  .alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 15px;
+    font-size: 14px;
+  }
+  
