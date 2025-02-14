@@ -100,7 +100,6 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     1
   }
 
-
   onCreate(): void {
     if (this.chatUserForm.valid) {
       if (this.chatUserForm.dirty) {
@@ -183,7 +182,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       }
 
 
-      const chatObj = new ChatMessage(chatInput, this.userName)
+      const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym)
       this.chatHistory.push(chatObj);
       this.chatterForm.reset();
       setTimeout(() => {
@@ -206,7 +205,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     if(chatInput.trim().length === 0) 
       return;
 
-    const chatObj = new ChatMessage(chatInput, this.userName)
+    const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym)
     this.chatHistory.push(chatObj);
     this.chatterForm.reset();
   

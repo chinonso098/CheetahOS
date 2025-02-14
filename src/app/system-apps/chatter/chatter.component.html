@@ -105,13 +105,12 @@
                 </span>
               </ng-container>
             </div>
-
           </div>
           <div class="chatter-chat-window-content"  #chatHistoryOutput>
             <ng-container  *ngFor="let msg of chatHistory"> 
               <div class="chatter-chat-output-content">
                 <span class="span chatter-head"> 
-                  <div class="chatter-user-acronym"> HW </div>
+                  <div class="chatter-user-acronym"> {{msg.getUserNameAcronym}} </div>
                 </span>
 
                 <div class="chat-user-txt-container">
@@ -131,6 +130,7 @@
                 <textarea
                   appKeyPressCapture
                   class="chatter-area"
+                  maxlength="300"
                   formControlName="msgText"
                   placeholder="{{chatPrompt}}"
                   (keydown)="onKeyDownInInputBox($event)"

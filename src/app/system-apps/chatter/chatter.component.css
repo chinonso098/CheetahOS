@@ -95,6 +95,12 @@ span.chatter-head {
 
 span.chatter-mid {
     padding: 0 4px;
+    border: 1px solid transparent;
+}
+
+span.chatter-mid:hover {
+    padding: 0 4px;
+    border: 1px solid #a6a4a4;
 }
 
 .user-name-bold {

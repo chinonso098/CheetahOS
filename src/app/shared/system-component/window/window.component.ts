@@ -268,7 +268,7 @@ import { Process } from 'src/app/system-files/process';
     setHeaderInActive(pid:number):void{
       if(this.processId == pid){
         this.headerActiveStyles = {
-          'background-color':'rgb(121, 163, 232)'
+          'background-color':'rgb(56,56,56)'
         };
       }
     }
@@ -281,7 +281,7 @@ import { Process } from 'src/app/system-files/process';
 
       //console.log('setHeaderActive 1:',pid);//TBD
         this.headerActiveStyles = {
-          'background-color':'blue'
+          'background-color':'rgb(24,60,124)'
         };
       }
     }

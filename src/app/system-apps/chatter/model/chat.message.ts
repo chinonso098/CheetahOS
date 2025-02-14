@@ -1,10 +1,10 @@
 export class ChatMessage {
     private _msg: string;
     private _userName:string;
-
+    private _userNameAcronym:string;
     private _msgDate:string;
 
-    constructor(msg:string, userName:string ){
+    constructor(msg:string, userName:string, userNameAcronym:string ){
         this._msg = msg;
         this._userName = userName;
 
@@ -15,6 +15,7 @@ export class ChatMessage {
             minute: '2-digit', // Two-digit minutes (e.g., "50")
             hour12: true // Use 12-hour format with AM/PM
         });
+        this._userNameAcronym = userNameAcronym;
     }
 
     get getMessage(){
@@ -29,6 +30,10 @@ export class ChatMessage {
     }
     set setUserName(userName:string){
         this._userName= userName
+    }
+
+    get getUserNameAcronym(){
+        return this._userNameAcronym;
     }
 
     get getMsgDate(){

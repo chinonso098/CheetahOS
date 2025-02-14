@@ -63,7 +63,7 @@ h1{
   font-size: 12px;
   font-weight: normal;
   height: 29px;
-  border-bottom: 1px transparent blue;  
+  border-bottom: 1px transparent #183c7c;  
   width: fit-content;
   flex-grow: 1;
   display: flex;
@@ -73,8 +73,7 @@ h1{
 img{
   height: 18px;
   width: 18px;
-  margin: 0 6px 0 8px;
-  
+  margin: 0 6px 0 8px; 
 }
 
 figure{
@@ -90,7 +89,7 @@ figcaption{
 }
 
 button{
-  border-left: 1px transparent blue;
+  border-left: 1px transparent #183c7c;
   box-sizing: content-box;
   color: #fff;
   display: flex;
@@ -128,8 +127,3 @@ nav{
 .ng-resizable-diagonal{ 
   border-bottom: 12px solid transparent; 
 }
-
-
-  /* ::ng-deep .yogaba { 
-    background-color: lightblue;
-  } */
