@@ -341,16 +341,18 @@ import { Process } from 'src/app/system-files/process';
     }
 
     onTitleBarDoubleClick():void{
-      if(this.isWindowMaximizable){
-        if(this.currentWindowSizeState && !this.windowMaximize){
-          this.windowMaximize = false;
-          this.windowMinMaxAction = 'minimized';
-        }else{
-          this.windowMaximize = true;
-          this.windowMinMaxAction = 'maximized';
-        }
-        this.setMaximizeAndUnMaximize()
-      }
+      console.log('this featured is turned off');
+
+      // if(this.isWindowMaximizable){
+      //   if(this.currentWindowSizeState && !this.windowMaximize){
+      //     this.windowMaximize = false;
+      //     this.windowMinMaxAction = 'minimized';
+      //   }else{
+      //     this.windowMaximize = true;
+      //     this.windowMinMaxAction = 'maximized';
+      //   }
+      //   this.setMaximizeAndUnMaximize()
+      // }
     }
 
     onDragEnd(input:HTMLElement):void{
@@ -373,8 +375,8 @@ import { Process } from 'src/app/system-files/process';
     }
 
     onDragStart(pid:number):void{
-      //console.log('i am trouble'); //TBD
-      //this.setFocusOnWindow(pid);
+      console.log('onDragStart-Started. But this function will also call  setFocusOnWindow()'); //TBD
+      this.setFocusOnWindow(pid);
     }
 
     onRZStop(input:any):void{
@@ -391,7 +393,9 @@ import { Process } from 'src/app/system-files/process';
 
       this._stateManagmentService.addState(this.uniqueId, windowState, StateType.Window);
 
-      //send window resize alert
+      //send window resize alert(containing new width and height);
+      this._windowService.resizeProcessWindowNotify.next([]);
+      
     }
     
     generateCloseAnimationValues(x_axis:number, y_axis:number):void{

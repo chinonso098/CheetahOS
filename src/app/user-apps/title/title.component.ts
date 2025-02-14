@@ -31,6 +31,7 @@ export class TitleComponent implements BaseComponent, OnDestroy, AfterViewInit{
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}angular.png`;
+  isMaximizable = false;
   name = 'hello';
   processId = 0;
   type = ComponentType.User;

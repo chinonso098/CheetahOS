@@ -14,10 +14,12 @@
 }"
 
 [ngStyle]="currentStyles" #divWindow   tabindex="0" class="window-container  window-dd-box"
-        ngDraggable [handle]="leftHS" (stopped)="onDragEnd($event)" (started)="onDragStart(this.processId)"
-        (rzStop)="onRZStop($event)"  
+        ngDraggable [handle]="leftHS" (stopped)="onDragEnd($event)" (started)="onDragStart(this.processId)">
+
+        <!-- (rzStop)="onRZStop($event)"  
         ngResizable [rzHandles]="'e,s,w,se,sw'" 
-        [rzMinWidth]="defaultWidthOnOpen" [rzMinHeight]="defaultHeightOnOpen">
+        [rzMinWidth]="defaultWidthOnOpen" [rzMinHeight]="defaultHeightOnOpen" -->
+
     <div class="header-container"
         appHighlight tabindex="0"
         [ngStyle]="headerActiveStyles"

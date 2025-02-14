@@ -56,6 +56,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}markdown.png`;
+  isMaximizable = false;
   name = 'markdownviewer';
   processId = 0;
   type = ComponentType.System;

@@ -22,7 +22,7 @@ export class TriggerProcessService implements BaseService{
     private _windowService:WindowService;
     private _appDirectory:AppDirectory;
     private _TriggerList:FileInfo[];
-    private _onlyOneInstanceAllowed:string[] = ["audioplayer", "cheetah", "jsdos", "photoviewer", 
+    private _onlyOneInstanceAllowed:string[] = ["audioplayer", "chatter", "cheetah", "jsdos", "photoviewer", 
         "ruffle", "runsystem", "taskmanager", "videoplayer"];
     static instance: TriggerProcessService;
 
@@ -72,14 +72,15 @@ export class TriggerProcessService implements BaseService{
                     if(runningProcess){
                         if(runningProcess.getProcessName ==="runsystem" || runningProcess.getProcessName ==="cheetah"){
                             this._windowService.focusOnCurrentProcess_WWC_Notify.next(runningProcess.getProcessId);
-                        }else if(runningProcess.getProcessName ==="taskmanager"){
+                        }else if(runningProcess.getProcessName ==="taskmanager" || runningProcess.getProcessName ==="chatter"){
                             this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
                         }else{
                             const uid = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
-                            this._runningProcessService.addEventOriginator(uid);
-
+  
                             this._TriggerList.push(file);
                             this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
+                            
+                            this._runningProcessService.addEventOriginator(uid);
                             this._runningProcessService.changeProcessContentNotify.next();
                         }
                     }
