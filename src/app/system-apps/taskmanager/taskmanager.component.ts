@@ -100,7 +100,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}taskmanager.png`;
-  eco_icon = `${Constants.IMAGE_BASE_PATH}econo.png`;
+  isMaximizable=false;
   name = 'taskmanager';
   processId = 0;
   type = ComponentType.System;
@@ -1010,11 +1010,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
       const mainWindow = document.getElementById('vanta'); 
-      const tskmgrCardBody = this.tskmgrCardBody.nativeElement;
-      const tbodyWidth = tskmgrCardBody.getBoundingClientRect().width;
-      console.log('mainWindow?.offsetHeight:',mainWindow?.offsetHeight);
-      console.log('mainWindow?.offsetWidth:',mainWindow?.offsetWidth);
-      console.log('maximizeWindow from tskmgrCardBody tbodyWidth:', tbodyWidth);
+      //const tskmgrCardBody = this.tskmgrCardBody.nativeElement;
+      //const tbodyWidth = tskmgrCardBody.getBoundingClientRect().width;
+      // console.log('mainWindow?.offsetHeight:',mainWindow?.offsetHeight);
+      // console.log('mainWindow?.offsetWidth:',mainWindow?.offsetWidth);
+      // console.log('maximizeWindow from tskmgrCardBody tbodyWidth:', tbodyWidth);
   
       /*
       -45 (tskmgr footer)
@@ -1028,16 +1028,14 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       const pixelToSubtract = 45 + 30 + 20 + 3 + 19 + 1 + 40;
       this.tskmgrTblCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelToSubtract}px`;
       this.tskmgrTblCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-  
-      // this.tskMgrTable.nativeElement.style.height = `${mainWindow?.offsetHeight || 0 - 84}px`;
-      // this.tskMgrTable.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
 
 
-      //avoid setting these manu
+      //when next you decide to focus on the Window min/max, use the chrome dev mode to see what container, 
+      // do not return to their original size on minize. The minimize for taskmanger is 95% there 
+
+      //avoid setting these manully
       // this.tskMgrTableHeaderCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
       // this.tskMgrTableBodyCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-
-
 
       //this.tskMgrTableHeaderCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
       //this.tskMgrTableBodyCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;

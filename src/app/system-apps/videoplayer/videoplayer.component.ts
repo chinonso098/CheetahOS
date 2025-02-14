@@ -55,6 +55,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   name= 'videoplayer';
   hasWindow = true;
+  isMaximizable=false;
   icon = `${Constants.IMAGE_BASE_PATH}videoplayer.png`;
   processId = 0;
   type = ComponentType.System;

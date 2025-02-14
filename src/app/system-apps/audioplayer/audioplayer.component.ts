@@ -73,7 +73,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   name= 'audioplayer';
   hasWindow = true;
-  
+  isMaximizable=false;
   icon = `${Constants.IMAGE_BASE_PATH}audioplayer.png`;
   processId = 0;
   type = ComponentType.User;

@@ -30,9 +30,7 @@
 
           </div>
           <div class="chatter-chat-window-content"  #chatHistoryOutput>
-            
-            <!-- *ngFor="let msg of chatHistory" -->
-            <ng-container > 
+            <ng-container  *ngFor="let msg of chatHistory"> 
               <div class="chatter-chat-output-content">
                 <span class="span chatter-head"> 
                   <div class="chatter-user-acronym"> HW </div>
@@ -52,8 +50,8 @@
                 </div>
               </div>
             </ng-container>
-          </div>
 
+          </div>
           <div class="chatter-chat-texbox-container">
             <div class="chatter-chat-texbox">
               <form [formGroup]="chatterForm"  class="chatter-form">
