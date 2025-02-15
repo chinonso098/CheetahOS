@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { BaseService } from './base.service.interface';
 import { Constants } from 'src/app/system-files/constants';
 import { ProcessType } from 'src/app/system-files/system.types';
@@ -8,19 +8,23 @@ import { RunningProcessService } from './running.process.service';
 import { Process } from 'src/app/system-files/process';
 import { Service } from 'src/app/system-files/service';
 import { ChatMessage } from 'src/app/system-apps/chatter/model/chat.message';
+import { SessionManagmentService } from './session.management.service';
+import { IUserData } from 'src/app/system-apps/chatter/model/chat.interfaces';
+import { SocketService } from './socket.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChatterService implements BaseService{
-    private _chatData = new BehaviorSubject<ChatMessage[]>([]);
-    chatData$ = this._chatData.asObservable();
-
-    private _loadedMessages = new BehaviorSubject<ChatMessage[]>([]);
-    loadedMessages$ = this._loadedMessages.asObservable();
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
+    private _sessionManagmentService:SessionManagmentService
+    private _socketService:SocketService
+
+    private _chatData:ChatMessage[] = [];
+    private _newMessagRecievedSub!: Subscription;
+    newMessageNotify: Subject<void> = new Subject<void>();
   
   
     name = 'chatter_msg_svc';
@@ -34,42 +38,49 @@ export class ChatterService implements BaseService{
     constructor() {
         this._processIdService = ProcessIDService.instance;
         this._runningProcessService = RunningProcessService.instance;
+        this._sessionManagmentService = SessionManagmentService.instance;
+        this._socketService = SocketService.instance;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
+
+        this._newMessagRecievedSub = this._socketService.onNewMessage().subscribe((p)=>{this.raiseNewMessageReceivedAlert(p)});
     }
 
-    setChatData(data: ChatMessage[]) {
-        this._chatData.next(data);
+    sendMessage(data: ChatMessage) {
+       this._socketService.sendMessage(data);
     }
 
-    setLoadedMessages(messages: ChatMessage[]) {
-        this._loadedMessages.next(messages);
+    saveUserData(value: IUserData) {
+        this._sessionManagmentService.addSession(this.name, value);
     }
 
-
-    public saveData(key: string, value: string) {
-        localStorage.setItem(key, value);
-    }
-    
-    public getData(key: string) {
-        return localStorage.getItem(key)
+    getUserData() {
+        return this._sessionManagmentService.getSession(this.name);
     }
 
-    public removeData(key: string) {
-        localStorage.removeItem(key);
+    getChatData():ChatMessage[]{
+        return this._chatData;
     }
 
-    public clearData() {
-        localStorage.clear();
+    private raiseNewMessageReceivedAlert(newMessage:ChatMessage):void{
+        this._chatData.push(newMessage);
+        this.newMessageNotify.next();
+    }
+
+    terminateSubscription():void{
+        const timeout = 600000
+        setTimeout(() => {
+            this._newMessagRecievedSub?.unsubscribe();
+        }, timeout);
     }
 
     private getProcessDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
+        return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
     }
   
     private getServiceDetail():Service{
-    return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
+        return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
     }
 }

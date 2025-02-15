@@ -48,7 +48,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _stateManagmentService: StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _notificationService:NotificationService;
-    private _windowService:WindowService;
+  private _windowService:WindowService;
   private _menuService:MenuService;
   private _formBuilder;
   private _appState!:AppState;

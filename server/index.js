@@ -13,10 +13,18 @@ const io = socketIo(server, {
 });
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
+  console.log('A user connected:', socket.id);
+
+  // Listening for messages from the client
+  socket.on('message', (msg) => {
+    console.log('Received message:', msg);
+    io.emit('message', msg); // Broadcasting message to all clients
   });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+
 });
 
 server.listen(3000, () => {

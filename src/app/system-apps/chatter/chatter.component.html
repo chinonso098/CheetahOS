@@ -85,7 +85,7 @@
                       class="chatter_btn chatter_btn-outline-primary mr-3"
                       style="width:50px"
                       type="submit"
-                      (click)="onCreate()"
+                      (click)="onUpdateUserName()"
                       [disabled]="!chatUserForm.valid"
                       [ngClass]="!chatUserForm.valid ? 'chatter_btn chatter_btn-outline-disabled mr-3':'chatter_btn chatter_btn-outline-primary mr-3'"
                       >
@@ -105,7 +105,7 @@
             </div>
           </div>
           <div class="chatter-chat-window-content"  #chatHistoryOutput>
-            <ng-container  *ngFor="let msg of chatHistory"> 
+            <ng-container  *ngFor="let msg of chatData"> 
               <div class="chatter-chat-output-content">
                 <span class="span chatter-head"> 
                   <div class="chatter-user-acronym"  [ngStyle]="{'background-color':'msg.getIconColor'}"> {{msg.getUserNameAcronym}} </div>
