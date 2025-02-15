@@ -27,6 +27,9 @@ export class SocketService implements BaseService {
   status  = Constants.SERVICES_STATE_RUNNING;
   hasWindow = false;
   description = '';
+  mgsEvtString ='message';
+  newUserEvtString ='userConnected';
+  userLeftEvtString ='userDisconnected';
   
   constructor() {
     this.socket = io('http://localhost:3000');
@@ -40,19 +43,45 @@ export class SocketService implements BaseService {
     this._runningProcessService.addService(this.getServiceDetail());
   }
 
-  emit(event: string, data: any) {
-    this.socket.emit(event, data);
+  sendMessage(data: any) {
+    this.socket.emit(this.mgsEvtString, data);
   }
 
-  on(event: string): Observable<any> {
+  onNewMessage(): Observable<any> {
     return new Observable((observer) => {
-      this.socket.on(event, (data) => {
+      this.socket.on(this.mgsEvtString, (data) => {
         observer.next(data);
       });
 
       // Handle cleanup
       return () => {
-        this.socket.off(event);
+        this.socket.off(this.mgsEvtString);
+      };
+    });
+  }
+
+  onNewUser(): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on(this.newUserEvtString, (data) => {
+        observer.next(data);
+      });
+
+      // Handle cleanup
+      return () => {
+        this.socket.off(this.newUserEvtString);
+      };
+    });
+  }
+
+  onUserLeft(): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on(this.userLeftEvtString, (data) => {
+        observer.next(data);
+      });
+
+      // Handle cleanup
+      return () => {
+        this.socket.off(this.userLeftEvtString);
       };
     });
   }

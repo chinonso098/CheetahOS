@@ -311,6 +311,7 @@ span.chatter-mid:hover {
     width: fit-content;
     left: 300px;
     bottom: -2px;
+    background-color: #302c2c;
 }
 
 .chatter-span-footer-img{

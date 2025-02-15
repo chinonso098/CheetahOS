@@ -9,7 +9,8 @@ import { Process } from 'src/app/system-files/process';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ChatterService } from 'src/app/shared/system-service/chatter.service';
 import { ChatMessage } from './model/chat.message';
-import { IUser } from './model/user';
+import { IUser, IUserData } from './model/chat.interfaces';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'cos-chatter',
@@ -18,10 +19,10 @@ import { IUser } from './model/user';
 })
 export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
 
-  @ViewChild('endOfMessagesRef', {static: true}) endOfMessagesRef!: ElementRef;
-  @ViewChild('topOfMessagesRef', {static: true}) topOfMessagesRef!: ElementRef;
-  // @ViewChild('chatUserFormCntnr', {static: true}) chatUserFormCntnr!: ElementRef;
-  // @ViewChild('chatUserLabelCntnr', {static: true}) chatUserLabelCntnr!: ElementRef; 
+  @ViewChild('chatHistoryOutput', {static: true}) chatHistoryOutput!: ElementRef;
+
+  private _newMessageAlertSub!: Subscription;
+  private _userCountChangeSub!: Subscription;
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -40,12 +41,13 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   showUserNameForm = false;
   isTyping = false;
   messageLastRecieved = '';
+  scrollCounter = 0;
+  userCount = 0;
 
   userNameAcronym = '';
   bkgrndIconColor = '';
   userName = '';
   chatData: ChatMessage[] = [];
-  chatHistory: ChatMessage[] = [];
   lastTapTime = 0;
   messages: string[] = [];
   newMessage = '';
@@ -67,13 +69,13 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._chatService = chatService;
     this._formBuilder = formBuilder
 
+    this.setDefaults();
+
+    this._newMessageAlertSub = this._chatService.newMessageNotify.subscribe(()=> this.pullData());
+    this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe(()=> this.updateUserCount());
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
-    this.userName = `User_${this.getRandomNum()}`;
-    this.userNameAcronym = 'AU';
-    this.bkgrndIconColor = this.geIconColor();
-    this.getCurrentTime();
   }
 
   ngOnInit(): void {
@@ -95,27 +97,61 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     //   this.chatHistory = data.slice(-40);
     // });
 
-    setTimeout(() => this.scrollToBottom(), 1500);
+    //setTimeout(() => this.scrollToBottom(), 1500);
   }
 
   ngAfterViewInit(): void {
-    1
+    setTimeout(() => {
+      this.userCount = this._chatService.getUserCount();
+    }, 500);
+
   }
 
   ngOnDestroy():void{
-    1
+    this._newMessageAlertSub?.unsubscribe();
+    this._userCountChangeSub?.unsubscribe();
   }
 
-  sendMessage() {
-    1
+  pullData():void{
+    const data = this._chatService.getChatData();
+    //console.log('chat data:', data);
+    this.chatData = data
+    this.setMessageLastReceievedTime();
   }
 
-  onCreate(): void {
+  updateUserCount():void{
+    this.userCount = this._chatService.getUserCount();
+  }
+
+  setDefaults():void{
+    const uData = this._chatService.getUserData() as IUserData;
+    if(!uData){
+      this.userName = `User_${this.getRandomNum()}`
+      this.userNameAcronym = 'AU';
+      this.bkgrndIconColor = this.geIconColor();
+
+      const userData:IUserData = {'userName': this.userName, 'userNameAcronym':this.userNameAcronym, 'color':this.bkgrndIconColor};
+      this._chatService.saveUserData(userData)
+    }else{
+      this.userName = uData.userName
+      this.userNameAcronym = uData.userNameAcronym
+      this.bkgrndIconColor = uData.color
+    }
+
+  }
+
+  onUpdateUserName(): void {
     if (this.chatUserForm.valid) {
       if (this.chatUserForm.dirty) {
         const s = { ...this.chatUser, ...this.chatUserForm.value } as IUser;
         this.userNameAcronym = `${s.lastName.charAt(0)}${s.firstName.charAt(0)}`;
         this.userName = `${s.lastName}, ${s.firstName}`;
+
+        // retrieve the data from session and update it
+        const uData = this._chatService.getUserData() as IUserData;
+        uData.userName = this.userName;
+        uData.userNameAcronym = this.userNameAcronym
+        this._chatService.saveUserData(uData)
 
         this.showTheUserNameLabel();
       }
@@ -149,22 +185,43 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }
   }
 
-  scrollToBottom() {
-    setTimeout(() => {
-      if (this.endOfMessagesRef) {
-        this.endOfMessagesRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
+  // scrollToBottom() {
+  //   setTimeout(() => {
+  //     if (this.endOfMessagesRef) {
+  //       this.endOfMessagesRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
+  //     }
+  //   }, 1500);
+  // }
+
+  private scrollToBottom(): void {
+    const delay = 150;
+    const interval =  setInterval(() => {
+      try {
+        //console.log('height:',this.terminalOutputCntnr.nativeElement.scrollHeight);
+        if(this.scrollCounter < 2){
+          this.chatHistoryOutput.nativeElement.scrollTop = this.chatHistoryOutput.nativeElement.scrollHeight;
+          this.chatHistoryOutput.nativeElement.scrollIntoView({ behavior: 'smooth' });
+          this.scrollCounter++;
+        }
+      } catch (err) {
+        console.error('Error scrolling to bottom:', err);
       }
-    }, 1500);
+      if(this.scrollCounter == 2) {
+        clearInterval(interval);
+        this.scrollCounter = 0;
+      }
+
+    },delay);
   }
 
-  loadMoreMessages() {
-    const currentLength = this.chatHistory.length;
-    const moreMessages = this.chatData.slice(Math.max(this.chatData.length - currentLength - 20, 0), this.chatData.length - currentLength);
+  // loadMoreMessages() {
+  //   const currentLength = this.chatHistory.length;
+  //   const moreMessages = this.chatData.slice(Math.max(this.chatData.length - currentLength - 20, 0), this.chatData.length - currentLength);
     
-    setTimeout(() => {
-      this.chatHistory = [...moreMessages, ...this.chatHistory];
-    }, 1500);
-  }
+  //   setTimeout(() => {
+  //     this.chatHistory = [...moreMessages, ...this.chatHistory];
+  //   }, 1500);
+  // }
 
   handleExpandStateToggle() {
     //this.MSNExpand.expand = !this.MSNExpand.expand;
@@ -178,12 +235,9 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.lastTapTime = now;
   }
 
-
-
   async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
     
     if(evt.key == "Enter"){
-
       const chatInput = this.chatterForm.value.msgText as string;
 
       if(chatInput.trim().length === 0) {
@@ -191,18 +245,13 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         return;
       }
 
-
       const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym, this.bkgrndIconColor)
-      this.chatHistory.push(chatObj);
+      this._chatService.sendMessage(chatObj);
       this.chatterForm.reset();
       setTimeout(() => {
         this.chatterForm.controls[this.formCntrlName].setValue(null);
         this.chatterForm.controls[this.formCntrlName].markAsUntouched();
       }, 10);
-
-
-      // Update the chat data
-     //this._chatService.setChatData([...this.chatData]);
 
        // Scroll to bottom
        //this.scrollToBottom();
@@ -216,13 +265,13 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       return;
 
     const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym, this.bkgrndIconColor)
-    this.chatHistory.push(chatObj);
+    this._chatService.sendMessage(chatObj);
     this.chatterForm.reset();
-  
-    // Update the chat data
-    //this._chatService.setChatData([...this.chatData]);
-  
-  
+    setTimeout(() => {
+      this.chatterForm.controls[this.formCntrlName].setValue(null);
+      this.chatterForm.controls[this.formCntrlName].markAsUntouched();
+    }, 10);
+    
     // Scroll to bottom
     //this.scrollToBottom();
   }
@@ -247,7 +296,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     return selectedColor;
   }
 
-  private getCurrentTime():void{
+  private setMessageLastReceievedTime():void{
     let meridian = 'AM';
     const dateTime = new Date(); 
     let hour = dateTime.getHours();
@@ -261,6 +310,17 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     // Format the time as HH:MM Meridian
     const formattedTime = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${meridian}`;
     this.messageLastRecieved=` ${dateTime.getMonth() + 1}/${dateTime.getDate()},${formattedTime} `;
+  }
+
+  private docId() {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+    for (let i = 0; i < 5; i++) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+
+    return text;
   }
 
   setChatterWindowToFocus(pid:number):void{
