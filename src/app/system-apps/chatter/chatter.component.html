@@ -13,7 +13,7 @@
         <div class="chatter-online-container">
           <div class="chatter-online-content">
             <div class="chatter-online-heading">
-
+              <span class="chatter-span-online-heading">Online</span>
             </div>
             <div class="chatter-online-section">
 
@@ -165,15 +165,15 @@
         </div>
       </div>
       <div class="chatter-footer-container">
-        <span class="chatter-span-footer">last received message:{{messageLastRecieved}} </span>
-        <span class="chatter-span-footer"></span>
+        <div class="chatter-div-footer chatter-div-footer-lm">last received message:{{messageLastRecieved}} </div>
+        <div class="chatter-div-footer"></div>
         <ng-container  *ngIf="isTyping">
-          <span class="chatter-span-footer-fig">
-            <img class="chatter-span-footer-img" [src]="'osdrive/Cheetah/System/Gifres/loading.gif'"/>
-          </span>
+          <div class="chatter-div-footer-fig ">
+            <img class="chatter-div-footer-img" [src]="'osdrive/Cheetah/System/Gifres/loading.gif'"/>
+          </div>
         </ng-container>
-        <span class="chatter-span-footer"></span>
-        <span class="chatter-span-footer">online:{{userCount}}</span>
+        <div class="chatter-div-footer"></div>
+        <div class="chatter-div-footer chatter-div-footer-online">online:{{userCount}}</div>
       </div>      
     </div>
 </cos-window>

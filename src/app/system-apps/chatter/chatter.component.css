@@ -120,18 +120,32 @@ span.chatter-mid:hover {
     border-right: 1px solid #a6a4a4;
 }
 
-
 .chatter-online-content{
     width: 100%;
     height: 100%;
 }
 
 .chatter-online-heading{
+    width: 100%;
+    height: 58px;
+    border-bottom: 1px solid #a6a4a4;
+    padding: 5px 0 5px 15px;
+}
 
+.chatter-span-online-heading{
+    position: relative;
+    color: white;
+    text-align: left;
+    font-size: 25px;
+    font-weight: bold;
+    top: 8px;
 }
 
 .chatter-online-section{
-
+    width: 100%;
+    height: 570px;
+    overflow-y: auto;
+    padding: 8px 0px
 }
 
 /* Chat Window */
@@ -319,7 +333,8 @@ span.chatter-mid:hover {
 
 /*Chatter footer section*/
 
-.chatter-span-footer{
+.chatter-div-footer{
+    display: flex;
     color: white;
     font-size: 10px;
     font-weight: normal;
@@ -327,16 +342,28 @@ span.chatter-mid:hover {
     padding: 4px 4px;
 }
 
-.chatter-span-footer-fig{
+.chatter-div-footer-lm{
+    width:225px; 
+    position: fixed;
+    left: 0px;
+}
+
+.chatter-div-footer-online{
+    width:150px; 
+    position: fixed;
+    left:275px;
+}
+
+.chatter-div-footer-fig{
     position: fixed;
     height: fit-content;
     width: fit-content;
-    left: 300px;
+    right: 2%;
     bottom: -2px;
     background-color: #302c2c;
 }
 
-.chatter-span-footer-img{
+.chatter-div-footer-img{
     height: 20px;
     width: 20px;
 }
@@ -347,7 +374,6 @@ span.chatter-mid:hover {
     display: flex;
     background-color: #302c2c;
 }
-
 
 /*Chat User Name Form*/
 .chat-user-form-card{
