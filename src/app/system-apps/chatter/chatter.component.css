@@ -9,7 +9,7 @@ span {
 
 /* Main Container */
 .chatter-main-container {
-    width: 500px;
+    width: 750px;
     height: 100%;
     background: #ccc;
 }
@@ -110,6 +110,28 @@ span.chatter-mid:hover {
     font-size: 20px;
     font-weight: bold;
     top: 6px;
+}
+
+
+/*Users Online Styles */
+.chatter-online-container{
+    width: 250px;
+    background-color: #201c1c;
+    border-right: 1px solid #a6a4a4;
+}
+
+
+.chatter-online-content{
+    width: 100%;
+    height: 100%;
+}
+
+.chatter-online-heading{
+
+}
+
+.chatter-online-section{
+
 }
 
 /* Chat Window */

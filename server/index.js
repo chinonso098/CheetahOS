@@ -7,7 +7,8 @@ const server = http.createServer(app);
 
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:4200", // Allow frontend running on 42000, * will allow any
+    // origin: "http://localhost:4200", // Allow frontend running on 42000, * will allow any
+    origin: "*", 
     methods: ["GET", "POST"]
   }
 });
@@ -16,17 +17,41 @@ io.on('connection', (socket) => {
   io.emit('userConnected','+'); 
   console.log('A user connected:', socket.id);
 
-  // Listening for messages from the client
-  socket.on('message', (msg) => {
-    console.log('Received message:', msg);
-    io.emit('message', msg); // Broadcasting message to all clients
+  // Listening for newUserInfo from the client
+  socket.on('newUserInfo', (msg) => {
+    console.log('Received(newUserInfo) message:', msg);
+    io.emit('newUserInfo', msg); // Broadcasting message to all clients
+  });
+
+  // Listening for updateUserInfo from the client
+  socket.on('updateUserInfo', (msg) => {
+    console.log('Received(updateUserInfo) message:', msg);
+    io.emit('updateUserInfo', msg); // Broadcasting message to all clients
+  });
+
+  // Listening for chatMessage from the client
+  socket.on('chatMessage', (msg) => {
+    console.log('Received(chatMessage) message:', msg);
+    io.emit('chatMessage', msg); // Broadcasting message to all clients
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
     io.emit('userDisconnected','-'); 
+    console.log('User disconnected:', socket.id);
   });
 
+  // Listening for removeUserInfo from the client
+  socket.on('removeUserInfo', (msg) => {
+    console.log('Received(removeUserInfo) message:', msg);
+    io.emit('removeUserInfo', msg); // Broadcasting message to all clients
+  });
+
+  // Listening for userIsTyping from the client
+  socket.on('userIsTyping', (msg) => {
+    console.log('Received(userIsTyping) message:', msg);
+    io.emit('userIsTyping', msg); // Broadcasting message to all clients
+  });
+  
 });
 
 server.listen(3000, () => {
