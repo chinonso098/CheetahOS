@@ -108,7 +108,7 @@
             <ng-container  *ngFor="let msg of chatData"> 
               <div class="chatter-chat-output-content">
                 <span class="span chatter-head"> 
-                  <div class="chatter-user-acronym"  [ngStyle]="{'background-color':'msg.getIconColor'}"> {{msg.getUserNameAcronym}} </div>
+                  <div class="chatter-user-acronym"  [ngStyle]="{'background-color':msg.getIconColor}"> {{msg.getUserNameAcronym}} </div>
                 </span>
 
                 <div class="chat-user-txt-container">
@@ -162,6 +162,8 @@
             <img class="chatter-span-footer-img" [src]="'osdrive/Cheetah/System/Gifres/loading.gif'"/>
           </span>
         </ng-container>
+        <span class="chatter-span-footer"></span>
+        <span class="chatter-span-footer">online:{{userCount}}</span>
       </div>      
     </div>
 </cos-window>

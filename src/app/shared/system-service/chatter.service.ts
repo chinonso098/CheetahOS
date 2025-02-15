@@ -21,10 +21,16 @@ export class ChatterService implements BaseService{
     private _processIdService:ProcessIDService;
     private _sessionManagmentService:SessionManagmentService
     private _socketService:SocketService
+    private userCount = 0;
 
     private _chatData:ChatMessage[] = [];
     private _newMessagRecievedSub!: Subscription;
+    private _userConnectSub!: Subscription;
+    private _userDisconnectSub!: Subscription;
+    
     newMessageNotify: Subject<void> = new Subject<void>();
+    userCountChangeNotify: Subject<void> = new Subject<void>();
+    //userDisconnectNotify: Subject<void> = new Subject<void>();
   
   
     name = 'chatter_msg_svc';
@@ -46,6 +52,8 @@ export class ChatterService implements BaseService{
         this._runningProcessService.addService(this.getServiceDetail());
 
         this._newMessagRecievedSub = this._socketService.onNewMessage().subscribe((p)=>{this.raiseNewMessageReceivedAlert(p)});
+        this._userConnectSub = this._socketService.onNewUser().subscribe((i)=>{this.updateUserCount(i)});
+        this._userDisconnectSub = this._socketService.onUserLeft().subscribe((j)=>{this.updateUserCount(j)});
     }
 
     sendMessage(data: ChatMessage) {
@@ -64,8 +72,23 @@ export class ChatterService implements BaseService{
         return this._chatData;
     }
 
-    private raiseNewMessageReceivedAlert(newMessage:any):void{
+    getUserCount():number{
+        return this.userCount;
+    }
 
+    private updateUserCount(update:string){
+        console.log('updateUserCount:', update)
+        if(update === '+'){
+            this.userCount++
+        }else{
+            this.userCount--;
+        }
+
+        console.log('this.userCount:', this.userCount)
+        this.userCountChangeNotify.next();
+    }
+
+    private raiseNewMessageReceivedAlert(newMessage:any):void{
         if(newMessage){
             const msg = newMessage._msg as string;
             const userName = newMessage._userName as string;
@@ -84,6 +107,8 @@ export class ChatterService implements BaseService{
         const timeout = 600000
         setTimeout(() => {
             this._newMessagRecievedSub?.unsubscribe();
+            this._userDisconnectSub?.unsubscribe();
+            this._userConnectSub?.unsubscribe();
         }, timeout);
     }
 

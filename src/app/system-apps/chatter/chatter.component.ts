@@ -19,12 +19,10 @@ import { Subscription } from 'rxjs';
 })
 export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
 
-  @ViewChild('endOfMessagesRef', {static: true}) endOfMessagesRef!: ElementRef;
-  @ViewChild('topOfMessagesRef', {static: true}) topOfMessagesRef!: ElementRef;
-  // @ViewChild('chatUserFormCntnr', {static: true}) chatUserFormCntnr!: ElementRef;
-  // @ViewChild('chatUserLabelCntnr', {static: true}) chatUserLabelCntnr!: ElementRef; 
+  @ViewChild('chatHistoryOutput', {static: true}) chatHistoryOutput!: ElementRef;
 
   private _newMessageAlertSub!: Subscription;
+  private _userCountChangeSub!: Subscription;
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -43,6 +41,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   showUserNameForm = false;
   isTyping = false;
   messageLastRecieved = '';
+  scrollCounter = 0;
+  userCount = 0;
 
   userNameAcronym = '';
   bkgrndIconColor = '';
@@ -70,9 +70,9 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._formBuilder = formBuilder
 
     this.setDefaults();
-    this.getCurrentTime();
 
     this._newMessageAlertSub = this._chatService.newMessageNotify.subscribe(()=> this.pullData());
+    this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe(()=> this.updateUserCount());
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
@@ -101,17 +101,26 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   ngAfterViewInit(): void {
-    1
+    setTimeout(() => {
+      this.userCount = this._chatService.getUserCount();
+    }, 500);
+
   }
 
   ngOnDestroy():void{
     this._newMessageAlertSub?.unsubscribe();
+    this._userCountChangeSub?.unsubscribe();
   }
 
   pullData():void{
     const data = this._chatService.getChatData();
-    console.log('chat data:', data);
+    //console.log('chat data:', data);
     this.chatData = data
+    this.setMessageLastReceievedTime();
+  }
+
+  updateUserCount():void{
+    this.userCount = this._chatService.getUserCount();
   }
 
   setDefaults():void{
@@ -176,12 +185,33 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }
   }
 
-  scrollToBottom() {
-    setTimeout(() => {
-      if (this.endOfMessagesRef) {
-        this.endOfMessagesRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
+  // scrollToBottom() {
+  //   setTimeout(() => {
+  //     if (this.endOfMessagesRef) {
+  //       this.endOfMessagesRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
+  //     }
+  //   }, 1500);
+  // }
+
+  private scrollToBottom(): void {
+    const delay = 150;
+    const interval =  setInterval(() => {
+      try {
+        //console.log('height:',this.terminalOutputCntnr.nativeElement.scrollHeight);
+        if(this.scrollCounter < 2){
+          this.chatHistoryOutput.nativeElement.scrollTop = this.chatHistoryOutput.nativeElement.scrollHeight;
+          this.chatHistoryOutput.nativeElement.scrollIntoView({ behavior: 'smooth' });
+          this.scrollCounter++;
+        }
+      } catch (err) {
+        console.error('Error scrolling to bottom:', err);
       }
-    }, 1500);
+      if(this.scrollCounter == 2) {
+        clearInterval(interval);
+        this.scrollCounter = 0;
+      }
+
+    },delay);
   }
 
   // loadMoreMessages() {
@@ -204,8 +234,6 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }
     this.lastTapTime = now;
   }
-
-
 
   async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
     
@@ -268,7 +296,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     return selectedColor;
   }
 
-  private getCurrentTime():void{
+  private setMessageLastReceievedTime():void{
     let meridian = 'AM';
     const dateTime = new Date(); 
     let hour = dateTime.getHours();
@@ -282,6 +310,17 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     // Format the time as HH:MM Meridian
     const formattedTime = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${meridian}`;
     this.messageLastRecieved=` ${dateTime.getMonth() + 1}/${dateTime.getDate()},${formattedTime} `;
+  }
+
+  private docId() {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+    for (let i = 0; i < 5; i++) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+
+    return text;
   }
 
   setChatterWindowToFocus(pid:number):void{
