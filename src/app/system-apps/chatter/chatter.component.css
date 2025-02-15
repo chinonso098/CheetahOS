@@ -9,7 +9,7 @@ span {
 
 /* Main Container */
 .chatter-main-container {
-    width: 750px;
+    width: 720px;
     height: 100%;
     background: #ccc;
 }
@@ -24,7 +24,7 @@ span {
 /* Sidebar Styles */
 .chatter-sidebar-container {
     width: 50px;
-    background-color: #000;
+    background-color: #302c2c;
     border-right: 1px solid #a6a4a4;
 }
 
@@ -115,7 +115,7 @@ span.chatter-mid:hover {
 
 /*Users Online Styles */
 .chatter-online-container{
-    width: 250px;
+    width: 230px;
     background-color: #201c1c;
     border-right: 1px solid #a6a4a4;
 }
@@ -145,7 +145,77 @@ span.chatter-mid:hover {
     width: 100%;
     height: 570px;
     overflow-y: auto;
-    padding: 8px 0px
+    padding: 8px 0px;
+    background-color: #201c1c;
+}
+
+/*Users Online Entries Styles */
+
+.chatter-online-item-cntnr{
+    width: 100%;
+}
+
+.chatter-online-item{
+    height: fit-content;
+    padding: 4px 0;
+    background-color: #201c1c;
+    display: inline-flex;
+    width: 100%;
+}
+
+.chatter-online-item:hover{
+    background-color: #302c2c;
+}
+
+.chatter-online-empty-line-container{
+    max-height: 10px;
+    min-height: 10px;
+    background-color: #201c1c;
+} 
+
+span.chatter-online-head{
+    padding-left: 10px;
+}
+
+span.chatter-online-mid{
+    color: white; /* Black text color */
+    text-align: left;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 12px 10px;
+}
+
+/* span.chatter-online-tail{
+    padding-left: 47px; 
+} */
+
+.chatter-user-online-acronym {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-weight: 500;
+    /* background-color: cadetblue; */
+    color: white;
+}
+
+.chatter-online-fig{
+    position: relative;
+    align-items: center;
+    display: inline-flex;
+    min-width: 18px;
+    top: 0;
+    left: 15%;
+}
+
+
+.chatter-online-img{
+    height: 16px;
+    width: 16px;
+
+    position: relative;
 }
 
 /* Chat Window */
