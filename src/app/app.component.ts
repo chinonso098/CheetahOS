@@ -38,7 +38,6 @@ import { PropertiesComponent } from './shared/system-component/properties/proper
 import { ChatterComponent } from './system-apps/chatter/chatter.component';
 import { RunSystemComponent } from './system-apps/runsystem/runsystem.component';
 import { FileInfo } from './system-files/file.info';
-import { SocketService } from './shared/system-service/socket.service';
 
 @Component({
   selector: 'cos-root',
@@ -63,7 +62,6 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private _stateManagmentService:StateManagmentService;
   private _menuService:MenuService;
   private _windowService:WindowService;
-  private _socketService:SocketService;
   private _componentRefView!:ViewRef;
   private _appDirectory:AppDirectory;
 
@@ -118,7 +116,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
 
   // the order of the service init matter.
   //runningProcesssService must come first
-  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService,  windowService:WindowService, socketService:SocketService,
+  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService,  windowService:WindowService,
     componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService, sessionMangamentServices:SessionManagmentService,
     notificationServices:NotificationService, stateManagmentService:StateManagmentService, menuService:MenuService){
     this._processIdService = processIdService
@@ -132,7 +130,6 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this._stateManagmentService = stateManagmentService;
     this._windowService = windowService;
     this._menuService = menuService;
-    this._socketService = socketService;
 
     this._startProcessSub = this._triggerProcessService.startProcessNotify.subscribe((appName) =>{this.loadApps(appName)})
     this._appNotFoundSub = this._triggerProcessService.appNotFoundNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Error,appName)})

@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } fr
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { SocketService } from 'src/app/shared/system-service/socket.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Constants } from 'src/app/system-files/constants';
@@ -28,6 +29,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _runningProcessService:RunningProcessService;
   private _windowService:WindowService;
   private _chatService:ChatterService;
+  private _socketService:SocketService;
   chatUser: IUser | undefined;
 
   userNameAcronymStyle:Record<string, unknown> = {};
@@ -61,11 +63,12 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   type = ComponentType.System;
   displayName = 'Chatter';
 
-  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
+  constructor(socketService:SocketService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
     windowService:WindowService, chatService:ChatterService, formBuilder:FormBuilder) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
+    this._socketService = socketService;
     this._chatService = chatService;
     this._formBuilder = formBuilder
 
