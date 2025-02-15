@@ -295,6 +295,36 @@ span.chatter-mid:hover {
     white-space: pre;
 }
 
+/*Chatter footer section*/
+
+.chatter-span-footer{
+    color: white;
+    font-size: 10px;
+    font-weight: normal;
+    font-family: monospace;
+    padding: 4px 4px;
+}
+
+.chatter-span-footer-fig{
+    position: fixed;
+    height: fit-content;
+    width: fit-content;
+    left: 300px;
+    bottom: -2px;
+}
+
+.chatter-span-footer-img{
+    height: 20px;
+    width: 20px;
+}
+
+.chatter-footer-container{
+    width: 100%;
+    height: 24px;
+    display: flex;
+    background-color: #302c2c;
+}
+
 
 /*Chat User Name Form*/
 .chat-user-form-card{

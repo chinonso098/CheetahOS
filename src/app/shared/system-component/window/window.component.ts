@@ -97,7 +97,7 @@ import { Process } from 'src/app/system-files/process';
   
 
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, 
-                stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, windowService:WindowService){
+                windowService:WindowService, stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService){
       this._runningProcessService = runningProcessService;
       this._stateManagmentService = stateManagmentService;
       this._sessionManagmentService = sessionManagmentService;
@@ -509,7 +509,7 @@ import { Process } from 'src/app/system-files/process';
     moveWindowsOutOfSight(pid:number):void{
 
       //console.log('i was called 1');
-      if(this._runningProcessService.getEventOrginator() === this.uniqueId){
+      if(this._windowService.getEventOrginator() === this.uniqueId){
         const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow === true && p.getProcessId !== pid);
 
         for(let i = 0; i < processWithWindows.length; i++){
@@ -527,7 +527,7 @@ import { Process } from 'src/app/system-files/process';
             this.setWindowToPriorHiddenState(window, this.MIN_Z_INDEX);
           }
         }
-        this._runningProcessService.removeEventOriginator();
+        this._windowService.removeEventOriginator();
       }
     }
 
@@ -630,7 +630,7 @@ import { Process } from 'src/app/system-files/process';
 
    setNextWindowToFocus():void{
 
-    if(this._runningProcessService.getEventOrginator() == this.uniqueId){
+    if(this._windowService.getEventOrginator() == this.uniqueId){
 
       const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow == true && p.getProcessId === this.processId);
       for (let i = 0; i < processWithWindows.length; i++){
@@ -644,7 +644,7 @@ import { Process } from 'src/app/system-files/process';
         }
       }
 
-      this._runningProcessService.removeEventOriginator();
+      this._windowService.removeEventOriginator();
     }
    }
 

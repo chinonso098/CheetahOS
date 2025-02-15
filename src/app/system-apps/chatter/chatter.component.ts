@@ -38,6 +38,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   showUserNameLabel = true;
   showUserNameForm = false;
+  isTyping = false;
+  messageLastRecieved = '';
 
   userNameAcronym = '';
   bkgrndIconColor = '';
@@ -71,6 +73,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.userName = `User_${this.getRandomNum()}`;
     this.userNameAcronym = 'AU';
     this.bkgrndIconColor = this.geIconColor();
+    this.getCurrentTime();
   }
 
   ngOnInit(): void {
@@ -242,6 +245,22 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
     const selectedColor = colorSet[this.getRandomNum(defaultMin,defaultMax)]
     return selectedColor;
+  }
+
+  private getCurrentTime():void{
+    let meridian = 'AM';
+    const dateTime = new Date(); 
+    let hour = dateTime.getHours();
+    if(hour > 12){
+      const diff = hour - 12;
+      hour = diff;
+      meridian = 'PM';
+    }
+    const minutes = dateTime.getMinutes();
+
+    // Format the time as HH:MM Meridian
+    const formattedTime = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${meridian}`;
+    this.messageLastRecieved=` ${dateTime.getMonth() + 1}/${dateTime.getDate()},${formattedTime} `;
   }
 
   setChatterWindowToFocus(pid:number):void{
