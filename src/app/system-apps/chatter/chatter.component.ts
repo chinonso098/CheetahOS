@@ -109,7 +109,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   pullData():void{
-    const data = this._chatService.getChatData()
+    const data = this._chatService.getChatData();
+    console.log('chat data:', data);
     this.chatData = data
   }
 

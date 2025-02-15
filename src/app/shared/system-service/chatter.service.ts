@@ -64,9 +64,20 @@ export class ChatterService implements BaseService{
         return this._chatData;
     }
 
-    private raiseNewMessageReceivedAlert(newMessage:ChatMessage):void{
-        this._chatData.push(newMessage);
-        this.newMessageNotify.next();
+    private raiseNewMessageReceivedAlert(newMessage:any):void{
+
+        if(newMessage){
+            const msg = newMessage._msg as string;
+            const userName = newMessage._userName as string;
+            const userNameAcronym = newMessage._userNameAcronym as string;
+            const iconColor = newMessage._iconColor as string;
+            const msgDate = newMessage._msgDate as string;
+
+            const newChatData  = new ChatMessage(msg,userName,userNameAcronym,iconColor,msgDate);
+            this._chatData.push(newChatData);
+            this.newMessageNotify.next();
+        }
+
     }
 
     terminateSubscription():void{
