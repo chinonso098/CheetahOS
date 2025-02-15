@@ -45,6 +45,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}vs_code.png`;
+  isMaximizable = false;
   name = 'codeeditor';
   processId = 0;
   type = ComponentType.User;

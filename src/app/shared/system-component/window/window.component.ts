@@ -97,7 +97,7 @@ import { Process } from 'src/app/system-files/process';
   
 
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, 
-                stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, windowService:WindowService){
+                windowService:WindowService, stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService){
       this._runningProcessService = runningProcessService;
       this._stateManagmentService = stateManagmentService;
       this._sessionManagmentService = sessionManagmentService;
@@ -268,7 +268,7 @@ import { Process } from 'src/app/system-files/process';
     setHeaderInActive(pid:number):void{
       if(this.processId == pid){
         this.headerActiveStyles = {
-          'background-color':'rgb(121, 163, 232)'
+          'background-color':'rgb(56,56,56)'
         };
       }
     }
@@ -281,7 +281,7 @@ import { Process } from 'src/app/system-files/process';
 
       //console.log('setHeaderActive 1:',pid);//TBD
         this.headerActiveStyles = {
-          'background-color':'blue'
+          'background-color':'rgb(24,60,124)'
         };
       }
     }
@@ -341,16 +341,18 @@ import { Process } from 'src/app/system-files/process';
     }
 
     onTitleBarDoubleClick():void{
-      if(this.isWindowMaximizable){
-        if(this.currentWindowSizeState && !this.windowMaximize){
-          this.windowMaximize = false;
-          this.windowMinMaxAction = 'minimized';
-        }else{
-          this.windowMaximize = true;
-          this.windowMinMaxAction = 'maximized';
-        }
-        this.setMaximizeAndUnMaximize()
-      }
+      console.log('this featured is turned off');
+
+      // if(this.isWindowMaximizable){
+      //   if(this.currentWindowSizeState && !this.windowMaximize){
+      //     this.windowMaximize = false;
+      //     this.windowMinMaxAction = 'minimized';
+      //   }else{
+      //     this.windowMaximize = true;
+      //     this.windowMinMaxAction = 'maximized';
+      //   }
+      //   this.setMaximizeAndUnMaximize()
+      // }
     }
 
     onDragEnd(input:HTMLElement):void{
@@ -373,8 +375,8 @@ import { Process } from 'src/app/system-files/process';
     }
 
     onDragStart(pid:number):void{
-      //console.log('i am trouble'); //TBD
-      //this.setFocusOnWindow(pid);
+      console.log('onDragStart-Started. But this function will also call  setFocusOnWindow()'); //TBD
+      this.setFocusOnWindow(pid);
     }
 
     onRZStop(input:any):void{
@@ -391,7 +393,9 @@ import { Process } from 'src/app/system-files/process';
 
       this._stateManagmentService.addState(this.uniqueId, windowState, StateType.Window);
 
-      //send window resize alert
+      //send window resize alert(containing new width and height);
+      this._windowService.resizeProcessWindowNotify.next([]);
+      
     }
     
     generateCloseAnimationValues(x_axis:number, y_axis:number):void{
@@ -505,7 +509,7 @@ import { Process } from 'src/app/system-files/process';
     moveWindowsOutOfSight(pid:number):void{
 
       //console.log('i was called 1');
-      if(this._runningProcessService.getEventOrginator() === this.uniqueId){
+      if(this._windowService.getEventOrginator() === this.uniqueId){
         const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow === true && p.getProcessId !== pid);
 
         for(let i = 0; i < processWithWindows.length; i++){
@@ -523,7 +527,7 @@ import { Process } from 'src/app/system-files/process';
             this.setWindowToPriorHiddenState(window, this.MIN_Z_INDEX);
           }
         }
-        this._runningProcessService.removeEventOriginator();
+        this._windowService.removeEventOriginator();
       }
     }
 
@@ -626,7 +630,7 @@ import { Process } from 'src/app/system-files/process';
 
    setNextWindowToFocus():void{
 
-    if(this._runningProcessService.getEventOrginator() == this.uniqueId){
+    if(this._windowService.getEventOrginator() == this.uniqueId){
 
       const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow == true && p.getProcessId === this.processId);
       for (let i = 0; i < processWithWindows.length; i++){
@@ -640,7 +644,7 @@ import { Process } from 'src/app/system-files/process';
         }
       }
 
-      this._runningProcessService.removeEventOriginator();
+      this._windowService.removeEventOriginator();
     }
    }
 

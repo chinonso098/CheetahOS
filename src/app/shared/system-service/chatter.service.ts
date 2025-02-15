@@ -7,16 +7,17 @@ import { ProcessIDService } from './process.id.service';
 import { RunningProcessService } from './running.process.service';
 import { Process } from 'src/app/system-files/process';
 import { Service } from 'src/app/system-files/service';
+import { ChatMessage } from 'src/app/system-apps/chatter/model/chat.message';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChatterService implements BaseService{
-    private chatData = new BehaviorSubject<any[]>([]);
-    chatData$ = this.chatData.asObservable();
+    private _chatData = new BehaviorSubject<ChatMessage[]>([]);
+    chatData$ = this._chatData.asObservable();
 
-    private loadedMessages = new BehaviorSubject<any[]>([]);
-    loadedMessages$ = this.loadedMessages.asObservable();
+    private _loadedMessages = new BehaviorSubject<ChatMessage[]>([]);
+    loadedMessages$ = this._loadedMessages.asObservable();
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
@@ -39,21 +40,23 @@ export class ChatterService implements BaseService{
         this._runningProcessService.addService(this.getServiceDetail());
     }
 
-    setChatData(data: any[]) {
-        this.chatData.next(data);
+    setChatData(data: ChatMessage[]) {
+        this._chatData.next(data);
     }
 
-    setLoadedMessages(messages: any[]) {
-        this.loadedMessages.next(messages);
+    setLoadedMessages(messages: ChatMessage[]) {
+        this._loadedMessages.next(messages);
     }
+
 
     public saveData(key: string, value: string) {
         localStorage.setItem(key, value);
     }
     
     public getData(key: string) {
-    return localStorage.getItem(key)
+        return localStorage.getItem(key)
     }
+
     public removeData(key: string) {
         localStorage.removeItem(key);
     }
@@ -61,6 +64,7 @@ export class ChatterService implements BaseService{
     public clearData() {
         localStorage.clear();
     }
+
     private getProcessDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
     }

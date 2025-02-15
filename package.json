@@ -46,6 +46,7 @@
     "ngx-monaco-editor-v2": "18.0.1",
     "notyf": "^3.10.0",
     "rxjs": "~7.5.0",
+    "socket.io-client": "^4.8.1",
     "tslib": "^2.3.0",
     "zone.js": "^0.14.7"
   },

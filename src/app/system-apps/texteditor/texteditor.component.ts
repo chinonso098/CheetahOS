@@ -54,6 +54,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}text-editor.png`;
   name = 'texteditor';
+  isMaximizable = false;
   processId = 0;
   type = ComponentType.System;
   displayName = '';

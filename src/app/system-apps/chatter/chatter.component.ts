@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -7,6 +8,8 @@ import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ChatterService } from 'src/app/shared/system-service/chatter.service';
+import { ChatMessage } from './model/chat.message';
+import { IUser } from './model/user';
 
 @Component({
   selector: 'cos-chatter',
@@ -15,23 +18,40 @@ import { ChatterService } from 'src/app/shared/system-service/chatter.service';
 })
 export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
 
-  @ViewChild('endOfMessagesRef') endOfMessagesRef!: ElementRef;
-  @ViewChild('topOfMessagesRef') topOfMessagesRef!: ElementRef;
+  @ViewChild('endOfMessagesRef', {static: true}) endOfMessagesRef!: ElementRef;
+  @ViewChild('topOfMessagesRef', {static: true}) topOfMessagesRef!: ElementRef;
+  // @ViewChild('chatUserFormCntnr', {static: true}) chatUserFormCntnr!: ElementRef;
+  // @ViewChild('chatUserLabelCntnr', {static: true}) chatUserLabelCntnr!: ElementRef; 
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _windowService:WindowService;
   private _chatService:ChatterService;
+  chatUser: IUser | undefined;
 
-  userName = false;
-  userNameValue = '';
-  chatValue = '';
-  chatData: any[] = [];
-  loadedMessages: any[] = [];
+  userNameAcronymStyle:Record<string, unknown> = {};
+
+  chatterForm!: FormGroup;
+  chatUserForm!: FormGroup;
+  private _formBuilder;
+  formCntrlName = 'msgText';
+
+  showUserNameLabel = true;
+  showUserNameForm = false;
+  isTyping = false;
+  messageLastRecieved = '';
+
+  userNameAcronym = '';
+  bkgrndIconColor = '';
+  userName = '';
+  chatData: ChatMessage[] = [];
+  chatHistory: ChatMessage[] = [];
   lastTapTime = 0;
-  sendDisable = true;
-  MSNExpand = { expand: false, show: false, x: 50, y: 120, hide: false, focusItem: false };
+  messages: string[] = [];
+  newMessage = '';
 
+  chatPrompt = 'Type a message';
+  isMaximizable = false;
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
   name = 'chatter';
@@ -39,21 +59,41 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   type = ComponentType.System;
   displayName = 'Chatter';
 
-  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, windowService:WindowService, chatService:ChatterService) { 
+  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
+    windowService:WindowService, chatService:ChatterService, formBuilder:FormBuilder) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
     this._chatService = chatService;
+    this._formBuilder = formBuilder
+
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
+    this.userName = `User_${this.getRandomNum()}`;
+    this.userNameAcronym = 'AU';
+    this.bkgrndIconColor = this.geIconColor();
+    this.getCurrentTime();
   }
 
   ngOnInit(): void {
-    this._chatService.chatData$.subscribe(data => {
-      this.chatData = data;
-      this.loadedMessages = data.slice(-40);
+    this.userNameAcronymStyle = {
+      'background-color': this.bkgrndIconColor
+    };
+
+    this.chatterForm = this._formBuilder.nonNullable.group({
+      msgText: '',
     });
+
+    this.chatUserForm = this._formBuilder.group({
+      firstName: ["",[Validators.required,Validators.minLength(1),Validators.maxLength(10),]],
+      lastName: ["",[Validators.required,Validators.minLength(1),Validators.maxLength(10),]],
+    });
+
+    // this._chatService.chatData$.subscribe(data => {
+    //   this.chatData = data;
+    //   this.chatHistory = data.slice(-40);
+    // });
 
     setTimeout(() => this.scrollToBottom(), 1500);
   }
@@ -66,6 +106,49 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     1
   }
 
+  sendMessage() {
+    1
+  }
+
+  onCreate(): void {
+    if (this.chatUserForm.valid) {
+      if (this.chatUserForm.dirty) {
+        const s = { ...this.chatUser, ...this.chatUserForm.value } as IUser;
+        this.userNameAcronym = `${s.lastName.charAt(0)}${s.firstName.charAt(0)}`;
+        this.userName = `${s.lastName}, ${s.firstName}`;
+
+        this.showTheUserNameLabel();
+      }
+    }
+  }
+
+  showTheUserNameForm():void{
+    this.showUserNameForm = true;
+    this.showUserNameLabel = false;
+    //this.volumeSlider.nativeElement.style.display === 'block'
+  }
+
+  showTheUserNameLabel():void{
+    this.showUserNameForm = false;
+    this.showUserNameLabel = true;
+    //this.volumeSlider.nativeElement.style.display === 'block'
+  }
+
+  onKeyDownOnWindow(evt:KeyboardEvent):void{
+    this.focusOnInput();
+    if (evt.key === "Tab") {
+      // Prevent tab from moving focus
+      evt.preventDefault();
+    }
+  }
+
+  focusOnInput():void{
+    const chatterMsgBoxElm= document.getElementById('chatterMsgBox') as HTMLInputElement;
+    if(chatterMsgBoxElm){
+      chatterMsgBoxElm?.focus();
+    }
+  }
+
   scrollToBottom() {
     setTimeout(() => {
       if (this.endOfMessagesRef) {
@@ -75,16 +158,16 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   loadMoreMessages() {
-    const currentLength = this.loadedMessages.length;
+    const currentLength = this.chatHistory.length;
     const moreMessages = this.chatData.slice(Math.max(this.chatData.length - currentLength - 20, 0), this.chatData.length - currentLength);
     
     setTimeout(() => {
-      this.loadedMessages = [...moreMessages, ...this.loadedMessages];
+      this.chatHistory = [...moreMessages, ...this.chatHistory];
     }, 1500);
   }
 
   handleExpandStateToggle() {
-    this.MSNExpand.expand = !this.MSNExpand.expand;
+    //this.MSNExpand.expand = !this.MSNExpand.expand;
   }
 
   handleExpandStateToggleMobile() {
@@ -95,26 +178,90 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.lastTapTime = now;
   }
 
-  createChat() {
-    if (this.chatValue.trim().length === 0) return;
-  
-    const newMessage = {
-      name: this.userNameValue || 'Anonymous',
-      chat: this.chatValue,
-      date: new Date().toISOString(),
-      dev: false, // You can adjust this based on your app logic
-    };
+
+
+  async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
+    
+    if(evt.key == "Enter"){
+
+      const chatInput = this.chatterForm.value.msgText as string;
+
+      if(chatInput.trim().length === 0) {
+        this.chatPrompt = 'message box can not be empty'
+        return;
+      }
+
+
+      const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym, this.bkgrndIconColor)
+      this.chatHistory.push(chatObj);
+      this.chatterForm.reset();
+      setTimeout(() => {
+        this.chatterForm.controls[this.formCntrlName].setValue(null);
+        this.chatterForm.controls[this.formCntrlName].markAsUntouched();
+      }, 10);
+
+
+      // Update the chat data
+     //this._chatService.setChatData([...this.chatData]);
+
+       // Scroll to bottom
+       //this.scrollToBottom();
+    }
+  }
+
+  createChat():void{
+    const chatInput = this.chatterForm.value.msgText as string;
+
+    if(chatInput.trim().length === 0) 
+      return;
+
+    const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym, this.bkgrndIconColor)
+    this.chatHistory.push(chatObj);
+    this.chatterForm.reset();
   
     // Update the chat data
-    this._chatService.setChatData([...this.chatData, newMessage]);
+    //this._chatService.setChatData([...this.chatData]);
   
-    // Reset input
-    this.chatValue = '';
   
     // Scroll to bottom
-    this.scrollToBottom();
+    //this.scrollToBottom();
   }
   
+  getRandomNum(min?:number, max?:number):number {
+    const defaultMin = 0;
+    const defaultMax = 100000;
+    min =(min === undefined)? defaultMin :min;
+    max =(max === undefined)? defaultMax : max;
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
+   /** Generates the next color dynamically */
+   geIconColor(): string {
+    const defaultMin = 0;
+    const defaultMax = 26;
+    const colorSet = ['#00FFFF', '#AAFF00', '#228B22', '#7CFC00', '#00A36C', '#32CD32', '#00FF7F','#FFBF00','#ECFFDC',
+      '#F88379', '#FF4433', '#FF00FF', '#FFB6C1', '#E30B5C', '#800080', '#D8BFD8', '#AA98A9', '#7F00FF',
+      '#0000FF', '#0047AB', '#3F00FF', '#7393B3', '#D27D2D', '#800020', '#8B0000', '#FFFF00', '#FFD700'];
+
+    const selectedColor = colorSet[this.getRandomNum(defaultMin,defaultMax)]
+    return selectedColor;
+  }
+
+  private getCurrentTime():void{
+    let meridian = 'AM';
+    const dateTime = new Date(); 
+    let hour = dateTime.getHours();
+    if(hour > 12){
+      const diff = hour - 12;
+      hour = diff;
+      meridian = 'PM';
+    }
+    const minutes = dateTime.getMinutes();
+
+    // Format the time as HH:MM Meridian
+    const formattedTime = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${meridian}`;
+    this.messageLastRecieved=` ${dateTime.getMonth() + 1}/${dateTime.getDate()},${formattedTime} `;
+  }
 
   setChatterWindowToFocus(pid:number):void{
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);

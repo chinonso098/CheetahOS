@@ -1,5 +1,5 @@
 
-<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayName" (click)="setFileExplorerWindowToFocus(this.processId)">
+<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayName" [isMaximizable]="this.isMaximizable" (click)="setFileExplorerWindowToFocus(this.processId)">
     <div #fileExplorerRootContainer>
         <div class="fileexp-header-tab-container" >
             <div class="fileexp-header-tabs">

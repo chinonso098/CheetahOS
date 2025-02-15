@@ -201,6 +201,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   icon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
   navPathIcon = `${Constants.IMAGE_BASE_PATH}this_pc.png`;
+  isMaximizable = false;
   name = 'fileexplorer';
   processId = 0;
   type = ComponentType.System;

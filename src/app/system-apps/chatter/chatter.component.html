@@ -1,59 +1,167 @@
-<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setChatterWindowToFocus(this.processId)">
+<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" (click)="setChatterWindowToFocus(this.processId)">
     <div class="chatter-main-container" #chatterContainer>
-        <div class="folder_folder-MSN"
-        (click)="$event.stopPropagation()"
-        [ngStyle]="MSNExpand.expand ? { transform: 'scale(1.2)' } : {}"
-      >
-        <!-- Username Modal -->
-        <div *ngIf="userName" class="Username_input_div_active">
-          <div class="container_username">
-            <div class="form_banner">
-              <p class="username_text_banner">Username</p>
-              <div class="close_form_banner" (click)="userName = false">×</div>
+      <div class="chatter-content-container">
+        <div class="chatter-sidebar-container">
+          <div class="chatter-sidebar-content" (click)="1" (mouseenter)="1" (mouseleave)="1">
+            <div class="chatter-sidebar-icon">
+                <figure class="chatter-sidebar-figure">
+                    <img class="chatter-sidebar-img" [src]="'osdrive/Cheetah/System/Imageres/chatter_2.png'"/>
+                </figure>
             </div>
-            <form (submit)="$event.preventDefault()">
-              <p>Username:</p>
-              <input type="text" maxlength="20" placeholder="Enter your username here..."
-                [(ngModel)]="userNameValue" name="username">
-              <div class="ok_cancel_username">
-                <!-- <button (click)="userName = false; localStorage.setItem('username', userNameValue)">Ok</button>
-                <button (click)="userName = false; userNameValue = localStorage.getItem('username') || ''">Cancel</button> -->
+          </div>
+        </div>
+        <div class="chatter-chat-container">
+          <div class="chatter-user-info-container">
+            <div class="chatter-user-info-content" >
+              <span class="span chatter-head"> 
+                <div class="chatter-user-acronym" [ngStyle]="userNameAcronymStyle"> {{userNameAcronym}} </div>
+              </span>
+
+              <ng-container *ngIf="this.showUserNameForm">
+                <div class="chat-user-form-card"  #chatUserFormCntnr>
+                  <div class="chat-user-form-body">
+                    <form novalidate [formGroup]="chatUserForm">
+                      <div class="form-group row mb-2">
+  
+                        <div class="col-md-6">
+                          <input
+                            class="form-control"  id="firstNameId"
+                            type="text"  placeholder="First Name (required)"
+                            formControlName="firstName"
+                            [ngClass]="{
+                              'is-invalid':
+                                (chatUserForm.get('firstName')?.touched 
+                                ||  chatUserForm.get('firstName')?.dirty) 
+                                && !chatUserForm.get('firstName')?.valid
+                            }"
+                            appAlphaNumeric
+                          />
+                          <span class="invalid-feedback">
+                            <span *ngIf="(chatUserForm.get('firstName')?.touched && !chatUserForm.get('firstName')?.valid)">
+                              First name required.
+                            </span>
+                            <span *ngIf="(chatUserForm.get('firstName')?.errors?.['maxlength'])">
+                              10 characters max.
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                
+                      <div class="form-group row mb-2">
+                        <div class="col-md-6">
+                          <input
+                            class="form-control"  id="lastNameId"
+                            type="text"  placeholder="Last Name (required)"
+                            formControlName="lastName"
+                            [ngClass]="{
+                              'is-invalid':
+                                (chatUserForm.get('lastName')?.touched 
+                                || chatUserForm.get('lastName')?.dirty) 
+                                &&  !chatUserForm.get('lastName')?.valid
+                            }"
+                            appAlphaNumeric
+                          />
+                          <span class="invalid-feedback">
+                            <span *ngIf="(chatUserForm.get('lastName')?.touched && !chatUserForm.get('lastName')?.valid)">
+                              last name required.
+                            </span>
+                            <span *ngIf="chatUserForm.get('lastName')?.errors?.['maxlength']">
+                              10 characters max.
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                
+                  <div class="chat-user-form-footer">
+                    <button class="chatter_btn chatter_btn-outline-secondary mr-3"  
+                      style="width:60px" 
+                      (click)="showTheUserNameLabel()">
+                       Cancel
+                    </button>
+                
+                    <button
+                      class="chatter_btn chatter_btn-outline-primary mr-3"
+                      style="width:50px"
+                      type="submit"
+                      (click)="onCreate()"
+                      [disabled]="!chatUserForm.valid"
+                      [ngClass]="!chatUserForm.valid ? 'chatter_btn chatter_btn-outline-disabled mr-3':'chatter_btn chatter_btn-outline-primary mr-3'"
+                      >
+                     Add
+                    </button>
+                  </div>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="showUserNameLabel">
+                <span class="span chatter-mid"   (click)="showTheUserNameForm()" #chatUserLabelCntnr> 
+                  <span class="user-name-bold">
+                    {{this.userName}}
+                  </span>
+                </span>
+              </ng-container>
+            </div>
+          </div>
+          <div class="chatter-chat-window-content"  #chatHistoryOutput>
+            <ng-container  *ngFor="let msg of chatHistory"> 
+              <div class="chatter-chat-output-content">
+                <span class="span chatter-head"> 
+                  <div class="chatter-user-acronym"  [ngStyle]="{'background-color':'msg.getIconColor'}"> {{msg.getUserNameAcronym}} </div>
+                </span>
+
+                <div class="chat-user-txt-container">
+                  <div class="chat-username-and-date">
+                    <span  class="chat-username">{{msg.getUserName}}</span>
+                    <span  class= "chat-date">{{msg.getMsgDate}}</span>
+                  </div>
+                  <span  class="chat-content">{{msg.getMessage}}
+                  </span>
+                </div>
               </div>
-            </form>
+              <div class="chatter-empty-line-container "> </div>
+            </ng-container>
           </div>
-        </div>
-      
-        <!-- Chat Header -->
-        <div class="folder_dragbar-MSN"
-          (dblclick)="handleExpandStateToggle()"
-          (touchstart)="handleExpandStateToggleMobile()">
-          <div class="folder_barname-MSN">
-            <span>MSN</span>
+          <div class="chatter-chat-texbox-container">
+            <div class="chatter-chat-texbox">
+              <form [formGroup]="chatterForm"  class="chatter-form">
+                <textarea
+                  appKeyPressCapture
+                  class="chatter-area"
+                  maxlength="300"
+                  formControlName="msgText"
+                  placeholder="{{chatPrompt}}"
+                  (keydown)="onKeyDownInInputBox($event)"
+                  autofocus="true"
+                  spellcheck="false"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  id="chatterMsgBox"
+                  rows="2">
+                </textarea>
+              </form>
+            </div>
+            <div class="chatter-chat-send">
+              <div class="chatter-send-msg-content" (click)="1" (mouseenter)="1" (mouseleave)="1">
+                <div class="chatter-send-msg-icon">
+                    <figure class="chatter-send-msg-figure">
+                        <img class="chatter-send-msg-img" [src]="'osdrive/Cheetah/System/Imageres/send_msg.png'"/>
+                    </figure>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      
-        <!-- Chat Content -->
-        <div class="folder_content-MSN">
-          <span *ngIf="chatData.length === 0">LOADING.......</span>
-          <div #topOfMessagesRef></div>
-          <div *ngFor="let chat of loadedMessages">
-            <p>
-              <span [style.color]="chat?.dev ? 'red' : 'blue'">&lt;{{ chat?.dev ? 'Dev' : chat.name }}&gt;</span>:
-              <span [style.color]="chat?.dev ? 'red' : '#171616'">{{ chat.chat }}</span>
-            </p>
-          </div>
-          <div #endOfMessagesRef></div>
-        </div>
-      
-        <!-- Chat Input -->
-        <div class="enter_text_div">
-          <textarea maxlength="100" placeholder="Enter your message here..."
-            [(ngModel)]="chatValue" name="chat"
-            (keydown.enter)="createChat()">
-          </textarea>
-          <button [disabled]="sendDisable" (click)="createChat()">Send</button>
         </div>
       </div>
-      
+      <div class="chatter-footer-container">
+        <span class="chatter-span-footer">last received message:{{messageLastRecieved}} </span>
+        <span class="chatter-span-footer"></span>
+        <ng-container  *ngIf="isTyping">
+          <span class="chatter-span-footer-fig">
+            <img class="chatter-span-footer-img" [src]="'osdrive/Cheetah/System/Gifres/loading.gif'"/>
+          </span>
+        </ng-container>
+      </div>      
     </div>
 </cos-window>

@@ -74,6 +74,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   traversalDepth = 0;
 
   hasWindow = true;
+  isMaximizable = false;
   icon = `${Constants.IMAGE_BASE_PATH}terminal.png`;
   name = 'terminal';
   processId = 0;

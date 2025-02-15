@@ -9,6 +9,7 @@ import { SessionManagmentService } from './shared/system-service/session.managem
 import { NotificationService } from './shared/system-service/notification.service';
 import { StateManagmentService } from './shared/system-service/state.management.service';
 import { WindowService } from './shared/system-service/window.service';
+import { MenuService } from './shared/system-service/menu.services';
 
 import { ComponentType } from './system-files/system.types';
 import { NotificationType } from './system-files/notification.type';
@@ -36,7 +37,6 @@ import { MarkDownViewerComponent } from './user-apps/markdownviewer/markdownview
 import { PropertiesComponent } from './shared/system-component/properties/properties.component';
 import { ChatterComponent } from './system-apps/chatter/chatter.component';
 import { RunSystemComponent } from './system-apps/runsystem/runsystem.component';
-import { MenuService } from './shared/system-service/menu.services';
 import { FileInfo } from './system-files/file.info';
 
 @Component({
@@ -116,8 +116,8 @@ export class AppComponent implements OnDestroy, AfterViewInit {
 
   // the order of the service init matter.
   //runningProcesssService must come first
-  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService,
-    sessionMangamentServices:SessionManagmentService, notificationServices:NotificationService, stateManagmentService:StateManagmentService, windowService:WindowService, menuService:MenuService){
+  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService,  windowService:WindowService, componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService,
+    sessionMangamentServices:SessionManagmentService, notificationServices:NotificationService, stateManagmentService:StateManagmentService, menuService:MenuService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
