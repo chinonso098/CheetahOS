@@ -21,16 +21,27 @@ export class ChatterService implements BaseService{
     private _processIdService:ProcessIDService;
     private _sessionManagmentService:SessionManagmentService
     private _socketService:SocketService
-    private userCount = 0;
 
+    private connectedUserCounter = 0;
     private _chatData:ChatMessage[] = [];
+    private _onlineUsers:IUserData[] = [];
+
     private _newMessagRecievedSub!: Subscription;
     private _userConnectSub!: Subscription;
     private _userDisconnectSub!: Subscription;
+    private _newUserInformationSub!: Subscription;
     
     newMessageNotify: Subject<void> = new Subject<void>();
     userCountChangeNotify: Subject<void> = new Subject<void>();
-    //userDisconnectNotify: Subject<void> = new Subject<void>();
+    newUserInformationNotify: Subject<void> = new Subject<void>();
+
+    chatMsgEvt = Constants.CHAT_MSG_EVT;
+    userConnectEvt = Constants.USER_CONNECT_EVT;
+    newUserInfoEvt = Constants.NEW_USER_INFO_EVT;
+    updateUserInfoEvt = Constants.UPDATE_USER_INFO_EVT;
+    removeUserInfoEvt = Constants.REMOVE_USER_INFO_EVT;
+    userDisconnectEvt = Constants.USER_DISCONNECT_EVT;
+    userIsTypingEvt=  Constants.USER_IS_TYPING_EVT;
   
   
     name = 'chatter_msg_svc';
@@ -51,15 +62,34 @@ export class ChatterService implements BaseService{
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
 
-        this._newMessagRecievedSub = this._socketService.onNewMessage().subscribe((p)=>{this.raiseNewMessageReceivedAlert(p)});
-        this._userConnectSub = this._socketService.onNewUser().subscribe((i)=>{this.updateUserCount(i)});
-        this._userDisconnectSub = this._socketService.onUserLeft().subscribe((j)=>{this.updateUserCount(j)});
+        this._newMessagRecievedSub = this._socketService.onNewMessage().subscribe((p)=>{this.raiseNewMessageReceived(p)});
+        
+        this._userConnectSub = this._socketService.onNewUserConnect().subscribe((i)=>{this.updateUserCount(i)});
+        this._userDisconnectSub = this._socketService.onUserDisconnect().subscribe((j)=>{this.updateUserCount(j)});
+        
+        this._newUserInformationSub = this._socketService.onNewUserInfo().subscribe((t)=>{this.raiseNewUserInformationRecieved(t)})
     }
 
-    sendMessage(data: ChatMessage) {
-       this._socketService.sendMessage(data);
+    sendChatMessage(data: ChatMessage) {
+       this._socketService.sendMessage(this.chatMsgEvt, data);
     }
 
+    sendUserInfoMessage(data: IUserData) {
+        this._socketService.sendMessage(this.newUserInfoEvt, data);
+    }
+
+    sendRemoveInfoMessage(data: IUserData) {
+        this._socketService.sendMessage(this.removeUserInfoEvt, data);
+    }
+
+    sendUpdateInfoMessage(data: IUserData) {
+        this._socketService.sendMessage(this.updateUserInfoEvt, data);
+    }
+
+    userIsTypingMessage(data: IUserData) {
+        this._socketService.sendMessage(this.userIsTypingEvt, data);
+    }
+ 
     saveUserData(value: IUserData) {
         this._sessionManagmentService.addSession(this.name, value);
     }
@@ -73,34 +103,40 @@ export class ChatterService implements BaseService{
     }
 
     getUserCount():number{
-        return this.userCount;
+        return this.connectedUserCounter;
     }
 
     private updateUserCount(update:string){
         console.log('updateUserCount:', update)
         if(update === '+'){
-            this.userCount++
+            this.connectedUserCounter++;
         }else{
-            this.userCount--;
+            this.connectedUserCounter--;
         }
 
-        console.log('this.userCount:', this.userCount)
+        console.log('this.userCount:', this.connectedUserCounter)
         this.userCountChangeNotify.next();
     }
 
-    private raiseNewMessageReceivedAlert(newMessage:any):void{
-        if(newMessage){
-            const msg = newMessage._msg as string;
-            const userName = newMessage._userName as string;
-            const userNameAcronym = newMessage._userNameAcronym as string;
-            const iconColor = newMessage._iconColor as string;
-            const msgDate = newMessage._msgDate as string;
+    private raiseNewMessageReceived(chatMsg:any):void{
+        if(chatMsg){
+            const msg = chatMsg._msg as string;
+            const userName = chatMsg._userName as string;
+            const userNameAcronym = chatMsg._userNameAcronym as string;
+            const iconColor = chatMsg._iconColor as string;
+            const msgDate = chatMsg._msgDate as string;
 
             const newChatData  = new ChatMessage(msg,userName,userNameAcronym,iconColor,msgDate);
             this._chatData.push(newChatData);
             this.newMessageNotify.next();
         }
+    }
 
+    private raiseNewUserInformationRecieved(userInfo:any):void{
+        if(userInfo){
+            console.log('new user info:',userInfo);
+            //this.newUserInformationNotify.next();
+        }
     }
 
     terminateSubscription():void{

@@ -1,6 +1,8 @@
 <cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" (click)="setChatterWindowToFocus(this.processId)">
     <div class="chatter-main-container" #chatterContainer>
       <div class="chatter-content-container">
+
+        <!-- Side bar-->
         <div class="chatter-sidebar-container">
           <div class="chatter-sidebar-content" (click)="1" (mouseenter)="1" (mouseleave)="1">
             <div class="chatter-sidebar-icon">
@@ -10,6 +12,33 @@
             </div>
           </div>
         </div>
+
+        <!-- online users-->
+        <div class="chatter-online-container">
+          <div class="chatter-online-content">
+            <div class="chatter-online-heading">
+              <span class="chatter-span-online-heading">Online</span>
+            </div>
+
+            <div class="chatter-online-section">
+
+              <div class="chatter-online-item-cntnr"  *ngFor="let onlineUser of onlineUsers; let i = index">
+                <ng-content *ngIf="onlineUser.userId !== userId">
+                  <div class="chatter-online-item">
+                    <span class="span chatter-online-head"> 
+                      <div class="chatter-user-online-acronym" [ngStyle]="{'background-color':onlineUser.color}"> {{onlineUser.userNameAcronym}} </div>
+                    </span>
+                    <span class="span chatter-online-mid">{{onlineUser.userName}}</span>
+                    <span class="span chatter-online-tail"></span>
+                  </div>
+                  <div class="chatter-online-empty-line-container"></div>
+                </ng-content>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Container-->
         <div class="chatter-chat-container">
           <div class="chatter-user-info-container">
             <div class="chatter-user-info-content" >
@@ -155,15 +184,15 @@
         </div>
       </div>
       <div class="chatter-footer-container">
-        <span class="chatter-span-footer">last received message:{{messageLastRecieved}} </span>
-        <span class="chatter-span-footer"></span>
+        <div class="chatter-div-footer chatter-div-footer-lm">last received message:{{messageLastRecieved}} </div>
+        <div class="chatter-div-footer"></div>
         <ng-container  *ngIf="isTyping">
-          <span class="chatter-span-footer-fig">
-            <img class="chatter-span-footer-img" [src]="'osdrive/Cheetah/System/Gifres/loading.gif'"/>
-          </span>
+          <div class="chatter-div-footer-fig ">
+            <img class="chatter-div-footer-img" [src]="'osdrive/Cheetah/System/Gifres/loading.gif'"/>
+          </div>
         </ng-container>
-        <span class="chatter-span-footer"></span>
-        <span class="chatter-span-footer">online:{{userCount}}</span>
+        <div class="chatter-div-footer"></div>
+        <div class="chatter-div-footer chatter-div-footer-online">online:{{userCount}}</div>
       </div>      
     </div>
 </cos-window>

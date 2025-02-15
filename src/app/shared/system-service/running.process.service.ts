@@ -18,6 +18,10 @@ export class RunningProcessService implements BaseService{
     private _runningServices:Service[];
     private _eventOriginator = '';
 
+    /**
+     * This  notify the app component  to removes process that have window componenets
+     * Calling this on a process without one, will throw an error
+     */
     closeProcessNotify: Subject<Process> = new Subject<Process>();
     changeProcessContentNotify:Subject<void> = new Subject<void>();
     processListChangeNotify: Subject<void> = new Subject<void>();

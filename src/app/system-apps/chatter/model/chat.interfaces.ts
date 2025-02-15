@@ -4,6 +4,7 @@ export interface IUser {
 }
 
 export interface IUserData{
+    userId:string;
     userName: string;
     userNameAcronym:string;
     color:string;

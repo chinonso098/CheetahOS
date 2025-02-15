@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } fr
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { SocketService } from 'src/app/shared/system-service/socket.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Constants } from 'src/app/system-files/constants';
@@ -15,7 +16,8 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'cos-chatter',
   templateUrl: './chatter.component.html',
-  styleUrl: './chatter.component.css'
+  styleUrl: './chatter.component.css',
+  providers: [SocketService] // New instance per component
 })
 export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
 
@@ -28,7 +30,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _runningProcessService:RunningProcessService;
   private _windowService:WindowService;
   private _chatService:ChatterService;
-  chatUser: IUser | undefined;
+  private _socketService:SocketService;
 
   userNameAcronymStyle:Record<string, unknown> = {};
 
@@ -47,7 +49,13 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   userNameAcronym = '';
   bkgrndIconColor = '';
   userName = '';
+  userId= '';
+
   chatData: ChatMessage[] = [];
+  onlineUsers: IUserData[] = [];
+  chatUser!: IUser;
+  chatUserData!:IUserData
+
   lastTapTime = 0;
   messages: string[] = [];
   newMessage = '';
@@ -61,11 +69,12 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   type = ComponentType.System;
   displayName = 'Chatter';
 
-  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
+  constructor(socketService:SocketService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
     windowService:WindowService, chatService:ChatterService, formBuilder:FormBuilder) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
+    this._socketService = socketService;
     this._chatService = chatService;
     this._formBuilder = formBuilder
 
@@ -101,15 +110,45 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   ngAfterViewInit(): void {
+    // setTimeout(() => {
+    //   this.userCount = this._chatService.getUserCount();
+    // }, 500);
+
     setTimeout(() => {
-      this.userCount = this._chatService.getUserCount();
-    }, 500);
+        this._chatService.sendUserInfoMessage(this.chatUserData);
+    }, 2000);
+
+
+
+     const userA:IUserData = {
+      'userId':'kjwe9fweffefe', 
+      'userName': 'Chinonsooo, Maduakolam', 
+      'userNameAcronym':'CM', 
+      'color':'#D27D2D'
+    };
+
+
+    const userB:IUserData = {
+      'userId':'kf3e9fweplefe', 
+      'userName': 'Krystal, Wett', 
+      'userNameAcronym':'KW', 
+      'color':'#00FF2D'
+    };
+
+    this.onlineUsers.push(userA);
+    this.onlineUsers.push(userB);
+    this.onlineUsers.push(this.chatUserData);
 
   }
 
   ngOnDestroy():void{
     this._newMessageAlertSub?.unsubscribe();
     this._userCountChangeSub?.unsubscribe();
+    this._socketService.disconnect();
+
+    const ssPid = this._socketService.processId;
+    const socketProccess = this._runningProcessService.getProcess(ssPid);
+    this._runningProcessService.removeProcess(socketProccess);
   }
 
   pullData():void{
@@ -126,18 +165,26 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   setDefaults():void{
     const uData = this._chatService.getUserData() as IUserData;
     if(!uData){
-      this.userName = `User_${this.getRandomNum()}`
+      this.userId = this.generateUserID();
+      this.userName = `User_${this.getRandomNum()}`;
       this.userNameAcronym = 'AU';
       this.bkgrndIconColor = this.geIconColor();
 
-      const userData:IUserData = {'userName': this.userName, 'userNameAcronym':this.userNameAcronym, 'color':this.bkgrndIconColor};
-      this._chatService.saveUserData(userData)
-    }else{
-      this.userName = uData.userName
-      this.userNameAcronym = uData.userNameAcronym
-      this.bkgrndIconColor = uData.color
-    }
+      this.chatUserData = {
+        'userId':this.userId, 
+        'userName': this.userName, 
+        'userNameAcronym':this.userNameAcronym, 
+        'color':this.bkgrndIconColor
+      };
 
+      this._chatService.saveUserData(this.chatUserData)
+    }else{
+      this.userId = uData.userId;
+      this.userName = uData.userName;
+      this.userNameAcronym = uData.userNameAcronym;
+      this.bkgrndIconColor = uData.color;
+      this.chatUserData = uData;
+    }
   }
 
   onUpdateUserName(): void {
@@ -246,7 +293,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       }
 
       const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym, this.bkgrndIconColor)
-      this._chatService.sendMessage(chatObj);
+      this._chatService.sendChatMessage(chatObj);
       this.chatterForm.reset();
       setTimeout(() => {
         this.chatterForm.controls[this.formCntrlName].setValue(null);
@@ -265,7 +312,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       return;
 
     const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym, this.bkgrndIconColor)
-    this._chatService.sendMessage(chatObj);
+    this._chatService.sendChatMessage(chatObj);
     this.chatterForm.reset();
     setTimeout(() => {
       this.chatterForm.controls[this.formCntrlName].setValue(null);
@@ -287,40 +334,38 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
    /** Generates the next color dynamically */
    geIconColor(): string {
     const defaultMin = 0;
-    const defaultMax = 26;
+    const defaultMax = 36;
     const colorSet = ['#00FFFF', '#AAFF00', '#228B22', '#7CFC00', '#00A36C', '#32CD32', '#00FF7F','#FFBF00','#ECFFDC',
-      '#F88379', '#FF4433', '#FF00FF', '#FFB6C1', '#E30B5C', '#800080', '#D8BFD8', '#AA98A9', '#7F00FF',
-      '#0000FF', '#0047AB', '#3F00FF', '#7393B3', '#D27D2D', '#800020', '#8B0000', '#FFFF00', '#FFD700'];
+      '#F88379', '#FF4433', '#FF00FF', '#FFB6C1', '#E30B5C', '#800080', '#D8BFD8', '#AA98A9', '#7F00FF','#7B68EE',
+      '#0000FF', '#0047AB', '#3F00FF', '#7393B3', '#D27D2D', '#800020', '#8B0000', '#FFFF00', '#FFD700','#000000',
+      '#4B0082','#696969','#191970','#000080','#4169E1','#008080','#2E8B57','#F08080'];
 
     const selectedColor = colorSet[this.getRandomNum(defaultMin,defaultMax)]
     return selectedColor;
   }
 
   private setMessageLastReceievedTime():void{
-    let meridian = 'AM';
     const dateTime = new Date(); 
+    // const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    // const dayName = days[dateTime.getDay()];
+    
     let hour = dateTime.getHours();
-    if(hour > 12){
-      const diff = hour - 12;
-      hour = diff;
-      meridian = 'PM';
-    }
     const minutes = dateTime.getMinutes();
-
+    const meridian = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12 || 12; // Convert 24-hour to 12-hour format
+    
     // Format the time as HH:MM Meridian
     const formattedTime = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${meridian}`;
     this.messageLastRecieved=` ${dateTime.getMonth() + 1}/${dateTime.getDate()},${formattedTime} `;
   }
 
-  private docId() {
-    let text = '';
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-    for (let i = 0; i < 5; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
+  private generateUserID() {
+    let userId = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    for (let i = 0; i < 15; i++) {
+      userId += possible.charAt(Math.floor(Math.random() * possible.length));
     }
-
-    return text;
+    return userId;
   }
 
   setChatterWindowToFocus(pid:number):void{
