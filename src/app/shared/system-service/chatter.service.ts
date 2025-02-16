@@ -121,12 +121,13 @@ export class ChatterService implements BaseService{
     private raiseNewMessageReceived(chatMsg:any):void{
         if(chatMsg){
             const msg = chatMsg._msg as string;
+            const userId = chatMsg._userId as string;
             const userName = chatMsg._userName as string;
             const userNameAcronym = chatMsg._userNameAcronym as string;
             const iconColor = chatMsg._iconColor as string;
             const msgDate = chatMsg._msgDate as string;
 
-            const newChatData  = new ChatMessage(msg,userName,userNameAcronym,iconColor,msgDate);
+            const newChatData  = new ChatMessage(msg, userId, userName, userNameAcronym, iconColor, msgDate);
             this._chatData.push(newChatData);
             this.newMessageNotify.next();
         }

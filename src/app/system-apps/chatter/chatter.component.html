@@ -135,21 +135,45 @@
           </div>
           <div class="chatter-chat-window-content"  #chatHistoryOutput>
             <ng-container  *ngFor="let msg of chatData"> 
-              <div class="chatter-chat-output-content">
-                <span class="span chatter-head"> 
-                  <div class="chatter-user-acronym"  [ngStyle]="{'background-color':msg.getIconColor}"> {{msg.getUserNameAcronym}} </div>
-                </span>
 
-                <div class="chat-user-txt-container">
-                  <div class="chat-username-and-date">
-                    <span  class="chat-username">{{msg.getUserName}}</span>
-                    <span  class= "chat-date">{{msg.getMsgDate}}</span>
+              <ng-container *ngIf="msg.getUserId === userId">
+                <div class="chatter-chat-output-content">
+                  <span class="span chatter-head"> 
+                    <div class="chatter-user-acronym"  [ngStyle]="{'background-color':msg.getIconColor}"> {{msg.getUserNameAcronym}} </div>
+                  </span>
+  
+                  <div class="chat-user-txt-container">
+                    <div class="chat-username-and-date">
+                      <span  class="chat-username">{{msg.getUserName}}</span>
+                      <span  class= "chat-date">{{msg.getMsgDate}}</span>
+                    </div>
+                    <span  class="chat-content">{{msg.getMessage}}
+                    </span>
                   </div>
-                  <span  class="chat-content">{{msg.getMessage}}
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="msg.getUserId !== userId">
+                <div class="chatter-chat-output-content-r">
+
+                  <div class="chat-user-txt-container">
+                    <div class="chat-username-and-date">
+                      <span  class="chat-username">{{msg.getUserName}}</span>
+                      <span  class= "chat-date">{{msg.getMsgDate}}</span>
+                    </div>
+                    <span  class="chat-content">{{msg.getMessage}}
+                    </span>
+                  </div>
+                  
+                  <span class="span chatter-head"> 
+                    <div class="chatter-user-acronym"  [ngStyle]="{'background-color':msg.getIconColor}"> {{msg.getUserNameAcronym}} </div>
                   </span>
                 </div>
-              </div>
+              </ng-container>
+
+
               <div class="chatter-empty-line-container "> </div>
+
             </ng-container>
           </div>
           <div class="chatter-chat-texbox-container">
@@ -183,16 +207,23 @@
           </div>
         </div>
       </div>
+
+      <!-- footer-->
       <div class="chatter-footer-container">
         <div class="chatter-div-footer chatter-div-footer-lm">last received message:{{messageLastRecieved}} </div>
         <div class="chatter-div-footer"></div>
+
+        <div class="chatter-div-footer-fig1 ">
+          <img class="chatter-div-footer-img" [src]="'osdrive/Cheetah/System/Imageres/users_online.png'"/>
+        </div>
+        <div class="chatter-div-footer chatter-div-footer-online">online:{{userCount}}</div>
+
         <ng-container  *ngIf="isTyping">
           <div class="chatter-div-footer-fig ">
             <img class="chatter-div-footer-img" [src]="'osdrive/Cheetah/System/Gifres/loading.gif'"/>
           </div>
         </ng-container>
         <div class="chatter-div-footer"></div>
-        <div class="chatter-div-footer chatter-div-footer-online">online:{{userCount}}</div>
       </div>      
     </div>
 </cos-window>

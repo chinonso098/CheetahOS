@@ -118,27 +118,6 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         this._chatService.sendUserInfoMessage(this.chatUserData);
     }, 2000);
 
-
-
-     const userA:IUserData = {
-      'userId':'kjwe9fweffefe', 
-      'userName': 'Chinonsooo, Maduakolam', 
-      'userNameAcronym':'CM', 
-      'color':'#D27D2D'
-    };
-
-
-    const userB:IUserData = {
-      'userId':'kf3e9fweplefe', 
-      'userName': 'Krystal, Wett', 
-      'userNameAcronym':'KW', 
-      'color':'#00FF2D'
-    };
-
-    this.onlineUsers.push(userA);
-    this.onlineUsers.push(userB);
-    this.onlineUsers.push(this.chatUserData);
-
   }
 
   ngOnDestroy():void{
@@ -159,7 +138,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   updateUserCount():void{
-    this.userCount = this._chatService.getUserCount();
+    //subtract 1 to account for yourself
+    this.userCount = this._chatService.getUserCount() - 1;
   }
 
   setDefaults():void{
@@ -292,7 +272,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         return;
       }
 
-      const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym, this.bkgrndIconColor)
+      const chatObj = new ChatMessage(chatInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor)
       this._chatService.sendChatMessage(chatObj);
       this.chatterForm.reset();
       setTimeout(() => {
@@ -311,7 +291,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     if(chatInput.trim().length === 0) 
       return;
 
-    const chatObj = new ChatMessage(chatInput, this.userName, this.userNameAcronym, this.bkgrndIconColor)
+    const chatObj = new ChatMessage(chatInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor)
     this._chatService.sendChatMessage(chatObj);
     this.chatterForm.reset();
     setTimeout(() => {

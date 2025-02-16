@@ -1,12 +1,15 @@
 export class ChatMessage {
     private _msg: string;
+    private _userId:string;
     private _userName:string;
     private _userNameAcronym:string;
     private _msgDate:string;
     private _iconColor:string;
 
-    constructor(msg?:string, userName?:string, userNameAcronym?:string, iconColor?:string, msgDate?:string ){
+    constructor(msg?:string, userId?:string, userName?:string, userNameAcronym?:string, iconColor?:string, msgDate?:string ){
         this._msg = (msg === undefined)?'':msg
+
+        this._userId = (userId === undefined)?'': userId;
 
         this._userName = (userName === undefined)?'': userName;
 
@@ -28,24 +31,32 @@ export class ChatMessage {
          this._msg = msg;
     }
 
+    set setUserId(userId:string){
+        this._userId= userId;
+    }
+
     set setUserName(userName:string){
-        this._userName= userName
+        this._userName= userName;
     }
 
     set setUserNameAcronym(unAcronym:string){
-        this._userNameAcronym= unAcronym
+        this._userNameAcronym= unAcronym;
     }
 
     set setMsgDate(msgDate:string){
-        this._msgDate= msgDate
+        this._msgDate= msgDate;
     }
 
     set setIconColor(iconColor:string){
-        this._iconColor= iconColor
+        this._iconColor= iconColor;
     }
 
     get getMessage(){
         return this._msg;
+    }
+
+    get getUserId(){
+        return this._userId;
     }
 
     get getUserName(){
