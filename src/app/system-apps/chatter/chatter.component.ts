@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -19,7 +19,7 @@ import { Subscription } from 'rxjs';
   styleUrl: './chatter.component.css',
   providers: [SocketService] // New instance per component
 })
-export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
+export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit, AfterViewChecked{
 
   @ViewChild('chatHistoryOutput', {static: true}) chatHistoryOutput!: ElementRef;
 
@@ -81,7 +81,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.setDefaults();
 
     this._newMessageAlertSub = this._chatService.newMessageNotify.subscribe(()=> this.pullData());
-    this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe(()=> this.updateUserCount());
+    this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe(()=> this.updateOnlineUserCount());
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
@@ -110,15 +110,15 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   ngAfterViewInit(): void {
-    // setTimeout(() => {
-    //   this.userCount = this._chatService.getUserCount();
-    // }, 500);
-
+   
     setTimeout(() => {
         this._chatService.sendUserInfoMessage(this.chatUserData);
     }, 2000);
-
   }
+
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  } 
 
   ngOnDestroy():void{
     this._newMessageAlertSub?.unsubscribe();
@@ -137,9 +137,12 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.setMessageLastReceievedTime();
   }
 
-  updateUserCount():void{
-    //subtract 1 to account for yourself
-    this.userCount = this._chatService.getUserCount() - 1;
+  updateOnlineUserCount():void{
+    setTimeout(() => {
+      //subtract 1 to account for yourself
+      console.log('this._chatService.getUserCount():',this._chatService.getUserCount());
+      //this.userCount = this._chatService.getUserCount() - 1;
+    }, 1000);
   }
 
   setDefaults():void{
@@ -212,33 +215,9 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }
   }
 
-  // scrollToBottom() {
-  //   setTimeout(() => {
-  //     if (this.endOfMessagesRef) {
-  //       this.endOfMessagesRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
-  //     }
-  //   }, 1500);
-  // }
-
   private scrollToBottom(): void {
-    const delay = 150;
-    const interval =  setInterval(() => {
-      try {
-        //console.log('height:',this.terminalOutputCntnr.nativeElement.scrollHeight);
-        if(this.scrollCounter < 2){
-          this.chatHistoryOutput.nativeElement.scrollTop = this.chatHistoryOutput.nativeElement.scrollHeight;
-          this.chatHistoryOutput.nativeElement.scrollIntoView({ behavior: 'smooth' });
-          this.scrollCounter++;
-        }
-      } catch (err) {
-        console.error('Error scrolling to bottom:', err);
-      }
-      if(this.scrollCounter == 2) {
-        clearInterval(interval);
-        this.scrollCounter = 0;
-      }
-
-    },delay);
+    this.chatHistoryOutput.nativeElement.scrollTop = this.chatHistoryOutput.nativeElement.scrollHeight;
+    this.chatHistoryOutput.nativeElement.scrollIntoView({ behavior: 'smooth' });
   }
 
   // loadMoreMessages() {

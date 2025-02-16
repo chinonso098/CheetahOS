@@ -233,30 +233,40 @@ span.chatter-online-mid{
 }
 
 .chatter-empty-line-container {
-    max-height: 18px;
-    min-height: 18px;
+    height: 18px;
     background-color: #201c1c;
+    flex-shrink: 0; /* Prevent it from shrinking */
+}
+
+.chatter-chat-msg-block{
+    display: flex;
+    flex-direction: column;  /* Stack children vertically */
+    align-items: flex-start; /* Default left alignment */
+    width: 372px;
 }
 
 /* Chat Messages */
-.chatter-chat-output-content {
+.chatter-chat-output-content-left {
     display: flex;
+    align-items: flex-start; /* Ensure alignment */
 }
 
-.chatter-chat-output-content-r {
-    position: fixed;
+.chatter-chat-output-content-right {
     display: flex;
-    right: 13px;
+    justify-content: flex-end; /* Push content to the right */
+    align-items: flex-start;
+    width: 100%; /* Ensure it takes full width */
+    margin-left: 48px; /* Moves content further right */
 }
 
-.chat-user-txt-container {
-    position: relative;
-    width: auto;
-    min-width: 150px;
+.chat-user-txt-container-left {
     max-width: 360px;
-    height: fit-content;
-    padding-left: 4px;
-    top: 6px;
+    padding: 6px 0px 0px 4px;
+}
+
+.chat-user-txt-container-right {
+    max-width: 360px;
+    padding: 6px 4px 0px 0px;
 }
 
 .chat-username-and-date {
@@ -433,6 +443,7 @@ span.chatter-online-mid{
     width:150px; 
     position: fixed;
     left:275px;
+    bottom: 3px;
 }
 
 .chatter-div-footer-fig{

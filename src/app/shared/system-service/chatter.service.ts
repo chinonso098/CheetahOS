@@ -42,6 +42,7 @@ export class ChatterService implements BaseService{
     removeUserInfoEvt = Constants.REMOVE_USER_INFO_EVT;
     userDisconnectEvt = Constants.USER_DISCONNECT_EVT;
     userIsTypingEvt=  Constants.USER_IS_TYPING_EVT;
+    updateOnlineUserCountEvt = Constants.UPDATE_ONLINE_USER_COUNT_EVT;
   
   
     name = 'chatter_msg_svc';
@@ -86,6 +87,10 @@ export class ChatterService implements BaseService{
         this._socketService.sendMessage(this.updateUserInfoEvt, data);
     }
 
+    sendUpdateOnlineUserCount(data: ChatMessage) {
+        this._socketService.sendMessage(this.updateOnlineUserCountEvt, data);
+     }
+
     userIsTypingMessage(data: IUserData) {
         this._socketService.sendMessage(this.userIsTypingEvt, data);
     }
@@ -114,7 +119,7 @@ export class ChatterService implements BaseService{
             this.connectedUserCounter--;
         }
 
-        console.log('this.userCount:', this.connectedUserCounter)
+        console.log('userCount:', this.connectedUserCounter)
         this.userCountChangeNotify.next();
     }
 

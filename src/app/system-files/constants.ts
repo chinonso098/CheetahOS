@@ -36,6 +36,7 @@ export namespace Constants{
     export const REMOVE_USER_INFO_EVT ='removeUserInfo';
     export const USER_DISCONNECT_EVT ='userDisconnected';
     export const USER_IS_TYPING_EVT = 'userIsTyping';
+    export const UPDATE_ONLINE_USER_COUNT_EVT = 'updateOnlineUserCount'; 
 
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
