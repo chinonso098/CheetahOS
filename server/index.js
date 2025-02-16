@@ -23,10 +23,10 @@ io.on('connection', (socket) => {
     io.emit('newUserInfo', msg); // Broadcasting message to all clients
   });
 
-  // Listening for updateUserInfo from the client
-  socket.on('updateUserInfo', (msg) => {
-    console.log('Received(updateUserInfo) message:', msg);
-    io.emit('updateUserInfo', msg); // Broadcasting message to all clients
+  // Listening for updateUserName from the client
+  socket.on('updateUserName', (msg) => {
+    console.log('Received(updateUserName) message:', msg);
+    io.emit('updateUserName', msg); // Broadcasting message to all clients
   });
 
   // Listening for updateOnlineUserCount from the client

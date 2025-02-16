@@ -33,6 +33,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _userCountChangeSub!: Subscription;
   private _newUserInfomationSub!: Subscription;
   private _updateOnlineUserListSub!: Subscription;
+  private _updateUserNameSub!: Subscription;
 
   userNameAcronymStyle:Record<string, unknown> = {};
 
@@ -92,7 +93,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._newChatMessageSub = this._chatService.newMessageNotify.subscribe(()=> this.updateChatData());
     this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe(()=> this.updateOnlineUserCount());
     this._newUserInfomationSub = this._chatService.newUserInformationNotify.subscribe(()=> this.updateOnlineUserList(this.ADD_AND_BROADCAST));
-    this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList(this.ADD)) 
+    this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList(this.ADD));
+    this._updateUserNameSub =  this._chatService.updateUserNameNotify.subscribe(()=> this.updateOnlineUserList(this.ADD));
   }
 
   ngOnInit(): void {
@@ -150,7 +152,6 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       //subtract 1 to account for yourself
       const currentUserCount = this._chatService.getUserCount();
       this.userCount = currentUserCount - 1;
-
     }, 50);
   }
 
@@ -167,10 +168,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         const data = this._chatService.getListOfOnlineUsers();
         this.onlineUsers.push(...data);
   
-        const myList:IUserList ={
-          timeStamp:this.onlineUsersListFirstUpdateTS,
-          onlineUsers:this.onlineUsers
-        }
+        const myList:IUserList = {timeStamp:this.onlineUsersListFirstUpdateTS, onlineUsers:this.onlineUsers};
   
         const timeout = delays[Math.floor(Math.random() * data.length)];
         console.log('timeout-sendMyOnlineUserList:',timeout);
@@ -228,8 +226,10 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         // retrieve the data from session and update it
         const uData = this._chatService.getUserData() as IUserData;
         uData.userName = this.userName;
-        uData.userNameAcronym = this.userNameAcronym
+        uData.userNameAcronym = this.userNameAcronym;
+
         this._chatService.saveUserData(uData)
+        this._chatService.sendUpdateUserNameMessage(uData);
 
         this.showTheUserNameLabel();
       }

@@ -32,7 +32,7 @@ export namespace Constants{
     export const CHAT_MSG_EVT ='chatMessage';
     export const USER_CONNECT_EVT ='userConnected';
     export const NEW_USER_INFO_EVT ='newUserInfo';
-    export const UPDATE_USER_INFO_EVT ='updateUserInfo';
+    export const UPDATE_USER_NAME_EVT ='updateUserName';
     export const REMOVE_USER_INFO_EVT ='removeUserInfo';
     export const USER_DISCONNECT_EVT ='userDisconnected';
     export const USER_IS_TYPING_EVT = 'userIsTyping';
