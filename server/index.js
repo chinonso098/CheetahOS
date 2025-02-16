@@ -35,6 +35,12 @@ io.on('connection', (socket) => {
     io.emit('updateOnlineUserCount', msg); // Broadcasting message to all clients
   });
 
+  //updateOnlineUseList
+  socket.on('updateOnlineUserList', (msg) => {
+    console.log('Received(updateOnlineUserList) message:', msg);
+    io.emit('updateOnlineUserList', msg); // Broadcasting message to all clients
+  });
+
   // Listening for chatMessage from the client
   socket.on('chatMessage', (msg) => {
     console.log('Received(chatMessage) message:', msg);

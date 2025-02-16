@@ -9,3 +9,8 @@ export interface IUserData{
     userNameAcronym:string;
     color:string;
 }
+
+export interface IUserList{
+    timeStamp:number;
+    onlineUsers: IUserData[];
+}

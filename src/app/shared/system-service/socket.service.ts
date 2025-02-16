@@ -33,6 +33,7 @@ export class SocketService implements BaseService {
   userDisconnectEvt = Constants.USER_DISCONNECT_EVT;
   userIsTypingEvt=  Constants.USER_IS_TYPING_EVT;
   updateOnlineUserCountEvt = Constants.UPDATE_ONLINE_USER_COUNT_EVT;
+  updateOnlineUserListEvt = Constants.UPDATE_ONLINE_USER_LIST_EVT;
   
   constructor() {
     this.socket = io('http://localhost:3000');
@@ -114,6 +115,20 @@ export class SocketService implements BaseService {
       };
     });
   }
+
+  onUpdateOnlineUserList(): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on(this.updateOnlineUserListEvt, (data) => {
+        observer.next(data);
+      });
+
+      // Handle cleanup
+      return () => {
+        this.socket.off(this.updateOnlineUserListEvt);
+      };
+    });
+  }
+
 
   disconnect() {
     if (this.socket) {

@@ -10,7 +10,7 @@ import { Process } from 'src/app/system-files/process';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ChatterService } from 'src/app/shared/system-service/chatter.service';
 import { ChatMessage } from './model/chat.message';
-import { IUser, IUserData } from './model/chat.interfaces';
+import { IUser, IUserData, IUserList } from './model/chat.interfaces';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -23,14 +23,16 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   @ViewChild('chatHistoryOutput', {static: true}) chatHistoryOutput!: ElementRef;
 
-  private _newMessageAlertSub!: Subscription;
-  private _userCountChangeSub!: Subscription;
-
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _windowService:WindowService;
   private _chatService:ChatterService;
   private _socketService:SocketService;
+
+  private _newChatMessageSub!: Subscription;
+  private _userCountChangeSub!: Subscription;
+  private _newUserInfomationSub!: Subscription;
+  private _updateOnlineUserListSub!: Subscription;
 
   userNameAcronymStyle:Record<string, unknown> = {};
 
@@ -39,9 +41,13 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _formBuilder;
   formCntrlName = 'msgText';
 
+  private ADD_AND_BROADCAST = 'Add&Broadcast';
+  private ADD = 'Add';
+
   showUserNameLabel = true;
   showUserNameForm = false;
   isTyping = false;
+  isFirstOnlineUserUpdateResponse = true;
   messageLastRecieved = '';
   scrollCounter = 0;
   userCount = 0;
@@ -53,6 +59,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   chatData: ChatMessage[] = [];
   onlineUsers: IUserData[] = [];
+  onlineUsersListFirstUpdateTS = 0;
   chatUser!: IUser;
   chatUserData!:IUserData
 
@@ -78,13 +85,14 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._chatService = chatService;
     this._formBuilder = formBuilder
 
-    this.setDefaults();
-
-    this._newMessageAlertSub = this._chatService.newMessageNotify.subscribe(()=> this.pullData());
-    this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe(()=> this.updateOnlineUserCount());
-
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
+    this.setDefaults();
+
+    this._newChatMessageSub = this._chatService.newMessageNotify.subscribe(()=> this.updateChatData());
+    this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe(()=> this.updateOnlineUserCount());
+    this._newUserInfomationSub = this._chatService.newUserInformationNotify.subscribe(()=> this.updateOnlineUserList(this.ADD_AND_BROADCAST));
+    this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList(this.ADD)) 
   }
 
   ngOnInit(): void {
@@ -110,15 +118,17 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   ngAfterViewInit(): void {
-   
     setTimeout(() => {
-        this._chatService.sendUserInfoMessage(this.chatUserData);
-    }, 2000);
+      this._chatService.sendUserInfoMessage(this.chatUserData);
+    }, 50);
   }
 
   ngOnDestroy():void{
-    this._newMessageAlertSub?.unsubscribe();
+    this._newChatMessageSub?.unsubscribe();
     this._userCountChangeSub?.unsubscribe();
+    this._newUserInfomationSub?.unsubscribe();
+    this._updateOnlineUserListSub?.unsubscribe();
+
     this._socketService.disconnect();
 
     const ssPid = this._socketService.processId;
@@ -126,7 +136,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._runningProcessService.removeProcess(socketProccess);
   }
 
-  pullData():void{
+  updateChatData():void{
     const data = this._chatService.getChatData();
     //console.log('chat data:', data);
     this.chatData = data
@@ -138,9 +148,40 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   updateOnlineUserCount():void{
     setTimeout(() => {
       //subtract 1 to account for yourself
-      console.log('this._chatService.getUserCount():',this._chatService.getUserCount());
-      //this.userCount = this._chatService.getUserCount() - 1;
-    }, 1000);
+      const currentUserCount = this._chatService.getUserCount();
+      this.userCount = currentUserCount - 1;
+
+    }, 50);
+  }
+
+  updateOnlineUserList(intent:string):void{
+    const delays = [100, 250, 400, 550, 700];
+
+    if(intent === this.ADD_AND_BROADCAST){
+      if(this.isFirstOnlineUserUpdateResponse){
+        // skip the first update. It is most likely the echoing effect of coming online
+        console.log('skip the first update. echoing effect of coming online:', this.userId + '-' + this.userName )
+        this.isFirstOnlineUserUpdateResponse = false;
+        return;
+      }else{
+        const data = this._chatService.getListOfOnlineUsers();
+        this.onlineUsers.push(...data);
+  
+        const myList:IUserList ={
+          timeStamp:this.onlineUsersListFirstUpdateTS,
+          onlineUsers:this.onlineUsers
+        }
+  
+        const timeout = delays[Math.floor(Math.random() * data.length)];
+        console.log('timeout-sendMyOnlineUserList:',timeout);
+        setTimeout(() => {
+          this._chatService.sendMyOnlineUsersListMessage(myList);
+        }, timeout);
+      }
+    }else{
+      const data = this._chatService.getListOfOnlineUsers();
+      this.onlineUsers = data;
+    }
   }
 
   setDefaults():void{
@@ -152,20 +193,29 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       this.bkgrndIconColor = this.geIconColor();
 
       this.chatUserData = {
-        'userId':this.userId, 
-        'userName': this.userName, 
-        'userNameAcronym':this.userNameAcronym, 
-        'color':this.bkgrndIconColor
+        userId:this.userId, 
+        userName: this.userName, 
+        userNameAcronym:this.userNameAcronym, 
+        color:this.bkgrndIconColor
       };
-
-      this._chatService.saveUserData(this.chatUserData)
+      this._chatService.saveUserData(this.chatUserData);
     }else{
       this.userId = uData.userId;
       this.userName = uData.userName;
       this.userNameAcronym = uData.userNameAcronym;
       this.bkgrndIconColor = uData.color;
       this.chatUserData = uData;
+
+      this.chatUserData = {
+        userId:this.userId, 
+        userName: this.userName, 
+        userNameAcronym:this.userNameAcronym, 
+        color:this.bkgrndIconColor
+      };
     }
+
+    this.onlineUsersListFirstUpdateTS = Date.now();
+    //this.onlineUsers.push(this.chatUserData);
   }
 
   onUpdateUserName(): void {

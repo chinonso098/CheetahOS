@@ -135,7 +135,6 @@
           </div>
           <div class="chatter-chat-window-content"  #chatHistoryOutput>
             <ng-container  *ngFor="let msg of chatData"> 
-              
               <ng-container *ngIf="msg.getUserId === userId">
                 <div class="chatter-chat-msg-block">
 
@@ -179,7 +178,6 @@
                   <div class="chatter-empty-line-container"> </div>
                 </div>
               </ng-container>
-
             </ng-container>
           </div>
           <div class="chatter-chat-texbox-container">

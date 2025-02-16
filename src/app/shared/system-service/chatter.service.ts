@@ -9,7 +9,7 @@ import { Process } from 'src/app/system-files/process';
 import { Service } from 'src/app/system-files/service';
 import { ChatMessage } from 'src/app/system-apps/chatter/model/chat.message';
 import { SessionManagmentService } from './session.management.service';
-import { IUserData } from 'src/app/system-apps/chatter/model/chat.interfaces';
+import { IUserData, IUserList } from 'src/app/system-apps/chatter/model/chat.interfaces';
 import { SocketService } from './socket.service';
 
 @Injectable({
@@ -23,6 +23,7 @@ export class ChatterService implements BaseService{
     private _socketService:SocketService
 
     private connectedUserCounter = 0;
+    private listTS = -1;
     private _chatData:ChatMessage[] = [];
     private _onlineUsers:IUserData[] = [];
 
@@ -30,10 +31,12 @@ export class ChatterService implements BaseService{
     private _userConnectSub!: Subscription;
     private _userDisconnectSub!: Subscription;
     private _newUserInformationSub!: Subscription;
+    private _updateOnlineUserListSub!: Subscription;
     
     newMessageNotify: Subject<void> = new Subject<void>();
     userCountChangeNotify: Subject<void> = new Subject<void>();
     newUserInformationNotify: Subject<void> = new Subject<void>();
+    updateOnlineUserListNotify: Subject<void> = new Subject<void>();
 
     chatMsgEvt = Constants.CHAT_MSG_EVT;
     userConnectEvt = Constants.USER_CONNECT_EVT;
@@ -43,6 +46,7 @@ export class ChatterService implements BaseService{
     userDisconnectEvt = Constants.USER_DISCONNECT_EVT;
     userIsTypingEvt=  Constants.USER_IS_TYPING_EVT;
     updateOnlineUserCountEvt = Constants.UPDATE_ONLINE_USER_COUNT_EVT;
+    updateOnlineUserListEvt = Constants.UPDATE_ONLINE_USER_LIST_EVT;
   
   
     name = 'chatter_msg_svc';
@@ -69,6 +73,8 @@ export class ChatterService implements BaseService{
         this._userDisconnectSub = this._socketService.onUserDisconnect().subscribe((j)=>{this.updateUserCount(j)});
         
         this._newUserInformationSub = this._socketService.onNewUserInfo().subscribe((t)=>{this.raiseNewUserInformationRecieved(t)})
+
+        this._updateOnlineUserListSub = this._socketService.onUpdateOnlineUserList().subscribe((t)=>{this.raiseUpdateOnlineUserListRecieved(t)})
     }
 
     sendChatMessage(data: ChatMessage) {
@@ -87,9 +93,16 @@ export class ChatterService implements BaseService{
         this._socketService.sendMessage(this.updateUserInfoEvt, data);
     }
 
+    sendMyOnlineUsersListMessage(data: IUserList) {
+        if(this.listTS === -1){
+            this.listTS = data.timeStamp;
+        }
+        this._socketService.sendMessage(this.updateOnlineUserListEvt, data);
+    }
+
     sendUpdateOnlineUserCount(data: ChatMessage) {
         this._socketService.sendMessage(this.updateOnlineUserCountEvt, data);
-     }
+    }
 
     userIsTypingMessage(data: IUserData) {
         this._socketService.sendMessage(this.userIsTypingEvt, data);
@@ -105,6 +118,10 @@ export class ChatterService implements BaseService{
 
     getChatData():ChatMessage[]{
         return this._chatData;
+    }
+
+    getListOfOnlineUsers():IUserData[]{
+        return this._onlineUsers;
     }
 
     getUserCount():number{
@@ -140,17 +157,53 @@ export class ChatterService implements BaseService{
 
     private raiseNewUserInformationRecieved(userInfo:any):void{
         if(userInfo){
-            console.log('new user info:',userInfo);
-            //this.newUserInformationNotify.next();
+            const newUser:IUserData = {
+                'userId': userInfo.userId as string,
+                'userName': userInfo.userName as string,
+                'userNameAcronym': userInfo.userNameAcronym as string,
+                'color':userInfo.color as string,
+            }
+            this._onlineUsers.push(newUser);
+            this.newUserInformationNotify.next();
+        }
+    }
+
+    private raiseUpdateOnlineUserListRecieved(onlinerUserList:any):void{
+        if(onlinerUserList){
+            console.log('raiseUpdateOnlineUserListRecieved');
+            console.log('onlinerUserList:',onlinerUserList);
+
+            const userList: IUserList = {
+                timeStamp: onlinerUserList.timeStamp,
+                onlineUsers: onlinerUserList.onlineUsers.map((user: IUserData) => ({
+                  userId: user.userId,
+                  userName: user.userName,
+                  userNameAcronym: user.userNameAcronym,
+                  color: user.color
+                }))
+              };
+
+
+            if(userList.timeStamp > this.listTS){
+                // Merge lists and remove duplicates using a Map
+                const mergedList: IUserData[] = [
+                    ...new Map([...this._onlineUsers, ...userList.onlineUsers].map(user => [user.userId, user])).values()
+                ];
+                this._onlineUsers = [];
+                this._onlineUsers = mergedList;
+
+                this.updateOnlineUserListNotify.next();
+            }
         }
     }
 
     terminateSubscription():void{
-        const timeout = 600000
+        const timeout = 600000;
         setTimeout(() => {
             this._newMessagRecievedSub?.unsubscribe();
             this._userDisconnectSub?.unsubscribe();
             this._userConnectSub?.unsubscribe();
+            this._newUserInformationSub?.unsubscribe();
         }, timeout);
     }
 
