@@ -177,15 +177,16 @@ export class AppComponent implements OnDestroy, AfterViewInit {
 
   private async lazyLoadComponment(appPosition:number) {
     const componentToLoad = this.apps[appPosition];
-    const componentRef = this.itemViewContainer.createComponent<BaseComponent>(componentToLoad.type);
-    const pid = componentRef.instance.processId
-    this.addEntryFromUserOpenedApps(componentRef.instance.name);
-    this._componentReferenceService.addComponentReference(pid, componentRef);
-
-    console.log('this._runningProcessService.processCount():', this._runningProcessService.processCount());
-   //alert subscribers
-    if(this._runningProcessService !== undefined){
-      this._runningProcessService.processListChangeNotify.next();
+    if(componentToLoad !== undefined){   
+      const componentRef = this.itemViewContainer.createComponent<BaseComponent>(componentToLoad.type);
+      const pid = componentRef.instance.processId
+      this.addEntryFromUserOpenedApps(componentRef.instance.name);
+      this._componentReferenceService.addComponentReference(pid, componentRef);
+  
+     //alert subscribers
+      if(this._runningProcessService !== undefined){
+        this._runningProcessService.processListChangeNotify.next();
+      }
     }
   }
 
