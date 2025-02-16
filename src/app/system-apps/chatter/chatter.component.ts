@@ -1,4 +1,4 @@
-import { AfterViewInit, AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -19,7 +19,7 @@ import { Subscription } from 'rxjs';
   styleUrl: './chatter.component.css',
   providers: [SocketService] // New instance per component
 })
-export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit, AfterViewChecked{
+export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
 
   @ViewChild('chatHistoryOutput', {static: true}) chatHistoryOutput!: ElementRef;
 
@@ -116,10 +116,6 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }, 2000);
   }
 
-  ngAfterViewChecked() {
-    this.scrollToBottom();
-  } 
-
   ngOnDestroy():void{
     this._newMessageAlertSub?.unsubscribe();
     this._userCountChangeSub?.unsubscribe();
@@ -135,6 +131,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     //console.log('chat data:', data);
     this.chatData = data
     this.setMessageLastReceievedTime();
+
+    setTimeout(() => this.scrollToBottom(), 500);
   }
 
   updateOnlineUserCount():void{
@@ -229,17 +227,6 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   //   }, 1500);
   // }
 
-  handleExpandStateToggle() {
-    //this.MSNExpand.expand = !this.MSNExpand.expand;
-  }
-
-  handleExpandStateToggleMobile() {
-    const now = Date.now();
-    if (now - this.lastTapTime < 300) {
-      this.handleExpandStateToggle();
-    }
-    this.lastTapTime = now;
-  }
 
   async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
     
@@ -260,7 +247,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       }, 10);
 
        // Scroll to bottom
-       //this.scrollToBottom();
+      setTimeout(() => this.scrollToBottom(), 500);
     }
   }
 

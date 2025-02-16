@@ -182,8 +182,11 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this.addEntryFromUserOpenedApps(componentRef.instance.name);
     this._componentReferenceService.addComponentReference(pid, componentRef);
 
+    console.log('this._runningProcessService.processCount():', this._runningProcessService.processCount());
    //alert subscribers
-   this._runningProcessService.processListChangeNotify.next()
+    if(this._runningProcessService !== undefined){
+      this._runningProcessService.processListChangeNotify.next();
+    }
   }
 
   private showDialogMsgBox(dialogMsgType:string, msg:string):void{
@@ -234,7 +237,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this._processIdService.removeProcessId(eventData.getProcessId);
     this.deleteEntryFromUserOpenedAppsAndSession(eventData);
 
-    this._runningProcessService.processListChangeNotify.next()
+    this._runningProcessService.processListChangeNotify.next();
   }
 
   private getComponentDetail():Process{

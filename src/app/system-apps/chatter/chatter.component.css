@@ -269,9 +269,17 @@ span.chatter-online-mid{
     padding: 6px 4px 0px 0px;
 }
 
-.chat-username-and-date {
+.chat-username-and-date-left {
     display: flex;
     padding: 3px 0;
+}
+
+.chat-username-and-date-right {
+    display: flex;
+    padding: 3px 0;
+    justify-content: flex-end;
+    align-items: flex-start;
+    width: 100%;
 }
 
 .chat-username {
