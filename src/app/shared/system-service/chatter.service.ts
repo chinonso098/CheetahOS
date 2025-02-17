@@ -44,15 +44,15 @@ export class ChatterService implements BaseService{
     updateUserNameNotify: Subject<void> = new Subject<void>();
     updateUserCountNotify: Subject<void> = new Subject<void>();
 
-    chatMsgEvt = Constants.CHAT_MSG_EVT;
-    userConnectEvt = Constants.USER_CONNECT_EVT;
-    newUserInfoEvt = Constants.NEW_USER_INFO_EVT;
-    updateUserNameEvt = Constants.UPDATE_USER_NAME_EVT;
-    removeUserInfoEvt = Constants.REMOVE_USER_INFO_EVT;
-    userDisconnectEvt = Constants.USER_DISCONNECT_EVT;
-    userIsTypingEvt=  Constants.USER_IS_TYPING_EVT;
-    updateOnlineUserCountEvt = Constants.UPDATE_ONLINE_USER_COUNT_EVT;
-    updateOnlineUserListEvt = Constants.UPDATE_ONLINE_USER_LIST_EVT;
+    readonly CHAT_MSG_EVT ='chatMessage';
+    readonly USER_CONNECT_EVT ='userConnected';
+    readonly NEW_USER_INFO_EVT ='newUserInfo';
+    readonly UPDATE_USER_NAME_EVT ='updateUserName';
+    readonly REMOVE_USER_INFO_EVT ='removeUserInfo';
+    readonly USER_DISCONNECT_EVT ='userDisconnected';
+    readonly USER_IS_TYPING_EVT = 'userIsTyping';
+    readonly UPDATE_ONLINE_USER_COUNT_EVT = 'updateOnlineUserCount'; 
+    readonly UPDATE_ONLINE_USER_LIST_EVT = 'updateOnlineUserList'; 
   
   
     name = 'chatter_msg_svc';
@@ -73,49 +73,49 @@ export class ChatterService implements BaseService{
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
 
-        this._newMessagRecievedSub = this._socketService.onMessageEvent(this.chatMsgEvt).subscribe((p)=>{this.raiseNewMessageReceived(p)});
+        this._newMessagRecievedSub = this._socketService.onMessageEvent(this.CHAT_MSG_EVT).subscribe((p)=>{this.raiseNewMessageReceived(p)});
         
-        this._userConnectSub = this._socketService.onMessageEvent(this.userConnectEvt).subscribe((i)=>{this.updateUserCount(i)});
-        this._userDisconnectSub = this._socketService.onMessageEvent(this.userDisconnectEvt).subscribe((j)=>{this.updateUserCount(j)});
-        
-        this._updateUserCountSub = this._socketService.onMessageEvent(this.updateOnlineUserCountEvt).subscribe((j)=>{this.updateUserCountAfterComparing(j)});
-        
-        this._newUserInformationSub = this._socketService.onMessageEvent(this.newUserInfoEvt).subscribe((t)=>{this.raiseNewUserInformationRecieved(t)});
+        this._userConnectSub = this._socketService.onMessageEvent(this.USER_CONNECT_EVT).subscribe((i)=>{this.updateUserCount(i)});
+        this._userDisconnectSub = this._socketService.onMessageEvent(this.USER_DISCONNECT_EVT).subscribe((j)=>{this.updateUserCount(j)});
 
-        this._updateOnlineUserListSub = this._socketService.onMessageEvent(this.updateOnlineUserListEvt).subscribe((t)=>{this.raiseUpdateOnlineUserListRecieved(t)});
-        this._updateUserNameSub = this._socketService.onMessageEvent(this.updateUserNameEvt).subscribe((t)=>{this.raiseUpdateUserNameRecieved(t)});
+        this._updateUserCountSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_COUNT_EVT).subscribe((j)=>{this.updateUserCountAfterComparing(j)});
+        
+        this._newUserInformationSub = this._socketService.onMessageEvent(this.NEW_USER_INFO_EVT).subscribe((t)=>{this.raiseNewUserInformationRecieved(t)});
+
+        this._updateOnlineUserListSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_LIST_EVT).subscribe((t)=>{this.raiseUpdateOnlineUserListRecieved(t)});
+        this._updateUserNameSub = this._socketService.onMessageEvent(this.UPDATE_USER_NAME_EVT).subscribe((t)=>{this.raiseUpdateUserNameRecieved(t)});
     }
 
     sendChatMessage(data:ChatMessage) {
-       this._socketService.sendMessage(this.chatMsgEvt, data);
+       this._socketService.sendMessage(this.CHAT_MSG_EVT, data);
     }
 
     sendUserInfoMessage(data:IUserData) {
-        this._socketService.sendMessage(this.newUserInfoEvt, data);
+        this._socketService.sendMessage(this.NEW_USER_INFO_EVT, data);
     }
 
     sendRemoveInfoMessage(data:IUserData) {
-        this._socketService.sendMessage(this.removeUserInfoEvt, data);
+        this._socketService.sendMessage(this.REMOVE_USER_INFO_EVT, data);
     }
 
     sendUpdateUserNameMessage(data:IUserData) {
-        this._socketService.sendMessage(this.updateUserNameEvt, data);
+        this._socketService.sendMessage(this.UPDATE_USER_NAME_EVT, data);
     }
 
     sendMyOnlineUsersListMessage(data:IUserList) {
         if(this._listTS === -1){
             this._listTS = data.timeStamp;
         }
-        this._socketService.sendMessage(this.updateOnlineUserListEvt, data);
+        this._socketService.sendMessage(this.UPDATE_ONLINE_USER_LIST_EVT, data);
     }
 
     sendUpdateOnlineUserCountMessage() {
         const data = {'timeStamp':this._comeOnlineTS, 'userCount':this._connectedUserCounter}
-        this._socketService.sendMessage(this.updateOnlineUserCountEvt, data);
+        this._socketService.sendMessage(this.UPDATE_ONLINE_USER_COUNT_EVT, data);
     }
 
     userIsTypingMessage(data: IUserData) {
-        this._socketService.sendMessage(this.userIsTypingEvt, data);
+        this._socketService.sendMessage(this.USER_IS_TYPING_EVT, data);
     }
  
     saveUserData(value: IUserData) {
@@ -256,6 +256,7 @@ export class ChatterService implements BaseService{
             this._newUserInformationSub?.unsubscribe();
             this._updateOnlineUserListSub?.unsubscribe();
             this._updateUserNameSub?.unsubscribe();
+            this._updateUserCountSub?.unsubscribe();
 
         }, timeout);
     }

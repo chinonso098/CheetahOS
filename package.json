@@ -7,6 +7,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "purge":"ng cache clean",
     "build": "npm run build:fs && ng build",
     "build:fs": "cd src/osdrive && node Cheetah/System/BrowserFS/scripts/make_http_index.js > ../osdrive.json",
     "clean": "rm -rf node_modules",
