@@ -25,16 +25,6 @@ export class SocketService implements BaseService {
   status  = Constants.SERVICES_STATE_RUNNING;
   hasWindow = false;
   description = '';
-
-  chatMsgEvt = Constants.CHAT_MSG_EVT;
-  userConnectEvt = Constants.USER_CONNECT_EVT;
-  newUserInfoEvt = Constants.NEW_USER_INFO_EVT;
-  updateUserNameEvt = Constants.UPDATE_USER_NAME_EVT;
-  removeUserInfoEvt = Constants.REMOVE_USER_INFO_EVT;
-  userDisconnectEvt = Constants.USER_DISCONNECT_EVT;
-  userIsTypingEvt=  Constants.USER_IS_TYPING_EVT;
-  updateOnlineUserCountEvt = Constants.UPDATE_ONLINE_USER_COUNT_EVT;
-  updateOnlineUserListEvt = Constants.UPDATE_ONLINE_USER_LIST_EVT;
   
   constructor() {
     this.socket = io('http://localhost:3000');
@@ -48,89 +38,13 @@ export class SocketService implements BaseService {
     this._runningProcessService.addService(this.getServiceDetail());
   }
 
+  // Method to send message to the server
   sendMessage(evt:string, data: any) {
     this.socket.emit(evt, data);
   }
 
-  // onNewMessage(): Observable<any> {
-  //   return new Observable((observer) => {
-  //     this.socket.on(this.chatMsgEvt, (data) => {
-  //       observer.next(data);
-  //     });
-
-  //     // Handle cleanup
-  //     return () => {
-  //       this.socket.off(this.chatMsgEvt);
-  //     };
-  //   });
-  // }
-
-  // onNewUserConnect(): Observable<any> {
-  //   return new Observable((observer) => {
-  //     this.socket.on(this.userConnectEvt, (data) => {
-  //       observer.next(data);
-  //     });
-
-  //     // Handle cleanup
-  //     return () => {
-  //       this.socket.off(this.userConnectEvt);
-  //     };
-  //   });
-  // }
-
-  // onNewUserInfo(): Observable<any> {
-  //   return new Observable((observer) => {
-  //     this.socket.on(this.newUserInfoEvt, (data) => {
-  //       observer.next(data);
-  //     });
-
-  //     // Handle cleanup
-  //     return () => {
-  //       this.socket.off(this.newUserInfoEvt);
-  //     };
-  //   });
-  // }
-
-  // onUserDisconnect(): Observable<any> {
-  //   return new Observable((observer) => {
-  //     this.socket.on(this.userDisconnectEvt, (data) => {
-  //       observer.next(data);
-  //     });
-
-  //     // Handle cleanup
-  //     return () => {
-  //       this.socket.off(this.userDisconnectEvt);
-  //     };
-  //   });
-  // }
-
-  // onUpdateOnlineUserCount(): Observable<any> {
-  //   return new Observable((observer) => {
-  //     this.socket.on(this.updateOnlineUserCountEvt, (data) => {
-  //       observer.next(data);
-  //     });
-
-  //     // Handle cleanup
-  //     return () => {
-  //       this.socket.off(this.updateOnlineUserCountEvt);
-  //     };
-  //   });
-  // }
-
-  // onUpdateOnlineUserList(): Observable<any> {
-  //   return new Observable((observer) => {
-  //     this.socket.on(this.updateOnlineUserListEvt, (data) => {
-  //       observer.next(data);
-  //     });
-
-  //     // Handle cleanup
-  //     return () => {
-  //       this.socket.off(this.updateOnlineUserListEvt);
-  //     };
-  //   });
-  // }
-
-  onGenericEvent(evt:string): Observable<any> {
+  // Observable to receive messages from the server
+  onMessageEvent(evt:string): Observable<any> {
     return new Observable((observer) => {
       this.socket.on(evt, (data) => {
         observer.next(data);
@@ -141,7 +55,6 @@ export class SocketService implements BaseService {
       };
     });
   }
-
 
   disconnect() {
     if (this.socket) {

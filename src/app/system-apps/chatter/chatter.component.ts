@@ -35,15 +35,16 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _updateOnlineUserListSub!: Subscription;
   private _updateUserNameSub!: Subscription;
 
+  private _formBuilder;
+
   userNameAcronymStyle:Record<string, unknown> = {};
 
   chatterForm!: FormGroup;
   chatUserForm!: FormGroup;
-  private _formBuilder;
   formCntrlName = 'msgText';
 
-  private ADD_AND_BROADCAST = 'Add&Broadcast';
-  private ADD = 'Add';
+  ADD_AND_BROADCAST = 'Add&Broadcast';
+  ADD = 'Add';
 
   showUserNameLabel = true;
   showUserNameForm = false;
@@ -90,8 +91,9 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._runningProcessService.addProcess(this.getComponentDetail()); 
     this.setDefaults();
 
+
     this._newChatMessageSub = this._chatService.newMessageNotify.subscribe(()=> this.updateChatData());
-    this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe(()=> this.updateOnlineUserCount());
+    this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe((p)=> this.updateOnlineUserCount(p));
     this._newUserInfomationSub = this._chatService.newUserInformationNotify.subscribe(()=> this.updateOnlineUserList(this.ADD_AND_BROADCAST));
     this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList(this.ADD));
     this._updateUserNameSub =  this._chatService.updateUserNameNotify.subscribe(()=> this.updateOnlineUserList(this.ADD));
@@ -110,6 +112,9 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       firstName: ["",[Validators.required,Validators.minLength(1),Validators.maxLength(10),]],
       lastName: ["",[Validators.required,Validators.minLength(1),Validators.maxLength(10),]],
     });
+
+    // set as my timestamp for when i came online
+    this._chatService.setComeOnlineTS(Date.now());
 
     // this._chatService.chatData$.subscribe(data => {
     //   this.chatData = data;
@@ -147,16 +152,25 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     setTimeout(() => this.scrollToBottom(), 500);
   }
 
-  updateOnlineUserCount():void{
-    setTimeout(() => {
+  updateOnlineUserCount(value:number):void{
+    //0 is add_and_broadcast
+    // 1 is add
+    const currentUserCount = this._chatService.getUserCount();
+
+    if(value === 0){
       //subtract 1 to account for yourself
-      const currentUserCount = this._chatService.getUserCount();
       this.userCount = currentUserCount - 1;
-    }, 50);
+      const timeout = this.getTimeOut();
+      setTimeout(() => {
+        this._chatService.sendUpdateOnlineUserCountMessage();
+      }, timeout);
+    }else{
+      //subtract 1 to account for yourself
+      this.userCount = currentUserCount - 1;
+    }
   }
 
   updateOnlineUserList(intent:string):void{
-    const delays = [100, 250, 400, 550, 700];
 
     if(intent === this.ADD_AND_BROADCAST){
       if(this.isFirstOnlineUserUpdateResponse){
@@ -170,7 +184,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   
         const myList:IUserList = {timeStamp:this.onlineUsersListFirstUpdateTS, onlineUsers:this.onlineUsers};
   
-        const timeout = delays[Math.floor(Math.random() * data.length)];
+        const timeout = this.getTimeOut();
         console.log('timeout-sendMyOnlineUserList:',timeout);
         setTimeout(() => {
           this._chatService.sendMyOnlineUsersListMessage(myList);
@@ -180,6 +194,11 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       const data = this._chatService.getListOfOnlineUsers();
       this.onlineUsers = data;
     }
+  }
+  getTimeOut():number{
+    const delays = [100, 250, 400, 550, 700, 850];
+    const timeout = delays[Math.floor(Math.random() * delays.length)];
+    return timeout;
   }
 
   setDefaults():void{

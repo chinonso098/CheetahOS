@@ -22,8 +22,9 @@ export class ChatterService implements BaseService{
     private _sessionManagmentService:SessionManagmentService
     private _socketService:SocketService
 
-    private connectedUserCounter = 0;
-    private listTS = -1;
+    private _connectedUserCounter = 0;
+    private _listTS = -1;
+    private _comeOnlineTS = -1;
     private _chatData:ChatMessage[] = [];
     private _onlineUsers:IUserData[] = [];
 
@@ -33,12 +34,15 @@ export class ChatterService implements BaseService{
     private _newUserInformationSub!: Subscription;
     private _updateOnlineUserListSub!: Subscription;
     private _updateUserNameSub!: Subscription;
+    private _updateUserCountSub!: Subscription;
     
     newMessageNotify: Subject<void> = new Subject<void>();
-    userCountChangeNotify: Subject<void> = new Subject<void>();
+    userCountChangeNotify: Subject<number> = new Subject<number>();
     newUserInformationNotify: Subject<void> = new Subject<void>();
     updateOnlineUserListNotify: Subject<void> = new Subject<void>();
+    updateOnlineUserCountNotify: Subject<void> = new Subject<void>();
     updateUserNameNotify: Subject<void> = new Subject<void>();
+    updateUserCountNotify: Subject<void> = new Subject<void>();
 
     chatMsgEvt = Constants.CHAT_MSG_EVT;
     userConnectEvt = Constants.USER_CONNECT_EVT;
@@ -69,15 +73,17 @@ export class ChatterService implements BaseService{
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
 
-        this._newMessagRecievedSub = this._socketService.onGenericEvent(this.chatMsgEvt).subscribe((p)=>{this.raiseNewMessageReceived(p)});
+        this._newMessagRecievedSub = this._socketService.onMessageEvent(this.chatMsgEvt).subscribe((p)=>{this.raiseNewMessageReceived(p)});
         
-        this._userConnectSub = this._socketService.onGenericEvent(this.userConnectEvt).subscribe((i)=>{this.updateUserCount(i)});
-        this._userDisconnectSub = this._socketService.onGenericEvent(this.userDisconnectEvt).subscribe((j)=>{this.updateUserCount(j)});
+        this._userConnectSub = this._socketService.onMessageEvent(this.userConnectEvt).subscribe((i)=>{this.updateUserCount(i)});
+        this._userDisconnectSub = this._socketService.onMessageEvent(this.userDisconnectEvt).subscribe((j)=>{this.updateUserCount(j)});
         
-        this._newUserInformationSub = this._socketService.onGenericEvent(this.newUserInfoEvt).subscribe((t)=>{this.raiseNewUserInformationRecieved(t)});
+        this._updateUserCountSub = this._socketService.onMessageEvent(this.updateOnlineUserCountEvt).subscribe((j)=>{this.updateUserCountAfterComparing(j)});
+        
+        this._newUserInformationSub = this._socketService.onMessageEvent(this.newUserInfoEvt).subscribe((t)=>{this.raiseNewUserInformationRecieved(t)});
 
-        this._updateOnlineUserListSub = this._socketService.onGenericEvent(this.updateOnlineUserListEvt).subscribe((t)=>{this.raiseUpdateOnlineUserListRecieved(t)});
-        this._updateUserNameSub = this._socketService.onGenericEvent(this.updateUserNameEvt).subscribe((t)=>{this.raiseUpdateUserNameRecieved(t)});
+        this._updateOnlineUserListSub = this._socketService.onMessageEvent(this.updateOnlineUserListEvt).subscribe((t)=>{this.raiseUpdateOnlineUserListRecieved(t)});
+        this._updateUserNameSub = this._socketService.onMessageEvent(this.updateUserNameEvt).subscribe((t)=>{this.raiseUpdateUserNameRecieved(t)});
     }
 
     sendChatMessage(data:ChatMessage) {
@@ -97,13 +103,14 @@ export class ChatterService implements BaseService{
     }
 
     sendMyOnlineUsersListMessage(data:IUserList) {
-        if(this.listTS === -1){
-            this.listTS = data.timeStamp;
+        if(this._listTS === -1){
+            this._listTS = data.timeStamp;
         }
         this._socketService.sendMessage(this.updateOnlineUserListEvt, data);
     }
 
-    sendUpdateOnlineUserCount(data:ChatMessage) {
+    sendUpdateOnlineUserCountMessage() {
+        const data = {'timeStamp':this._comeOnlineTS, 'userCount':this._connectedUserCounter}
         this._socketService.sendMessage(this.updateOnlineUserCountEvt, data);
     }
 
@@ -128,19 +135,38 @@ export class ChatterService implements BaseService{
     }
 
     getUserCount():number{
-        return this.connectedUserCounter;
+        return this._connectedUserCounter;
+    }
+
+    setComeOnlineTS(timeStamp:number):void{
+        this._comeOnlineTS = timeStamp;
     }
 
     private updateUserCount(update:string){
         console.log('updateUserCount:', update)
         if(update === '+'){
-            this.connectedUserCounter++;
-        }else{
-            this.connectedUserCounter--;
+            this._connectedUserCounter++;            
+        }else if(update === '-'){
+            this._connectedUserCounter--;
         }
 
-        console.log('userCount:', this.connectedUserCounter)
-        this.userCountChangeNotify.next();
+        console.log('userCount:', this._connectedUserCounter)
+        this.userCountChangeNotify.next(0);
+    }
+
+    private updateUserCountAfterComparing(userCount:any){
+
+        if(userCount){
+            const tStamp =  userCount.timeStamp as number;
+            const uCount =  userCount.userCount as number;
+            console.log('tStamp:', tStamp)
+            console.log('uCount:', uCount)
+
+            if(tStamp < this._comeOnlineTS &&  uCount > this._connectedUserCounter){
+                this._connectedUserCounter = uCount;
+                this.userCountChangeNotify.next(1);
+            }
+        }
     }
 
     private raiseNewMessageReceived(chatMsg:any):void{
@@ -186,7 +212,7 @@ export class ChatterService implements BaseService{
                 }))
               };
 
-            if(userList.timeStamp > this.listTS){
+            if(userList.timeStamp > this._listTS){
                 // Merge lists and remove duplicates using a Map
                 const mergedList: IUserData[] = [
                     ...new Map([...this._onlineUsers, ...userList.onlineUsers].map(user => [user.userId, user])).values()
@@ -209,20 +235,12 @@ export class ChatterService implements BaseService{
             }
 
            const currUserInfo = this._onlineUsers.find(x => x.userId === newUserInfo.userId);
-
-           console.log('currUserInfo:',currUserInfo);
-
            const currUserInfoIdx = this._onlineUsers.findIndex(x => x.userId === newUserInfo.userId);
-
-           console.log('currUserInfoIdx:',currUserInfoIdx);
 
            if(currUserInfo){
                 currUserInfo.userName = newUserInfo.userName;
                 currUserInfo.userNameAcronym = newUserInfo.userNameAcronym;
-
                 this._onlineUsers[currUserInfoIdx] = currUserInfo;
-
-                console.log('currUserInfo:',currUserInfo);
             }
             
             this.updateUserNameNotify.next();

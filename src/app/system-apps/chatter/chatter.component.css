@@ -495,7 +495,7 @@ span.chatter-online-mid{
     margin: auto;
     position: absolute;
     z-index: 2;
-    left: 110px;
+    left: 45%;
   }
   
   .chat-user-form-body {
