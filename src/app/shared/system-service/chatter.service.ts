@@ -64,6 +64,10 @@ export class ChatterService implements BaseService{
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
     description = ' ';
+    
+    receivedCounter = 0;
+    possibleIDs = ['A','A','C','D','E','F','G','H','I','J','JA','JB','JC','JD','JE','K'];
+    ChatterServiceID =  `ChatterServiceID_${this.possibleIDs[Math.floor(Math.random() * this.possibleIDs.length)]}`;
 
     constructor() {
         this._processIdService = ProcessIDService.instance;
@@ -195,6 +199,9 @@ export class ChatterService implements BaseService{
                 'color':userInfo.color as string,
             }
             this._onlineUsers.push(newUser);
+            const tmpList =  this.removeDuplicates(this._onlineUsers);
+            this._onlineUsers = [];
+            this._onlineUsers = tmpList;
             this.newUserInformationNotify.next();
         }
     }
@@ -203,6 +210,7 @@ export class ChatterService implements BaseService{
         if(onlinerUserList){
             console.log('raiseUpdateOnlineUserListRecieved');
             console.log('onlinerUserList:',onlinerUserList);
+            this.receivedCounter++;
 
             const userList: IUserList = {
                 timeStamp: onlinerUserList.timeStamp,
@@ -214,32 +222,17 @@ export class ChatterService implements BaseService{
                 }))
               };
 
-
-            if(userList.timeStamp > this._listTS){
-                // Merge lists and remove duplicates using a Map
-                // const mergedList: IUserData[] = [
-                //     ...new Map([...this._onlineUsers, ...userList.onlineUsers].map(user => [user.userId, user])).values()
-                // ];
-
-
+            if(userList.timeStamp > this._listTS){                
                 // combined both lists
                 const  mergeList = [...this._onlineUsers, ...userList.onlineUsers];
 
-
-
-                // remove duplicates
-                const set = mergeList.filter((value, index, self) =>
-                    index === self.findIndex((t) => (
-                      t.userId === value.userId 
-                    ))
-                  )
-
-                  this._onlineUsers = [];
-                this._onlineUsers = set;
+                this._onlineUsers = this.removeDuplicates(mergeList);
                 this.updateOnlineUserListNotify.next();
             }
         }
     }
+
+
 
     private raiseUpdateUserNameRecieved(userInfo:any):void{
         if(userInfo){
@@ -300,6 +293,15 @@ export class ChatterService implements BaseService{
             this._userOfflineRemoveUserInfoSub?.unsubscribe();
 
         }, timeout);
+    }
+
+    removeDuplicates(arr:IUserData[]):IUserData[]{
+        const result = arr.filter((value, index, self) =>
+            index === self.findIndex((t) => (
+                t.userId === value.userId 
+            ))
+        );
+        return result;
     }
 
     private getProcessDetail():Process{

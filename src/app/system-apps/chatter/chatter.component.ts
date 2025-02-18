@@ -182,7 +182,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         return;
       }else{
         const data = this._chatService.getListOfOnlineUsers();
-        this.onlineUsers.push(...data);
+        this.onlineUsers = data;
   
         const myList:IUserList = {timeStamp:this.onlineUsersListFirstUpdateTS, onlineUsers:this.onlineUsers};
   

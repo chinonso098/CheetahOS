@@ -53,6 +53,7 @@ export class FileService implements BaseService{
     description = 'Mediates btwn ui & filesystem ';
 
     constructor(){ 
+        this.initBrowserFS();
         this._fileExistsMap =  new Map<string, number>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
         FileService.instace = this;
@@ -63,6 +64,14 @@ export class FileService implements BaseService{
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
+    }
+
+
+    private initBrowserFS(): void {
+        // Using setTimeout ensures it runs after the constructor has returned
+        setTimeout(() => {
+            this.initBrowserFsAsync();
+        }, 0);
     }
 
     private async initBrowserFsAsync():Promise<void>{
