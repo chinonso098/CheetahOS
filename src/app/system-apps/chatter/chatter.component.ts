@@ -79,12 +79,14 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   displayName = 'Chatter';
 
   constructor(socketService:SocketService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
-    windowService:WindowService, chatService:ChatterService, formBuilder:FormBuilder) { 
+    windowService:WindowService, formBuilder:FormBuilder, chatService:ChatterService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
     this._socketService = socketService;
     this._chatService = chatService;
+    this._chatService.setSocketInstance(socketService);
+    this._chatService.setSubscriptions();
     this._formBuilder = formBuilder
 
     this.processId = this._processIdService.getNewProcessId()
@@ -131,18 +133,19 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   ngOnDestroy():void{
+    this._chatService.sendUserOfflineRemoveInfoMessage(this.chatUserData);
+
     this._newChatMessageSub?.unsubscribe();
     this._userCountChangeSub?.unsubscribe();
     this._newUserInfomationSub?.unsubscribe();
     this._updateOnlineUserListSub?.unsubscribe();
+    this._updateUserNameSub?.unsubscribe();
 
     this._socketService.disconnect();
-    this._chatService.sendUserOfflineRemoveInfoMessage(this.chatUserData);
-
+    
     const ssPid = this._socketService.processId;
     const socketProccess = this._runningProcessService.getProcess(ssPid);
     this._runningProcessService.removeProcess(socketProccess);
-
   }
 
   updateChatData():void{
@@ -305,11 +308,11 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       const chatInput = this.chatterForm.value.msgText as string;
 
       if(chatInput.trim().length === 0) {
-        this.chatPrompt = 'message box can not be empty'
+        this.chatPrompt = 'message box can not be empty';
         return;
       }
 
-      const chatObj = new ChatMessage(chatInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor)
+      const chatObj = new ChatMessage(chatInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor);
       this._chatService.sendChatMessage(chatObj);
       this.chatterForm.reset();
       setTimeout(() => {
@@ -328,7 +331,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     if(chatInput.trim().length === 0) 
       return;
 
-    const chatObj = new ChatMessage(chatInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor)
+    const chatObj = new ChatMessage(chatInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor);
     this._chatService.sendChatMessage(chatObj);
     this.chatterForm.reset();
     setTimeout(() => {

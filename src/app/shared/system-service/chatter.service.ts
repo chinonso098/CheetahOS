@@ -20,7 +20,7 @@ export class ChatterService implements BaseService{
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
     private _sessionManagmentService:SessionManagmentService
-    private _socketService:SocketService
+    private _socketService!:SocketService;
 
     private _connectedUserCounter = 0;
     private _listTS = -1;
@@ -28,14 +28,14 @@ export class ChatterService implements BaseService{
     private _chatData:ChatMessage[] = [];
     private _onlineUsers:IUserData[] = [];
 
-    private _newMessagRecievedSub!: Subscription;
-    private _userConnectSub!: Subscription;
-    private _userDisconnectSub!: Subscription;
-    private _newUserInformationSub!: Subscription;
-    private _updateOnlineUserListSub!: Subscription;
-    private _updateUserNameSub!: Subscription;
-    private _updateUserCountSub!: Subscription;
-    private _userOfflineRemoveUserInfoSub!: Subscription;
+    private _newMessagRecievedSub: Subscription | undefined;
+    private _userConnectSub!:Subscription | undefined;
+    private _userDisconnectSub!:Subscription | undefined;
+    private _newUserInformationSub!:Subscription | undefined;
+    private _updateOnlineUserListSub!:Subscription | undefined;
+    private _updateUserNameSub!:Subscription | undefined;
+    private _updateUserCountSub!:Subscription | undefined;
+    private _userOfflineRemoveUserInfoSub!:Subscription | undefined;
     
     newMessageNotify: Subject<void> = new Subject<void>();
     userCountChangeNotify: Subject<number> = new Subject<number>();
@@ -73,24 +73,14 @@ export class ChatterService implements BaseService{
         this._processIdService = ProcessIDService.instance;
         this._runningProcessService = RunningProcessService.instance;
         this._sessionManagmentService = SessionManagmentService.instance;
-        this._socketService = SocketService.instance;
+
+        // this._socketService = SocketService.instance;
+        // console.log('Chatter constructor 1st:', this._socketService);
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
 
-        this._newMessagRecievedSub = this._socketService.onMessageEvent(this.CHAT_MSG_EVT).subscribe((p)=>{this.raiseNewMessageReceived(p)});
-        
-        this._userConnectSub = this._socketService.onMessageEvent(this.USER_CONNECT_EVT).subscribe((i)=>{this.updateUserCount(i)});
-        this._userDisconnectSub = this._socketService.onMessageEvent(this.USER_DISCONNECT_EVT).subscribe((j)=>{this.updateUserCount(j)});
-
-        this._newUserInformationSub = this._socketService.onMessageEvent(this.NEW_USER_INFO_EVT).subscribe((t)=>{this.raiseNewUserInformationRecieved(t)});
-
-        this._updateOnlineUserListSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_LIST_EVT).subscribe((t)=>{this.raiseUpdateOnlineUserListRecieved(t)});
-        this._updateUserNameSub = this._socketService.onMessageEvent(this.UPDATE_USER_NAME_EVT).subscribe((t)=>{this.raiseUpdateUserNameRecieved(t)});
-        this._updateUserCountSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_COUNT_EVT).subscribe((j)=>{this.updateUserCountAfterComparing(j)});
-
-        this._userOfflineRemoveUserInfoSub = this._socketService.onMessageEvent(this.REMOVE_USER_INFO_EVT).subscribe((t)=>{this.raiseRemoveUserFromOnlineListRecieved(t)});
     }
 
     sendChatMessage(data:ChatMessage) {
@@ -103,6 +93,11 @@ export class ChatterService implements BaseService{
 
     sendUserOfflineRemoveInfoMessage(data:IUserData) {
         this._socketService.sendMessage(this.REMOVE_USER_INFO_EVT, data);
+
+        setTimeout(() => {
+            console.log('Terminate old subscriptions');
+            this.terminateSubscriptions();
+        }, 35);
     }
 
     sendUpdateUserNameMessage(data:IUserData) {
@@ -280,22 +275,18 @@ export class ChatterService implements BaseService{
         }
     }
 
-    terminateSubscription():void{
-        const timeout = 600000;
-        setTimeout(() => {
-            this._newMessagRecievedSub?.unsubscribe();
-            this._userDisconnectSub?.unsubscribe();
-            this._userConnectSub?.unsubscribe();
-            this._newUserInformationSub?.unsubscribe();
-            this._updateOnlineUserListSub?.unsubscribe();
-            this._updateUserNameSub?.unsubscribe();
-            this._updateUserCountSub?.unsubscribe();
-            this._userOfflineRemoveUserInfoSub?.unsubscribe();
-
-        }, timeout);
+    private terminateSubscriptions():void{
+        this._newMessagRecievedSub?.unsubscribe();
+        this._userDisconnectSub?.unsubscribe();
+        this._userConnectSub?.unsubscribe();
+        this._newUserInformationSub?.unsubscribe();
+        this._updateOnlineUserListSub?.unsubscribe();
+        this._updateUserNameSub?.unsubscribe();
+        this._updateUserCountSub?.unsubscribe();
+        this._userOfflineRemoveUserInfoSub?.unsubscribe();
     }
 
-    removeDuplicates(arr:IUserData[]):IUserData[]{
+    private removeDuplicates(arr:IUserData[]):IUserData[]{
         const result = arr.filter((value, index, self) =>
             index === self.findIndex((t) => (
                 t.userId === value.userId 
@@ -303,6 +294,28 @@ export class ChatterService implements BaseService{
         );
         return result;
     }
+
+    
+    setSocketInstance(socketService:SocketService):void{
+        this._socketService = socketService;
+    }
+
+    setSubscriptions():void{
+        console.log('Set new subscriptions');
+        this._newMessagRecievedSub = this._socketService.onMessageEvent(this.CHAT_MSG_EVT).subscribe((p)=>{this.raiseNewMessageReceived(p)});
+        
+        this._userConnectSub = this._socketService.onMessageEvent(this.USER_CONNECT_EVT).subscribe((i)=>{this.updateUserCount(i)});
+        this._userDisconnectSub = this._socketService.onMessageEvent(this.USER_DISCONNECT_EVT).subscribe((j)=>{this.updateUserCount(j)});
+
+        this._newUserInformationSub = this._socketService.onMessageEvent(this.NEW_USER_INFO_EVT).subscribe((t)=>{this.raiseNewUserInformationRecieved(t)});
+
+        this._updateOnlineUserListSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_LIST_EVT).subscribe((t)=>{this.raiseUpdateOnlineUserListRecieved(t)});
+        this._updateUserNameSub = this._socketService.onMessageEvent(this.UPDATE_USER_NAME_EVT).subscribe((t)=>{this.raiseUpdateUserNameRecieved(t)});
+        this._updateUserCountSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_COUNT_EVT).subscribe((j)=>{this.updateUserCountAfterComparing(j)});
+
+        this._userOfflineRemoveUserInfoSub = this._socketService.onMessageEvent(this.REMOVE_USER_INFO_EVT).subscribe((t)=>{this.raiseRemoveUserFromOnlineListRecieved(t)});
+    }
+
 
     private getProcessDetail():Process{
         return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
