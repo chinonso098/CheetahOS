@@ -35,6 +35,7 @@ export class ChatterService implements BaseService{
     private _updateOnlineUserListSub!: Subscription;
     private _updateUserNameSub!: Subscription;
     private _updateUserCountSub!: Subscription;
+    private _userOfflineRemoveUserInfoSub!: Subscription;
     
     newMessageNotify: Subject<void> = new Subject<void>();
     userCountChangeNotify: Subject<number> = new Subject<number>();
@@ -43,6 +44,7 @@ export class ChatterService implements BaseService{
     updateOnlineUserCountNotify: Subject<void> = new Subject<void>();
     updateUserNameNotify: Subject<void> = new Subject<void>();
     updateUserCountNotify: Subject<void> = new Subject<void>();
+  
 
     readonly CHAT_MSG_EVT ='chatMessage';
     readonly USER_CONNECT_EVT ='userConnected';
@@ -78,23 +80,24 @@ export class ChatterService implements BaseService{
         this._userConnectSub = this._socketService.onMessageEvent(this.USER_CONNECT_EVT).subscribe((i)=>{this.updateUserCount(i)});
         this._userDisconnectSub = this._socketService.onMessageEvent(this.USER_DISCONNECT_EVT).subscribe((j)=>{this.updateUserCount(j)});
 
-        this._updateUserCountSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_COUNT_EVT).subscribe((j)=>{this.updateUserCountAfterComparing(j)});
-        
         this._newUserInformationSub = this._socketService.onMessageEvent(this.NEW_USER_INFO_EVT).subscribe((t)=>{this.raiseNewUserInformationRecieved(t)});
 
         this._updateOnlineUserListSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_LIST_EVT).subscribe((t)=>{this.raiseUpdateOnlineUserListRecieved(t)});
         this._updateUserNameSub = this._socketService.onMessageEvent(this.UPDATE_USER_NAME_EVT).subscribe((t)=>{this.raiseUpdateUserNameRecieved(t)});
+        this._updateUserCountSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_COUNT_EVT).subscribe((j)=>{this.updateUserCountAfterComparing(j)});
+
+        this._userOfflineRemoveUserInfoSub = this._socketService.onMessageEvent(this.REMOVE_USER_INFO_EVT).subscribe((t)=>{this.raiseRemoveUserFromOnlineListRecieved(t)});
     }
 
     sendChatMessage(data:ChatMessage) {
        this._socketService.sendMessage(this.CHAT_MSG_EVT, data);
     }
 
-    sendUserInfoMessage(data:IUserData) {
+    sendUserOnlineAddInfoMessage(data:IUserData) {
         this._socketService.sendMessage(this.NEW_USER_INFO_EVT, data);
     }
 
-    sendRemoveInfoMessage(data:IUserData) {
+    sendUserOfflineRemoveInfoMessage(data:IUserData) {
         this._socketService.sendMessage(this.REMOVE_USER_INFO_EVT, data);
     }
 
@@ -155,7 +158,6 @@ export class ChatterService implements BaseService{
     }
 
     private updateUserCountAfterComparing(userCount:any){
-
         if(userCount){
             const tStamp =  userCount.timeStamp as number;
             const uCount =  userCount.userCount as number;
@@ -212,14 +214,28 @@ export class ChatterService implements BaseService{
                 }))
               };
 
+
             if(userList.timeStamp > this._listTS){
                 // Merge lists and remove duplicates using a Map
-                const mergedList: IUserData[] = [
-                    ...new Map([...this._onlineUsers, ...userList.onlineUsers].map(user => [user.userId, user])).values()
-                ];
+                // const mergedList: IUserData[] = [
+                //     ...new Map([...this._onlineUsers, ...userList.onlineUsers].map(user => [user.userId, user])).values()
+                // ];
 
-                this._onlineUsers = [];
-                this._onlineUsers = mergedList;
+
+                // combined both lists
+                const  mergeList = [...this._onlineUsers, ...userList.onlineUsers];
+
+
+
+                // remove duplicates
+                const set = mergeList.filter((value, index, self) =>
+                    index === self.findIndex((t) => (
+                      t.userId === value.userId 
+                    ))
+                  )
+
+                  this._onlineUsers = [];
+                this._onlineUsers = set;
                 this.updateOnlineUserListNotify.next();
             }
         }
@@ -247,6 +263,30 @@ export class ChatterService implements BaseService{
         }
     }
 
+    private raiseRemoveUserFromOnlineListRecieved(userInfo:any):void{
+        console.log('offlinUser :',userInfo);
+        if(userInfo){
+
+            const offlineUser:IUserData = {
+                'userId': userInfo.userId as string,
+                'userName': userInfo.userName as string,
+                'userNameAcronym': userInfo.userNameAcronym as string,
+                'color':userInfo.color as string,
+            }
+
+            console.log('raiseRemoveUserFromOnlineListRecieved');
+            console.log('offlineUser :',offlineUser);
+
+           const deleteCount = 1;
+           const userInfoIdx = this._onlineUsers.findIndex(x => x.userId === offlineUser.userId);
+           if (userInfoIdx !== -1) {
+                this._onlineUsers.splice(userInfoIdx, deleteCount);
+            }
+            
+            this.updateOnlineUserListNotify.next();
+        }
+    }
+
     terminateSubscription():void{
         const timeout = 600000;
         setTimeout(() => {
@@ -257,6 +297,7 @@ export class ChatterService implements BaseService{
             this._updateOnlineUserListSub?.unsubscribe();
             this._updateUserNameSub?.unsubscribe();
             this._updateUserCountSub?.unsubscribe();
+            this._userOfflineRemoveUserInfoSub?.unsubscribe();
 
         }, timeout);
     }

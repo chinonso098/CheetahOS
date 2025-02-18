@@ -29,6 +29,7 @@ io.on('connection', (socket) => {
     io.emit('updateUserName', msg); // Broadcasting message to all clients
   });
 
+
   // Listening for updateOnlineUserCount from the client
   socket.on('updateOnlineUserCount', (msg) => {
     console.log('Received(updateOnlineUserCount) message:', msg);
@@ -39,6 +40,12 @@ io.on('connection', (socket) => {
   socket.on('updateOnlineUserList', (msg) => {
     console.log('Received(updateOnlineUserList) message:', msg);
     io.emit('updateOnlineUserList', msg); // Broadcasting message to all clients
+  });
+
+    // Listening for removeUserInfo from the client
+  socket.on('removeUserInfo', (msg) => {
+      console.log('Received(removeUserInfo) message:', msg);
+      io.emit('removeUserInfo', msg); // Broadcasting message to all clients
   });
 
   // Listening for chatMessage from the client

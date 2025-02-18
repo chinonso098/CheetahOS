@@ -44,7 +44,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   formCntrlName = 'msgText';
 
   ADD_AND_BROADCAST = 'Add&Broadcast';
-  ADD = 'Add';
+  UPDATE = 'Update';
 
   showUserNameLabel = true;
   showUserNameForm = false;
@@ -95,8 +95,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._newChatMessageSub = this._chatService.newMessageNotify.subscribe(()=> this.updateChatData());
     this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe((p)=> this.updateOnlineUserCount(p));
     this._newUserInfomationSub = this._chatService.newUserInformationNotify.subscribe(()=> this.updateOnlineUserList(this.ADD_AND_BROADCAST));
-    this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList(this.ADD));
-    this._updateUserNameSub =  this._chatService.updateUserNameNotify.subscribe(()=> this.updateOnlineUserList(this.ADD));
+    this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList(this.UPDATE));
+    this._updateUserNameSub =  this._chatService.updateUserNameNotify.subscribe(()=> this.updateOnlineUserList(this.UPDATE));
   }
 
   ngOnInit(): void {
@@ -126,7 +126,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this._chatService.sendUserInfoMessage(this.chatUserData);
+      this._chatService.sendUserOnlineAddInfoMessage(this.chatUserData);
     }, 50);
   }
 
@@ -137,10 +137,12 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._updateOnlineUserListSub?.unsubscribe();
 
     this._socketService.disconnect();
+    this._chatService.sendUserOfflineRemoveInfoMessage(this.chatUserData);
 
     const ssPid = this._socketService.processId;
     const socketProccess = this._runningProcessService.getProcess(ssPid);
     this._runningProcessService.removeProcess(socketProccess);
+
   }
 
   updateChatData():void{
