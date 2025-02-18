@@ -303,16 +303,12 @@ export class ChatterService implements BaseService{
     setSubscriptions():void{
         console.log('Set new subscriptions');
         this._newMessagRecievedSub = this._socketService.onMessageEvent(this.CHAT_MSG_EVT).subscribe((p)=>{this.raiseNewMessageReceived(p)});
-        
         this._userConnectSub = this._socketService.onMessageEvent(this.USER_CONNECT_EVT).subscribe((i)=>{this.updateUserCount(i)});
         this._userDisconnectSub = this._socketService.onMessageEvent(this.USER_DISCONNECT_EVT).subscribe((j)=>{this.updateUserCount(j)});
-
         this._newUserInformationSub = this._socketService.onMessageEvent(this.NEW_USER_INFO_EVT).subscribe((t)=>{this.raiseNewUserInformationRecieved(t)});
-
         this._updateOnlineUserListSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_LIST_EVT).subscribe((t)=>{this.raiseUpdateOnlineUserListRecieved(t)});
         this._updateUserNameSub = this._socketService.onMessageEvent(this.UPDATE_USER_NAME_EVT).subscribe((t)=>{this.raiseUpdateUserNameRecieved(t)});
         this._updateUserCountSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_COUNT_EVT).subscribe((j)=>{this.updateUserCountAfterComparing(j)});
-
         this._userOfflineRemoveUserInfoSub = this._socketService.onMessageEvent(this.REMOVE_USER_INFO_EVT).subscribe((t)=>{this.raiseRemoveUserFromOnlineListRecieved(t)});
     }
 

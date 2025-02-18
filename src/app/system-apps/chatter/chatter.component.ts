@@ -201,7 +201,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }
   }
   getTimeOut():number{
-    const delays = [100, 250, 400, 550, 700, 850];
+    const delays = [100, 175, 250, 325, 400, 475, 550, 525, 700, 775, 850, 925];
     const timeout = delays[Math.floor(Math.random() * delays.length)];
     return timeout;
   }
