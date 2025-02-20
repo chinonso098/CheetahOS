@@ -227,6 +227,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       }
     }else{
       const data = this._chatService.getListOfOnlineUsers();
+      //console.log('updateOnlineUserList:',data);
       this.onlineUsers = data;
     }
   }

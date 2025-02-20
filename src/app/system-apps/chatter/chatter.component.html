@@ -29,7 +29,13 @@
                       <div class="chatter-user-online-acronym" [ngStyle]="{'background-color':onlineUser.color}"> {{onlineUser.userNameAcronym}} </div>
                     </span>
                     <span class="span chatter-online-mid">{{onlineUser.userName}}</span>
-                    <span class="span chatter-online-tail"></span>
+                    <span class="span chatter-online-tail">
+                      <ng-container  *ngIf="onlineUser.isTyping">
+                        <div class="chatter-online-div-fig">
+                          <img class="chatter-online-div-img" [src]="'osdrive/Cheetah/System/Gifres/loading.gif'"/>
+                        </div>
+                      </ng-container>
+                    </span>
                   </div>
                   <div class="chatter-online-empty-line-container"></div>
                 </ng-content>

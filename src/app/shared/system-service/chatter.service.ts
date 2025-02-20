@@ -250,6 +250,7 @@ export class ChatterService implements BaseService{
            if(currUserInfo){
                 currUserInfo.userName = newUserInfo.userName;
                 currUserInfo.userNameAcronym = newUserInfo.userNameAcronym;
+                currUserInfo.isTyping = newUserInfo.isTyping;
                 this._onlineUsers[currUserInfoIdx] = currUserInfo;
             }
             
