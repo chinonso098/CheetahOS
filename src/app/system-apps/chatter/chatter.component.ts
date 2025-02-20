@@ -141,22 +141,24 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._chatService.sendUserOfflineRemoveInfoMessage(this.chatUserData);
     this.generateAndSendAppMessages(this.USER_HAS_LEFT_THE_CHAT_MSG);
 
-    this._newChatMessageSub?.unsubscribe();
-    this._userCountChangeSub?.unsubscribe();
-    this._newUserInfomationSub?.unsubscribe();
-    this._updateOnlineUserListSub?.unsubscribe();
-    this._updateUserNameSub?.unsubscribe();
-
-    this._socketService.disconnect();
-    
-    const ssPid = this._socketService.processId;
-    const socketProccess = this._runningProcessService.getProcess(ssPid);
-    this._runningProcessService.removeProcess(socketProccess);
+    setTimeout(() => {
+      this._newChatMessageSub?.unsubscribe();
+      this._userCountChangeSub?.unsubscribe();
+      this._newUserInfomationSub?.unsubscribe();
+      this._updateOnlineUserListSub?.unsubscribe();
+      this._updateUserNameSub?.unsubscribe();
+  
+      this._socketService.disconnect();
+      
+      const ssPid = this._socketService.processId;
+      const socketProccess = this._runningProcessService.getProcess(ssPid);
+      this._runningProcessService.removeProcess(socketProccess);
+    }, 25);
   }
 
   updateChatData():void{
     const data = this._chatService.getChatData();
-    //console.log('chat data:', data);
+    console.log('chat data:', data);
     this.chatData = data
     this.setMessageLastReceievedTime();
 
@@ -193,10 +195,10 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }
 
     const chatObj = new ChatMessage(chatInput, this.userId, this.userName);
-    chatObj.setIsSysMgs = true;
+    chatObj.setIsAppMgs = true;
     this._chatService.sendChatMessage(chatObj);
 
-    //setTimeout(() => this.scrollToBottom(), 250);
+    setTimeout(() => this.scrollToBottom(), 250);
   }
 
   updateOnlineUserList(intent:string):void{

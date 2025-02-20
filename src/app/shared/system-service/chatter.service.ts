@@ -178,10 +178,10 @@ export class ChatterService implements BaseService{
             const userNameAcronym = chatMsg._userNameAcronym as string;
             const iconColor = chatMsg._iconColor as string;
             const msgDate = chatMsg._msgDate as string;
-            const isSysMsg = chatMsg._isSysMsg as boolean;
+            const isAppMsg = chatMsg._isAppMsg as boolean;
 
             const newChatData  = new ChatMessage(msg, userId, userName, userNameAcronym, iconColor, msgDate);
-            newChatData.setIsSysMgs = isSysMsg;
+            newChatData.setIsAppMgs = isAppMsg;
             this._chatData.push(newChatData);
             this.newMessageNotify.next();
         }
@@ -228,7 +228,6 @@ export class ChatterService implements BaseService{
             }
         }
     }
-
 
 
     private raiseUpdateUserNameRecieved(userInfo:any):void{

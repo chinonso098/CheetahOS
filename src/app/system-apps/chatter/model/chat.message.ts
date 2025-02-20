@@ -5,7 +5,7 @@ export class ChatMessage {
     private _userNameAcronym:string;
     private _msgDate:string;
     private _iconColor:string;
-    private _isSysMsg:boolean;
+    private _isAppMsg:boolean;
 
     constructor(msg?:string, userId?:string, userName?:string, userNameAcronym?:string, iconColor?:string, msgDate?:string ){
         this._msg = (msg === undefined)?'':msg
@@ -25,7 +25,7 @@ export class ChatMessage {
             minute: '2-digit', // Two-digit minutes (e.g., "50")
             hour12: true // Use 12-hour format with AM/PM
         });
-        this._isSysMsg = false;
+        this._isAppMsg = false;
     }
 
 
@@ -53,8 +53,8 @@ export class ChatMessage {
         this._iconColor= iconColor;
     }
 
-    set setIsSysMgs(isSysMsg:boolean){
-        this._isSysMsg = isSysMsg;
+    set setIsAppMgs(isAppMsg:boolean){
+        this._isAppMsg = isAppMsg;
     }
 
     get getMessage(){
@@ -81,7 +81,7 @@ export class ChatMessage {
         return this._iconColor;
     }
 
-    get getIsSysMsg(){
-        return this._isSysMsg;
+    get getIsAppMsg(){
+        return this._isAppMsg;
     }
   }
