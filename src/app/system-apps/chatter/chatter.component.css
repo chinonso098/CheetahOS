@@ -24,7 +24,7 @@ span {
 /* Sidebar Styles */
 .chatter-sidebar-container {
     width: 50px;
-    background-color: #302c2c;
+    background-color: #100c0c;
     border-right: 1px solid #a6a4a4;
 }
 
@@ -261,12 +261,12 @@ span.chatter-online-mid{
 
 .chat-user-txt-container-left {
     max-width: 360px;
-    padding: 6px 0px 0px 4px;
+    padding: 1px 0px 0px 4px;
 }
 
 .chat-user-txt-container-right {
     max-width: 360px;
-    padding: 6px 4px 0px 0px;
+    padding: 1px 4px 0px 0px;
 }
 
 .chat-username-and-date-left {
@@ -285,7 +285,7 @@ span.chatter-online-mid{
 .chat-username {
     font-family: monospace;
     font-weight: bold;
-    font-size: 11.5px;
+    font-size: 10px;
     color: #fff;
     padding-right: 12px;
 }
@@ -293,13 +293,13 @@ span.chatter-online-mid{
 .chat-date {
     font-family: monospace;
     font-weight: 200;
-    font-size: 11px;
+    font-size: 10px;
     color: #fff;
 }
 
 .chat-content, .chat-content-sys {
     font-family: monospace;
-    font-size: 12px;
+    font-size: 11.5px;
     color: #848ada;
     padding: 1px 2px;
     outline: none;
@@ -320,6 +320,8 @@ span.chatter-online-mid{
 
 .chat-content-sys{
     font-style: italic;
+    font-size: 10.5px;
+    color: #ccc;
 }
 
 /* Chat Input Section */
