@@ -33,7 +33,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _userCountChangeSub!: Subscription;
   private _newUserInfomationSub!: Subscription;
   private _updateOnlineUserListSub!: Subscription;
-  private _updateUserNameSub!: Subscription;
+  private _updateUserNameOrStatusSub!: Subscription;
 
   private _formBuilder;
 
@@ -48,6 +48,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   A_NEW_USER_HAS_JOINED_THE_CHAT_MSG = 0;
   USER_HAS_LEFT_THE_CHAT_MSG = 1;
   USER_CHANGED_NAME_MSG = 2;
+  SCROLL_DELAY = 300;
 
   showUserNameLabel = true;
   showUserNameForm = false;
@@ -101,7 +102,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe((p)=> this.updateOnlineUserCount(p));
     this._newUserInfomationSub = this._chatService.newUserInformationNotify.subscribe(()=> this.updateOnlineUserList(this.ADD_AND_BROADCAST));
     this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList(this.UPDATE));
-    this._updateUserNameSub =  this._chatService.updateUserNameNotify.subscribe(()=> this.updateOnlineUserList(this.UPDATE));
+    this._updateUserNameOrStatusSub =  this._chatService.updateUserNameOrStateNotify.subscribe(()=> this.updateOnlineUserList(this.UPDATE));
   }
 
   ngOnInit(): void {
@@ -146,7 +147,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       this._userCountChangeSub?.unsubscribe();
       this._newUserInfomationSub?.unsubscribe();
       this._updateOnlineUserListSub?.unsubscribe();
-      this._updateUserNameSub?.unsubscribe();
+      this._updateUserNameOrStatusSub?.unsubscribe();
   
       this._socketService.disconnect();
       
@@ -202,7 +203,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
     this._chatService.sendChatMessage(chatObj);
 
-    setTimeout(() => this.scrollToBottom(), 250);
+    setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
   }
 
   updateOnlineUserList(intent:string):void{
@@ -247,7 +248,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         userId:this.userId, 
         userName: this.userName, 
         userNameAcronym:this.userNameAcronym, 
-        color:this.bkgrndIconColor
+        color:this.bkgrndIconColor,
+        isTyping:false
       };
       this._chatService.saveUserData(this.chatUserData);
     }else{
@@ -261,7 +263,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         userId:this.userId, 
         userName: this.userName, 
         userNameAcronym:this.userNameAcronym, 
-        color:this.bkgrndIconColor
+        color:this.bkgrndIconColor,
+        isTyping:this.isTyping
       };
     }
 
@@ -336,7 +339,25 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
     
     if(evt.key == "Enter"){
+      this.createChat();
+    }else{
       const chatInput = this.chatterForm.value.msgText as string;
+      if(chatInput.trim().length > 0) {
+
+        this.isTyping = true;
+        this.chatUserData.isTyping = true
+        this._chatService.sendUserIsTypingMessage(this.chatUserData)
+      }else if(chatInput.trim().length === 0) {
+        this.isTyping = false;
+        this.chatUserData.isTyping = false
+        this._chatService.sendUserIsTypingMessage(this.chatUserData)
+      }
+    }
+  }
+
+  createChat():void{
+      const chatInput = this.chatterForm.value.msgText as string;
+      const delay = 10;
 
       if(chatInput.trim().length === 0) {
         this.chatPrompt = 'message box can not be empty';
@@ -346,32 +367,18 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       const chatObj = new ChatMessage(chatInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor);
       this._chatService.sendChatMessage(chatObj);
       this.chatterForm.reset();
+
       setTimeout(() => {
         this.chatterForm.controls[this.formCntrlName].setValue(null);
         this.chatterForm.controls[this.formCntrlName].markAsUntouched();
-      }, 10);
+      }, delay);
+
+      this.isTyping = false;
+      this.chatUserData.isTyping = false
+      this._chatService.sendUserIsTypingMessage(this.chatUserData)
 
        // Scroll to bottom
-      setTimeout(() => this.scrollToBottom(), 500);
-    }
-  }
-
-  createChat():void{
-    const chatInput = this.chatterForm.value.msgText as string;
-
-    if(chatInput.trim().length === 0) 
-      return;
-
-    const chatObj = new ChatMessage(chatInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor);
-    this._chatService.sendChatMessage(chatObj);
-    this.chatterForm.reset();
-    setTimeout(() => {
-      this.chatterForm.controls[this.formCntrlName].setValue(null);
-      this.chatterForm.controls[this.formCntrlName].markAsUntouched();
-    }, 10);
-    
-    // Scroll to bottom
-    //this.scrollToBottom();
+      setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
   }
   
   getRandomNum(min?:number, max?:number):number {

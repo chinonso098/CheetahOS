@@ -8,6 +8,7 @@ export interface IUserData{
     userName: string;
     userNameAcronym:string;
     color:string;
+    isTyping:boolean;
 }
 
 export interface IUserList{
