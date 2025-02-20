@@ -187,15 +187,19 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
     let chatInput = '';
     if(msgType == this.A_NEW_USER_HAS_JOINED_THE_CHAT_MSG){
-      chatInput = `New user ${this.userName}, has joined the chat.`
+      chatInput = `${this.userName} has joined the chat.`
     }else if(msgType == this.USER_HAS_LEFT_THE_CHAT_MSG){
-      chatInput = `User ${this.userName}, has left the chat.`
+      chatInput = `${this.userName} has left the chat.`
     }else{
-      chatInput = `User ${userName}, has changed name to ${this.userName}.`
+      chatInput = `${userName} has changed name to ${this.userName}.`
     }
 
     const chatObj = new ChatMessage(chatInput, this.userId, this.userName);
     chatObj.setIsAppMgs = true;
+
+    if(msgType === this.USER_CHANGED_NAME_MSG)
+        chatObj.setIsUserNameEdit = true;
+
     this._chatService.sendChatMessage(chatObj);
 
     setTimeout(() => this.scrollToBottom(), 250);
@@ -211,12 +215,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         return;
       }else{
         const data = this._chatService.getListOfOnlineUsers();
-
-
-        // find what is different between the two lists and post the message on the scren
-
         this.onlineUsers = data;
-  
         const myList:IUserList = {timeStamp:this.onlineUsersListFirstUpdateTS, onlineUsers:this.onlineUsers};
   
         const timeout = this.getTimeOut();

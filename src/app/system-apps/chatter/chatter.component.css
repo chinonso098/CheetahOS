@@ -98,6 +98,21 @@ span.chatter-head {
     padding: 0 5px;
 }
 
+.chatter-head-figure {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 14px;
+    width: 14px;
+    top: 2px;
+}
+
+.chatter-head-img {
+    position: relative;
+    height: 14px;
+    width: 14px;
+}
+
 span.chatter-mid {
     padding: 0 4px;
     border: 1px solid transparent;
@@ -264,6 +279,11 @@ span.chatter-online-mid{
     padding: 1px 0px 0px 4px;
 }
 
+.chat-user-txt-container-left-sys {
+    max-width: 360px;
+    padding: 0px 0px 0px 4px;
+}
+
 .chat-user-txt-container-right {
     max-width: 360px;
     padding: 1px 4px 0px 0px;
@@ -322,6 +342,7 @@ span.chatter-online-mid{
     font-style: italic;
     font-size: 10.5px;
     color: #ccc;
+    line-height: 2;
 }
 
 /* Chat Input Section */
@@ -352,7 +373,6 @@ span.chatter-online-mid{
     background-color: #302c2c;
     border-bottom: 1.5px solid #ccc;
 }
-
 
 /* Textarea for Chat Input */
 .chatter-area {

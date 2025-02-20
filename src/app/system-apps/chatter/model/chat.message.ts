@@ -6,6 +6,7 @@ export class ChatMessage {
     private _msgDate:string;
     private _iconColor:string;
     private _isAppMsg:boolean;
+    private _isUserNameEdit:boolean;
 
     constructor(msg?:string, userId?:string, userName?:string, userNameAcronym?:string, iconColor?:string, msgDate?:string ){
         this._msg = (msg === undefined)?'':msg
@@ -26,6 +27,7 @@ export class ChatMessage {
             hour12: true // Use 12-hour format with AM/PM
         });
         this._isAppMsg = false;
+        this._isUserNameEdit = false;
     }
 
 
@@ -57,6 +59,10 @@ export class ChatMessage {
         this._isAppMsg = isAppMsg;
     }
 
+    set setIsUserNameEdit(isUserNameEdit:boolean){
+        this._isUserNameEdit = isUserNameEdit;
+    }
+
     get getMessage(){
         return this._msg;
     }
@@ -83,5 +89,9 @@ export class ChatMessage {
 
     get getIsAppMsg(){
         return this._isAppMsg;
+    }
+
+    get getIsUserNameEdit(){
+        return this._isUserNameEdit;
     }
   }

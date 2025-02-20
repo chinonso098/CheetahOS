@@ -179,9 +179,11 @@ export class ChatterService implements BaseService{
             const iconColor = chatMsg._iconColor as string;
             const msgDate = chatMsg._msgDate as string;
             const isAppMsg = chatMsg._isAppMsg as boolean;
+            const isUserNameEdit = chatMsg._isUserNameEdit as boolean;
 
             const newChatData  = new ChatMessage(msg, userId, userName, userNameAcronym, iconColor, msgDate);
             newChatData.setIsAppMgs = isAppMsg;
+            newChatData.setIsUserNameEdit = isUserNameEdit;
             this._chatData.push(newChatData);
             this.newMessageNotify.next();
         }

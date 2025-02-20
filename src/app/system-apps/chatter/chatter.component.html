@@ -184,7 +184,12 @@
                 <div class="chatter-chat-msg-block">
                   
                   <div class="chatter-chat-output-content-left" >
-                    <div class="chat-user-txt-container-left">
+                    <span class="span chatter-head"> 
+                      <figure class="chatter-head-figure">
+                        <img class="chatter-head-figure" [src]=" msg.getIsUserNameEdit === false ? 'osdrive/Cheetah/System/Imageres/chatter_user.png': 'osdrive/Cheetah/System/Imageres/chatter_edit.png'"/>
+                    </figure>
+                    </span>
+                    <div class="chat-user-txt-container-left-sys">
                       <span  class="chat-content-sys">{{msg.getMessage}}</span>
                     </div>
                   </div>
