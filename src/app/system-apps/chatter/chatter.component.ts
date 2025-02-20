@@ -45,6 +45,9 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   ADD_AND_BROADCAST = 'Add&Broadcast';
   UPDATE = 'Update';
+  A_NEW_USER_HAS_JOINED_THE_CHAT_MSG = 0;
+  USER_HAS_LEFT_THE_CHAT_MSG = 1;
+  USER_CHANGED_NAME_MSG = 2;
 
   showUserNameLabel = true;
   showUserNameForm = false;
@@ -129,11 +132,14 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   ngAfterViewInit(): void {
     setTimeout(() => {
       this._chatService.sendUserOnlineAddInfoMessage(this.chatUserData);
+
+      this.generateAndSendAppMessages(this.A_NEW_USER_HAS_JOINED_THE_CHAT_MSG);
     }, 50);
   }
 
   ngOnDestroy():void{
     this._chatService.sendUserOfflineRemoveInfoMessage(this.chatUserData);
+    this.generateAndSendAppMessages(this.USER_HAS_LEFT_THE_CHAT_MSG);
 
     this._newChatMessageSub?.unsubscribe();
     this._userCountChangeSub?.unsubscribe();
@@ -175,6 +181,24 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }
   }
 
+  generateAndSendAppMessages(msgType:number, userName?:string):void{
+
+    let chatInput = '';
+    if(msgType == this.A_NEW_USER_HAS_JOINED_THE_CHAT_MSG){
+      chatInput = `New user ${this.userName}, has joined the chat.`
+    }else if(msgType == this.USER_HAS_LEFT_THE_CHAT_MSG){
+      chatInput = `User ${this.userName}, has left the chat.`
+    }else{
+      chatInput = `User ${userName}, has changed name to ${this.userName}.`
+    }
+
+    const chatObj = new ChatMessage(chatInput, this.userId, this.userName);
+    chatObj.setIsSysMgs = true;
+    this._chatService.sendChatMessage(chatObj);
+
+    //setTimeout(() => this.scrollToBottom(), 250);
+  }
+
   updateOnlineUserList(intent:string):void{
 
     if(intent === this.ADD_AND_BROADCAST){
@@ -185,6 +209,10 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         return;
       }else{
         const data = this._chatService.getListOfOnlineUsers();
+
+
+        // find what is different between the two lists and post the message on the scren
+
         this.onlineUsers = data;
   
         const myList:IUserList = {timeStamp:this.onlineUsersListFirstUpdateTS, onlineUsers:this.onlineUsers};
@@ -243,6 +271,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   onUpdateUserName(): void {
     if (this.chatUserForm.valid) {
       if (this.chatUserForm.dirty) {
+        const oldUserName = this.userName;
         const s = { ...this.chatUser, ...this.chatUserForm.value } as IUser;
         this.userNameAcronym = `${s.lastName.charAt(0)}${s.firstName.charAt(0)}`;
         this.userName = `${s.lastName}, ${s.firstName}`;
@@ -254,6 +283,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
         this._chatService.saveUserData(uData)
         this._chatService.sendUpdateUserNameMessage(uData);
+        this.generateAndSendAppMessages(this.USER_CHANGED_NAME_MSG, oldUserName);
 
         this.showTheUserNameLabel();
       }

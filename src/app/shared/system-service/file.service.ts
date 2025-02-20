@@ -52,7 +52,9 @@ export class FileService implements BaseService{
     hasWindow = false;
     description = 'Mediates btwn ui & filesystem ';
 
+    
     constructor(){ 
+
         this.initBrowserFS();
         this._fileExistsMap =  new Map<string, number>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
@@ -75,7 +77,11 @@ export class FileService implements BaseService{
     }
 
     private async initBrowserFsAsync():Promise<void>{
+        
         if(!this._fileSystem){
+            const currentURL = window.location.href;
+            console.log('currentURL:',currentURL);
+            
             return new Promise<void>((resolve, reject) => {
                 BrowserFS.configure({
                     fs: "MountableFileSystem",
@@ -83,7 +89,7 @@ export class FileService implements BaseService{
                         '/':{
                             fs: 'OverlayFS',
                             options:{
-                                readable:{fs: 'XmlHttpRequest', options:{index: osDriveFileSystemIndex, baseUrl:'osdrive'}},
+                                readable:{fs: 'XmlHttpRequest', options:{index: osDriveFileSystemIndex, baseUrl:`${currentURL}osdrive`}},
                                 writable:{fs:"IndexedDB", options: {storeName: "browser-fs-cache"}}
                             },
                         },  

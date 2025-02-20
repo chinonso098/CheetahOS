@@ -135,7 +135,8 @@
           </div>
           <div class="chatter-chat-window-content"  #chatHistoryOutput>
             <ng-container  *ngFor="let msg of chatData"> 
-              <ng-container *ngIf="msg.getUserId === userId">
+
+              <ng-container *ngIf="msg.getUserId === userId && !msg.getIsSysMsg">
                 <div class="chatter-chat-msg-block">
 
                   <div class="chatter-chat-output-content-left" >
@@ -156,8 +157,8 @@
                   <div class="chatter-empty-line-container"> </div>
                 </div>
               </ng-container>
-
-              <ng-container  *ngIf="msg.getUserId !== userId">
+            
+              <ng-container  *ngIf="msg.getUserId !== userId && !msg.getIsSysMsg">
                 <div class="chatter-chat-msg-block">
 
                   <div class="chatter-chat-output-content-right">
@@ -178,6 +179,19 @@
                   <div class="chatter-empty-line-container"> </div>
                 </div>
               </ng-container>
+
+              <ng-container *ngIf="msg.getUserId !== userId && msg.getIsSysMsg">
+                <div class="chatter-chat-msg-block">
+                  
+                  <div class="chatter-chat-output-content-left" >
+                    <div class="chat-user-txt-container-left">
+                      <span  class="chat-content-sys">{{msg.getMessage}}</span>
+                    </div>
+                  </div>
+                  <div class="chatter-empty-line-container"> </div>
+                </div>
+              </ng-container>
+              
             </ng-container>
           </div>
           <div class="chatter-chat-texbox-container">

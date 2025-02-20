@@ -297,7 +297,7 @@ span.chatter-online-mid{
     color: #fff;
 }
 
-.chat-content {
+.chat-content, .chat-content-sys {
     font-family: monospace;
     font-size: 12px;
     color: #848ada;
@@ -316,6 +316,10 @@ span.chatter-online-mid{
     border: 1px solid #302c2c;
     background-color: #302c2c;
     border-radius: 3px;
+}
+
+.chat-content-sys{
+    font-style: italic;
 }
 
 /* Chat Input Section */

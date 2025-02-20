@@ -28,14 +28,14 @@ export class ChatterService implements BaseService{
     private _chatData:ChatMessage[] = [];
     private _onlineUsers:IUserData[] = [];
 
-    private _newMessagRecievedSub: Subscription | undefined;
-    private _userConnectSub!:Subscription | undefined;
-    private _userDisconnectSub!:Subscription | undefined;
-    private _newUserInformationSub!:Subscription | undefined;
-    private _updateOnlineUserListSub!:Subscription | undefined;
-    private _updateUserNameSub!:Subscription | undefined;
-    private _updateUserCountSub!:Subscription | undefined;
-    private _userOfflineRemoveUserInfoSub!:Subscription | undefined;
+    private _newMessagRecievedSub!: Subscription;
+    private _userConnectSub!:Subscription;
+    private _userDisconnectSub!:Subscription;
+    private _newUserInformationSub!:Subscription;
+    private _updateOnlineUserListSub!:Subscription;
+    private _updateUserNameSub!:Subscription;
+    private _updateUserCountSub!:Subscription;
+    private _userOfflineRemoveUserInfoSub!:Subscription;
     
     newMessageNotify: Subject<void> = new Subject<void>();
     userCountChangeNotify: Subject<number> = new Subject<number>();
@@ -66,8 +66,8 @@ export class ChatterService implements BaseService{
     description = ' ';
     
     receivedCounter = 0;
-    possibleIDs = ['A','A','C','D','E','F','G','H','I','J','JA','JB','JC','JD','JE','K'];
-    ChatterServiceID =  `ChatterServiceID_${this.possibleIDs[Math.floor(Math.random() * this.possibleIDs.length)]}`;
+    possibleIDs = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P'];
+    chatterServiceID =  `ChatterServiceID_${this.possibleIDs[Math.floor(Math.random() * this.possibleIDs.length)]}`;
 
     constructor() {
         this._processIdService = ProcessIDService.instance;
@@ -160,8 +160,8 @@ export class ChatterService implements BaseService{
         if(userCount){
             const tStamp =  userCount.timeStamp as number;
             const uCount =  userCount.userCount as number;
-            console.log('tStamp:', tStamp)
-            console.log('uCount:', uCount)
+            console.log('tStamp:', tStamp);
+            console.log('uCount:', uCount);
 
             if(tStamp < this._comeOnlineTS &&  uCount > this._connectedUserCounter){
                 this._connectedUserCounter = uCount;
@@ -178,8 +178,10 @@ export class ChatterService implements BaseService{
             const userNameAcronym = chatMsg._userNameAcronym as string;
             const iconColor = chatMsg._iconColor as string;
             const msgDate = chatMsg._msgDate as string;
+            const isSysMsg = chatMsg._isSysMsg as boolean;
 
             const newChatData  = new ChatMessage(msg, userId, userName, userNameAcronym, iconColor, msgDate);
+            newChatData.setIsSysMgs = isSysMsg;
             this._chatData.push(newChatData);
             this.newMessageNotify.next();
         }
@@ -201,7 +203,7 @@ export class ChatterService implements BaseService{
         }
     }
 
-    private raiseUpdateOnlineUserListRecieved(onlinerUserList:any):void{
+    private raiseUpdateOnlineUserListRecieved(onlinerUserList: any):void{
         if(onlinerUserList){
             console.log('raiseUpdateOnlineUserListRecieved');
             console.log('onlinerUserList:',onlinerUserList);
