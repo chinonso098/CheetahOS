@@ -67,11 +67,14 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   onlineUsers: IUserData[] = [];
   onlineUsersListFirstUpdateTS = 0;
   chatUser!: IUser;
-  chatUserData!:IUserData
+  chatUserData!:IUserData;
 
-  lastTapTime = 0;
-  messages: string[] = [];
-  newMessage = '';
+  RETRIEVAL_DELAY = 150;
+  currIteration = 0;
+  prevScrollHeight = 0;
+
+
+
 
   chatPrompt = 'Type a message';
   isMaximizable = false;
@@ -122,12 +125,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     // set as my timestamp for when i came online
     this._chatService.setComeOnlineTS(Date.now());
 
-    // this._chatService.chatData$.subscribe(data => {
-    //   this.chatData = data;
-    //   this.chatHistory = data.slice(-40);
-    // });
-
-    //setTimeout(() => this.scrollToBottom(), 1500);
+    this.retrieveEarlierMessages();
   }
 
   ngAfterViewInit(): void {
@@ -327,16 +325,6 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.chatHistoryOutput.nativeElement.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // loadMoreMessages() {
-  //   const currentLength = this.chatHistory.length;
-  //   const moreMessages = this.chatData.slice(Math.max(this.chatData.length - currentLength - 20, 0), this.chatData.length - currentLength);
-    
-  //   setTimeout(() => {
-  //     this.chatHistory = [...moreMessages, ...this.chatHistory];
-  //   }, 1500);
-  // }
-
-
   async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
     
     if(evt.key == "Enter"){
@@ -425,6 +413,61 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       userId += possible.charAt(Math.floor(Math.random() * possible.length));
     }
     return userId;
+  }
+
+  retrieveEarlierMessages(): void {
+    const minNoOfMsgs = 40;
+    const loadedMessages = this._chatService.getChatData();
+
+    // Load the last 40 messages initially
+    if (loadedMessages.length >= minNoOfMsgs) {
+        this.chatData = loadedMessages.slice(-minNoOfMsgs);
+        setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
+
+        // Load older messages progressively
+        this.currIteration = 0;
+        this.loadMessagesInBatches(loadedMessages, minNoOfMsgs);
+    } else {
+        this.chatData = loadedMessages;
+        setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
+    }
+  }
+
+  loadMessagesInBatches(loadedMessages: ChatMessage[], batchSize: number) {
+    const totalBatches = Math.ceil(loadedMessages.length / batchSize);
+
+    const interval = setInterval(() => {
+        if (this.currIteration >= totalBatches - 1) {
+            clearInterval(interval);
+            return;
+        }
+
+        this.loadMoreMessages(loadedMessages, batchSize);
+        this.currIteration++;
+    }, this.RETRIEVAL_DELAY);
+  }
+
+  loadMoreMessages(chatHistory: ChatMessage[], batchSize: number) {
+    const chatContainer = this.chatHistoryOutput.nativeElement;
+
+    // Store current scroll height before adding messages
+    this.prevScrollHeight = chatContainer.scrollHeight;
+
+    const remainingMessages = chatHistory.length - this.chatData.length;
+    if (remainingMessages <= 0) return;
+
+    const startIdx = Math.max(remainingMessages - batchSize, 0);
+    const moreMessages = chatHistory.slice(startIdx, remainingMessages);
+
+    this.chatData.unshift(...moreMessages);
+
+    // Maintain scroll position instead of scrolling to bottom
+    setTimeout(() => this.maintainScrollPosition(), this.SCROLL_DELAY);
+  }
+
+  maintainScrollPosition() {
+      const chatContainer = this.chatHistoryOutput.nativeElement;
+      chatContainer.scrollTop = chatContainer.scrollHeight - this.prevScrollHeight;
   }
 
   setChatterWindowToFocus(pid:number):void{
