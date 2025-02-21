@@ -157,7 +157,6 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   updateChatData():void{
     const data = this._chatService.getChatData();
-    console.log('chat data:', data);
     this.chatData = data
     this.setMessageLastReceievedTime();
 
@@ -229,6 +228,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       this.onlineUsers = data;
     }
   }
+
   getTimeOut():number{
     const delays = [100, 175, 250, 325, 400, 475, 550, 525, 700, 775, 850, 925];
     const timeout = delays[Math.floor(Math.random() * delays.length)];
@@ -296,21 +296,11 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   showTheUserNameForm():void{
     this.showUserNameForm = true;
     this.showUserNameLabel = false;
-    //this.volumeSlider.nativeElement.style.display === 'block'
   }
 
   showTheUserNameLabel():void{
     this.showUserNameForm = false;
     this.showUserNameLabel = true;
-    //this.volumeSlider.nativeElement.style.display === 'block'
-  }
-
-  onKeyDownOnWindow(evt:KeyboardEvent):void{
-    this.focusOnInput();
-    if (evt.key === "Tab") {
-      // Prevent tab from moving focus
-      evt.preventDefault();
-    }
   }
 
   focusOnInput():void{
@@ -320,7 +310,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }
   }
 
-  private scrollToBottom(): void {
+  scrollToBottom(): void {
     this.chatHistoryOutput.nativeElement.scrollTop = this.chatHistoryOutput.nativeElement.scrollHeight;
     this.chatHistoryOutput.nativeElement.scrollIntoView({ behavior: 'smooth' });
   }
@@ -331,12 +321,12 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       this.createChat();
     }else{
       const chatInput = this.chatterForm.value.msgText as string;
-      if(chatInput.trim().length > 0) {
+      if(chatInput!== null && chatInput.trim().length > 0) {
 
         this.isTyping = true;
         this.chatUserData.isTyping = true
         this._chatService.sendUserIsTypingMessage(this.chatUserData)
-      }else if(chatInput.trim().length === 0) {
+      }else if(chatInput!== null &&  chatInput.trim().length === 0) {
         this.isTyping = false;
         this.chatUserData.isTyping = false
         this._chatService.sendUserIsTypingMessage(this.chatUserData)
@@ -345,29 +335,29 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   createChat():void{
-      const chatInput = this.chatterForm.value.msgText as string;
-      const delay = 10;
+    const chatInput = this.chatterForm.value.msgText as string;
+    const delay = 10;
 
-      if(chatInput.trim().length === 0) {
-        this.chatPrompt = 'message box can not be empty';
-        return;
-      }
+    if(chatInput!== null &&  chatInput.trim().length === 0) {
+      this.chatPrompt = 'message box can not be empty';
+      return;
+    }
 
-      const chatObj = new ChatMessage(chatInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor);
-      this._chatService.sendChatMessage(chatObj);
-      this.chatterForm.reset();
+    const chatObj = new ChatMessage(chatInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor);
+    this._chatService.sendChatMessage(chatObj);
+    this.chatterForm.reset();
 
-      setTimeout(() => {
-        this.chatterForm.controls[this.formCntrlName].setValue(null);
-        this.chatterForm.controls[this.formCntrlName].markAsUntouched();
-      }, delay);
+    setTimeout(() => {
+      this.chatterForm.controls[this.formCntrlName].setValue(null);
+      this.chatterForm.controls[this.formCntrlName].markAsUntouched();
+    }, delay);
 
-      this.isTyping = false;
-      this.chatUserData.isTyping = false
-      this._chatService.sendUserIsTypingMessage(this.chatUserData)
+    this.isTyping = false;
+    this.chatUserData.isTyping = false
+    this._chatService.sendUserIsTypingMessage(this.chatUserData)
 
-       // Scroll to bottom
-      setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
+      // Scroll to bottom
+    setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
   }
   
   getRandomNum(min?:number, max?:number):number {
@@ -379,7 +369,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
    /** Generates the next color dynamically */
-   geIconColor(): string {
+  geIconColor(): string {
     const defaultMin = 0;
     const defaultMax = 36;
     const colorSet = ['#00FFFF', '#AAFF00', '#228B22', '#7CFC00', '#00A36C', '#32CD32', '#00FF7F','#FFBF00','#ECFFDC',
@@ -391,7 +381,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     return selectedColor;
   }
 
-  private setMessageLastReceievedTime():void{
+  setMessageLastReceievedTime():void{
     const dateTime = new Date(); 
     // const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     // const dayName = days[dateTime.getDay()];
@@ -406,7 +396,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.messageLastRecieved=` ${dateTime.getMonth() + 1}/${dateTime.getDate()},${formattedTime} `;
   }
 
-  private generateUserID() {
+  generateUserID() {
     let userId = '';
     const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
     for (let i = 0; i < 15; i++) {

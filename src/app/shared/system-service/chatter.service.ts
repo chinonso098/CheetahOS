@@ -96,7 +96,6 @@ export class ChatterService implements BaseService{
         this._socketService.sendMessage(this.REMOVE_USER_INFO_EVT, data);
 
         setTimeout(() => {
-            console.log('Terminate old subscriptions');
             this.terminateSubscriptions();
         }, 35);
     }
@@ -153,7 +152,6 @@ export class ChatterService implements BaseService{
             this._connectedUserCounter--;
         }
 
-        console.log('userCount:', this._connectedUserCounter)
         this.userCountChangeNotify.next(0);
     }
 
@@ -161,8 +159,6 @@ export class ChatterService implements BaseService{
         if(userCount){
             const tStamp =  userCount.timeStamp as number;
             const uCount =  userCount.userCount as number;
-            console.log('tStamp:', tStamp);
-            console.log('uCount:', uCount);
 
             if(tStamp < this._comeOnlineTS &&  uCount > this._connectedUserCounter){
                 this._connectedUserCounter = uCount;
@@ -209,10 +205,6 @@ export class ChatterService implements BaseService{
 
     private raiseUpdateOnlineUserListRecieved(onlinerUserList: any):void{
         if(onlinerUserList){
-            console.log('raiseUpdateOnlineUserListRecieved');
-            console.log('onlinerUserList:',onlinerUserList);
-            //this.receivedCounter++;
-
             const userList: IUserList = {
                 timeStamp: onlinerUserList.timeStamp,
                 onlineUsers: onlinerUserList.onlineUsers.map((user: IUserData) => ({
@@ -259,9 +251,7 @@ export class ChatterService implements BaseService{
     }
 
     private raiseRemoveUserFromOnlineListRecieved(userInfo:any):void{
-        console.log('offlinUser :',userInfo);
         if(userInfo){
-
             const offlineUser:IUserData = {
                 userId: userInfo.userId as string,
                 userName: userInfo.userName as string,
@@ -269,9 +259,6 @@ export class ChatterService implements BaseService{
                 color:userInfo.color as string,
                 isTyping:userInfo.isTyping as boolean,
             }
-
-            console.log('raiseRemoveUserFromOnlineListRecieved');
-            console.log('offlineUser :',offlineUser);
 
            const deleteCount = 1;
            const userInfoIdx = this._onlineUsers.findIndex(x => x.userId === offlineUser.userId);
@@ -310,7 +297,6 @@ export class ChatterService implements BaseService{
     }
 
     setSubscriptions():void{
-        console.log('Set new subscriptions');
         this._newMessagRecievedSub = this._socketService.onMessageEvent(this.CHAT_MSG_EVT).subscribe((p)=>{this.raiseNewMessageReceived(p)});
         this._userConnectSub = this._socketService.onMessageEvent(this.USER_CONNECT_EVT).subscribe((i)=>{this.updateUserCount(i)});
         this._userDisconnectSub = this._socketService.onMessageEvent(this.USER_DISCONNECT_EVT).subscribe((j)=>{this.updateUserCount(j)});
