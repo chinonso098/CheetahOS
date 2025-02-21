@@ -36,8 +36,18 @@ export class ChatterService implements BaseService{
     private _updateUserNameSub!:Subscription;
     private _updateUserCountSub!:Subscription;
     private _userOfflineRemoveUserInfoSub!:Subscription;
-    private _userIsTypingSub!:Subscription;
-    
+    private _userIsTypingSub!:Subscription;  
+
+    private readonly CHAT_MSG_EVT ='chatMessage';
+    private readonly USER_CONNECT_EVT ='userConnected';
+    private readonly NEW_USER_INFO_EVT ='newUserInfo';
+    private readonly UPDATE_USER_NAME_EVT ='updateUserName';
+    private readonly REMOVE_USER_INFO_EVT ='removeUserInfo';
+    private readonly USER_DISCONNECT_EVT ='userDisconnected';
+    private readonly USER_IS_TYPING_EVT = 'userIsTyping'; 
+    private readonly UPDATE_ONLINE_USER_COUNT_EVT = 'updateOnlineUserCount'; 
+    private readonly UPDATE_ONLINE_USER_LIST_EVT = 'updateOnlineUserList'; 
+
     newMessageNotify: Subject<void> = new Subject<void>();
     userCountChangeNotify: Subject<number> = new Subject<number>();
     newUserInformationNotify: Subject<void> = new Subject<void>();
@@ -45,17 +55,6 @@ export class ChatterService implements BaseService{
     updateOnlineUserCountNotify: Subject<void> = new Subject<void>();
     updateUserNameOrStateNotify: Subject<void> = new Subject<void>();
     updateUserCountNotify: Subject<void> = new Subject<void>();
-  
-
-    readonly CHAT_MSG_EVT ='chatMessage';
-    readonly USER_CONNECT_EVT ='userConnected';
-    readonly NEW_USER_INFO_EVT ='newUserInfo';
-    readonly UPDATE_USER_NAME_EVT ='updateUserName';
-    readonly REMOVE_USER_INFO_EVT ='removeUserInfo';
-    readonly USER_DISCONNECT_EVT ='userDisconnected';
-    readonly USER_IS_TYPING_EVT = 'userIsTyping'; 
-    readonly UPDATE_ONLINE_USER_COUNT_EVT = 'updateOnlineUserCount'; 
-    readonly UPDATE_ONLINE_USER_LIST_EVT = 'updateOnlineUserList'; 
   
   
     name = 'chatter_msg_svc';
