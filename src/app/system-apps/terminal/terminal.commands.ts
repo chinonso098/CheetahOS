@@ -29,6 +29,9 @@ export class TerminalCommandProcessor{
     private closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu",
         "cmpnt_ref_svc", "file_mgr_svc", "file_svc", "menu_svc", "notification_svc", "pid_gen_svc", "rning_proc_svc", "scripts_svc",
         "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc", "window_mgmt_svc"];
+
+    private falseDirectories:string[] = ["3D-Objects", "Desktop", "Documents", "Downloads", "Games", "Music", "Pictures", "Videos"];
+        
     private files:FileInfo[] = [];
     private readonly defaultDirectoryPath = Constants.ROOT;
     private currentDirectoryPath = Constants.ROOT;
@@ -353,7 +356,21 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         return result;
     }
 
-    async cd(arg0:string, key=""):Promise<{type: string;  result: any; depth:number;}>{
+
+
+    async cd(arg0:string):Promise<boolean>{
+
+        const result = await this._fileService.checkIfExistsAsync(arg0);
+        if(result){
+            this.currentDirectoryPath = arg0;
+            return true;
+        }
+
+        return false;
+    }
+
+
+    async traverseThroughDirectories(arg0:string):Promise<{type: string;  result: any; depth:number;}>{
 
         console.log('ARG0:', arg0);
 
@@ -369,24 +386,24 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         if(filePathRegex.test(arg0)){
            const cmdArg = arg0.split(Constants.ROOT);
       
-           //console.log('CMDARG:', cmdArg);
+           console.log('CMDARG:', cmdArg);
            const moveUps = (cmdArg.length > 1)? cmdArg.filter(x => x == "..") : ['..'] ;
-           const impliedPath = this.cdMoveUp(moveUps);
+           const impliedPath = this.iterMoveUp(moveUps);
            this.fallBackDirPath = impliedPath;
            const explicitPath = (arg0 !== '..')? arg0.split("../").splice(-1)[0] : '';
 
            directory = `${impliedPath}/${explicitPath}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT);
 
-        //    console.log('IMPLIEDPATH:', impliedPath);
-        //    console.log('EXPLICITPATH:', explicitPath);
-        //    console.log('DIRECTORY:', directory);
+           console.log('IMPLIEDPATH:', impliedPath);
+           console.log('EXPLICITPATH:', explicitPath);
+           console.log('DIRECTORY:', directory);
         }else{
             directory = `${this.currentDirectoryPath}/${arg0}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT);
             this.fallBackDirPath = this.getFallBackPath(directory);
         }
 
-        // console.log('directory:', directory);
-        // console.log('fallBackDirPath:', this.fallBackDirPath);
+        console.log('directory:', directory);
+        console.log('fallBackDirPath:', this.fallBackDirPath);
 
         const firstDirectoryCheck = await this._fileService.checkIfExistsAsync(directory);
         let secondDirectoryCheck = false;
@@ -399,16 +416,14 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         }
 
         if(firstDirectoryCheck || secondDirectoryCheck){
-            console.log('key:', key);
-            if(key == 'Enter'){
-                this.currentDirectoryPath = directory;
-            }
 
             depth = this.getFolderDepth(directory);
             const fetchedFiles = await this.loadFilesInfoAsync(directory).then(()=>{
                 const files:string[] = [];
                 this.files.forEach(file => {
-                    if(file.getFileType === 'folder')
+                    if(file.getFileType === 'folder' && this.falseDirectories.includes(file.getFileName) && this.fallBackDirPath.includes('/Users/'))
+                        files.push(`${file.getFileName}/`);
+                    else if(file.getFileType === 'folder' && !this.falseDirectories.includes(file.getFileName))
                         files.push(`${file.getFileName}/`);
                     else
                         files.push(file.getFileName);
@@ -421,7 +436,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         }
     }
 
-    cdMoveUp(arg0:string[]):string{
+    iterMoveUp(arg0:string[]):string{
         let directory = '';
         let dirPath = '';
         let cnt = 0;

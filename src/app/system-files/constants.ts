@@ -2,6 +2,7 @@
 export namespace Constants{
 
     export const EMPTY_STRING = '';
+    export const EMPTY_SPACE = ' ';
     export const ROOT = '/';
     export const DOUBLE_SLASH = '//';
     export const OSDISK = 'OSDisk (C:)';
