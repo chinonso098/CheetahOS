@@ -453,14 +453,17 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
 
                 rootArg = Constants.EMPTY_STRING;
-                //this.isInLoopState = false;
-                //this.fetchedDirectoryList = [];
                 cmdString = 'cp  ';
                 this.firstSection = false;
                 this.secondSection = true;
                 this.numCntr = 0;
+
+                const cursorPos = this.getCursorPosition();
+                this.createTabState(cursorPos, 1);
+
               }else{
                 rootArg  =  cmdStringArr[2];
+                this.updateTabState(1, this.getCursorPosition(), rootArg);
               }
               this.secCntnr++;
             }else{
@@ -538,7 +541,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[0]}`});
       
             if(this.secondSection)
-              this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.selected[0]} ${this.fetchedDirectoryList[0]}`});
+              this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabComptState.tabSections[0].path} ${this.fetchedDirectoryList[0]}`});
           }
 
           this.numCntr++;
@@ -574,7 +577,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[curNum]}`});
 
       if(this.secondSection)
-        this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.selected[0]} ${this.fetchedDirectoryList[curNum]}`});
+        this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabComptState.tabSections[0].path} ${this.fetchedDirectoryList[curNum]}`});
     }
 
     if(this.numCntr > this.fetchedDirectoryList.length - 1){
