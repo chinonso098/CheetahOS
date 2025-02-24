@@ -370,7 +370,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
     }
 
 
-    async traverseThroughDirectories(arg0:string):Promise<{type: string;  result: any; depth:number;}>{
+    async directoryTraverser(arg0:string):Promise<{type: string;  result: any; depth:number;}>{
 
         console.log('ARG0:', arg0);
 

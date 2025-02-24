@@ -17,7 +17,6 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ITabState } from './model/tab.state';
-import { promises } from 'dns';
 
 @Component({
   selector: 'cos-terminal',
@@ -82,6 +81,10 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   terminalForm!: FormGroup;
   numCntr = 0;
   traversalDepth = 0;
+  firstSection = true;
+  firstCounter = 0;
+  secondSection = false;
+  secondCounter = 0;
 
   hasWindow = true;
   isMaximizable = false;
@@ -191,7 +194,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
   }
 
-
   async onKeyDoublePressed(evt: KeyboardEvent): Promise<void> {
     console.log(`${evt.key} Key pressed  rapidly.`);
 
@@ -289,7 +291,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     },this.SECONDS_DELAY[1]);
   }
 
-
   async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
     console.log('evt.key:',evt.key);
 
@@ -318,7 +319,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       this.wasSpaceBarPressed = true;
       console.log('this.wasSpaceBarPressed:',this.wasSpaceBarPressed);
     } else  if(evt.key === "Tab"){
-      const cmdString = this.terminalForm.value.terminalCmd as string;
+      let cmdString = this.terminalForm.value.terminalCmd as string;
       const cmdStringArr = (cmdString === undefined)? [Constants.EMPTY_STRING] : cmdString.split(Constants.EMPTY_SPACE);
       const rootCmd = cmdStringArr[0];
       let rootArg = Constants.EMPTY_STRING;
@@ -374,6 +375,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
           console.log('Has-White-Space-At-The- sEnd:', this.isWhiteSpaceAtTheEnd);
   
           if(rootArg === undefined){
+
+            console.log('setValue - 0');
             this.terminalForm.setValue({terminalCmd:`${rootCmd} ${Constants.EMPTY_SPACE}`});
             return;
           }
@@ -384,12 +387,21 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
               rootArg  =  cmdStringArr[1];
             } else if(cmdStringArr.length === 3 && this.wasSpaceBarPressed)
             {
-              cmdStringArr.pop();
-              this.tabCompletionState.selected.push(cmdStringArr[1]);
-              rootArg = Constants.EMPTY_SPACE;
-              this.isInLoopState = false;
+              if(this.secondCounter === 0){
+                cmdStringArr.pop();
+                this.tabCompletionState.selected.push(cmdStringArr[1]);
+                rootArg = Constants.EMPTY_STRING;
+                //this.isInLoopState = false;
+                //this.fetchedDirectoryList = [];
+                cmdString = 'cp  ';
+                this.firstSection = false;
+                this.secondSection = true;
+                this.numCntr = 0;
+              }else{
+                rootArg  =  cmdStringArr[2];
+              }
+              this.secondCounter++;
             }else{
-
               rootArg  =  cmdStringArr[1];
             }
 
@@ -422,7 +434,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         if(!this.fetchedDirectoryList.includes(alteredRootArg)){
           console.log('fetchedDirectoryList does not have:',alteredRootArg );
           const terminalCommand = new TerminalCommand(cmdString, 0, " ");
-          await this.TraverseDirectoryHelper(terminalCommand).then(() =>{
+          await this.traverseDirectoryHelper(terminalCommand).then(() =>{
             this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, alteredRootArg);
             this.isInLoopState = true;
             this.numCntr = 0;
@@ -444,7 +456,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
         console.log('i am now here 2');
         const terminalCommand = new TerminalCommand(cmdString, 0, " ");
-        await this.TraverseDirectoryHelper(terminalCommand).then(() =>{
+        await this.traverseDirectoryHelper(terminalCommand).then(() =>{
           this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, "");
           this.isInLoopState = true;
         });
@@ -453,9 +465,18 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
           console.log('i am now here 4');
 
           if(rootArg.includes('/')){
+            console.log('setValue - 1');
             this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]}`});
           }else{
-            this.terminalForm.setValue({terminalCmd:`${rootCmd} ${this.fetchedDirectoryList[0]}`});
+            console.log('setValue - 2');
+            // this.terminalForm.setValue({terminalCmd:`${rootCmd} ${this.fetchedDirectoryList[0]}`});
+
+
+            if(this.firstSection)
+              this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[0]}`});
+      
+            if(this.secondSection)
+              this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.selected[0]} ${this.fetchedDirectoryList[0]}`});
           }
 
           this.numCntr++;
@@ -479,10 +500,19 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
     if((this.traversalDepth > 1)){
       console.log('11111111');
-      this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[curNum]}`});
+      console.log('setValue - 3');
+
+      if(this.firstSection)
+        this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[curNum]}`});
     }else if(this.traversalDepth >= 0 && this.traversalDepth <= 1){
       console.log('22222222');
-      this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[curNum]}`});
+      console.log('setValue - 4');
+
+      if(this.firstSection)
+        this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[curNum]}`});
+
+      if(this.secondSection)
+        this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.selected[0]} ${this.fetchedDirectoryList[curNum]}`});
     }
 
     if(this.numCntr > this.fetchedDirectoryList.length - 1){
@@ -626,15 +656,15 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
 
-  async TraverseDirectoryHelper(terminalCmd:TerminalCommand):Promise<void>{
-    console.log('TAB TAB TAB key:');
+  async traverseDirectoryHelper(terminalCmd:TerminalCommand):Promise<void>{
     const cmdStringArr = terminalCmd.getCommand.split(" ");
-    const rootCmd = cmdStringArr[0].toLowerCase();
+    //const rootCmd = cmdStringArr[0].toLowerCase();
+    const path = cmdStringArr[1];
 
     const str = 'string';
     const strArr = 'string[]';
 
-    const result = await this._terminaCommandsProc.traverseThroughDirectories(cmdStringArr[1]);
+    const result = await this._terminaCommandsProc.directoryTraverser(path);
 
     if(result.type === str || result.type === strArr)
       terminalCmd.setResponseCode = this.Success;
