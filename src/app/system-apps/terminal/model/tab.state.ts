@@ -7,13 +7,13 @@ export interface  IState{
 }
 
 
-export interface  ITabState2{
-    tabSections:IState[]
-}
-
-
 export interface  ITabState{
-    directories:string[],
-    index: number,
-    selected:string[], // Stores final selections
+    sections:IState[]
 }
+
+
+// export interface  ITabState{
+//     directories:string[],
+//     index: number,
+//     selected:string[], // Stores final selections
+// }

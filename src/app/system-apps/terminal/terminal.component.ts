@@ -16,7 +16,7 @@ import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { ITabState, ITabState2, IState } from './model/tab.state';
+import { ITabState, IState } from './model/tab.state';
 
 @Component({
   selector: 'cos-terminal',
@@ -51,13 +51,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private isWhiteSpaceAtTheEnd = false;
 
   private tabCompletionState:ITabState = {
-    directories: [],
-    index: 0,
-    selected: [], // Stores final selections
-  };
-
-  private tabComptState:ITabState2 = {
-    tabSections: [],
+    sections: [],
   };
 
   
@@ -286,14 +280,13 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   getTabStateCount():number{
-    return this.tabComptState.tabSections.length;
+    return this.tabCompletionState.sections.length;
   }
 
   validateRootCmd(rootCmd:string):boolean{
     if((rootCmd !== undefined && rootCmd.length > 0) && (!rootCmd.includes(Constants.EMPTY_SPACE))){
       return true;
     }
-
     return false;
   }
 
@@ -306,17 +299,16 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       path:Constants.EMPTY_SPACE 
     }
 
-    this.tabComptState.tabSections.push(writeState);
+    this.tabCompletionState.sections.push(writeState);
   }
 
   updateTabState(idx:number, cursorPos:number, rootArg:string):void{
-
-    const writeState = this.tabComptState.tabSections[idx];
+    const writeState = this.tabCompletionState.sections[idx];
     writeState.cursorPosition = cursorPos
     writeState.path = rootArg;
     writeState.indexIterCounter = this.secCntnr;
 
-    this.tabComptState.tabSections[idx] = writeState;
+    this.tabCompletionState.sections[idx] = writeState;
   }
 
   private scrollToBottom(): void {
@@ -365,10 +357,42 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       this.getCommandHistory("backward");
     }else if(evt.key === "ArrowDown"){
       this.getCommandHistory("forward")    
+    } else if(evt.key === "ArrowLeft"){
+      /*
+      State 1
+        firstSection Active only
+        firstSection Inactive  secondSection Active only
+
+      State 2
+        firstSection Avtive  secondSection Inactive only
+        firstSection Inactive  secondSection Active only
+
+      Store fetches Directories & numCntr state for each section */
+
+      const curCursorPos = this.getCursorPosition();
+      const sectOneCursorPos = this.tabCompletionState.sections[0].cursorPosition;
+      const sectTwoCursorPos = this.tabCompletionState.sections[1].cursorPosition;
+
+      if(this.getTabStateCount() <= 1){
+        //state 1
+        if(curCursorPos < sectOneCursorPos){
+          //first section
+        }else if(curCursorPos > sectOneCursorPos && curCursorPos <= sectTwoCursorPos){
+          //second section
+        }
+      }else{
+        //state 2
+        if(curCursorPos < sectOneCursorPos){
+          //first section
+        }else if(curCursorPos > sectOneCursorPos && curCursorPos <= sectTwoCursorPos){
+          //second section
+        }
+      }
+
+      this.getCommandHistory("backward");
+    }else if(evt.key === "ArrowRight"){
+      this.getCommandHistory("forward")    
     }else if(evt.key === Constants.EMPTY_SPACE){
-      // if(this.validateRootCmd(rootCmd)){
-      //   this.swtichToNextSection = true;
-      // }
       if(this.validateRootCmd(rootCmd) && (rootArg !== undefined && !rootArg.includes(Constants.EMPTY_SPACE))){
         this.swtichToNextSection = true;
         this.secCntnr = 0;
@@ -541,7 +565,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[0]}`});
       
             if(this.secondSection)
-              this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabComptState.tabSections[0].path} ${this.fetchedDirectoryList[0]}`});
+              this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].path} ${this.fetchedDirectoryList[0]}`});
           }
 
           this.numCntr++;
@@ -577,7 +601,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[curNum]}`});
 
       if(this.secondSection)
-        this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabComptState.tabSections[0].path} ${this.fetchedDirectoryList[curNum]}`});
+        this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].path} ${this.fetchedDirectoryList[curNum]}`});
     }
 
     if(this.numCntr > this.fetchedDirectoryList.length - 1){
