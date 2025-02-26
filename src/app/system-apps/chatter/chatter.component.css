@@ -9,14 +9,14 @@ span {
 
 /* Main Container */
 .chatter-main-container {
-    width: 720px;
+    width: 800px;
     height: 100%;
     background: #ccc;
 }
 
 /* Content Layout */
 .chatter-content-container {
-    width: 100%;
+   width: 100%;
     display: flex;
     background-color: #202020;
 }
@@ -61,7 +61,7 @@ span {
 
 /* Chat Container */
 .chatter-chat-container {
-    width: 450px;
+    width: 530px;
 }
 
 /* User Info Section */
@@ -491,7 +491,7 @@ span.chatter-online-tail{
 .chatter-div-footer-online{
     width:150px; 
     position: fixed;
-    left:275px;
+    left:320px;
     bottom: 3px;
 }
 
@@ -499,7 +499,7 @@ span.chatter-online-tail{
     position: fixed;
     height: fit-content;
     width: fit-content;
-    right: 2%;
+    right: 7%;
     bottom: -2px;
     /* background-color: #302c2c; */
 }
@@ -508,7 +508,7 @@ span.chatter-online-tail{
     position: fixed;
     height: fit-content;
     width: fit-content;
-    right: 62%;
+    right: 60%;
     bottom: -1px;
     /* background-color: #302c2c; */
 }
@@ -536,7 +536,7 @@ span.chatter-online-tail{
     margin: auto;
     position: absolute;
     z-index: 2;
-    left: 45%;
+    left: 41%;
   }
   
   .chat-user-form-body {

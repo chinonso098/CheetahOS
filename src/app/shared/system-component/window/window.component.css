@@ -5,8 +5,11 @@
   background-color: #808080;
   box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%);
   position: absolute;
-  min-width: 25%;
-  min-height: 10%;
+  /* min-width: 25%; 
+    min-height: 10%;
+  */
+  width: fit-content;
+  height: fit-content;
   top: 25%;
   left: 25%;
   outline: 1px hsl(0deg 0% 20%/70%);

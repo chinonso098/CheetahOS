@@ -27,7 +27,7 @@ export class SocketService implements BaseService {
   description = '';
   
   constructor() {
-    this.socket = io('http://localhost:3000');
+    this.socket = io('http://chinonsosnas.local:3000');
     SocketService.instance = this;
 
     this._processIdService = ProcessIDService.instance;
