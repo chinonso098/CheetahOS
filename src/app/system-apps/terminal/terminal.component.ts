@@ -304,11 +304,14 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   updateTabState(idx:number, cursorPos:number, rootArg:string):void{
     const writeState = this.tabCompletionState.sections[idx];
-    writeState.cursorPosition = cursorPos
-    writeState.path = rootArg;
-    writeState.indexIterCounter = this.secCntnr;
 
-    this.tabCompletionState.sections[idx] = writeState;
+    if(writeState){
+      writeState.cursorPosition = cursorPos
+      writeState.path = rootArg;
+      writeState.indexIterCounter = this.secCntnr;
+  
+      this.tabCompletionState.sections[idx] = writeState;
+    }
   }
 
   private scrollToBottom(): void {
@@ -339,6 +342,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
     let cmdString = this.terminalForm.value.terminalCmd as string;
     const cmdStringArr = (cmdString === undefined)? [Constants.EMPTY_STRING] : cmdString.split(Constants.EMPTY_SPACE);
+    //const cmdStringArr = (cmdString === undefined)? [Constants.EMPTY_STRING] : cmdString.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
     const rootCmd = cmdStringArr[0];
     let rootArg =cmdStringArr[1];
 

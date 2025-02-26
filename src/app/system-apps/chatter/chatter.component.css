@@ -56,9 +56,6 @@ span {
 
 /* ---------------------------------------------------------------- */
 
-
-
-
 /* Chat Container */
 .chatter-chat-container {
     width: 530px;
@@ -206,8 +203,8 @@ span.chatter-online-mid{
 }
 
 span.chatter-online-tail{
-    position: relative; 
-    right: -25%;
+    position: fixed; 
+    left: 31.5%;
 }
 
 .chatter-user-online-acronym {
@@ -230,7 +227,6 @@ span.chatter-online-tail{
     top: 0;
     left: 15%;
 }
-
 
 .chatter-online-img{
     height: 16px;
@@ -286,7 +282,7 @@ span.chatter-online-tail{
     justify-content: flex-end; /* Push content to the right */
     align-items: flex-start;
     width: 100%; /* Ensure it takes full width */
-    margin-left: 48px; /* Moves content further right */
+    margin-left: 128px; /* Moves content further right */
 }
 
 .chat-user-txt-container-left {

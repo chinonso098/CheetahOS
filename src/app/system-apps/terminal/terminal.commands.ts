@@ -370,15 +370,24 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
     }
 
 
-    async directoryTraverser(arg0:string):Promise<{type: string;  result: any; depth:number;}>{
+    addQuotesToFileName(fileName:string):string{
+        const strArr = fileName.split(Constants.EMPTY_SPACE);
+        console.log('addQuotesToFileName:',strArr);
+        if(strArr.length > 1)
+            return `'${fileName}'`;
 
+        return fileName;
+    }
+
+    async directoryTraverser(arg0:string):Promise<{type: string;  result: any; depth:number;}>{
         console.log('ARG0:', arg0);
 
         let directory = ''
         let depth = 0;
+        const goUpADirectory = '..';
 
         if(arg0===undefined){
-            return {type:'', result:'', depth:depth};
+            return {type:Constants.EMPTY_STRING, result:Constants.EMPTY_STRING, depth:depth};
         }
 
         const filePathRegex = /^(\.\.\/)+([a-zA-Z0-9_-]+\/?)*$|^(\.\/|\/)([a-zA-Z0-9_-]+\/?)+$|^\.\.$|^\.\.\/$/;
@@ -387,10 +396,10 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
            const cmdArg = arg0.split(Constants.ROOT);
       
            console.log('CMDARG:', cmdArg);
-           const moveUps = (cmdArg.length > 1)? cmdArg.filter(x => x == "..") : ['..'] ;
+           const moveUps = (cmdArg.length > 1)? cmdArg.filter(x => x == goUpADirectory) : [goUpADirectory] ;
            const impliedPath = this.iterMoveUp(moveUps);
            this.fallBackDirPath = impliedPath;
-           const explicitPath = (arg0 !== '..')? arg0.split("../").splice(-1)[0] : '';
+           const explicitPath = (arg0 !== goUpADirectory)? arg0.split('../').splice(-1)[0] : Constants.EMPTY_STRING;
 
            directory = `${impliedPath}/${explicitPath}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT);
 
@@ -422,11 +431,11 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
                 const files:string[] = [];
                 this.files.forEach(file => {
                     if(file.getFileType === 'folder' && this.falseDirectories.includes(file.getFileName) && this.fallBackDirPath.includes('/Users/'))
-                        files.push(`${file.getFileName}/`);
+                        files.push(`${this.addQuotesToFileName(file.getFileName)}/`);
                     else if(file.getFileType === 'folder' && !this.falseDirectories.includes(file.getFileName))
-                        files.push(`${file.getFileName}/`);
+                        files.push(`${this.addQuotesToFileName(file.getFileName)}/`);
                     else
-                        files.push(file.getFileName);
+                        files.push(this.addQuotesToFileName(file.getFileName));
                 });
                 return {type:'string[]', result:files, depth:depth};
             })
@@ -437,12 +446,12 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
     }
 
     iterMoveUp(arg0:string[]):string{
-        let directory = '';
-        let dirPath = '';
+        let directory = Constants.EMPTY_STRING;
+        let dirPath = Constants.EMPTY_STRING;
         let cnt = 0;
         const tmpTraversedPath = this.currentDirectoryPath.split(Constants.ROOT);
         tmpTraversedPath.shift();
-        const traversedPath = tmpTraversedPath.filter(x => x !== '');
+        const traversedPath = tmpTraversedPath.filter(x => x !== Constants.EMPTY_STRING);
         
         if(traversedPath.length == 0){
             return Constants.ROOT;
@@ -473,10 +482,10 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
                     break;
                 }
             }
-            dirPath = tmpStr.join('');
+            dirPath = tmpStr.join(Constants.EMPTY_STRING);
         }
 
-        return dirPath.replace(',','');
+        return dirPath.replace(',',Constants.EMPTY_STRING);
     }
 
     getFolderDepth(input: string): number {
@@ -507,13 +516,13 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         })
         tmpStr.push(Constants.ROOT);
 
-        dirPath = tmpStr.join('');
-        return dirPath.replace(',','');
+        dirPath = tmpStr.join(Constants.EMPTY_STRING);
+        return dirPath.replace(',',Constants.EMPTY_STRING);
     }
 
     async mkdir(arg0:string, arg1:string):Promise<string>{
         
-        const forbiddenChars:string[]= [ '\\', '/',':','*','?',' "', '<', '>', '|'];
+        const forbiddenChars:string[]= [ '\\', '/',':','*','?','"', '<', '>', '|', "'"];
 
         if(arg0 && !forbiddenChars.includes(arg0)){
             const folderName = arg0;

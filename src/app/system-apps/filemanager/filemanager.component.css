@@ -1,6 +1,7 @@
 
   ol{
     /* column-gap: 1px; */
+    position: relative;
     display: grid;
     grid-auto-flow: column;
     grid-template-columns:  repeat(auto-fill,90px);
@@ -9,6 +10,7 @@
     width: 100%;
     padding: 5px 0 ;
     row-gap: 20px;
+    z-index: 1;
 }
 
 
@@ -17,7 +19,6 @@ li{
     justify-content: center;
     padding: 2px;
     height: min-content;
-    z-index: 1;
 }
 
 

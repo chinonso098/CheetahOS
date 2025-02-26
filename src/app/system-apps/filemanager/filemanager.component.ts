@@ -313,7 +313,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
   hideIconContextMenu(caller?:string):void{
     this.showCntxtMenu = false;
-
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){
       this._menuService.hideContextMenus.next();
@@ -321,7 +320,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   handleIconHighLightState():void{
- 
     //First case - I'm clicking only on the desktop icons
     if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt == 0)){  
       if(this.isRenameActive){

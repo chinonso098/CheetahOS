@@ -1123,7 +1123,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     //console.log('adjustContextMenuData - filename:',file.getCurrentPath); //TBD
    if(file.getIsFile){
-      if(editNotAllowed.includes(file.getCurrentPath.replace('/', Constants.EMPTY_STRING))){
+      if(editNotAllowed.includes(file.getCurrentPath.replace(Constants.ROOT, Constants.EMPTY_STRING))){
         this.menuOrder = Constants.FILE_EXPLORER_UNIQUE_MENU_ORDER ;
         for(const x of this.sourceData) {
           if(x.label === 'Cut' || x.label === 'Delete' || x.label === 'Rename'){ /*nothing*/}
