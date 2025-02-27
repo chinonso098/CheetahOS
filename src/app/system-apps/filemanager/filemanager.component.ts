@@ -452,6 +452,11 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         (isMouseHover)? btnElement.style.backgroundColor ='#607c9c' : 
           btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
       }
+
+      if(!isMouseHover && this.isIconInFocusDueToPriorAction){
+        btnElement.style.backgroundColor = 'transparent';
+        btnElement.style.border = '0.5px solid white'
+      }
     }
   }
 

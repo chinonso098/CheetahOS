@@ -4,6 +4,8 @@ export namespace Constants{
     export const EMPTY_STRING = '';
     export const EMPTY_SPACE = ' ';
     export const ROOT = '/';
+    export const COLON = ':';
+    export const PIPE= '|';
     export const DOUBLE_SLASH = '//';
     export const OSDISK = 'OSDisk (C:)';
     export const THISPC = 'This PC';
