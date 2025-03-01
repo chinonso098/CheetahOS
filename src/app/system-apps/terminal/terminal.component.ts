@@ -81,13 +81,13 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   haveISeenThisAutoCmplt = '';
 
   terminalForm!: FormGroup;
-  numCntr = 0;
+  dirEntryTraverseCntr = 0;
   traversalDepth = 0;
   firstSection = true;
   firstCounter = 0;
   secondSection = false;
   secondCounter = 0;
-  secCntnr = 0;
+  sectionTabPressCntnr = 0;
 
   hasWindow = true;
   isMaximizable = false;
@@ -308,8 +308,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       cursorPosition: cursorPos,
       isSectionActive: true,
       indexSection: idxSec || 0,
-      indexIterCounter:0,
-      path:Constants.EMPTY_SPACE 
+      dirEntryTraverseCntr:0,
+      currentPath:Constants.EMPTY_SPACE 
     }
 
     this.tabCompletionState.sections.push(writeState);
@@ -320,9 +320,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
     if(writeState){
       writeState.cursorPosition = cursorPos
-      writeState.path = rootArg;
-      writeState.indexIterCounter = this.secCntnr;
-  
+      writeState.currentPath = rootArg;
+      writeState.dirEntryTraverseCntr = this.dirEntryTraverseCntr;
       this.tabCompletionState.sections[idx] = writeState;
     }
   }
@@ -350,7 +349,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
 
   setSections():void{
-          /*
+    /*
       State 1
         firstSection Active only
         firstSection Inactive  secondSection Active only
@@ -375,13 +374,32 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         if(curCursorPos < sectOneCursorPos){
           this.firstSection = true;
           this.secondSection = false;
-          this.setCursorPosition(sectOneCursorPos);
+          this.swtichToNextSection = false;
+          //this.setCursorPosition(sectOneCursorPos);
         }else if(curCursorPos > sectOneCursorPos && curCursorPos <= sectTwoCursorPos){
           this.firstSection = false
           this.secondSection = true;
-          this.setCursorPosition(sectTwoCursorPos);
+          this.swtichToNextSection = true;
+          //this.setCursorPosition(sectTwoCursorPos);
         }
       }
+  }
+
+  changeCursorPositionAndNumCntr():void{
+    if(this.getTabStateCount() === 2){
+      const sectOneCursorPos = this.tabCompletionState.sections[0].cursorPosition;
+      const sectOneIdxCntr = this.tabCompletionState.sections[0].dirEntryTraverseCntr;
+      const sectTwoCursorPos = this.tabCompletionState.sections[1].cursorPosition;
+      const sectTwoIdxCntr = this.tabCompletionState.sections[1].dirEntryTraverseCntr;
+
+      if(this.firstSection){
+        this.setCursorPosition(sectOneCursorPos);
+        this.dirEntryTraverseCntr = sectOneIdxCntr;
+      }else if(this.secondSection){
+        this.setCursorPosition(sectTwoCursorPos);
+        this.dirEntryTraverseCntr = sectTwoIdxCntr;
+      }
+    }
   }
 
   async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
@@ -395,7 +413,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     let rootArg =cmdStringArr[1];
     if(evt.key === "Enter"){
       this.isInLoopState = false;
-      this.numCntr = 0;
+      this.dirEntryTraverseCntr = 0;
       const terminalCommand = new TerminalCommand(cmdString, 0, '');
 
       if(cmdString !== Constants.EMPTY_STRING){
@@ -413,10 +431,10 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }else if(evt.key === "ArrowRight"){
       this.setSections();  
     }else if(evt.key === Constants.EMPTY_SPACE){
-      if(this.validateRootCmd(rootCmd) && (rootArg !== undefined && ! this.stringIsOnlyWhiteSpace(rootArg))){
+      if(this.validateRootCmd(rootCmd) && (rootArg !== undefined && !this.stringIsOnlyWhiteSpace(rootArg))){
         this.currentState = this.stateTwo;
         this.swtichToNextSection = true;
-        this.secCntnr = 0;
+        this.sectionTabPressCntnr = 0;
       }
 
       console.log('this.swtichToNextSection:',this.swtichToNextSection);
@@ -479,17 +497,18 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         }else{
             //case where cp is rootCmd, and rootArg could be empty space or something else
           if(cmdStringArr.length >= 2){
+            //this.changeCursorPositionAndNumCntr();
             //condition to switch to next section, not met. still on the 1st section
             if(cmdStringArr.length === 3 && !this.swtichToNextSection){
               cmdStringArr.pop();
-              this.secCntnr++;
+              this.sectionTabPressCntnr++;
               rootArg  =  cmdStringArr[1];
 
               this.updateTabState(0, this.getCursorPosition(), rootArg);
             } 
             //condition to switch to next section, met. now on the 2nd section
             else if(cmdStringArr.length === 3 && this.swtichToNextSection){
-              if(this.secCntnr === 0){
+              if(this.sectionTabPressCntnr === 0){
                 cmdStringArr.pop();
                 this.updateTabState(0, this.getCursorPosition(), rootArg);
 
@@ -499,7 +518,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
                 cmdString = 'cp  ';
                 this.firstSection = false;
                 this.secondSection = true;
-                this.numCntr = 0;
+                this.dirEntryTraverseCntr = 0;
+                // reset
+                this.fetchedDirectoryList = [];
 
                 const cursorPos = this.getCursorPosition();
                 this.createTabState(cursorPos, 1);
@@ -508,7 +529,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
                 rootArg  =  cmdStringArr[2];
                 this.updateTabState(1, this.getCursorPosition(), rootArg);
               }
-              this.secCntnr++;
+              this.sectionTabPressCntnr++;
             }else{
               rootArg  =  cmdStringArr[1];
             }
@@ -545,7 +566,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
           await this.traverseDirectoryHelper(terminalCommand).then(() =>{
             this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, alteredRootArg);
             this.isInLoopState = true;
-            this.numCntr = 0;
+            this.dirEntryTraverseCntr = 0;
           });
         }else{
           console.log('fetchedDirectoryList does have:',alteredRootArg );
@@ -555,7 +576,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       }else{
         console.log('i am now here 1');
         this.loopThroughDirectory(rootCmd,rootArg, alteredRootArg);
-        console.log('this.numCntr++:', this.numCntr);
+        console.log('this.numCntr++:', this.dirEntryTraverseCntr);
       }
 
     }else{
@@ -577,10 +598,10 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]}`});
             }else{
               if(this.firstSection)
-                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]} ${this.tabCompletionState.sections[1].path}`});
+                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]} ${this.tabCompletionState.sections[1].currentPath}`});
 
               if(this.secondSection)
-                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].path}  ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]}`});
+                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath}  ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]}`});
             }
           }else{
             console.log('setValue - 2');
@@ -588,14 +609,14 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
               this.terminalForm.setValue({terminalCmd:`${rootCmd} ${this.fetchedDirectoryList[0]}`});
             }else{
               if(this.firstSection)
-                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[0]} ${this.tabCompletionState.sections[1].path}`});
+                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[0]} ${this.tabCompletionState.sections[1].currentPath}`});
         
               if(this.secondSection)
-                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].path} ${this.fetchedDirectoryList[0]}`});
+                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath} ${this.fetchedDirectoryList[0]}`});
             }
           }
 
-          this.numCntr++;
+          this.dirEntryTraverseCntr++;
         }else{
           console.log('i am now here 5');
           this.loopThroughDirectory(rootCmd,rootArg, '');
@@ -613,7 +634,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     console.log(`loopThroughDirectory:alteredRootArg:${alteredRootArg}`)
     console.log('traversalDepth:',this.traversalDepth);
 
-    const curNum = this.numCntr++;
+    const curNum = this.dirEntryTraverseCntr++;
 
     if((this.traversalDepth > 1)){
       console.log('11111111');
@@ -624,10 +645,10 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       }else{
 
         if(this.firstSection)
-          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[curNum]} ${this.tabCompletionState.sections[1].path} `});
+          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[curNum]} ${this.tabCompletionState.sections[1].currentPath} `});
   
         if(this.secondSection)
-          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].path} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[curNum]}`});
+          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[curNum]}`});
       }
 
 
@@ -639,15 +660,15 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[curNum]}`});
       }else{
         if(this.firstSection)
-          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[curNum]} ${this.tabCompletionState.sections[1].path}`});
+          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[curNum]} ${this.tabCompletionState.sections[1].currentPath}`});
   
         if(this.secondSection)
-          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].path} ${this.fetchedDirectoryList[curNum]}`});
+          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath} ${this.fetchedDirectoryList[curNum]}`});
       }
     }
 
-    if(this.numCntr > this.fetchedDirectoryList.length - 1){
-      this.numCntr = 0;
+    if(this.dirEntryTraverseCntr > this.fetchedDirectoryList.length - 1){
+      this.dirEntryTraverseCntr = 0;
     }
   }
 
@@ -741,6 +762,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     return rootArg;
   }
 
+
   checkForWhitSpaceAtTheEnd(arg0:string):boolean {
     const whitespaceChars = [' ', '\t', '\n'];
     return whitespaceChars.some(char => arg0.slice(-1).includes(char));
@@ -795,7 +817,13 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   async traverseDirectoryHelper(terminalCmd:TerminalCommand):Promise<void>{
     const cmdStringArr = terminalCmd.getCommand.split(" ");
     //const rootCmd = cmdStringArr[0].toLowerCase();
-    const path = cmdStringArr[1];
+    let path = '';
+
+    if(this.firstSection)
+        path = cmdStringArr[1];
+    else{
+      path = cmdStringArr[2];
+    }
 
     const str = 'string';
     const strArr = 'string[]';

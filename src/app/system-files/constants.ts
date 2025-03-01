@@ -6,6 +6,8 @@ export namespace Constants{
     export const ROOT = '/';
     export const COLON = ':';
     export const PIPE= '|';
+    export const TILDE= '~';
+    export const BACK_SLASH= '\\';
     export const DOUBLE_SLASH = '//';
     export const OSDISK = 'OSDisk (C:)';
     export const THISPC = 'This PC';
