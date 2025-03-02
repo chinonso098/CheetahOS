@@ -6,7 +6,7 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
-import { TerminalCommand } from './model/terminal.command';
+import { TerminalCommand } from './model/terminal.types';
 import { TerminalCommandProcessor } from './terminal.commands';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
@@ -16,7 +16,7 @@ import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { ITabState, IState } from './model/tab.state';
+import { ITabState, IState } from './model/terminal.types';
 
 @Component({
   selector: 'cos-terminal',
@@ -60,7 +60,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     sections: [],
   };
 
-  
+
   Success = 1;
   Fail = 2;
   Warning = 3;
@@ -299,7 +299,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   validateRootCmd(rootCmd:string):boolean{
-    if((rootCmd !== undefined && rootCmd.length > 0) && (!rootCmd.includes(Constants.EMPTY_SPACE))){
+    if((rootCmd !== undefined && rootCmd.length > 0) && (!rootCmd.includes(Constants.BLANK_SPACE))){
       return true;
     }
     return false;
@@ -310,7 +310,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       cursorPosition: cursorPos,
       indexSection: idxSec || 0,
       dirEntryTraverseCntr:0,
-      currentPath:Constants.EMPTY_SPACE 
+      currentPath:Constants.BLANK_SPACE 
     }
 
     this.tabCompletionState.sections.push(writeState);
@@ -417,7 +417,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     console.log('Cursor Position:', this.getCursorPosition());
 
     let cmdString = this.terminalForm.value.terminalCmd as string;
-    const cmdStringArr = (cmdString === undefined)? [Constants.EMPTY_STRING] : cmdString.split(Constants.EMPTY_SPACE);
+    const cmdStringArr = (cmdString === undefined)? [Constants.EMPTY_STRING] : cmdString.split(Constants.BLANK_SPACE);
 
     const rootCmd = cmdStringArr[0];
     let rootArg =cmdStringArr[1];
@@ -440,7 +440,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       this.setSections();
     }else if(evt.key === "ArrowRight"){
       this.setSections();  
-    }else if(evt.key === Constants.EMPTY_SPACE){
+    }else if(evt.key === Constants.BLANK_SPACE){
       if(this.validateRootCmd(rootCmd) && (rootArg !== undefined && !this.stringIsOnlyWhiteSpace(rootArg))){
         this.currentState = this.stateTwo;
         this.swtichToNextSection = true;
@@ -476,7 +476,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
           console.log('Has-White-Space-At-The- sEnd:', this.isWhiteSpaceAtTheEnd);
   
           if(rootArg === undefined){
-            this.terminalForm.setValue({terminalCmd:`${rootCmd} ${Constants.EMPTY_SPACE}`});
+            this.terminalForm.setValue({terminalCmd:`${rootCmd} ${Constants.BLANK_SPACE}`});
             return;
           }
         }else{
@@ -499,7 +499,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
           if(rootArg === undefined){
             console.log('setValue - 0');
-            this.terminalForm.setValue({terminalCmd:`${rootCmd} ${Constants.EMPTY_SPACE}`});
+            this.terminalForm.setValue({terminalCmd:`${rootCmd} ${Constants.BLANK_SPACE}`});
             const cursorPos = this.getCursorPosition();
             this.createTabState(cursorPos);
             return;
@@ -563,7 +563,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   async handleChangeDirectoryRequest(cmdString:string, rootCmd:string, rootArg:string):Promise<void>{
-    if((rootArg !== undefined && rootArg.length > 0) && (!rootArg.includes(Constants.EMPTY_SPACE))){
+    if((rootArg !== undefined && rootArg.length > 0) && (!rootArg.includes(Constants.BLANK_SPACE))){
       const alteredRootArg = this.getLastSegment(rootArg);
       console.log('alteredRootArg:',alteredRootArg);
 
@@ -585,7 +585,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         }
       }else{
         console.log('i am now here 1');
-
         if(this.firstSection && this.firstSectionCntr === 0 ){
           this.firstSectionCntr --;
 
@@ -862,7 +861,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     const str = 'string';
     const strArr = 'string[]';
 
-    const result = await this._terminaCommandsProc.directoryTraverser(path);
+    const result = await this._terminaCommandsProc.traverseDirectory(path);
 
     if(result.type === str || result.type === strArr)
       terminalCmd.setResponseCode = this.Success;
@@ -961,19 +960,16 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         terminalCmd.setCommandOutput = result;
       } 
 
-
       if(rootCmd == "cd"){
-
         const result = await this._terminaCommandsProc.cd(cmdStringArr[1]);
 
-        if(result){
+        if(result.result){
           terminalCmd.setResponseCode = this.Success;
-          terminalCmd.setCommandOutput = cmdStringArr[1];
+          terminalCmd.setCommandOutput = result.response;
         }else{
           terminalCmd.setResponseCode = this.Fail;
-          terminalCmd.setCommandOutput = 'No such file or directory';
+          terminalCmd.setCommandOutput = result.response;
         }
-
       } 
 
       if(rootCmd == "ls"){

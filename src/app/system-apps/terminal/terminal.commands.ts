@@ -1,4 +1,4 @@
-import { TerminalCommand } from "./model/terminal.command";
+import { CDResult, ITraverseResult, LSResult, TerminalCommand } from "./model/terminal.types";
 import { AppDirectory } from "src/app/system-files/app.directory";
 import { TriggerProcessService } from "src/app/shared/system-service/trigger.process.service";
 import { FileInfo } from "src/app/system-files/file.info";
@@ -313,24 +313,28 @@ All commands:
         return result;
     }
 
-    async ls(arg0:string):Promise<{type: string;  result: any;}>{
+    async ls(arg0:string):Promise<LSResult>{
+        let resultSet:LSResult;
 
         const result = await this.loadFilesInfoAsync(this.currentDirectoryPath).then(()=>{
 
-            if(arg0 == undefined || arg0 == ''){
+            if(arg0 == undefined || arg0 == Constants.EMPTY_STRING){
                 const onlyFileNames:string[] = [];
                 this.files.forEach(file => {
                     onlyFileNames.push(file.getFileName);
                 });
-                return {type:'string[]', result:onlyFileNames};
+
+                resultSet = {type:'string[]', result:onlyFileNames};
+                return resultSet;
             }
 
             const lsOptions:string[] = ['-l', '-r', '-t', '-lr', '-rl', '-lt', '-tl', '-lrt', '-ltr', '-rtl', '-rlt', '-tlr', '-trl'];
             if(lsOptions.includes(arg0)) {
                 
-                const splitOptions = arg0.replace('-','').split('').sort().reverse();
-                console.log('splitOptions:', splitOptions);
+                const splitOptions = arg0.replace(Constants.DASH, Constants.EMPTY_STRING)
+                    .split(Constants.EMPTY_STRING).sort().reverse();
 
+                console.log('splitOptions:', splitOptions);
                 const result:string[] = [];
 
                 splitOptions.forEach(i => {
@@ -349,66 +353,86 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
                         });
                     }
                 });
-                return {type:'string', result:result.join('')}; // Join with empty string to avoid commas
+                resultSet = {type:'string', result:result.join(Constants.EMPTY_STRING)}; // Join with empty string to avoid commas
+                return resultSet;
             }
-            return {type:'', result: ''};
+            resultSet =  {type:Constants.EMPTY_STRING, result:Constants.EMPTY_STRING};
+            return resultSet;
         })
         return result;
     }
 
+    async cd(path:string):Promise<CDResult>{
 
+        const goOneLevelUpWithSlash = '../';
 
-    async cd(arg0:string):Promise<boolean>{
+        let fixedPath = Constants.EMPTY_STRING;
+        let result:CDResult;
 
-        const result = await this._fileService.checkIfExistsAsync(arg0);
-        if(result){
-            this.currentDirectoryPath = arg0;
-            return true;
+        if(path.includes(goOneLevelUpWithSlash)){
+            const goOneLevelUp = '..';
+            const moveUps = path.split(goOneLevelUp).filter(x => x === goOneLevelUp);
+            const impliedPath = this.getImpliedPath(moveUps);
+            fixedPath = `${impliedPath}/${path}`.replaceAll(goOneLevelUpWithSlash, Constants.EMPTY_STRING);
+        }else{
+            fixedPath = `${this.currentDirectoryPath}/${path}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+        }
+        const res = await this._fileService.checkIfExistsAsync(fixedPath);
+        if(res){
+            this.currentDirectoryPath = fixedPath;
+            result = {response:fixedPath, result:res};
+            return result;
         }
 
-        return false;
+        result = {response:'No such file or directory', result:false};
+        return result;
     }
 
 
     addPipeToFileName(fileName:string):string{
-        const strArr = fileName.split(Constants.EMPTY_SPACE);
+        const strArr = fileName.split(Constants.BLANK_SPACE);
         console.log('addQuotesToFileName:',strArr);
         if(strArr.length > 1)
-            return fileName.replaceAll(Constants.EMPTY_SPACE, Constants.PIPE);
+            return fileName.replaceAll(Constants.BLANK_SPACE, Constants.PIPE);
 
         return fileName;
     }
 
-    async directoryTraverser(pathInput:string):Promise<{type: string;  result: any; depth:number;}>{
+    async traverseDirectory(pathInput:string):Promise<ITraverseResult>{
         console.log('ARG0:', pathInput);
-
-        let directory = ''
-        let depth = 0;
-        const goUpADirectory = '..';
-        const path = pathInput.replace(Constants.PIPE,Constants.EMPTY_SPACE);
-
-        if(path===undefined){
-            return {type:Constants.EMPTY_STRING, result:Constants.EMPTY_STRING, depth:depth};
-        }
-
+        const users = '/Users/';
+        const folder = 'folder';
+        const goOneLevelUp = '..';
+        const goOneLevelUpWithSlash = '../';
         const filePathRegex = /^(\.\.\/)+([a-zA-Z0-9_-]+\/?)*$|^(\.\/|\/)([a-zA-Z0-9_-]+\/?)+$|^\.\.$|^\.\.\/$/;
+        const path = pathInput.replace(Constants.PIPE, Constants.BLANK_SPACE);
+
+        let directory = Constants.EMPTY_STRING;
+        let depth = 0;
+        let result:ITraverseResult;
+
+        if(path === undefined){
+            result = {type:Constants.EMPTY_STRING, result:Constants.EMPTY_STRING, depth:depth};
+            return result;
+        }
 
         if(filePathRegex.test(path)){
            const cmdArg = path.split(Constants.ROOT);
       
            console.log('CMDARG:', cmdArg);
-           const moveUps = (cmdArg.length > 1)? cmdArg.filter(x => x == goUpADirectory) : [goUpADirectory] ;
-           const impliedPath = this.iterMoveUp(moveUps);
+           const moveUps = (cmdArg.length > 1)? cmdArg.filter(x => x === goOneLevelUp) : [goOneLevelUp];
+           const impliedPath = this.getImpliedPath(moveUps);
            this.fallBackDirPath = impliedPath;
-           const explicitPath = (path !== goUpADirectory)? path.split('../').splice(-1)[0] : Constants.EMPTY_STRING;
+           const explicitPath = (path !== goOneLevelUp)? path.split(goOneLevelUpWithSlash).splice(-1)[0] : Constants.EMPTY_STRING;
 
-           directory = `${impliedPath}/${explicitPath}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT);
+           directory = `${impliedPath}/${explicitPath}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+           this.fallBackDirPath = this.getFallBackPath(directory); // why didn't i add this before?
 
            console.log('IMPLIEDPATH:', impliedPath);
            console.log('EXPLICITPATH:', explicitPath);
            console.log('DIRECTORY:', directory);
         }else{
-            directory = `${this.currentDirectoryPath}/${path}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT);
+            directory = `${this.currentDirectoryPath}/${path}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
             this.fallBackDirPath = this.getFallBackPath(directory);
         }
 
@@ -421,32 +445,38 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         if(!firstDirectoryCheck){
             secondDirectoryCheck = await this._fileService.checkIfExistsAsync(this.fallBackDirPath);
 
-            if(secondDirectoryCheck)
+            if(secondDirectoryCheck){
                 directory = this.fallBackDirPath;
+            }
         }
 
         if(firstDirectoryCheck || secondDirectoryCheck){
-
             depth = this.getFolderDepth(directory);
             const fetchedFiles = await this.loadFilesInfoAsync(directory).then(()=>{
                 const files:string[] = [];
                 this.files.forEach(file => {
-                    if(file.getFileType === 'folder' && this.falseDirectories.includes(file.getFileName) && this.fallBackDirPath.includes('/Users/'))
+                    if(file.getFileType === folder && this.falseDirectories.includes(file.getFileName) 
+                        && (this.fallBackDirPath.includes(users) || directory.includes(users))){
+
                         files.push(`${this.addPipeToFileName(file.getFileName)}/`);
-                    else if(file.getFileType === 'folder' && !this.falseDirectories.includes(file.getFileName))
+                    } else if(file.getFileType === folder && !this.falseDirectories.includes(file.getFileName)){
                         files.push(`${this.addPipeToFileName(file.getFileName)}/`);
-                    else
+                    }else{
                         files.push(this.addPipeToFileName(file.getFileName));
+                    }
                 });
-                return {type:'string[]', result:files, depth:depth};
+                result = {type:'string[]', result:files, depth:depth};
+                return result;
             })
-            return fetchedFiles
+
+            return fetchedFiles;
         }else{
-            return {type:'string', result:'No such file or directory', depth:depth};
+            result = {type:'string', result:'No such file or directory', depth:depth};
+            return result
         }
     }
 
-    iterMoveUp(arg0:string[]):string{
+    getImpliedPath(arg0:string[]):string{
         let directory = Constants.EMPTY_STRING;
         let dirPath = Constants.EMPTY_STRING;
         let cnt = 0;
@@ -454,9 +484,9 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         tmpTraversedPath.shift();
         const traversedPath = tmpTraversedPath.filter(x => x !== Constants.EMPTY_STRING);
         
-        if(traversedPath.length == 0){
+        if(traversedPath.length === 0){
             return Constants.ROOT;
-        } else if(traversedPath.length == 1){
+        } else if(traversedPath.length === 1){
             directory = traversedPath[0];
             return `/${directory}`;
         }else if(traversedPath.length > 1){
@@ -486,7 +516,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
             dirPath = tmpStr.join(Constants.EMPTY_STRING);
         }
 
-        return dirPath.replace(',',Constants.EMPTY_STRING);
+        return dirPath.replace(Constants.COMMA, Constants.EMPTY_STRING);
     }
 
     getFolderDepth(input: string): number {

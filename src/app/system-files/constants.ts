@@ -2,11 +2,13 @@
 export namespace Constants{
 
     export const EMPTY_STRING = '';
-    export const EMPTY_SPACE = ' ';
+    export const BLANK_SPACE = ' ';
     export const ROOT = '/';
     export const COLON = ':';
+    export const COMMA = ',';
     export const PIPE= '|';
     export const TILDE= '~';
+    export const DASH= '-';
     export const BACK_SLASH= '\\';
     export const DOUBLE_SLASH = '//';
     export const OSDISK = 'OSDisk (C:)';

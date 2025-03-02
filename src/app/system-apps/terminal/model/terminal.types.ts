@@ -29,4 +29,31 @@ export class TerminalCommand {
     set setCommandOutput(cmdOutput:string){
         this._commandOutput = cmdOutput;
     }
-  }
+}
+
+export interface  IState{
+    cursorPosition: number,
+    indexSection:number,
+    dirEntryTraverseCntr:number,
+    currentPath:string
+}
+
+export interface  ITabState{
+    sections:IState[]
+}
+
+export interface  ITraverseResult{
+    type: string,  
+    result: any, 
+    depth:number
+}
+
+export interface LSResult{
+    type: string;  
+    result: any;
+}
+
+export interface CDResult{
+    response: string;  
+    result: boolean;
+}
