@@ -6,7 +6,7 @@ export namespace Constants{
     export const ROOT = '/';
     export const COLON = ':';
     export const COMMA = ',';
-    export const PIPE= '|';
+    export const BACK_TICK= '`';
     export const TILDE= '~';
     export const DASH= '-';
     export const BACK_SLASH= '\\';

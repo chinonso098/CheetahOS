@@ -44,22 +44,18 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private msgPosCounter = 0;
   private scrollCounter = 0
   private prevPtrIndex = 0;
-  private versionNum = '1.0.4';
+  private versionNum = '1.0.4.4';
   private SECONDS_DELAY:number[] = [120,250];
   private doesDirExist = true;
   private isInLoopState = false;
   private isWhiteSpaceAtTheEnd = false;
 
-  private stateOne = 'S1';
-  private stateTwo = 'S2';
-  private firstSectionCntr = -1;
-  private secondSectionCntr = -1;
-  private currentState =  this.stateOne;
-
   private tabCompletionState:ITabState = {
     sections: [],
   };
 
+  stateOne = 'S1';
+  stateTwo = 'S2';
 
   Success = 1;
   Fail = 2;
@@ -68,7 +64,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   isBannerVisible = true;
   isWelcomeVisible = true;
-  swtichToNextSection = false;
 
   banner = '';
   welcomeMessage = '';
@@ -85,11 +80,15 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   terminalForm!: FormGroup;
   dirEntryTraverseCntr = 0;
   traversalDepth = 0;
+
   firstSection = true;
-  firstCounter = 0;
   secondSection = false;
-  secondCounter = 0;
   sectionTabPressCntnr = 0;
+
+  firstSectionCntr = -1;
+  secondSectionCntr = -1;
+  currentState =  this.stateOne;
+  swtichToNextSection = false;
 
   hasWindow = true;
   isMaximizable = false;
@@ -431,6 +430,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         this.commandHistory.push(terminalCommand);
         this.prevPtrIndex = this.commandHistory.length;
         this.terminalForm.reset();
+        this.resetValues();
       }
     }else if(evt.key === "ArrowUp"){
       this.getCommandHistory("backward");
@@ -801,11 +801,15 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     return whitespaceChars.some(char => arg0.slice(-1).includes(char));
   }
 
-  countSlashes(input: string): number {
-    const matches = input.match(/\//g);
-    return matches ? matches.length : 0;
+  resetValues():void{
+    this.firstSection = true;
+    this.secondSection = false;
+    this.sectionTabPressCntnr = 0;
+    this.firstSectionCntr = -1;
+    this.secondSectionCntr = -1;
+    this.currentState =  this.stateOne;
+    this.swtichToNextSection = false;
   }
-
 
   isOption(arg0:string):boolean{
     const firstChar = arg0[0];

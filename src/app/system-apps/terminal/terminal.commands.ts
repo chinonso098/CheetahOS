@@ -346,8 +346,9 @@ All commands:
                     }else{ // present in list format
                         this.files.forEach(file => {
                             const strPermission =this.getPermission(file.getMode);
+                            const fileNameWithExt = `${this.addBackTickToFileName(file.getFileName)}${file.getFileExtension}`;
                             const fileInfo = `
-${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces('Terminal',8)} ${this.addspaces('staff', 6)} ${this.addspaces(String(file.getSize),6)}  ${this.addspaces(file.getDateTimeModifiedUS,12)} ${this.addspaces(file.getFileName,11)}
+${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces('Terminal',8)} ${this.addspaces('staff', 6)} ${this.addspaces(String(file.getSize),6)}  ${this.addspaces(file.getDateTimeModifiedUS,12)} ${this.addspaces(fileNameWithExt,11)}
                         `
                             result.push(fileInfo);
                         });
@@ -363,7 +364,6 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
     }
 
     async cd(path:string):Promise<CDResult>{
-
         const goOneLevelUpWithSlash = '../';
 
         let fixedPath = Constants.EMPTY_STRING;
@@ -389,11 +389,10 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
     }
 
 
-    addPipeToFileName(fileName:string):string{
+    addBackTickToFileName(fileName:string):string{
         const strArr = fileName.split(Constants.BLANK_SPACE);
-        console.log('addQuotesToFileName:',strArr);
         if(strArr.length > 1)
-            return fileName.replaceAll(Constants.BLANK_SPACE, Constants.PIPE);
+            return fileName.replaceAll(Constants.BLANK_SPACE, Constants.BACK_TICK);
 
         return fileName;
     }
@@ -405,7 +404,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         const goOneLevelUp = '..';
         const goOneLevelUpWithSlash = '../';
         const filePathRegex = /^(\.\.\/)+([a-zA-Z0-9_-]+\/?)*$|^(\.\/|\/)([a-zA-Z0-9_-]+\/?)+$|^\.\.$|^\.\.\/$/;
-        const path = pathInput.replace(Constants.PIPE, Constants.BLANK_SPACE);
+        const path = pathInput.replace(Constants.BACK_TICK, Constants.BLANK_SPACE);
 
         let directory = Constants.EMPTY_STRING;
         let depth = 0;
@@ -458,11 +457,11 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
                     if(file.getFileType === folder && this.falseDirectories.includes(file.getFileName) 
                         && (this.fallBackDirPath.includes(users) || directory.includes(users))){
 
-                        files.push(`${this.addPipeToFileName(file.getFileName)}/`);
+                        files.push(`${this.addBackTickToFileName(file.getFileName)}/`);
                     } else if(file.getFileType === folder && !this.falseDirectories.includes(file.getFileName)){
-                        files.push(`${this.addPipeToFileName(file.getFileName)}/`);
+                        files.push(`${this.addBackTickToFileName(file.getFileName)}/`);
                     }else{
-                        files.push(this.addPipeToFileName(file.getFileName));
+                        files.push(`${this.addBackTickToFileName(file.getFileName)}${file.getFileExtension}`);
                     }
                 });
                 result = {type:'string[]', result:files, depth:depth};
@@ -616,7 +615,7 @@ usage: mkdir direcotry_name [-v]
             if(destinationArg === '.'){
                 destinationArg = this.currentDirectoryPath;
             }
-            sourceArg = optionArg;
+            sourceArg = optionArg.replaceAll(Constants.BACK_TICK, Constants.BLANK_SPACE);
             optionArg = undefined
         }
         if(destinationArg === '.'){
