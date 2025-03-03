@@ -79,7 +79,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   terminalForm!: FormGroup;
   dirEntryTraverseCntr = 0;
-  traversalDepth = 0;
+  directoryTraversalDepth = 0;
 
   firstSection = true;
   secondSection = false;
@@ -665,18 +665,24 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     //console.log('cnt:',cnt);
     console.log(`loopThroughDirectory:rootArg:${rootArg}`)
     console.log(`loopThroughDirectory:alteredRootArg:${alteredRootArg}`)
-    console.log('traversalDepth:',this.traversalDepth);
+    console.log('traversalDepth:',this.directoryTraversalDepth);
 
     const curNum = this.dirEntryTraverseCntr++;
 
-    if((this.traversalDepth > 1)){
+    if((this.directoryTraversalDepth > 1)){
       console.log('11111111');
       console.log('setValue - 3');
+
+      if(this.countSlahesInPath(rootArg) <= 1){
+        if(!this.checkForCharAfterSlashRegex(rootArg)){
+          rootArg = this.stripAfterSlash(rootArg);
+        }
+      }
+        
 
       if(this.currentState === this.stateOne){
         this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[curNum]}`});
       }else{
-
         if(this.firstSection)
           this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[curNum]} ${this.tabCompletionState.sections[1].currentPath} `});
   
@@ -685,7 +691,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       }
 
 
-    }else if(this.traversalDepth >= 0 && this.traversalDepth <= 1){
+    }else if(this.directoryTraversalDepth >= 0 && this.directoryTraversalDepth <= 1){
       console.log('22222222');
       console.log('setValue - 4');
 
@@ -704,6 +710,20 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       this.dirEntryTraverseCntr = 0;
     }
   }
+
+  countSlahesInPath(input: string): number {
+    const matches = input.match(/\//g);
+    return matches ? matches.length : 0;
+  }
+
+  checkForCharAfterSlashRegex(input: string): boolean {
+    const match = input.match(/\/(.)/);
+    return match ? true : false;
+  }
+
+  stripAfterSlash(input: string): string {
+    return input.split("/")[0]; 
+  } 
 
   evaluateChangeDirectoryRequest(cmdString:string, rootCmd:string, rootArg:string, alteredRootArg:string):boolean{
     console.log('ecdr-cmdString:',cmdString);
@@ -809,6 +829,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     this.secondSectionCntr = -1;
     this.currentState =  this.stateOne;
     this.swtichToNextSection = false;
+    this.fetchedDirectoryList = [];
   }
 
   isOption(arg0:string):boolean{
@@ -873,13 +894,13 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     if(result.type === str){
       terminalCmd.setCommandOutput = result.result;
       this.doesDirExist = false;
-      this.traversalDepth = result.depth;
+      this.directoryTraversalDepth = result.depth;
     }
     else if(result.type === strArr){
       this.fetchedDirectoryList = [];
       this.fetchedDirectoryList = [...result.result as string[]];
       this.doesDirExist = true;
-      this.traversalDepth = result.depth;
+      this.directoryTraversalDepth = result.depth;
     }
   }
 
