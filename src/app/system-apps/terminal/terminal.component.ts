@@ -172,18 +172,18 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   populateWelecomeMessageField():void{
     const welcomeMessage = "Type 'help', or 'help -verbose' to view a list of available commands.";
-    const msgArr :string[] = welcomeMessage.split(" ");
+    const msgArr :string[] = welcomeMessage.split(Constants.BLANK_SPACE);
 
     const interval =  setInterval((msg) => {
       let tmpCounter = 0;
       for(let i = 0; i < msg.length; i++){
         if (tmpCounter < 1){
-          this.welcomeMessage +=(this.msgPosCounter == 0)? msg[this.msgPosCounter]:  " " + msg[this.msgPosCounter];
+          this.welcomeMessage +=(this.msgPosCounter === 0)? msg[this.msgPosCounter]:  Constants.BLANK_SPACE + msg[this.msgPosCounter];
           tmpCounter++;
         }
       }
 
-      if(this.msgPosCounter == msg.length - 1)
+      if(this.msgPosCounter === msg.length - 1)
         clearInterval(interval);
 
       this.msgPosCounter++;
@@ -205,7 +205,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     // Handle the rapid key presses here
     if(evt.key == "Tab"){
       const cmdString = this.terminalForm.value.terminalCmd as string;
-      const cmdStringArr = cmdString.split(" ");
+      const cmdStringArr = cmdString.split(Constants.BLANK_SPACE);
 
       const rootCmd = cmdStringArr[0];
       const rootArg = cmdStringArr[1];
@@ -215,7 +215,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       /**
        * the command part of the command string, can not be undefined, must have a length greater than 0, and cannot contain space
        */
-      if(rootCmd !== undefined && rootCmd.length > 0 && !rootCmd.includes(" ")){
+      if(rootCmd !== undefined && rootCmd.length > 0 && !rootCmd.includes(Constants.BLANK_SPACE)){
         if(!this.allCommands.includes(rootCmd)){
 
           const autoCmpltReslt = this.getAutoCompelete(rootCmd, this.allCommands);
@@ -223,9 +223,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
           if(autoCmpltReslt.length <= 1){
             this.terminalForm.setValue({terminalCmd: autoCmpltReslt[0]});
           }else{
-            const terminalCommand = new TerminalCommand(cmdString, 0, " ");
+            const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
             terminalCommand.setResponseCode = this.Options;
-            terminalCommand.setCommandOutput = autoCmpltReslt.join(" ");
+            terminalCommand.setCommandOutput = autoCmpltReslt.join(Constants.BLANK_SPACE);
             this.commandHistory.push(terminalCommand);
           }
 
@@ -234,10 +234,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
       if(rootCmd === "cd"){
         console.log('rootArg:',rootArg);
-
-        const terminalCommand = new TerminalCommand(cmdString, 0, " ");
+        const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
         await this.processCommand(terminalCommand).then(() =>{
-  
           const autoCmpltReslt = this.getAutoCompelete(rootArg, this.generatedArguments);
   
           console.log('autoCmpltReslt:',autoCmpltReslt);
@@ -248,20 +246,16 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${autoCmpltReslt[0]}`});
             }else{
               terminalCommand.setResponseCode = this.Options;
-              terminalCommand.setCommandOutput = autoCmpltReslt.join(" ") || this.generatedArguments.join(" ");
+              terminalCommand.setCommandOutput = autoCmpltReslt.join(Constants.BLANK_SPACE) || this.generatedArguments.join(Constants.BLANK_SPACE);
               this.commandHistory.push(terminalCommand);
             }  
           }else{
             terminalCommand.setResponseCode = this.Options;
-            terminalCommand.setCommandOutput = this.generatedArguments.join(" ");
+            terminalCommand.setCommandOutput = this.generatedArguments.join(Constants.BLANK_SPACE);
             this.commandHistory.push(terminalCommand);
           }
-    
-  
         });
       }
-
-      
       evt.preventDefault();
     }
   }
@@ -460,9 +454,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
           if(autoCmpltReslt.length === 1){
             this.terminalForm.setValue({terminalCmd: autoCmpltReslt[0]});
           }if(autoCmpltReslt.length > 1){
-            const terminalCommand = new TerminalCommand(cmdString, 0, " ");
+            const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
             terminalCommand.setResponseCode = this.Options;
-            terminalCommand.setCommandOutput = autoCmpltReslt.join(" ");
+            terminalCommand.setCommandOutput = autoCmpltReslt.join(Constants.BLANK_SPACE);
             this.commandHistory.push(terminalCommand);
           }
         }
@@ -572,7 +566,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         console.log('i am now here');
         if(!this.fetchedDirectoryList.includes(alteredRootArg)){
           console.log('fetchedDirectoryList does not have:',alteredRootArg );
-          const terminalCommand = new TerminalCommand(cmdString, 0, " ");
+          const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
           await this.traverseDirectoryHelper(terminalCommand).then(() =>{
             this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, alteredRootArg);
             this.isInLoopState = true;
@@ -585,12 +579,12 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         }
       }else{
         console.log('i am now here 1');
-        if(this.firstSection && this.firstSectionCntr === 0 ){
+        if(this.firstSection && this.firstSectionCntr === 0){
           this.firstSectionCntr --;
 
           const alteredCmdString = `lx ${this.removeCurrentDir(rootArg)}`;
           console.log('alteredCmdString:',alteredCmdString);
-          const terminalCommand = new TerminalCommand(alteredCmdString, 0, " ");
+          const terminalCommand = new TerminalCommand(alteredCmdString, 0, Constants.BLANK_SPACE);
           await this.traverseDirectoryHelper(terminalCommand).then(() =>{
             this.loopThroughDirectory( rootCmd, rootArg, alteredRootArg);
             this.dirEntryTraverseCntr = this.tabCompletionState.sections[0].dirEntryTraverseCntr;
@@ -601,7 +595,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
           const alteredCmdString = `lx ${this.removeCurrentDir(rootArg)}`;
           console.log('alteredCmdString:',alteredCmdString);
-          const terminalCommand = new TerminalCommand(alteredCmdString, 0, " ");
+          const terminalCommand = new TerminalCommand(alteredCmdString, 0, Constants.BLANK_SPACE);
           await this.traverseDirectoryHelper(terminalCommand).then(() =>{
             this.loopThroughDirectory(rootCmd, rootArg, alteredRootArg);
             this.dirEntryTraverseCntr = this.tabCompletionState.sections[1].dirEntryTraverseCntr;
@@ -616,7 +610,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       //console.log('rootArg:',rootArg);
       if(this.fetchedDirectoryList.length == 0){
         console.log('i am now here 2');
-        const terminalCommand = new TerminalCommand(cmdString, 0, " ");
+        const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
         await this.traverseDirectoryHelper(terminalCommand).then(() =>{
           this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, "");
           this.isInLoopState = true;
@@ -625,7 +619,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         if(this.isInLoopState){
           console.log('i am now here 4');
 
-          if(rootArg.includes('/')){
+          if(rootArg.includes(Constants.ROOT)){
             console.log('setValue - 1');
             if(this.currentState === this.stateOne){
               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]}`});
@@ -711,20 +705,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
   }
 
-  countSlahesInPath(input: string): number {
-    const matches = input.match(/\//g);
-    return matches ? matches.length : 0;
-  }
-
-  checkForCharAfterSlashRegex(input: string): boolean {
-    const match = input.match(/\/(.)/);
-    return match ? true : false;
-  }
-
-  stripAfterSlash(input: string): string {
-    return input.split("/")[0]; 
-  } 
-
   evaluateChangeDirectoryRequest(cmdString:string, rootCmd:string, rootArg:string, alteredRootArg:string):boolean{
     console.log('ecdr-cmdString:',cmdString);
     console.log('ecdr-rootCmd:',rootCmd);
@@ -733,12 +713,12 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     const autoCmpltReslt = this.getAutoCompelete(alteredRootArg, this.fetchedDirectoryList);
     let result = false;
     if(autoCmpltReslt.length === 1){
-      if((rootArg.includes('/') && rootArg !== this.haveISeenThisRootArg) &&  (this.haveISeenThisAutoCmplt !== autoCmpltReslt[0])){
+      if((rootArg.includes(Constants.ROOT) && rootArg !== this.haveISeenThisRootArg) &&  (this.haveISeenThisAutoCmplt !== autoCmpltReslt[0])){
         console.log('1- I AM STILL NEEDED 001');
         this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${autoCmpltReslt[0]}`});
         this.haveISeenThisRootArg = `${this.removeCurrentDir(rootArg)}${autoCmpltReslt[0]}`
         this.haveISeenThisAutoCmplt = autoCmpltReslt[0];
-      }else if(!rootArg.includes('/')){
+      }else if(!rootArg.includes(Constants.ROOT)){
         console.log('2 - I AM STILL NEEDED 0002');
         this.haveISeenThisAutoCmplt = autoCmpltReslt[0];
         this.terminalForm.setValue({terminalCmd: `${rootCmd} ${autoCmpltReslt[0]}`});
@@ -746,15 +726,15 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       result = true;
     }else if(autoCmpltReslt.length > 1){
       console.log('3 - I AM STILL NEEDED 00003');
-      const terminalCommand = new TerminalCommand(cmdString, 0, " ");
+      const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
       terminalCommand.setResponseCode = this.Options;
-      terminalCommand.setCommandOutput = autoCmpltReslt.join(" ");
+      terminalCommand.setCommandOutput = autoCmpltReslt.join(Constants.BLANK_SPACE);
       this.commandHistory.push(terminalCommand);
       result = true;
     }else{
-      const terminalCommand = new TerminalCommand(cmdString, 0, " ");
+      const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
       terminalCommand.setResponseCode = this.Options;
-      terminalCommand.setCommandOutput = this.fetchedDirectoryList.join(" ");
+      terminalCommand.setCommandOutput = this.fetchedDirectoryList.join(Constants.BLANK_SPACE);
       this.commandHistory.push(terminalCommand);
       result = true;
     }
@@ -768,13 +748,13 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
      * give an input like Document/, Games/Data/In/, Documents/Sample, Games/FlashGames/Moz, ABC/DEF/HIJ/KlM/, ABC/DEF/HIJ/KlM/NO
      * return Document/, Games/Data/, Documents, Games/FlashGames/, ABC/DEF/HIJ/, ABC/DEF/HIJ/KlM/
      */
-    let result = '';
+    let result = Constants.EMPTY_STRING;
 
     if(this.isWhiteSpaceAtTheEnd)
         return arg0;
 
-    if(arg0.includes('/')) {
-      const argSplit = arg0.split('/').filter(x => x !== '');
+    if(arg0.includes(Constants.ROOT)) {
+      const argSplit = arg0.split(Constants.ROOT).filter(x => x !== Constants.EMPTY_STRING);
       const res:string[] = [];
 
       if(argSplit.length === 1)
@@ -786,11 +766,11 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
           res.push(`${argSplit[i]}/`);
         }
       }
-      result = res.join('');
+      result = res.join(Constants.EMPTY_STRING);
       //console.log('removeCurrentDir-result:',result);
     }
 
-    return result.replace(',','');
+    return result.replace(Constants.COMMA, Constants.EMPTY_STRING);
   }
 
   getLastSegment(arg0:string):string{
@@ -798,14 +778,13 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
      * give an input like Document/PD, Games/Data/In
      * return PD, In
      */
-    const rootArgs = arg0.split('/');
-    let rootArg = '';
+    const rootArgs = arg0.split(Constants.ROOT);
+    let rootArg = Constants.EMPTY_STRING;
 
     if(rootArgs.length === 1) {
       rootArg =  rootArgs[0];
     }else if (rootArgs.length >1){
-
-      if(rootArgs.slice(-1)[0] !== ''){
+      if(rootArgs.slice(-1)[0] !== Constants.EMPTY_STRING){
          rootArg = rootArgs.slice(-1)[0];
       }else{
         rootArg = rootArgs.slice(-2)[0];
@@ -815,6 +794,19 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     return rootArg;
   }
 
+  countSlahesInPath(input: string): number {
+    const matches = input.match(/\//g);
+    return matches ? matches.length : 0;
+  }
+
+  checkForCharAfterSlashRegex(input: string): boolean {
+    const match = input.match(/\/(.)/);
+    return match ? true : false;
+  }
+
+  stripAfterSlash(input: string): string {
+    return input.split(Constants.ROOT)[0]; 
+  } 
 
   checkForWhitSpaceAtTheEnd(arg0:string):boolean {
     const whitespaceChars = [' ', '\t', '\n'];
@@ -834,7 +826,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   isOption(arg0:string):boolean{
     const firstChar = arg0[0];
-    return (firstChar === '-')? true : false;
+    return (firstChar === Constants.DASH)? true : false;
   }
 
   getCommandHistory(direction:string):void{
@@ -873,7 +865,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
 
   async traverseDirectoryHelper(terminalCmd:TerminalCommand):Promise<void>{
-    const cmdStringArr = terminalCmd.getCommand.split(" ");
+    const cmdStringArr = terminalCmd.getCommand.split(Constants.BLANK_SPACE);
     //const rootCmd = cmdStringArr[0].toLowerCase();
     let path = '';
 
@@ -905,7 +897,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   async processCommand(terminalCmd:TerminalCommand, key=""):Promise<void>{
-    const cmdStringArr = terminalCmd.getCommand.split(" ");
+    const cmdStringArr = terminalCmd.getCommand.split(Constants.BLANK_SPACE);
     const rootCmd = cmdStringArr[0].toLowerCase();
     if(this.isValidCommand(rootCmd)){
 
