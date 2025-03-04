@@ -320,68 +320,48 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
   }
 
-  private scrollToBottom(): void {
-
-    const interval =  setInterval(() => {
-      try {
-        //console.log('height:',this.terminalOutputCntnr.nativeElement.scrollHeight);
-        if(this.scrollCounter < 2){
-          this.terminalOutputCntnr.nativeElement.scrollTop = this.terminalOutputCntnr.nativeElement.scrollHeight;
-          this.scrollCounter++;
-        }
-        
-      } catch (err) {
-        console.error('Error scrolling to bottom:', err);
-      }
-      if(this.scrollCounter == 2) {
-        clearInterval(interval);
-        this.scrollCounter = 0;
-      }
-
-    },this.SECONDS_DELAY[1]);
+  scrollToBottom(): void {
+    this.terminalOutputCntnr.nativeElement.scrollTop = this.terminalOutputCntnr.nativeElement.scrollHeight;
+    this.terminalOutputCntnr.nativeElement.scrollIntoView({ behavior: 'smooth' });
   }
 
 
-  setSections():void{
+  switchSections():void{
     /*
       State 1
         firstSection Active only
         firstSection Inactive  secondSection Active only
-
       State 2
         firstSection Avtive  secondSection Inactive only
         firstSection Inactive  secondSection Active only
-
       Store fetches Directories & numCntr state for each section */
 
-      const curCursorPos = this.getCursorPosition();
-      const sectOneCursorPos = this.tabCompletionState.sections[0].cursorPosition;
-      const sectTwoCursorPos = this.tabCompletionState.sections[1].cursorPosition;
+    const curCursorPos = this.getCursorPosition();
+    let sectOneCursorPos = 0;
+    let sectTwoCursorPos = 0;
 
-      if(this.getTabStateCount() <= 1){
-        //state 1
-        if(curCursorPos < sectOneCursorPos){
-          this.currentState = this.stateOne;
-        }
-      }else{
-        this.currentState = this.stateTwo;
-        if(curCursorPos < sectOneCursorPos){
-          this.firstSection = true;
-          this.secondSection = false;
-          this.swtichToNextSection = false;
-          this.firstSectionCntr = 0;
-          //this.setCursorPosition(sectOneCursorPos);
-        }else if(curCursorPos > sectOneCursorPos && curCursorPos <= sectTwoCursorPos){
-          this.firstSection = false
-          this.secondSection = true;
-          this.swtichToNextSection = true;
-          this.secondSectionCntr = 0;
-          //this.setCursorPosition(sectTwoCursorPos);
-        }
-
-        console.log('currentState:', this.currentState);
-        console.log('swtichToNextSection:', this.swtichToNextSection);
+    if(this.getTabStateCount() <= 1){
+      //state 1
+      sectOneCursorPos = this.tabCompletionState.sections[0].cursorPosition;
+      if(curCursorPos < sectOneCursorPos){
+        this.currentState = this.stateOne;
       }
+    }else{
+      this.currentState = this.stateTwo;
+      sectOneCursorPos = this.tabCompletionState.sections[0].cursorPosition;
+      sectTwoCursorPos = this.tabCompletionState.sections[1].cursorPosition;
+      if(curCursorPos < sectOneCursorPos){
+        this.firstSection = true;
+        this.secondSection = false;
+        this.swtichToNextSection = false;
+        this.firstSectionCntr = 0;
+      }else if(curCursorPos > sectOneCursorPos && curCursorPos <= sectTwoCursorPos){
+        this.firstSection = false
+        this.secondSection = true;
+        this.swtichToNextSection = true;
+        this.secondSectionCntr = 0;
+      }
+    }
   }
 
   changeCursorPositionAndNumCntr():void{
@@ -389,7 +369,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     if(this.getTabStateCount() === 1){
       //
     }else if(this.getTabStateCount() === 2){
-
       const sectOneCursorPos = this.tabCompletionState.sections[0].cursorPosition;
       const sectOneIdxCntr = this.tabCompletionState.sections[0].dirEntryTraverseCntr;
       const sectTwoCursorPos = this.tabCompletionState.sections[1].cursorPosition;
@@ -431,9 +410,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }else if(evt.key === "ArrowDown"){
       this.getCommandHistory("forward")    
     } else if(evt.key === "ArrowLeft"){
-      this.setSections();
+      this.switchSections();
     }else if(evt.key === "ArrowRight"){
-      this.setSections();  
+      this.switchSections();  
     }else if(evt.key === Constants.BLANK_SPACE){
       if(this.validateRootCmd(rootCmd) && (rootArg !== undefined && !this.stringIsOnlyWhiteSpace(rootArg))){
         this.currentState = this.stateTwo;
@@ -556,101 +535,219 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
   }
 
-  async handleChangeDirectoryRequest(cmdString:string, rootCmd:string, rootArg:string):Promise<void>{
-    if((rootArg !== undefined && rootArg.length > 0) && (!rootArg.includes(Constants.BLANK_SPACE))){
-      const alteredRootArg = this.getLastSegment(rootArg);
-      console.log('alteredRootArg:',alteredRootArg);
+  // async handleChangeDirectoryRequest(cmdString:string, rootCmd:string, rootArg:string):Promise<void>{
+  //   if((rootArg !== undefined && rootArg.length > 0) && (!rootArg.includes(Constants.BLANK_SPACE))){
+  //     const alteredRootArg = this.getLastSegment(rootArg);
+  //     console.log('alteredRootArg:',alteredRootArg);
 
 
-      if(!this.isInLoopState){
-        console.log('i am now here');
-        if(!this.fetchedDirectoryList.includes(alteredRootArg)){
-          console.log('fetchedDirectoryList does not have:',alteredRootArg );
-          const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
-          await this.traverseDirectoryHelper(terminalCommand).then(() =>{
-            this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, alteredRootArg);
-            this.isInLoopState = true;
-            this.dirEntryTraverseCntr = 0;
-          });
-        }else{
-          console.log('fetchedDirectoryList does have:',alteredRootArg);
-          this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, alteredRootArg);
-          this.isInLoopState = true;
-        }
-      }else{
-        console.log('i am now here 1');
-        if(this.firstSection && this.firstSectionCntr === 0){
-          this.firstSectionCntr --;
+  //     if(!this.isInLoopState){
+  //       console.log('i am now here');
+  //       if(!this.fetchedDirectoryList.includes(alteredRootArg)){
+  //         console.log('fetchedDirectoryList does not have:',alteredRootArg );
+  //         const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
+  //         await this.traverseDirectoryHelper(terminalCommand).then(() =>{
+  //           this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, alteredRootArg);
+  //           this.isInLoopState = true;
+  //           this.dirEntryTraverseCntr = 0;
+  //         });
+  //       }else{
+  //         console.log('fetchedDirectoryList does have:',alteredRootArg);
+  //         this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, alteredRootArg);
+  //         this.isInLoopState = true;
+  //       }
+  //     }else{
+  //       console.log('i am now here 1');
+  //       if(this.firstSection && this.firstSectionCntr === 0){
+  //         this.firstSectionCntr --;
 
-          const alteredCmdString = `lx ${this.removeCurrentDir(rootArg)}`;
-          console.log('alteredCmdString:',alteredCmdString);
-          const terminalCommand = new TerminalCommand(alteredCmdString, 0, Constants.BLANK_SPACE);
-          await this.traverseDirectoryHelper(terminalCommand).then(() =>{
-            this.loopThroughDirectory( rootCmd, rootArg, alteredRootArg);
-            this.dirEntryTraverseCntr = this.tabCompletionState.sections[0].dirEntryTraverseCntr;
-          });
+  //         const alteredCmdString = `lx ${this.removeCurrentDir(rootArg)}`;
+  //         console.log('alteredCmdString:',alteredCmdString);
+  //         const terminalCommand = new TerminalCommand(alteredCmdString, 0, Constants.BLANK_SPACE);
+  //         await this.traverseDirectoryHelper(terminalCommand).then(() =>{
+  //           this.loopThroughDirectory( rootCmd, rootArg, alteredRootArg);
+  //           this.dirEntryTraverseCntr = this.tabCompletionState.sections[0].dirEntryTraverseCntr;
+  //         });
 
-        }else if(this.secondSection && this.secondSectionCntr === 0){
-          this.secondSectionCntr--;
+  //       }else if(this.secondSection && this.secondSectionCntr === 0){
+  //         this.secondSectionCntr--;
 
-          const alteredCmdString = `lx ${this.removeCurrentDir(rootArg)}`;
-          console.log('alteredCmdString:',alteredCmdString);
-          const terminalCommand = new TerminalCommand(alteredCmdString, 0, Constants.BLANK_SPACE);
-          await this.traverseDirectoryHelper(terminalCommand).then(() =>{
-            this.loopThroughDirectory(rootCmd, rootArg, alteredRootArg);
-            this.dirEntryTraverseCntr = this.tabCompletionState.sections[1].dirEntryTraverseCntr;
-          });
-        }else{
-          this.loopThroughDirectory(rootCmd,rootArg, alteredRootArg);
-          console.log('this.numCntr++:', this.dirEntryTraverseCntr);
-        }
+  //         const alteredCmdString = `lx ${this.removeCurrentDir(rootArg)}`;
+  //         console.log('alteredCmdString:',alteredCmdString);
+  //         const terminalCommand = new TerminalCommand(alteredCmdString, 0, Constants.BLANK_SPACE);
+  //         await this.traverseDirectoryHelper(terminalCommand).then(() =>{
+  //           this.loopThroughDirectory(rootCmd, rootArg, alteredRootArg);
+  //           this.dirEntryTraverseCntr = this.tabCompletionState.sections[1].dirEntryTraverseCntr;
+  //         });
+  //       }else{
+  //         this.loopThroughDirectory(rootCmd,rootArg, alteredRootArg);
+  //         console.log('this.numCntr++:', this.dirEntryTraverseCntr);
+  //       }
+  //     }
+
+  //   }else{
+  //     //console.log('rootArg:',rootArg);
+  //     if(this.fetchedDirectoryList.length == 0){
+  //       console.log('i am now here 2');
+  //       const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
+  //       await this.traverseDirectoryHelper(terminalCommand).then(() =>{
+  //         this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, "");
+  //         this.isInLoopState = true;
+  //       });
+  //     }else{
+  //       if(this.isInLoopState){
+  //         console.log('i am now here 4');
+
+  //         if(rootArg.includes(Constants.ROOT)){
+  //           console.log('setValue - 1');
+  //           if(this.currentState === this.stateOne){
+  //             this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]}`});
+  //           }else{
+  //             if(this.firstSection)
+  //               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]} ${this.tabCompletionState.sections[1].currentPath}`});
+
+  //             if(this.secondSection)
+  //               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath}  ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]}`});
+  //           }
+  //         }else{
+  //           console.log('setValue - 2');
+  //           if(this.currentState === this.stateOne){
+  //             this.terminalForm.setValue({terminalCmd:`${rootCmd} ${this.fetchedDirectoryList[0]}`});
+  //           }else{
+  //             if(this.firstSection)
+  //               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[0]} ${this.tabCompletionState.sections[1].currentPath}`});
+        
+  //             if(this.secondSection)
+  //               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath} ${this.fetchedDirectoryList[0]}`});
+  //           }
+  //         }
+
+  //         this.dirEntryTraverseCntr++;
+  //       }else{
+  //         console.log('i am now here 5');
+  //         this.loopThroughDirectory(rootCmd,rootArg, '');
+  //       }
+  //     }
+  //   }
+  // }
+
+  async handleChangeDirectoryRequest(cmdString: string, rootCmd: string, rootArg: string): Promise<void> {
+      if (this.isValidRootArg(rootArg)) {
+          const alteredRootArg = this.getLastSegment(rootArg);
+          console.log('alteredRootArg:', alteredRootArg);
+
+          if (!this.isInLoopState) {
+              console.log('Processing outside loop state');
+              await this.processDirectoryTraversal(cmdString, rootCmd, rootArg, alteredRootArg);
+          } else {
+              console.log('Processing inside loop state');
+              await this.processSection(rootCmd, rootArg, alteredRootArg);
+          }
+      } else {
+          await this.handleEmptyRootArg(cmdString, rootCmd, rootArg);
       }
+  }
 
-    }else{
-      //console.log('rootArg:',rootArg);
-      if(this.fetchedDirectoryList.length == 0){
-        console.log('i am now here 2');
-        const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
-        await this.traverseDirectoryHelper(terminalCommand).then(() =>{
+  /** Helper to check if rootArg is valid */
+  private isValidRootArg(rootArg: string): boolean {
+      return rootArg !== undefined && rootArg.length > 0 && !rootArg.includes(Constants.BLANK_SPACE);
+  }
+
+  /** Handles directory traversal when outside loop state */
+  private async processDirectoryTraversal(cmdString: string, rootCmd: string, rootArg: string, alteredRootArg: string): Promise<void> {
+      if (!this.fetchedDirectoryList.includes(alteredRootArg)) {
+          console.log('Directory list does not contain:', alteredRootArg);
+          const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
+          await this.traverseDirectoryHelper(terminalCommand);
+      } else {
+          console.log('Directory list contains:', alteredRootArg);
+      }
+      this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, alteredRootArg);
+      this.isInLoopState = true;
+  }
+
+  /** Processes section-based directory traversal */
+  private async processSection(rootCmd: string, rootArg: string, alteredRootArg: string): Promise<void> {
+      if (this.firstSection && this.firstSectionCntr === 0) {
+          await this.processSpecificSection(0, rootCmd, rootArg, alteredRootArg);
+      } else if (this.secondSection && this.secondSectionCntr === 0) {
+          await this.processSpecificSection(1, rootCmd, rootArg, alteredRootArg);
+      } else {
+          this.loopThroughDirectory(rootCmd, rootArg, alteredRootArg);
+          console.log('Updated dirEntryTraverseCntr:', this.dirEntryTraverseCntr);
+      }
+  }
+
+  /** Processes a specific section */
+  private async processSpecificSection(sectionIndex: number, rootCmd: string, rootArg: string, alteredRootArg: string): Promise<void> {
+      if (sectionIndex === 0) this.firstSectionCntr--;
+      else this.secondSectionCntr--;
+
+      const alteredCmdString = `lx ${this.removeCurrentDir(rootArg)}`;
+      console.log('alteredCmdString:', alteredCmdString);
+      const terminalCommand = new TerminalCommand(alteredCmdString, 0, Constants.BLANK_SPACE);
+
+      await this.traverseDirectoryHelper(terminalCommand);
+      this.loopThroughDirectory(rootCmd, rootArg, alteredRootArg);
+      this.dirEntryTraverseCntr = this.tabCompletionState.sections[sectionIndex].dirEntryTraverseCntr;
+  }
+
+  /** Handles cases where rootArg is empty */
+  private async handleEmptyRootArg(cmdString: string, rootCmd: string, rootArg: string): Promise<void> {
+      if (this.fetchedDirectoryList.length === 0) {
+          console.log('Handling empty directory list');
+          const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
+          await this.traverseDirectoryHelper(terminalCommand);
           this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, "");
           this.isInLoopState = true;
-        });
-      }else{
-        if(this.isInLoopState){
-          console.log('i am now here 4');
-
-          if(rootArg.includes(Constants.ROOT)){
-            console.log('setValue - 1');
-            if(this.currentState === this.stateOne){
-              this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]}`});
-            }else{
-              if(this.firstSection)
-                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]} ${this.tabCompletionState.sections[1].currentPath}`});
-
-              if(this.secondSection)
-                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath}  ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]}`});
-            }
-          }else{
-            console.log('setValue - 2');
-            if(this.currentState === this.stateOne){
-              this.terminalForm.setValue({terminalCmd:`${rootCmd} ${this.fetchedDirectoryList[0]}`});
-            }else{
-              if(this.firstSection)
-                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[0]} ${this.tabCompletionState.sections[1].currentPath}`});
-        
-              if(this.secondSection)
-                this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath} ${this.fetchedDirectoryList[0]}`});
-            }
-          }
-
-          this.dirEntryTraverseCntr++;
-        }else{
-          console.log('i am now here 5');
-          this.loopThroughDirectory(rootCmd,rootArg, '');
-        }
+      } else {
+          await this.handleLoopState(rootCmd, rootArg);
       }
-    }
   }
+
+  /** Handles loop state logic */
+  private async handleLoopState(rootCmd: string, rootArg: string): Promise<void> {
+      if (this.isInLoopState) {
+          console.log('Handling loop state');
+          this.updateTerminalForm(rootCmd, rootArg);
+          this.dirEntryTraverseCntr++;
+      } else {
+          console.log('Handling directory loop');
+          this.loopThroughDirectory(rootCmd, rootArg, '');
+      }
+  }
+
+  /** Updates the terminal form based on rootArg */
+  private updateTerminalForm(rootCmd: string, rootArg: string): void {
+      const firstPath = this.fetchedDirectoryList[0];
+
+      if (rootArg.includes(Constants.ROOT)) {
+          console.log('setValue - 1');
+          if (this.currentState === this.stateOne) {
+              this.terminalForm.setValue({ terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${firstPath}` });
+          } else {
+              this.updateMultiSectionPath(rootCmd, rootArg, firstPath);
+          }
+      } else {
+          console.log('setValue - 2');
+          if (this.currentState === this.stateOne) {
+              this.terminalForm.setValue({ terminalCmd: `${rootCmd} ${firstPath}` });
+          } else {
+              this.updateMultiSectionPath(rootCmd, rootArg, firstPath);
+          }
+      }
+  }
+
+  /** Updates multi-section paths */
+  private updateMultiSectionPath(rootCmd: string, rootArg: string, firstPath: string): void {
+      if (this.firstSection) {
+          this.terminalForm.setValue({ terminalCmd: `${rootCmd} ${firstPath} ${this.tabCompletionState.sections[1].currentPath}` });
+      }
+      if (this.secondSection) {
+          this.terminalForm.setValue({ terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath} ${firstPath}` });
+      }
+  }
+
 
 
   loopThroughDirectory(rootCmd:string, rootArg:string,  alteredRootArg:string):void{
@@ -899,6 +996,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   async processCommand(terminalCmd:TerminalCommand, key=""):Promise<void>{
     const cmdStringArr = terminalCmd.getCommand.split(Constants.BLANK_SPACE);
     const rootCmd = cmdStringArr[0].toLowerCase();
+    const scrollDelay = 300;
     if(this.isValidCommand(rootCmd)){
 
       if(rootCmd == "clear"){
@@ -989,6 +1087,18 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         }
       } 
 
+      if (rootCmd == "cp"){
+        const option = cmdStringArr[1];
+
+        const source = cmdStringArr[2];
+        const destination = cmdStringArr[3];
+      
+        const result = await this._terminaCommandsProc.cp(option, source, destination);
+
+        terminalCmd.setResponseCode = this.Success;
+        terminalCmd.setCommandOutput = result;
+      }
+
       if(rootCmd == "ls"){
         const str = 'string';
         const strArr = 'string[]';
@@ -1020,23 +1130,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         terminalCmd.setCommandOutput = result;
       }
 
-
-
       if(rootCmd == "mv"){
         const result = await this._terminaCommandsProc.mv(cmdStringArr[1], cmdStringArr[2]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      }
-
-
-      if (rootCmd == "cp"){
-        const option = cmdStringArr[1];
-
-        const source = cmdStringArr[2];
-        const destination = cmdStringArr[3];
-      
-        const result = await this._terminaCommandsProc.cp(option, source, destination);
-
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       }
@@ -1046,7 +1141,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       terminalCmd.setCommandOutput = `${terminalCmd.getCommand}: command not found. Type 'help', or 'help -verbose' to view a list of available commands.`;
     }
 
-    this.scrollToBottom();
+    setTimeout(() => this.scrollToBottom(), scrollDelay);
     this.storeAppState();
   }
 
