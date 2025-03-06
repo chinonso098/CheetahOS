@@ -316,6 +316,8 @@ All commands:
     async ls(arg0:string):Promise<LSResult>{
         let resultSet:LSResult;
 
+        const TIME = 't', LIST = 'l', REVERSE = 'r';
+
         const result = await this.loadFilesInfoAsync(this.currentDirectoryPath).then(()=>{
 
             if(arg0 == undefined || arg0 == Constants.EMPTY_STRING){
@@ -339,9 +341,9 @@ All commands:
 
                 splitOptions.forEach(i => {
                     // sort by time
-                    if( i === 't'){
+                    if( i === TIME){
                        this.files = this.files.sort((objA, objB) => objB.getDateModified.getTime() -  objA.getDateModified.getTime());
-                    }else if( i  === 'r'){ // reverse the order
+                    }else if( i  === REVERSE){ // reverse the order
                         this.files.reverse();
                     }else{ // present in list format
                         this.files.forEach(file => {
@@ -741,7 +743,7 @@ Mandatory argument to long options are mandotory for short options too.
     }
 
     private sendDirectoryUpdateNotification(arg0:string):void{
-        if(arg0.includes('/Users/Desktop')){
+        if(arg0.includes('Users/Desktop')){
             this._fileService.addEventOriginator('filemanager');
         }else{
             this._fileService.addEventOriginator('fileexplorer');

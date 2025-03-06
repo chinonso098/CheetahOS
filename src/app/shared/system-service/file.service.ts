@@ -116,7 +116,6 @@ export class FileService implements BaseService{
     }
 
     public async checkIfDirectory(path: string):Promise<boolean> {
- 
         return new Promise<boolean>((resolve, reject) =>{
             this._fileSystem.stat(path,(err, stats) =>{
                 if(err){
@@ -131,7 +130,6 @@ export class FileService implements BaseService{
     }
 
     public async checkIfExistsAsync(dirPath:string):Promise<boolean>{
-
         return new Promise<boolean>((resolve) =>{
             this._fileSystem.exists(`${dirPath}`,(exits) =>{
                  if(exits){
@@ -147,18 +145,19 @@ export class FileService implements BaseService{
 
     public async copyFileAsync(sourcePath:string, destinationPath:string):Promise<boolean>{
         const fileName = this.getFileName(sourcePath);
-        console.log(`Destination: ${destinationPath}/${fileName}`);
+        const destPath = this.pathCorrection(destinationPath);
+        console.log(`Destination: ${destPath}/${fileName}`);
         return new Promise<boolean>((resolve, reject) =>{
              this._fileSystem.readFile(sourcePath,(err, contents = Buffer.from('')) =>{
                 if(err){
                     console.log('copyFileAsync error:',err)
                     reject(false)
                 }else{
-                    this._fileSystem.writeFile(`${destinationPath}/${fileName}`, contents, {flag: 'wx'}, (err) =>{  
+                    this._fileSystem.writeFile(`${destPath}/${fileName}`, contents, {flag: 'wx'}, (err) =>{  
                         if(err?.code === 'EEXIST' ){
                             console.log('copyFileAsync Error: file already exists',err);
                             // if file exists, increment it simple.txt, simple(1).txt ...
-                            const itrName = this.iterateFileName(`${destinationPath}/${fileName}`);
+                            const itrName = this.iterateFileName(`${destPath}/${fileName}`);
                             this._fileSystem.writeFile(itrName,contents,(err) =>{  
                                 if(err){
                                     console.log('copyFileAsync Iterate Error:',err);
@@ -167,8 +166,8 @@ export class FileService implements BaseService{
                                 resolve(true);
                             });
                         }else{
-                            console.log('copyFileAsync Error:',err);
-                            this._fileExistsMap.set(`${destinationPath}/${fileName}`,0);
+                            //console.log('copyFileAsync Error:',err);
+                            this._fileExistsMap.set(`${destPath}/${fileName}`,0);
                             resolve(true);
                         }
                     });
@@ -771,6 +770,13 @@ export class FileService implements BaseService{
 
     getAppAssociaton(appname:string):string{
         return this._fileAndAppIconAssociation.get(appname) || '';
+    }
+
+    pathCorrection(path:string):string{
+        if(path.slice(-1) === Constants.ROOT)
+            return path.slice(0, -1);
+        else
+            return path;
     }
 
     private bufferToUrl(buffer:Buffer):string{

@@ -198,66 +198,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
   }
 
-  async onKeyDoublePressed(evt: KeyboardEvent): Promise<void> {
+  onKeyDoublePressed(evt: KeyboardEvent):void {
     console.log(`${evt.key} Key pressed  rapidly.`);
-
-    return;
-    // Handle the rapid key presses here
-    if(evt.key == "Tab"){
-      const cmdString = this.terminalForm.value.terminalCmd as string;
-      const cmdStringArr = cmdString.split(Constants.BLANK_SPACE);
-
-      const rootCmd = cmdStringArr[0];
-      const rootArg = cmdStringArr[1];
-
-      console.log('rootCmd:',rootCmd);
-
-      /**
-       * the command part of the command string, can not be undefined, must have a length greater than 0, and cannot contain space
-       */
-      if(rootCmd !== undefined && rootCmd.length > 0 && !rootCmd.includes(Constants.BLANK_SPACE)){
-        if(!this.allCommands.includes(rootCmd)){
-
-          const autoCmpltReslt = this.getAutoCompelete(rootCmd, this.allCommands);
-
-          if(autoCmpltReslt.length <= 1){
-            this.terminalForm.setValue({terminalCmd: autoCmpltReslt[0]});
-          }else{
-            const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
-            terminalCommand.setResponseCode = this.Options;
-            terminalCommand.setCommandOutput = autoCmpltReslt.join(Constants.BLANK_SPACE);
-            this.commandHistory.push(terminalCommand);
-          }
-
-        }
-      }
-
-      if(rootCmd === "cd"){
-        console.log('rootArg:',rootArg);
-        const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
-        await this.processCommand(terminalCommand).then(() =>{
-          const autoCmpltReslt = this.getAutoCompelete(rootArg, this.generatedArguments);
-  
-          console.log('autoCmpltReslt:',autoCmpltReslt);
-          console.log('this.generatedArguments:',this.generatedArguments);
-
-          if(rootArg){
-            if(autoCmpltReslt.length === 1){
-              this.terminalForm.setValue({terminalCmd: `${rootCmd} ${autoCmpltReslt[0]}`});
-            }else{
-              terminalCommand.setResponseCode = this.Options;
-              terminalCommand.setCommandOutput = autoCmpltReslt.join(Constants.BLANK_SPACE) || this.generatedArguments.join(Constants.BLANK_SPACE);
-              this.commandHistory.push(terminalCommand);
-            }  
-          }else{
-            terminalCommand.setResponseCode = this.Options;
-            terminalCommand.setCommandOutput = this.generatedArguments.join(Constants.BLANK_SPACE);
-            this.commandHistory.push(terminalCommand);
-          }
-        });
-      }
-      evt.preventDefault();
-    }
   }
 
 
@@ -286,17 +228,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
   }
 
-
   getTabStateCount():number{
     return this.tabCompletionState.sections.length;
   }
-
-  // validateRootCmd(rootCmd:string):boolean{
-  //   if((rootCmd !== undefined && rootCmd.length > 0) && (!rootCmd.includes(Constants.BLANK_SPACE))){
-  //     return true;
-  //   }
-  //   return false;
-  // }
 
   createTabState(cursorPos:number, idxSec?:number):void{
     const writeState:IState ={
@@ -664,7 +598,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     console.log('traversalDepth:',this.directoryTraversalDepth);
 
     const curNum = this.dirEntryTraverseCntr++;
-
+    console.log('dirEntryTraverseCntr:',this.dirEntryTraverseCntr);
+    
     if((this.directoryTraversalDepth > 1)){
       console.log('11111111');
       console.log('setValue - 3');
