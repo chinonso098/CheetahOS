@@ -371,10 +371,12 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
 
         if(path.includes(goOneLevelUpWithSlash)){
             const goOneLevelUp = '..';
-            const moveUps = path.split(goOneLevelUp);
+            const moveUps = path.split(Constants.ROOT);
             const fMoveUps = moveUps.filter(x => x === goOneLevelUp);
             const impliedPath = this.getImpliedPath(fMoveUps);
             fixedPath = `${impliedPath}/${path}`.replaceAll(goOneLevelUpWithSlash, Constants.EMPTY_STRING);
+        }else if(path.trim() === Constants.ROOT){
+            fixedPath = Constants.ROOT;
         }else{
             fixedPath = `${this.currentDirectoryPath}/${path}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
         }

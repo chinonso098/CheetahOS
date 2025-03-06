@@ -80,7 +80,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   terminalForm!: FormGroup;
   dirEntryTraverseCntr = 0;
   directoryTraversalDepth = 0;
-
+  readonly SCROLL_DELAY = 300;
   firstSection = true;
   secondSection = false;
   sectionTabPressCntnr = 0;
@@ -291,12 +291,12 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     return this.tabCompletionState.sections.length;
   }
 
-  validateRootCmd(rootCmd:string):boolean{
-    if((rootCmd !== undefined && rootCmd.length > 0) && (!rootCmd.includes(Constants.BLANK_SPACE))){
-      return true;
-    }
-    return false;
-  }
+  // validateRootCmd(rootCmd:string):boolean{
+  //   if((rootCmd !== undefined && rootCmd.length > 0) && (!rootCmd.includes(Constants.BLANK_SPACE))){
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   createTabState(cursorPos:number, idxSec?:number):void{
     const writeState:IState ={
@@ -340,7 +340,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     let sectOneCursorPos = 0;
     let sectTwoCursorPos = 0;
 
-    if(this.getTabStateCount() <= 1){
+    if(this.getTabStateCount() === 1){
       //state 1
       sectOneCursorPos = this.tabCompletionState.sections[0].cursorPosition;
       if(curCursorPos < sectOneCursorPos){
@@ -414,7 +414,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }else if(evt.key === "ArrowRight"){
       this.switchSections();  
     }else if(evt.key === Constants.BLANK_SPACE){
-      if(this.validateRootCmd(rootCmd) && (rootArg !== undefined && !this.stringIsOnlyWhiteSpace(rootArg))){
+      if(this.isValidInputArg(rootCmd) && (rootArg !== undefined && !this.stringIsOnlyWhiteSpace(rootArg))){
         this.currentState = this.stateTwo;
         this.swtichToNextSection = true;
         this.sectionTabPressCntnr = 0;
@@ -426,7 +426,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       /**
        * the command part of the command string, can not be undefined, must have a length greater than 0, and cannot contain space
        */
-      if(this.validateRootCmd(rootCmd)){
+      if(this.isValidInputArg(rootCmd)){
         if(!this.allCommands.includes(rootCmd)){
           const autoCmpltReslt = this.getAutoCompelete(rootCmd, this.allCommands);
 
@@ -535,104 +535,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
   }
 
-  // async handleChangeDirectoryRequest(cmdString:string, rootCmd:string, rootArg:string):Promise<void>{
-  //   if((rootArg !== undefined && rootArg.length > 0) && (!rootArg.includes(Constants.BLANK_SPACE))){
-  //     const alteredRootArg = this.getLastSegment(rootArg);
-  //     console.log('alteredRootArg:',alteredRootArg);
-
-
-  //     if(!this.isInLoopState){
-  //       console.log('i am now here');
-  //       if(!this.fetchedDirectoryList.includes(alteredRootArg)){
-  //         console.log('fetchedDirectoryList does not have:',alteredRootArg );
-  //         const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
-  //         await this.traverseDirectoryHelper(terminalCommand).then(() =>{
-  //           this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, alteredRootArg);
-  //           this.isInLoopState = true;
-  //           this.dirEntryTraverseCntr = 0;
-  //         });
-  //       }else{
-  //         console.log('fetchedDirectoryList does have:',alteredRootArg);
-  //         this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, alteredRootArg);
-  //         this.isInLoopState = true;
-  //       }
-  //     }else{
-  //       console.log('i am now here 1');
-  //       if(this.firstSection && this.firstSectionCntr === 0){
-  //         this.firstSectionCntr --;
-
-  //         const alteredCmdString = `lx ${this.removeCurrentDir(rootArg)}`;
-  //         console.log('alteredCmdString:',alteredCmdString);
-  //         const terminalCommand = new TerminalCommand(alteredCmdString, 0, Constants.BLANK_SPACE);
-  //         await this.traverseDirectoryHelper(terminalCommand).then(() =>{
-  //           this.loopThroughDirectory( rootCmd, rootArg, alteredRootArg);
-  //           this.dirEntryTraverseCntr = this.tabCompletionState.sections[0].dirEntryTraverseCntr;
-  //         });
-
-  //       }else if(this.secondSection && this.secondSectionCntr === 0){
-  //         this.secondSectionCntr--;
-
-  //         const alteredCmdString = `lx ${this.removeCurrentDir(rootArg)}`;
-  //         console.log('alteredCmdString:',alteredCmdString);
-  //         const terminalCommand = new TerminalCommand(alteredCmdString, 0, Constants.BLANK_SPACE);
-  //         await this.traverseDirectoryHelper(terminalCommand).then(() =>{
-  //           this.loopThroughDirectory(rootCmd, rootArg, alteredRootArg);
-  //           this.dirEntryTraverseCntr = this.tabCompletionState.sections[1].dirEntryTraverseCntr;
-  //         });
-  //       }else{
-  //         this.loopThroughDirectory(rootCmd,rootArg, alteredRootArg);
-  //         console.log('this.numCntr++:', this.dirEntryTraverseCntr);
-  //       }
-  //     }
-
-  //   }else{
-  //     //console.log('rootArg:',rootArg);
-  //     if(this.fetchedDirectoryList.length == 0){
-  //       console.log('i am now here 2');
-  //       const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
-  //       await this.traverseDirectoryHelper(terminalCommand).then(() =>{
-  //         this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, "");
-  //         this.isInLoopState = true;
-  //       });
-  //     }else{
-  //       if(this.isInLoopState){
-  //         console.log('i am now here 4');
-
-  //         if(rootArg.includes(Constants.ROOT)){
-  //           console.log('setValue - 1');
-  //           if(this.currentState === this.stateOne){
-  //             this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]}`});
-  //           }else{
-  //             if(this.firstSection)
-  //               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]} ${this.tabCompletionState.sections[1].currentPath}`});
-
-  //             if(this.secondSection)
-  //               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath}  ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[0]}`});
-  //           }
-  //         }else{
-  //           console.log('setValue - 2');
-  //           if(this.currentState === this.stateOne){
-  //             this.terminalForm.setValue({terminalCmd:`${rootCmd} ${this.fetchedDirectoryList[0]}`});
-  //           }else{
-  //             if(this.firstSection)
-  //               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[0]} ${this.tabCompletionState.sections[1].currentPath}`});
-        
-  //             if(this.secondSection)
-  //               this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath} ${this.fetchedDirectoryList[0]}`});
-  //           }
-  //         }
-
-  //         this.dirEntryTraverseCntr++;
-  //       }else{
-  //         console.log('i am now here 5');
-  //         this.loopThroughDirectory(rootCmd,rootArg, '');
-  //       }
-  //     }
-  //   }
-  // }
 
   async handleChangeDirectoryRequest(cmdString: string, rootCmd: string, rootArg: string): Promise<void> {
-      if (this.isValidRootArg(rootArg)) {
+      if (this.isValidInputArg(rootArg)) {
           const alteredRootArg = this.getLastSegment(rootArg);
           console.log('alteredRootArg:', alteredRootArg);
 
@@ -648,9 +553,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       }
   }
 
-  /** Helper to check if rootArg is valid */
-  private isValidRootArg(rootArg: string): boolean {
-      return rootArg !== undefined && rootArg.length > 0 && !rootArg.includes(Constants.BLANK_SPACE);
+  /** Helper to check if inputArg is valid */
+  private isValidInputArg(inputArg: string): boolean {
+      return ((inputArg !== undefined && inputArg.length > 0) && (!inputArg.includes(Constants.BLANK_SPACE)));
   }
 
   /** Handles directory traversal when outside loop state */
@@ -991,12 +896,14 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       this.doesDirExist = true;
       this.directoryTraversalDepth = result.depth;
     }
+
+    setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
   }
 
   async processCommand(terminalCmd:TerminalCommand, key=""):Promise<void>{
     const cmdStringArr = terminalCmd.getCommand.split(Constants.BLANK_SPACE);
     const rootCmd = cmdStringArr[0].toLowerCase();
-    const scrollDelay = 300;
+
     if(this.isValidCommand(rootCmd)){
 
       if(rootCmd == "clear"){
@@ -1141,7 +1048,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       terminalCmd.setCommandOutput = `${terminalCmd.getCommand}: command not found. Type 'help', or 'help -verbose' to view a list of available commands.`;
     }
 
-    setTimeout(() => this.scrollToBottom(), scrollDelay);
+    setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
     this.storeAppState();
   }
 
