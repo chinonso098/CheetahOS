@@ -234,6 +234,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
+    const menuHeight = 213; //this is not ideal.. menu height should be gotten dynmically
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
     this._menuService.hideContextMenus.next();
@@ -245,10 +246,12 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
     // show IconContexMenu is still a btn click, just a different type
     this.doBtnClickThings(id);
+
+    const axis = this.checkAndHandleMenuBounds(evt, menuHeight);
   
     this.iconCntxtMenuStyle = {
       'position':'absolute',
-      'transform':`translate(${String(evt.clientX)}px, ${String(evt.clientY)}px)`,
+      'transform':`translate(${String(evt.clientX + 2)}px, ${String(axis.yAxis)}px)`,
       'z-index': 2,
     }
 
@@ -276,6 +279,37 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         this.menuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
         this.menuData = this.sourceData;
       }
+  }
+
+  checkAndHandleMenuBounds(evt:MouseEvent, menuHeight:number):{ xAxis: number; yAxis: number; }{
+
+    let yAxis = 0;
+    const xAxis = 0;
+    const taskBarHeight = 40;
+
+    const mainWindow = document.getElementById('vanta');
+    const windowHeight =  mainWindow?.offsetHeight || 0;
+    const verticalDiff = windowHeight - evt.clientY;
+
+    let verticalShift = false;
+    if((verticalDiff) >= taskBarHeight && (verticalDiff) <= menuHeight){
+      const shifMenuUpBy = menuHeight - verticalDiff;
+      verticalShift = true;
+      yAxis = evt.clientY - shifMenuUpBy - taskBarHeight;
+    }
+    
+    //yAxis = (verticalShift)? yAxis : evt.clientY;
+    if(verticalShift){
+      yAxis = yAxis + 0;
+    }else{
+      if(verticalDiff >= 215 && verticalDiff <= 230){
+        yAxis = evt.clientY - 35;
+      }else  if(verticalDiff >= 231 && verticalDiff <= 246){
+        yAxis = evt.clientY - 17.5;
+      }
+    }
+
+    return {xAxis, yAxis};
   }
 
   doNothing():void{

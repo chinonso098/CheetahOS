@@ -587,8 +587,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       }
   }
 
-
-
   loopThroughDirectory(rootCmd:string, rootArg:string,  alteredRootArg:string):void{
 
     //const cnt = this.countSlashes(rootArg);
@@ -599,7 +597,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
     const curNum = this.dirEntryTraverseCntr++;
     console.log('dirEntryTraverseCntr:',this.dirEntryTraverseCntr);
-    
+
     if((this.directoryTraversalDepth > 1)){
       console.log('11111111');
       console.log('setValue - 3');
@@ -798,8 +796,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   stringIsOnlyWhiteSpace(arg: string): boolean{
     return  !arg.replace(/\s/g, '').length;
   }
-
-
 
   async traverseDirectoryHelper(terminalCmd:TerminalCommand):Promise<void>{
     const cmdStringArr = terminalCmd.getCommand.split(Constants.BLANK_SPACE);

@@ -293,7 +293,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     const evtOriginator = this._runningProcessService.getEventOrginator();
 
-    if(evtOriginator == ''){
+    if(evtOriginator === Constants.EMPTY_STRING){
       const menuHeight = 281; //this is not ideal.. menu height should be gotten dynmically
   
       this._menuService.hideContextMenus.next();
