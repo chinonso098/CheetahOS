@@ -823,6 +823,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
     else if(result.type === strArr){
       this.fetchedDirectoryList = [];
+      this.dirEntryTraverseCntr = 0;
       this.fetchedDirectoryList = [...result.result as string[]];
       this.doesDirExist = true;
       this.directoryTraversalDepth = result.depth;

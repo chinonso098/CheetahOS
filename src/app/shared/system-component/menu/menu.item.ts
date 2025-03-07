@@ -22,3 +22,8 @@ export interface NestedMenuItem {
     emptyline:boolean;
     styleOption:string;
 }
+
+export interface MenuPositiom{ 
+    xAxis: number; 
+    yAxis: number; 
+}

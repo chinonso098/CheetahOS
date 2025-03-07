@@ -13,7 +13,7 @@ import { FileManagerService } from 'src/app/shared/system-service/file.manager.s
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
-import { GeneralMenu } from 'src/app/shared/system-component/menu/menu.item';
+import { GeneralMenu, MenuPositiom } from 'src/app/shared/system-component/menu/menu.item';
 
 
 @Component({
@@ -281,8 +281,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       }
   }
 
-  checkAndHandleMenuBounds(evt:MouseEvent, menuHeight:number):{ xAxis: number; yAxis: number; }{
-
+  checkAndHandleMenuBounds(evt:MouseEvent, menuHeight:number):MenuPositiom{
     let yAxis = 0;
     const xAxis = 0;
     const taskBarHeight = 40;
@@ -298,14 +297,13 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       yAxis = evt.clientY - shifMenuUpBy - taskBarHeight;
     }
     
-    //yAxis = (verticalShift)? yAxis : evt.clientY;
-    if(verticalShift){
-      yAxis = yAxis + 0;
-    }else{
+    if(!verticalShift){
       if(verticalDiff >= 215 && verticalDiff <= 230){
         yAxis = evt.clientY - 35;
       }else  if(verticalDiff >= 231 && verticalDiff <= 246){
         yAxis = evt.clientY - 17.5;
+      }else{
+        yAxis = evt.clientY;
       }
     }
 

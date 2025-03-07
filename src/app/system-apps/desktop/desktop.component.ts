@@ -12,7 +12,7 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
-import { NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.item';
+import { MenuPositiom, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.item';
 import * as htmlToImage from 'html-to-image';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -332,7 +332,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  checkAndHandleMenuBounds(evt:MouseEvent, menuHeight:number):{ xAxis: number; yAxis: number; }{
+  checkAndHandleMenuBounds(evt:MouseEvent, menuHeight:number):MenuPositiom{
 
     let xAxis = 0;
     let yAxis = 0;

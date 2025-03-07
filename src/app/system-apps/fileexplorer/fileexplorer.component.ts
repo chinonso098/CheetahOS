@@ -16,7 +16,7 @@ import {basename} from 'path';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
-import { GeneralMenu, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.item';
+import { GeneralMenu, MenuPositiom, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.item';
 import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
@@ -1331,28 +1331,20 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._menuService.storeData.next([path, action]);
   }
   
-  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):{ xAxis: number; yAxis: number; }{
+  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPositiom{
 
     let xAxis = 0;
     let yAxis = 0;
-    //const horizontalMin = rect.x;
-    const horizontalMax = rect.right
-    //const verticalMin = rect.top;
-    const verticalMax = rect.bottom;
-    const horizontalDiff =  horizontalMax - evt.clientX;
-    const verticalDiff = verticalMax - evt.clientY;
     let horizontalShift = false;
     let verticalShift = false;
 
+    const horizontalMax = rect.right
+    const verticalMax = rect.bottom;
+    const horizontalDiff =  horizontalMax - evt.clientX;
+    const verticalDiff = verticalMax - evt.clientY;
     const menuWidth = 210;
-    const subMenuWidth = 205;
-
-    // if((horizontalDiff) >= 0 && (horizontalDiff) <= 10){
-    //   this.isShiftSubMenuLeft = true;
-    //   horizontalShift = true;
-
-    //   xAxis = evt.clientX - rect.left - horizontalDiff;
-    // }
+    //const subMenuWidth = 205;
+    const taskBarHeight = 40;
 
     if((horizontalDiff) < menuWidth){
       horizontalShift = true;
@@ -1361,12 +1353,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       xAxis = evt.clientX - rect.left - diff;
     }
 
-    
-
-    if((verticalDiff) >= 40 && (verticalDiff) <= menuHeight){
+    if((verticalDiff) >= taskBarHeight && (verticalDiff) <= menuHeight){
       const shifMenuUpBy = menuHeight - verticalDiff;
       verticalShift = true;
-
       yAxis = evt.clientY - rect.top - shifMenuUpBy;
     }
     
@@ -1375,21 +1364,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
  
     return {xAxis, yAxis};
   }
-
-  //menu doesn't exist when this method is first called
-  // getMenuHeight(menuId:string):number{
-  //   const nestedMenu =  document.getElementById(menuId) as HTMLDivElement;
-  //   let menuHeight = 0;
-  //   console.log('nestedMenu:', nestedMenu);
-
-  //   setTimeout(()=>{
-  //     if(nestedMenu){
-  //       menuHeight = Number(nestedMenu.style.height);
-  //       console.log('menu height:', menuHeight);
-  //     }
-  //   },200)
-  //   return menuHeight
-  // }
 
   shiftViewSubMenu():void{ this.shiftNestedMenuPosition(0); }
 
