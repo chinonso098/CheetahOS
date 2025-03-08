@@ -36,7 +36,7 @@ export class TerminalCommandProcessor{
     private files:FileInfo[] = [];
     private readonly defaultDirectoryPath = Constants.ROOT;
     private currentDirectoryPath = Constants.ROOT;
-    private fallBackDirPath = '';
+    private fallBackDirPath = Constants.EMPTY_STRING;
 
     constructor() { 
         this._triggerProcessService = TriggerProcessService.instance;
@@ -72,8 +72,8 @@ help -verbose                   get a detailed list of commands
 open --app  <foo>               opens app <foo>
 close --app <pid>               closes app <pid>
 clear                           clears the terminal output and all previous command
-curl                            query Api's, and transfer data to and from servers
-download <uri> <name>           download from the internet by providing a urls
+curl                            query Api's
+download <uri> <path> <name>    download from the internet by providing a urls
 ls                              list files and folder in the present directory
 cd                              change directory
 cp  -<option> <path> <path>     copy from source to destination folder
@@ -133,13 +133,13 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             return {response:response, result:true};
         }
 
+        const alteredSrcUri = srcUri.replace('src:', Constants.EMPTY_STRING).trim();
         // Ensure the URL has a valid scheme
-        if (!srcUri.startsWith('http://') || !srcUri.startsWith('https://')) {
+        if (!alteredSrcUri.startsWith('http://') && !alteredSrcUri.startsWith('https://')) {
             return {response:'provide a valid url starting with http:// or https://', result:true};
         }
 
-        const alteredSrcUri = srcUri.replace('src:', Constants.EMPTY_STRING).replace(Constants.DOUBLE_SLASH, Constants.EMPTY_STRING);
-        const parts = alteredSrcUri.split(Constants.SLASH)
+        const parts = srcUri.split(Constants.SLASH)
         defaultfileName = parts[parts.length - 1];
 
         if(!dest){  dest = defualtDownloadLocation; }
@@ -152,30 +152,31 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
                if(!result){
                 return {response:'download folder does not exist', result:true};
                }
+
+               dest = dlDest;
             }
         }
 
-
-        if(!name){  name = defaultfileName;  }
-        if(name){
-            if(!res){
-                return {response: 'file name not allowed', result:true};
+        if(!name){  name = defaultfileName;}
+        else{
+            const dlName = dest.replace('filename:', Constants.EMPTY_STRING)
+            if(dlName){
+                if(!res){
+                    return {response: 'file name not allowed', result:true};
+                }
+                name = dlName;
             }
         }
 
-        console.log(`Downloading from: ${srcUri}`);
         try {    
-            const response = await fetch(srcUri);
-
+            const response = await fetch(alteredSrcUri);
             // Handle non-OK responses (e.g., 404, 500)
             if (!response.ok) {
                 return {response:`Download failed, status ${response.status} - ${response.statusText}`, result:false}
             }
     
             const buffer = await response.arrayBuffer();
-            console.log('Downloaded buffer:', buffer);
             if(buffer){
-
                 const dlCntnt:FileInfo = new FileInfo();
                 dlCntnt.setFileName = name,
                 dlCntnt.setCurrentPath = `${dest}/${name}`;
@@ -189,7 +190,6 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
 
         return {response:`Download successful, location:${dest}`, result:true};
     }
-    
 
     hostname():string{
         const hostname = window.location.hostname;
@@ -199,7 +199,7 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
     async weather(arg0:string):Promise<string>{
         const city = arg0;
 
-        if (city == undefined || city == '' || city.length == 0) {
+        if (city == undefined || city == Constants.EMPTY_STRING || city.length == 0) {
           return 'Usage: weather [city]. Example: weather Indianapolis';
         }
     
@@ -258,9 +258,9 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             }
 
             result.push(tmpBottom);
-            return result.join(''); // Join with empty string to avoid commas
+            return result.join(Constants.EMPTY_STRING); // Join with empty string to avoid commas
         }
-        return '';
+        return Constants.EMPTY_STRING;
     }
 
     open(arg0:string, arg1:string):string{
@@ -371,7 +371,7 @@ curl(['curl', 'example.com', '-X', 'POST', '-H', 'Content-Type: application/json
                     }
                     break;
                 case '-d': // Request body (for POST/PUT)
-                    body = args[i + 1] || '';
+                    body = args[i + 1] || Constants.EMPTY_STRING;
                     i++;
                     break;
             }
@@ -436,8 +436,8 @@ curl(['curl', 'example.com', '-X', 'POST', '-H', 'Content-Type: application/json
     }
 
     getPermission(arg0:string):string{
-        let result = '';
-        const argSplit = arg0.split('');
+        let result = Constants.EMPTY_STRING;
+        const argSplit = arg0.split(Constants.EMPTY_STRING);
         argSplit.shift();
 
         argSplit.forEach(x => {
@@ -527,7 +527,6 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         result = {response:'No such file or directory', result:false};
         return result;
     }
-
 
     addBackTickToFileName(fileName:string):string{
         const strArr = fileName.split(Constants.BLANK_SPACE);
@@ -664,22 +663,19 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
     }
 
     getFallBackPath(arg0:string):string{
-
         /** given an input like this /osdrive/Documents/PD
-        *create a function that splits directory and the assisgns a portion to fallback
-        *this.fallBackDirPath = this.currentDirectoryPath;  /osdrive/Documents 
-        */
+         *create a function that splits directory and the assisgns a portion to fallback
+         *this.fallBackDirPath = this.currentDirectoryPath;  /osdrive/Documents */
 
         const tmpTraversedPath = arg0.split(Constants.ROOT);
         const tmpStr:string[] = [];
-        let dirPath = '';
+        let dirPath = Constants.EMPTY_STRING;
 
         tmpTraversedPath.shift();
-        const traversedPath = tmpTraversedPath.filter(x => x !== '');
+        const traversedPath = tmpTraversedPath.filter(x => x !== Constants.EMPTY_STRING);
 
         // first, remove the last entry in the array
-        const removedEntry = traversedPath.pop();
-        //console.log('prepFallBackPath - removedEntry:', removedEntry);
+        traversedPath.pop();
 
         traversedPath.forEach(el =>{
             tmpStr.push(`/${el}`);
@@ -687,8 +683,43 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         tmpStr.push(Constants.ROOT);
 
         dirPath = tmpStr.join(Constants.EMPTY_STRING);
-        return dirPath.replace(',',Constants.EMPTY_STRING);
+        return dirPath.replace(Constants.COMMA, Constants.EMPTY_STRING);
     }
+
+    async touch(arg0: string):Promise<GenericResult>{
+
+        const cmplxRegex = /^([\w\-.]+)\{(\d+)\.\.(\d+)\}$/;
+        const simpleRegex = /^[a-zA-Z0-9_]+$/;
+  
+        if(!arg0){
+            const response = `
+filename is required
+
+Usage:
+touch <filename>
+touch <filename>{start_num..end_num}`;
+            return {response:response, result:true};
+        }
+
+        if(arg0.match(cmplxRegex)){
+            const fileName = arg0.substring(0, arg0.indexOf('{'));
+            const sub = arg0.substring(arg0.indexOf('{'), arg0.indexOf('}') + 1);
+            const range = sub.replace('{', Constants.EMPTY_STRING).replace('}', Constants.EMPTY_STRING).split('..');
+            const start = range[0];
+            const end = range[1];
+
+
+            console.log('filename:',fileName);
+            console.log('sub:',sub);
+            console.log('start:',start);
+            console.log('end:',end);
+
+        }else if(arg0.match(simpleRegex)){
+            //
+        }
+
+        return {response:'Enter valid imput', result:true};
+      }
 
     async mkdir(arg0:string, arg1:string):Promise<string>{
         
@@ -710,7 +741,7 @@ usage: mkdir direcotry_name [-v]
                         `;
         }
 
-        return '';
+        return Constants.EMPTY_STRING;
     }
 
     async mv(sourceArg:string, destinationArg:string):Promise<string>{
@@ -730,7 +761,7 @@ usage: mkdir direcotry_name [-v]
         const result =  await this._fileService.movehandler(destinationArg, folderQueue);
         if(result){
             const result = await this.rm('-rf', sourceArg);
-            if(result === ''){
+            if(result === Constants.EMPTY_STRING){
                 if(destinationArg.includes('/Users/Desktop')){
                     this.sendDirectoryUpdateNotification(sourceArg);
                     this.sendDirectoryUpdateNotification(destinationArg);
@@ -740,7 +771,7 @@ usage: mkdir direcotry_name [-v]
             }
         }
 
-        return ''
+        return Constants.EMPTY_STRING;
     }
 
     async cp(optionArg:any, sourceArg:string, destinationArg:string):Promise<string>{
@@ -763,10 +794,10 @@ usage: mkdir direcotry_name [-v]
         }
         
         const options = ['-f', '--force', '-R','-r','--recursive', '-v', '--verbose' , '--help'];
-        let option = '';
+        let option = Constants.EMPTY_STRING;
         if(optionArg){
-            option = (options.includes(optionArg as string))? optionArg : '';
-            if(option === '')
+            option = (options.includes(optionArg as string))? optionArg : Constants.EMPTY_STRING;
+            if(option === Constants.EMPTY_STRING)
                 return `cp: invalid option ${optionArg as string}`
 
             if(option === '--help'){
@@ -793,7 +824,7 @@ Mandatory argument to long options are mandotory for short options too.
 
         const isDirectory = await this._fileService.checkIfDirectory(sourceArg);
         if(isDirectory){
-            if(option === '' || option === '-f' || option === '--force' || option === '--verbose')
+            if(option === Constants.EMPTY_STRING || option === '-f' || option === '--force' || option === '--verbose')
                 return `cp: omitting directory ${sourceArg}`;
 
             if(option === '-r' || (option === '-R' || option === '--recursive')){
@@ -812,7 +843,7 @@ Mandatory argument to long options are mandotory for short options too.
                 this.sendDirectoryUpdateNotification(destinationArg);
             }
         }        
-        return '';
+        return Constants.EMPTY_STRING;
     }
 
     async rm(optionArg:any, sourceArg:string):Promise<string>{
@@ -829,10 +860,10 @@ Mandatory argument to long options are mandotory for short options too.
 
         
         const options = ['-rf'];
-        let option = '';
+        let option = Constants.EMPTY_STRING;
         if(optionArg){
-            option = (options.includes(optionArg as string))? optionArg : '';
-            if(option === '')
+            option = (options.includes(optionArg as string))? optionArg : Constants.EMPTY_STRING;
+            if(option === Constants.EMPTY_STRING)
                 return `rm: invalid option ${optionArg as string}`
 
             if(option === '--help'){
@@ -855,7 +886,7 @@ Mandatory argument to long options are mandotory for short options too.
 
         const isDirectory = await this._fileService.checkIfDirectory(sourceArg);
         if(isDirectory){
-            if(option === '' )
+            if(option === Constants.EMPTY_STRING )
                 return `rm: omitting directory ${sourceArg}`;
 
             if(option === '-rf'){
@@ -863,7 +894,7 @@ Mandatory argument to long options are mandotory for short options too.
                 const result = await this._fileService.removeHandler(optionArg,sourceArg);
                 if(result){
                     this.sendDirectoryUpdateNotification(sourceArg);
-                    return '';
+                    return Constants.EMPTY_STRING;
                 }
             }
         }else{
@@ -871,7 +902,7 @@ Mandatory argument to long options are mandotory for short options too.
             const result = await this._fileService.removeHandler(sourceArg,sourceArg);
             if(result){
                 this.sendDirectoryUpdateNotification(sourceArg);
-                return '';
+                return Constants.EMPTY_STRING;
             }
         }        
         return 'error';

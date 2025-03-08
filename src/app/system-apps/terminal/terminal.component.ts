@@ -276,14 +276,14 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
     if(this.getTabStateCount() === 1){
       //state 1
-      sectOneCursorPos = this.tabCompletionState.sections[0].cursorPosition;
+      sectOneCursorPos = this.tabCompletionState.sections[0]?.cursorPosition;
       if(curCursorPos < sectOneCursorPos){
         this.currentState = this.stateOne;
       }
     }else{
       this.currentState = this.stateTwo;
-      sectOneCursorPos = this.tabCompletionState.sections[0].cursorPosition;
-      sectTwoCursorPos = this.tabCompletionState.sections[1].cursorPosition;
+      sectOneCursorPos = this.tabCompletionState.sections[0]?.cursorPosition;
+      sectTwoCursorPos = this.tabCompletionState.sections[1]?.cursorPosition;
       if(curCursorPos < sectOneCursorPos){
         this.firstSection = true;
         this.secondSection = false;
@@ -303,10 +303,10 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     if(this.getTabStateCount() === 1){
       //
     }else if(this.getTabStateCount() === 2){
-      const sectOneCursorPos = this.tabCompletionState.sections[0].cursorPosition;
-      const sectOneIdxCntr = this.tabCompletionState.sections[0].dirEntryTraverseCntr;
-      const sectTwoCursorPos = this.tabCompletionState.sections[1].cursorPosition;
-      const sectTwoIdxCntr = this.tabCompletionState.sections[1].dirEntryTraverseCntr;
+      const sectOneCursorPos = this.tabCompletionState.sections[0]?.cursorPosition;
+      const sectOneIdxCntr = this.tabCompletionState.sections[0]?.dirEntryTraverseCntr;
+      const sectTwoCursorPos = this.tabCompletionState.sections[1]?.cursorPosition;
+      const sectTwoIdxCntr = this.tabCompletionState.sections[1]?.dirEntryTraverseCntr;
 
       if(this.firstSection && (curCursorPos < sectOneCursorPos)){
         this.setCursorPosition(sectOneCursorPos);
@@ -983,6 +983,12 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         const result = await this._terminaCommandsProc.mv(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
+      }
+
+      if(rootCmd == "touch"){
+        const result = await this._terminaCommandsProc.touch(cmdStringArr[1]);
+        terminalCmd.setResponseCode = this.Success;
+        terminalCmd.setCommandOutput = result.response;
       }
       
     }else{
