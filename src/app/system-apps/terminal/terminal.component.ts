@@ -380,7 +380,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         if(cmdStringArr.length === 1){
           rootArg  =  cmdStringArr[1];
           this.isWhiteSpaceAtTheEnd = this.checkForWhitSpaceAtTheEnd(cmdString);
-          console.log('Has-White-Space-At-The- sEnd:', this.isWhiteSpaceAtTheEnd);
   
           if(rootArg === undefined){
             this.terminalForm.setValue({terminalCmd:`${rootCmd} ${Constants.BLANK_SPACE}`});
@@ -397,7 +396,20 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
             await this.handleChangeDirectoryRequest(cmdString,rootCmd,rootArg);
           }
         }
-      }else if(rootCmd === "cp" || rootCmd === "mv"){        
+      }else if(rootCmd === "download"){
+        if(cmdStringArr.length === 1){
+          rootArg  =  cmdStringArr[1];
+          this.isWhiteSpaceAtTheEnd = this.checkForWhitSpaceAtTheEnd(cmdString);
+          const src = 'src:';
+  
+          if(rootArg === undefined){
+            this.terminalForm.setValue({terminalCmd:`${rootCmd} ${src}`});
+            return;
+          }
+        }
+      }
+      
+      else if(rootCmd === "cp" || rootCmd === "mv"){        
         //case where cp is rootCmd, but there is no space following rootCmd. Add space
         if(cmdStringArr.length === 1){
           rootArg  =  cmdStringArr[1];
@@ -667,6 +679,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       this.commandHistory.push(terminalCommand);
       result = true;
     }else{
+      console.log('3 - I AM STILL NEEDED 00004');
       const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
       terminalCommand.setResponseCode = this.Options;
       terminalCommand.setCommandOutput = this.fetchedDirectoryList.join(Constants.BLANK_SPACE);
@@ -702,7 +715,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         }
       }
       result = res.join(Constants.EMPTY_STRING);
-      //console.log('removeCurrentDir-result:',result);
     }
 
     return result.replace(Constants.COMMA, Constants.EMPTY_STRING);
@@ -863,9 +875,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       } 
 
       if(rootCmd == "download"){
-        this._terminaCommandsProc.download(cmdStringArr[1], cmdStringArr[2]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = 'downloading ..';
+        const result = await this._terminaCommandsProc.download(cmdStringArr[1], cmdStringArr[2], '');
+        terminalCmd.setResponseCode = (result.result)? this.Success : this.Fail;
+        terminalCmd.setCommandOutput = result.response;
       } 
 
       if(rootCmd == "exit"){
@@ -928,12 +940,10 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
       if (rootCmd == "cp"){
         const option = cmdStringArr[1];
-
         const source = cmdStringArr[2];
         const destination = cmdStringArr[3];
       
         const result = await this._terminaCommandsProc.cp(option, source, destination);
-
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       }
@@ -991,7 +1001,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   getAutoCompelete(arg0:string, arg1:string[]): string[]{
     // eslint-disable-next-line prefer-const
     let matchingCommand =  arg1.filter((x) => x.startsWith(arg0.trim()));
-
     return (matchingCommand.length > 0) ? matchingCommand : [];
   }
 
@@ -1013,7 +1022,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       }
       this.terminalHistoryOutput.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
       this.terminalHistoryOutput.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
-
     }
   }
 

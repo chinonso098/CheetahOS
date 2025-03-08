@@ -53,7 +53,7 @@ export interface LSResult{
     result: any;
 }
 
-export interface CDResult{
+export interface GenericResult{
     response: string;  
     result: boolean;
 }

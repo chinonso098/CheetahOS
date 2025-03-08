@@ -597,14 +597,15 @@ export class FileService implements BaseService{
 
     public async writeFileAsync(directory:string, file:FileInfo):Promise<boolean>{
         return new Promise<boolean>((resolve, reject) =>{
-            this._fileSystem.writeFile(`${directory}/${file.getFileName}`, file.getContentPath, {flag: 'wx'}, (err) =>{  
+            const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
+            this._fileSystem.writeFile(`${directory}/${file.getFileName}`, cntnt, {flag: 'wx'}, (err) =>{  
                 console.log(`FileName:${directory}/${file.getFileName}`);
 
                 if(err?.code === 'EEXIST' ){
                     console.log('writeFileAsync Error: file already exists',err);
 
                     const itrName = this.iterateFileName(`${directory}/${file.getFileName}`);
-                    this._fileSystem.writeFile(itrName,file.getContentPath,(err) =>{  
+                    this._fileSystem.writeFile(itrName, cntnt,(err) =>{  
                         if(err){
                             console.log('writeFileAsync Iterate Error:',err);
                             reject(false);

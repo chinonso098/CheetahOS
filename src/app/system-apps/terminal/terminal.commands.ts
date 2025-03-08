@@ -1,4 +1,4 @@
-import { CDResult, ITraverseResult, LSResult, TerminalCommand } from "./model/terminal.types";
+import { GenericResult, ITraverseResult, LSResult, TerminalCommand } from "./model/terminal.types";
 import { AppDirectory } from "src/app/system-files/app.directory";
 import { TriggerProcessService } from "src/app/shared/system-service/trigger.process.service";
 import { FileInfo } from "src/app/system-files/file.info";
@@ -8,6 +8,7 @@ import {extname, basename, resolve, dirname} from 'path';
 import { FileService } from "src/app/shared/system-service/file.service";
 import { FileEntry } from 'src/app/system-files/file.entry';
 import { Constants } from 'src/app/system-files/constants';
+import { Buffer } from 'buffer';
 
 
 export interface OctalRepresentation {
@@ -100,13 +101,82 @@ All commands:
         return new Date().toLocaleDateString();
     }
 
-    download(uri: string, downloadName: string):void {
-        const link = document.createElement("a");
-        link.download = downloadName;
-        link.href = uri;
-        link.click();
-        link.remove();
+    // download(uri: string, fileName:string):void {
+
+    //     if(!uri || uri === '.')
+    //         uri = 'https://assets.mixkit.co/active_storage/video_items/100545/1725385175/100545-video-720.mp4';
+
+    //     const contentType = 'application/octet-stream';
+    //     const link  = document.createElement('a');
+    //     const blob = new Blob([uri], {'type':contentType});
+    //     console.log('blob data:', blob)
+    //     link.href = window.URL.createObjectURL(blob);
+    //     link.download = fileName;
+    //     link.click();
+    // }
+
+    async download(srcUri: string, dest: string, name: string): Promise<GenericResult> {     
+        const defualtDownloadLocation = '/Users/Downloads';
+        const regexStr = '^[a-zA-Z0-9_]+$';
+        const res = new RegExp(regexStr).test(name);
+
+        let defaultfileName = Constants.EMPTY_STRING;
+        
+        if(!srcUri) {
+            const response = `
+download src must be specified.
+
+Usage:
+src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename:<name>(Optional)
+`;
+            return {response:response, result:true};
+        }
+
+        // Ensure the URL has a valid scheme
+        if (!srcUri.startsWith('http://') || !srcUri.startsWith('https://')) {
+            return {response:'provide a valid url starting with http:// or https://', result:true};
+        }
+
+        const alteredSrcUri = srcUri.replaceAll(Constants.DOUBLE_SLASH, Constants.EMPTY_STRING);
+        const parts = alteredSrcUri.split(Constants.SLASH)
+        defaultfileName = parts[parts.length - 1];
+
+        if(!dest){  dest = defualtDownloadLocation;  }
+
+        if(!name){  name = defaultfileName;  }
+        if(name){
+            if(!res){
+                return {response: 'file name not allowed', result:true};
+            }
+        }
+
+        console.log(`Downloading from: ${srcUri}`);
+        try {    
+            const response = await fetch(srcUri);
+
+            // Handle non-OK responses (e.g., 404, 500)
+            if (!response.ok) {
+                return {response:`Download failed, status ${response.status} - ${response.statusText}`, result:false}
+            }
+    
+            const buffer = await response.arrayBuffer();
+            console.log('Downloaded buffer:', buffer);
+            if(buffer){
+
+                const dlCntnt:FileInfo = new FileInfo();
+                dlCntnt.setFileName = name,
+                dlCntnt.setCurrentPath = `${dest}/${name}`;
+                dlCntnt.setContentBuffer = Buffer.from(buffer);
+
+                this._fileService.writeFileAsync(dest, dlCntnt);
+            }    
+        } catch (error:any) {
+            return {response:`Error downloading file: ${error.message}`, result:false};
+        }
+
+        return {response:`Download successful, location:${dest}`, result:true};
     }
+    
 
     hostname():string{
         const hostname = window.location.hostname;
@@ -241,25 +311,78 @@ All commands:
         }
     }
 
-    async curl (args: string[]):Promise<string> {
-        if (args.length === 0 || (args[1] === undefined || args[1].length === 0)){
-          return 'curl: no URL provided';
-        }
-        let url = args[1];
+    /**
+     *
+     *await curl(['curl', 'example.com']); // Simple GET request  
+     *await curl(['curl', 'example.com', '-X', 'POST', '-H', 'Content-Type: application/json', '-d', '{"name": "John"}']); // POST request with JSON  
+     * @param args 
+     * @returns 
+     */
+    async curl(args: string[]): Promise<string> {
+        if (args.length < 2 || !args[1]) {
+            return `
+curl: no URL provided
 
-        if(!url.includes('https://')){
-           const tmpUrl = `https://${url}`;
-           url = tmpUrl;
+Usage:
+curl(['curl', 'example.com']); // Simple GET request  
+curl(['curl', 'example.com', '-X', 'POST', '-H', 'Content-Type: application/json', '-d', '{"name": "John"}']); // POST
+            `;
+        }
+    
+        let url = args[1];
+    
+        // Ensure the URL has a valid scheme
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = `https://${url}`;
+        }
+    
+        // Default options
+        let method = 'GET';
+        const headers: Record<string, string> = {};
+        let body: string | undefined = undefined;
+    
+        // Parse additional arguments (e.g., -X POST, -H "Header: value", -d "body")
+        for (let i = 2; i < args.length; i++) {
+            switch (args[i]) {
+                case '-X': // HTTP method
+                    method = args[i + 1] || 'GET';
+                    i++;
+                    break;
+                case '-H': // Headers
+                    if (args[i + 1]) {
+                        const headerParts = args[i + 1].split(':');
+                        if (headerParts.length === 2) {
+                            headers[headerParts[0].trim()] = headerParts[1].trim();
+                        }
+                        i++;
+                    }
+                    break;
+                case '-d': // Request body (for POST/PUT)
+                    body = args[i + 1] || '';
+                    i++;
+                    break;
+            }
         }
     
         try {
-          const response = await fetch(url);
-          const data = await response.text();
-          return data;
+            const response = await fetch(url, {
+                method,
+                headers,
+                body: method !== 'GET' && method !== 'HEAD' ? body : undefined, // Only include body for relevant methods
+            });
+    
+            const responseBody = await response.text();
+    
+            if (!response.ok) {
+                return `curl: request failed with status ${response.status} - ${response.statusText}\n${responseBody}`;
+            }
+    
+            return responseBody;
         } catch (error) {
-          return `curl: could not fetch URL ${url}. Details: ${error}`;
+            return `curl: could not fetch URL ${url}. Details: ${error}`;
         }
     }
+    
 
     addspaces(arg:string, maxSpace = 21):string{
         const maxSpaceInput = maxSpace;
@@ -365,11 +488,11 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         return result;
     }
 
-    async cd(path:string):Promise<CDResult>{
+    async cd(path:string):Promise<GenericResult>{
         const goOneLevelUpWithSlash = '../';
 
         let fixedPath = Constants.EMPTY_STRING;
-        let result:CDResult;
+        let result:GenericResult;
 
         if(path.includes(goOneLevelUpWithSlash)){
             const goOneLevelUp = '..';
