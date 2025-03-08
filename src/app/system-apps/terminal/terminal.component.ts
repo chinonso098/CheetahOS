@@ -961,7 +961,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         }
         else if(result.type === strArr){
           console.log('ls result:', result)
-          terminalCmd.setCommandOutput = result.result.join(' ');
+          terminalCmd.setCommandOutput = result.result.join(Constants.BLANK_SPACE);
           this.fetchedDirectoryList = [];
           this.fetchedDirectoryList = [...result.result];
         }
@@ -990,7 +990,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result.response;
       }
-      
     }else{
       terminalCmd.setResponseCode = this.Fail;
       terminalCmd.setCommandOutput = `${terminalCmd.getCommand}: command not found. Type 'help', or 'help -verbose' to view a list of available commands.`;

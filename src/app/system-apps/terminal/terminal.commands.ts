@@ -687,9 +687,13 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
     }
 
     async touch(arg0: string):Promise<GenericResult>{
-
         const cmplxRegex = /^([\w\-.]+)\{(\d+)\.\.(\d+)\}$/;
+        const cmplxRegexStr = /^([\w\-.]+)\{([a-zA-Z])\.\.([a-zA-Z])\}$/;
         const simpleRegex = /^[a-zA-Z0-9_]+$/;
+
+        let fileName = Constants.EMPTY_STRING;
+        let sub = Constants.EMPTY_STRING;
+        let range:string[] = [];
   
         if(!arg0){
             const response = `
@@ -697,25 +701,54 @@ filename is required
 
 Usage:
 touch <filename>
-touch <filename>{start_num..end_num}`;
+touch <filename>{start_num..end_num};
+touch <filename>{start_char..end_char}`;
             return {response:response, result:true};
         }
 
+        if(arg0.match(cmplxRegex) || arg0.match(cmplxRegexStr)){
+            fileName = arg0.substring(0, arg0.indexOf('{'));
+            sub = arg0.substring(arg0.indexOf('{'), arg0.indexOf('}') + 1);
+            range = sub.replace('{', Constants.EMPTY_STRING).replace('}', Constants.EMPTY_STRING).split('..');
+        }
+
         if(arg0.match(cmplxRegex)){
-            const fileName = arg0.substring(0, arg0.indexOf('{'));
-            const sub = arg0.substring(arg0.indexOf('{'), arg0.indexOf('}') + 1);
-            const range = sub.replace('{', Constants.EMPTY_STRING).replace('}', Constants.EMPTY_STRING).split('..');
-            const start = range[0];
-            const end = range[1];
+            const start = Number(range[0]);
+            const end =  Number(range[1]);
 
+            for(let i = start; i <= end; i++){
+                const newFile:FileInfo = new FileInfo();
+                newFile.setFileName = `${fileName}_${i}.txt`;
+                newFile.setCurrentPath = `${this.currentDirectoryPath}/${fileName}_${i}.txt`;
+                newFile.setContentPath = Constants.BLANK_SPACE;
 
-            console.log('filename:',fileName);
-            console.log('sub:',sub);
-            console.log('start:',start);
-            console.log('end:',end);
+                this._fileService.writeFileAsync(this.currentDirectoryPath, newFile);
+            }
+            return {response:Constants.EMPTY_STRING, result:true};
+        }else if(arg0.match(cmplxRegexStr)){
+            const alphs:string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+                'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+            const start = alphs.indexOf(range[0]);
+            const end =  alphs.indexOf(range[1]);
 
-        }else if(arg0.match(simpleRegex)){
-            //
+            for(let i = start; i <= end; i++){
+                const newFile:FileInfo = new FileInfo();
+                newFile.setFileName = `${fileName}_${alphs[i]}.txt`;
+                newFile.setCurrentPath = `${this.currentDirectoryPath}/${fileName}_${alphs[i]}.txt`;
+                newFile.setContentPath = Constants.BLANK_SPACE;
+
+                this._fileService.writeFileAsync(this.currentDirectoryPath, newFile);
+            }
+            return {response:Constants.EMPTY_STRING, result:true};
+        } else if(arg0.match(simpleRegex)){
+            const newFile:FileInfo = new FileInfo();
+            newFile.setFileName = `${arg0}.txt`;
+            newFile.setCurrentPath = `${this.currentDirectoryPath}/${arg0}.txt`;
+            newFile.setContentPath = Constants.BLANK_SPACE;
+
+            this._fileService.writeFileAsync(this.currentDirectoryPath, newFile);
+
+            return {response:Constants.EMPTY_STRING, result:true};
         }
 
         return {response:'Enter valid imput', result:true};
@@ -723,7 +756,7 @@ touch <filename>{start_num..end_num}`;
 
     async mkdir(arg0:string, arg1:string):Promise<string>{
         
-        const forbiddenChars:string[]= [ '\\', '/',':','*','?','"', '<', '>', '|', "'"];
+        const forbiddenChars:string[]= [ '\\', '/',':','*','?','"', '<', '>', '|', "'", '`'];
 
         if(arg0 && !forbiddenChars.includes(arg0)){
             const folderName = arg0;
@@ -732,7 +765,6 @@ touch <filename>{start_num..end_num}`;
                 if(arg1 && arg1 == '-v'){
                     return `folder: ${arg0} successfully created`;
                 }
-
                 this.sendDirectoryUpdateNotification(this.currentDirectoryPath);
             }
         }else{

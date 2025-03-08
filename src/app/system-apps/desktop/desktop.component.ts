@@ -250,14 +250,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       const animateColorTransition = (time: number) => {
         const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
         const interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
-  
         this._vantaEffect.setOptions({ color: interpolatedColor });
   
         if (progress < 1) {
           requestAnimationFrame(animateColorTransition);
         }
       };
-  
       requestAnimationFrame(animateColorTransition);
     }
   }
