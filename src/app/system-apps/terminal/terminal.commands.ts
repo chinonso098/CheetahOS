@@ -119,6 +119,7 @@ All commands:
         const defualtDownloadLocation = '/Users/Downloads';
         const regexStr = '^[a-zA-Z0-9_]+$';
         const res = new RegExp(regexStr).test(name);
+        const filePathRegex = /^(\.\.\/)+([a-zA-Z0-9_-]+\/?)*$|^(\.\/|\/)([a-zA-Z0-9_-]+\/?)+$|^\.\.$|^\.\.\/$/;
 
         let defaultfileName = Constants.EMPTY_STRING;
         
@@ -137,11 +138,23 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             return {response:'provide a valid url starting with http:// or https://', result:true};
         }
 
-        const alteredSrcUri = srcUri.replaceAll(Constants.DOUBLE_SLASH, Constants.EMPTY_STRING);
+        const alteredSrcUri = srcUri.replace('src:', Constants.EMPTY_STRING).replace(Constants.DOUBLE_SLASH, Constants.EMPTY_STRING);
         const parts = alteredSrcUri.split(Constants.SLASH)
         defaultfileName = parts[parts.length - 1];
 
-        if(!dest){  dest = defualtDownloadLocation;  }
+        if(!dest){  dest = defualtDownloadLocation; }
+        else{
+            const dlDest = dest.replace('dpath:', Constants.EMPTY_STRING)
+            if(dlDest === '.'){ dest = this.currentDirectoryPath; }
+
+            if(filePathRegex.test(dlDest)){
+               const result = await this._fileService.checkIfExistsAsync(dlDest);
+               if(!result){
+                return {response:'download folder does not exist', result:true};
+               }
+            }
+        }
+
 
         if(!name){  name = defaultfileName;  }
         if(name){
@@ -383,7 +396,6 @@ curl(['curl', 'example.com', '-X', 'POST', '-H', 'Content-Type: application/json
         }
     }
     
-
     addspaces(arg:string, maxSpace = 21):string{
         const maxSpaceInput = maxSpace;
         const argLen = arg.length;
