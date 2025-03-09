@@ -84,7 +84,7 @@ list --apps -i                  get a list of all installed apps
 list --apps -a                  get a list of all running apps
 
 All commands:
-    clear, close, curl, cd, download, date, ls, list, help, hostname, open, pwd, version, weather
+    cat, clear, close, curl, cd, download, date, ls, list, help, hostname, open, pwd, touch, version, weather
     whoami
         `;
             return verbose;
@@ -753,6 +753,63 @@ touch <filename>{start_char..end_char}`;
 
         return {response:'Enter valid imput', result:true};
       }
+
+    async cat(arg0: string):Promise<GenericResult>{
+        //"cat file1.txt file2.txt > file3.txt"
+        const concatRegex = /^cat (\S+(\s\S+)*) > (\S+)$/;
+
+        //cat > file1.txt
+        const createRegex = /^cat\s+>\s+[a-zA-Z0-9._-]+\.txt$/;
+
+        //cat file.txt
+        const readOrOpenRegex = /^cat\s+[a-zA-Z0-9._-]+\.txt$/;
+
+        // "cat oldfile1.txt > newfileR.txt",
+        const copyRegex = /^cat\s+[a-zA-Z0-9._-]+\.txt\s+>\s+[a-zA-Z0-9._-]+\.txt$/;
+
+        //"cat 'Hello there, world' > newfile-1.txt",
+        const writeCreateRegex = /^cat\s+'[^']*'\s+>\s+[a-zA-Z0-9._-]+\.txt$/;
+
+        //"cat 'Hello there, world' > newfile-1.txt",
+        const updateCreateRegex = /^cat\s+'[^']*'\s+>>\s+[a-zA-Z0-9._-]+\.txt$/;
+
+        if(arg0.match(readOrOpenRegex)){
+            const parts = arg0.split(Constants.BLANK_SPACE)
+            const fileName = parts[1];
+
+            const result = await this._fileService.checkIfExistsAsync(`${this.currentDirectoryPath}/${fileName}`);
+            if(result){
+                const textCntnt = await this._fileService.getFileAsync(`${this.currentDirectoryPath}/${fileName}`);
+
+                return {response:textCntnt, result:true};
+            }
+
+            return {response:`file: ${fileName} not found`, result:true};
+
+        }else if(arg0.match(createRegex)){
+                //
+        }else if(arg0.match(writeCreateRegex)){
+            //
+        }
+
+        const invalidResponse =`
+Invalid cmd
+
+Usage:
+
+cat > file1.txt                                 Create file
+
+cat file1.txt                                   Read file
+
+cat file1.txt file2.txt file3.txt > file4.txt   Concatenate file
+
+cat oldfile.txt > newfile.txt                   Copy to new file
+`;
+
+       
+        return {response:invalidResponse, result:true};
+    }
+
 
     async mkdir(arg0:string, arg1:string):Promise<string>{
         

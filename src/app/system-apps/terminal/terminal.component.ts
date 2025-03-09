@@ -850,20 +850,48 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
     if(this.isValidCommand(rootCmd)){
 
+      if(rootCmd == "cat"){
+        const result = await this._terminaCommandsProc.cat(terminalCmd.getCommand);
+        terminalCmd.setResponseCode = this.Success;
+        terminalCmd.setCommandOutput = result.response;
+      }
+
+      if(rootCmd == "cd"){
+        const result = await this._terminaCommandsProc.cd(cmdStringArr[1]);
+
+        if(result.result){
+          terminalCmd.setResponseCode = this.Success;
+          terminalCmd.setCommandOutput = result.response;
+        }else{
+          terminalCmd.setResponseCode = this.Fail;
+          terminalCmd.setCommandOutput = result.response;
+        }
+      } 
+
       if(rootCmd == "clear"){
         this.commandHistory = [];
         this.isBannerVisible = false;
         this.isWelcomeVisible = false;
       } 
 
-      if(rootCmd == "curl"){
-        const result = await this._terminaCommandsProc.curl(cmdStringArr);
+      if(rootCmd == "close"){
+        const result = this._terminaCommandsProc.close(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
 
-      if(rootCmd == "close"){
-        const result = this._terminaCommandsProc.close(cmdStringArr[1], cmdStringArr[2]);
+      if (rootCmd == "cp"){
+        const option = cmdStringArr[1];
+        const source = cmdStringArr[2];
+        const destination = cmdStringArr[3];
+      
+        const result = await this._terminaCommandsProc.cp(option, source, destination);
+        terminalCmd.setResponseCode = this.Success;
+        terminalCmd.setCommandOutput = result;
+      }
+
+      if(rootCmd == "curl"){
+        const result = await this._terminaCommandsProc.curl(cmdStringArr);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
@@ -890,63 +918,11 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         terminalCmd.setCommandOutput = result;
       } 
 
-      if(rootCmd == "open"){
-        const result = this._terminaCommandsProc.open(cmdStringArr[1], cmdStringArr[2]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "version"){
-        const result = this._terminaCommandsProc.version(this.versionNum);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "whoami"){
-        const result = this._terminaCommandsProc.whoami();
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "weather"){
-        const result = await this._terminaCommandsProc.weather(cmdStringArr[1]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
       if(rootCmd == "list"){
         const result = this._terminaCommandsProc.list(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       } 
-
-      if(rootCmd == "pwd"){
-        const result = this._terminaCommandsProc.pwd();
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "cd"){
-        const result = await this._terminaCommandsProc.cd(cmdStringArr[1]);
-
-        if(result.result){
-          terminalCmd.setResponseCode = this.Success;
-          terminalCmd.setCommandOutput = result.response;
-        }else{
-          terminalCmd.setResponseCode = this.Fail;
-          terminalCmd.setCommandOutput = result.response;
-        }
-      } 
-
-      if (rootCmd == "cp"){
-        const option = cmdStringArr[1];
-        const source = cmdStringArr[2];
-        const destination = cmdStringArr[3];
-      
-        const result = await this._terminaCommandsProc.cp(option, source, destination);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      }
 
       if(rootCmd == "ls"){
         const str = 'string';
@@ -973,14 +949,26 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         terminalCmd.setCommandOutput = result;
       }
 
-      if(rootCmd == "rm"){
-        const result = await this._terminaCommandsProc.rm(cmdStringArr[1], cmdStringArr[2]);
+      if(rootCmd == "mv"){
+        const result = await this._terminaCommandsProc.mv(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       }
 
-      if(rootCmd == "mv"){
-        const result = await this._terminaCommandsProc.mv(cmdStringArr[1], cmdStringArr[2]);
+      if(rootCmd == "open"){
+        const result = this._terminaCommandsProc.open(cmdStringArr[1], cmdStringArr[2]);
+        terminalCmd.setResponseCode = this.Success;
+        terminalCmd.setCommandOutput = result;
+      } 
+
+      if(rootCmd == "pwd"){
+        const result = this._terminaCommandsProc.pwd();
+        terminalCmd.setResponseCode = this.Success;
+        terminalCmd.setCommandOutput = result;
+      } 
+
+      if(rootCmd == "rm"){
+        const result = await this._terminaCommandsProc.rm(cmdStringArr[1], cmdStringArr[2]);
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result;
       }
@@ -990,6 +978,25 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         terminalCmd.setResponseCode = this.Success;
         terminalCmd.setCommandOutput = result.response;
       }
+
+      if(rootCmd == "version"){
+        const result = this._terminaCommandsProc.version(this.versionNum);
+        terminalCmd.setResponseCode = this.Success;
+        terminalCmd.setCommandOutput = result;
+      } 
+
+      if(rootCmd == "whoami"){
+        const result = this._terminaCommandsProc.whoami();
+        terminalCmd.setResponseCode = this.Success;
+        terminalCmd.setCommandOutput = result;
+      } 
+
+      if(rootCmd == "weather"){
+        const result = await this._terminaCommandsProc.weather(cmdStringArr[1]);
+        terminalCmd.setResponseCode = this.Success;
+        terminalCmd.setCommandOutput = result;
+      } 
+
     }else{
       terminalCmd.setResponseCode = this.Fail;
       terminalCmd.setCommandOutput = `${terminalCmd.getCommand}: command not found. Type 'help', or 'help -verbose' to view a list of available commands.`;
