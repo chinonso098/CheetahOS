@@ -52,7 +52,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   SECONDS_DELAY = 250;
 
   hasWindow = true;
-  icon = `${Constants.IMAGE_BASE_PATH}text-editor.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}text_editor.png`;
   name = 'texteditor';
   isMaximizable = false;
   processId = 0;

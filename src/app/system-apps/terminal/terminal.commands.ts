@@ -139,7 +139,7 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             return {response:'provide a valid url starting with http:// or https://', result:true};
         }
 
-        const parts = srcUri.split(Constants.SLASH)
+        const parts = srcUri.split(Constants.ROOT)
         defaultfileName = parts[parts.length - 1];
 
         if(!dest){  dest = defualtDownloadLocation; }
@@ -789,20 +789,34 @@ touch <filename>{start_char..end_char}`;
         }else if(arg0.match(createRegex)){
                 //
         }else if(arg0.match(writeCreateRegex)){
-            //
+            const idxs = [];
+            for( let i = 0; i <= arg0.length; i++){
+                if(arg0[i] === "'")
+                    idxs.push(i)
+            }
+
+            const text = arg0.substring(idxs[0], idxs[1] + 1);
+            const parts = arg0.split(Constants.BLANK_SPACE)
+            const fileName = parts[parts.length -1];
+
+            const newFile:FileInfo = new FileInfo();
+            newFile.setFileName = fileName,
+            newFile.setCurrentPath = `${this.currentDirectoryPath}/${fileName}`;
+            newFile.setContentPath = text
+
+            this._fileService.writeFileAsync(this.currentDirectoryPath, newFile);
+
+            return {response:Constants.EMPTY_STRING, result:true};
         }
 
         const invalidResponse =`
 Invalid cmd
 
 Usage:
-
 cat > file1.txt                                 Create file
-
+cat 'This is a test of' > file1.txt             Create file with text
 cat file1.txt                                   Read file
-
 cat file1.txt file2.txt file3.txt > file4.txt   Concatenate file
-
 cat oldfile.txt > newfile.txt                   Copy to new file
 `;
 
@@ -851,7 +865,7 @@ usage: mkdir direcotry_name [-v]
         if(result){
             const result = await this.rm('-rf', sourceArg);
             if(result === Constants.EMPTY_STRING){
-                if(destinationArg.includes('/Users/Desktop')){
+                if(destinationArg.includes('Users/Desktop')){
                     this.sendDirectoryUpdateNotification(sourceArg);
                     this.sendDirectoryUpdateNotification(destinationArg);
                 }
@@ -891,16 +905,14 @@ usage: mkdir direcotry_name [-v]
 
             if(option === '--help'){
                 return `
-Usage cp [option] ....SOURCE DEST
-Copy SOURCE to DEST.
+Usage:
+cp [option] [SOURCE] [DEST] copies SOURCE to DEST.
 
 Mandatory argument to long options are mandotory for short options too.
 
-   -f, --force             copy file by force
-   -r, -R, -- recursive    copy folder recurively.
-   -v, --verbose           explain what is being done.
-       --help              display the help and exit.
-
+-f, --force             copy file by force
+-r, -R, -- recursive    copy folder recurively.
+-v, --verbose           prints  files being copied
                 `;
             }
         }
@@ -957,15 +969,13 @@ Mandatory argument to long options are mandotory for short options too.
 
             if(option === '--help'){
                 return `
-Usage rm [option] ....SOURCE
-Delete SOURCE.
+Usage:
+rm [options] [SOURCE] deletes SOURCE.
 
 Mandatory argument to long options are mandotory for short options too.
 
-   -rf                     delete folder recurively.
-   -v, --verbose           explain what is being done.
-       --help              display the help and exit.
-
+-rf                 delete folder recurively.
+-v, --verbose       prints  files being deleted.
                 `;
             }
         }

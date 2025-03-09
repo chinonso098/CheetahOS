@@ -10,7 +10,6 @@ export namespace Constants{
     export const TILDE= '~';
     export const DASH= '-';
     export const BACK_SLASH= '\\';
-    export const SLASH= '/';
     export const DOUBLE_SLASH = '//';
     export const OSDISK = 'OSDisk (C:)';
     export const THISPC = 'This PC';
