@@ -3,7 +3,7 @@ import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChange
 import { ComponentType } from 'src/app/system-files/system.types';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { Subscription } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
 import { BaseState, WindowState } from 'src/app/system-files/state/state.interface';
 import {openCloseAnimation, hideShowAnimation, minimizeMaximizeAnimation} from 'src/app/shared/system-component/window/animation/animations';
@@ -57,17 +57,12 @@ import { Process } from 'src/app/system-files/process';
   windowMinMaxAction = 'minimized';
 
   windowTransform =  'translate(0,0)';
-
   windowTransform0p =   'translate(0,0)';
-  windowTransform25p =  'translate(-25px,25px)';
   windowTransform50p =  'translate(-50px,50px)';
-  windowTransform75p =  'translate(-75px,75px)';
   windowTransform100p = 'translate(-100px,100px)';
 
   yAxis0p =   'translate(0,0)';
-  yAxis25p =  'translate(0,25px)';
   yAxis50p =  'translate(0,50px)';
-  yAxis75p =  'translate(0,75px)';
   yAxis100p = 'translate(0,100px)';
 
   windowWidth = '0px';
@@ -76,6 +71,9 @@ import { Process } from 'src/app/system-files/process';
 
   xAxisTmp = 0;
   yAxisTmp = 0;
+
+  winTop = 0;
+  winLeft = 0;
 
   isWindowMaximizable = true;
   currentWindowSizeState = false;
@@ -124,18 +122,20 @@ import { Process } from 'src/app/system-files/process';
       this.icon = this.processAppIcon;
       this.name = this.processAppName;
       this.isWindowMaximizable = this.isMaximizable;
-      this.windowOpenCloseAction = 'open'
-    }
 
-    ngOnDestroy():void{
-      this._restoreOrMinSub?.unsubscribe();
-      this._focusOnNextProcessSub?.unsubscribe();
-      this._focusOnCurrentProcessSub?.unsubscribe();
-      this._removeFocusOnOtherProcessesSub?.unsubscribe();
-      this._showOnlyCurrentProcessSub?.unsubscribe();
-      this._hideOtherProcessSub?.unsubscribe();
-      this._restoreProcessSub?.unsubscribe();
-      this._restoreProcessesSub?.unsubscribe();
+      this.windowOpenCloseAction = 'open';
+      const uid = `${this.name}-${this.processId}`;
+
+      setTimeout(() => {
+        if(this._windowService.isProcessInWindowList(uid)){
+          this.stackWindow(false);
+        }else{
+          this.stackWindow(true);
+        }
+      }, 0);
+
+      this._windowService.addProcessToWindowList(uid); 
+      //this.setWindowToFocusById(this.processId);
     }
 
     ngAfterViewInit():void{
@@ -158,10 +158,13 @@ import { Process } from 'src/app/system-files/process';
         z_index:(z_index === undefined)? this.MAX_Z_INDEX : z_index,
         is_visible:true
       }
+
+
       
       this.uniqueId = `${this.name}-${this.processId}`;
       this._stateManagmentService.addState(this.uniqueId,this._originalWindowsState, StateType.Window);
-      this.setWindowToFocusById(this.processId);
+
+      //this.setWindowToFocusById(this.processId);
 
       //tell angular to run additional detection cycle after 
       this.changeDetectorRef.detectChanges();
@@ -170,6 +173,17 @@ import { Process } from 'src/app/system-files/process';
       //  this.captureComponentImg();
       //},this.WINDOW_CAPTURE_SECONDS_DELAY);
   
+    }
+
+    ngOnDestroy():void{
+      this._restoreOrMinSub?.unsubscribe();
+      this._focusOnNextProcessSub?.unsubscribe();
+      this._focusOnCurrentProcessSub?.unsubscribe();
+      this._removeFocusOnOtherProcessesSub?.unsubscribe();
+      this._showOnlyCurrentProcessSub?.unsubscribe();
+      this._hideOtherProcessSub?.unsubscribe();
+      this._restoreProcessSub?.unsubscribe();
+      this._restoreProcessesSub?.unsubscribe();
     }
 
     ngOnChanges(changes: SimpleChanges):void{
@@ -207,7 +221,13 @@ import { Process } from 'src/app/system-files/process';
           //console.log(`setHideAndShow-Window app_name: ${windowState.app_name} ----  Window pid:${windowState.pid}  ---------- ${this.processId}`);//TBD
           windowState.is_visible = false;
           windowState.z_index = this.MIN_Z_INDEX;
-          this.currentStyles = { 'z-index':this.MIN_Z_INDEX };
+
+          this.currentStyles = { 
+            'top': `${this.winTop}%`,
+            'left': `${this.winLeft}%`,
+            'z-index':this.MIN_Z_INDEX 
+          };
+
           this._stateManagmentService.addState(this.uniqueId, windowState, StateType.Window);
 
           const nextProc = this.getNextProcess(this.processId);
@@ -308,6 +328,8 @@ import { Process } from 'src/app/system-files/process';
       //console.log(`updateWindowZIndex-Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);//TBD
       if(this.processId == window.pid){
         this.currentStyles = {
+          'top': `${this.winTop}%`,
+          'left': `${this.winLeft}%`,
           'z-index':zIndex
         };
         window.z_index = zIndex;
@@ -320,6 +342,8 @@ import { Process } from 'src/app/system-files/process';
       //console.log(`setWindowToPriorHiddenState-Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);//TBD
       if(this.processId == window.pid){
         this.currentStyles = {
+          'top': `${this.winTop}%`,
+          'left': `${this.winLeft}%`,
           'z-index':zIndex,
           'opacity': 0,
         };
@@ -400,18 +424,58 @@ import { Process } from 'src/app/system-files/process';
     
     generateCloseAnimationValues(x_axis:number, y_axis:number):void{
       this.windowTransform0p =  `translate(${String(x_axis)}px , ${String(y_axis)}px)`;
-      this.windowTransform25p =  `translate(${String(x_axis - 25)}px , ${String(y_axis + 25)}px)`;
       this.windowTransform50p =  `translate(${String(x_axis - 50)}px , ${String(y_axis + 50)}px)`;
-      this.windowTransform75p =  `translate(${String(x_axis - 75)}px , ${String(y_axis + 75)}px)`;
       this.windowTransform100p =  `translate(${String(x_axis - 100)}px , ${String(y_axis + 100)}px)`;
     }
 
     generateHideAnimationValues(x_axis:number, y_axis:number ):void{
       this.yAxis0p =  `translate(${String(x_axis)}px , ${String(y_axis)}px)`;
-      this.yAxis25p =  `translate(${String(x_axis)}px , ${String(y_axis + 25)}px)`;
       this.yAxis50p =  `translate(${String(x_axis)}px , ${String(y_axis + 50)}px)`;
-      this.yAxis75p =  `translate(${String(x_axis)}px , ${String(y_axis + 75)}px)`;
       this.yAxis100p =  `translate(${String(x_axis)}px , ${String(y_axis + 100)}px)`;
+    }
+
+    stackWindow(isFirstTime:boolean):void{
+      console.log('stacking Window');
+      let newTop = 25;
+      let newLeft = 25;
+
+      if(!isFirstTime){
+        const offset = 2;
+        const currentVal = this._windowService.getProcessWindowOffset(this.uniqueId);
+        newTop = currentVal + offset;
+        newLeft = currentVal + offset;
+
+        this._windowService.addProcessWindowOffset(this.uniqueId, newTop);
+      }else{
+        this._windowService.addProcessWindowOffset(this.uniqueId, newTop);
+      }
+
+      // Ensure they don’t go out of bounds
+      const mainWindow = document.getElementById('vanta');
+      if(mainWindow){
+        newTop = Math.min(newTop, 60); // Prevent it from going off-screen
+        newLeft = Math.min(newLeft, 60);
+      }
+
+
+      this.winTop = newTop;
+      this.winLeft = newLeft;
+
+      console.log(`Setting window position: top=${newTop}%, left=${newLeft}%`);
+
+      console.log(`Before Update:`, this.currentStyles);
+
+      this.currentStyles = {
+        'top': `${newTop}%`,
+        'left': `${newLeft}%`,
+        'z-index':this.MAX_Z_INDEX
+      };
+
+      console.log(`After Update:`, this.currentStyles);
+
+      // Trigger change detection
+      //this.changeDetectorRef.detectChanges();
+
     }
 
     createGlassPane():void{
@@ -421,10 +485,12 @@ import { Process } from 'src/app/system-files/process';
     onCloseBtnClick():void{
       this.windowOpenCloseAction = 'close';
       this.generateCloseAnimationValues(this.xAxisTmp, this.yAxisTmp);
+      this._windowService.removePidFromProcessOrderList();
 
       setTimeout(()=>{
         const processToClose = this._runningProcessService.getProcess(this.processId);
         this._runningProcessService.closeProcessNotify.next(processToClose);
+        this._windowService.cleanUp(this.uniqueId);
 
         const nextProc = this.getNextProcess(this.processId);
         if(nextProc){
@@ -489,13 +555,13 @@ import { Process } from 'src/app/system-files/process';
       // console.log('removeFocusOnWindow --- this.uniqueId:', this.uniqueId);//TBD
       // console.log('removeFocusOnWindow --- pid:', pid);//TBD
 
-      const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow == true && p.getProcessId != pid);
+      const processWithWindows = this._runningProcessService.getProcesses().filter(p => p.getHasWindow === true && p.getProcessId !== pid);
 
       for(let i = 0; i < processWithWindows.length; i++){
         const process = processWithWindows[i];
         const window = this._stateManagmentService.getState(`${process.getProcessName}-${process.getProcessId}`, StateType.Window) as WindowState;
           
-        if(window != undefined && window.is_visible){
+        if(window !== undefined && window.is_visible){
           this.setHeaderInActive(window.pid);
           this.updateWindowZIndex(window, this.MIN_Z_INDEX);
         }
@@ -590,10 +656,12 @@ import { Process } from 'src/app/system-files/process';
           z_index = this.MAX_Z_INDEX;
           this._stateManagmentService.addState(this.z_index, z_index);
 
-          windowState.z_index = z_index
+          windowState.z_index = z_index;
           this._stateManagmentService.addState(this.uniqueId, windowState, StateType.Window);
   
           this.currentStyles = {
+            'top': `${this.winTop}%`,
+            'left': `${this.winLeft}%`,
             'z-index':z_index
           };
           this.setHeaderActive(pid);
@@ -613,6 +681,8 @@ import { Process } from 'src/app/system-files/process';
             //console.log('window:',uid + ' is currently hidden');//TBD
             //console.log(`translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`); //TBD
             this.currentStyles = {
+              'top': `${this.winTop}%`,
+              'left': `${this.winLeft}%`,
               'z-index':z_index,
               'opacity': 1,
               'transform': `translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`
@@ -620,6 +690,8 @@ import { Process } from 'src/app/system-files/process';
             //console.log('window:',uid + ' should be visible');
           }else{
             this.currentStyles = {
+              'top': `${this.winTop}%`,
+              'left': `${this.winLeft}%`,
               'z-index':z_index
             };
           }
@@ -649,6 +721,7 @@ import { Process } from 'src/app/system-files/process';
    }
 
    getNextProcess(pid:number):Process | undefined{
+    const nextPid = this._windowService.getNextPidInProcessOrderList();
     const processWithWindows  = this._runningProcessService.getProcesses().filter(p => p.getHasWindow == true && p.getProcessId !== pid);
     
     for (let i = 0; i < processWithWindows.length; i++){

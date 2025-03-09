@@ -19,7 +19,10 @@ export class WindowService implements BaseService{
     private _processIdService:ProcessIDService;
 
     static instance: WindowService;
-    private _runningProcessesPreviewImages:Map<string, TaskBarPreviewImage[]>;
+    private _processPreviewImages:Map<string, TaskBarPreviewImage[]>;
+    private _processWindowList:Map<string, string[]>;
+    private _processWindowOffset:Map<string, number>;
+    private _processOrderList:number[];
     private _eventOriginator = '';
 
     //WWC - without window component
@@ -44,7 +47,6 @@ export class WindowService implements BaseService{
     restoreProcessesWindowNotify: Subject<void> = new Subject<void>();
     
 
-
     name = 'window_mgmt_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
     processId = 0;
@@ -55,8 +57,12 @@ export class WindowService implements BaseService{
 
 
     constructor(){
-        this._runningProcessesPreviewImages = new Map<string, TaskBarPreviewImage[]>();
         WindowService.instance = this; //I added this to access the service from a class, not component
+
+        this._processPreviewImages = new Map<string, TaskBarPreviewImage[]>();
+        this._processWindowList = new Map<string, string[]>();
+        this._processWindowOffset = new Map<string, number>();
+        this._processOrderList = [];
 
         this._processIdService = ProcessIDService.instance;
         this._runningProcessService = RunningProcessService.instance;
@@ -67,15 +73,38 @@ export class WindowService implements BaseService{
     }
 
     addProcessPreviewImage(appName:string, data:TaskBarPreviewImage):void{
-        if(!this._runningProcessesPreviewImages.has(appName)){
+        if(!this._processPreviewImages.has(appName)){
             const tmpArr:TaskBarPreviewImage[] = [data];
-            this._runningProcessesPreviewImages.set(appName, tmpArr);
+            this._processPreviewImages.set(appName, tmpArr);
         }
         else{
-            const currImages = this._runningProcessesPreviewImages.get(appName) || [];
+            const currImages = this._processPreviewImages.get(appName) || [];
             currImages.push(data);
-            this._runningProcessesPreviewImages.set(appName, currImages);
+            this._processPreviewImages.set(appName, currImages);
         }
+    }
+
+    addProcessToWindowList(uid:string):void{
+        const appName = uid.split(Constants.DASH)[0];
+
+        if(!this._processWindowList.has(appName)){
+            this._processWindowList.set(appName, [uid]);
+        }
+        else{
+            const currUids = this._processWindowList.get(appName) || [];
+            currUids.push(uid);
+            this._processWindowList.set(appName, currUids);
+        }
+    }
+
+    addPidToProcessOrderList(uid:string):void{
+        const appPid = uid.split(Constants.DASH)[1];
+        this._processOrderList.push(Number(appPid))
+    }
+
+    addProcessWindowOffset(uid:string, offset:number):void{
+        const appName = uid.split(Constants.DASH)[0];
+        this._processWindowOffset.set(appName, offset);
     }
 
     addEventOriginator(eventOrig:string):void{
@@ -83,14 +112,47 @@ export class WindowService implements BaseService{
     }
 
     removeProcessPreviewImages(appName:string):void{
-        if(this._runningProcessesPreviewImages.has(appName))
-            this._runningProcessesPreviewImages.delete(appName);
+        if(this._processPreviewImages.has(appName))
+            this._processPreviewImages.delete(appName);
+    }
+
+    removeProcessFromWindowList(uid:string):void{
+        const appName = uid.split(Constants.DASH)[0];
+
+        if(this._processPreviewImages.has(appName)){
+            const currUids = this._processWindowList.get(appName) || [];
+
+            const deleteCount = 1;
+            const uidIndex = currUids.indexOf(uid)
+            if(uidIndex !== -1) {
+                currUids.splice(uidIndex, deleteCount);
+                this._processWindowList.set(appName, currUids);
+            }
+
+            if(currUids.length === 0)
+                this._processWindowList.delete(appName);
+        }
+    }
+
+    removeProcessWindowOffset(uid:string):void{
+        const appName = uid.split(Constants.DASH)[0];
+        if(this._processWindowOffset.has(appName))
+            this._processWindowOffset.delete(appName);
+    }
+
+    isProcessInWindowList(uid:string):boolean{
+        const appName = uid.split(Constants.DASH)[0];
+
+        if(this._processPreviewImages.has(appName))
+            return true;
+
+        return false;
     }
 
     removeProcessPreviewImage(appName:string, pid:number):void{
         const deleteCount = 1;
-        if(this._runningProcessesPreviewImages.has(appName)){
-            const currImages = this._runningProcessesPreviewImages.get(appName) || [];
+        if(this._processPreviewImages.has(appName)){
+            const currImages = this._processPreviewImages.get(appName) || [];
             const dataIndex = currImages.findIndex((d) => {
                 return d.pid  === pid;
               });
@@ -98,7 +160,7 @@ export class WindowService implements BaseService{
             if(dataIndex != -1){
                 currImages.splice(dataIndex || 0, deleteCount)
             }
-        }    
+        }
     }
 
     removeEventOriginator():void{
@@ -106,10 +168,44 @@ export class WindowService implements BaseService{
     }
 
     getProcessPreviewImages(appName:string):TaskBarPreviewImage[]{
-        if(this._runningProcessesPreviewImages.has(appName))
-           return this._runningProcessesPreviewImages.get(appName) || [];
+        if(this._processPreviewImages.has(appName))
+           return this._processPreviewImages.get(appName) || [];
 
         return [];
+    }
+
+    getProcessCountFromWindowList(uid:string):number{
+        const appName = uid.split(Constants.DASH)[0];
+
+        if(this._processPreviewImages.has(appName)){
+            const currUids = this._processWindowList.get(appName) || [];
+
+            return currUids.length;
+        }
+
+        return 0;
+    }
+
+    getProcessWindowOffset(uid:string):number{
+        const appName = uid.split(Constants.DASH)[0];
+        if(this._processWindowOffset.has(appName))
+            return this._processWindowOffset.get(appName) || 0;
+
+        return 0;
+    }
+
+    getNextPidInProcessOrderList():number{
+        return this._processOrderList[this._processOrderList.length - 1] || 0;
+    }
+
+    removePidFromProcessOrderList():void{
+        this._processOrderList.pop();
+    }
+
+    cleanUp(uid:string):void{
+        //this.removePidFromProcessOrderList();
+        this.removeProcessFromWindowList(uid);
+        this.removeProcessWindowOffset(uid);
     }
 
     getEventOrginator():string{

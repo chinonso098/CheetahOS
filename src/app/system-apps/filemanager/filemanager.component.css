@@ -8,7 +8,7 @@
     grid-template-rows: repeat(auto-fill,70px);
     height: calc(100% - 40px);
     width: 100%;
-    padding: 5px 0 ;
+    padding: 5px 0;
     row-gap: 20px;
     z-index: 1;
 }

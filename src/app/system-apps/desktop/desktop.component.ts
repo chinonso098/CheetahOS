@@ -189,26 +189,28 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   ngOnInit():void{
-    this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
-      this._vantaEffect = VANTA.WAVES({
-        el: '#vanta',
-        color:this.DEFAULT_COLOR, 
-        waveHeight:20,
-        shininess:45,
-        waveSpeed:0.20,
-        zoom:0.9,     
-      });
-    })
+    1
+    // this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
+    //   this._vantaEffect = VANTA.WAVES({
+    //     el: '#vanta',
+    //     color:this.DEFAULT_COLOR, 
+    //     waveHeight:20,
+    //     shininess:45,
+    //     waveSpeed:0.20,
+    //     zoom:0.9,     
+    //   });
+    // })
+    
     this.getDesktopMenuData();
   }
 
   ngAfterViewInit():void{
-    this._timerSubscription = interval(this.COLOR_CHANGE_DELAY).subscribe(() => {
-      this.transitionToNextColor();
-    });
+    // this._timerSubscription = interval(this.COLOR_CHANGE_DELAY).subscribe(() => {
+    //   this.transitionToNextColor();
+    // });
     
     this.hideContextMenu();
-    this.loadOtherBackgrounds();
+    //this.loadOtherBackgrounds();
     this.initClippy();
   }
 
@@ -793,8 +795,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     rowZero.label = file.getOpensWith;
     this.taskBarMenuData[0] = rowZero;
 
-    if(processCount == 1){
-      if(this.taskBarMenuData.length == 2){
+    if(processCount === 1){
+      if(this.taskBarMenuData.length === 2){
         const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}x_32.png`, label: 'Close window', action:this.closeApplicationFromTaskBar.bind(this)};
         this.taskBarMenuData.push(menuEntry);
       }else{
@@ -804,8 +806,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
     }else if(processCount > 1){
       const rowTwo = this.taskBarMenuData[2];
+      if(!rowTwo){
+        const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}x_32.png`, label: 'Close all windows', action:this.closeApplicationFromTaskBar.bind(this)};
+        this.taskBarMenuData.push(menuEntry);
+      }else{
       rowTwo.label = 'Close all windows';
       this.taskBarMenuData[2] = rowTwo;
+      }
     }
 
     return processCount;
