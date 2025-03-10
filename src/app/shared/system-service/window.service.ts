@@ -8,6 +8,7 @@ import { ProcessType } from "src/app/system-files/system.types";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { BaseService } from "./base.service.interface";
+import { WindowState } from "src/app/system-files/state/state.interface";
 
 @Injectable({
     providedIn: 'root'
@@ -22,7 +23,7 @@ export class WindowService implements BaseService{
     private _processPreviewImages:Map<string, TaskBarPreviewImage[]>;
     private _processWindowList:Map<string, string[]>;
     private _processWindowOffset:Map<string, number>;
-    private _processOrderList:number[];
+    private _processWindowStates:WindowState[];
     private _eventOriginator = '';
 
     //WWC - without window component
@@ -62,7 +63,7 @@ export class WindowService implements BaseService{
         this._processPreviewImages = new Map<string, TaskBarPreviewImage[]>();
         this._processWindowList = new Map<string, string[]>();
         this._processWindowOffset = new Map<string, number>();
-        this._processOrderList = [];
+        this._processWindowStates = [];
 
         this._processIdService = ProcessIDService.instance;
         this._runningProcessService = RunningProcessService.instance;
@@ -97,9 +98,15 @@ export class WindowService implements BaseService{
         }
     }
 
-    addPidToProcessOrderList(uid:string):void{
-        const appPid = uid.split(Constants.DASH)[1];
-        this._processOrderList.push(Number(appPid))
+    addWindowState(winState:WindowState):void{
+        const idx = this._processWindowStates.findIndex(x => x.pid === winState.pid);
+
+        if(idx === -1){
+            this._processWindowStates.push(winState);
+        } else{
+            console.log('Update Windows State:',winState);
+            this._processWindowStates[idx] = winState;
+        }
     }
 
     addProcessWindowOffset(uid:string, offset:number):void{
@@ -167,6 +174,17 @@ export class WindowService implements BaseService{
         this._eventOriginator = '';
     }
 
+    removeWindowState(pid:number):void{
+        const deleteCount = 1;
+        const winStateIdx = this._processWindowStates.findIndex((p) => {
+            return p.pid === pid;
+          });
+
+        if(winStateIdx != -1){
+            this._processWindowStates.splice(winStateIdx, deleteCount)
+        }
+    }
+
     getProcessPreviewImages(appName:string):TaskBarPreviewImage[]{
         if(this._processPreviewImages.has(appName))
            return this._processPreviewImages.get(appName) || [];
@@ -194,16 +212,33 @@ export class WindowService implements BaseService{
         return 0;
     }
 
-    getNextPidInProcessOrderList():number{
-        return this._processOrderList[this._processOrderList.length - 1] || 0;
+    getNextPidInWindowStateList():number{
+        /**
+         * get the next window state, where isvisible == true
+         */
+        let winState:WindowState = {
+            width: 0, height: 0,  x_axis: 0,  y_axis: 0, z_index: 0,is_visible: false,  pid: 0, app_name: ""
+        }
+
+        for(let i = this._processWindowStates.length - 1; i >= 0;  i--){
+            winState = this._processWindowStates[i];
+            if(winState.is_visible)
+                break;
+        }
+
+        return winState.pid;
     }
 
-    removePidFromProcessOrderList():void{
-        this._processOrderList.pop();
+    getWindowState(pid:number):WindowState | null{
+        return this._processWindowStates.find(x => x.pid === pid) || null;
+    }
+
+    getWindowStates():WindowState[]{
+        return this._processWindowStates;
     }
 
     cleanUp(uid:string):void{
-        //this.removePidFromProcessOrderList();
+        //this.addWindowStateToList();
         this.removeProcessFromWindowList(uid);
         this.removeProcessWindowOffset(uid);
     }
