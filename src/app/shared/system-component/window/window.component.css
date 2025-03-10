@@ -1,25 +1,4 @@
 
-.window-container-old{
-  font-size: 1rem;
-  text-align: center;
-  background-color: #808080;
-  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%);
-  position: absolute;
-  /* min-width: 25%; 
-    min-height: 10%;
-  */
-  width: fit-content;
-  height: fit-content;
-  /* top: 25%;
-  left: 25%; */
-  outline: 1px hsl(0deg 0% 20%/70%);
-  overflow:hidden;
-  /*max-width: 100%;  Set the width of the parent container */
-  /*max-height: 100%;  Set the height of the parent container */
-  /* transform: translate(-50%, -50%);  */
-  /* Move the element back by 50% of its own width and height */
-  /* z-index: 2; */
-}
 
 .window-container{
   font-size: 1rem;
@@ -31,6 +10,9 @@
   height: fit-content;
   outline: 1px hsl(0deg 0% 20%/70%);
   overflow: hidden;
+  /* top: 25%;
+  left: 25%;
+  z-index: 2; */
 }
 
 .header-container{

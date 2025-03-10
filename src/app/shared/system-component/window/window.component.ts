@@ -134,7 +134,7 @@ import { Process } from 'src/app/system-files/process';
         }
       }, 0);
 
-      this._windowService.addProcessToWindowList(this.uniqueId ); 
+      this._windowService.addProcessWindowToWindows(this.uniqueId ); 
     }
 
     ngAfterViewInit():void{

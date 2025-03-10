@@ -21,7 +21,7 @@ export class WindowService implements BaseService{
 
     static instance: WindowService;
     private _processPreviewImages:Map<string, TaskBarPreviewImage[]>;
-    private _processWindowList:Map<string, string[]>;
+    private _processWindows:Map<string, string[]>;
     private _processWindowOffset:Map<string, number>;
     private _processWindowStates:WindowState[];
     private _eventOriginator = '';
@@ -61,7 +61,7 @@ export class WindowService implements BaseService{
         WindowService.instance = this; //I added this to access the service from a class, not component
 
         this._processPreviewImages = new Map<string, TaskBarPreviewImage[]>();
-        this._processWindowList = new Map<string, string[]>();
+        this._processWindows = new Map<string, string[]>();
         this._processWindowOffset = new Map<string, number>();
         this._processWindowStates = [];
 
@@ -85,16 +85,16 @@ export class WindowService implements BaseService{
         }
     }
 
-    addProcessToWindowList(uid:string):void{
+    addProcessWindowToWindows(uid:string):void{
         const appName = uid.split(Constants.DASH)[0];
 
-        if(!this._processWindowList.has(appName)){
-            this._processWindowList.set(appName, [uid]);
+        if(!this._processWindows.has(appName)){
+            this._processWindows.set(appName, [uid]);
         }
         else{
-            const currUids = this._processWindowList.get(appName) || [];
+            const currUids = this._processWindows.get(appName) || [];
             currUids.push(uid);
-            this._processWindowList.set(appName, currUids);
+            this._processWindows.set(appName, currUids);
         }
     }
 
@@ -123,21 +123,21 @@ export class WindowService implements BaseService{
             this._processPreviewImages.delete(appName);
     }
 
-    removeProcessFromWindowList(uid:string):void{
+    removeProcessWindowFromWindows(uid:string):void{
         const appName = uid.split(Constants.DASH)[0];
 
-        if(this._processPreviewImages.has(appName)){
-            const currUids = this._processWindowList.get(appName) || [];
+        if(this._processWindows.has(appName)){
+            const currUids = this._processWindows.get(appName) || [];
 
             const deleteCount = 1;
             const uidIndex = currUids.indexOf(uid)
             if(uidIndex !== -1) {
                 currUids.splice(uidIndex, deleteCount);
-                this._processWindowList.set(appName, currUids);
+                this._processWindows.set(appName, currUids);
             }
 
             if(currUids.length === 0)
-                this._processWindowList.delete(appName);
+                this._processWindows.delete(appName);
         }
     }
 
@@ -196,7 +196,7 @@ export class WindowService implements BaseService{
         const appName = uid.split(Constants.DASH)[0];
 
         if(this._processPreviewImages.has(appName)){
-            const currUids = this._processWindowList.get(appName) || [];
+            const currUids = this._processWindows.get(appName) || [];
 
             return currUids.length;
         }
@@ -239,7 +239,7 @@ export class WindowService implements BaseService{
 
     cleanUp(uid:string):void{
         //this.addWindowStateToList();
-        this.removeProcessFromWindowList(uid);
+        this.removeProcessWindowFromWindows(uid);
         this.removeProcessWindowOffset(uid);
     }
 
