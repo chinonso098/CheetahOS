@@ -43,12 +43,14 @@ import { Process } from 'src/app/system-files/process';
    private _restoreProcessSub!:Subscription
    private _restoreProcessesSub!:Subscription
 
-  readonly SECONDS_DELAY = 350;
+  readonly SECONDS_DELAY = 450;
   readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
   readonly HIDDEN_Z_INDEX = 0;
   readonly MIN_Z_INDEX = 1;
   readonly MAX_Z_INDEX = 2;
   readonly TMP_Z_INDEX = 3;
+  readonly WIN_TOP = 25;
+  readonly WIN_LEFT = 25;
 
   windowHide = false;
   windowMaximize = false;
@@ -72,8 +74,8 @@ import { Process } from 'src/app/system-files/process';
   xAxisTmp = 0;
   yAxisTmp = 0;
 
-  winTop = 0;
-  winLeft = 0;
+  windowTop = 0;
+  windowLeft = 0;
 
   isWindowMaximizable = true;
   currentWindowSizeState = false;
@@ -125,13 +127,8 @@ import { Process } from 'src/app/system-files/process';
 
       this.windowOpenCloseAction = 'open';
       this.uniqueId = `${this.name}-${this.processId}`;
- 
       setTimeout(() => {
-        if(this._windowService.isProcessInWindowList(this.uniqueId )){
-          this.stackWindow(false);
-        }else{
-          this.stackWindow(true);
-        }
+        this.stackWindow(); 
       }, 0);
 
       this._windowService.addProcessWindowToWindows(this.uniqueId ); 
@@ -222,8 +219,8 @@ import { Process } from 'src/app/system-files/process';
             this._windowService.addWindowState(windowState);
   
             this.currentStyles = { 
-              'top': `${this.winTop}%`,
-              'left': `${this.winLeft}%`,
+              'top': `${this.windowTop}%`,
+              'left': `${this.windowLeft}%`,
               'z-index':this.MIN_Z_INDEX 
             };
 
@@ -332,8 +329,8 @@ import { Process } from 'src/app/system-files/process';
       //console.log(`updateWindowZIndex-Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);//TBD
       if(this.processId == window.pid){
         this.currentStyles = {
-          'top': `${this.winTop}%`,
-          'left': `${this.winLeft}%`,
+          'top': `${this.windowTop}%`,
+          'left': `${this.windowLeft}%`,
           'z-index':zIndex
         };
         window.z_index = zIndex;
@@ -345,8 +342,8 @@ import { Process } from 'src/app/system-files/process';
       //console.log(`setWindowToPriorHiddenState-Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);//TBD
       if(this.processId == window.pid){
         this.currentStyles = {
-          'top': `${this.winTop}%`,
-          'left': `${this.winLeft}%`,
+          'top': `${this.windowTop}%`,
+          'left': `${this.windowLeft}%`,
           'z-index':zIndex,
           'opacity': 0,
         };
@@ -440,32 +437,74 @@ import { Process } from 'src/app/system-files/process';
       this.yAxis100p =  `translate(${String(x_axis)}px , ${String(y_axis + 100)}px)`;
     }
 
-    stackWindow(isFirstTime:boolean):void{
+    stackWindow():void{
       console.log('stacking Window');
-      let newTop = 25;
-      let newLeft = 25;
+      let newTop = this.WIN_TOP;
+      let newLeft = this.WIN_LEFT;
+      let mainWindowWidth = 0;
+      let adjMainWindowWidth = 0;
+      let mainWindowHeight = 0;
+      let adjMainWindowHeight = 0;
 
-      if(!isFirstTime){
+      const taskBarHeight = 40;
+
+      const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
+
+      const currentVal = this._windowService.getProcessWindowOffset(this.uniqueId);
+
+
+      if(currentVal !== -1){
         const offset = 2;
-        const currentVal = this._windowService.getProcessWindowOffset(this.uniqueId);
         newTop = currentVal + offset;
         newLeft = currentVal + offset;
-
         this._windowService.addProcessWindowOffset(this.uniqueId, newTop);
       }else{
         this._windowService.addProcessWindowOffset(this.uniqueId, newTop);
       }
 
       // Ensure they don’t go out of bounds
-      const mainWindow = document.getElementById('vanta');
-      if(mainWindow){
-        newTop = Math.min(newTop, 60); // Prevent it from going off-screen
-        newLeft = Math.min(newLeft, 60);
-      }
+      const mainWindow = document.getElementById('vanta')?.getBoundingClientRect();
+      const winCmpnt = document.getElementById(winCmpntId)?.getBoundingClientRect();
+      // const rect =  this.audioContainer.nativeElement.getBoundingClientRect();
 
 
-      this.winTop = newTop;
-      this.winLeft = newLeft;
+      mainWindowWidth = mainWindow?.width || 0;
+   
+      //get the starting point of the window in x-axis
+      const startingPointXAxis = ((mainWindowWidth * newLeft) / 100);
+
+      // assuming we don't move the window around, every new window will start from the point.
+      adjMainWindowWidth = mainWindowWidth - startingPointXAxis;
+      const availableHorizontalRoom = adjMainWindowWidth - (winCmpnt?.width || 0);
+
+
+      mainWindowHeight = mainWindow?.height || 0;
+      //get the starting point of the window in x-axis
+      const startingPointYAxis = ((mainWindowHeight * newTop) / 100);
+      adjMainWindowHeight = mainWindowHeight - startingPointYAxis; 
+      const availableVerticalRoom = adjMainWindowHeight - taskBarHeight - (winCmpnt?.height || 0);
+
+
+
+
+
+      console.log('availableHorizontalRoom:',availableHorizontalRoom);
+      console.log('availableVerticalRoom:',availableVerticalRoom);
+      // console.log('winCmpnt:', winCmpnt);
+
+      // console.log('mainWindow:',mainWindow);
+      // console.log('winCmpnt:', winCmpnt);
+
+
+
+      // if(mainWindow){
+      //   newTop = Math.min(newTop, 60); // Prevent it from going off-screen
+      //   newLeft = Math.min(newLeft, 60);
+      // }
+
+
+      this.windowTop = newTop;
+      this.windowLeft = newLeft;
 
       console.log(`Setting window position: top=${newTop}%, left=${newLeft}%`);
 
@@ -669,8 +708,8 @@ import { Process } from 'src/app/system-files/process';
           this._windowService.addWindowState(windowState);
   
           this.currentStyles = {
-            'top': `${this.winTop}%`,
-            'left': `${this.winLeft}%`,
+            'top': `${this.windowTop}%`,
+            'left': `${this.windowLeft}%`,
             'z-index':z_index
           };
           this.setHeaderActive(pid);
@@ -690,8 +729,8 @@ import { Process } from 'src/app/system-files/process';
             //console.log('window:',uid + ' is currently hidden');//TBD
             //console.log(`translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`); //TBD
             this.currentStyles = {
-              'top': `${this.winTop}%`,
-              'left': `${this.winLeft}%`,
+              'top': `${this.windowTop}%`,
+              'left': `${this.windowLeft}%`,
               'z-index':z_index,
               'opacity': 1,
               'transform': `translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`
@@ -699,8 +738,8 @@ import { Process } from 'src/app/system-files/process';
             //console.log('window:',uid + ' should be visible');
           }else{
             this.currentStyles = {
-              'top': `${this.winTop}%`,
-              'left': `${this.winLeft}%`,
+              'top': `${this.windowTop}%`,
+              'left': `${this.windowLeft}%`,
               'z-index':z_index
             };
           }

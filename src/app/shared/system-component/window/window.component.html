@@ -14,7 +14,7 @@
 }"
 
 #divWindow class="window-container  window-dd-box" [ngStyle]="currentStyles"   tabindex="0" 
-ngDraggable [handle]="leftHS" (stopped)="onDragEnd($event)" (started)="onDragStart(this.processId)">
+ngDraggable [handle]="leftHS" (stopped)="onDragEnd($event)" (started)="onDragStart(this.processId)" id="wincmpnt-{{uniqueId}}">
 
         <!-- (rzStop)="onRZStop($event)"  
         ngResizable [rzHandles]="'e,s,w,se,sw'" 

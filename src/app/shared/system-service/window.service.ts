@@ -147,10 +147,10 @@ export class WindowService implements BaseService{
             this._processWindowOffset.delete(appName);
     }
 
-    isProcessInWindowList(uid:string):boolean{
+    isProcessWindowInWindows(uid:string):boolean{
         const appName = uid.split(Constants.DASH)[0];
 
-        if(this._processPreviewImages.has(appName))
+        if(this._processWindows.has(appName))
             return true;
 
         return false;
@@ -207,9 +207,9 @@ export class WindowService implements BaseService{
     getProcessWindowOffset(uid:string):number{
         const appName = uid.split(Constants.DASH)[0];
         if(this._processWindowOffset.has(appName))
-            return this._processWindowOffset.get(appName) || 0;
+            return this._processWindowOffset.get(appName) || -1;
 
-        return 0;
+        return -1;
     }
 
     getNextPidInWindowStateList():number{
