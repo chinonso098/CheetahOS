@@ -104,7 +104,6 @@ export class WindowService implements BaseService{
         if(idx === -1){
             this._processWindowStates.push(winState);
         } else{
-            console.log('Update Windows State:',winState);
             this._processWindowStates[idx] = winState;
         }
     }

@@ -399,6 +399,8 @@ import { Process } from 'src/app/system-files/process';
           this.windowTransform =  `translate(${String(x_axis)}px , ${String(y_axis)}px)`;    
           this._windowService.addWindowState(windowState);
         }
+
+        this.resetWindowBoundsState();
       }
     }
 
@@ -449,7 +451,6 @@ import { Process } from 'src/app/system-files/process';
 
       const offset = 1;
       const taskBarHeight = 40;
-      const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
 
       const currentBound = this._windowService.getProcessWindowBounds(this.uniqueId);
       if(currentBound){
@@ -466,82 +467,89 @@ import { Process } from 'src/app/system-files/process';
       }
 
       // Ensure they don’t go out of bounds
+      const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
       const mainWindow = document.getElementById('vanta')?.getBoundingClientRect();
       const winCmpnt = document.getElementById(winCmpntId)?.getBoundingClientRect();
 
-      mainWindowWidth = mainWindow?.width || 0;   
-      //get the starting point of the window in x-axis
-      const startingPointXAxis = ((mainWindowWidth * newLeft) / 100);
-      // assuming we don't move the window around, every new window will start from the point.
-      adjMainWindowWidth = mainWindowWidth - startingPointXAxis;
-      const availableHorizontalRoom = adjMainWindowWidth - (winCmpnt?.width || 0);
-
-
-      mainWindowHeight = mainWindow?.height || 0;
-      //get the starting point of the window in x-axis
-      const startingPointYAxis = ((mainWindowHeight * newTop) / 100);
-      // assuming we don't move the window around, every new window will start from the point.
-      adjMainWindowHeight = mainWindowHeight - startingPointYAxis; 
-      const availableVerticalRoom = adjMainWindowHeight - taskBarHeight - (winCmpnt?.height || 0);
-
-      console.log('availableHorizontalRoom:',availableHorizontalRoom);
-      console.log('availableVerticalRoom:',availableVerticalRoom);
-      // console.log('winCmpnt:', winCmpnt);
-      // console.log('mainWindow:',mainWindow);
-      // console.log('winCmpnt:', winCmpnt);
-
-
-      // handle out of bounds
-      if((availableVerticalRoom < 0) || (availableHorizontalRoom < 0)){
-        //horizontally out of bounds
-        if(availableHorizontalRoom < 0){
-          const  leftSubtraction = (currentBound?.x_bounds_subtraction || 0) - offset;
-          const resetLeft = this.WIN_LEFT - (leftSubtraction * -1);
-          newLeft = resetLeft;
-          newTop = this.WIN_TOP;
-          if(currentBound){
-            currentBound.x_offset = resetLeft;
-            currentBound.y_offset = this.WIN_TOP;
-            currentBound.x_bounds_subtraction = leftSubtraction;
-            this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
+      if(mainWindow && winCmpnt){
+        mainWindowWidth = mainWindow.width;   
+        //get the starting point of the window in x-axis
+        const startingPointXAxis = ((mainWindowWidth * newLeft) / 100);
+        // assuming we don't move the window around, every new window will start from the point.
+        adjMainWindowWidth = mainWindowWidth - startingPointXAxis;
+        const availableHorizontalRoom = adjMainWindowWidth - winCmpnt.width;
+  
+        mainWindowHeight = mainWindow.height;
+        //get the starting point of the window in x-axis
+        const startingPointYAxis = ((mainWindowHeight * newTop) / 100);
+        // assuming we don't move the window around, every new window will start from the point.
+        adjMainWindowHeight = mainWindowHeight - startingPointYAxis; 
+        const availableVerticalRoom = adjMainWindowHeight - taskBarHeight - winCmpnt.height;
+  
+        // handle out of bounds
+        if((availableVerticalRoom < 0) || (availableHorizontalRoom < 0)){
+          //horizontally out of bounds
+          if(availableHorizontalRoom < 0){
+            const  leftSubtraction = (currentBound?.x_bounds_subtraction || 0) - offset;
+            const resetLeft = this.WIN_LEFT - (leftSubtraction * -1);
+            newLeft = resetLeft;
+            newTop = this.WIN_TOP;
+            if(currentBound){
+              currentBound.x_offset = resetLeft;
+              currentBound.y_offset = this.WIN_TOP;
+              currentBound.x_bounds_subtraction = leftSubtraction;
+              this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
+            }
           }
-        }
-
-        //vertinally out of bounds
-        if(availableVerticalRoom < 0){
-          const  topSubtraction = (currentBound?.y_bounds_subtraction || 0) - offset;
-          const resetTop = this.WIN_TOP - (topSubtraction * -1);
-          newTop = resetTop;
-          newLeft = this.WIN_LEFT;
-          if(currentBound){
-            currentBound.y_offset = resetTop;
-            currentBound.x_offset = this.WIN_LEFT;
-            currentBound.y_bounds_subtraction = topSubtraction;
-            this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
+  
+          //vertinally out of bounds
+          if(availableVerticalRoom < 0){
+            const  topSubtraction = (currentBound?.y_bounds_subtraction || 0) - offset;
+            const resetTop = this.WIN_TOP - (topSubtraction * -1);
+            newTop = resetTop;
+            newLeft = this.WIN_LEFT;
+            if(currentBound){
+              currentBound.y_offset = resetTop;
+              currentBound.x_offset = this.WIN_LEFT;
+              currentBound.y_bounds_subtraction = topSubtraction;
+              this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
+            }
           }
         }
       }
 
-
-
-      // if(mainWindow){
-      //   newTop = Math.min(newTop, 60); // Prevent it from going off-screen
-      //   newLeft = Math.min(newLeft, 60);
-      // }
-
-
       this.windowTop = newTop;
       this.windowLeft = newLeft;
-
-      console.log(`Setting window position: top=${newTop}%, left=${newLeft}%`);
-
-      console.log(`Before Update:`, this.currentStyles);
 
       this.currentStyles = {
         'top': `${newTop}%`,
         'left': `${newLeft}%`,
         'z-index':this.MAX_Z_INDEX
       };
+    }
+
+    resetWindowBoundsState():void{
+      let newLeft = 0;
+      let newTop = 0;
+
+      const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
+      const mainWindow = document.getElementById('vanta')?.getBoundingClientRect();
+      const winCmpnt = document.getElementById(winCmpntId)?.getBoundingClientRect();
+      const currentBound = this._windowService.getProcessWindowBounds(this.uniqueId);
+
+      if(winCmpnt && mainWindow){
+        newTop = ((winCmpnt.top / mainWindow.height) * 100);
+        newLeft = ((winCmpnt.left / mainWindow.width) * 100);
+
+        if(currentBound){
+          currentBound.x_offset = newLeft;
+          currentBound.y_offset = newTop
+          currentBound.x_bounds_subtraction = 0;
+          currentBound.y_bounds_subtraction = 0;
+
+          this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
+        }
+      }
     }
 
     createGlassPane():void{
