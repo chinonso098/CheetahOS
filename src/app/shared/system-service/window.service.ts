@@ -8,7 +8,7 @@ import { ProcessType } from "src/app/system-files/system.types";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { BaseService } from "./base.service.interface";
-import { WindowState } from "src/app/system-files/state/state.interface";
+import { WindowState, WindowBoundsState } from "../system-component/window/windows.types";
 
 @Injectable({
     providedIn: 'root'
@@ -22,7 +22,7 @@ export class WindowService implements BaseService{
     static instance: WindowService;
     private _processPreviewImages:Map<string, TaskBarPreviewImage[]>;
     private _processWindows:Map<string, string[]>;
-    private _processWindowOffset:Map<string, number>;
+    private _processWindowBounds:Map<string, WindowBoundsState>;
     private _processWindowStates:WindowState[];
     private _eventOriginator = '';
 
@@ -62,7 +62,7 @@ export class WindowService implements BaseService{
 
         this._processPreviewImages = new Map<string, TaskBarPreviewImage[]>();
         this._processWindows = new Map<string, string[]>();
-        this._processWindowOffset = new Map<string, number>();
+        this._processWindowBounds = new Map<string, WindowBoundsState>();
         this._processWindowStates = [];
 
         this._processIdService = ProcessIDService.instance;
@@ -109,9 +109,9 @@ export class WindowService implements BaseService{
         }
     }
 
-    addProcessWindowOffset(uid:string, offset:number):void{
+    addProcessWindowBounds(uid:string, bounds:WindowBoundsState):void{
         const appName = uid.split(Constants.DASH)[0];
-        this._processWindowOffset.set(appName, offset);
+        this._processWindowBounds.set(appName, bounds);
     }
 
     addEventOriginator(eventOrig:string):void{
@@ -143,8 +143,8 @@ export class WindowService implements BaseService{
 
     removeProcessWindowOffset(uid:string):void{
         const appName = uid.split(Constants.DASH)[0];
-        if(this._processWindowOffset.has(appName))
-            this._processWindowOffset.delete(appName);
+        if(this._processWindowBounds.has(appName))
+            this._processWindowBounds.delete(appName);
     }
 
     isProcessWindowInWindows(uid:string):boolean{
@@ -204,12 +204,12 @@ export class WindowService implements BaseService{
         return 0;
     }
 
-    getProcessWindowOffset(uid:string):number{
+    getProcessWindowBounds(uid:string):WindowBoundsState | undefined{
         const appName = uid.split(Constants.DASH)[0];
-        if(this._processWindowOffset.has(appName))
-            return this._processWindowOffset.get(appName) || -1;
+        if(this._processWindowBounds.has(appName))
+            return this._processWindowBounds.get(appName);
 
-        return -1;
+        return undefined;
     }
 
     getNextPidInWindowStateList():number{

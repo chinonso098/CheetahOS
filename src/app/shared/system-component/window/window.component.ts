@@ -5,9 +5,10 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { of, Subscription } from 'rxjs';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
-import { BaseState, WindowState } from 'src/app/system-files/state/state.interface';
+import { BaseState } from 'src/app/system-files/state/state.interface';
+import { WindowBoundsState, WindowState } from './windows.types';
 import {openCloseAnimation, hideShowAnimation, minimizeMaximizeAnimation} from 'src/app/shared/system-component/window/animation/animations';
-import { StateType } from 'src/app/system-files/state/state.type';
+
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 
 import * as htmlToImage from 'html-to-image';
@@ -446,33 +447,31 @@ import { Process } from 'src/app/system-files/process';
       let mainWindowHeight = 0;
       let adjMainWindowHeight = 0;
 
+      const offset = 1;
       const taskBarHeight = 40;
-
       const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
 
-      const currentVal = this._windowService.getProcessWindowOffset(this.uniqueId);
+      const currentBound = this._windowService.getProcessWindowBounds(this.uniqueId);
+      if(currentBound){
+        const newXVal = currentBound.x_offset + offset;
+        const newYVal = currentBound.y_offset + offset;
+        newLeft = newXVal, newTop = newYVal;
+        currentBound.x_offset = newXVal;
+        currentBound.y_offset = newYVal;
 
-
-      if(currentVal !== -1){
-        const offset = 2;
-        newTop = currentVal + offset;
-        newLeft = currentVal + offset;
-        this._windowService.addProcessWindowOffset(this.uniqueId, newTop);
+        this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
       }else{
-        this._windowService.addProcessWindowOffset(this.uniqueId, newTop);
+        const windowBound:WindowBoundsState = {x_offset:this.WIN_LEFT, y_offset:this.WIN_TOP, x_bounds_subtraction:0, y_bounds_subtraction:0};
+        this._windowService.addProcessWindowBounds(this.uniqueId, windowBound);
       }
 
       // Ensure they don’t go out of bounds
       const mainWindow = document.getElementById('vanta')?.getBoundingClientRect();
       const winCmpnt = document.getElementById(winCmpntId)?.getBoundingClientRect();
-      // const rect =  this.audioContainer.nativeElement.getBoundingClientRect();
 
-
-      mainWindowWidth = mainWindow?.width || 0;
-   
+      mainWindowWidth = mainWindow?.width || 0;   
       //get the starting point of the window in x-axis
       const startingPointXAxis = ((mainWindowWidth * newLeft) / 100);
-
       // assuming we don't move the window around, every new window will start from the point.
       adjMainWindowWidth = mainWindowWidth - startingPointXAxis;
       const availableHorizontalRoom = adjMainWindowWidth - (winCmpnt?.width || 0);
@@ -481,19 +480,47 @@ import { Process } from 'src/app/system-files/process';
       mainWindowHeight = mainWindow?.height || 0;
       //get the starting point of the window in x-axis
       const startingPointYAxis = ((mainWindowHeight * newTop) / 100);
+      // assuming we don't move the window around, every new window will start from the point.
       adjMainWindowHeight = mainWindowHeight - startingPointYAxis; 
       const availableVerticalRoom = adjMainWindowHeight - taskBarHeight - (winCmpnt?.height || 0);
-
-
-
-
 
       console.log('availableHorizontalRoom:',availableHorizontalRoom);
       console.log('availableVerticalRoom:',availableVerticalRoom);
       // console.log('winCmpnt:', winCmpnt);
-
       // console.log('mainWindow:',mainWindow);
       // console.log('winCmpnt:', winCmpnt);
+
+
+      // handle out of bounds
+      if((availableVerticalRoom < 0) || (availableHorizontalRoom < 0)){
+        //horizontally out of bounds
+        if(availableHorizontalRoom < 0){
+          const  leftSubtraction = (currentBound?.x_bounds_subtraction || 0) - offset;
+          const resetLeft = this.WIN_LEFT - (leftSubtraction * -1);
+          newLeft = resetLeft;
+          newTop = this.WIN_TOP;
+          if(currentBound){
+            currentBound.x_offset = resetLeft;
+            currentBound.y_offset = this.WIN_TOP;
+            currentBound.x_bounds_subtraction = leftSubtraction;
+            this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
+          }
+        }
+
+        //vertinally out of bounds
+        if(availableVerticalRoom < 0){
+          const  topSubtraction = (currentBound?.y_bounds_subtraction || 0) - offset;
+          const resetTop = this.WIN_TOP - (topSubtraction * -1);
+          newTop = resetTop;
+          newLeft = this.WIN_LEFT;
+          if(currentBound){
+            currentBound.y_offset = resetTop;
+            currentBound.x_offset = this.WIN_LEFT;
+            currentBound.y_bounds_subtraction = topSubtraction;
+            this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
+          }
+        }
+      }
 
 
 
