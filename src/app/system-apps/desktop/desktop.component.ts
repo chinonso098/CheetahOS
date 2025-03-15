@@ -648,7 +648,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       emptyline:true, styleOption:'B' }
 
     const showDesktopIcons:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Show desktop icons',  action: this.showDesktopIcon.bind(this), variables:this.showDesktopIcons,
-      emptyline:false,  styleOption:'B'}
+      emptyline:false,  styleOption:'B' }
 
     const viewByMenu = [smallIcon,mediumIcon,largeIcon, autoArrageIcon, autoAlign,showDesktopIcons];
 

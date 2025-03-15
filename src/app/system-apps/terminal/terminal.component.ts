@@ -127,7 +127,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   ngAfterViewInit():void{
-    this.setTerminalWindowToFocus(this.processId); 
+    //this.setTerminalWindowToFocus(this.processId); 
     this.populateWelecomeMessageField();
 
     setTimeout(()=>{

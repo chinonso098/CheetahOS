@@ -47,7 +47,6 @@ export class WindowService implements BaseService{
     restoreProcessWindowNotify: Subject<number> = new Subject<number>();
     restoreProcessesWindowNotify: Subject<void> = new Subject<void>();
     
-
     name = 'window_mgmt_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
     processId = 0;
@@ -55,7 +54,6 @@ export class WindowService implements BaseService{
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
     description = 'keeps track of all procs windows';
-
 
     constructor(){
         WindowService.instance = this; //I added this to access the service from a class, not component
@@ -140,7 +138,7 @@ export class WindowService implements BaseService{
         }
     }
 
-    removeProcessWindowOffset(uid:string):void{
+    removeProcessWindowBounds(uid:string):void{
         const appName = uid.split(Constants.DASH)[0];
         if(this._processWindowBounds.has(appName))
             this._processWindowBounds.delete(appName);
@@ -237,9 +235,15 @@ export class WindowService implements BaseService{
     }
 
     cleanUp(uid:string):void{
-        //this.addWindowStateToList();
+        const appName = uid.split(Constants.DASH)[0];
         this.removeProcessWindowFromWindows(uid);
-        this.removeProcessWindowOffset(uid);
+
+        // only remove window bound information when there is no more windows for the given app
+        const currUids = this._processWindows.get(appName) || [];
+        console.log('cleanUp currUids:', currUids.length);
+        if(currUids.length === 0){
+            this.removeProcessWindowBounds(uid);
+        }
     }
 
     getEventOrginator():string{

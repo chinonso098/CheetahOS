@@ -193,9 +193,17 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   }
 
   closeApplication(proccess:Process[]):void{
+    const  process = proccess[0];
     for(let i = 0; i <= proccess.length - 1; i++){
+      this._windowServices.removeWindowState(proccess[i].getProcessId);
       this._runningProcessService.closeProcessNotify.next(proccess[i]);
     }
+
+
+    // this removes other window state data
+    const falsePid = 0;
+    const falseUid = `${process.getProcessName}-${falsePid}`;
+    this._windowServices.cleanUp(falseUid);
   }
 
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo):void{

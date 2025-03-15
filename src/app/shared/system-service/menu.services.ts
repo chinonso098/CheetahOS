@@ -49,7 +49,7 @@ export class MenuService implements BaseService{
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
-    description = ' componenet reference mananger adds/remmoves component refs.. ';
+    description = ' ';
 
 
     constructor(){
