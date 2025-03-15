@@ -50,7 +50,7 @@ export class TitleComponent implements BaseComponent, OnDestroy, AfterViewInit{
 
 
   ngAfterViewInit(): void {
-    this.setTitleWindowToFocus(this.processId); 
+    //this.setTitleWindowToFocus(this.processId); 
 
     setTimeout(()=>{
       this.captureComponentImg();

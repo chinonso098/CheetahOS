@@ -116,7 +116,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   } 
 
   async ngAfterViewInit():Promise<void> {
-    this.setImageViewerWindowToFocus(this.processId); 
+    //this.setImageViewerWindowToFocus(this.processId); 
 
     this.picSrc = (this.picSrc !=='') ? 
     this.picSrc : this.getPictureSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);

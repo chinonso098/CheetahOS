@@ -74,7 +74,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   }
 
   async ngAfterViewInit() {
-    this.setRuffleWindowToFocus(this.processId); 
+    //this.setRuffleWindowToFocus(this.processId); 
 
     this.gameSrc = (this.gameSrc !=='')? 
     this.gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);

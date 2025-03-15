@@ -69,7 +69,8 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   }
 
   ngAfterViewInit(): void {
-    this.setCodeEditorWindowToFocus(this.processId); 
+    1
+    //this.setCodeEditorWindowToFocus(this.processId); 
 
     // setTimeout(()=>{
     //   this.captureComponentImg();

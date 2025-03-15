@@ -111,7 +111,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   ngAfterViewInit():void{  
 
-    this.setAudioWindowToFocus(this.processId); 
+    //this.setAudioWindowToFocus(this.processId); 
     this.audioSrc = (this.audioSrc !== '')? 
       this.audioSrc :this.getAudioSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 

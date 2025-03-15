@@ -94,7 +94,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   async ngAfterViewInit() {
     
-    this.setJSDosWindowToFocus(this.processId); 
+    //this.setJSDosWindowToFocus(this.processId); 
       
     this.gameSrc = (this.gameSrc !=='')? 
       this.gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);

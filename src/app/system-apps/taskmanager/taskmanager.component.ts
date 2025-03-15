@@ -149,7 +149,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   ngAfterViewInit(): void {
 
-    this.setTaskMangrWindowToFocus(this.processId); 
+    //this.setTaskMangrWindowToFocus(this.processId); 
     this.hideContextMenu();
 
 

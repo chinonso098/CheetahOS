@@ -102,7 +102,8 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   async ngAfterViewInit(): Promise<void> {
 
-    this.setVideoWindowToFocus(this.processId); 
+    //this.setVideoWindowToFocus(this.processId);
+    
     this.fileType =  (this.fileType !=='') ? 
       this.fileType : 'video/' + this._fileInfo.getFileType.replace('.','');
 

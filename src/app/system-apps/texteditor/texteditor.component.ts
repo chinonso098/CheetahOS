@@ -84,7 +84,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
 
 
   ngAfterViewInit(): void {
-    this.setTextEditorWindowToFocus(this.processId); 
+    //this.setTextEditorWindowToFocus(this.processId); 
 
     this.fileSrc = (this.fileSrc !=='')? 
     this.fileSrc : this.getFileSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
