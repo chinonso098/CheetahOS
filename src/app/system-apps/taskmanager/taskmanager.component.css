@@ -60,9 +60,9 @@
 /*----------------------------------------Table CSS START --------------------------*/
 /* Custom styles for .table-responsive (Optional) */
 .tskmgr-table-cntnr {
-  /* width: 715px; */
-  width: 640px;
-  height:270px;
+    /* width: 640px; */
+  width: 715px;
+  height:310px;
   /* overflow: auto; Enable horizontal/vertical scrolling when needed */
   border-top:  none;
   /* padding-bottom: 10px; */
@@ -112,7 +112,7 @@
 .tskmgr-table-body-cntnr{  
   /* width:715px; */
   /* width: 400px; */
-  height:220px;
+  height:260px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -131,7 +131,6 @@ tbody{
 .tskmgr-table tr:nth-child(even) {
   background-color: #ffffff; 
 }
-
 
 /* Custom styles for table cells */
 .tskmgr-table th {
