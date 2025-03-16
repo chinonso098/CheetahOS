@@ -25,6 +25,7 @@ export class WindowService implements BaseService{
     private _processWindowBounds:Map<string, WindowBoundsState>;
     private _processWindowStates:WindowState[];
     private _eventOriginator = '';
+    private _processWindowWithTheHighestZIndex = 0;
 
     //WWC - without window component
     focusOnCurrentProcess_WWC_Notify: Subject<number> = new Subject<number>();
@@ -101,8 +102,10 @@ export class WindowService implements BaseService{
         const idx = this._processWindowStates.findIndex(x => x.pid === winState.pid);
 
         if(idx === -1){
+            console.log('winState -add:', winState);
             this._processWindowStates.push(winState);
         } else{
+            console.log('winState -updated:', winState);
             this._processWindowStates[idx] = winState;
         }
     }
@@ -114,6 +117,11 @@ export class WindowService implements BaseService{
 
     addEventOriginator(eventOrig:string):void{
         this._eventOriginator = eventOrig;
+    }
+
+    addProcessWindowIDWithHighestZIndex(pid:number):void{
+        console.log('addProcessWindowIDWithHighestZIndex:', pid);
+        this._processWindowWithTheHighestZIndex = pid;
     }
 
     removeProcessPreviewImages(appName:string):void{
@@ -235,6 +243,14 @@ export class WindowService implements BaseService{
         return this._processWindowStates;
     }
 
+    getProcessWindowIDWithHighestZIndex():number{
+        return this._processWindowWithTheHighestZIndex;
+    }
+
+    getEventOrginator():string{
+        return this._eventOriginator;
+    }
+
     cleanUp(uid:string):void{
         const appName = uid.split(Constants.DASH)[0];
         this.removeProcessWindowFromWindows(uid);
@@ -247,9 +263,6 @@ export class WindowService implements BaseService{
         }
     }
 
-    getEventOrginator():string{
-        return this._eventOriginator;
-    }
 
     private getProcessDetail():Process{
         return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
