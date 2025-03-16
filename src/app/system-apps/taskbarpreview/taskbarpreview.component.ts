@@ -80,16 +80,16 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit {
     console.log('I will implement the TaskBarPreview Context Window.........later');
   }
 
-  setWindowToFocus(pid:number):void{
-    this._windowServices.showOnlyCurrentProcessWindowNotify.next(pid);
+  setWindowToFocusOnMouseHover(pid:number):void{
+    this._windowServices.setProcessWindowToFocusOnMouseHoverNotify.next(pid);
   }
 
-  restoreWindow(pid:number):void{
-    this._windowServices.restoreProcessWindowNotify.next(pid);
+  restoreWindowOnMouseLeave(pid:number):void{
+    this._windowServices.restoreProcessWindowOnMouseLeaveNotify.next(pid);
   }
 
-  showWindow(pid:number):void{
-    this._windowServices.restoreProcessWindowNotify.next(pid);
+  showOrSetWindowToFocusOnClick(pid:number):void{
+    this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
   }
 
 }

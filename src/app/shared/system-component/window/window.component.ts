@@ -49,7 +49,7 @@ import { Process } from 'src/app/system-files/process';
   readonly HIDDEN_Z_INDEX = 0;
   readonly MIN_Z_INDEX = 1;
   readonly MAX_Z_INDEX = 2;
-  readonly TMP_Z_INDEX = 3;
+  readonly TMP_MAX_Z_INDEX = 3;
   readonly WIN_TOP = 25;
   readonly WIN_LEFT = 25;
 
@@ -110,9 +110,9 @@ import { Process } from 'src/app/system-files/process';
       this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe(() => {this.setNextWindowToFocus()});
       this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => {this.setFocusOnWindow(p)});
       this._removeFocusOnOtherProcessesSub = this._windowService.removeFocusOnOtherProcessesWindowNotify.subscribe((p) => {this.removeFocusOnOtherWindows(p)});
-      this._showOnlyCurrentProcessSub = this._windowService.showOnlyCurrentProcessWindowNotify.subscribe((p) => {this.showOnlyThisWindow(p)});
-      this._hideOtherProcessSub = this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.moveWindowsOutOfSight(p)});
-      this._restoreProcessSub = this._windowService.restoreProcessWindowNotify.subscribe((p) => {this.restorePriorFocusOnWindow(p)});
+      this._showOnlyCurrentProcessSub = this._windowService.setProcessWindowToFocusOnMouseHoverNotify.subscribe((p) => {this.setWindowToFocusOnMouseHover(p)});
+      this._hideOtherProcessSub = this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.hideOtherWindowsOnMouseHover(p)});
+      this._restoreProcessSub = this._windowService.restoreProcessWindowOnMouseLeaveNotify.subscribe((p) => {this.restoreWindowOnMouseLeave(p)});
       this._restoreProcessesSub = this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
     }
 
@@ -451,7 +451,7 @@ import { Process } from 'src/app/system-files/process';
       let mainWindowHeight = 0;
       let adjMainWindowHeight = 0;
 
-      const offset = 1;
+      const offset = 2;
       const taskBarHeight = 40;
 
       const currentBound = this._windowService.getProcessWindowBounds(this.uniqueId);
@@ -564,19 +564,12 @@ import { Process } from 'src/app/system-files/process';
       this.generateCloseAnimationValues(this.xAxisTmp, this.yAxisTmp);
       this._windowService.removeWindowState(this.processId);
 
-      console.log(`Process processId  to clode:`, this.processId);
-
       setTimeout(()=>{
         const processToClose = this._runningProcessService.getProcess(this.processId);
-
-        console.log(`processToClose`, processToClose);
-
         this._runningProcessService.closeProcessNotify.next(processToClose);
         this._windowService.cleanUp(this.uniqueId);
 
         const nextProc = this.getNextProcess();
-
-        console.log(`nextProc`, nextProc);
 
         if(nextProc){
           this._windowService.addEventOriginator(`${nextProc.getProcessName}-${nextProc.getProcessId}`);
@@ -623,7 +616,7 @@ import { Process } from 'src/app/system-files/process';
       this.setWindowToFocusById(pid);
     }
 
-    showOnlyThisWindow(pid:number):void{
+    setWindowToFocusOnMouseHover(pid:number):void{
       /**
        * If you want to make a non-focusable element focusable, 
        * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
@@ -633,7 +626,9 @@ import { Process } from 'src/app/system-files/process';
       this._windowService.hideOtherProcessesWindowNotify.next(pid);
       
       if(this.processId == pid){
-        this.setHeaderActive(pid);
+        if(pid === this.pid_with_highest_z_index)
+            this.setHeaderActive(pid);
+
         this.showOnlyWindowById(pid);
       }
     }
@@ -665,9 +660,9 @@ import { Process } from 'src/app/system-files/process';
 
     /**
      * the pid of the current window currently in focus is passed. if the pid of other windows do not match,
-     * then they are hidden by setting z -index = -1
+     * then they are hidden by setting z -index = 0
      */
-    moveWindowsOutOfSight(pid:number):void{
+    hideOtherWindowsOnMouseHover(pid:number):void{
 
       //console.log('i was called 1');
       if(this._windowService.getEventOrginator() === this.uniqueId){
@@ -675,17 +670,17 @@ import { Process } from 'src/app/system-files/process';
 
         for(let i = 0; i < processWithWindows.length; i++){
           const process = processWithWindows[i];
-          const window = this._windowService.getWindowState(process.pid);
+          const windowState = this._windowService.getWindowState(process.pid);
             
-          if(window != undefined && window.is_visible){
-            if(window.z_index === 2){
-              this.pid_with_highest_z_index = window.pid;
+          if(windowState && windowState.is_visible){
+            if(windowState.z_index === this.MAX_Z_INDEX){
+              this.pid_with_highest_z_index = windowState.pid;
             }
-            this.updateWindowZIndex(window, this.HIDDEN_Z_INDEX);
+            this.updateWindowZIndex(windowState, this.HIDDEN_Z_INDEX);
           }
-          else if(window != undefined && !window.is_visible){
+          else if(windowState && !windowState.is_visible){
             // using a z-index of less than 1, breaks hide/show animation, the show part to be exact.
-            this.setWindowToPriorHiddenState(window, this.MIN_Z_INDEX);
+            this.setWindowToPriorHiddenState(windowState, this.MIN_Z_INDEX);
           }
         }
         this._windowService.removeEventOriginator();
@@ -702,7 +697,7 @@ import { Process } from 'src/app/system-files/process';
         const process = processWithWindows[i];
         const window = this._windowService.getWindowState(process.pid)
           
-        if(window != undefined && window.is_visible){
+        if(window && window.is_visible){
           if(window.pid !== this.pid_with_highest_z_index){
             this.setHeaderInActive(window.pid);
             this.updateWindowZIndex(window, this.MIN_Z_INDEX);
@@ -714,26 +709,28 @@ import { Process } from 'src/app/system-files/process';
       }
     }
 
-    restorePriorFocusOnWindow(pid:number):void{
+    restoreWindowOnMouseLeave(pid:number):void{
 
+      console.log('restoreOrSetFoucOnProcessWindow-pid:',pid);
       //console.log('i was called 3');
-      const processWithWindows = this._windowService.getWindowStates().filter(p => p.pid === pid);
+      const process = this._windowService.getWindowStates().find(p => p.pid === pid);
 
-      const process = processWithWindows[0];
-      const window = this._windowService.getWindowState(process.pid);
+      if(process){
+        console.log('process:',process);
+        const window = this._windowService.getWindowState(process.pid);
         
-      if(window != undefined && window.is_visible){
-        if(window.pid !== this.pid_with_highest_z_index){
-          this.setHeaderInActive(window.pid);
-          this.updateWindowZIndex(window, this.MIN_Z_INDEX);
-        }else{
-          this.setHeaderActive(window.pid);
-          this.updateWindowZIndex(window, this.MAX_Z_INDEX);
+        if(window && window.is_visible){
+          if(window.pid !== this.pid_with_highest_z_index){
+            this.setHeaderInActive(window.pid);
+            this.updateWindowZIndex(window, this.MIN_Z_INDEX);
+          }else{
+            this.setHeaderActive(window.pid);
+            this.updateWindowZIndex(window, this.MAX_Z_INDEX);
+          }
+        } else if(window && !window.is_visible){
+          // using a z-index of less than 1, breaks hide/show animation, the show part to be exact.
+          this.setWindowToPriorHiddenState(window, this.MIN_Z_INDEX);
         }
-      }
-      else if(window != undefined && !window.is_visible){
-        // using a z-index of less than 1, breaks hide/show animation, the show part to be exact.
-        this.setWindowToPriorHiddenState(window, this.MIN_Z_INDEX);
       }
     }
 
@@ -753,6 +750,7 @@ import { Process } from 'src/app/system-files/process';
 
           windowState.z_index = z_index;
           this._windowService.addWindowState(windowState);
+          this.pid_with_highest_z_index = pid;
   
           this.currentStyles = {
             'top': `${this.windowTop}%`,
@@ -769,7 +767,7 @@ import { Process } from 'src/app/system-files/process';
       const windowState = this._windowService.getWindowState(pid);
 
       if(windowState && (windowState.pid == pid)){
-        const z_index = this.TMP_Z_INDEX;
+        const z_index = this.TMP_MAX_Z_INDEX;
 
         if(!windowState.is_visible){
           //console.log('window:',uid + ' is currently hidden');//TBD
@@ -789,7 +787,7 @@ import { Process } from 'src/app/system-files/process';
             'z-index':z_index
           };
         }
-        this.setHeaderActive(pid); 
+        //this.setHeaderActive(pid);  //header should only be active, if the windows in question had the highest 2-index.TBD
       }
     }
 

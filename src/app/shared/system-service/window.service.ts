@@ -38,13 +38,14 @@ export class WindowService implements BaseService{
     maximizeProcessWindowNotify: Subject<void> = new Subject<void>();
     minimizeProcessWindowNotify: Subject<number[]> = new Subject<number[]>();
 
-    showOnlyCurrentProcessWindowNotify: Subject<number> = new Subject<number>();
+    setProcessWindowToFocusOnMouseHoverNotify: Subject<number> = new Subject<number>();
     showProcessPreviewWindowNotify: Subject<unknown[]> = new Subject<unknown[]>();
+    showOrSetProcessWindowToFocusOnClickNotify: Subject<number> = new Subject<number>();
  
     resizeProcessWindowNotify: Subject<number[]> = new Subject<number[]>();
     removeFocusOnOtherProcessesWindowNotify: Subject<number> = new Subject<number>();
     restoreOrMinimizeProcessWindowNotify: Subject<number> = new Subject<number>();
-    restoreProcessWindowNotify: Subject<number> = new Subject<number>();
+    restoreProcessWindowOnMouseLeaveNotify: Subject<number> = new Subject<number>();
     restoreProcessesWindowNotify: Subject<void> = new Subject<void>();
     
     name = 'window_mgmt_svc';
