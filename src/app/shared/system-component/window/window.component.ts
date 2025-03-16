@@ -3,8 +3,7 @@ import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChange
 import { ComponentType } from 'src/app/system-files/system.types';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { of, Subscription } from 'rxjs';
-import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
+import {Subscription } from 'rxjs';
 import { BaseState } from 'src/app/system-files/state/state.interface';
 import { WindowBoundsState, WindowState } from './windows.types';
 import {openCloseAnimation, hideShowAnimation, minimizeMaximizeAnimation} from 'src/app/shared/system-component/window/animation/animations';
@@ -30,7 +29,6 @@ import { Process } from 'src/app/system-files/process';
    @Input() isMaximizable = true;  
    
    private _runningProcessService:RunningProcessService;
-   //private _stateManagmentService: StateManagmentService;
    private _sessionManagmentService: SessionManagmentService;
    private _windowService:WindowService;
    private _originalWindowsState!:WindowState;
@@ -41,8 +39,9 @@ import { Process } from 'src/app/system-files/process';
    private _showOnlyCurrentProcessSub!:Subscription;
    private _removeFocusOnOtherProcessesSub!:Subscription;
    private _hideOtherProcessSub!:Subscription;
-   private _restoreProcessSub!:Subscription
-   private _restoreProcessesSub!:Subscription
+   private _restoreProcessSub!:Subscription;
+   private _restoreProcessesSub!:Subscription;
+   private _showOrSetProcessWindowToFocusSub!:Subscription;
 
   readonly SECONDS_DELAY = 450;
   readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
@@ -113,6 +112,7 @@ import { Process } from 'src/app/system-files/process';
       this._hideOtherProcessSub = this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.hideWindowNotMatchingPidOnMouseHover(p)});
       this._restoreProcessSub = this._windowService.restoreProcessWindowOnMouseLeaveNotify.subscribe((p) => {this.restoreWindowOnMouseLeave(p)});
       this._restoreProcessesSub = this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
+      this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)})
     }
 
     get getDivWindowElement(): HTMLElement {
@@ -176,6 +176,7 @@ import { Process } from 'src/app/system-files/process';
       this._hideOtherProcessSub?.unsubscribe();
       this._restoreProcessSub?.unsubscribe();
       this._restoreProcessesSub?.unsubscribe();
+      this._showOrSetProcessWindowToFocusSub?.unsubscribe();
     }
 
     ngOnChanges(changes: SimpleChanges):void{
@@ -236,7 +237,7 @@ import { Process } from 'src/app/system-files/process';
           }
           windowState.is_visible = true;
           this._windowService.addWindowState(windowState);
-          //this.setFocsuOnThisWindow(windowState.pid );
+          this.setFocsuOnThisWindow(windowState.pid);
         }
       }
     }
@@ -321,7 +322,6 @@ import { Process } from 'src/app/system-files/process';
     }
 
     updateWindowZIndex(window: WindowState, zIndex:number):void{
-      //console.log(`updateWindowZIndex-Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);//TBD
       if(this.processId == window.pid){
         this.currentStyles = {
           'top': `${this.windowTop}%`,
@@ -334,7 +334,6 @@ import { Process } from 'src/app/system-files/process';
     }
 
     setWindowToPriorHiddenState(window: WindowState, zIndex:number):void{
-      //console.log(`setWindowToPriorHiddenState-Window app_name: ${window.app_name} ----  Window pid:${window.pid}  ---------- ${this.processId}`);//TBD
       if(this.processId == window.pid){
         this.currentStyles = {
           'top': `${this.windowTop}%`,
@@ -578,17 +577,15 @@ import { Process } from 'src/app/system-files/process';
        */
       const uid = `${this.name}-${pid}`;
       if((this.uniqueId === uid) && (!this.windowHide)){
-        this._windowService.addEventOriginator(this.uniqueId);
         this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pid);
         
-        this.setHeaderActive(pid);
+        //this.setHeaderActive(pid);
         this.setWindowToFocusById(pid);
         this.resetWindowBoundsState();
       }
     }
 
     setFocusOnWindowInit(pid:number):void{
-      this._windowService.addEventOriginator(this.uniqueId);
       this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pid);
 
       this.setHeaderActive(pid);
@@ -599,8 +596,6 @@ import { Process } from 'src/app/system-files/process';
        * If you want to make a non-focusable element focusable, 
        * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
        */
-
-      this._windowService.addEventOriginator(this.uniqueId);
       this._windowService.hideOtherProcessesWindowNotify.next(pid);
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
       
@@ -684,12 +679,34 @@ import { Process } from 'src/app/system-files/process';
       }
     }
 
+    //the window positioning is acting wonky, but it is kinda 50% there
+    showOrSetProcessWindowToFocusOnClick(pid:number):void{
+      if(this.processId === pid){
+        const windowState = this._windowService.getWindowState(pid);
+        if(windowState){
+          if(!windowState.is_visible){
+            this.windowHide = !this.windowHide;
+  
+            this.currentStyles = {
+              'top': `${this.windowTop}%`,
+              'left': `${this.windowLeft}%`,
+              'transform': `translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`,
+              'opacity': 1,
+            };
+  
+            windowState.is_visible = true;
+            this._windowService.addWindowState(windowState);
+          }
+  
+          this.setFocsuOnThisWindow(windowState.pid)
+        }
+      }
+    }
+
     setWindowToFocusAndResetWindowBoundsByPid(pid:number):void{
-      // return to modify this function, passing just the pid is enough
       if(this.processId === pid){
         const window = this._windowService.getWindowState(this.processId);
         if(window && window.is_visible){
-          //console.log('setNextWindowToFocus-process:',process.getProcessId +'----'+process.getProcessName); //TBD
           this.setWindowToFocusById(window.pid);
   
           //reset window bound when a window is closed or hidden.
