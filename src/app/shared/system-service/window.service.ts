@@ -30,7 +30,7 @@ export class WindowService implements BaseService{
     //WWC - without window component
     focusOnCurrentProcess_WWC_Notify: Subject<number> = new Subject<number>();
     focusOnCurrentProcessWindowNotify: Subject<number> = new Subject<number>();
-    focusOnNextProcessWindowNotify: Subject<void> = new Subject<void>();
+    focusOnNextProcessWindowNotify: Subject<number> = new Subject<number>();
   
     hideProcessPreviewWindowNotify: Subject<void> = new Subject<void>();
     hideOtherProcessesWindowNotify: Subject<number> = new Subject<number>();

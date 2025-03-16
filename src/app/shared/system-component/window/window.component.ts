@@ -106,7 +106,7 @@ import { Process } from 'src/app/system-files/process';
       this.retrievePastSessionData();
 
       this._restoreOrMinSub = this._windowService.restoreOrMinimizeProcessWindowNotify.subscribe((p) => {this.restoreHiddenWindow(p)});
-      this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe(() => {this.setNextWindowToFocus()});
+      this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusAndResetWindowBoundsByPid(p)});
       this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => {this.setFocsuOnThisWindow(p)});
       this._removeFocusOnOtherProcessesSub = this._windowService.removeFocusOnOtherProcessesWindowNotify.subscribe((p) => {this.removeFocusOnWindowNotMatchingPid(p)});
       this._showOnlyCurrentProcessSub = this._windowService.setProcessWindowToFocusOnMouseHoverNotify.subscribe((p) => {this.setWindowToFocusOnMouseHover(p)});
@@ -209,38 +209,34 @@ import { Process } from 'src/app/system-files/process';
 
       const windowState = this._windowService.getWindowState(this.processId);
 
-      if(this.windowHide){
-        if(windowState){
-          if(windowState.pid == this.processId){
-            //console.log(`setHideAndShow-Window app_name: ${windowState.app_name} ----  Window pid:${windowState.pid}  ---------- ${this.processId}`);//TBD
-            windowState.is_visible = false;
-            windowState.z_index = this.MIN_Z_INDEX;
-            this._windowService.addWindowState(windowState);
-  
-            this.currentStyles = { 
-              'top': `${this.windowTop}%`,
-              'left': `${this.windowLeft}%`,
-              'z-index':this.MIN_Z_INDEX 
-            };
+      if(this.windowHide && windowState){
+        if(windowState.pid == this.processId){
+          windowState.is_visible = false;
+          windowState.z_index = this.MIN_Z_INDEX;
+          this._windowService.addWindowState(windowState);
 
-            const nextProc = this.getNextProcess();
-            if(nextProc){
-              this._windowService.addEventOriginator(`${nextProc.getProcessName}-${nextProc.getProcessId}`);
-              this._windowService.focusOnNextProcessWindowNotify.next();
-            }
+          this.setHeaderInActive(windowState.pid);
+          this.currentStyles = { 
+            'top': `${this.windowTop}%`,
+            'left': `${this.windowLeft}%`,
+            'z-index':this.MIN_Z_INDEX 
+          };
+
+          const nextProc = this.getNextProcess();
+          if(nextProc){
+            this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
           }
         }
       }
-      else if(!this.windowHide){
-        if(windowState){
-          if(windowState.pid == this.processId){
-            if(this.currentWindowSizeState){ 
-              // if window was in full screen when hidden, give the proper z-index when unhidden
-              this.setWindowToFullScreen(this.processId, windowState.z_index);
-            }
-            windowState.is_visible = true;
-            this._windowService.addWindowState(windowState);
+      else if(!this.windowHide && windowState){
+        if(windowState.pid == this.processId){
+          if(this.currentWindowSizeState){ 
+            // if window was in full screen when hidden, give the proper z-index when unhidden
+            this.setWindowToFullScreen(this.processId, windowState.z_index);
           }
+          windowState.is_visible = true;
+          this._windowService.addWindowState(windowState);
+          //this.setFocsuOnThisWindow(windowState.pid );
         }
       }
     }
@@ -567,11 +563,10 @@ import { Process } from 'src/app/system-files/process';
           this._runningProcessService.closeProcessNotify.next(processToClose);
           this._windowService.cleanUp(this.uniqueId);
         }
-        const nextProc = this.getNextProcess();
 
+        const nextProc = this.getNextProcess();
         if(nextProc){
-          this._windowService.addEventOriginator(`${nextProc.getProcessName}-${nextProc.getProcessId}`);
-          this._windowService.focusOnNextProcessWindowNotify.next();
+          this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
         }
       },this.SECONDS_DELAY) ;
     }
@@ -689,6 +684,20 @@ import { Process } from 'src/app/system-files/process';
       }
     }
 
+    setWindowToFocusAndResetWindowBoundsByPid(pid:number):void{
+      // return to modify this function, passing just the pid is enough
+      if(this.processId === pid){
+        const window = this._windowService.getWindowState(this.processId);
+        if(window && window.is_visible){
+          //console.log('setNextWindowToFocus-process:',process.getProcessId +'----'+process.getProcessName); //TBD
+          this.setWindowToFocusById(window.pid);
+  
+          //reset window bound when a window is closed or hidden.
+          this.resetWindowBoundsState();
+        }
+      }
+     }
+
     setWindowToFocusById(pid:number):void{
       const windowState = this._windowService.getWindowState(pid);
       if(windowState){
@@ -717,8 +726,6 @@ import { Process } from 'src/app/system-files/process';
         const z_index = this.TMP_MAX_Z_INDEX;
 
         if(!windowState.is_visible){
-          //console.log('window:',uid + ' is currently hidden');//TBD
-          //console.log(`translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`); //TBD
           this.currentStyles = {
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
@@ -738,29 +745,10 @@ import { Process } from 'src/app/system-files/process';
       }
     }
 
-   setNextWindowToFocus():void{
-    if(this._windowService.getEventOrginator() == this.uniqueId){
-
-      const processWithWindows = this._windowService.getWindowStates().filter(p => p.pid === this.processId);
-      for (let i = 0; i < processWithWindows.length; i++){
-        const process = processWithWindows[i];
-
-        const window = this._windowService.getWindowState(process.pid);
-        if(window && window.is_visible){
-
-          //console.log('setNextWindowToFocus-process:',process.getProcessId +'----'+process.getProcessName); //TBD
-          this.setWindowToFocusById(process.pid);
-
-          //reset window bound when a window is closed or hidden.
-          this.resetWindowBoundsState();
-          break;
-        }
-      }
-
-      this._windowService.removeEventOriginator();
-    }
-   }
-
+    /**
+     * this method returns a process that has a windows, with a visible state
+     * @returns Process
+     */
    getNextProcess():Process | undefined{
     const nextPid = this._windowService.getNextPidInWindowStateList();
     return this._runningProcessService.getProcesses().find(p => p.getProcessId === nextPid);
