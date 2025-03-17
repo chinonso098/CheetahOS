@@ -1,11 +1,12 @@
 .task-bar-nav{
+    display: block;
+    position: fixed;
     background-color: rgba(41,41, 41, 0.6);
     backdrop-filter: blur(10px);
-    bottom: 0;
     height: 40px;
-    left: 0;
-    position: fixed;
-    right: 0;
     width: 100vw;
+    bottom: 0;
+    left: 0;
+    right: 0;
     z-index: 5;
 }

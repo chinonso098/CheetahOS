@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy } from '@angular/core';
-import {NestedMenu, GeneralMenu } from './menu.item';
+import {NestedMenu, GeneralMenu } from './menu.types';
 import { MenuService } from '../../system-service/menu.services';
 import { Subscription } from 'rxjs';
 import { Constants } from 'src/app/system-files/constants';
@@ -24,6 +24,7 @@ export class MenuComponent implements OnDestroy{
   readonly paste = 'Paste';
   readonly fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
   readonly tskBarAppIconMenuOption = Constants.TASK_BAR_APP_ICON_MENU_OPTION;
+  readonly tskBarContextMenuOption = Constants.TASK_BAR_CONTEXT_MENU_OPTION;
   readonly defaultFileMenuOrder = Constants.DEFAULT_FILE_MENU_ORDER;
   readonly defaultFolderMenuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
   readonly fileExplrFolderMenuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;

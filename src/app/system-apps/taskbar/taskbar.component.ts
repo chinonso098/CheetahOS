@@ -56,10 +56,15 @@ export class TaskbarComponent implements AfterViewInit{
   }
 
   showTaskBarContextMenu(evt:MouseEvent):void{
-
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
 
+    // const taskBarElmnt = document.getElementById('the-window-taskbar') as HTMLDivElement;
+    // const rect =  taskBarElmnt.getBoundingClientRect();
+    const xAxis = evt.clientX;
+    const yAxis = evt.clientY;
+
+    this._menuService.showTaskBarConextMenu.next([xAxis, yAxis]);
     evt.preventDefault();
   }
 

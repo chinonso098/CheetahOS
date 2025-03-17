@@ -8,7 +8,8 @@
     
     <cos-menu [nestedMenu]="deskTopMenu" *ngIf="showDesktopCntxtMenu" [style]="dskTopCntxtMenuStyle" [menuType]="deskTopMenuOption"> </cos-menu>
     <cos-taskbarpreview  [fadeState]="tskBarPreviewWindowState" [name]="appToPreview" [icon]="appToPreviewIcon" *ngIf="showTskBarPreviewWindow"  [ngStyle]="tskBarPrevWindowStyle">  </cos-taskbarpreview>
-    <cos-menu [generalMenu]="taskBarMenuData" *ngIf="showTskBarAppIconMenu" [style]="tskBarAppIconMenuStyle" [menuType]="tskBarAppIconMenuOption" [menuOrder]="menuOrder"> </cos-menu>
+    <cos-menu [generalMenu]="taskBarAppIconMenuData" *ngIf="showTskBarAppIconMenu" [style]="tskBarAppIconMenuStyle" [menuType]="tskBarAppIconMenuOption" [menuOrder]="menuOrder"> </cos-menu>
+    <cos-menu [generalMenu]="taskBarContextMenuData" *ngIf="showTskBarCntxtMenu" [style]="tskBarCntxtMenuStyle" [menuType]="tskBarAppIconMenuOption" [menuOrder]="menuOrder"> </cos-menu>
     
     @if(showStartMenu){
         <cos-startmenu [@slideStartMenuAnimation]></cos-startmenu>

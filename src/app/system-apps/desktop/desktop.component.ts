@@ -12,7 +12,7 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
-import { MenuPositiom, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.item';
+import { GeneralMenu, MenuPositiom, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import * as htmlToImage from 'html-to-image';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -66,13 +66,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   
   private _timerSubscription!: Subscription;
-  private _showTaskBarMenuSub!:Subscription;
+  private _showTaskBarAppIconMenuSub!:Subscription;
+  private _showTaskBarContextMenuSub!:Subscription;
   private _hideContextMenuSub!:Subscription;
   private _showTaskBarPreviewWindowSub!:Subscription;
   private _hideTaskBarPreviewWindowSub!:Subscription;
   private _keepTaskBarPreviewWindowSub!:Subscription;
   private _showStartMenuSub!:Subscription;
   private _hideStartMenuSub!:Subscription;
+  private _showSub!:Subscription;
   private _vantaEffect: any;
   private _numSequence = 0;
   private _charSequence = 'a';
@@ -107,12 +109,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   dskTopCntxtMenuStyle:Record<string, unknown> = {};
   tskBarAppIconMenuStyle:Record<string, unknown> = {};
-  //tskBarCntxtMenuStyle:Record<string, unknown> = {};
+  tskBarCntxtMenuStyle:Record<string, unknown> = {};
   tskBarPrevWindowStyle:Record<string, unknown> = {};
   deskTopMenuOption =  Constants.NESTED_MENU_OPTION;
   showDesktopCntxtMenu = false;
   showTskBarAppIconMenu = false;
-  //  showTskBarCntxtMenu = false;
+  showTskBarCntxtMenu = false;
   showTskBarPreviewWindow = false;
   tskBarPreviewWindowState = 'in';
   tskBarAppIconMenuOption =  Constants.TASK_BAR_APP_ICON_MENU_OPTION;
@@ -149,12 +151,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private MAX_NUM_COLOR_RANGE = 99999;
   private DEFAULT_COLOR = 0x274c;
   
-  taskBarMenuData = [
+  deskTopMenu:NestedMenu[] = [];
+  taskBarContextMenuData:GeneralMenu[] = [];
+  taskBarAppIconMenuData:GeneralMenu[] = [
     {icon:'', label: '', action: this.openApplicationFromTaskBar.bind(this)},
     {icon:'', label: '', action: ()=> console.log() },
   ];
-
-  deskTopMenu:NestedMenu[] = [];
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -176,7 +178,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._fileService = fileService;
     this._windowService = windowService;
 
-    this._showTaskBarMenuSub = this._menuService.showTaskBarAppIconMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
+    this._showTaskBarAppIconMenuSub = this._menuService.showTaskBarAppIconMenu.subscribe((p) => { this.onShowTaskBarAppIconMenu(p)});
+    this._showTaskBarContextMenuSub = this._menuService.showTaskBarConextMenu.subscribe((p) => { this.onShowTaskBarContetxMenu(p)});
     this._showTaskBarPreviewWindowSub = this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
     this._hideTaskBarPreviewWindowSub = this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
@@ -203,6 +206,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     })
     
     this.getDesktopMenuData();
+    this.getTaskBarContextData();
   }
 
   ngAfterViewInit():void{
@@ -217,8 +221,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   ngOnDestroy(): void {
     this._timerSubscription?.unsubscribe();
-    this._showTaskBarMenuSub?.unsubscribe();
+    this._showTaskBarAppIconMenuSub?.unsubscribe();
     this._hideContextMenuSub?.unsubscribe();
+    this._showTaskBarContextMenuSub?.unsubscribe();
     this._showTaskBarPreviewWindowSub?.unsubscribe();
     this._hideTaskBarPreviewWindowSub?.unsubscribe();
     this._keepTaskBarPreviewWindowSub?.unsubscribe();
@@ -439,6 +444,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.showDesktopCntxtMenu = false;
     this.showTskBarAppIconMenu = false;
+    this.showTskBarCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
 
     // to prevent an endless loop of calls,
@@ -706,6 +712,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       ]
   }
 
+  getTaskBarContextData():void{
+    this.taskBarContextMenuData = [
+          {icon:'', label: 'Hide the taskbar', action:()=> ''},
+          {icon:'', label: 'Show the desktop', action:()=> ''},
+          {icon:'', label: 'Task Manager', action:()=> ''},
+          {icon:'', label: 'Merge taskbar btns', action:()=> ''}
+      ]
+  }
+
   private buildVantaEffect(n:number) {
 
     try {
@@ -732,7 +747,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  onShowTaskBarContextMenu(data:unknown[]):void{
+  onShowTaskBarAppIconMenu(data:unknown[]):void{
     const rect = data[0] as DOMRect;
     const file = data[1] as FileInfo;
     const isPinned = data[2] as boolean;
@@ -760,29 +775,51 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  hideTaskBarContextMenu():void{
+  hideTaskBarAppIconMenu():void{
     this.showTskBarAppIconMenu = false;
   }
 
-  showTaskBarContextMenu():void{
+  showTaskBarAppIconMenu():void{
     this.showTskBarAppIconMenu = true;
+  }
+
+
+  onShowTaskBarContetxMenu(axis:number[]):void{
+    const menuHeight = 116;
+    this.showTskBarCntxtMenu = true;
+
+    console.log('axis:',axis);
+
+    this.tskBarCntxtMenuStyle = {
+      'position':'absolute',
+      'transform':`translate(${String(axis[0])}px, ${String(axis[1] - 116)}px)`,
+      'z-index': 6,
+    }
+  }
+
+  hideTaskBarContextMenu():void{
+    this.showTskBarCntxtMenu = false;
+  }
+
+  showTaskBarContextMenu():void{
+    this.showTskBarCntxtMenu = true;
   }
 
   switchBetweenPinAndUnpin(isAppPinned:boolean):void{
     if(isAppPinned){
       const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}unpin_24.png`, label:'Unpin from taskbar', action: this.unPinApplicationFromTaskBar.bind(this)}
-      const rowOne = this.taskBarMenuData[1];
+      const rowOne = this.taskBarAppIconMenuData[1];
       rowOne.icon = menuEntry.icon;
       rowOne.label = menuEntry.label;
       rowOne.action = menuEntry.action;
-      this.taskBarMenuData[1] = rowOne;
+      this.taskBarAppIconMenuData[1] = rowOne;
     }else if(!isAppPinned){
       const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}pin_24.png`, label:'Pin to taskbar', action: this.pinApplicationFromTaskBar.bind(this)}
-      const rowOne = this.taskBarMenuData[1];
+      const rowOne = this.taskBarAppIconMenuData[1];
       rowOne.icon = menuEntry.icon;
       rowOne.label = menuEntry.label;
       rowOne.action = menuEntry.action;
-      this.taskBarMenuData[1] = rowOne;
+      this.taskBarAppIconMenuData[1] = rowOne;
     }
   }
 
@@ -791,28 +828,28 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const processCount = this._runningProcessService.getProcesses()
       .filter(p => p.getProcessName === file.getOpensWith).length;
 
-    const rowZero = this.taskBarMenuData[0];
+    const rowZero = this.taskBarAppIconMenuData[0];
     rowZero.icon = file.getIconPath;
     rowZero.label = file.getOpensWith;
-    this.taskBarMenuData[0] = rowZero;
+    this.taskBarAppIconMenuData[0] = rowZero;
 
     if(processCount === 1){
-      if(this.taskBarMenuData.length === 2){
+      if(this.taskBarAppIconMenuData.length === 2){
         const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}x_32.png`, label: 'Close window', action:this.closeApplicationFromTaskBar.bind(this)};
-        this.taskBarMenuData.push(menuEntry);
+        this.taskBarAppIconMenuData.push(menuEntry);
       }else{
-        const rowTwo = this.taskBarMenuData[2];
+        const rowTwo = this.taskBarAppIconMenuData[2];
         rowTwo.label = 'Close window';
-        this.taskBarMenuData[2] = rowTwo;
+        this.taskBarAppIconMenuData[2] = rowTwo;
       }
     }else if(processCount > 1){
-      const rowTwo = this.taskBarMenuData[2];
+      const rowTwo = this.taskBarAppIconMenuData[2];
       if(!rowTwo){
         const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}x_32.png`, label: 'Close all windows', action:this.closeApplicationFromTaskBar.bind(this)};
-        this.taskBarMenuData.push(menuEntry);
+        this.taskBarAppIconMenuData.push(menuEntry);
       }else{
       rowTwo.label = 'Close all windows';
-      this.taskBarMenuData[2] = rowTwo;
+      this.taskBarAppIconMenuData[2] = rowTwo;
       }
     }
 
@@ -854,7 +891,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.appToPreview = appName;
     this.appToPreviewIcon = iconPath;
-    this.hideTaskBarContextMenu();
+    this.hideTaskBarAppIconMenu();
 
     if(this.previousDisplayedTaskbarPreview !== appName){
       this.showTskBarPreviewWindow = false;

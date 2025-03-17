@@ -13,7 +13,7 @@ import { FileManagerService } from 'src/app/shared/system-service/file.manager.s
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
-import { GeneralMenu, MenuPositiom } from 'src/app/shared/system-component/menu/menu.item';
+import { GeneralMenu, MenuPositiom } from 'src/app/shared/system-component/menu/menu.types';
 
 
 @Component({
