@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChanges, ViewChild, ChangeDetectorRef, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChanges, ViewChild, ChangeDetectorRef, SimpleChanges, Renderer2 } from '@angular/core';
 
 import { ComponentType } from 'src/app/system-files/system.types';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -22,6 +22,7 @@ import { Process } from 'src/app/system-files/process';
  })
  export class WindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
    @ViewChild('divWindow') divWindow!: ElementRef;
+   @ViewChild('glassPaneContainer') glassPaneContainer!: ElementRef; //glassPaneContainer
 
    @Input() runningProcessID = 0;  
    @Input() processAppIcon = '';  
@@ -97,8 +98,8 @@ import { Process } from 'src/app/system-files/process';
   displayName = '';
   
 
-    constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, 
-                windowService:WindowService, sessionManagmentService: SessionManagmentService){
+    constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, private renderer: Renderer2,
+                windowService:WindowService, sessionManagmentService: SessionManagmentService,){
       this._runningProcessService = runningProcessService;
       this._sessionManagmentService = sessionManagmentService;
       this._windowService = windowService;
@@ -137,6 +138,7 @@ import { Process } from 'src/app/system-files/process';
     }
 
     ngAfterViewInit():void{
+      this.hideGlassPaneContainer();
       this.defaultHeightOnOpen = this.getDivWindowElement.offsetHeight;
       this.defaultWidthOnOpen  = this.getDivWindowElement.offsetWidth;
 
@@ -232,6 +234,7 @@ import { Process } from 'src/app/system-files/process';
 
     showSilhouette(pid:number):void{
       if(this.processId === pid){
+        this.showGlassPaneContainer();
         const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
         if(glassPane){
           glassPane.style.position = 'absolute';
@@ -243,14 +246,23 @@ import { Process } from 'src/app/system-files/process';
       }
     }
 
+    showGlassPaneContainer() {
+      this.renderer.setStyle(this.glassPaneContainer.nativeElement, 'display', 'block');
+    }
+
     hideSilhouette(pid:number):void{
       if(this.processId === pid){
+        this.hideGlassPaneContainer();
         const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
         if(glassPane){
           glassPane.style.display = 'none';
           glassPane.style.zIndex = String(this.HIDDEN_Z_INDEX);
         }
       }
+    }
+
+    hideGlassPaneContainer() {
+      this.renderer.setStyle(this.glassPaneContainer.nativeElement, 'display', 'none');
     }
 
     removeSilhouette(pid:number):void{
@@ -582,28 +594,22 @@ import { Process } from 'src/app/system-files/process';
     createSilhouette():void{
       this.uniqueGPId = `gp-${this.uniqueId}`;
       //Every window has a hidden glass pane that is revealed when the window is hidden
-      const glassPane = document.createElement('div');
+      const glassPane = this.renderer.createElement('div');
 
       // Add attributes
       glassPane.setAttribute('id', this.uniqueGPId);
-      //silhouetteDiv.setAttribute('class', 'dynamic-div');
-      //silhouetteDiv.style.backgroundColor = 'lightblue'; // Add inline style
 
       glassPane.style.transform =  'translate(0, 0)';
       glassPane.style.height =  `${this.defaultHeightOnOpen}px`;
       glassPane.style.width =  `${this.defaultWidthOnOpen}px`;
 
       glassPane.style.zIndex =  String(this.HIDDEN_Z_INDEX);
-      glassPane.style.backgroundColor = 'rgba(41,41, 41, 0.6)';
-      glassPane.style.backdropFilter = 'blur(10px)';
+      glassPane.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+      glassPane.style.backdropFilter = 'blur(5px)';
       glassPane.style.display =  'none';
 
-      // Add content
-      //silhouetteDiv.textContent = 'This div was created dynamically!';
-
       // Append to the body
-      document.body.appendChild(glassPane);
-
+      this.renderer.appendChild(this.glassPaneContainer.nativeElement, glassPane);
     }
 
     onCloseBtnClick():void{
@@ -659,6 +665,7 @@ import { Process } from 'src/app/system-files/process';
         if(pid === pid_with_highest_z_index)
             this.setHeaderActive(pid);
 
+        this.hideSilhouette(pid);
         this.showOnlyWindowById(pid);
       }
     }
