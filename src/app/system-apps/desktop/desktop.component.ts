@@ -106,14 +106,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   slideState = 'slideIn';
 
   dskTopCntxtMenuStyle:Record<string, unknown> = {};
-  tskBarCntxtMenuStyle:Record<string, unknown> = {};
+  tskBarAppIconMenuStyle:Record<string, unknown> = {};
+  //tskBarCntxtMenuStyle:Record<string, unknown> = {};
   tskBarPrevWindowStyle:Record<string, unknown> = {};
   deskTopMenuOption =  Constants.NESTED_MENU_OPTION;
   showDesktopCntxtMenu = false;
-  showTskBarCntxtMenu = false;
+  showTskBarAppIconMenu = false;
+  //  showTskBarCntxtMenu = false;
   showTskBarPreviewWindow = false;
   tskBarPreviewWindowState = 'in';
-  tskBarMenuOption =  Constants.TASK_BAR_MENU_OPTION;
+  tskBarAppIconMenuOption =  Constants.TASK_BAR_APP_ICON_MENU_OPTION;
   menuOrder = Constants.DEFAULT_MENU_ORDER;
   selectedFileFromTaskBar!:FileInfo;
   appToPreview = '';
@@ -174,7 +176,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._fileService = fileService;
     this._windowService = windowService;
 
-    this._showTaskBarMenuSub = this._menuService.showTaskBarMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
+    this._showTaskBarMenuSub = this._menuService.showTaskBarAppIconMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
     this._showTaskBarPreviewWindowSub = this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
     this._hideTaskBarPreviewWindowSub = this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
@@ -436,7 +438,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
      */
 
     this.showDesktopCntxtMenu = false;
-    this.showTskBarCntxtMenu = false;
+    this.showTskBarAppIconMenu = false;
     this.isShiftSubMenuLeft = false;
 
     // to prevent an endless loop of calls,
@@ -741,16 +743,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const processCount = this.countInstaceAndSetMenu();
 
     this.removeOldTaskBarPreviewWindowNow();
-    this.showTskBarCntxtMenu = true;
+    this.showTskBarAppIconMenu = true;
 
     if(processCount == 0){
-      this.tskBarCntxtMenuStyle = {
+      this.tskBarAppIconMenuStyle = {
         'position':'absolute',
         'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 68.5)}px)`,
         'z-index': 5,
       }
     }else {
-      this.tskBarCntxtMenuStyle = {
+      this.tskBarAppIconMenuStyle = {
         'position':'absolute',
         'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 97.5)}px)`,
         'z-index': 5,
@@ -759,11 +761,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   hideTaskBarContextMenu():void{
-    this.showTskBarCntxtMenu = false;
+    this.showTskBarAppIconMenu = false;
   }
 
   showTaskBarContextMenu():void{
-    this.showTskBarCntxtMenu = true;
+    this.showTskBarAppIconMenu = true;
   }
 
   switchBetweenPinAndUnpin(isAppPinned:boolean):void{
@@ -818,13 +820,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   openApplicationFromTaskBar():void{
-    this.showTskBarCntxtMenu = false;
+    this.showTskBarAppIconMenu = false;
     const file = this.selectedFileFromTaskBar;  
     this._triggerProcessService.startApplication(file);
   }
 
   closeApplicationFromTaskBar():void{
-    this.showTskBarCntxtMenu = false;
+    this.showTskBarAppIconMenu = false;
     const file = this.selectedFileFromTaskBar;
     const proccesses = this._runningProcessService.getProcesses()
       .filter(p => p.getProcessName === file.getOpensWith);
@@ -833,13 +835,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   pinApplicationFromTaskBar():void{
-    this.showTskBarCntxtMenu = false;
+    this.showTskBarAppIconMenu = false;
     const file = this.selectedFileFromTaskBar;
     this._menuService.pinToTaskBar.next(file);
   }
 
   unPinApplicationFromTaskBar():void{
-    this.showTskBarCntxtMenu = false;
+    this.showTskBarAppIconMenu = false;
     const file = this.selectedFileFromTaskBar;
     this._menuService.unPinFromTaskBar.next(file);
   }

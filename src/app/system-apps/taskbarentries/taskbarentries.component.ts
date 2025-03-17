@@ -218,7 +218,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
 
-    this._menuService.showTaskBarMenu.next(data);
+    this._menuService.showTaskBarAppIconMenu.next(data);
 
     evt.preventDefault();
   }
@@ -237,7 +237,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
 
-    this._menuService.showTaskBarMenu.next(data);
+    this._menuService.showTaskBarAppIconMenu.next(data);
 
     evt.preventDefault();
   }

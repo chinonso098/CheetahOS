@@ -28,7 +28,7 @@ export namespace Constants{
     export const FILE_EXPLORER_FOLDER_MENU_ORDER = 'FileExplorerfolderMenuOrder';
     export const FILE_EXPLORER_UNIQUE_MENU_ORDER = 'FileExploreruniqueMenuOrder';
 
-    export const TASK_BAR_MENU_OPTION =  'taskbar-menu';
+    export const TASK_BAR_APP_ICON_MENU_OPTION =  'taskbar-app-icon-menu';
     export const NESTED_MENU_OPTION =  'nested-menu';
     export const FILE_EXPLORER_FILE_MANAGER_MENU_OPTION = 'file-explorer-file-manager-menu';
 

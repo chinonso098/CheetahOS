@@ -23,7 +23,7 @@ export class MenuComponent implements OnDestroy{
 
   readonly paste = 'Paste';
   readonly fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
-  readonly tskBarMenuOption = Constants.TASK_BAR_MENU_OPTION;
+  readonly tskBarAppIconMenuOption = Constants.TASK_BAR_APP_ICON_MENU_OPTION;
   readonly defaultFileMenuOrder = Constants.DEFAULT_FILE_MENU_ORDER;
   readonly defaultFolderMenuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
   readonly fileExplrFolderMenuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;

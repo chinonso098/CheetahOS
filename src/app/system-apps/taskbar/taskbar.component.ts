@@ -55,6 +55,14 @@ export class TaskbarComponent implements AfterViewInit{
     this._menuService.hideContextMenus.next();
   }
 
+  showTaskBarContextMenu(evt:MouseEvent):void{
+
+    const uid = `${this.name}-${this.processId}`;
+    this._runningProcessService.addEventOriginator(uid);
+
+    evt.preventDefault();
+  }
+
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }

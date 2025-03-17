@@ -1,5 +1,5 @@
 <ng-container [ngTemplateOutlet]="menuType === fileExplrMngrMenuOption ? fileExplrMngrMenu :
-                                  menuType === tskBarMenuOption ? tskBarMenu : nestedMenu0 ">
+                                  menuType === tskBarAppIconMenuOption ? tskBarAppIconMenu : nestedMenu0 ">
 </ng-container>
 
 <ng-template #fileExplrMngrMenu>
@@ -48,7 +48,7 @@
 </div>
 </ng-template>
 
-<ng-template #tskBarMenu>
+<ng-template #tskBarAppIconMenu>
   <div class="dm-tskbar-vertical-menu">
     <div class="dm-tskbar-empty-line-container"></div>
   

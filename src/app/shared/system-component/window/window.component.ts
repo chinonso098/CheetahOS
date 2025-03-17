@@ -481,7 +481,6 @@ import { Process } from 'src/app/system-files/process';
     }
 
     stackWindow():void{
-      console.log('stacking Window');
       let newTop = this.WIN_TOP;
       let newLeft = this.WIN_LEFT;
       let mainWindowWidth = 0;
@@ -569,7 +568,6 @@ import { Process } from 'src/app/system-files/process';
     }
 
     resetWindowBoundsState():void{
-      console.log('resetWindowBoundsState');
       let newLeft = 0;
       let newTop = 0;
 
@@ -606,7 +604,7 @@ import { Process } from 'src/app/system-files/process';
       glassPane.style.width =  `${this.defaultWidthOnOpen}px`;
 
       glassPane.style.zIndex =  String(this.HIDDEN_Z_INDEX);
-      glassPane.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+      glassPane.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
       glassPane.style.backdropFilter = 'blur(5px)';
       glassPane.style.display =  'none';
 
@@ -785,8 +783,6 @@ import { Process } from 'src/app/system-files/process';
     setWindowToFocusById(pid:number):void{
       const windowState = this._windowService.getWindowState(pid);
       if(windowState){
-        console.log(`setWindowToFocusById-Window app_name: ${windowState.app_name} ----  Window pid:${windowState.pid}  ---------- ${this.processId}`);//TBD
-
         if((windowState.pid == pid) && (windowState.z_index < this.MAX_Z_INDEX)){
           windowState.z_index = this.MAX_Z_INDEX;
           this._windowService.addWindowState(windowState);
@@ -803,12 +799,10 @@ import { Process } from 'src/app/system-files/process';
     }
 
     showOnlyWindowById(pid:number):void{
-      const uid = `${this.name}-${pid}`;
       const windowState = this._windowService.getWindowState(pid);
 
       if(windowState && (windowState.pid == pid)){
         const z_index = this.TMP_MAX_Z_INDEX;
-
         if(!windowState.is_visible){
           this.currentStyles = {
             'top': `${this.windowTop}%`,
@@ -817,7 +811,6 @@ import { Process } from 'src/app/system-files/process';
             'opacity': 1,
             'transform': `translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`
           };
-          //console.log('window:',uid + ' should be visible');
         }else{
           this.currentStyles = {
             'top': `${this.windowTop}%`,
@@ -825,7 +818,6 @@ import { Process } from 'src/app/system-files/process';
             'z-index':z_index
           };
         }
-        //this.setHeaderActive(pid);  //header should only be active, if the windows in question had the highest 2-index.TBD
       }
     }
 

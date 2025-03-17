@@ -26,9 +26,9 @@ export class MenuService implements BaseService{
     // closeApplication: Subject<FileInfo[]> = new Subject<FileInfo[]>();
     openApplicationFromTaskBar: Subject<FileInfo> = new Subject<FileInfo>();
     closeApplicationFromTaskBar: Subject<Process[]> = new Subject<Process[]>();
-    showTaskBarMenu: Subject<unknown[]> = new Subject<unknown[]>();
-    hideTaskBarMenu: Subject<void> = new Subject<void>();
-    keepTaskBarMenu: Subject<void> = new Subject<void>();
+    showTaskBarAppIconMenu: Subject<unknown[]> = new Subject<unknown[]>();
+    showTaskBarConextMenu: Subject<void> = new Subject<void>();
+    // keepTaskBarMenu: Subject<void> = new Subject<void>();
     hideStartMenu: Subject<void> = new Subject<void>();
     showStartMenu: Subject<void> = new Subject<void>();
     hideContextMenus: Subject<void> = new Subject<void>();
