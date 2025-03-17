@@ -102,10 +102,8 @@ export class WindowService implements BaseService{
         const idx = this._processWindowStates.findIndex(x => x.pid === winState.pid);
 
         if(idx === -1){
-            console.log('winState -add:', winState);
             this._processWindowStates.push(winState);
         } else{
-            console.log('winState -updated:', winState);
             this._processWindowStates[idx] = winState;
         }
     }
@@ -120,7 +118,6 @@ export class WindowService implements BaseService{
     }
 
     addProcessWindowIDWithHighestZIndex(pid:number):void{
-        console.log('addProcessWindowIDWithHighestZIndex:', pid);
         this._processWindowWithTheHighestZIndex = pid;
     }
 
@@ -257,7 +254,6 @@ export class WindowService implements BaseService{
 
         // only remove window bound information when there is no more windows for the given app
         const currUids = this._processWindows.get(appName) || [];
-        console.log('cleanUp currUids:', currUids.length);
         if(currUids.length === 0){
             this.removeProcessWindowBounds(uid);
         }

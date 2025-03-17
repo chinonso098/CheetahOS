@@ -222,10 +222,7 @@ import { Process } from 'src/app/system-files/process';
     }
 
     setHeaderActive(pid:number):void{
-
-      //console.log('setHeaderActive:',pid);//TBD
       if(this.processId == pid){
-      //console.log('setHeaderActive 1:',pid);//TBD
         this.headerActiveStyles = {
           'background-color':'rgb(24,60,124)'
         };
@@ -353,6 +350,7 @@ import { Process } from 'src/app/system-files/process';
       //ignore false drag
       if( x_axis!= 0  && y_axis != 0){
         const windowState = this._windowService.getWindowState(this.processId);
+        const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
 
         if(windowState){
           windowState.x_axis= x_axis;
@@ -360,10 +358,14 @@ import { Process } from 'src/app/system-files/process';
 
           this.xAxisTmp = x_axis;
           this.yAxisTmp = y_axis;
-          this.windowTransform =  `translate(${String(x_axis)}px , ${String(y_axis)}px)`;    
+          this.windowTransform = `translate(${String(x_axis)}px , ${String(y_axis)}px)`;    
           this._windowService.addWindowState(windowState);
 
           this.resetWindowBoundsState();
+        }
+
+        if(glassPane){
+          glassPane.style.transform =  `translate(${x_axis}px , ${y_axis}px)`;   
         }
       }
     }
