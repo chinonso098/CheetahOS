@@ -1,0 +1,21 @@
+<div class="volume-control-container">
+    <div class="volume-control-heading">
+        <p class="volume-control-heading-txt">Speakers (Audio)</p>
+    </div>
+    <div class="volume-control-body">
+      <div class="volume-control-head"> 
+        <figure class="volume-control-fig">
+            <img class="volume-control-img" [src]="audioIcon"/>
+        </figure>
+      </div>
+
+      <div class="volume-control-mid">
+        <input type="range" min="0" max="100" value="50" class="volume-control-slider">
+      </div>
+
+      <div class="volume-control-tail"> 
+        <p class="volume-control-tail-txt">{{adjustedVolume}}</p>
+      </div>
+    </div>
+  </div>
+  

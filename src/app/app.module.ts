@@ -39,6 +39,7 @@ import { ClippyComponent } from "./system-apps/clippy/clippy.component";
 import { ChatterComponent } from './system-apps/chatter/chatter.component';
 import { RunSystemComponent } from './system-apps/runsystem/runsystem.component';
 import { VolumeComponent } from './system-apps/volume/volume.component';
+import { VolumeControlComponent } from './system-apps/volumecontrol/volumecontrol.component';
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
@@ -86,6 +87,7 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     ChatterComponent,
     RunSystemComponent,
     VolumeComponent,
+    VolumeControlComponent,
 
     HighlightDirective,
     TaskBarEntryHighlightDirective,
