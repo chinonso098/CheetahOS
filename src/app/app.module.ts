@@ -38,6 +38,7 @@ import { CheetahComponent } from './system-apps/cheetah/cheetah.component';
 import { ClippyComponent } from "./system-apps/clippy/clippy.component";
 import { ChatterComponent } from './system-apps/chatter/chatter.component';
 import { RunSystemComponent } from './system-apps/runsystem/runsystem.component';
+import { VolumeComponent } from './system-apps/volume/volume.component';
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
@@ -84,6 +85,7 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     ClippyComponent,
     ChatterComponent,
     RunSystemComponent,
+    VolumeComponent,
 
     HighlightDirective,
     TaskBarEntryHighlightDirective,

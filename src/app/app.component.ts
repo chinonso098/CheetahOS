@@ -39,6 +39,7 @@ import { PropertiesComponent } from './shared/system-component/properties/proper
 import { ChatterComponent } from './system-apps/chatter/chatter.component';
 import { RunSystemComponent } from './system-apps/runsystem/runsystem.component';
 import { FileInfo } from './system-files/file.info';
+import { ScriptService } from './shared/system-service/script.services';
 
 @Component({
   selector: 'cos-root',
@@ -120,7 +121,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   //runningProcesssService must come first
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService,  windowService:WindowService,
     componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService, sessionMangamentServices:SessionManagmentService,
-    notificationServices:NotificationService, stateManagmentService:StateManagmentService, menuService:MenuService){
+    scriptService:ScriptService, audioService:AudioService, notificationServices:NotificationService, stateManagmentService:StateManagmentService, menuService:MenuService,){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
@@ -132,6 +133,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this._stateManagmentService = stateManagmentService;
     this._windowService = windowService;
     this._menuService = menuService;
+    this._audioService = audioService;
 
     this._startProcessSub = this._triggerProcessService.startProcessNotify.subscribe((appName) =>{this.loadApps(appName)})
     this._appNotFoundSub = this._triggerProcessService.appNotFoundNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Error,appName)})
@@ -149,7 +151,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this._audioService = new AudioService();
+    1//this._audioService = new AudioService();
   }
 
   ngAfterViewInit():void{
