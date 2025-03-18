@@ -67,20 +67,23 @@
 </ng-template>
 
 <ng-template #tskBarCntxtMenu>
-  <div class="dm-tskbar-vertical-menu">
-    <div class="dm-tskbar-empty-line-container"></div>
+  <div class="dm-tskbar-cntxt-vertical-menu">
+    <div class="dm-tskbar-cntxt-empty-line-container"></div>
   
-    <div lass="dm-tskbar-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
-        <div class="dm-tskbar-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action)">
-            <div class="dm-tskbar-head"> <figure class="dm-tskbar-fig-cntxt-menu"><img *ngIf="menuItem.icon.length > 0" class="dm-tskbar-img-alt" [src]="menuItem.icon"/></figure></div>
-            <div class="dm-tskbar-mid"><p class="dm-p">{{menuItem.label}}</p></div>
-            <div class="dm-tskbar-tail"> <figure class="dm-tskbar-fig-cntxt-menu"> </figure> </div>
+    <div lass="dm-tskbar-cntxt-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
+        <div class="dm-tskbar-cntxt-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action)">
+            <div class="dm-tskbar-cntxt-head"> <figure class="dm-tskbar-cntxt-fig-cntxt-menu"><img *ngIf="menuItem.icon.length > 0" class="dm-tskbar-cntxt-img-alt" [src]="menuItem.icon"/></figure></div>
+            <div class="dm-tskbar-cntxt-mid"><p class="dm-p">{{menuItem.label}}</p></div>
+            <div class="dm-tskbar-cntxt-tail"> <figure class="dm-tskbar-cntxt-fig-cntxt-menu"> </figure> </div>
         </div>
+
+        <div class="dm-tskbar-cntxt-line-container" *ngIf="i === 0 || i === 1"></div>
+        <div class="dm-tskbar-cntxt-line-container" *ngIf="i === 0 || i === 1"><div class="dm-tskbar-cntxt-line"></div></div>
+        <div class="dm-tskbar-cntxt-empty-line-container" *ngIf="i === 0 || i === 1"></div>
     </div>
   
-    <div class="dm-tskbar-empty-line-container"></div>
+    <div class="dm-tskbar-cntxt-empty-line-container"></div>
   </div>
-  
 </ng-template>
 
 <ng-template #nestedMenu0>

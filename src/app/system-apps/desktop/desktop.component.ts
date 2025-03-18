@@ -118,6 +118,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showTskBarPreviewWindow = false;
   tskBarPreviewWindowState = 'in';
   tskBarAppIconMenuOption =  Constants.TASK_BAR_APP_ICON_MENU_OPTION;
+  tskBarContextMenuOption = Constants.TASK_BAR_CONTEXT_MENU_OPTION
   menuOrder = Constants.DEFAULT_MENU_ORDER;
   selectedFileFromTaskBar!:FileInfo;
   appToPreview = '';
@@ -179,7 +180,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._windowService = windowService;
 
     this._showTaskBarAppIconMenuSub = this._menuService.showTaskBarAppIconMenu.subscribe((p) => { this.onShowTaskBarAppIconMenu(p)});
-    this._showTaskBarContextMenuSub = this._menuService.showTaskBarConextMenu.subscribe((p) => { this.onShowTaskBarContetxMenu(p)});
+    this._showTaskBarContextMenuSub = this._menuService.showTaskBarConextMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
     this._showTaskBarPreviewWindowSub = this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
     this._hideTaskBarPreviewWindowSub = this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
@@ -301,10 +302,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     if(evtOriginator === Constants.EMPTY_STRING){
       const menuHeight = 281; //this is not ideal.. menu height should be gotten dynmically
+      const menuWidth = 210;
   
       this._menuService.hideContextMenus.next();
       this.showDesktopCntxtMenu = true;
-      const axis = this.checkAndHandleMenuBounds(evt, menuHeight);
+      const axis = this.checkAndHandleMenuBounds(evt, menuHeight, menuWidth);
 
       this.dskTopCntxtMenuStyle = {
         'position':'absolute',
@@ -338,11 +340,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  checkAndHandleMenuBounds(evt:MouseEvent, menuHeight:number):MenuPositiom{
+  checkAndHandleMenuBounds(evt:MouseEvent, menuHeightInput:number, menuWidthInput:number):MenuPositiom{
 
     let xAxis = 0;
     let yAxis = 0;
-    const menuWidth = 210;
+    const menuWidth = menuWidthInput;
+    const menuHeight = menuHeightInput;
     const subMenuWidth = 205;
     const taskBarHeight = 40;
 
@@ -714,10 +717,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   getTaskBarContextData():void{
     this.taskBarContextMenuData = [
-          {icon:'', label: 'Hide the taskbar', action:()=> ''},
           {icon:'', label: 'Show the desktop', action:()=> ''},
           {icon:'', label: 'Task Manager', action:()=> ''},
-          {icon:'', label: 'Merge taskbar btns', action:()=> ''}
+          {icon:'', label: 'Hide the taskbar', action:()=> ''},
+          {icon:'', label: 'Merge taskbar buttons', action:()=> ''}
       ]
   }
 
@@ -783,16 +786,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.showTskBarAppIconMenu = true;
   }
 
-
-  onShowTaskBarContetxMenu(axis:number[]):void{
+  onShowTaskBarContextMenu(evt:MouseEvent):void{
     const menuHeight = 116;
+    const menuWidth = 203;
     this.showTskBarCntxtMenu = true;
 
-    console.log('axis:',axis);
-
+    const axis = this.checkAndHandleMenuBounds(evt, menuHeight, menuWidth);
     this.tskBarCntxtMenuStyle = {
       'position':'absolute',
-      'transform':`translate(${String(axis[0])}px, ${String(axis[1] - 116)}px)`,
+      'transform':`translate(${String(axis.xAxis + 2)}px, ${String(evt.y - menuHeight)}px)`,
       'z-index': 6,
     }
   }

@@ -1,5 +1,5 @@
 
-.dm-vertical-menu, .dm-tskbar-vertical-menu{
+.dm-vertical-menu, .dm-tskbar-vertical-menu, .dm-tskbar-cntxt-vertical-menu{
     position: absolute;
     width: 205px;
     box-shadow: 2px 2px rgba(0, 0, 0, 0.3);
@@ -12,7 +12,7 @@
 }
 
 
-.dm-vertical-menu-item, .dm-tskbar-vertical-menu-item{
+.dm-vertical-menu-item, .dm-tskbar-vertical-menu-item, .dm-tskbar-cntxt-vertical-menu-item{
     height: fit-content;
     padding: 2px 0;
     background-color: #2b2b2b;
@@ -29,24 +29,26 @@
 .dm-tskbar-vertical-menu-item:hover{
     background-color: #484444;
 }
+.dm-tskbar-cntxt-vertical-menu-item:hover{
+    background-color: #484444;
+}
 
 .dm-vertical-menu{
     background-color: #484444;
 }
 
-.dm-line-container{
+.dm-line-container, .dm-tskbar-cntxt-line-container{
     max-height: 1px;
     background-color: #2b2b2b;
 }
 
-.dm-line {
+.dm-line, .dm-tskbar-cntxt-line {
     border: 1px solid #9c9898;
     margin: 0 8px;
 }
 
-.dm-empty-line-container , .dm-tskbar-empty-line-container {
-    max-height: 3px;
-    min-height: 3px;
+.dm-empty-line-container , .dm-tskbar-empty-line-container, .dm-tskbar-cntxt-empty-line-container {
+    height: 3px;
     background-color: #2b2b2b;
 }
 
@@ -105,24 +107,23 @@ span.dm-tail{
     z-index: 5;
 }
 
-.dm-tskbar-vertical-menu-cntnr{
+.dm-tskbar-vertical-menu-cntnr, .dm-tskbar-cntxt-vertical-menu-cntnr{
     width: 100%;
 }
 
-.dm-tskbar-vertical-menu-item{
+.dm-tskbar-vertical-menu-item{ 
     background-color: transparent;
     z-index: 5;
 }
 
-
-.dm-tskbar-head{
+.dm-tskbar-head, .dm-tskbar-cntxt-head{
     max-width: 27%;
     padding-left: 5px;
     padding-top: 2px;
     padding-bottom: 2px;
 }
 
-.dm-tskbar-mid{
+.dm-tskbar-mid, .dm-tskbar-cntxt-mid{
     min-width: 48%;
     padding-left: 10px;
     padding-top: 2px;
@@ -138,14 +139,14 @@ span.dm-tail{
     top: 10%;
 }
 
-.dm-tskbar-tail{
+.dm-tskbar-tail, .dm-tskbar-cntxt-tail{
     max-width: 25%;
     padding-left: 48px;
     padding-top: 2px;
     padding-bottom: 2px;
 }
 
-.dm-tskbar-fig-cntxt-menu{
+.dm-tskbar-fig-cntxt-menu, .dm-tskbar-cntxt-fig-cntxt-menu{
     position: relative;
     align-items: center;
     display: inline-flex;
@@ -154,7 +155,7 @@ span.dm-tail{
     left: 15%;
 }
 
-.dm-tskbar-img-alt{
+.dm-tskbar-img-alt, .dm-tskbar-cntxt-img-alt{
     height: 18px;
     width: 18px;
     position: relative;
