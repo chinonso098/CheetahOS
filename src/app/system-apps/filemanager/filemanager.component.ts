@@ -252,7 +252,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this.iconCntxtMenuStyle = {
       'position':'absolute',
       'transform':`translate(${String(evt.clientX + 2)}px, ${String(axis.yAxis)}px)`,
-      'z-index': 2,
+      'z-index': 4,
     }
 
     evt.preventDefault();

@@ -4,7 +4,7 @@
     border: 0.2px solid  rgba(41, 41, 41, 0.6);
     position: absolute;
     display: inline-flex;
-    z-index: 2;
+
 }
 
 .taskbar-preview-ol{

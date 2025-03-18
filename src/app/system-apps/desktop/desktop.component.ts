@@ -312,7 +312,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         'position':'absolute',
         'width': '210px', 
         'transform':`translate(${String(axis.xAxis + 2)}px, ${String(axis.yAxis)}px)`,
-        'z-index': 3,
+        'z-index': 4,
         'opacity':1
       }
       evt.preventDefault();
@@ -795,7 +795,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.tskBarCntxtMenuStyle = {
       'position':'absolute',
       'transform':`translate(${String(axis.xAxis + 2)}px, ${String(evt.y - menuHeight)}px)`,
-      'z-index': 6,
+      'z-index': 5,
     }
   }
 
@@ -912,7 +912,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.tskBarPrevWindowStyle = {
       'position':'absolute',
       'transform':`translate(${String(rect.x - 59)}px, ${String(rect.y - 131)}px)`,
-      'z-index': 2,
+      'z-index': 5,
     }
   }
 
