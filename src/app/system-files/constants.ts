@@ -18,6 +18,7 @@ export namespace Constants{
     export const BASE = 'osdrive';
     export const IMAGE_BASE_PATH = 'osdrive/Cheetah/System/Imageres/';
     export const GIF_BASE_PATH = 'osdrive/Cheetah/System/Gifres/';
+    export const AUDIO_BASE_PATH = 'osdrive/Cheetah/System/Media/';
     export const NEW_FOLDER = 'New Folder';
     export const CHEETAH = 'cheetah';
 

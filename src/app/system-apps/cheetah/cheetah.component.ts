@@ -1,7 +1,6 @@
 import { Component} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Constants } from "src/app/system-files/constants";
-import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { Process } from 'src/app/system-files/process';
@@ -14,7 +13,6 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 })
 
 export class CheetahComponent implements BaseComponent {
-  private _menuService:MenuService;
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
 
@@ -25,11 +23,10 @@ export class CheetahComponent implements BaseComponent {
   type = ComponentType.System;
   displayName = 'CheetahOS';
   name = 'cheetah';
-  version = 'Version: 2.10.27';
+  version = 'Version: 3.03.18';
   year = `\u00A9 ${new Date().getFullYear()}`;
 
-  constructor( menuService:MenuService, processIdService:ProcessIDService,  runningProcessService:RunningProcessService) { 
-    this._menuService = menuService;
+  constructor(processIdService:ProcessIDService,  runningProcessService:RunningProcessService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
 

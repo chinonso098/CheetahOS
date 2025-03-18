@@ -1,4 +1,4 @@
-import {Component,ViewChild, ViewContainerRef, ViewRef, OnDestroy, Type, AfterViewInit} from '@angular/core';
+import {Component,ViewChild, ViewContainerRef, ViewRef, OnDestroy, Type, OnInit, AfterViewInit} from '@angular/core';
 import { Subscription } from 'rxjs';
 
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -10,6 +10,7 @@ import { NotificationService } from './shared/system-service/notification.servic
 import { StateManagmentService } from './shared/system-service/state.management.service';
 import { WindowService } from './shared/system-service/window.service';
 import { MenuService } from './shared/system-service/menu.services';
+import { AudioService } from './shared/system-service/audio.services';
 
 import { ComponentType } from './system-files/system.types';
 import { NotificationType } from './system-files/notification.type';
@@ -48,7 +49,7 @@ import { FileInfo } from './system-files/file.info';
 /**
  *  This is the main app component
  */
-export class AppComponent implements OnDestroy, AfterViewInit {
+export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
  
   @ViewChild('processContainerRef',  { read: ViewContainerRef })
   private itemViewContainer!: ViewContainerRef
@@ -62,6 +63,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   private _stateManagmentService:StateManagmentService;
   private _menuService:MenuService;
   private _windowService:WindowService;
+  private _audioService!:AudioService;
   private _componentRefView!:ViewRef;
   private _appDirectory:AppDirectory;
 
@@ -146,17 +148,8 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this._appDirectory = new AppDirectory();
   }
 
-  ngOnDestroy():void{
-    this._closeProcessSub?.unsubscribe();
-    this._closeMsgDialogSub?.unsubscribe();
-    this._startProcessSub?.unsubscribe();
-    this._appNotFoundSub?.unsubscribe();
-    this._appIsRunningSub?.unsubscribe();
-    this._errorNotifySub?.unsubscribe();
-    this._infoNotifySub?.unsubscribe();
-    this._warnNotifySub?.unsubscribe();
-    this._showPropertiesViewSub?.unsubscribe();
-    this._closePropertiesViewSub?.unsubscribe();
+  ngOnInit(): void {
+    this._audioService = new AudioService();
   }
 
   ngAfterViewInit():void{
@@ -169,6 +162,24 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     }, this.SECONDS_DELAY[0]);
 
     //this.showPropertiesWindow();
+
+    setTimeout(() => {
+      this._audioService.playSound();
+    }, 500);
+
+  }
+
+  ngOnDestroy():void{
+    this._closeProcessSub?.unsubscribe();
+    this._closeMsgDialogSub?.unsubscribe();
+    this._startProcessSub?.unsubscribe();
+    this._appNotFoundSub?.unsubscribe();
+    this._appIsRunningSub?.unsubscribe();
+    this._errorNotifySub?.unsubscribe();
+    this._infoNotifySub?.unsubscribe();
+    this._warnNotifySub?.unsubscribe();
+    this._showPropertiesViewSub?.unsubscribe();
+    this._closePropertiesViewSub?.unsubscribe();
   }
 
   async loadApps(appName:string):Promise<void>{
