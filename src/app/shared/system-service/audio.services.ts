@@ -35,7 +35,7 @@ export class AudioService implements BaseService {
   type = ProcessType.Cheetah;
   status  = Constants.SERVICES_STATE_RUNNING;
   hasWindow = false;
-  description = 'handlessystem audio file';
+  description = 'handles system audio file';
 
   audioSrc = '';
     

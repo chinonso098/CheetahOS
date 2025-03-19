@@ -29,7 +29,7 @@ export class VolumeComponent implements AfterViewInit  {
   type = ComponentType.System
   audioIcon = `${Constants.IMAGE_BASE_PATH}no_volume.png`;
   private currentVolume = 0;
-
+  currentVolumeTxt = '';
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, audioService:AudioService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -66,6 +66,8 @@ export class VolumeComponent implements AfterViewInit  {
         this.audioIcon =  `${Constants.IMAGE_BASE_PATH}high_volume.png`;
         tskBarVolumeElmnt.style.left = '0px';
       }
+
+      this.currentVolumeTxt = `volume:${(this.currentVolume * 100)}`;
     }
   }
 
