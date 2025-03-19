@@ -27,9 +27,9 @@ export class TerminalCommandProcessor{
   
     
     private  permissionChart!:Map<number, OctalRepresentation>;
-    private closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu",
+    private closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu","volume",
         "cmpnt_ref_svc", "file_mgr_svc", "file_svc", "menu_svc", "notification_svc", "pid_gen_svc", "rning_proc_svc", "scripts_svc",
-        "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc", "window_mgmt_svc"];
+        "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc", "window_mgmt_svc",  "audio_svc"];
 
     private falseDirectories:string[] = ["3D-Objects", "Desktop", "Documents", "Downloads", "Games", "Music", "Pictures", "Videos"];
         

@@ -8,6 +8,7 @@ import { Service } from "src/app/system-files/service";
 import { BaseService } from "./base.service.interface";
 import { ScriptService } from "./script.services";
 import {extname} from 'path';
+import { Subject } from "rxjs";
 
 declare const Howl:any;
 
@@ -23,6 +24,11 @@ export class AudioService implements BaseService {
   private _processIdService:ProcessIDService;
   private _audioPlayer: any;
 
+  readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}start_up.mp3`;
+
+  changeVolumeNotify: Subject<void> = new Subject<void>();
+  hideShowVolumeControlNotify: Subject<void> = new Subject<void>();
+
   name = 'audio_svc';
   icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
   processId = 0;
@@ -31,7 +37,6 @@ export class AudioService implements BaseService {
   hasWindow = false;
   description = 'handlessystem audio file';
 
-  readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}start_up.mp3`;
   audioSrc = '';
     
   constructor(){
@@ -47,8 +52,6 @@ export class AudioService implements BaseService {
       this._runningProcessService.addService(this.getServiceDetail());
   }
 
-
-
   private loadAudioScript(): void {
       // Using setTimeout ensures it runs after the constructor has returned
       setTimeout(() => {
@@ -61,13 +64,10 @@ export class AudioService implements BaseService {
       this.loadHowlSingleTrackObjectAsync()
         .then(howl => { this._audioPlayer = howl; })
         .catch(error => { console.error('Error loading track:', error); });
-
-        console.log('script load complete');
     });
   }
 
   async loadHowlSingleTrackObjectAsync(): Promise<any> {
-
     // Your asynchronous code here
     return new Promise<any>((resolve, reject) => {
       const ext = this.getExt('', this.audioSrc);
@@ -88,51 +88,70 @@ export class AudioService implements BaseService {
     });
   }
 
+  play(path:string):void{
+    const delay = 10;
+    this.audioSrc = Constants.EMPTY_STRING;
+    this.audioSrc = path;
+
+    this._audioPlayer.stop();
+
+    setTimeout(async()=> {
+      this.loadHowlSingleTrackObjectAsync()
+        .then(howl => { 
+          this._audioPlayer = howl; 
+          this.playSound();
+        })
+        .catch(error => { console.error('Error loading track:', error); });
+    }, delay);
+  }
+
   playSound():void{
     this._audioPlayer.play();
+  }
+
+  stopSound():void{
+    this._audioPlayer.stop();
+  }
+
+  pauseSound():void{
+    this._audioPlayer.pause();
   }
 
   getVolume():number{
     return  this._audioPlayer.volume();
   }
-  // getAudioSrc(pathOne:string, pathTwo:string):string{
-  //   let audioSrc = '';
-  //   if(pathOne.includes('blob:http')){
-  //     return pathOne;
-  //   }else if(this.checkForExt(pathOne,pathTwo)){
-  //     audioSrc = '/' + this._fileInfo.getContentPath;
-  //   }else{
-  //     audioSrc = this._fileInfo.getCurrentPath;
-  //   }
-  //   return audioSrc;
-  // }
 
-    checkForExt(contentPath:string, currentPath:string):boolean{
-      const contentExt = extname(contentPath);
-      const currentPathExt = extname(currentPath);
-      let res = false;
-  
-      if(Constants.AUDIO_FILE_EXTENSIONS.includes(contentExt)){
-        res = true;
-      }else if(Constants.AUDIO_FILE_EXTENSIONS.includes(currentPathExt)){
-        res = false;
-      }
-      return res;
+  changeVolume(volume:number):void{
+    this._audioPlayer.volume(volume);
+  }
+
+
+  checkForExt(contentPath:string, currentPath:string):boolean{
+    const contentExt = extname(contentPath);
+    const currentPathExt = extname(currentPath);
+    let res = false;
+
+    if(Constants.AUDIO_FILE_EXTENSIONS.includes(contentExt)){
+      res = true;
+    }else if(Constants.AUDIO_FILE_EXTENSIONS.includes(currentPathExt)){
+      res = false;
     }
-  
-    getExt(contentPath:string, currentPath:string):string{
-      const contentExt = extname(contentPath);
-      const currentPathExt = extname(currentPath);
-      let res = '';
-  
-      if(Constants.AUDIO_FILE_EXTENSIONS.includes(contentExt)){
-        res = contentExt;
-      }else if(Constants.AUDIO_FILE_EXTENSIONS.includes(currentPathExt)){
-        res = currentPathExt;
-      }
-  
-      return res;
+    return res;
+  }
+
+  getExt(contentPath:string, currentPath:string):string{
+    const contentExt = extname(contentPath);
+    const currentPathExt = extname(currentPath);
+    let res = '';
+
+    if(Constants.AUDIO_FILE_EXTENSIONS.includes(contentExt)){
+      res = contentExt;
+    }else if(Constants.AUDIO_FILE_EXTENSIONS.includes(currentPathExt)){
+      res = currentPathExt;
     }
+
+    return res;
+  }
 
 
   private getProcessDetail():Process{

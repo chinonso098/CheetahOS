@@ -10,7 +10,7 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 export class VolumeControlComponent implements AfterViewInit {
   private _audioService!:AudioService
 
-  audioIcon ='';
+  audioIcon =`${Constants.IMAGE_BASE_PATH}no_volume.png`;
   private currentVolume = 0;
   adjustedVolume = 0;
 
@@ -22,7 +22,7 @@ export class VolumeControlComponent implements AfterViewInit {
     setTimeout(() => {
       this.currentVolume = this._audioService.getVolume();
       this.setVolumeIcon();
-    }, 150);
+    }, 0);
   }
 
   setVolumeIcon():void{
@@ -39,6 +39,17 @@ export class VolumeControlComponent implements AfterViewInit {
       this.audioIcon =  `${Constants.IMAGE_BASE_PATH}high_volume.png`;
       this.adjustedVolume = (this.currentVolume * 100);
     }
+
+  }
+
+  onVolumeSliderChange(event: Event):void{
+    const inputElement = event.target as HTMLInputElement;
+    const enteredValue = Number(inputElement.value);
+    this.adjustedVolume = enteredValue;
+    const newVolume = enteredValue/100;
+
+    this._audioService.changeVolume(newVolume);
+    this._audioService.changeVolumeNotify.next();
   }
 
 }

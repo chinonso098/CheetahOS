@@ -18,6 +18,7 @@ import { FileService } from 'src/app/shared/system-service/file.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { AudioService } from 'src/app/shared/system-service/audio.services';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
@@ -63,6 +64,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _scriptService: ScriptService;
   private _menuService: MenuService;
   private _windowService:WindowService;
+  private _audioService:AudioService;
 
   
   private _timerSubscription!: Subscription;
@@ -74,7 +76,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _keepTaskBarPreviewWindowSub!:Subscription;
   private _showStartMenuSub!:Subscription;
   private _hideStartMenuSub!:Subscription;
-  private _showSub!:Subscription;
+  private _hideShowVolumeControlSub!: Subscription;
   private _vantaEffect: any;
   private _numSequence = 0;
   private _charSequence = 'a';
@@ -104,6 +106,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showDesktopIcons = true;
   showDesktopScreenShotPreview = false;
   showStartMenu = false;
+  showVolumeControl = false;
   dsktpPrevImg = '';
   slideState = 'slideIn';
 
@@ -168,7 +171,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService,fileManagerServices:FileManagerService,
-              triggerProcessService:TriggerProcessService, scriptService: ScriptService, menuService: MenuService, fileService:FileService, windowService:WindowService ) { 
+              triggerProcessService:TriggerProcessService, scriptService: ScriptService, audioService: AudioService, menuService: MenuService, fileService:FileService, windowService:WindowService ) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -178,6 +181,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService = menuService;
     this._fileService = fileService;
     this._windowService = windowService;
+    this._audioService = audioService;
 
     this._showTaskBarAppIconMenuSub = this._menuService.showTaskBarAppIconMenu.subscribe((p) => { this.onShowTaskBarAppIconMenu(p)});
     this._showTaskBarContextMenuSub = this._menuService.showTaskBarConextMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
@@ -187,6 +191,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._keepTaskBarPreviewWindowSub = this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
     this._showStartMenuSub = this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
     this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
+    this._hideShowVolumeControlSub = this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
 
 
     this.processId = this._processIdService.getNewProcessId()
@@ -464,6 +469,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
       this._menuService.hideStartMenu.next();
     }
+  }
+
+  hideShowVolumeControl():void{
+    this.showVolumeControl = !this.showVolumeControl;
   }
 
   viewByLargeIcon():void{

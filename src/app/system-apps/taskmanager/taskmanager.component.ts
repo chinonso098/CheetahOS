@@ -85,9 +85,9 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   SECONDS_DELAY = 250;
 
   processes:Process[] =[];
-  closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu",
+  closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu", "volume",
     "cmpnt_ref_svc", "file_mgr_svc", "file_svc", "menu_svc", "notification_svc", "pid_gen_svc", "rning_proc_svc", "scripts_svc",
-    "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc", "window_mgmt_svc"];
+    "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc", "window_mgmt_svc", "audio_svc"];
   groupedData: any = {};
   selectedRefreshRate = 0;
 

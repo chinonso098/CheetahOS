@@ -10,7 +10,11 @@
     <cos-taskbarpreview  [fadeState]="tskBarPreviewWindowState" [name]="appToPreview" [icon]="appToPreviewIcon" *ngIf="showTskBarPreviewWindow"  [ngStyle]="tskBarPrevWindowStyle">  </cos-taskbarpreview>
     <cos-menu [generalMenu]="taskBarAppIconMenuData" *ngIf="showTskBarAppIconMenu" [style]="tskBarAppIconMenuStyle" [menuType]="tskBarAppIconMenuOption"> </cos-menu>
     <cos-menu [generalMenu]="taskBarContextMenuData" *ngIf="showTskBarCntxtMenu" [style]="tskBarCntxtMenuStyle" [menuType]="tskBarContextMenuOption"> </cos-menu>
-    <cos-volumecontrol></cos-volumecontrol>
+    
+    
+    @if(showVolumeControl){
+        <cos-volumecontrol></cos-volumecontrol>
+    }
     
     @if(showStartMenu){
         <cos-startmenu [@slideStartMenuAnimation]></cos-startmenu>
