@@ -104,6 +104,8 @@
 }
 
 .lockscreen-date-placeholder {
+    position: relative;
+    left: 15px;
     font-size: 45px;
     font-weight:300;
     color: #fff;

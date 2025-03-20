@@ -129,6 +129,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   previousDisplayedTaskbarPreview = '';
   removeTskBarPrevWindowFromDOMTimeoutId!: NodeJS.Timeout;
   hideTskBarPrevWindowTimeoutId!: NodeJS.Timeout;
+  clippyIntervalId!: NodeJS.Timeout;
 
   readonly DESKTOP_DIRECTORY ='/Users/Desktop';
   readonly DESKTOP_SCREEN_SHOT_DIRECTORY ='/Users/Documents/Screen-Shots';
@@ -192,6 +193,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._showStartMenuSub = this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
     this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
     this._hideShowVolumeControlSub = this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
+
+    this._runningProcessService.showDesktopNotify.subscribe(() => {this.initClippy()})
+    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.stopClippy()})
 
 
     this.processId = this._processIdService.getNewProcessId()
@@ -285,10 +289,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   initClippy():void{
-    setInterval(() =>{
+    this.clippyIntervalId = setInterval(() =>{
       const appName = 'clippy';
       this.openApplication(appName);
     },this.CLIPPY_INIT_DELAY);
+  }
+
+  stopClippy():void{
+    clearInterval(this.clippyIntervalId);
   }
 
   getRandomInt(min:number, max:number):number{

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { Constants } from 'src/app/system-files/constants';
@@ -11,7 +11,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
   styleUrl: './login.component.css'
 })
 
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, AfterViewInit {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -56,6 +56,12 @@ export class LoginComponent implements OnInit {
     setInterval(() => {
       this.getDate();
     }, secondsDelay[1]); 
+
+    this._runningProcessService.showLockScreenNotify.next();
+  }
+
+  ngAfterViewInit(): void {
+    1//this._runningProcessService.showLockScreenNotify.next();
   }
 
   updateTime():void {
@@ -136,6 +142,8 @@ export class LoginComponent implements OnInit {
     if(lockScreenElmnt){
       lockScreenElmnt.style.zIndex = '-1';
       lockScreenElmnt.style.backdropFilter = 'none';
+
+      this._runningProcessService.showDesktopNotify.next();
     }
   }
 
@@ -144,6 +152,9 @@ export class LoginComponent implements OnInit {
     if(lockScreenElmnt){
       lockScreenElmnt.style.zIndex = '6';
       lockScreenElmnt.style.backdropFilter = 'none';
+
+      this._runningProcessService.showLockScreenNotify.next();
+      this.startLockScreenTimeOut();
     }
   }
 
