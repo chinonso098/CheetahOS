@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { Constants } from 'src/app/system-files/constants';
@@ -11,7 +11,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
   styleUrl: './login.component.css'
 })
 
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -19,8 +19,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   password = Constants.EMPTY_STRING;
   currentTime = Constants.EMPTY_STRING;
   currentDate = Constants.EMPTY_STRING;
-  intervalId!: NodeJS.Timeout;
   authFormTimeoutId!: NodeJS.Timeout;
+  lockScreenTimeoutId!: NodeJS.Timeout;
 
   authForm = 'AuthenticationForm';
   currentDateTime = 'DateTime'; 
@@ -40,24 +40,22 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
-
+    this._runningProcessService.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
   }
 
   ngOnInit():void {
     this.viewOptions =  this.currentDateTime;
-    const secondsDelay = 1000; // Update time every second
+    const secondsDelay = [1000, 360000];  // Update time every second
     this.updateTime(); // Set initial time
     this.getDate();
-    
-    this.intervalId = setInterval(() => {
-      this.updateTime();
-    }, secondsDelay); 
-  }
 
-  ngOnDestroy():void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId); // Clean up interval when component is destroyed
-    }
+    setInterval(() => {
+      this.updateTime();
+    }, secondsDelay[0]); 
+
+    setInterval(() => {
+      this.getDate();
+    }, secondsDelay[1]); 
   }
 
   updateTime():void {
@@ -75,30 +73,38 @@ export class LoginComponent implements OnInit, OnDestroy {
     const now = new Date();
     this.currentDate = now.toLocaleString('en-US', {
       weekday: 'long', // Full day name (e.g., "Tuesday")
-      month:'short',
+      month:'long',
       day:'numeric'
     });
   }
 
   onKeyDown(evt:KeyboardEvent):void{
-    const secondsDelay = 12000; //wait 12 seconds;
     if(evt.key === Constants.BLANK_SPACE){
-      this.viewOptions = this.authForm;
-
-      const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
-      if(lockScreenElmnt){
-        lockScreenElmnt.style.backdropFilter = 'blur(40px)';
-
-        this.authFormTimeoutId = setTimeout(() => {
-            this.resetViewOption();
-        }, secondsDelay);
-      }
+      this.showAuthForm();
     }
   }
 
-  resetViewOption():void{
+  showAuthForm():void{
+    this.viewOptions = this.authForm;
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    if(lockScreenElmnt){
+      lockScreenElmnt.style.backdropFilter = 'blur(40px)';
+      lockScreenElmnt.style.transition = 'backdrop-filter 0.4s ease';
+
+      this.startAuthFormTimeOut();
+    }
+  }
+
+  startAuthFormTimeOut():void{
+    const secondsDelay = 60000; //wait 60 seconds;
+    this.authFormTimeoutId = setTimeout(() => {
+      this.showDateTime();
+    }, secondsDelay);
+  }
+
+  showDateTime():void{
     this.viewOptions = this.currentDateTime;
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
       lockScreenElmnt.style.backdropFilter = 'none';
     }
@@ -109,17 +115,21 @@ export class LoginComponent implements OnInit, OnDestroy {
     const res = new RegExp(regexStr).test(evt.key)
 
     if(res){
-       this.showDesktop();
+       //this.showDesktop();
       //return res
     }else{
 
       //return res;
     }
 
-    if (this.authFormTimeoutId) {
-      clearTimeout(this.authFormTimeoutId); // is key is being pressed then rest the timeout
-    }
+    this.resetAuthFormTimeOut();
   }
+
+  resetAuthFormTimeOut():void{
+    clearTimeout(this.authFormTimeoutId);
+    this.startAuthFormTimeOut();
+  }
+
 
   showDesktop():void{
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
@@ -129,6 +139,25 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
+  showLockScreen():void{
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    if(lockScreenElmnt){
+      lockScreenElmnt.style.zIndex = '6';
+      lockScreenElmnt.style.backdropFilter = 'none';
+    }
+  }
+
+  startLockScreenTimeOut():void{
+    const secondsDelay = 1200000; //wait 2 mins;
+    this.lockScreenTimeoutId = setTimeout(() => {
+      this.showDesktop();
+    }, secondsDelay);
+  }
+
+  resetLockScreenTimeOut():void{
+    clearTimeout(this.lockScreenTimeoutId);
+    this.startLockScreenTimeOut();
+  }
 
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)

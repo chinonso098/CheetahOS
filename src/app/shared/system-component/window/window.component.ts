@@ -43,6 +43,8 @@ import { Process } from 'src/app/system-files/process';
    private _restoreProcessSub!:Subscription;
    private _restoreProcessesSub!:Subscription;
    private _showOrSetProcessWindowToFocusSub!:Subscription;
+   private _lockScreenActiveSub!:Subscription;
+   private _desktopActiveSub!:Subscription;
 
   readonly SECONDS_DELAY = 450;
   readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
@@ -114,6 +116,8 @@ import { Process } from 'src/app/system-files/process';
       this._hideOtherProcessSub = this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.hideWindowNotMatchingPidOnMouseHover(p)});
       this._restoreProcessSub = this._windowService.restoreProcessWindowOnMouseLeaveNotify.subscribe((p) => {this.restoreWindowOnMouseLeave(p)});
       this._restoreProcessesSub = this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
+      this._lockScreenActiveSub = this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+      this._desktopActiveSub = this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
       //this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)})
     }
 
@@ -181,6 +185,8 @@ import { Process } from 'src/app/system-files/process';
       this._restoreProcessSub?.unsubscribe();
       this._restoreProcessesSub?.unsubscribe();
       this._showOrSetProcessWindowToFocusSub?.unsubscribe();
+      this._lockScreenActiveSub?.unsubscribe();
+      this._desktopActiveSub?.unsubscribe();
     }
 
     ngOnChanges(changes: SimpleChanges):void{
@@ -818,6 +824,39 @@ import { Process } from 'src/app/system-files/process';
             'z-index':z_index
           };
         }
+      }
+    }
+
+    lockScreenIsActive():void{
+      const windowState = this._windowService.getWindowState(this.processId);
+      if(windowState && windowState.is_visible){
+        this.currentStyles = {
+          'top': `${this.windowTop}%`,
+          'left': `${this.windowLeft}%`,
+          'z-index':this.HIDDEN_Z_INDEX
+        };
+
+        this._windowService.addWindowState(windowState);   
+      }
+    }
+
+    desktopIsActive():void{
+      const windowState = this._windowService.getWindowState(this.processId);
+      if(windowState){
+        if(windowState.pid === this._windowService.getProcessWindowIDWithHighestZIndex()){
+          this.currentStyles = {
+            'top': `${this.windowTop}%`,
+            'left': `${this.windowLeft}%`,
+            'z-index':this.MAX_Z_INDEX
+          };
+        }else{
+          this.currentStyles = {
+            'top': `${this.windowTop}%`,
+            'left': `${this.windowLeft}%`,
+            'z-index':this.MIN_Z_INDEX
+          };
+        }
+        this._windowService.addWindowState(windowState);   
       }
     }
 

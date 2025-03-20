@@ -325,6 +325,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     else{
       this._runningProcessService.removeEventOriginator();
     }
+
+    this._runningProcessService.resetLockScreenTimeOutNotify.next();
   }
 
   shiftViewSubMenu():void{ this.shiftNestedMenuPosition(0); }
@@ -469,6 +471,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
       this._menuService.hideStartMenu.next();
     }
+
+    this._runningProcessService.resetLockScreenTimeOutNotify.next();
+  }
+
+  resetLockScreenTimeOut():void{
+    this._runningProcessService.resetLockScreenTimeOutNotify.next();
   }
 
   hideShowVolumeControl():void{

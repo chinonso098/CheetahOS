@@ -1,4 +1,4 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -10,7 +10,7 @@ import { Constants } from 'src/app/system-files/constants';
   templateUrl: './clock.component.html',
   styleUrls: ['./clock.component.css']
 })
-export class ClockComponent implements AfterViewInit {
+export class ClockComponent implements OnInit {
 
   private _processIdService;
   private _runningProcessService;
@@ -29,16 +29,15 @@ export class ClockComponent implements AfterViewInit {
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
 
-    this.updateTime();
-    this.getDate();
-    
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
 
-  ngAfterViewInit():void {
+  ngOnInit():void {
     const secondsDelay = [1000, 360000]; 
+    this.updateTime();
+    this.getDate();
 
     setInterval(() => {
       this.updateTime();

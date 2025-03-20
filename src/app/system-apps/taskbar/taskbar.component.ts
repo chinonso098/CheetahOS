@@ -36,6 +36,10 @@ export class TaskbarComponent implements AfterViewInit{
     
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
+
+     // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
+    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   
@@ -59,14 +63,25 @@ export class TaskbarComponent implements AfterViewInit{
     if(this._runningProcessService.getEventOrginator() === Constants.EMPTY_STRING){
       const uid = `${this.name}-${this.processId}`;
       this._runningProcessService.addEventOriginator(uid);
-  
-      // const taskBarElmnt = document.getElementById('the-window-taskbar') as HTMLDivElement;
-      // const rect =  taskBarElmnt.getBoundingClientRect();
-  
+    
       this._menuService.showTaskBarConextMenu.next(evt);
     }
 
     evt.preventDefault();
+  }
+
+  lockScreenIsActive():void{
+    const taskBarElmnt = document.getElementById('the-window-taskbar') as HTMLDivElement;
+    if(taskBarElmnt){
+      taskBarElmnt.style.zIndex = '0';
+    }
+  }
+
+  desktopIsActive():void{
+    const taskBarElmnt = document.getElementById('the-window-taskbar') as HTMLDivElement;
+    if(taskBarElmnt){
+      taskBarElmnt.style.zIndex = '4';
+    }
   }
 
   private getComponentDetail():Process{

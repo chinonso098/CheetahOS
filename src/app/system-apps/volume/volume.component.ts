@@ -5,7 +5,6 @@ import { Constants } from 'src/app/system-files/constants';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'cos-volume',
@@ -16,20 +15,19 @@ export class VolumeComponent implements AfterViewInit  {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _audioService!:AudioService
+  private _audioService!:AudioService;
 
-  private _changeVolumeSub!: Subscription;
-  
+  private currentVolume = 0;
+  audioIcon = `${Constants.IMAGE_BASE_PATH}no_volume.png`;
+  currentVolumeTxt = Constants.EMPTY_STRING;
 
   hasWindow = false;
   hover = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'volume';
   processId = 0;
-  type = ComponentType.System
-  audioIcon = `${Constants.IMAGE_BASE_PATH}no_volume.png`;
-  private currentVolume = 0;
-  currentVolumeTxt = '';
+  type = ComponentType.System;
+
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, audioService:AudioService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -38,8 +36,8 @@ export class VolumeComponent implements AfterViewInit  {
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-
-    this._changeVolumeSub = this._audioService.changeVolumeNotify.subscribe(() => { this.upadateVolume()});
+    // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
+    this._audioService.changeVolumeNotify.subscribe(() => { this.upadateVolume()}); 
   }
 
   ngAfterViewInit():void{  
@@ -80,7 +78,6 @@ export class VolumeComponent implements AfterViewInit  {
   showVolumeControl():void{
     this._audioService.hideShowVolumeControlNotify.next();
   }
-
 
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild, ElementRef} from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, ElementRef} from '@angular/core';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -7,7 +7,6 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
 import { Process } from 'src/app/system-files/process';
 import { FileEntry } from 'src/app/system-files/file.entry';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { Subscription } from 'rxjs';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { FileManagerService } from 'src/app/shared/system-service/file.manager.services';
 import { FormGroup, FormBuilder } from '@angular/forms';
@@ -21,7 +20,7 @@ import { GeneralMenu, MenuPositiom } from 'src/app/shared/system-component/menu/
   templateUrl: './filemanager.component.html',
   styleUrls: ['./filemanager.component.css']
 })
-export class FileManagerComponent implements BaseComponent, OnInit, AfterViewInit, OnDestroy {
+export class FileManagerComponent implements BaseComponent, OnInit, AfterViewInit {
   @ViewChild('myBounds', {static: true}) myBounds!: ElementRef;
   
   private _processIdService:ProcessIDService;
@@ -30,18 +29,10 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private _elRef:ElementRef;
   private _directoryFilesEntries!:FileEntry[];
   private _triggerProcessService:TriggerProcessService;
+  private _fileManagerService:FileManagerService;
   private _menuService:MenuService;
   private _formBuilder:FormBuilder;
 
-
-  private _viewByNotifySub!:Subscription;
-  private _sortByNotifySub!:Subscription;
-  private _refreshNotifySub!:Subscription;
-  private _autoArrangeIconsNotifySub!:Subscription;
-  private _autoAlignIconsNotifyBySub!:Subscription;
-  private _showDesktopIconNotifySub!:Subscription;
-  private _dirFilesUpdatedSub!: Subscription;
-  private _hideContextMenuSub!:Subscription;
 
   private autoAlign = true;
   private autoArrange = false;
@@ -104,6 +95,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
               triggerProcessService:TriggerProcessService, fileManagerService:FileManagerService, formBuilder: FormBuilder, menuService:MenuService, elRef: ElementRef) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
+    this._fileManagerService = fileManagerService
     this._fileService = fileInfoService;
     this._triggerProcessService = triggerProcessService;
     this._menuService = menuService;
@@ -113,20 +105,24 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    this._dirFilesUpdatedSub = this._fileService.dirFilesUpdateNotify.subscribe(() =>{
+    this._fileService.dirFilesUpdateNotify.subscribe(() =>{
       if(this._fileService.getEventOriginator() === this.name){
         this.loadFilesInfoAsync();
         this._fileService.removeEventOriginator();
       }
     });
 
-    this._viewByNotifySub = fileManagerService.viewByNotify.subscribe((p) =>{this.changeIconsSize(p)});
-    this._sortByNotifySub = fileManagerService.sortByNotify.subscribe((p)=>{this.sortIcons(p)});
-    this._autoArrangeIconsNotifySub = fileManagerService.autoArrangeIconsNotify.subscribe((p) =>{this.toggleAutoArrangeIcons(p)});
-    this._autoAlignIconsNotifyBySub = fileManagerService.alignIconsToGridNotify.subscribe((p) => {this.toggleAutoAlignIconsToGrid(p)});
-    this._refreshNotifySub = fileManagerService.refreshNotify.subscribe(()=>{this.refreshIcons()});
-    this._showDesktopIconNotifySub = fileManagerService.showDesktopIconsNotify.subscribe((p) =>{this.toggleDesktopIcons(p)});
-    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideIconContextMenu()});
+    this._fileManagerService.viewByNotify.subscribe((p) =>{this.changeIconsSize(p)});
+    this._fileManagerService.sortByNotify.subscribe((p)=>{this.sortIcons(p)});
+    this._fileManagerService.autoArrangeIconsNotify.subscribe((p) =>{this.toggleAutoArrangeIcons(p)});
+    this._fileManagerService.alignIconsToGridNotify.subscribe((p) => {this.toggleAutoAlignIconsToGrid(p)});
+    this._fileManagerService.refreshNotify.subscribe(()=>{this.refreshIcons()});
+    this._fileManagerService.showDesktopIconsNotify.subscribe((p) =>{this.toggleDesktopIcons(p)});
+    this._menuService.hideContextMenus.subscribe(() => { this.hideIconContextMenu()});
+
+    // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
+    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   ngOnInit():void{
@@ -138,17 +134,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   async ngAfterViewInit():Promise<void>{
     await this.loadFilesInfoAsync();
     this.removeVantaJSSideEffect();
-  }
-
-  ngOnDestroy(): void {
-    this._viewByNotifySub?.unsubscribe();
-    this._sortByNotifySub?.unsubscribe();
-    this._refreshNotifySub?.unsubscribe();
-    this._autoArrangeIconsNotifySub?.unsubscribe();
-    this._autoAlignIconsNotifyBySub?.unsubscribe();
-    this._showDesktopIconNotifySub?.unsubscribe();
-    this._dirFilesUpdatedSub?.unsubscribe();
-    this._hideContextMenuSub?.unsubscribe();
   }
 
   onDragOver(event:DragEvent):void{
@@ -736,6 +721,14 @@ OpensWith=${selectedFile.getOpensWith}
     }
 
     this.isIconInFocusDueToPriorAction = true;
+  }
+
+  lockScreenIsActive():void{
+    this.toggleDesktopIcons(false);
+  }
+
+  desktopIsActive():void{
+    this.toggleDesktopIcons(true);
   }
 
   private getComponentDetail():Process{

@@ -25,6 +25,9 @@ export class RunningProcessService implements BaseService{
     closeProcessNotify: Subject<Process> = new Subject<Process>();
     changeProcessContentNotify:Subject<void> = new Subject<void>();
     processListChangeNotify: Subject<void> = new Subject<void>();
+    showLockScreenNotify: Subject<void> = new Subject<void>();
+    showDesktopNotify: Subject<void> = new Subject<void>();
+    resetLockScreenTimeOutNotify: Subject<void> = new Subject<void>();
 
 
     name = 'rning_proc_svc';
