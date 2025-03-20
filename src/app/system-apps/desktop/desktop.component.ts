@@ -107,6 +107,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showDesktopScreenShotPreview = false;
   showStartMenu = false;
   showVolumeControl = false;
+  showClippy = true;
   dsktpPrevImg = '';
   slideState = 'slideIn';
 
@@ -194,7 +195,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
     this._hideShowVolumeControlSub = this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
 
-    this._runningProcessService.showDesktopNotify.subscribe(() => {this.initClippy()})
+    this._runningProcessService.showDesktopNotify.subscribe(() => {this.startClippy()})
     this._runningProcessService.showLockScreenNotify.subscribe(() => {this.stopClippy()})
 
 
@@ -289,14 +290,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   initClippy():void{
-    this.clippyIntervalId = setInterval(() =>{
-      const appName = 'clippy';
-      this.openApplication(appName);
-    },this.CLIPPY_INIT_DELAY);
+    if(this.showClippy){
+      this.clippyIntervalId = setInterval(() =>{
+        const appName = 'clippy';
+        this.openApplication(appName);
+      },this.CLIPPY_INIT_DELAY);
+    }
   }
 
   stopClippy():void{
+    this.showClippy = false;
     clearInterval(this.clippyIntervalId);
+  }
+
+  startClippy():void{
+    this.showClippy = false;
+    this.initClippy();
   }
 
   getRandomInt(min:number, max:number):number{

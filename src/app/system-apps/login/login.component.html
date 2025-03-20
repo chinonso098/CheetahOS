@@ -11,18 +11,19 @@
           
             <!-- Section 2: Name Placeholder -->
             <div class="lockscreen-name-section">
-              <div class="lockscreen-name-placeholder">Anonymous User</div>
+              <div class="lockscreen-name-placeholder">Anonymous, User</div>
             </div>
           
             <!-- Section 3: Password Input -->
             <div class="lockscreen-password-section">
-              <div class="lockscreen-icon-container">
-                <i class="lockscreen-arrow-icon">&rarr;</i>
-              </div>
-              <input type="password" 
+                <input type="password" 
                      class="lockscreen-password-input" 
                      (keydown)="onEnteringPassword($event)"
                     placeholder="Password" />
+
+                <div class="lockscreen-icon-container">
+                    <i class="lockscreen-arrow-icon">&rarr;</i>
+                </div>
             </div>
         </div> 
     </ng-template>
@@ -30,14 +31,17 @@
     <ng-template #showCurrentDateTime>
         <!-- New Additional Container -->
         <div class="lockscreen-datetime-container">
-            <!-- Section 1: First Placeholder -->
+
+            <div class="lockscreen-notice-section">
+                <div class="lockscreen-notice-placeholder">Press Space to unlock.</div>
+            </div>
+
+            <div class="lockscreen-notice-space"></div>
+
             <div class="lockscreen-time-section">
                 <div class="lockscreen-time-placeholder">{{ currentTime }}</div>
             </div>
 
-            <div class="lockscreen-datetime-space"></div>
-
-            <!-- Section 2: Second Placeholder -->
             <div class="lockscreen-date-section">
                 <div class="lockscreen-date-placeholder">{{ currentDate }}</div>
             </div>

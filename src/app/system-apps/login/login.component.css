@@ -38,9 +38,9 @@
 }
   
 .lockscreen-name-placeholder {
-    font-size: 50px;
-    font-weight: bold;
-    color: #333;
+    font-size: 40px;
+    font-weight: 200;
+    color: #fff;
 }
   
   /* Password Input */
@@ -49,8 +49,7 @@
     align-items: center;
     width: 100%;
     max-width: 300px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    border: 1.5px solid #ccc;
     overflow: hidden;
 }
   
@@ -60,11 +59,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #ddd;
+    background-color: #ccc;
 }
   
 .lockscreen-arrow-icon {
     font-size: 20px;
+    color: #fff;
 }
   
 /* Password Input */
@@ -84,17 +84,25 @@
     bottom: 8%;
     margin-left: 25px;
 }
-
-.lockscreen-datetime-space{
-    height: 1px;
-}
   
-.lockscreen-time-section, .lockscreen-date-section {
+.lockscreen-time-section, .lockscreen-date-section, .lockscreen-notice-section {
     width: fit-content;
     height: fit-content;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.lockscreen-notice-space{
+    height: 50px;
+}
+
+.lockscreen-notice-placeholder {
+    position: relative;
+    left: 10px;
+    font-size: 18px;
+    font-weight:normal;
+    color: #fff;
 }
  
 .lockscreen-time-placeholder {
@@ -105,7 +113,7 @@
 
 .lockscreen-date-placeholder {
     position: relative;
-    left: 15px;
+    left: 6px;
     font-size: 45px;
     font-weight:300;
     color: #fff;
