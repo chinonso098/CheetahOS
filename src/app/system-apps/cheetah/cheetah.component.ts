@@ -27,7 +27,7 @@ export class CheetahComponent implements BaseComponent, OnInit {
   version = 'Version: 3.03.18';
   year = `\u00A9 ${new Date().getFullYear()}`;
 
-  readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}cheetah_sound.mp3`;
+  readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}about_cheetah.mp3`;
 
   constructor(processIdService:ProcessIDService,  runningProcessService:RunningProcessService, private _audioService:AudioService) { 
     this._processIdService = processIdService;

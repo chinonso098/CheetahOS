@@ -24,7 +24,7 @@ export class AudioService implements BaseService {
   private _processIdService:ProcessIDService;
   private _audioPlayer: any;
 
-  readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}start_up.mp3`;
+  readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}cheetah_start_up_2.mp3`;
 
   changeVolumeNotify: Subject<void> = new Subject<void>();
   hideShowVolumeControlNotify: Subject<void> = new Subject<void>();
@@ -89,7 +89,7 @@ export class AudioService implements BaseService {
   }
 
   play(path:string):void{
-    const delay = 10;
+    const delay = 1;
     this.audioSrc = Constants.EMPTY_STRING;
     this.audioSrc = path;
 
