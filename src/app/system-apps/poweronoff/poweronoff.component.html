@@ -1,0 +1,22 @@
+<div class="main-shutdown-container" id="powerOnOffCmpnt">
+    <div class="shutdown-container">
+
+        <div class="power-startup-section" tabindex="0" (click)="powerOnSystem()">
+            @if(showPowerBtn){
+                <div class="shutdown-image-placeholder">
+                    <img class="power-img"  [src]="pwrBtnIcon"/>
+                </div>
+            }
+          
+            @if(showStartUpGif){
+                <div class="startup-gif-placeholder">
+                    <img class="startup-gif"  [src]="startUpGif"/>
+                </div>
+            }
+        </div>
+
+        <div class="shutdown-notice-section">
+          <div class="shutdown-notice-placeholder">{{loadingMessage}}</div>
+        </div>
+    </div>
+</div>>

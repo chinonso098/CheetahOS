@@ -10,7 +10,7 @@ import { NotificationService } from './shared/system-service/notification.servic
 import { StateManagmentService } from './shared/system-service/state.management.service';
 import { WindowService } from './shared/system-service/window.service';
 import { MenuService } from './shared/system-service/menu.services';
-import { AudioService } from './shared/system-service/audio.services';
+import { ScriptService } from './shared/system-service/script.services';
 
 import { ComponentType } from './system-files/system.types';
 import { NotificationType } from './system-files/notification.type';
@@ -39,7 +39,7 @@ import { PropertiesComponent } from './shared/system-component/properties/proper
 import { ChatterComponent } from './system-apps/chatter/chatter.component';
 import { RunSystemComponent } from './system-apps/runsystem/runsystem.component';
 import { FileInfo } from './system-files/file.info';
-import { ScriptService } from './shared/system-service/script.services';
+
 
 @Component({
   selector: 'cos-root',
@@ -64,7 +64,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   private _stateManagmentService:StateManagmentService;
   private _menuService:MenuService;
   private _windowService:WindowService;
-  private _audioService!:AudioService;
   private _componentRefView!:ViewRef;
   private _appDirectory:AppDirectory;
 
@@ -121,7 +120,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   //runningProcesssService must come first
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService,  windowService:WindowService,
     componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService, sessionMangamentServices:SessionManagmentService,
-    scriptService:ScriptService, audioService:AudioService, notificationServices:NotificationService, stateManagmentService:StateManagmentService, menuService:MenuService,){
+    scriptService:ScriptService, notificationServices:NotificationService, stateManagmentService:StateManagmentService, menuService:MenuService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
@@ -133,7 +132,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this._stateManagmentService = stateManagmentService;
     this._windowService = windowService;
     this._menuService = menuService;
-    this._audioService = audioService;
 
     this._startProcessSub = this._triggerProcessService.startProcessNotify.subscribe((appName) =>{this.loadApps(appName)})
     this._appNotFoundSub = this._triggerProcessService.appNotFoundNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Error,appName)})
@@ -151,7 +149,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-    1//this._audioService = new AudioService();
+    1
   }
 
   ngAfterViewInit():void{
@@ -164,11 +162,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     }, this.SECONDS_DELAY[0]);
 
     //this.showPropertiesWindow();
-
-    setTimeout(() => {
-      this._audioService.playSound();
-    }, 500);
-
   }
 
   ngOnDestroy():void{

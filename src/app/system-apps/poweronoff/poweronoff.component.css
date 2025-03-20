@@ -1,0 +1,62 @@
+.main-shutdown-container{
+  position: fixed;
+  width: 100vw;
+  height: 100%;
+  background-color:black;
+  z-index: 7;
+}
+
+/* Main container */
+.shutdown-container {
+  display: flex;
+  position: relative;
+  top:25%;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+}
+
+/* Section 1: Image Placeholder */
+.power-startup-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.power-img-placeholder {
+  width: 48px;
+  height: 48px;
+  /* background-color: #ccc; */
+  border-radius: 50%;
+}
+
+.power-img{
+  width: 48px;
+  height: 48px;
+}
+
+.startup-gif-placeholder {
+  width: 200px;
+  height: 200px;
+  /* background-color: #ccc; */
+  border-radius: 50%;
+}
+
+.startup-gif{
+  width: 200px;
+  height: 200px;
+}
+
+/* Section 2: Name Placeholder */
+.shutdown-notice-section {
+  text-align: center;
+}
+
+.shutdown-notice-placeholder {
+  font-size: 30px;
+  font-weight: 400;
+  color: #333;
+}

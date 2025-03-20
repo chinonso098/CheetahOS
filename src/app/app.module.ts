@@ -41,6 +41,7 @@ import { RunSystemComponent } from './system-apps/runsystem/runsystem.component'
 import { VolumeComponent } from './system-apps/volume/volume.component';
 import { VolumeControlComponent } from './system-apps/volumecontrol/volumecontrol.component';
 import { LoginComponent } from './system-apps/login/login.component';
+import { PowerOnOffComponent } from './system-apps/poweronoff/poweronoff.component';
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
@@ -90,6 +91,7 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     VolumeComponent,
     VolumeControlComponent,
     LoginComponent,
+    PowerOnOffComponent,
 
     HighlightDirective,
     TaskBarEntryHighlightDirective,
