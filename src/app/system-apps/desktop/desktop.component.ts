@@ -200,28 +200,28 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   ngOnInit():void{
-    // this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
-    //   this._vantaEffect = VANTA.WAVES({
-    //     el: '#vanta',
-    //     color:this.DEFAULT_COLOR, 
-    //     waveHeight:20,
-    //     shininess:45,
-    //     waveSpeed:0.20,
-    //     zoom:0.9,     
-    //   });
-    // })
+    this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
+      this._vantaEffect = VANTA.WAVES({
+        el: '#vanta',
+        color:this.DEFAULT_COLOR, 
+        waveHeight:20,
+        shininess:45,
+        waveSpeed:0.20,
+        zoom:0.9,     
+      });
+    })
     
     this.getDesktopMenuData();
     this.getTaskBarContextData();
   }
 
   ngAfterViewInit():void{
-    // this._timerSubscription = interval(this.COLOR_CHANGE_DELAY).subscribe(() => {
-    //   this.transitionToNextColor();
-    // });
+    this._timerSubscription = interval(this.COLOR_CHANGE_DELAY).subscribe(() => {
+      this.transitionToNextColor();
+    });
     
     this.hideContextMenu();
-    //this.loadOtherBackgrounds();
+    this.loadOtherBackgrounds();
     this.initClippy();
   }
 

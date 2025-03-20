@@ -1,1 +1,43 @@
-<p>login works!</p>
+<div class="main-lockscreen-container" (keydown)="onKeyDown($event)"> 
+    <ng-container [ngTemplateOutlet]="viewOptions === authForm ? showlogonform : showCurrentDateTime ">
+    </ng-container>
+
+    <ng-template #showlogonform>
+        <div class="lockscreen-logon-container">
+            <!-- Section 1: Image Placeholder -->
+            <div class="lockscreen-image-section">
+              <div class="lockscreen-image-placeholder"></div>
+            </div>
+          
+            <!-- Section 2: Name Placeholder -->
+            <div class="lockscreen-name-section">
+              <div class="lockscreen-name-placeholder">Name</div>
+            </div>
+          
+            <!-- Section 3: Password Input -->
+            <div class="lockscreen-password-section">
+              <div class="lockscreen-icon-container">
+                <i class="lockscreen-arrow-icon">&rarr;</i>
+              </div>
+              <input type="password" class="lockscreen-password-input" placeholder="Enter password" />
+            </div>
+        </div> 
+    </ng-template>
+
+    <ng-template #showCurrentDateTime>
+        <!-- New Additional Container -->
+        <div class="lockscreen-datetime-container">
+            <!-- Section 1: First Placeholder -->
+            <div class="lockscreen-time-section">
+                <div class="lockscreen-time-placeholder">{{ currentTime }}</div>
+            </div>
+
+            <div class="lockscreen-datetime-space"></div>
+
+            <!-- Section 2: Second Placeholder -->
+            <div class="lockscreen-date-section">
+                <div class="lockscreen-date-placeholder">{{ currentDate }}</div>
+            </div>
+        </div>
+    </ng-template>
+</div>
