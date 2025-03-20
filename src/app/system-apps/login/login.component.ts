@@ -48,6 +48,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     const secondsDelay = 1000; // Update time every second
     this.updateTime(); // Set initial time
     this.getDate();
+    
     this.intervalId = setInterval(() => {
       this.updateTime();
     }, secondsDelay); 

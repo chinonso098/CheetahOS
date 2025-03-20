@@ -43,10 +43,11 @@ export class VolumeComponent implements AfterViewInit  {
   }
 
   ngAfterViewInit():void{  
+    const secondsDelay = 250;
     setTimeout(() => {
       this.currentVolume = this._audioService.getVolume();
       this.setVolumeIcon();
-    }, 150);
+    }, secondsDelay);
   }
 
   setVolumeIcon():void{

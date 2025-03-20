@@ -1,6 +1,4 @@
-import { Component, AfterViewInit, OnDestroy } from '@angular/core';
-import { Clock } from './clock';
-import { Subscription, timer } from 'rxjs';
+import { Component, AfterViewInit } from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -12,17 +10,13 @@ import { Constants } from 'src/app/system-files/constants';
   templateUrl: './clock.component.html',
   styleUrls: ['./clock.component.css']
 })
-export class ClockComponent implements AfterViewInit,OnDestroy {
+export class ClockComponent implements AfterViewInit {
 
   private _processIdService;
   private _runningProcessService;
-  
-  private _taskBarClock:Clock;
-  private _timerSubscription!:Subscription;
-  private _dateSubscription!:Subscription;
-  
-  subscribeTime!:string;
-  subscribeDate!:string;
+
+  subscribeTime = Constants.EMPTY_STRING;
+  subscribeDate = Constants.EMPTY_STRING;
 
   hasWindow = false;
   hover = false;
@@ -34,42 +28,43 @@ export class ClockComponent implements AfterViewInit,OnDestroy {
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
+
+    this.updateTime();
+    this.getDate();
     
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
-
-    const dateTime = new Date();
-    this._taskBarClock = new Clock(dateTime.getSeconds(),dateTime.getMinutes(),dateTime.getHours());
   }
 
 
   ngAfterViewInit():void {
-    this.oberserableTimer();
-    this.oberserableDate();
+    const secondsDelay = [1000, 360000]; 
+
+    setInterval(() => {
+      this.updateTime();
+    }, secondsDelay[0]); 
+
+    setInterval(() => {
+      this.getDate();
+    }, secondsDelay[1]); 
   }
 
-  ngOnDestroy():void {
-    this._timerSubscription?.unsubscribe();
-    this._dateSubscription?.unsubscribe();
+  updateTime():void {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
+    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+
+    this.subscribeTime = `${formattedHours}:${formattedMinutes} ${ampm}`;
   }
 
-  private oberserableTimer():void{
-    this._timerSubscription = timer(50, 1000).subscribe(() => {
-          this._taskBarClock.tick()
-      this.subscribeTime = `${this._taskBarClock.getHourStyle('12hr')}:${this.padSingleDigits(this._taskBarClock.getMinutes)} ${this._taskBarClock.getMeridian}`;
-    });
+  getDate():void{
+    const dateTime = new Date();  
+    this.subscribeDate = `${dateTime.getMonth() + 1}/${dateTime.getDate()}/${dateTime.getFullYear()}`;
   }
 
-  private oberserableDate():void{
-    this._dateSubscription = timer(50, 360000).subscribe(() => {
-      const dateTime = new Date();  
-      this.subscribeDate = `${dateTime.getMonth() + 1}/${dateTime.getDate()}/${dateTime.getFullYear()}`;
-    });
-  }
-
-  private padSingleDigits(n:number):string{
-    return n > 9 ? "" + n: "0" + n;
-  }
 
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
