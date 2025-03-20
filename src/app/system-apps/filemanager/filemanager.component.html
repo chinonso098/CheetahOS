@@ -17,7 +17,7 @@
                 </figcaption>
                 <div class="rename-textbox"  id="renameContainer{{i}}">
                     <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                        <input type="text" formControlName="renameInput"  (keypress)="onInputChange($event)" autofocus spellcheck="false" id="renameTxtBox{{i}}"/>
+                        <input type="text" formControlName="renameInput"  (keydown)="onInputChange($event)" autofocus spellcheck="false" id="renameTxtBox{{i}}"/>
                     </form>
                 </div>
             </figure>

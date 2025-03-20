@@ -19,7 +19,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   password = Constants.EMPTY_STRING;
   currentTime = Constants.EMPTY_STRING;
   currentDate = Constants.EMPTY_STRING;
-  private intervalId!: NodeJS.Timeout;
+  intervalId!: NodeJS.Timeout;
+  authFormTimeoutId!: NodeJS.Timeout;
 
   authForm = 'AuthenticationForm';
   currentDateTime = 'DateTime'; 
@@ -79,8 +80,51 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   onKeyDown(evt:KeyboardEvent):void{
+    const secondsDelay = 12000; //wait 12 seconds;
     if(evt.key === Constants.BLANK_SPACE){
       this.viewOptions = this.authForm;
+
+      const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+      if(lockScreenElmnt){
+        lockScreenElmnt.style.backdropFilter = 'blur(40px)';
+
+        this.authFormTimeoutId = setTimeout(() => {
+            this.resetViewOption();
+        }, secondsDelay);
+      }
+    }
+  }
+
+  resetViewOption():void{
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    this.viewOptions = this.currentDateTime;
+    if(lockScreenElmnt){
+      lockScreenElmnt.style.backdropFilter = 'none';
+    }
+  }
+
+  onEnteringPassword(evt:KeyboardEvent):void{
+    const regexStr = '^[a-zA-Z0-9_]+$';
+    const res = new RegExp(regexStr).test(evt.key)
+
+    if(res){
+       this.showDesktop();
+      //return res
+    }else{
+
+      //return res;
+    }
+
+    if (this.authFormTimeoutId) {
+      clearTimeout(this.authFormTimeoutId); // is key is being pressed then rest the timeout
+    }
+  }
+
+  showDesktop():void{
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    if(lockScreenElmnt){
+      lockScreenElmnt.style.zIndex = '-1';
+      lockScreenElmnt.style.backdropFilter = 'none';
     }
   }
 

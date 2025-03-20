@@ -299,7 +299,7 @@
     
                                         <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
                                             <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                                                <input type="text" formControlName="renameInput"  (keypress)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
+                                                <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
                                             </form>
                                         </div>
                                     </figure>
@@ -322,7 +322,7 @@
                                         </figcaption>
                                         <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
                                             <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                                                <input type="text" formControlName="renameInput"  (keypress)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
+                                                <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
                                             </form>
                                         </div>
                                     </span>
@@ -359,7 +359,7 @@
     
                                             <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
                                                 <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                                                    <input type="text" formControlName="renameInput"  (keypress)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
+                                                    <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
                                                 </form>
                                             </div>
                                         </div>
@@ -384,7 +384,7 @@
                                             <div class="figcaption-title-view-cntnr">
                                                 <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
                                                     <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                                                        <input type="text" formControlName="renameInput"  (keypress)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
+                                                        <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
                                                     </form>
                                                 </div>
                                                 <div class="div-figcaption-tiles-view-cntnr">
@@ -397,7 +397,7 @@
     
                                         <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
                                             <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                                                <input type="text" formControlName="renameInput"  (keypress)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
+                                                <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
                                             </form>
                                         </div>
                                     </span>

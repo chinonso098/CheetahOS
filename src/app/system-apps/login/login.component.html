@@ -1,4 +1,4 @@
-<div class="main-lockscreen-container" (keydown)="onKeyDown($event)"> 
+<div class="main-lockscreen-container" (keydown)="onKeyDown($event)" id="lockscreenCmpnt" tabindex="0"> 
     <ng-container [ngTemplateOutlet]="viewOptions === authForm ? showlogonform : showCurrentDateTime ">
     </ng-container>
 
@@ -11,7 +11,7 @@
           
             <!-- Section 2: Name Placeholder -->
             <div class="lockscreen-name-section">
-              <div class="lockscreen-name-placeholder">Name</div>
+              <div class="lockscreen-name-placeholder">Anonymous User</div>
             </div>
           
             <!-- Section 3: Password Input -->
@@ -19,7 +19,10 @@
               <div class="lockscreen-icon-container">
                 <i class="lockscreen-arrow-icon">&rarr;</i>
               </div>
-              <input type="password" class="lockscreen-password-input" placeholder="Enter password" />
+              <input type="password" 
+                     class="lockscreen-password-input" 
+                     (keydown)="onEnteringPassword($event)"
+                    placeholder="Password" />
             </div>
         </div> 
     </ng-template>
