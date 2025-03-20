@@ -22,9 +22,12 @@ export class LoginComponent implements OnInit, AfterViewInit {
   authFormTimeoutId!: NodeJS.Timeout;
   lockScreenTimeoutId!: NodeJS.Timeout;
 
+  isScreenLocked = true;
+
+  incorrectPassword = 'The password is incorrect. Try again.'
   authForm = 'AuthenticationForm';
   currentDateTime = 'DateTime'; 
-  viewOptions = Constants.EMPTY_STRING
+  viewOptions = Constants.EMPTY_STRING;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -32,7 +35,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   processId = 0;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
-
+  
 
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService){
     this._processIdService = processIdService
@@ -102,7 +105,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   startAuthFormTimeOut():void{
-    const secondsDelay = 60000; //wait 60 seconds;
+    const secondsDelay = 45000; //wait 45 seconds;
     this.authFormTimeoutId = setTimeout(() => {
       this.showDateTime();
     }, secondsDelay);
@@ -121,7 +124,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     const res = new RegExp(regexStr).test(evt.key)
 
     if(res){
-       //this.showDesktop();
+      this.showDesktop();
       //return res
     }else{
 
@@ -143,31 +146,38 @@ export class LoginComponent implements OnInit, AfterViewInit {
       lockScreenElmnt.style.zIndex = '-1';
       lockScreenElmnt.style.backdropFilter = 'none';
 
+      this.isScreenLocked = false;
       this._runningProcessService.showDesktopNotify.next();
+      this.startLockScreenTimeOut();
     }
   }
 
   showLockScreen():void{
+    this.viewOptions = this.currentDateTime;
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
       lockScreenElmnt.style.zIndex = '6';
       lockScreenElmnt.style.backdropFilter = 'none';
 
+      this.isScreenLocked = true;
       this._runningProcessService.showLockScreenNotify.next();
-      this.startLockScreenTimeOut();
     }
   }
 
   startLockScreenTimeOut():void{
-    const secondsDelay = 1200000; //wait 2 mins;
-    this.lockScreenTimeoutId = setTimeout(() => {
-      this.showDesktop();
-    }, secondsDelay);
+    if(!this.isScreenLocked){
+      const secondsDelay = 120000; //wait 2 mins;
+      this.lockScreenTimeoutId = setTimeout(() => {
+        this.showLockScreen();
+      }, secondsDelay);
+    }
   }
 
   resetLockScreenTimeOut():void{
-    clearTimeout(this.lockScreenTimeoutId);
-    this.startLockScreenTimeOut();
+    if(!this.isScreenLocked){
+      clearTimeout(this.lockScreenTimeoutId);
+      this.startLockScreenTimeOut();
+    }
   }
 
   private getComponentDetail():Process{
