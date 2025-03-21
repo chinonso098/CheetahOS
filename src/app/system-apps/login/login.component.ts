@@ -1,4 +1,5 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { Constants } from 'src/app/system-files/constants';
@@ -15,6 +16,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
+  private _audioService:AudioService;
 
   password = Constants.EMPTY_STRING;
   currentTime = Constants.EMPTY_STRING;
@@ -29,6 +31,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
   currentDateTime = 'DateTime'; 
   viewOptions = Constants.EMPTY_STRING;
 
+  readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}cheetah_ unlock.wav`;
+
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'cheetah_authentication';
@@ -37,9 +41,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
   displayName = Constants.EMPTY_STRING;
   
 
-  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService){
-    this._processIdService = processIdService
-    this.processId = this._processIdService.getNewProcessId()
+  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService,audioService:AudioService){
+    this._processIdService = processIdService;
+    this.processId = this._processIdService.getNewProcessId();
+    this._audioService = audioService;
 
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -100,6 +105,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
       lockScreenElmnt.style.backdropFilter = 'blur(40px)';
       lockScreenElmnt.style.transition = 'backdrop-filter 0.4s ease';
 
+
+      this._audioService.play(this.defaultAudio)
       this.startAuthFormTimeOut();
     }
   }

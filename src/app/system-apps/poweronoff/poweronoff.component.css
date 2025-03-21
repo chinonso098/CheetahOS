@@ -2,7 +2,7 @@
   position: fixed;
   width: 100vw;
   height: 100%;
-  background-color:black;
+  background-color:#1f2124;
   z-index: 7;
 }
 
@@ -26,10 +26,14 @@
   align-items: center;
 }
 
+.shutdown-image-placeholder:hover {
+  background-color: #ccc;
+  transition: background-color 0.3s ease-in-out;
+}
+
 .power-img-placeholder {
   width: 48px;
   height: 48px;
-  /* background-color: #ccc; */
   border-radius: 50%;
 }
 
@@ -41,7 +45,6 @@
 .startup-gif-placeholder {
   width: 200px;
   height: 200px;
-  /* background-color: #ccc; */
   border-radius: 50%;
 }
 
@@ -58,5 +61,5 @@
 .shutdown-notice-placeholder {
   font-size: 30px;
   font-weight: 400;
-  color: #333;
+  color: #ccc;
 }
