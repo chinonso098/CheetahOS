@@ -31,7 +31,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   currentDateTime = 'DateTime'; 
   viewOptions = Constants.EMPTY_STRING;
 
-  readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}cheetah_ unlock.wav`;
+  defaultAudio = `${Constants.AUDIO_BASE_PATH}cheetah_unlock.wav`;
+  userIcon = `${Constants.ACCT_IMAGE_BASE_PATH}default_user.png`;
+  pwrBtnIcon = `${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -105,8 +107,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
       lockScreenElmnt.style.backdropFilter = 'blur(40px)';
       lockScreenElmnt.style.transition = 'backdrop-filter 0.4s ease';
 
-
-      this._audioService.play(this.defaultAudio)
       this.startAuthFormTimeOut();
     }
   }
@@ -156,6 +156,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.isScreenLocked = false;
       this._runningProcessService.showDesktopNotify.next();
       this.startLockScreenTimeOut();
+      this._audioService.play(this.defaultAudio);
     }
   }
 

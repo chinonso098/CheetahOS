@@ -30,12 +30,7 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   startUpGif = `${Constants.GIF_BASE_PATH}cheetah_starting_up.gif`;
   loadingMessage = 'Pwr On';
 
-  startUpMessages: string[] = [
-    'Initializing...',
-    'Loading resources...',
-    'Setting up system',
-    'Almost done...'
-  ];
+  startUpMessages: string[] = ['Initializing...',  'Loading resources...', 'Setting up system', 'Almost done...'];
 
 
   hasWindow = false;
@@ -45,9 +40,9 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   
-  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService,){
-    this._processIdService = processIdService
-    this.processId = this._processIdService.getNewProcessId()
+  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService){
+    this._processIdService = processIdService;
+    this.processId = this._processIdService.getNewProcessId();
     this._audioService = audioService;
 
     this._runningProcessService = runningProcessService;
@@ -72,7 +67,7 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   simulateBusy() {
     this.showStartUpGif = true;
     let index = 0;
-    const secondsDelay = 2000;
+    const secondsDelay = 2000; //2 seconds
 
     const interval = setInterval(() => {
       if (index < this.startUpMessages.length) {
@@ -93,6 +88,11 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
       powerOnOffElmnt.style.display = 'none';
       // play startup sound
       this._audioService.playSound();
+    }
+
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    if(lockScreenElmnt){
+      lockScreenElmnt.focus();
     }
   }
 

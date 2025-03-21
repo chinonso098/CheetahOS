@@ -800,7 +800,17 @@ import { Process } from 'src/app/system-files/process';
             'z-index':this.MAX_Z_INDEX
           };
           this.setHeaderActive(pid);
+          this.setFocusOnDiv();
         }     
+      }
+    }
+
+    setFocusOnDiv():void{
+      const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
+      const winCmpnt = document.getElementById(winCmpntId) as HTMLDivElement;
+      
+      if(winCmpnt){
+        winCmpnt.focus();
       }
     }
 

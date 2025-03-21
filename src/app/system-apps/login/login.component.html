@@ -4,17 +4,16 @@
 
     <ng-template #showlogonform>
         <div class="lockscreen-logon-container">
-            <!-- Section 1: Image Placeholder -->
             <div class="lockscreen-image-section">
-              <div class="lockscreen-image-placeholder"></div>
+              <div class="lockscreen-image-placeholder">
+                <img  class="lockscreen-img" [src]="userIcon"/>
+              </div>
             </div>
           
-            <!-- Section 2: Name Placeholder -->
             <div class="lockscreen-name-section">
               <div class="lockscreen-name-placeholder">Anonymous, User</div>
             </div>
           
-            <!-- Section 3: Password Input -->
             <div class="lockscreen-password-section">
                 <input type="password" 
                      class="lockscreen-password-input" 
@@ -26,6 +25,12 @@
                 </div>
             </div>
         </div> 
+
+        <div class="lockscreen-power-container">
+            <div class="lockscreen-power-section">
+                <img class="lockscreen-power-icon" [src]="pwrBtnIcon"/>
+            </div>
+        </div>
     </ng-template>
 
     <ng-template #showCurrentDateTime>
@@ -33,7 +38,7 @@
         <div class="lockscreen-datetime-container">
 
             <div class="lockscreen-notice-section">
-                <div class="lockscreen-notice-placeholder">Press Space to unlock.</div>
+                <div class="lockscreen-notice-placeholder">Press Space, or click to unlock.</div>
             </div>
 
             <div class="lockscreen-notice-space"></div>

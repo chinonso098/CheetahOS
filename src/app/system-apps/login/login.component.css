@@ -32,6 +32,12 @@
     background-color: #b8b6b6;
     border-radius: 50%;
 }
+
+.lockscreen-img{
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+}
   
   /* Name Placeholder */
 .lockscreen-name-section {
@@ -90,13 +96,40 @@
     margin-left: 25px;
 }
   
-.lockscreen-time-section, .lockscreen-date-section, .lockscreen-notice-section {
+.lockscreen-power-container{
+    display: block;
+    position: fixed;
+    bottom: 5%;
+    align-items: center;
+    width: 100%;
+    flex-direction: column;
+    margin: auto;
+}
+
+.lockscreen-power-icon {
+    width: 28px;
+    height: 28px;
+}
+
+
+.lockscreen-time-section, .lockscreen-date-section, .lockscreen-notice-section, .lockscreen-power-section {
     width: fit-content;
     height: fit-content;
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
+.lockscreen-power-section{
+    position: fixed;
+    padding: 3px;
+    right:2%;
+}
+
+.lockscreen-power-section:hover{
+    background-color: #b8b6b6;
+}
+
 
 .lockscreen-notice-space{
     height: 50px;
