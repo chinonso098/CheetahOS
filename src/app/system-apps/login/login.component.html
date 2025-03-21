@@ -1,4 +1,4 @@
-<div class="main-lockscreen-container" (keydown)="onKeyDown($event)" id="lockscreenCmpnt" tabindex="0"> 
+<div class="main-lockscreen-container" (keydown)="onKeyDown($event)"  (click)="onClick()" id="lockscreenCmpnt" tabindex="0"> 
     <ng-container [ngTemplateOutlet]="viewOptions === authForm ? showlogonform : showCurrentDateTime ">
     </ng-container>
 
@@ -14,20 +14,49 @@
               <div class="lockscreen-name-placeholder">Anonymous, User</div>
             </div>
           
-            <div class="lockscreen-password-section">
-                <input type="password" 
-                     class="lockscreen-password-input" 
-                     (keydown)="onEnteringPassword($event)"
-                    placeholder="Password" />
-
-                <div class="lockscreen-icon-container">
-                    <i class="lockscreen-arrow-icon">&rarr;</i>
+            @if(showPasswordEntry){
+                <div class="lockscreen-password-section" tabindex="0">
+                    <form  class="lockscreen-password-form"   [formGroup]="loginForm"  (ngSubmit)="onEnteringPassword()">
+                        <input 
+                            type="password" 
+                            formControlName="loginInput" 
+                            class="lockscreen-password-input" 
+                            (keydown)="onEnteringPassword($event)"
+                            id="lockScreenPwdTxtBox"
+                            placeholder="Password" />
+                    </form>
+                    <div class="lockscreen-icon-container" tabindex="0">
+                        <i class="lockscreen-arrow-icon">&rarr;</i>
+                    </div>
                 </div>
-            </div>
+            }
+
+            @if(showLoading){ 
+                <div class="lockscreen-loading-section">
+                    <div class="lockscreen-loading-gif-placeholder">
+                        <img class="lockscreen-loading-gif"  [src]="loadingGif"/>
+                    </div>
+    
+                    <div class="lockscreen-loading-container">
+                        <div class="lockscreen-loading-placeholder">Welcome</div>
+                    </div>
+                </div>
+            }
+
+            @if(showFailedEntry){
+                <div class="lockscreen-error-section">
+                    <div class="lockscreen-error-message">
+                       {{incorrectPassword}}
+                    </div>
+                    <div class="lockscreen-error-button-section">
+                        <button class="lockscreen-error-button" (click)="onBtnClick()">OK</button>
+                    </div>
+                </div>
+            }
         </div> 
 
         <div class="lockscreen-power-container">
-            <div class="lockscreen-power-section">
+            <div class="lockscreen-power-section" tabindex="0">
                 <img class="lockscreen-power-icon" [src]="pwrBtnIcon"/>
             </div>
         </div>

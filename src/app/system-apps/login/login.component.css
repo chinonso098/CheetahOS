@@ -70,7 +70,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #b8b6b6;
+    backdrop-filter: blur(50px);
 }
   
 .lockscreen-arrow-icon {
@@ -79,6 +79,13 @@
 }
   
 /* Password Input */
+
+.lockscreen-password-form{
+    display: flex;
+    width: 100%;
+    height: fit-content;
+}
+
 .lockscreen-password-input {
     flex: 1;
     height: 40px;
@@ -112,7 +119,8 @@
 }
 
 
-.lockscreen-time-section, .lockscreen-date-section, .lockscreen-notice-section, .lockscreen-power-section {
+.lockscreen-time-section, .lockscreen-date-section, .lockscreen-notice-section, 
+.lockscreen-power-section, .lockscreen-loading-section {
     width: fit-content;
     height: fit-content;
     display: flex;
@@ -126,10 +134,15 @@
     right:2%;
 }
 
+.lockscreen-loading-section{
+    position: relative;
+    max-width: 190px;
+    left: -10px;
+}
+
 .lockscreen-power-section:hover{
     background-color: #b8b6b6;
 }
-
 
 .lockscreen-notice-space{
     height: 50px;
@@ -155,4 +168,70 @@
     font-size: 45px;
     font-weight:300;
     color: #fff;
+}
+
+
+.lockscreen-loading-gif-placeholder {
+    width: 170px;
+    width: 40px;
+    height: 40px;
+}
+
+.lockscreen-loading-gif{
+    width: 40px;
+    height: 40px;
+}
+
+.lockscreen-loading-container{
+    padding-left: 10px;
+    height: 40px;
+    width: fit-content;
+}
+
+.lockscreen-loading-placeholder {
+    font-size: 30px;
+    font-weight: 200;
+    color: #fff;
+}
+
+
+.lockscreen-error-section {
+    display: flex;
+    flex-direction: column; /* Stacks items vertically */
+    align-items: center; /* Centers content */
+    justify-content: center;
+    width: 100%;
+    max-width: 300px;
+    padding: 20px;
+    text-align: center;
+}
+
+
+.lockscreen-error-message {
+    font-size: 14px;
+    font-weight: 200;
+    color: #fff;
+    margin-bottom: 15px; /* Space between text and button */
+}
+
+.lockscreen-error-button-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.lockscreen-error-button {
+    background-color: rgba(0, 0, 0, -0.9);
+    backdrop-filter: blur(2px);
+    color: white;
+    border: none;
+    width: 120px;
+    padding: 6px 20px;
+    font-size: 18px;
+    font-weight: 200;
+    border: 2px solid #b8b6b6;
+}
+
+.lockscreen-error-button:hover {
+    border: 2px solid #fff;
 }
