@@ -70,7 +70,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(50px);
+    background-color: rgba(0, 0, 0, 0.1);
+    backdrop-filter: opacity(20);
 }
   
 .lockscreen-arrow-icon {

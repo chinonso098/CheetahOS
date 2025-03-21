@@ -67,6 +67,7 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   simulateBusy() {
     this.showStartUpGif = true;
     let index = 0;
+    this.loadingMessage = 'Powering On';
     const secondsDelay = 2000; //2 seconds
 
     const interval = setInterval(() => {
