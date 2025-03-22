@@ -63,7 +63,7 @@ export class VolumeComponent implements AfterViewInit  {
         tskBarVolumeElmnt.style.left = '0px';
       }
 
-      this.currentVolumeTxt = `volume:${(this.currentVolume * 100)}`;
+      this.currentVolumeTxt = `speaker:${(this.currentVolume * 100)}%`;
     }
   }
 

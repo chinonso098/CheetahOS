@@ -17,6 +17,9 @@ export class CheetahComponent implements BaseComponent, OnInit {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
 
+
+  SECONDS_DELAY = 100;
+
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   cheetahIcon = `${Constants.IMAGE_BASE_PATH}cheetah-midsprint-dash.jpg`;
@@ -35,6 +38,10 @@ export class CheetahComponent implements BaseComponent, OnInit {
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
+
+    // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
+    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   onClosePropertyView():void{
@@ -43,9 +50,37 @@ export class CheetahComponent implements BaseComponent, OnInit {
   }
 
   ngOnInit(): void {
-    this._audioService.play(this.defaultAudio);
+    const secondsDelay = 50;
+
+    setTimeout(() => {
+      this._audioService.play(this.defaultAudio);
+    }, secondsDelay);
+
+    this.removeUnWantedStyle();
   }
 
+  removeUnWantedStyle():void{
+    setTimeout(()=> {
+      const cheetahElmnt = document.getElementById('cheetahAboutMainCntnr') as HTMLDivElement;
+      if(cheetahElmnt) {
+        cheetahElmnt.style.transform = Constants.EMPTY_STRING;
+      }
+    }, this.SECONDS_DELAY);
+  }
+
+  lockScreenIsActive():void{
+    const cheetahElmnt = document.getElementById('cheetahAboutMainCntnr') as HTMLDivElement;
+    if(cheetahElmnt) {
+      cheetahElmnt.style.zIndex = '0';
+    }
+  }
+
+  desktopIsActive():void{
+    const cheetahElmnt = document.getElementById('cheetahAboutMainCntnr') as HTMLDivElement;
+    if(cheetahElmnt) {
+      cheetahElmnt.style.zIndex = '2';
+    }
+  }
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type);
   }

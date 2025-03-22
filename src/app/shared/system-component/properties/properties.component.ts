@@ -5,6 +5,7 @@ import { dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { MenuService } from '../../system-service/menu.services';
+import { RunningProcessService } from '../../system-service/running.process.service';
 
 @Component({
   selector: 'cos-properties',
@@ -17,6 +18,7 @@ export class PropertiesComponent implements OnChanges{
 
   private _fileService:FileService;
   private _menuService:MenuService;
+  private _runningProcessService:RunningProcessService;
   URL = Constants.URL;
 
   propertyId = 0;
@@ -26,10 +28,14 @@ export class PropertiesComponent implements OnChanges{
   location = '';
   icon = '';
 
-  constructor(fileInfoService:FileService, menuService:MenuService){
+  constructor(fileInfoService:FileService, menuService:MenuService, runningProcessService:RunningProcessService){
     this._fileService = fileInfoService;
     this._menuService = menuService;
+    this._runningProcessService = runningProcessService;
     this.propertyId = this.generatePropertyId();
+
+    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   ngOnChanges(changes: SimpleChanges):void{
@@ -49,6 +55,20 @@ export class PropertiesComponent implements OnChanges{
     const min = 500;
     const max = 999;
     return Math.floor(Math.random() * (max - min + 1)) + min; 
+  }
+
+  lockScreenIsActive():void{
+    const propElmnt = document.getElementById(`propDisplay-${this.propertyId}`) as HTMLDivElement;
+    if(propElmnt) {
+      propElmnt.style.zIndex = '0';
+    }
+  }
+
+  desktopIsActive():void{
+    const propElmnt = document.getElementById(`propDisplay-${this.propertyId}`) as HTMLDivElement;
+    if(propElmnt) {
+      propElmnt.style.zIndex = '2';
+    }
   }
 }
 

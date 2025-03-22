@@ -164,7 +164,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   onEnteringPassword(evt?:KeyboardEvent):void{
     const secondsDelays = [2500,3000]; //2.5 & 3 seconds
-
     if(evt?.key === "Enter"){
       const loginTxt = this.loginForm.value.loginInput as string;
       if(loginTxt === this.defaultPassWord){
@@ -247,24 +246,22 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   getPowerMenuData():void{
     this.menuData = [
-      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`, label: 'Shut down', action: ()=>'' },
+      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`, label: 'Shut down', action: this.shutDownOS.bind(this) },
       {icon:`${Constants.IMAGE_BASE_PATH}cheetah_restart.png`, label: 'Restart', action:()=>'' }
     ];
   }
 
   onPowerBtnClick(evt:MouseEvent):void{
     this.showPowerMenu = !this.showPowerMenu;
-    const lockScreenElmnt = document.getElementById('lockscreenCmpnt');
-
-    if(lockScreenElmnt){
-      const lsRect = lockScreenElmnt.getBoundingClientRect();
+    const powerBtnElmt = document.getElementById('powerBtnCntnr'); 
+    if(powerBtnElmt){
+      const pbRect = powerBtnElmt.getBoundingClientRect();
       this.powerMenuStyle = {
         'position':'absolute',
-        'transform':`translate(${String(evt.clientX  - lsRect.x - 65)}px, ${String(evt.clientY - lsRect.y - 360)}px)`,
+        'transform':`translate(${String(pbRect.x - 54)}px, ${String(pbRect.y - 352)}px)`,
         'z-index': 6,
       }
     }
-
     evt.preventDefault();
   }
 

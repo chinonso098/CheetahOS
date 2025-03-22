@@ -3,6 +3,7 @@ import {NestedMenu, GeneralMenu } from './menu.types';
 import { MenuService } from '../../system-service/menu.services';
 import { Subscription } from 'rxjs';
 import { Constants } from 'src/app/system-files/constants';
+import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
 
 @Component({
   selector: 'cos-menu',
@@ -48,6 +49,23 @@ export class MenuComponent implements OnDestroy{
       this._menuService.setPasteState(true);
     })
   }
+
+
+    onBtnHover():void{
+      applyEffect('.dm-power-vertical-menu', {
+        clickEffect: true,
+        lightColor: 'rgba(255,255,255,0.1)',
+        gradientSize: 35,
+        isContainer: true,
+        children: {
+          borderSelector: '.dm-power-vertical-menu-cntnr',
+          elementSelector: '.dm-power-vertical-menu-item',
+          lightColor: 'rgba(255,255,255,0.3)',
+          gradientSize: 35
+        }
+      })
+    }
+  
   
 
   ngOnDestroy(): void {

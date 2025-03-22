@@ -9,16 +9,13 @@
 .dm-power-vertical-menu{
     position: absolute;
     width: 120px;
-    background-color: rgba(0, 0, 0, 0.9);
-    backdrop-filter: blur(5px);
 }
 
 .dm-vertical-menu-item-cntnr{
     width: 100%;
 }
 
-
-.dm-vertical-menu-item, .dm-tskbar-vertical-menu-item, .dm-tskbar-cntxt-vertical-menu-item, .dm-power-vertical-menu-item{
+.dm-vertical-menu-item, .dm-tskbar-vertical-menu-item, .dm-tskbar-cntxt-vertical-menu-item{
     height: fit-content;
     padding: 2px 0;
     background-color: #2b2b2b;
@@ -28,7 +25,13 @@
 }
 
 .dm-power-vertical-menu-item{
-    background-color: none;
+    height: fit-content;
+    padding: 2px 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    display: inline-flex;
+    width: 100%;
+   /*  transition: background-color 0.3s ease; Add a transition for background-color */
 }
 
 .dm-vertical-menu .dm-vertical-menu-item:hover{
@@ -56,9 +59,14 @@
     margin: 0 8px;
 }
 
-.dm-empty-line-container , .dm-tskbar-empty-line-container, .dm-tskbar-cntxt-empty-line-container {
+.dm-empty-line-container , .dm-tskbar-empty-line-container, .dm-tskbar-cntxt-empty-line-container, .dm-power-empty-line-container {
     height: 3px;
     background-color: #2b2b2b;
+}
+
+.dm-power-empty-line-container {
+    height: 3px;
+    background-color: inherit;
 }
 
 span{

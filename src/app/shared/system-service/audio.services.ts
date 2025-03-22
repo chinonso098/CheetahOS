@@ -104,7 +104,7 @@ export class AudioService implements BaseService {
     }, delay);
   }
 
-  playSound():void{
+  private playSound():void{
     this._audioPlayer.play();
   }
 

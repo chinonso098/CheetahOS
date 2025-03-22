@@ -25,6 +25,7 @@ import { SortBys } from '../desktop/desktop.enums';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
 import { NotificationService } from 'src/app/shared/system-service/notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { AudioService } from 'src/app/shared/system-service/audio.services';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -49,6 +50,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _notificationService:NotificationService;
   private _windowService:WindowService;
   private _menuService:MenuService;
+   private _audioService:AudioService;
   private _formBuilder;
   private _appState!:AppState;
 
@@ -182,7 +184,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   ];
 
   menuData:GeneralMenu[] = [];
-
   fileExplrMenu:NestedMenu[] = [];
 
   fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
@@ -198,6 +199,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileDateModified = Constants.EMPTY_STRING;
 
 
+  cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
+  cheetahGenericNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
+
   icon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
   navPathIcon = `${Constants.IMAGE_BASE_PATH}this_pc.png`;
   isMaximizable = false;
@@ -211,7 +215,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, triggerProcessService:TriggerProcessService, 
               formBuilder: FormBuilder, stateManagmentService:StateManagmentService, sessionManagmentService:SessionManagmentService,        
-              menuService:MenuService, notificationService:NotificationService ,windowService:WindowService) { 
+              menuService:MenuService, notificationService:NotificationService ,windowService:WindowService, audioService:AudioService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileService = fileService;
@@ -221,6 +225,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._menuService = menuService;
     this._notificationService = notificationService;
     this._windowService = windowService;
+    this._audioService = audioService;
     this._formBuilder = formBuilder;
 
     this.processId = this._processIdService.getNewProcessId();
@@ -570,6 +575,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }
 
+      this._audioService.play(this.cheetahNavAudio);
       this.populateHopsList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFilesInfoAsync();
@@ -652,6 +658,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }
 
+      this._audioService.play(this.cheetahNavAudio);
       this.populateHopsList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFilesInfoAsync();
@@ -710,6 +717,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }
 
+      this._audioService.play(this.cheetahNavAudio);
       this.populateHopsList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFilesInfoAsync();
@@ -973,6 +981,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async runProcess(file:FileInfo):Promise<void>{
 
+    this._audioService.play(this.cheetahNavAudio);
     console.log('fileexplorer-runProcess:',file)
     this.showInformationTip = false;
     // console.log('what was clicked:',file.getFileName +'-----' + file.getOpensWith +'---'+ file.getCurrentPath +'----'+ file.getIcon) TBD
@@ -1071,6 +1080,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   onTriggerRunProcess():void{
+    this._audioService.play(this.cheetahNavAudio);
     this.runProcess(this.selectedFile);
   }
 
@@ -2071,6 +2081,7 @@ OpensWith=${selectedFile.getOpensWith}
       const msg = `Cheetah can't create a shortcut here.
 Do you want the shortcut to be placed on the desktop instead?`;
 
+      this._audioService.play(this.cheetahGenericNotifyAudio);
       this._menuService.setStageData(fileContent);
       this._notificationService.warningNotify.next(msg);
       return;

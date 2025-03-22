@@ -3,6 +3,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { NotificationService } from '../../system-service/notification.service';
 import { NotificationType } from 'src/app/system-files/notification.type';
 import { MenuService } from '../../system-service/menu.services';
+import { RunningProcessService } from '../../system-service/running.process.service';
 
 @Component({
   selector: 'cos-dialog',
@@ -17,6 +18,7 @@ export class DialogComponent implements OnChanges {
 
   private _notificationServices:NotificationService;
   private _menuService:MenuService;
+  private _runningProcessService:RunningProcessService;
 
   notificationOption = '';
   errorNotification = NotificationType.Error;
@@ -28,10 +30,15 @@ export class DialogComponent implements OnChanges {
   type = ComponentType.System;
   displayMgs = '';
 
-  constructor(private changeDetectorRef: ChangeDetectorRef, notificationServices:NotificationService, menuService:MenuService){
+  constructor(private changeDetectorRef: ChangeDetectorRef, notificationServices:NotificationService, menuService:MenuService, runningProcessService:RunningProcessService){
     this._notificationServices = notificationServices;
     this._menuService = menuService;
+    this._runningProcessService =runningProcessService;
+
     this.notificationId = this.generateNotificationId();
+
+    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   ngOnChanges(changes: SimpleChanges):void{
@@ -54,6 +61,40 @@ export class DialogComponent implements OnChanges {
     const min = 10;
     const max = 499;
     return Math.floor(Math.random() * (max - min + 1)) + min; 
+  }
+
+  lockScreenIsActive():void{
+    const errDiagElmnt = document.getElementById(`error-dialog-${this.notificationId}`) as HTMLDivElement;
+    if(errDiagElmnt) {
+      errDiagElmnt.style.zIndex = '0';
+    }
+
+    const infoDiagElmnt = document.getElementById(`info-dialog-${this.notificationId}`) as HTMLDivElement;
+    if(infoDiagElmnt) {
+      infoDiagElmnt.style.zIndex = '0';
+    }
+
+    const warnDiagElmnt = document.getElementById(`warning-dialog-${this.notificationId}`) as HTMLDivElement;
+    if(warnDiagElmnt) {
+      warnDiagElmnt.style.zIndex = '0';
+    }
+  }
+
+  desktopIsActive():void{
+    const errDiagElmnt = document.getElementById(`error-dialog-${this.notificationId}`) as HTMLDivElement;
+    if(errDiagElmnt) {
+      errDiagElmnt.style.zIndex = '2';
+    }
+
+    const infoDiagElmnt = document.getElementById(`info-dialog-${this.notificationId}`) as HTMLDivElement;
+    if(infoDiagElmnt) {
+      infoDiagElmnt.style.zIndex = '2';
+    }
+
+    const warnDiagElmnt = document.getElementById(`warning-dialog-${this.notificationId}`) as HTMLDivElement;
+    if(warnDiagElmnt) {
+      warnDiagElmnt.style.zIndex = '2';
+    }
   }
 
 }

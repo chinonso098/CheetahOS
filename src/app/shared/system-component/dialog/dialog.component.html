@@ -3,7 +3,7 @@
 </ng-container>
 
 <ng-template #errorNotice>
-    <div ngDraggable [handle]="leftHS1" class="error-dialog-main-container">
+    <div ngDraggable [handle]="leftHS1" class="error-dialog-main-container" id="error-dialog-{{notificationId}}">
         <div class="error-dialog-header-container" tabindex="0">
             <div #leftHS1 class="error-dialog-left-header-section">
                 <h1 class="error-dialog-h1">
@@ -49,7 +49,7 @@
 </ng-template>
 
 <ng-template #infoNotice>
-    <div ngDraggable [handle]="leftHS2" class="info-dialog-main-container">    
+    <div ngDraggable [handle]="leftHS2" class="info-dialog-main-container" id="info-dialog-{{notificationId}}">    
         <div #leftHS2 class="info-dialog-mid-container" tabindex="0">
             <div class="info-dialog-mid-section1">
                 <div class="info-dialog-mid-img1">
@@ -75,7 +75,7 @@
 
 
 <ng-template #warningNotice>
-    <div ngDraggable [handle]="leftHS3" class="warning-dialog-main-container">   
+    <div ngDraggable [handle]="leftHS3" class="warning-dialog-main-container" id="warning-dialog-{{notificationId}}">   
         <div class="warning-dialog-heading-text"><p>Shortcut</p></div> 
         <div #leftHS3 class="warning-dialog-mid-container" tabindex="0">
             <div class="warning-dialog-mid-section1">

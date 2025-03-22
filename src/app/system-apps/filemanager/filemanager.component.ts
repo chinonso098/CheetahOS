@@ -13,6 +13,7 @@ import { FormGroup, FormBuilder } from '@angular/forms';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
 import { GeneralMenu, MenuPositiom } from 'src/app/shared/system-component/menu/menu.types';
+import { AudioService } from 'src/app/shared/system-service/audio.services';
 
 
 @Component({
@@ -30,6 +31,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private _directoryFilesEntries!:FileEntry[];
   private _triggerProcessService:TriggerProcessService;
   private _fileManagerService:FileManagerService;
+  private _audioService:AudioService;
   private _menuService:MenuService;
   private _formBuilder:FormBuilder;
 
@@ -63,6 +65,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   SECONDS_DELAY:number[] = [6000,250];
   renameForm!: FormGroup;
 
+  cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
+
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'filemanager';
@@ -92,7 +96,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   menuOrder = '';
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileInfoService:FileService,
-              triggerProcessService:TriggerProcessService, fileManagerService:FileManagerService, formBuilder: FormBuilder, menuService:MenuService, elRef: ElementRef) { 
+              triggerProcessService:TriggerProcessService, fileManagerService:FileManagerService, formBuilder: FormBuilder, 
+              menuService:MenuService, elRef: ElementRef, audioService:AudioService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileManagerService = fileManagerService
@@ -101,6 +106,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this._menuService = menuService;
     this._formBuilder = formBuilder;
     this._elRef = elRef;
+    this._audioService = audioService;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -191,6 +197,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   runProcess(file:FileInfo):void{
 
     console.log('filemanager-runProcess:',file)
+    this._audioService.play(this.cheetahNavAudio);
     this._triggerProcessService.startApplication(file);
     this.btnStyleAndValuesReset();
     
@@ -215,6 +222,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   onTriggerRunProcess():void{
+    this._audioService.play(this.cheetahNavAudio);
     this.runProcess(this.selectedFile);
   }
 
