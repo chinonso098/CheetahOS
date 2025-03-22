@@ -235,6 +235,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.showFailedEntry = false;
   }
 
+  onPowerBtnClick():void{
+    1
+  }
+
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }

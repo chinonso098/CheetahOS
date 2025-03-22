@@ -226,7 +226,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     });
     
     this.hideContextMenu();
-    this.loadOtherBackgrounds();
     this.initClippy();
   }
 
@@ -276,16 +275,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         }
       };
       requestAnimationFrame(animateColorTransition);
-    }
-  }
-
-  loadOtherBackgrounds():void{
-    const names:string[] = ["rings","halo", "globe", "birds"]
-    const bkgrounds:string[] = [ "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
-                                 "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
-        
-    for(let i =0; i <= bkgrounds.length - 1; i++){
-      this._scriptService.loadScript(names[i], bkgrounds[i]);
     }
   }
 
@@ -609,7 +598,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(this.CURRENT_DESTOP_NUM > this.MIN_NUMS_OF_DESKTOPS){
       this.CURRENT_DESTOP_NUM --;
       const curNum = this.CURRENT_DESTOP_NUM;
-      this.buildVantaEffect(curNum);
+      this.loadOtherBackgrounds(curNum);
     }
     this.hideContextMenu();
   }
@@ -618,10 +607,20 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(this.CURRENT_DESTOP_NUM < this.MAX_NUMS_OF_DESKTOPS){
       this.CURRENT_DESTOP_NUM ++;
       const curNum = this.CURRENT_DESTOP_NUM;
-      this.buildVantaEffect(curNum);
+      this.loadOtherBackgrounds(curNum);
     }
     
     this.hideContextMenu();
+  }
+
+  loadOtherBackgrounds(i:number):void{
+    const names:string[] = ["vanta-waves","rings","halo", "globe", "birds"]
+    const bkgrounds:string[] = ["osdrive/Program-Files/Backgrounds/vanta.waves.min.js", "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
+                                 "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
+        
+    this._scriptService.loadScript(names[i], bkgrounds[i]).then(() =>{
+      this.buildVantaEffect(i);
+    })
   }
 
   openTerminal():void{
