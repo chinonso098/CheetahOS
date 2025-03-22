@@ -2,6 +2,7 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -15,6 +16,7 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
+  private _systemNotificationService:SystemNotificationService;
   private _audioService:AudioService;
 
   password = Constants.EMPTY_STRING;
@@ -43,17 +45,21 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   
-  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService){
+  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
+    systemNotificationService:SystemNotificationService){
     this._processIdService = processIdService;
     this.processId = this._processIdService.getNewProcessId();
     this._audioService = audioService;
+    this._systemNotificationService = systemNotificationService;
 
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
+
+    this._systemNotificationService.restartSystemNotify.subscribe(()=>{this.simulateRestart()});
   }
 
   ngOnInit(): void {
-    1
+    1 
   }
 
   ngAfterViewInit(): void {
@@ -83,6 +89,18 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
       }
     }, secondsDelay);
   }
+
+  simulateRestart(): void {
+    this.showPowerBtn = false;
+    this.loadingMessage = Constants.EMPTY_STRING;
+    const delay = 1000;
+    setTimeout(() => {
+      this.showStartUpGif = true;
+      this.loadingMessage = Constants.EMPTY_STRING;
+      this.simulateBusy();
+    }, delay);
+  }
+
 
   showLockScreen():void{
     this.revertSettings();

@@ -342,9 +342,27 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.exitMessage = 'Shutting down';
     this.showRestartShutDown = true;
     this._audioService.play(this.cheetahRestarAndShutDownAudio);
+    this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_SHUT_DOWN);
 
     setTimeout(() => {
       this.showPowerOnOffScreen();
+    }, delay);
+  }
+
+
+  restartOS():void{
+    const delay = 5500; // 5.5secs
+    this.resetFields();
+    this.changeLockScreenLogonPosition(40);
+    this.hidePowerBtn();
+    this.exitMessage = 'Restarting';
+    this.showRestartShutDown = true;
+    this._audioService.play(this.cheetahRestarAndShutDownAudio);
+    this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_RESTART);
+ 
+    setTimeout(() => {
+      this.showPowerOnOffScreen();
+      this._systemNotificationServices.restartSystemNotify.next();
     }, delay);
   }
 
@@ -359,15 +377,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.showPowerBtn();
       // raise events to close opened apps
     }
-  }
-
-  restartOS():void{
-    this.resetFields();
-    this.changeLockScreenLogonPosition(40);
-    this.hidePowerBtn();
-    this.exitMessage = 'Restarting';
-    this.showRestartShutDown = true;
-    this._audioService.play(this.cheetahRestarAndShutDownAudio);
   }
 
   onPwdFieldClick():void{

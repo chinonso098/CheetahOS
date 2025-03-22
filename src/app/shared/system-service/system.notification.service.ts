@@ -17,10 +17,12 @@ export class SystemNotificationService implements BaseService{
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
+    private _systemMessage = Constants.EMPTY_STRING;
 
     showLockScreenNotify: Subject<void> = new Subject<void>();
     showDesktopNotify: Subject<void> = new Subject<void>();
     resetLockScreenTimeOutNotify: Subject<void> = new Subject<void>();
+    restartSystemNotify: Subject<void> = new Subject<void>();
 
     name = 'sys_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -37,6 +39,19 @@ export class SystemNotificationService implements BaseService{
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
+    }
+
+    setSystemMessage(msg:string):void{
+        this._systemMessage = msg;
+    }
+
+    getSystemMessage():string{
+        /**
+         * system message is cleared after it is retrieved
+         */
+        const tmpMsg = this._systemMessage;
+        this._systemMessage = Constants.EMPTY_STRING;
+        return tmpMsg;
     }
 
     private getProcessDetail():Process{

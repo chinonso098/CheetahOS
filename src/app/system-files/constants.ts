@@ -39,6 +39,8 @@ export namespace Constants{
     export const RESERVED_ID_RUNNING_PROCESS_SERVICE = 4;
     export const SERVICES_STATE_RUNNING = 'Running';
     export const SERVICES_STATE_STOPPED = 'Stopped';
+    export const SYSTEM_RESTART = 'Restart';
+    export const SYSTEM_SHUT_DOWN = 'Shutdown';
 
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
