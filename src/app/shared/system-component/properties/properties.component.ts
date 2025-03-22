@@ -5,8 +5,8 @@ import { dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { MenuService } from '../../system-service/menu.services';
-import { RunningProcessService } from '../../system-service/running.process.service';
 import { Subscription } from 'rxjs';
+import { SystemNotificationService } from '../../system-service/system.notification.service';
 
 @Component({
   selector: 'cos-properties',
@@ -19,7 +19,7 @@ export class PropertiesComponent implements OnChanges,  OnDestroy{
 
   private _fileService:FileService;
   private _menuService:MenuService;
-  private _runningProcessService:RunningProcessService;
+  private _systemNotificationServices:SystemNotificationService;
 
   private _deskTopIsActiveSub!:Subscription;
   private _lockScreenIsActiveSub!:Subscription;
@@ -33,14 +33,14 @@ export class PropertiesComponent implements OnChanges,  OnDestroy{
   location = '';
   icon = '';
 
-  constructor(fileInfoService:FileService, menuService:MenuService, runningProcessService:RunningProcessService){
+  constructor(fileInfoService:FileService, menuService:MenuService, systemNotificationServices:SystemNotificationService){
     this._fileService = fileInfoService;
     this._menuService = menuService;
-    this._runningProcessService = runningProcessService;
+    this._systemNotificationServices = systemNotificationServices;
     this.propertyId = this.generatePropertyId();
 
-    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   ngOnChanges(changes: SimpleChanges):void{

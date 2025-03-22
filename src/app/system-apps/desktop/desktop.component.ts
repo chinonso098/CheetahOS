@@ -19,6 +19,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
@@ -65,6 +66,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _menuService: MenuService;
   private _windowService:WindowService;
   private _audioService:AudioService;
+  private _systemNotificationServices:SystemNotificationService;
 
   
   private _timerSubscription!: Subscription;
@@ -173,7 +175,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService,fileManagerServices:FileManagerService,
-              triggerProcessService:TriggerProcessService, scriptService: ScriptService, audioService: AudioService, menuService: MenuService, fileService:FileService, windowService:WindowService ) { 
+              triggerProcessService:TriggerProcessService, scriptService: ScriptService, audioService: AudioService, 
+              menuService: MenuService, fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService ) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -184,6 +187,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._fileService = fileService;
     this._windowService = windowService;
     this._audioService = audioService;
+    this._systemNotificationServices = systemNotificationServices;
 
     this._showTaskBarAppIconMenuSub = this._menuService.showTaskBarAppIconMenu.subscribe((p) => { this.onShowTaskBarAppIconMenu(p)});
     this._showTaskBarContextMenuSub = this._menuService.showTaskBarConextMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
@@ -195,8 +199,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
     this._hideShowVolumeControlSub = this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
 
-    this._runningProcessService.showDesktopNotify.subscribe(() => {this.startClippy()})
-    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.stopClippy()})
+    this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.startClippy()})
+    this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.stopClippy()})
 
 
     this.processId = this._processIdService.getNewProcessId()
@@ -332,7 +336,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this._runningProcessService.removeEventOriginator();
     }
 
-    this._runningProcessService.resetLockScreenTimeOutNotify.next();
+    this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
   }
 
   shiftViewSubMenu():void{ this.shiftNestedMenuPosition(0); }
@@ -478,11 +482,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this._menuService.hideStartMenu.next();
     }
 
-    this._runningProcessService.resetLockScreenTimeOutNotify.next();
+    this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
   }
 
   resetLockScreenTimeOut():void{
-    this._runningProcessService.resetLockScreenTimeOutNotify.next();
+    this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
   }
 
   hideShowVolumeControl():void{

@@ -4,6 +4,7 @@ import { GeneralMenu } from 'src/app/shared/system-component/menu/menu.types';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -18,6 +19,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
+  private _systemNotificationServices:SystemNotificationService;
   private _audioService:AudioService;
 
   loginForm!: FormGroup;
@@ -69,15 +71,17 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   menuData:GeneralMenu[] = [];
 
-  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService,audioService:AudioService, formBuilder: FormBuilder){
+  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
+    formBuilder: FormBuilder, systemNotificationServices:SystemNotificationService){
     this._processIdService = processIdService;
     this.processId = this._processIdService.getNewProcessId();
     this._audioService = audioService;
     this._formBuilder = formBuilder;
+    this._systemNotificationServices = systemNotificationServices;
 
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
-    this._runningProcessService.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
+    this._systemNotificationServices.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
   }
 
   ngOnInit():void {
@@ -100,7 +104,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.getDate();
     }, secondsDelay[1]); 
 
-    this._runningProcessService.showLockScreenNotify.next();
+    this._systemNotificationServices.showLockScreenNotify.next();
     this.getPowerMenuData();
   }
 
@@ -151,7 +155,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   startAuthFormTimeOut():void{
-    const secondsDelay = 600000; //wait 1 min
+    const secondsDelay = 60000; //wait 1 min
     this.authFormTimeoutId = setTimeout(() => {
       this.showDateTime();
     }, secondsDelay);
@@ -205,7 +209,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       lockScreenElmnt.style.backdropFilter = 'none';
 
       this.isScreenLocked = false;
-      this._runningProcessService.showDesktopNotify.next();
+      this._systemNotificationServices.showDesktopNotify.next();
       this.startLockScreenTimeOut();
       this._audioService.play(this.cheetahUnlockAudio);
 
@@ -221,7 +225,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       lockScreenElmnt.style.backdropFilter = 'none';
 
       this.isScreenLocked = true;
-      this._runningProcessService.showLockScreenNotify.next();
+      this._systemNotificationServices.showLockScreenNotify.next();
     }
   }
 
@@ -242,9 +246,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   resetAuthFormState():void{
+    this.showUserInfo = true;
     this.showPasswordEntry = true;
     this.showLoading = false;
     this.showFailedEntry = false;
+    this.showRestartShutDown = false;
   }
 
   getPowerMenuData():void{
@@ -329,12 +335,30 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   shutDownOS():void{
+    const delay = 6000; // 6 secs
     this.resetFields();
     this.changeLockScreenLogonPosition(40);
     this.hidePowerBtn();
     this.exitMessage = 'Shutting down';
     this.showRestartShutDown = true;
     this._audioService.play(this.cheetahRestarAndShutDownAudio);
+
+    setTimeout(() => {
+      this.showPowerOnOffScreen();
+    }, delay);
+  }
+
+  showPowerOnOffScreen():void{
+    const powerOnOffElmnt = document.getElementById('powerOnOffCmpnt') as HTMLDivElement;
+    if(powerOnOffElmnt){
+      powerOnOffElmnt.style.zIndex = '7';
+      powerOnOffElmnt.style.display = 'block';
+
+      this.resetAuthFormState();
+      this.changeLockScreenLogonPosition(25);
+      this.showPowerBtn();
+      // raise events to close opened apps
+    }
   }
 
   restartOS():void{

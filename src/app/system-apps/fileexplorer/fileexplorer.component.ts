@@ -23,7 +23,7 @@ import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { SortBys } from '../desktop/desktop.enums';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
-import { NotificationService } from 'src/app/shared/system-service/notification.service';
+import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 
@@ -47,7 +47,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _triggerProcessService:TriggerProcessService;
   private _stateManagmentService: StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
-  private _notificationService:NotificationService;
+  private _notificationService:UserNotificationService;
   private _windowService:WindowService;
   private _menuService:MenuService;
    private _audioService:AudioService;
@@ -215,7 +215,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, triggerProcessService:TriggerProcessService, 
               formBuilder: FormBuilder, stateManagmentService:StateManagmentService, sessionManagmentService:SessionManagmentService,        
-              menuService:MenuService, notificationService:NotificationService ,windowService:WindowService, audioService:AudioService) { 
+              menuService:MenuService, notificationService:UserNotificationService ,windowService:WindowService, audioService:AudioService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileService = fileService;

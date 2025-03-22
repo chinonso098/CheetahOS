@@ -13,6 +13,7 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Process } from 'src/app/system-files/process';
+import { SystemNotificationService } from '../../system-service/system.notification.service';
 
  @Component({
    selector: 'cos-window',
@@ -31,6 +32,7 @@ import { Process } from 'src/app/system-files/process';
    
    private _runningProcessService:RunningProcessService;
    private _sessionManagmentService: SessionManagmentService;
+   private _systemNotificationServices:SystemNotificationService;
    private _windowService:WindowService;
    private _originalWindowsState!:WindowState;
 
@@ -101,10 +103,11 @@ import { Process } from 'src/app/system-files/process';
   
 
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, private renderer: Renderer2,
-                windowService:WindowService, sessionManagmentService: SessionManagmentService,){
+                windowService:WindowService, sessionManagmentService: SessionManagmentService, systemNotificationServices:SystemNotificationService){
       this._runningProcessService = runningProcessService;
       this._sessionManagmentService = sessionManagmentService;
       this._windowService = windowService;
+      this._systemNotificationServices = systemNotificationServices;
  
       this.retrievePastSessionData();
 
@@ -116,8 +119,8 @@ import { Process } from 'src/app/system-files/process';
       this._hideOtherProcessSub = this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.hideWindowNotMatchingPidOnMouseHover(p)});
       this._restoreProcessSub = this._windowService.restoreProcessWindowOnMouseLeaveNotify.subscribe((p) => {this.restoreWindowOnMouseLeave(p)});
       this._restoreProcessesSub = this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
-      this._lockScreenActiveSub = this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-      this._desktopActiveSub = this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+      this._lockScreenActiveSub = this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+      this._desktopActiveSub = this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
       //this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)})
     }
 

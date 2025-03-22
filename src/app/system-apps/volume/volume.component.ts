@@ -5,6 +5,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 
 @Component({
   selector: 'cos-volume',
@@ -15,6 +16,7 @@ export class VolumeComponent implements AfterViewInit  {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
+  private _systemNotificationServices:SystemNotificationService;
   private _audioService!:AudioService;
 
   private currentVolume = 0;
@@ -28,17 +30,19 @@ export class VolumeComponent implements AfterViewInit  {
   processId = 0;
   type = ComponentType.System;
 
-  constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, audioService:AudioService) { 
+  constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, 
+    audioService:AudioService, systemNotificationServices:SystemNotificationService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._audioService = audioService;
+    this._systemNotificationServices = systemNotificationServices;
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
 
     // these are subs, but since this cmpnt will not be closed, it doesn't need to be destoryed
     this._audioService.changeVolumeNotify.subscribe(() => { this.upadateVolume()}); 
-    this._runningProcessService.showDesktopNotify.subscribe(() =>{this.upadateVolume()})
+    this._systemNotificationServices.showDesktopNotify.subscribe(() =>{this.upadateVolume()})
   }
 
   ngAfterViewInit():void{  

@@ -7,7 +7,7 @@ import { ComponentType, ProcessType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { SortingInterface } from './sorting.interface';
 import { RefreshRates, RefreshRatesIntervals, TableColumns,DisplayViews, ResourceUtilization } from './taskmanager.enum';
-import { NotificationService } from 'src/app/shared/system-service/notification.service';
+import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import * as htmlToImage from 'html-to-image';
 import { Constants } from 'src/app/system-files/constants';
@@ -35,7 +35,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _notificationService:NotificationService;
+  private _notificationService:UserNotificationService;
     private _windowService:WindowService;
   private _renderer: Renderer2;
 
@@ -108,7 +108,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService,
-               notificationService:NotificationService, renderer: Renderer2 ,windowService:WindowService) { 
+               notificationService:UserNotificationService, renderer: Renderer2 ,windowService:WindowService) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;

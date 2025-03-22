@@ -7,6 +7,7 @@ import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { Subscription } from 'rxjs';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 
 @Component({
   selector:'cos-cheetah',
@@ -18,6 +19,7 @@ export class CheetahComponent implements BaseComponent, OnInit, OnDestroy{
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _audioService:AudioService;
+  private _systemNotificationServices:SystemNotificationService;
 
   private _deskTopIsActiveSub!:Subscription;
   private _lockScreenIsActiveSub!:Subscription;
@@ -37,16 +39,17 @@ export class CheetahComponent implements BaseComponent, OnInit, OnDestroy{
 
   readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}about_cheetah.mp3`;
 
-  constructor(processIdService:ProcessIDService,  runningProcessService:RunningProcessService, audioService:AudioService) { 
+  constructor(processIdService:ProcessIDService,  runningProcessService:RunningProcessService, audioService:AudioService, systemNotificationServices:SystemNotificationService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._audioService = audioService;
+    this._systemNotificationServices = systemNotificationServices;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    this._lockScreenIsActiveSub = this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._deskTopIsActiveSub = this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    this._lockScreenIsActiveSub = this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._deskTopIsActiveSub = this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   onClosePropertyView():void{

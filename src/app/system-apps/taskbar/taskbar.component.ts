@@ -5,6 +5,7 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 
 @Component({
   selector: 'cos-taskbar',
@@ -16,6 +17,7 @@ export class TaskbarComponent implements AfterViewInit{
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _menuService:MenuService;
+  private _systemNotificationServices:SystemNotificationService;
   private _el: ElementRef;
 
   
@@ -28,23 +30,24 @@ export class TaskbarComponent implements AfterViewInit{
   type = ComponentType.System
   displayName = ''
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService, el: ElementRef) { 
+  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService,
+    systemNotificationServices:SystemNotificationService, el: ElementRef) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._menuService = menuService;
+    this._systemNotificationServices = systemNotificationServices;
     this._el = el;
     
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
 
      // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
-    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   
   ngAfterViewInit(): void {
-
     // VANTA js wallpaper is adding an unwanted style position:relative and z-index:1
     setTimeout(()=> {
       const tskBar = this._el.nativeElement;

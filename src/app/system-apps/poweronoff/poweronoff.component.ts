@@ -103,6 +103,7 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   revertSettings():void{
     this.showStartUpGif = false;
     this.showPowerBtn = true;
+    this.loadingMessage = 'Pwr On';
   }
 
   private getComponentDetail():Process{

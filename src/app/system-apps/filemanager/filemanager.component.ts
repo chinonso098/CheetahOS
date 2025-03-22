@@ -14,6 +14,7 @@ import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
 import { GeneralMenu, MenuPositiom } from 'src/app/shared/system-component/menu/menu.types';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 
 
 @Component({
@@ -33,6 +34,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private _fileManagerService:FileManagerService;
   private _audioService:AudioService;
   private _menuService:MenuService;
+  private _systemNotificationServices:SystemNotificationService;
   private _formBuilder:FormBuilder;
 
 
@@ -97,7 +99,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileInfoService:FileService,
               triggerProcessService:TriggerProcessService, fileManagerService:FileManagerService, formBuilder: FormBuilder, 
-              menuService:MenuService, elRef: ElementRef, audioService:AudioService) { 
+              menuService:MenuService, elRef: ElementRef, audioService:AudioService, systemNotificationServices:SystemNotificationService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileManagerService = fileManagerService
@@ -107,6 +109,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this._formBuilder = formBuilder;
     this._elRef = elRef;
     this._audioService = audioService;
+    this._systemNotificationServices = systemNotificationServices;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -127,8 +130,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this._menuService.hideContextMenus.subscribe(() => { this.hideIconContextMenu()});
 
     // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
-    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   ngOnInit():void{

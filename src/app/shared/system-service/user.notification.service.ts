@@ -13,7 +13,7 @@ import { BaseService } from "./base.service.interface";
     providedIn: 'root'
 })
 
-export class NotificationService implements BaseService{
+export class UserNotificationService implements BaseService{
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
@@ -23,7 +23,7 @@ export class NotificationService implements BaseService{
     warningNotify: Subject<string> = new Subject<string>();
     closeDialogBoxNotify: Subject<number> = new Subject<number>();
 
-    name = 'notification_svc';
+    name = 'usr_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
     processId = 0;
     type = ProcessType.Background;
@@ -39,7 +39,6 @@ export class NotificationService implements BaseService{
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
     }
-
 
     private getProcessDetail():Process{
         return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
