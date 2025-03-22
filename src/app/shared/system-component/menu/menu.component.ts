@@ -25,6 +25,7 @@ export class MenuComponent implements OnDestroy{
   readonly fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
   readonly tskBarAppIconMenuOption = Constants.TASK_BAR_APP_ICON_MENU_OPTION;
   readonly tskBarContextMenuOption = Constants.TASK_BAR_CONTEXT_MENU_OPTION;
+  readonly pwrMenuOption = Constants.POWER_MENU_OPTION;
   readonly defaultFileMenuOrder = Constants.DEFAULT_FILE_MENU_ORDER;
   readonly defaultFolderMenuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
   readonly fileExplrFolderMenuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;

@@ -24,11 +24,11 @@ export class AudioService implements BaseService {
   private _processIdService:ProcessIDService;
   private _audioPlayer: any;
 
-  readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}cheetah_start_up_2.mp3`;
-
   changeVolumeNotify: Subject<void> = new Subject<void>();
   hideShowVolumeControlNotify: Subject<void> = new Subject<void>();
 
+  audioSrc = Constants.EMPTY_STRING;
+  
   name = 'audio_svc';
   icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
   processId = 0;
@@ -37,11 +37,9 @@ export class AudioService implements BaseService {
   hasWindow = false;
   description = 'handles system audio file';
 
-  audioSrc = '';
     
   constructor(){
       AudioService.instace = this;
-      this.audioSrc = this.defaultAudio;
       this._scriptService = ScriptService.instace;
       this._processIdService = ProcessIDService.instance;
       this._runningProcessService = RunningProcessService.instance;
@@ -60,11 +58,7 @@ export class AudioService implements BaseService {
   }
 
   private async loadAudioScriptAsync():Promise<void>{
-    this._scriptService.loadScript("howler","osdrive/Program-Files/Howler/howler.min.js").then(()=>{
-      this.loadHowlSingleTrackObjectAsync()
-        .then(howl => { this._audioPlayer = howl; })
-        .catch(error => { console.error('Error loading track:', error); });
-    });
+    this._scriptService.loadScript("howler","osdrive/Program-Files/Howler/howler.min.js");
   }
 
   async loadHowlSingleTrackObjectAsync(): Promise<any> {
@@ -89,11 +83,16 @@ export class AudioService implements BaseService {
   }
 
   play(path:string):void{
-    const delay = 1;
+    const delay = 0;
     this.audioSrc = Constants.EMPTY_STRING;
     this.audioSrc = path;
 
-    this._audioPlayer.stop();
+    // purge the old how object
+    if (this._audioPlayer) {
+      this._audioPlayer.stop();
+      this._audioPlayer.unload();
+    }
+
 
     setTimeout(async()=> {
       this.loadHowlSingleTrackObjectAsync()

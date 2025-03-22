@@ -56,10 +56,14 @@
         </div> 
 
         <div class="lockscreen-power-container">
-            <div class="lockscreen-power-section" tabindex="0" (cancel)="onPowerBtnClick()">
+            <div class="lockscreen-power-section" tabindex="0" (click)="onPowerBtnClick($event)">
                 <img class="lockscreen-power-icon" [src]="pwrBtnIcon"/>
             </div>
         </div>
+
+        <ng-container  *ngIf="showPowerMenu">
+            <cos-menu [generalMenu]="menuData" [style]="powerMenuStyle" [menuType]="powerMenuOption"> </cos-menu>
+        </ng-container>
     </ng-template>
 
     <ng-template #showCurrentDateTime>

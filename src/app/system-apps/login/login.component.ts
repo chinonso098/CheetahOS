@@ -1,5 +1,6 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { GeneralMenu } from 'src/app/shared/system-component/menu/menu.types';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -34,13 +35,22 @@ export class LoginComponent implements OnInit, AfterViewInit {
   showPasswordEntry = true;
   showLoading = false;
   showFailedEntry = false;
+  showRestartShutDown = false;
+  showPowerMenu = false;
+
+  powerMenuStyle:Record<string, unknown> = {};
+
+    
+  powerMenuOption = Constants.POWER_MENU_OPTION;
 
   incorrectPassword = 'The password is incorrect. Try again.'
   authForm = 'AuthenticationForm';
   currentDateTime = 'DateTime'; 
   viewOptions = Constants.EMPTY_STRING;
 
-  defaultAudio = `${Constants.AUDIO_BASE_PATH}cheetah_unlock.wav`;
+  cheetahUnlockAudio = `${Constants.AUDIO_BASE_PATH}cheetah_unlock.wav`;
+  cheetahRestarAndShutDownAudio = `${Constants.AUDIO_BASE_PATH}cheetah_shutdown.wav`;
+
   userIcon = `${Constants.ACCT_IMAGE_BASE_PATH}default_user.png`;
   pwrBtnIcon = `${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`;
   loadingGif = `${Constants.GIF_BASE_PATH}cheetah_loading.gif`;
@@ -54,6 +64,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   
+
+  menuData:GeneralMenu[] = [];
 
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService,audioService:AudioService, formBuilder: FormBuilder){
     this._processIdService = processIdService;
@@ -87,6 +99,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }, secondsDelay[1]); 
 
     this._runningProcessService.showLockScreenNotify.next();
+    this.getPowerMenuData();
   }
 
   ngAfterViewInit(): void {
@@ -135,7 +148,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   startAuthFormTimeOut():void{
-    const secondsDelay = 60000; //wait 1 min
+    const secondsDelay = 600000; //wait 1 min
     this.authFormTimeoutId = setTimeout(() => {
       this.showDateTime();
     }, secondsDelay);
@@ -160,7 +173,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
         setTimeout(() => {
           this.showDesktop();
         }, secondsDelays[0]);
-
       }else{
         this.showPasswordEntry = false;
         this.showLoading = true;
@@ -172,7 +184,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
         this.loginForm.controls[this.formCntrlName].setValue(null);
       }
     }
-
     this.resetAuthFormTimeOut();
   }
 
@@ -185,7 +196,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.startAuthFormTimeOut();
   }
 
-
   showDesktop():void{ 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
@@ -195,7 +205,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.isScreenLocked = false;
       this._runningProcessService.showDesktopNotify.next();
       this.startLockScreenTimeOut();
-      this._audioService.play(this.defaultAudio);
+      this._audioService.play(this.cheetahUnlockAudio);
 
       this.resetAuthFormState();
     }
@@ -235,8 +245,38 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.showFailedEntry = false;
   }
 
-  onPowerBtnClick():void{
-    1
+  getPowerMenuData():void{
+    this.menuData = [
+      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`, label: 'Shut down', action: ()=>'' },
+      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_restart.png`, label: 'Restart', action:()=>'' }
+    ];
+  }
+
+  onPowerBtnClick(evt:MouseEvent):void{
+    this.showPowerMenu = !this.showPowerMenu;
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt');
+
+    if(lockScreenElmnt){
+      const lsRect = lockScreenElmnt.getBoundingClientRect();
+      this.powerMenuStyle = {
+        'position':'absolute',
+        'transform':`translate(${String(evt.clientX  - lsRect.x - 65)}px, ${String(evt.clientY - lsRect.y - 360)}px)`,
+        'z-index': 6,
+      }
+    }
+
+    evt.preventDefault();
+  }
+
+  shutDownOS():void{
+    this.showPasswordEntry = false;
+    this.showRestartShutDown = true;
+
+    this._audioService.play(this.cheetahRestarAndShutDownAudio);
+  }
+
+  restartOS():void{
+    this._audioService.play(this.cheetahRestarAndShutDownAudio);
   }
 
   private getComponentDetail():Process{

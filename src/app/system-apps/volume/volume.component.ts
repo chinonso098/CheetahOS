@@ -36,16 +36,13 @@ export class VolumeComponent implements AfterViewInit  {
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
+    // these are subs, but since this cmpnt will not be closed, it doesn't need to be destoryed
     this._audioService.changeVolumeNotify.subscribe(() => { this.upadateVolume()}); 
+    this._runningProcessService.showDesktopNotify.subscribe(() =>{this.upadateVolume()})
   }
 
   ngAfterViewInit():void{  
-    const secondsDelay = 250;
-    setTimeout(() => {
-      this.currentVolume = this._audioService.getVolume();
-      this.setVolumeIcon();
-    }, secondsDelay);
+    1
   }
 
   setVolumeIcon():void{

@@ -30,6 +30,9 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   startUpGif = `${Constants.GIF_BASE_PATH}cheetah_starting_up.gif`;
   loadingMessage = 'Pwr On';
 
+  powerOnAudio = `${Constants.AUDIO_BASE_PATH}cheetah_start_up_2.mp3`;
+  powerOffAudio = `${Constants.AUDIO_BASE_PATH}cheetah_shutdown.wav`;
+
   startUpMessages: string[] = ['Initializing...',  'Loading resources...', 'Setting up system', 'Almost done...'];
 
 
@@ -88,7 +91,7 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
       powerOnOffElmnt.style.zIndex = '-2';
       powerOnOffElmnt.style.display = 'none';
       // play startup sound
-      this._audioService.playSound();
+      this._audioService.play(this.powerOnAudio);
     }
 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;

@@ -1,6 +1,7 @@
 <ng-container [ngTemplateOutlet]="menuType === fileExplrMngrMenuOption ? fileExplrMngrMenu :
                                   menuType === tskBarAppIconMenuOption ? tskBarAppIconMenu :  
-                                  menuType === tskBarContextMenuOption ? tskBarCntxtMenu : nestedMenu0">
+                                  menuType === tskBarContextMenuOption ? tskBarCntxtMenu :
+                                  menuType === pwrMenuOption ? powerMenu : nestedMenu0">
 </ng-container>
 
 <ng-template #fileExplrMngrMenu>
@@ -77,8 +78,10 @@
             <div class="dm-tskbar-cntxt-tail"> <figure class="dm-tskbar-cntxt-fig-cntxt-menu"> </figure> </div>
         </div>
 
-        <div class="dm-tskbar-cntxt-line-container" *ngIf="i === 0 || i === 1"></div>
-        <div class="dm-tskbar-cntxt-line-container" *ngIf="i === 0 || i === 1"><div class="dm-tskbar-cntxt-line"></div></div>
+        <div class="dm-tskbar-cntxt-empty-line-container" *ngIf="i === 0 || i === 1"></div>
+        <div class="dm-tskbar-cntxt-line-container" *ngIf="i === 0 || i === 1">
+          <div class="dm-tskbar-cntxt-line"></div>
+        </div>
         <div class="dm-tskbar-cntxt-empty-line-container" *ngIf="i === 0 || i === 1"></div>
     </div>
   
@@ -137,5 +140,22 @@
       <div *ngIf="menuItem.emptyline" class="dm-nested-empty-line-container"></div>
     </div>
     <div class="dm-nested-empty-line-container1"></div>  
+  </div>
+</ng-template>
+
+
+<ng-template #powerMenu>
+  <div class="dm-power-vertical-menu">
+    <div lass="dm-power-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
+      <div class="dm-power-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action)">
+          <div class="dm-power-head"> 
+            <figure class="dm-power-fig-menu">
+              <img class="dm-power-img-alt" [src]="menuItem.icon"/>
+            </figure>
+          </div>
+          <div class="dm-power-mid"><p class="dm-p">{{menuItem.label}}</p></div>
+          <div class="dm-power-tail"> <figure class="dm-power-fig-menu"> </figure> </div>
+      </div>
+  </div>
   </div>
 </ng-template>
