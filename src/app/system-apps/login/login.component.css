@@ -66,12 +66,13 @@
   
 .lockscreen-icon-container {
     width: 40px;
-    height: 40px;
+    height: 35px;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.1);
-    backdrop-filter: opacity(50);
+    background-color: rgba(184, 182, 182, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
   
 .lockscreen-arrow-icon {
@@ -88,11 +89,13 @@
 
 .lockscreen-password-input {
     flex: 1;
-    height: 40px;
+    height: 35px;
     border: none;
     padding-left: 10px;
     font-size: 16px;
     outline: none;
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: opacity(50);
 }
   
 /* New Additional Container */
@@ -140,9 +143,9 @@
     left: -10px;
 }
 
-.lockscreen-power-section:hover{
-    background-color: #b8b6b6;
-}
+/* .lockscreen-power-section:hover{
+    background-color: #b8b6b6; 
+} */
 
 .lockscreen-notice-space{
     height: 50px;

@@ -1,4 +1,4 @@
-<div class="main-lockscreen-container" (keydown)="onKeyDown($event)"  (click)="onClick()" id="lockscreenCmpnt" tabindex="0"> 
+<div class="main-lockscreen-container" (keydown)="onKeyDown($event)"  (click)="onLockScreenViewClick()" id="lockscreenCmpnt" tabindex="0"> 
     <ng-container [ngTemplateOutlet]="viewOptions === authForm ? showlogonform : showCurrentDateTime ">
     </ng-container>
 
@@ -22,6 +22,7 @@
                             formControlName="loginInput" 
                             class="lockscreen-password-input" 
                             (keydown)="onEnteringPassword($event)"
+                            (click)="onPwdFieldClick()"
                             id="lockScreenPwdTxtBox"
                             placeholder="Password" />
                     </form>
@@ -56,7 +57,8 @@
         </div> 
 
         <div class="lockscreen-power-container">
-            <div class="lockscreen-power-section" tabindex="0" (click)="onPowerBtnClick($event)" id="powerBtnCntnr">
+            <div class="lockscreen-power-section" tabindex="0" 
+            (click)="onPowerBtnClick($event)"  (mouseenter)="onPowerBtnMouseEnter()" (mouseleave)="onPowerBtnMouseLeave()" id="powerBtnCntnr">
                 <img class="lockscreen-power-icon" [src]="pwrBtnIcon"/>
             </div>
         </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit, OnDestroy} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Constants } from "src/app/system-files/constants";
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -6,6 +6,7 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector:'cos-cheetah',
@@ -13,9 +14,13 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
   styleUrls: ["./cheetah.component.css"]
 })
 
-export class CheetahComponent implements BaseComponent, OnInit {
+export class CheetahComponent implements BaseComponent, OnInit, OnDestroy{
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
+  private _audioService:AudioService;
+
+  private _deskTopIsActiveSub!:Subscription;
+  private _lockScreenIsActiveSub!:Subscription;
 
 
   SECONDS_DELAY = 100;
@@ -32,16 +37,16 @@ export class CheetahComponent implements BaseComponent, OnInit {
 
   readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}about_cheetah.mp3`;
 
-  constructor(processIdService:ProcessIDService,  runningProcessService:RunningProcessService, private _audioService:AudioService) { 
+  constructor(processIdService:ProcessIDService,  runningProcessService:RunningProcessService, audioService:AudioService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
+    this._audioService = audioService;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
-    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    this._lockScreenIsActiveSub = this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._deskTopIsActiveSub = this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   onClosePropertyView():void{
@@ -57,6 +62,11 @@ export class CheetahComponent implements BaseComponent, OnInit {
     }, secondsDelay);
 
     this.removeUnWantedStyle();
+  }
+
+  ngOnDestroy(): void {
+    this._deskTopIsActiveSub?.unsubscribe();
+    this._lockScreenIsActiveSub?.unsubscribe();
   }
 
   removeUnWantedStyle():void{

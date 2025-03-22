@@ -132,7 +132,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onClick():void{
+  onLockScreenViewClick():void{
+    this.showPowerMenu = false;
     this.showAuthForm();
   }
 
@@ -252,17 +253,40 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   onPowerBtnClick(evt:MouseEvent):void{
-    this.showPowerMenu = !this.showPowerMenu;
-    const powerBtnElmt = document.getElementById('powerBtnCntnr'); 
-    if(powerBtnElmt){
-      const pbRect = powerBtnElmt.getBoundingClientRect();
-      this.powerMenuStyle = {
-        'position':'absolute',
-        'transform':`translate(${String(pbRect.x - 54)}px, ${String(pbRect.y - 352)}px)`,
-        'z-index': 6,
+    const delay = 10;
+    setTimeout(() => {
+      this.showPowerMenu = !this.showPowerMenu;
+      const powerBtnElmt = document.getElementById('powerBtnCntnr'); 
+      if(powerBtnElmt){
+        const pbRect = powerBtnElmt.getBoundingClientRect();
+        powerBtnElmt.style.backgroundColor = '';
+
+        this.powerMenuStyle = {
+          'position':'absolute',
+          'transform':`translate(${String(pbRect.x - 50)}px, ${String(pbRect.y - 352)}px)`,
+          'z-index': 6,
+        }
+        this.onPwdFieldRemoveFocus();
+      }
+      evt.preventDefault();
+      
+    }, delay);
+  }
+
+  onPowerBtnMouseEnter():void{
+    const powerBtnElmt = document.getElementById('powerBtnCntnr') as HTMLDivElement; 
+    if(!this.showPowerMenu){
+      if(powerBtnElmt){
+        powerBtnElmt.style.backgroundColor = '#b8b6b6';
       }
     }
-    evt.preventDefault();
+  }
+
+  onPowerBtnMouseLeave():void{
+    const powerBtnElmt = document.getElementById('powerBtnCntnr') as HTMLDivElement; 
+    if(powerBtnElmt){
+      powerBtnElmt.style.backgroundColor = '';
+    }
   }
 
   shutDownOS():void{
@@ -274,6 +298,24 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   restartOS():void{
     this._audioService.play(this.cheetahRestarAndShutDownAudio);
+  }
+
+  onPwdFieldClick():void{
+    const lockScreenPwdElmnt = document.getElementById('lockScreenPwdTxtBox'); 
+    if(lockScreenPwdElmnt){
+      lockScreenPwdElmnt.style.backgroundColor = '#fff';
+      lockScreenPwdElmnt.style.backdropFilter = 'none';
+      lockScreenPwdElmnt.focus();
+    }
+  }
+
+  onPwdFieldRemoveFocus():void{
+    const lockScreenPwdElmnt = document.getElementById('lockScreenPwdTxtBox'); 
+    if(lockScreenPwdElmnt){
+      lockScreenPwdElmnt.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+      lockScreenPwdElmnt.style.backdropFilter = 'opacity(50)';
+      lockScreenPwdElmnt.blur();
+    }
   }
 
   private getComponentDetail():Process{

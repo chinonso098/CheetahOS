@@ -1,9 +1,10 @@
-import {ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, SimpleChanges} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { NotificationService } from '../../system-service/notification.service';
 import { NotificationType } from 'src/app/system-files/notification.type';
 import { MenuService } from '../../system-service/menu.services';
 import { RunningProcessService } from '../../system-service/running.process.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'cos-dialog',
@@ -11,7 +12,7 @@ import { RunningProcessService } from '../../system-service/running.process.serv
   styleUrls: ['./dialog.component.css']
 })
 
-export class DialogComponent implements OnChanges {
+export class DialogComponent implements OnChanges, OnDestroy {
 
   @Input() inputMsg = '';
   @Input() notificationType = '';
@@ -19,6 +20,9 @@ export class DialogComponent implements OnChanges {
   private _notificationServices:NotificationService;
   private _menuService:MenuService;
   private _runningProcessService:RunningProcessService;
+
+  private _deskTopIsActiveSub!:Subscription;
+  private _lockScreenIsActiveSub!:Subscription;
 
   notificationOption = '';
   errorNotification = NotificationType.Error;
@@ -30,15 +34,15 @@ export class DialogComponent implements OnChanges {
   type = ComponentType.System;
   displayMgs = '';
 
-  constructor(private changeDetectorRef: ChangeDetectorRef, notificationServices:NotificationService, menuService:MenuService, runningProcessService:RunningProcessService){
+  constructor(notificationServices:NotificationService, 
+    menuService:MenuService, runningProcessService:RunningProcessService){
     this._notificationServices = notificationServices;
     this._menuService = menuService;
     this._runningProcessService =runningProcessService;
 
     this.notificationId = this.generateNotificationId();
-
-    this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    this._lockScreenIsActiveSub = this._runningProcessService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._deskTopIsActiveSub = this._runningProcessService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   ngOnChanges(changes: SimpleChanges):void{
@@ -53,6 +57,11 @@ export class DialogComponent implements OnChanges {
 
   onCloseDialogBox():void{
     this._notificationServices.closeDialogBoxNotify.next(this.notificationId);
+  }
+
+  ngOnDestroy(): void {
+    this._deskTopIsActiveSub?.unsubscribe();
+    this._lockScreenIsActiveSub?.unsubscribe();
   }
 
   private generateNotificationId(): number{

@@ -18,7 +18,8 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "allowedCommonJsDependencies": [
-              "browserfs",
+              "src/osdrive/Cheetah/System/BrowserFS/browserfs",
+              "src/osdrive/Cheetah/System/Fluent Effect",
               "buffer",
               "ini",
               "path",
