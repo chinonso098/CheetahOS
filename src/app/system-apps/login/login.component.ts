@@ -27,23 +27,25 @@ export class LoginComponent implements OnInit, AfterViewInit {
   password = Constants.EMPTY_STRING;
   currentTime = Constants.EMPTY_STRING;
   currentDate = Constants.EMPTY_STRING;
+
   authFormTimeoutId!: NodeJS.Timeout;
   lockScreenTimeoutId!: NodeJS.Timeout;
 
-  isScreenLocked = true;
-
+  showUserInfo = true;
   showPasswordEntry = true;
   showLoading = false;
   showFailedEntry = false;
   showRestartShutDown = false;
   showPowerMenu = false;
+  isPowerMenuVisible = false;
+  isScreenLocked = true;
 
   powerMenuStyle:Record<string, unknown> = {};
 
-    
   powerMenuOption = Constants.POWER_MENU_OPTION;
 
-  incorrectPassword = 'The password is incorrect. Try again.'
+  incorrectPassword = 'The password is incorrect. Try again.';
+  exitMessage = Constants.EMPTY_STRING;
   authForm = 'AuthenticationForm';
   currentDateTime = 'DateTime'; 
   viewOptions = Constants.EMPTY_STRING;
@@ -248,26 +250,36 @@ export class LoginComponent implements OnInit, AfterViewInit {
   getPowerMenuData():void{
     this.menuData = [
       {icon:`${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`, label: 'Shut down', action: this.shutDownOS.bind(this) },
-      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_restart.png`, label: 'Restart', action:()=>'' }
+      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_restart.png`, label: 'Restart', action:this.restartOS.bind(this)}
     ];
   }
 
   onPowerBtnClick(evt:MouseEvent):void{
     const delay = 10;
-    setTimeout(() => {
-      this.showPowerMenu = !this.showPowerMenu;
-      const powerBtnElmt = document.getElementById('powerBtnCntnr'); 
-      if(powerBtnElmt){
-        const pbRect = powerBtnElmt.getBoundingClientRect();
-        powerBtnElmt.style.backgroundColor = '';
 
-        this.powerMenuStyle = {
-          'position':'absolute',
-          'transform':`translate(${String(pbRect.x - 50)}px, ${String(pbRect.y - 352)}px)`,
-          'z-index': 6,
+    //The onLockScreenViewClick also listens for a click event. hence, i have to delay the response of onPowerBtnClick
+    setTimeout(() => {
+      if(!this.showPowerMenu && !this.isPowerMenuVisible){
+        this.showPowerMenu = true;
+
+        const powerBtnElmt = document.getElementById('powerBtnCntnr'); 
+        if(powerBtnElmt){
+          const pbRect = powerBtnElmt.getBoundingClientRect();
+          powerBtnElmt.style.backgroundColor = '';
+  
+          this.powerMenuStyle = {
+            'position':'absolute',
+            'transform':`translate(${String(pbRect.x - 50)}px, ${String(pbRect.y - 352)}px)`,
+            'z-index': 6,
+          }
+          this.isPowerMenuVisible = true;
+          this.onPwdFieldRemoveFocus();
         }
-        this.onPwdFieldRemoveFocus();
+      }else{
+        this.showPowerMenu = false;
+        this.isPowerMenuVisible = false;
       }
+
       evt.preventDefault();
       
     }, delay);
@@ -289,14 +301,48 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  shutDownOS():void{
-    this.showPasswordEntry = false;
-    this.showRestartShutDown = true;
+  changeLockScreenLogonPosition(top:number):void{
+    const lsLogonElmnt = document.getElementById('lockscreen-logon-container') as HTMLDivElement; 
+    if(lsLogonElmnt){
+      lsLogonElmnt.style.top = `${top}%`;
+    }
+  }
 
+  hidePowerBtn():void{
+    const lsPwrBtn = document.getElementById('lockScreenPowerCntnr') as HTMLDivElement; 
+    if(lsPwrBtn){
+      lsPwrBtn.style.display = 'none';
+    }
+  }
+
+  showPowerBtn():void{
+    const lsPwrBtn = document.getElementById('lockScreenPowerCntnr') as HTMLDivElement; 
+    if(lsPwrBtn){
+      lsPwrBtn.style.display = 'block';
+    }
+  }
+  resetFields():void{
+    this.showUserInfo = false;
+    this.showPasswordEntry = false;
+    this.showLoading = false
+    this.showFailedEntry = false;
+  }
+
+  shutDownOS():void{
+    this.resetFields();
+    this.changeLockScreenLogonPosition(40);
+    this.hidePowerBtn();
+    this.exitMessage = 'Shutting down';
+    this.showRestartShutDown = true;
     this._audioService.play(this.cheetahRestarAndShutDownAudio);
   }
 
   restartOS():void{
+    this.resetFields();
+    this.changeLockScreenLogonPosition(40);
+    this.hidePowerBtn();
+    this.exitMessage = 'Restarting';
+    this.showRestartShutDown = true;
     this._audioService.play(this.cheetahRestarAndShutDownAudio);
   }
 

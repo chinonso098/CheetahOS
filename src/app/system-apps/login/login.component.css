@@ -238,3 +238,32 @@
 .lockscreen-error-button:hover {
     border: 2px solid #fff;
 }
+
+.lockscreen-shutdown-restart-section {
+    display: flex;
+    position: relative;
+    flex-direction: column; /* Stacks items vertically */
+    align-items: center; /* Centers content */
+    justify-content: center;
+    width: 100%;
+    max-width: 200px;
+    padding: 20px;
+    text-align: center;
+}
+
+.lockscreen-sr-loading-gif-placeholder {
+    width: 60px;
+    height: 60px;
+}
+
+.lockscreen-sr-loading-gif{
+    width: 60px;
+    height: 60px;
+}
+
+.lockscreen-shutdown-restart-message {
+    font-size: 22px;
+    font-weight: 200;
+    color: #fff;
+    margin-bottom: 1px; /* Space between text and button */
+}

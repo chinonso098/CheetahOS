@@ -3,16 +3,19 @@
     </ng-container>
 
     <ng-template #showlogonform>
-        <div class="lockscreen-logon-container">
-            <div class="lockscreen-image-section">
-              <div class="lockscreen-image-placeholder">
-                <img  class="lockscreen-img" [src]="userIcon"/>
-              </div>
-            </div>
-          
-            <div class="lockscreen-name-section">
-              <div class="lockscreen-name-placeholder">Anonymous, User</div>
-            </div>
+        <div class="lockscreen-logon-container" id="lockscreen-logon-container">
+
+            @if(showUserInfo){
+                <div class="lockscreen-image-section">
+                    <div class="lockscreen-image-placeholder">
+                      <img  class="lockscreen-img" [src]="userIcon"/>
+                    </div>
+                  </div>
+                
+                  <div class="lockscreen-name-section">
+                    <div class="lockscreen-name-placeholder">Anonymous, User</div>
+                </div>
+            }
           
             @if(showPasswordEntry){
                 <div class="lockscreen-password-section" tabindex="0">
@@ -54,9 +57,21 @@
                     </div>
                 </div>
             }
+
+            @if(showRestartShutDown){
+                <div class="lockscreen-shutdown-restart-section">
+                    <div class="lockscreen-sr-loading-gif-placeholder">
+                        <img class="lockscreen-sr-loading-gif"  [src]="loadingGif"/>
+                    </div>
+                    <div style="height: 10px;"></div>
+                    <div class="lockscreen-shutdown-restart-message">
+                       {{exitMessage}}
+                    </div>
+                </div>
+            }
         </div> 
 
-        <div class="lockscreen-power-container">
+        <div class="lockscreen-power-container" id="lockScreenPowerCntnr">
             <div class="lockscreen-power-section" tabindex="0" 
             (click)="onPowerBtnClick($event)"  (mouseenter)="onPowerBtnMouseEnter()" (mouseleave)="onPowerBtnMouseLeave()" id="powerBtnCntnr">
                 <img class="lockscreen-power-icon" [src]="pwrBtnIcon"/>
