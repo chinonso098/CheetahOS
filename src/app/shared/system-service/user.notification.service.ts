@@ -21,7 +21,9 @@ export class UserNotificationService implements BaseService{
     errorNotify: Subject<string> = new Subject<string>();
     InfoNotify: Subject<string> = new Subject<string>();
     warningNotify: Subject<string> = new Subject<string>();
+    powerOnOffNotify: Subject<string> = new Subject<string>();
     closeDialogBoxNotify: Subject<number> = new Subject<number>();
+    
 
     name = 'usr_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;

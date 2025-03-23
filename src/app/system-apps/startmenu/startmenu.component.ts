@@ -12,6 +12,7 @@ import { FileEntry } from 'src/app/system-files/file.entry';
 
 import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 
 
 @Component({
@@ -24,6 +25,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _triggerProcessService:TriggerProcessService;
+  private _userNotificationService:UserNotificationService;
   private _fileService:FileService;
   private _elRef:ElementRef;
 
@@ -48,12 +50,13 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   displayName = '';
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
-              elRef: ElementRef, fileService:FileService) { 
+              elRef: ElementRef, fileService:FileService, userNotificationService:UserNotificationService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._elRef = elRef;
     this._fileService = fileService;
     this._triggerProcessService = triggerProcessService;
+    this._userNotificationService = userNotificationService;
 
     this.processId = this._processIdService.getNewProcessId()
     if(this._runningProcessService.getProcesses().findIndex(x => x.getProcessName === this.name) === -1){
@@ -215,7 +218,9 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   }
 
   power():void{
-    location.reload();
+    const msg = 'Shut Down Cheetah'
+    this._userNotificationService.powerOnOffNotify.next(msg);
+    //location.reload();
   }
 
 

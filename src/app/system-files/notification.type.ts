@@ -1,5 +1,6 @@
-export enum NotificationType{
+export enum UserNotificationType{
     Error = "Error",
     Info = "Info",
-    Warning = "Warning"
+    Warning = "Warning",
+    PowerOnOff = "ShutdownRestart",
 }

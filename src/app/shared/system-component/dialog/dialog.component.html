@@ -1,5 +1,6 @@
 <ng-container [ngTemplateOutlet]="notificationOption === errorNotification ? errorNotice :
-                                  notificationOption === warnNotification ? warningNotice :  infoNotice ">
+                                  notificationOption === warnNotification ? warningNotice :
+                                  notificationOption === pwrOnOffNotification ? shutDownRestartNotice :  infoNotice ">
 </ng-container>
 
 <ng-template #errorNotice>
@@ -105,5 +106,57 @@
 </ng-template>
 
 
+
+<ng-template #shutDownRestartNotice >
+    <div ngDraggable [handle]="leftHS4"  class="shutdown-restart-dialog-main-container" id="shutdown-restart-dialog-{{notificationId}}">
+        <div class="shutdown-restart-dialog-header-container" tabindex="0">
+            <div #leftHS4 class="shutdown-restart-dialog-left-header-section">
+                <h1 class="shutdown-restart-dialog-h1">
+                    <figure class="shutdown-restart-dialog-figure">
+                        <!-- <img class="shutdown-restart-dialog-img" [src]="this.icon" [alt]="this.name"/> -->
+                        <figcaption class="shutdown-restart-dialog-figcaption"> {{this.displayMgs}} </figcaption>
+                    </figure>
+                </h1>
+            </div>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="shutdown-restart-section shutdown-restart-section1">
+          <div class="sr-section1-img">
+            <img [src]="cheetahOS" class="sr-section1-img">
+          </div>
+          <div class="sr-section1-text-container">
+            <span>CheetahOS</span>
+          </div>
+        </div>
+    
+        <!-- Section 2 -->
+        <div class="shutdown-restart-section shutdown-restart-section2">
+          <div class="shutdown-restart-section2-left-part">
+            <img [src]="myComputer" class="sr-section2-img">
+          </div>
+          <div class="right-part">
+            <div class="top-text">What do you want the computer to do ?</div>
+
+
+            <div class="custom-select">
+                <select class="shutdown-restart-select" [(ngModel)]="selectedOption">
+                    <option class="shutdown-restart-option" *ngFor="let option of pwrOnOffOptions" [value]="option.value">
+                        {{ option.value }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="bottom-text"> {{ pwrOnOffOptionsTxt }}</div>
+          </div>
+        </div>
+    
+        <!-- Section 3 -->
+        <div class="shutdown-restart-section shutdown-restart-section3">
+          <button>Button 1</button>
+          <button>Button 2</button>
+        </div>
+    </div>
+</ng-template>
 
 <!-- File Transfer Dialog To be Added -->

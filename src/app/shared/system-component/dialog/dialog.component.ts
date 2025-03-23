@@ -1,10 +1,11 @@
 import {Component, Input, OnChanges, OnDestroy, SimpleChanges} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { UserNotificationService } from '../../system-service/user.notification.service';
-import { NotificationType } from 'src/app/system-files/notification.type';
+import { UserNotificationType } from 'src/app/system-files/notification.type';
 import { MenuService } from '../../system-service/menu.services';
 import { Subscription } from 'rxjs';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
+import { Constants } from 'src/app/system-files/constants';
 
 @Component({
   selector: 'cos-dialog',
@@ -25,11 +26,20 @@ export class DialogComponent implements OnChanges, OnDestroy {
   private _lockScreenIsActiveSub!:Subscription;
 
   notificationOption = '';
-  errorNotification = NotificationType.Error;
-  warnNotification = NotificationType.Warning;
-  infoNotification =  NotificationType.Info;
+  errorNotification = UserNotificationType.Error;
+  warnNotification = UserNotificationType.Warning;
+  infoNotification =  UserNotificationType.Info;
+  pwrOnOffNotification =  UserNotificationType.PowerOnOff;
 
 
+  cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
+  myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
+  pwrOnOffOptions = [
+    { value: 'Shutdown', label: 'Closes all apps and turns off the PC' },
+    { value: 'Restart', label: 'Closes all apps and turns off the PC, and turns it on again' }
+  ];
+  selectedOption = 'Shutdown';
+  pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
   notificationId = 0;
   type = ComponentType.System;
   displayMgs = '';

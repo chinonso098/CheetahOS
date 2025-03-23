@@ -335,3 +335,202 @@
     width: 100%;
     height: 45px;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Container holds all sections */
+.shutdown-restart-dialog-main-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    /* padding: 20px; */
+    min-width: 550px;
+    font-family: Arial, sans-serif;
+
+    background-color: #fff;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%);
+    position: absolute;
+    top: 25%;
+    left: 25%;
+    transform: translate(-50%, -50%); /* Move the element back by 50% of its own width and height */
+    outline: 1px hsl(0deg 0% 20%/70%);
+    z-index: 2;
+  }
+
+
+.shutdown-restart-dialog-header-container{
+    width: 100%;
+    position: relative;
+    display: flex;
+}
+
+.shutdown-restart-dialog-left-header-section{
+    width:calc(100% - 45px);
+    height: 30px;
+    left: 0;
+}
+
+.shutdown-restart-dialog-h1{
+    color: #fff;
+    font-size: 13px;
+    font-weight: normal;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 29px;
+    border-bottom: 1px transparent blue;  
+    width: fit-content;
+    flex-grow: 1;
+    display: flex;
+    left: 0;
+}
+
+.shutdown-restart-dialog-figure{
+    padding-left: 6px;
+    display: flex;
+    align-items: center;
+    height: 30px;
+}
+
+
+.shutdown-restart-dialog-figcaption{
+    color: #000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+  /* Shared section styling for demo clarity */
+  .shutdown-restart-section {
+    padding: 10px;
+    border: 1px solid #ccc;
+  }
+
+  /* ----- Section 1: Image (50px) to the left, text (45px) to the right, both centered ----- */
+  .shutdown-restart-section1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sr-section1-img-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sr-section1-img {
+    width: 60px;
+    height: 60px;
+  }
+
+ .sr-section1-text-container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 45px;
+    color: #339AF0;
+    margin-left: 10px;
+  }
+
+  /* ----- Section 2: Two parts ----- */
+  .shutdown-restart-section2 {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Left part: Image with size 25px */
+  .shutdown-restart-section2-left-part {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sr-section2-img{
+    width: 30px;
+    height: 30px;
+  }
+
+
+  .shutdown-restart-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none; /* Remove default appearance */
+    outline: none;  /* Remove outline on focus */
+    background-color: #f0f0f0; /* Set background color */
+    border: 1px solid #ccc; /* Add a border */
+    border-radius: 0%;
+    padding: 2px; /* Add padding */
+    font-family: sans-serif; /* Set font family */
+    font-size: 13px; /* Set font size */
+    color: #333; /* Set text color */
+    width: 400px;
+  }
+
+  .shutdown-restart-select:hover {
+    border-color: #aaa; /* Change border color on hover */
+  }
+
+  .shutdown-restart-select:focus {
+    border-color: #777; /* Change border color on focus */
+  }
+
+
+  .custom-select {
+    position: relative;
+    display: inline-block;
+    width: 400px;
+  }
+  
+  .custom-select select {
+    width: 100%;
+    /* padding: 5px 30px 5px 10px; extra space for the arrow */
+  }
+  
+  .custom-select::after {
+    content: 'v';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .shutdown-restart-option{
+    background-color: #fff;
+    color: #000;
+    border-radius: 0%;
+  }
+  
+
+/* Right part: Vertical order: top text, drop down, bottom text */
+ .shutdown-restart-section2 .right-part {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-left: 10px;
+ }
+
+  .shutdown-restart-section2 .right-part .top-text,
+  .shutdown-restart-section2 .right-part .bottom-text {
+    margin: 0;
+  }
+  .shutdown-restart-section2 .right-part select {
+    margin: 5px 0;
+  }
+
+  /* ----- Section 3: Two buttons shifted to the right ----- */
+  .shutdown-restart-section3 {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }

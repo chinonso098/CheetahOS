@@ -13,7 +13,7 @@ import { MenuService } from './shared/system-service/menu.services';
 import { ScriptService } from './shared/system-service/script.services';
 
 import { ComponentType } from './system-files/system.types';
-import { NotificationType } from './system-files/notification.type';
+import { UserNotificationType } from './system-files/notification.type';
 import { Process } from './system-files/process';
 import { AppDirectory } from './system-files/app.directory';
 import { Constants } from 'src/app/system-files/constants';
@@ -67,17 +67,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   private _componentRefView!:ViewRef;
   private _appDirectory:AppDirectory;
 
-
-  private _closeProcessSub!:Subscription;
-  private _closeMsgDialogSub!:Subscription;
-  private _startProcessSub!:Subscription;
-  private _appNotFoundSub!:Subscription;
-  private _appIsRunningSub!:Subscription;  
-  private _errorNotifySub!:Subscription;
-  private _infoNotifySub!:Subscription;  
-  private _warnNotifySub!:Subscription;  
-  private _showPropertiesViewSub!:Subscription;
-  private _closePropertiesViewSub!:Subscription;
 
   private userOpenedAppsList:string[] = [];
   private retreivedKeys:string[] = [];
@@ -133,17 +122,23 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this._windowService = windowService;
     this._menuService = menuService;
 
-    this._startProcessSub = this._triggerProcessService.startProcessNotify.subscribe((appName) =>{this.loadApps(appName)})
-    this._appNotFoundSub = this._triggerProcessService.appNotFoundNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Error,appName)})
-    this._appIsRunningSub = this._triggerProcessService.appIsRunningNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Info,appName)})
-    this._errorNotifySub = this._notificationServices.errorNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Error,appName)})
-    this._infoNotifySub = this._notificationServices.InfoNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Info,appName)})
-    this._warnNotifySub = this._notificationServices.warningNotify.subscribe((appName) =>{this.showDialogMsgBox(NotificationType.Warning,appName)})
-    this._closeProcessSub = this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.onCloseBtnClicked(p)})
-    this._closeMsgDialogSub = this._notificationServices.closeDialogBoxNotify.subscribe((i) =>{this.closeDialogMsgBoxOrPropertiesView(i)})
-    this._showPropertiesViewSub = this._menuService.showPropertiesView.subscribe((p) => this.showPropertiesWindow(p));
-    this._closePropertiesViewSub = this._menuService.closePropertiesView.subscribe((p) => this.closeDialogMsgBoxOrPropertiesView(p));
+
+    // these are all subs, but the app cmpnt will not be closed, unsubsribe is not needed
+    this._triggerProcessService.startProcessNotify.subscribe((appName) =>{this.loadApps(appName)})
+    this._triggerProcessService.appNotFoundNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.Error,appName)})
+    this._triggerProcessService.appIsRunningNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.Info,appName)})
+
+    this._notificationServices.errorNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.Error,appName)})
+    this._notificationServices.InfoNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.Info,appName)})
+    this._notificationServices.warningNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.Warning,appName)})
+    this._notificationServices.powerOnOffNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.PowerOnOff,appName)})
+    this._notificationServices.closeDialogBoxNotify.subscribe((i) =>{this.closeDialogMsgBoxOrPropertiesView(i)})
+
+    this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.onCloseBtnClicked(p)})
     this._runningProcessService.addProcess(this.getComponentDetail());
+
+    this._menuService.showPropertiesView.subscribe((p) => this.showPropertiesWindow(p));
+    this._menuService.closePropertiesView.subscribe((p) => this.closeDialogMsgBoxOrPropertiesView(p));
 
     this._appDirectory = new AppDirectory();
   }
@@ -165,16 +160,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy():void{
-    this._closeProcessSub?.unsubscribe();
-    this._closeMsgDialogSub?.unsubscribe();
-    this._startProcessSub?.unsubscribe();
-    this._appNotFoundSub?.unsubscribe();
-    this._appIsRunningSub?.unsubscribe();
-    this._errorNotifySub?.unsubscribe();
-    this._infoNotifySub?.unsubscribe();
-    this._warnNotifySub?.unsubscribe();
-    this._showPropertiesViewSub?.unsubscribe();
-    this._closePropertiesViewSub?.unsubscribe();
+    1
   }
 
   async loadApps(appName:string):Promise<void>{
@@ -201,10 +187,13 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     const notificationId = componentRef.instance.notificationId;
     this._componentReferenceService.addComponentReference(notificationId, componentRef);
 
-    if(dialogMsgType === NotificationType.Error){
+    if(dialogMsgType === UserNotificationType.Error){
       componentRef.setInput('inputMsg', msg);
       componentRef.setInput('notificationType', dialogMsgType);
-    }else if(dialogMsgType === NotificationType.Info){
+    }else if(dialogMsgType === UserNotificationType.Info){
+      componentRef.setInput('inputMsg', msg);
+      componentRef.setInput('notificationType', dialogMsgType);
+    }else if(dialogMsgType === UserNotificationType.PowerOnOff){
       componentRef.setInput('inputMsg', msg);
       componentRef.setInput('notificationType', dialogMsgType);
     }else{
