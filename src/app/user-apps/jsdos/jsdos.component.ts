@@ -1,7 +1,5 @@
 import { Component, ElementRef, OnInit, AfterViewInit, ViewChild, OnDestroy } from '@angular/core';
-import {DosPlayerFactoryType } from "js-dos";
-import {DosPlayerOptions} from './js.dos';
-import {CommandInterface, Emulators} from "emulators";
+
 import {extname} from 'path';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -21,9 +19,7 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
 import { Constants } from "src/app/system-files/constants";
 import { WindowService } from 'src/app/shared/system-service/window.service';
 
-declare const Dos: DosPlayerFactoryType;
-declare const emulators:Emulators
-
+declare let Dos: any;
 @Component({
   selector: 'cos-jsdos',
   templateUrl: './jsdos.component.html',
@@ -41,7 +37,8 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   private _scriptService: ScriptService;
   private _windowService:WindowService;
   
-  private _ci!: CommandInterface;
+  private dosInstance: any = null; // Store js-dos instance
+
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private gameSrc = '';
@@ -56,7 +53,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   type = ComponentType.User;
   displayName = 'JS-Dos';
 
-  dosOptions:DosPlayerOptions = {
+  dosOptions= {
     style: "none",
     noSideBar: true,
     noFullscreen: true,
@@ -85,10 +82,9 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   }
 
   ngOnDestroy(): void {
-    if(this.dosOptions){
-
-      if(this._ci != undefined)
-          this._ci.exit();
+    if(this.dosInstance) {
+      this.dosInstance.exit(); // Clean up js-dos instance
+      this.dosInstance = null;
     }
   }
 
@@ -99,12 +95,10 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     this.gameSrc = (this.gameSrc !=='')? 
       this.gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    this._scriptService.loadScript("js-dos", "osdrive/Program-Files/JS-DOS/js-dos.js").then(async() =>{
-
-      emulators.pathPrefix= '/';
-
+    this._scriptService.loadScript("js-dos", "osdrive/Program-Files/jsdos/js-dos.js").then(async() =>{
       const data = await this._fileService.getFileBlobAsync(this.gameSrc);
-      this._ci = await  Dos(this.dosWindow.nativeElement, this.dosOptions).run(data);
+      this.dosInstance = await Dos(this.dosWindow.nativeElement, this.dosOptions).run(data);
+
       this.storeAppState(this.gameSrc);
       URL.revokeObjectURL(this.gameSrc);
 

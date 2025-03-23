@@ -38,8 +38,6 @@
     "@angular/platform-browser-dynamic": "^18.0.0",
     "@angular/router": "^18.0.0",
     "angular2-draggable": "^16.0.0",
-    "emulators": "^0.73.7",
-    "emulators-ui": "^0.73.7",
     "html-to-image": "^1.11.11",
     "ini": "^2.0.0",
     "monaco-editor": "0.49.0",

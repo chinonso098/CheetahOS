@@ -37,7 +37,7 @@
               "src/osdrive",
               {
                 "glob": "**/*",
-                "input": "src/osdrive/Program-Files/JS-DOS",
+                "input": "src/osdrive/Program-Files/jsdos",
                 "output": "/"
               },
               {
@@ -59,6 +59,7 @@
               "src/styles.css",
               "src/css/videoplayer/video-js.min.css",
               "src/css/quill/quill.snow.css",
+              "src/osdrive/Program-Files/jsdos/js-dos.css",
               "node_modules/angular2-draggable/css/resizable.min.css"
             ],
             "scripts": [
