@@ -23,9 +23,12 @@ export class AudioService implements BaseService {
   private _scriptService:ScriptService;
   private _processIdService:ProcessIDService;
   private _audioPlayer: any;
+  private _externalAudioSrc: Map<string, any>;
 
   changeVolumeNotify: Subject<void> = new Subject<void>();
   hideShowVolumeControlNotify: Subject<void> = new Subject<void>();
+
+  isExternalAudioSrcPresent = false;
 
   audioSrc = Constants.EMPTY_STRING;
   
@@ -35,19 +38,20 @@ export class AudioService implements BaseService {
   type = ProcessType.Cheetah;
   status  = Constants.SERVICES_STATE_RUNNING;
   hasWindow = false;
-  description = 'handles system audio file';
+  description = 'handles system audio';
 
     
   constructor(){
-      AudioService.instace = this;
-      this._scriptService = ScriptService.instace;
-      this._processIdService = ProcessIDService.instance;
-      this._runningProcessService = RunningProcessService.instance;
+    AudioService.instace = this;
+    this._scriptService = ScriptService.instace;
+    this._processIdService = ProcessIDService.instance;
+    this._runningProcessService = RunningProcessService.instance;
+    this._externalAudioSrc = new Map<string, any>();
 
-      this.loadAudioScript();
-      this.processId = this._processIdService.getNewProcessId();
-      this._runningProcessService.addProcess(this.getProcessDetail());
-      this._runningProcessService.addService(this.getServiceDetail());
+    this.loadAudioScript();
+    this.processId = this._processIdService.getNewProcessId();
+    this._runningProcessService.addProcess(this.getProcessDetail());
+    this._runningProcessService.addService(this.getServiceDetail());
   }
 
   private loadAudioScript(): void {
@@ -122,6 +126,26 @@ export class AudioService implements BaseService {
 
   changeVolume(volume:number):void{
     this._audioPlayer.volume(volume);
+
+    if(this._externalAudioSrc){
+      for(const extSrc of this._externalAudioSrc.values()){
+        extSrc.volume(volume);
+      }
+    }
+  }
+
+  addExternalAudioSrc(srcName:string, extAudio:any):void{
+    this._externalAudioSrc.set(srcName, extAudio);
+    this.isExternalAudioSrcPresent = true;
+  }
+
+  removeExternalAudioSrc(srcName:string):void{
+    const check = this._externalAudioSrc.get(srcName);
+    if(check)
+      this._externalAudioSrc.delete(srcName);
+    
+    if(this._externalAudioSrc.size === 0)
+      this.isExternalAudioSrcPresent = false;
   }
 
 

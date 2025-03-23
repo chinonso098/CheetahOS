@@ -17,6 +17,7 @@ import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { AudioService } from 'src/app/shared/system-service/audio.services';
 declare const videojs: (arg0: any, arg1: object, arg2: () => void) => any;
 
 
@@ -41,7 +42,8 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
-    private _windowService:WindowService;
+  private _windowService:WindowService;
+  private _audioService:AudioService;
 
   private _fileInfo!:FileInfo;
   private player: any;
@@ -64,7 +66,9 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
-    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService ,windowService:WindowService) { 
+    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService,
+    windowService:WindowService, audioService:AudioService) { 
+
     this._processIdService = processIdService;
     this._triggerProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
@@ -72,9 +76,9 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._sessionManagmentService= sessionManagmentService;
     this._scriptService = scriptService;
     this._windowService = windowService;
-    this.processId = this._processIdService.getNewProcessId();
+    this._audioService = audioService;
 
-  
+    this.processId = this._processIdService.getNewProcessId();
     this.retrievePastSessionData();
 
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
@@ -101,7 +105,6 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   async ngAfterViewInit(): Promise<void> {
-
     //this.setVideoWindowToFocus(this.processId);
     
     this.fileType =  (this.fileType !=='') ? 
@@ -130,8 +133,9 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.storeAppState(appData);
 
     this._scriptService.loadScript("videojs","osdrive/Program-Files/Videojs/video.min.js").then(() =>{
-      this.player = videojs(this.videowindow.nativeElement, videoOptions, function onPlayerReady(){
+      this.player = videojs(this.videowindow.nativeElement, videoOptions, ()=>{
         console.log('onPlayerReady:', "player is read");
+        this._audioService.addExternalAudioSrc(this.name, this.player)
       });
   
       //this.player.on('fullscreenchange', this.onFullscreenChange);
@@ -146,9 +150,11 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     if(this.player) {
       this.player.off('fullscreenchange', this.onFullscreenChange);
       this.player.dispose();
+      this._audioService.removeExternalAudioSrc(this.name);
     }
     this._maximizeWindowSub?.unsubscribe();
     this._minimizeWindowSub?.unsubscribe();
+    this._changeContentSub?.unsubscribe();
   }
 
   changeContent():void{

@@ -157,6 +157,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   startAuthFormTimeOut():void{
     const secondsDelay = 60000; //wait 1 min
     this.authFormTimeoutId = setTimeout(() => {
+      this.loginForm.controls[this.formCntrlName].setValue(null);
       this.showDateTime();
     }, secondsDelay);
   }
@@ -225,6 +226,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       lockScreenElmnt.style.backdropFilter = 'none';
 
       this.isScreenLocked = true;
+      this.loginForm.controls[this.formCntrlName].setValue(null);
       this._systemNotificationServices.showLockScreenNotify.next();
     }
   }
@@ -327,6 +329,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       lsPwrBtn.style.display = 'block';
     }
   }
+
   resetFields():void{
     this.showUserInfo = false;
     this.showPasswordEntry = false;
@@ -348,7 +351,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.showPowerOnOffScreen();
     }, delay);
   }
-
 
   restartOS():void{
     const delay = 5500; // 5.5secs

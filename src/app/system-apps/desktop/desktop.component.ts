@@ -68,17 +68,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _audioService:AudioService;
   private _systemNotificationServices:SystemNotificationService;
 
-  
-  private _timerSubscription!: Subscription;
-  private _showTaskBarAppIconMenuSub!:Subscription;
-  private _showTaskBarContextMenuSub!:Subscription;
-  private _hideContextMenuSub!:Subscription;
-  private _showTaskBarPreviewWindowSub!:Subscription;
-  private _hideTaskBarPreviewWindowSub!:Subscription;
-  private _keepTaskBarPreviewWindowSub!:Subscription;
-  private _showStartMenuSub!:Subscription;
-  private _hideStartMenuSub!:Subscription;
-  private _hideShowVolumeControlSub!: Subscription;
   private _vantaEffect: any;
   private _numSequence = 0;
   private _charSequence = 'a';
@@ -133,6 +122,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   removeTskBarPrevWindowFromDOMTimeoutId!: NodeJS.Timeout;
   hideTskBarPrevWindowTimeoutId!: NodeJS.Timeout;
   clippyIntervalId!: NodeJS.Timeout;
+  colorChgIntervalId!: NodeJS.Timeout;
 
   readonly DESKTOP_DIRECTORY ='/Users/Desktop';
   readonly DESKTOP_SCREEN_SHOT_DIRECTORY ='/Users/Documents/Screen-Shots';
@@ -189,18 +179,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._audioService = audioService;
     this._systemNotificationServices = systemNotificationServices;
 
-    this._showTaskBarAppIconMenuSub = this._menuService.showTaskBarAppIconMenu.subscribe((p) => { this.onShowTaskBarAppIconMenu(p)});
-    this._showTaskBarContextMenuSub = this._menuService.showTaskBarConextMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
-    this._showTaskBarPreviewWindowSub = this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
-    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
-    this._hideTaskBarPreviewWindowSub = this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
-    this._keepTaskBarPreviewWindowSub = this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
-    this._showStartMenuSub = this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
-    this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
-    this._hideShowVolumeControlSub = this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
+    // these are subs, but the desktop cmpnt is not going to be destoryed
+    this._menuService.showTaskBarAppIconMenu.subscribe((p) => { this.onShowTaskBarAppIconMenu(p)});
+    this._menuService.showTaskBarConextMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
+    this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
+    this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
+    this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
+    this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
+    this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
+    this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
+    this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
 
     this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.startClippy()})
-    this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.stopClippy()})
+    this._systemNotificationServices.showLockScreenNotify.subscribe(() => {
+      this.stopClippy(); 
+      this.hideVolumeControl();
+    });
 
 
     this.processId = this._processIdService.getNewProcessId()
@@ -225,24 +219,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   ngAfterViewInit():void{
-    this._timerSubscription = interval(this.COLOR_CHANGE_DELAY).subscribe(() => {
-      this.transitionToNextColor();
-    });
-    
+    this.startVantaWaveColorChange();
     this.hideContextMenu();
     this.initClippy();
   }
 
   ngOnDestroy(): void {
-    this._timerSubscription?.unsubscribe();
-    this._showTaskBarAppIconMenuSub?.unsubscribe();
-    this._hideContextMenuSub?.unsubscribe();
-    this._showTaskBarContextMenuSub?.unsubscribe();
-    this._showTaskBarPreviewWindowSub?.unsubscribe();
-    this._hideTaskBarPreviewWindowSub?.unsubscribe();
-    this._keepTaskBarPreviewWindowSub?.unsubscribe();
-    this._showStartMenuSub?.unsubscribe();
-    this._hideStartMenuSub?.unsubscribe();
     this._vantaEffect?.destroy();
   }
 
@@ -493,6 +475,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.showVolumeControl = !this.showVolumeControl;
   }
 
+  hideVolumeControl():void{
+    this.showVolumeControl = false;
+  }
+
   viewByLargeIcon():void{
     this.viewBy(this.largeIcons)
   }
@@ -622,9 +608,26 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const bkgrounds:string[] = ["osdrive/Program-Files/Backgrounds/vanta.waves.min.js", "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
                                  "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
         
+
     this._scriptService.loadScript(names[i], bkgrounds[i]).then(() =>{
       this.buildVantaEffect(i);
+
+      if(names[i] === "vanta-waves"){
+        this.startVantaWaveColorChange();
+      }else{
+        this.stopVantaWaveColorChange();
+      }
     })
+  }
+
+  stopVantaWaveColorChange():void{
+    clearInterval(this.colorChgIntervalId);
+  }
+
+  startVantaWaveColorChange():void{
+    this.colorChgIntervalId = setInterval(() => {
+      this.transitionToNextColor();
+    }, this.COLOR_CHANGE_DELAY);
   }
 
   openTerminal():void{

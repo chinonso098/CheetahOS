@@ -17,6 +17,7 @@ import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { AudioService } from 'src/app/shared/system-service/audio.services';
 
 // eslint-disable-next-line no-var
 declare const Howl:any;
@@ -58,6 +59,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
   private _windowService:WindowService;
+  private _audioService:AudioService;
 
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
@@ -86,15 +88,17 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
  
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
-    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService,windowService:WindowService) { 
+    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService, 
+    windowService:WindowService, audioService:AudioService) { 
     this._processIdService = processIdService;
     this._triggerProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService= sessionManagmentService;
     this._scriptService = scriptService;
     this._windowService = windowService;
+    this._audioService = audioService;
+
     this.processId = this._processIdService.getNewProcessId();
-    
     this.retrievePastSessionData();
 
     this._runningProcessService = runningProcessService;
@@ -132,7 +136,9 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   
           if(this.playList.length == 0){
             this.loadHowlSingleTrackObjectAsync()
-                .then(howl => { this.audioPlayer = howl; })
+                .then(howl => { this.audioPlayer = howl; 
+                  this._audioService.addExternalAudioSrc(this.name, howl);
+                })
                 .catch(error => { console.error('Error loading track:', error); });
       
             this.storeAppState(this.audioSrc);
@@ -153,6 +159,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   ngOnDestroy():void{
     this.audioPlayer?.unload();
+    this._audioService.removeExternalAudioSrc(this.name);
     this._maximizeWindowSub?.unsubscribe();
     this._minimizeWindowSub?.unsubscribe(); 
     this._changeContentSub?.unsubscribe(); 
@@ -177,27 +184,24 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.audioSrc = Constants.EMPTY_STRING;
     console.log('previous audio source-1:',  this.audioSrc);
     if(this._runningProcessService.getEventOrginator() === uid){
-
       this._fileInfo = this._triggerProcessService.getLastProcessTrigger();
 
-      console.log('new this._fileInfo:',  this._fileInfo);
-
-  
-      this.audioSrc = (this.audioSrc !== '')? 
+      this.audioSrc = (this.audioSrc !== Constants.EMPTY_STRING)? 
       this.audioSrc :this.getAudioSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
       this.siriWave.stop();
       this.audioPlayer.stop();
 
-      //this.audioPlayer?.unload();
+      // got purge the old howl instance :()
+      this.audioPlayer?.unload();
+      this._audioService.removeExternalAudioSrc(this.name);
+
       console.log('new audio source:',  this.audioSrc);
 
       setTimeout(async()=> {
         this.loadHowlSingleTrackObjectAsync()
           .then(howl => { this.audioPlayer = howl; 
-            // this.siriWave.start();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
-            // this.audioPlayer.play();
-
+            this._audioService.addExternalAudioSrc(this.name, howl);
             this.onPlayBtnClicked();
           })
           .catch(error => { console.error('Error loading track:', error); });
