@@ -1,4 +1,9 @@
- <main class="main-desktop" id="vanta"  (contextmenu)="showDesktopContextMenu($event)" (click)="hideContextMenu(name)" (mousemove)="resetLockScreenTimeOut()" #desktopContainer> 
+ <main class="main-desktop" id="vanta"  
+    (contextmenu)="showDesktopContextMenu($event)" 
+    (click)="hideContextMenu(name)"
+    (mousedown)="setMultSelect($event)"
+    (mouseup)="unSetMultSelect()"
+    (mousemove)="resetLockScreenTimeOut()"   (mousemove)="updateDivWithAndSize($event)" #desktopContainer> 
 
     @if(showDesktopScreenShotPreview){
         <div [@slideStatusAnimation]="slideState" class="dsktp-screen-preview-container" >
@@ -19,5 +24,7 @@
     @if(showStartMenu){
         <cos-startmenu [@slideStartMenuAnimation]></cos-startmenu>
     }
+
+    <div #selectPaneContainer id="dskTopMultiSelectPane"></div>
     <ng-content> </ng-content>
 </main>
