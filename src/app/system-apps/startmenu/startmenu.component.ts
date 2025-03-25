@@ -92,56 +92,59 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
  
 
+  // Store listener for removal
+  private overlaySlideOutListener = () => {
+    const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
+    if (smIconTxtOverlay) {
+        smIconTxtOverlay.style.boxShadow = '0px 2px 4px rgba(0, 0, 0, 0.6)';
+        this.txtOverlayMenuStyle = { display: 'flex' };
+    }
+  };
+
   // Show Overlay Function
   startMenuOverlaySlideOut(): void {
-
     clearTimeout(this.delayStartMenuOverlayHideTimeoutId);
-    const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
-    // Clear the show timeout as well if needed
     clearTimeout(this.delayStartMenuOverlayShowTimeoutId);
 
-    // Begin the show process
+    const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
+    if (!smIconTxtOverlay) return;
+
     this.delayStartMenuOverlayShowTimeoutId = setTimeout(() => {
-      if (smIconTxtOverlay) {
-        // Set initial position and visibility
         smIconTxtOverlay.style.width = '48px';
-        smIconTxtOverlay.style.transition = 'width 0.3s ease'; // Set transition
-        smIconTxtOverlay.style.width = '248px'; // Animate to 248px
+        smIconTxtOverlay.style.transition = 'width 0.3s ease';
+        smIconTxtOverlay.style.width = '248px';
         smIconTxtOverlay.style.transitionDelay = '0.75s';
 
-        // Box-shadow animation after expansion
-        smIconTxtOverlay.addEventListener('transitionend', () => {
-          smIconTxtOverlay.style.boxShadow = '0px 2px 4px rgba(0, 0, 0, 0.6)';
-          this.txtOverlayMenuStyle = { 'display': 'flex' }; // Make visible after slide out
-        }, { once: true });
-      }
-    }, 500); // Delay the start of the animation
+        // Remove any existing listener before adding a new one
+        smIconTxtOverlay.removeEventListener('transitionend', this.overlaySlideOutListener);
+        smIconTxtOverlay.addEventListener('transitionend', this.overlaySlideOutListener, { once: true });
+    }, 500);
   }
 
-  // Hide Overlay Function
+
+    // Hide Overlay Function
   startMenuOverlaySlideIn(): void {
-
-
     clearTimeout(this.delayStartMenuOverlayShowTimeoutId);
-    const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
-    // Clear the hide timeout if necessary
     clearTimeout(this.delayStartMenuOverlayHideTimeoutId);
 
-    // Begin the hide process
+    const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
+    if (!smIconTxtOverlay) return;
+
+    // Ensure we remove any transition listeners to prevent race conditions
+    smIconTxtOverlay.removeEventListener('transitionend', this.overlaySlideOutListener);
+
     this.delayStartMenuOverlayHideTimeoutId = setTimeout(() => {
-      if (smIconTxtOverlay ) {
-        // Start shrinking animation
         smIconTxtOverlay.style.transition = 'width 0.3s ease';
         smIconTxtOverlay.style.width = '48px';
         smIconTxtOverlay.style.boxShadow = 'none';
 
-        // Once transition ends, hide the overlay
-        smIconTxtOverlay.addEventListener('transitionstart', () => {
-          this.txtOverlayMenuStyle = { 'display': 'none' }; // Hide after slide in
+        // Ensure text hides after transition completes
+        smIconTxtOverlay.addEventListener('transitionend', () => {
+            this.txtOverlayMenuStyle = { display: 'none' };
         }, { once: true });
-      }
-    }, 250); // Add a slight delay to match the UX behavior
+    }, 250);
   }
+
 
 
   onBtnHover():void{
