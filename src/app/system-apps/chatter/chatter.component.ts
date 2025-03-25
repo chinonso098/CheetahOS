@@ -12,6 +12,7 @@ import { ChatterService } from 'src/app/shared/system-service/chatter.service';
 import { ChatMessage } from './model/chat.message';
 import { IUser, IUserData, IUserList } from './model/chat.interfaces';
 import { Subscription } from 'rxjs';
+import { AudioService } from 'src/app/shared/system-service/audio.services';
 
 @Component({
   selector: 'cos-chatter',
@@ -28,6 +29,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _windowService:WindowService;
   private _chatService:ChatterService;
   private _socketService:SocketService;
+  private _audioService:AudioService;
 
   private _newChatMessageSub!: Subscription;
   private _userCountChangeSub!: Subscription;
@@ -36,12 +38,11 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _updateUserNameOrStatusSub!: Subscription;
 
   private _formBuilder;
-
-  userNameAcronymStyle:Record<string, unknown> = {};
-
   chatterForm!: FormGroup;
   chatUserForm!: FormGroup;
   formCntrlName = 'msgText';
+
+  userNameAcronymStyle:Record<string, unknown> = {};
 
   ADD_AND_BROADCAST = 'Add&Broadcast';
   UPDATE = 'Update';
@@ -74,6 +75,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   prevScrollHeight = 0;
 
 
+  logonAudio = `${Constants.AUDIO_BASE_PATH}cheetah_logon.wav`;
+  newMsgAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_messaging.wav`;
 
 
   chatPrompt = 'Type a message';
@@ -86,11 +89,12 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   displayName = 'Chatter';
 
   constructor(socketService:SocketService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
-    windowService:WindowService, formBuilder:FormBuilder, chatService:ChatterService) { 
+    windowService:WindowService, formBuilder:FormBuilder, chatService:ChatterService, audioService:AudioService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
     this._socketService = socketService;
+    this._audioService = audioService;
     this._chatService = chatService;
     this._chatService.setSocketInstance(socketService);
     this._chatService.setSubscriptions();
@@ -124,7 +128,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
     // set as my timestamp for when i came online
     this._chatService.setComeOnlineTS(Date.now());
-
+    this._audioService.play(this.logonAudio);
     this.retrieveEarlierMessages();
   }
 
@@ -160,6 +164,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.chatData = data
     this.setMessageLastReceievedTime();
 
+    this._audioService.play(this.newMsgAudio);
     setTimeout(() => this.scrollToBottom(), 500);
   }
 

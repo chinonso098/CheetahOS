@@ -136,25 +136,42 @@
             <img [src]="myComputer" class="sr-section2-img">
           </div>
           <div class="right-part">
-            <div class="top-text">What do you want the computer to do ?</div>
-
+            <div class="top-text">What do you want the computer to do?</div>
 
             <div class="custom-select">
-                <select class="shutdown-restart-select" [(ngModel)]="selectedOption">
+                <select class="shutdown-restart-select" [(ngModel)]="selectedOption" (change)="onPwrOptionSelect($event)">
                     <option class="shutdown-restart-option" *ngFor="let option of pwrOnOffOptions" [value]="option.value">
                         {{ option.value }}
                     </option>
                 </select>
+                <div class="custom-select-img-cntnr">
+                    <div class="custom-select-img"> 
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                        height="10" width="10" 
+                        viewBox="0 0 512 512" style="fill: #333;">
+                        <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                    </svg>
+                    </div>
+                </div>
             </div>
-
             <div class="bottom-text"> {{ pwrOnOffOptionsTxt }}</div>
           </div>
         </div>
     
         <!-- Section 3 -->
         <div class="shutdown-restart-section shutdown-restart-section3">
-          <button>Button 1</button>
-          <button>Button 2</button>
+            <div class="sr-section3-question">
+                <div class="sr-section3-chxbox">
+                    <input type="checkbox">
+                </div>
+                <div class="sr-section3-txt">
+                    Reopen windows when loggin back in
+                </div>
+            </div>
+            <div class="sr-section3-btns">
+                <button class="btn btn-primary-pwr" (click)="onYesDialogBox()" >OK</button>
+                <button class="btn btn-secondary-pwr" (click)="onCloseDialogBox()">Cancel</button>
+            </div>
         </div>
     </div>
 </ng-template>

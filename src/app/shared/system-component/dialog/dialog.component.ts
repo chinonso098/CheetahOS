@@ -31,14 +31,15 @@ export class DialogComponent implements OnChanges, OnDestroy {
   infoNotification =  UserNotificationType.Info;
   pwrOnOffNotification =  UserNotificationType.PowerOnOff;
 
-
   cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
+
   pwrOnOffOptions = [
-    { value: 'Shutdown', label: 'Closes all apps and turns off the PC' },
-    { value: 'Restart', label: 'Closes all apps and turns off the PC, and turns it on again' }
+    { value: 'Shut down', label: 'Closes all apps and turns off the PC.' },
+    { value: 'Restart', label: 'Closes all apps and turns off the PC, and turns it on again.' }
   ];
-  selectedOption = 'Shutdown';
+
+  selectedOption = 'Shut down';
   pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
   notificationId = 0;
   type = ComponentType.System;
@@ -65,8 +66,22 @@ export class DialogComponent implements OnChanges, OnDestroy {
     this._menuService.createDesktopShortcut.next();
   }
 
+  onYesPowerDialogBox():void{
+    // if(this.selectedOption === Constants.SYSTEM_RESTART){
+    //   this._systemNotificationServices.restartSystemNotify.next();
+    // }else{
+    //   this._systemNotificationServices.shutDownSystemNotify.next();
+    // }
+  }
+
   onCloseDialogBox():void{
     this._notificationServices.closeDialogBoxNotify.next(this.notificationId);
+  }
+
+  onPwrOptionSelect(event: any):void{
+    const selectedValue = event.target.value;
+    this.selectedOption = selectedValue;
+    this.pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
   }
 
   ngOnDestroy(): void {
@@ -97,6 +112,11 @@ export class DialogComponent implements OnChanges, OnDestroy {
     if(warnDiagElmnt) {
       warnDiagElmnt.style.zIndex = '0';
     }
+
+    const pwrDiagElmnt = document.getElementById(`shutdown-restart-dialog-${this.notificationId}`) as HTMLDivElement;
+    if(pwrDiagElmnt) {
+      pwrDiagElmnt.style.zIndex = '0';
+    }
   }
 
   desktopIsActive():void{
@@ -113,6 +133,11 @@ export class DialogComponent implements OnChanges, OnDestroy {
     const warnDiagElmnt = document.getElementById(`warning-dialog-${this.notificationId}`) as HTMLDivElement;
     if(warnDiagElmnt) {
       warnDiagElmnt.style.zIndex = '2';
+    }
+
+    const pwrDiagElmnt = document.getElementById(`shutdown-restart-dialog-${this.notificationId}`) as HTMLDivElement;
+    if(pwrDiagElmnt) {
+      pwrDiagElmnt.style.zIndex = '2';
     }
   }
 

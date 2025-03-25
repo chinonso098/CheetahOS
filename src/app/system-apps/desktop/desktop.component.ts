@@ -279,7 +279,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   startClippy():void{
-    this.showClippy = false;
+    this.showClippy = true;
     this.initClippy();
   }
 

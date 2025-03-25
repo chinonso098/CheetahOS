@@ -23,6 +23,7 @@ export class SystemNotificationService implements BaseService{
     showDesktopNotify: Subject<void> = new Subject<void>();
     resetLockScreenTimeOutNotify: Subject<void> = new Subject<void>();
     restartSystemNotify: Subject<void> = new Subject<void>();
+    shutDownSystemNotify: Subject<void> = new Subject<void>();
 
     name = 'sys_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
