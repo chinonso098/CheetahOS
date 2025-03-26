@@ -49,6 +49,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private isHideCntxtMenuEvt= false;
 
   isDraggable = true;
+  isMultiSelectEnabled = true;
+  isMultiSelectActive = false;
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
@@ -68,14 +70,11 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   renameForm!: FormGroup;
 
   cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
+  shortCutImg = `${Constants.IMAGE_BASE_PATH}shortcut.png`;
 
-  hasWindow = false;
-  icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
-  name = 'filemanager';
-  processId = 0;
-  type = ComponentType.System;
-  displayName = '';
-  directory ='/Users/Desktop';
+  multiSelectElmnt!:HTMLDivElement | null;
+  multiSelectStartingPosition!:MouseEvent | null;
+
   files:FileInfo[] = [];
 
   sourceData:GeneralMenu[] = [
@@ -96,6 +95,15 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   
   fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
   menuOrder = '';
+
+
+  hasWindow = false;
+  icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
+  name = 'filemanager';
+  processId = 0;
+  type = ComponentType.System;
+  displayName = '';
+  directory ='/Users/Desktop';
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileInfoService:FileService,
               triggerProcessService:TriggerProcessService, fileManagerService:FileManagerService, formBuilder: FormBuilder, 
@@ -143,6 +151,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   async ngAfterViewInit():Promise<void>{
     await this.loadFilesInfoAsync();
     this.removeVantaJSSideEffect();
+    setTimeout(() => this.poitionShortCutIconProperly(), 10);
   }
 
   onDragOver(event:DragEvent):void{
@@ -196,6 +205,120 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       }
     }, this.SECONDS_DELAY[1]);
   }
+
+  activateMultiSelect(evt:MouseEvent):void{
+    if(this.isMultiSelectEnabled){    
+      this.isMultiSelectActive = true;
+      this.multiSelectElmnt = document.getElementById('dskTopMultiSelectPane') as HTMLDivElement;
+      this.multiSelectStartingPosition = evt;
+    }
+  }
+
+  deActivateMultiSelect():void{ 
+    if(this.multiSelectElmnt){
+      this.setDivWithAndSize(this.multiSelectElmnt, 0, 0, 0, 0, false);
+    }
+
+    this.multiSelectElmnt = null;
+    this.multiSelectStartingPosition = null;
+
+    const markedBtnCount = this.getCountOfAllTheMarkedButtons();
+
+    if(markedBtnCount === 0)
+      this.isMultiSelectActive = false;
+  }
+
+  updateDivWithAndSize(evt:any):void{
+    if(this.multiSelectStartingPosition && this.multiSelectElmnt){
+      const startingXPoint = this.multiSelectStartingPosition.clientX;
+      const startingYPoint = this.multiSelectStartingPosition.clientY;
+
+      const currentXPoint = evt.clientX;
+      const currentYPoint = evt.clientY;
+
+      const startX = Math.min(startingXPoint, currentXPoint);
+      const startY = Math.min(startingYPoint, currentYPoint);
+      const divWidth = Math.abs(startingXPoint - currentXPoint);
+      const divHeight = Math.abs(startingYPoint - currentYPoint);
+
+      this.setDivWithAndSize(this.multiSelectElmnt, startX, startY, divWidth, divHeight, true);
+
+      // Call function to check and highlight selected items
+      this.highlightSelectedItems(startX, startY, divWidth, divHeight);
+    }
+  }
+
+  setDivWithAndSize(divElmnt:HTMLDivElement, initX:number, initY:number, width:number, height:number, isShow:boolean):void{
+
+    divElmnt.style.position = 'absolute';
+    divElmnt.style.transform =  `translate(${initX}px , ${initY}px)`;
+    divElmnt.style.height =  `${height}px`;
+    divElmnt.style.width =  `${width}px`;
+
+    divElmnt.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+    divElmnt.style.backdropFilter = 'blur(5px)';
+    if(isShow){
+      divElmnt.style.zIndex = '2';
+      divElmnt.style.display =  'block';
+    }else{
+      divElmnt.style.zIndex = '0';
+      divElmnt.style.display =  'none';
+    }
+  }
+
+  highlightSelectedItems(initX: number, initY: number, width: number, height: number): void {
+    const selectionRect = {
+        left: initX,
+        top: initY,
+        right: initX + width,
+        bottom: initY + height
+    };
+
+    const btnIcons = document.querySelectorAll('.filemngr_btn');
+    btnIcons.forEach((btnIcon) => {
+        const btnIconRect = btnIcon.getBoundingClientRect();
+
+        // Check if the item is inside the selection area
+        if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
+            btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
+            btnIcon.classList.add('filemngr-multi-select-highlight');
+            console.log('btnIcon:',btnIcon);       
+        } else {
+            btnIcon.classList.remove('filemngr-multi-select-highlight');
+            console.log('btnIcon:',btnIcon);
+        }
+    });
+ }
+
+ poitionShortCutIconProperly():void{
+
+    for(let i = 0;  i < this.files.length; i++){
+      const figElmnt = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
+      const shortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
+
+      if(figElmnt && shortCutElmnt){
+        const figElmntRect = figElmnt.getBoundingClientRect();
+        shortCutElmnt.style.top = `${figElmntRect.top + 18}px`
+        shortCutElmnt.style.left = `${figElmntRect.left + 20}px`
+      }
+    }
+ }
+
+ getCountOfAllTheMarkedButtons():number{
+
+  const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
+  return btnIcons.length;
+ }
+
+
+ removeTransparentStyle(elmntId:string):void{
+  const btnIconsElmnt = document.getElementById(elmntId) as HTMLButtonElement;
+  if(btnIconsElmnt){
+    btnIconsElmnt.style.backgroundColor = '';
+    btnIconsElmnt.style.borderColor = '';
+  }
+ }
+
 
   runProcess(file:FileInfo):void{
 
@@ -395,18 +518,39 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     console.log('TODO:FileManagerComponent, Upgrade the basic state tracking/management logic:',transform);
   }
 
-  onDragStart(evt:DragEvent, i:number):void{
-    //this.isDraggable = true
-    const btnIcon = document.getElementById(`liIconBtn${i}`) as HTMLElement
-    // console.log('DragStart:',btnIcon);
-    // if(btnIcon){
-    //   // btnIcon.style.position = 'absolute';
-    //   btnIcon.style.zIndex = '4';
-    // }
-    // console.log('DragStart:',btnIcon);
+
+  onDragStart(evt:DragEvent, i: number): void {
+ 
+    /**
+     * This method is mimick the functionality of Windows should a user attempt to drag n drop content from the 
+     * desktop to the FileExplorer, or another application that support DnD
+     * 
+     * The issue at the moment, is that it collide with the angular2-draggable functionailty. 
+     * for the time being, it is Off
+     */
+  
+    const iconA = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
+  
+    // Get the cloneIcon container
+    const elementId = 'filemngr_clone_cntnr';
+    const cloneIcon = document.getElementById(elementId);
+  
+    if(cloneIcon){
+      // Clear any previous content in the clone container
+      cloneIcon.innerHTML = '';
+      cloneIcon.appendChild(iconA.cloneNode(true));
+  
+      cloneIcon.style.left = '-9999px';  // Move it out of view initially
+      cloneIcon.style.opacity = '0.2';
+  
+      // Set the cloned icon as the drag image
+      if (evt.dataTransfer) {
+        evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
+      }
+    }
   }
 
-  onDragStart_Off(evt:DragEvent, i: number): void {
+  onDragStart_One_Icon(evt:DragEvent, i: number): void {
  
     /**
      * This method is mimick the functionality of Windows should a user attempt to drag n drop content from the 
@@ -439,15 +583,22 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   
 
   onMouseEnter(id:number):void{
-    this.setBtnStyle(id, true);
+    if(!this.isMultiSelectActive){
+      this.isMultiSelectEnabled = false;
+      this.setBtnStyle(id, true);
+    }
   }
 
   onMouseLeave(id:number):void{
-    if(id != this.selectedElementId){
-      this.removeBtnStyle(id);
-    }
-    else if((id == this.selectedElementId) && !this.isIconInFocusDueToPriorAction){
-      this.setBtnStyle(id,false);
+    this.isMultiSelectEnabled = true;
+
+    if(!this.isMultiSelectActive){
+      if(id != this.selectedElementId){
+        this.removeBtnStyle(id);
+      }
+      else if((id == this.selectedElementId) && !this.isIconInFocusDueToPriorAction){
+        this.setBtnStyle(id,false);
+      }
     }
   }
 
@@ -485,6 +636,14 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         btnElement.style.backgroundColor = 'transparent';
         btnElement.style.border = '0.5px solid white'
       }
+    }
+  }
+
+  setBtnStyleOnMultiSelect(id:number):void{
+    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
+    if(btnElement){
+      btnElement.style.backgroundColor = 'rgba(0, 150, 255, 0.3)';
+      btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
     }
   }
 

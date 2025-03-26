@@ -66,11 +66,8 @@ img{
 
 .shortcut-img{
     position: absolute;
-    /* display: none; */
     height: 24px; 
     width: 24px;
-    top: 31.5%;
-    left: 23.5%;
 }
 
 .filemngr_btn{
@@ -151,4 +148,9 @@ input::selection{
     background-color: #ccc;
     z-index:  5;
     position: absolute;
+}
+
+.filemngr-multi-select-highlight {
+    background-color: rgba(0, 150, 255, 0.3);
+    border: 0.5px solid rgb(56, 56, 169);
 }
