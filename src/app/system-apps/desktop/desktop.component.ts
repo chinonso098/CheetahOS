@@ -155,11 +155,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     {icon:'', label: '', action: ()=> console.log() },
   ];
 
-
-  multiSelectElmnt!:HTMLDivElement | null;
-  multiSelectStartingPosition!:MouseEvent | null;
-
-
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'desktop';
@@ -246,57 +241,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     return Number(`0x${this._numSequence}${this._charSequence}`);
   }
-
-
-  setMultSelect(evt:MouseEvent):void{
-    this.multiSelectElmnt = document.getElementById('dskTopMultiSelectPane') as HTMLDivElement;
-    this.multiSelectStartingPosition = evt;
-  }
-
-  unSetMultSelect():void{ 
-    if(this.multiSelectElmnt){
-      this.setDivWithAndSize(this.multiSelectElmnt, 0, 0, 0, 0, false);
-    }
-
-    this.multiSelectElmnt = null;
-    this.multiSelectStartingPosition = null;
-  }
-
-  updateDivWithAndSize(evt:any):void{
-    if(this.multiSelectStartingPosition && this.multiSelectElmnt){
-      const startingXPoint = this.multiSelectStartingPosition.clientX;
-      const startingYPoint = this.multiSelectStartingPosition.clientY;
-
-      const currentXPoint = evt.clientX;
-      const currentYPoint = evt.clientY;
-
-      const startX = Math.min(startingXPoint, currentXPoint);
-      const startY = Math.min(startingYPoint, currentYPoint);
-      const divWidth = Math.abs(startingXPoint - currentXPoint);
-      const divHeight = Math.abs(startingYPoint - currentYPoint);
-
-      this.setDivWithAndSize(this.multiSelectElmnt, startX, startY, divWidth, divHeight, true);
-    }
-  }
-
-  setDivWithAndSize(divElmnt:HTMLDivElement, initX:number, initY:number, width:number, height:number, isShow:boolean):void{
-
-    divElmnt.style.position = 'absolute';
-    divElmnt.style.transform =  `translate(${initX}px , ${initY}px)`;
-    divElmnt.style.height =  `${height}px`;
-    divElmnt.style.width =  `${width}px`;
-
-    divElmnt.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
-    divElmnt.style.backdropFilter = 'blur(5px)';
-    if(isShow){
-      divElmnt.style.zIndex = '2';
-      divElmnt.style.display =  'block';
-    }else{
-      divElmnt.style.zIndex = '0';
-      divElmnt.style.display =  'none';
-    }
-  }
-
 
   /** Smoothly transitions to the next color */
   private transitionToNextColor(): void {
