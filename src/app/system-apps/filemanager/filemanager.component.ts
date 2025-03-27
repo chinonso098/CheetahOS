@@ -51,6 +51,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   isDraggable = true;
   isMultiSelectEnabled = true;
   isMultiSelectActive = false;
+  areMultipleIconsHighlighted = false;
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
@@ -221,11 +222,13 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
     this.multiSelectElmnt = null;
     this.multiSelectStartingPosition = null;
+    this.isMultiSelectActive = false;
 
     const markedBtnCount = this.getCountOfAllTheMarkedButtons();
-
     if(markedBtnCount === 0)
-      this.isMultiSelectActive = false;
+      this.areMultipleIconsHighlighted = false;
+    else
+      this.areMultipleIconsHighlighted = true;
   }
 
   updateDivWithAndSize(evt:any):void{
@@ -285,6 +288,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
             console.log('btnIcon:',btnIcon);       
         } else {
             btnIcon.classList.remove('filemngr-multi-select-highlight');
+            this.removeTransparentStyle(btnIcon.id);
             console.log('btnIcon:',btnIcon);
         }
     });
@@ -305,9 +309,18 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
  }
 
  getCountOfAllTheMarkedButtons():number{
-
   const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
   return btnIcons.length;
+ }
+
+ getIDsOfAllTheMarkedButtons():string[]{
+  const result:string[] = []
+  const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
+
+  btnIcons.forEach(btnIcon => {
+    result.push(btnIcon.id);
+  });
+  return  result;
  }
 
 
@@ -520,32 +533,56 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
 
   onDragStart(evt:DragEvent, i: number): void {
+
+    console.log('onDragStart - started');
  
-    /**
-     * This method is mimick the functionality of Windows should a user attempt to drag n drop content from the 
-     * desktop to the FileExplorer, or another application that support DnD
-     * 
-     * The issue at the moment, is that it collide with the angular2-draggable functionailty. 
-     * for the time being, it is Off
-     */
-  
-    const iconA = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
-  
     // Get the cloneIcon container
     const elementId = 'filemngr_clone_cntnr';
     const cloneIcon = document.getElementById(elementId);
-  
+    const countOfMarkedBtns = this.getCountOfAllTheMarkedButtons();
+
     if(cloneIcon){
-      // Clear any previous content in the clone container
-      cloneIcon.innerHTML = '';
-      cloneIcon.appendChild(iconA.cloneNode(true));
-  
-      cloneIcon.style.left = '-9999px';  // Move it out of view initially
-      cloneIcon.style.opacity = '0.2';
-  
-      // Set the cloned icon as the drag image
-      if (evt.dataTransfer) {
-        evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
+      if(countOfMarkedBtns <= 1){
+        const srcIcon = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
+      
+        // Clear any previous content in the clone container
+        cloneIcon.innerHTML = '';
+        cloneIcon.appendChild(srcIcon.cloneNode(true));
+    
+        cloneIcon.style.left = '-9999px';  // Move it out of view initially
+        cloneIcon.style.opacity = '0.2';
+    
+        // Set the cloned icon as the drag image
+        if (evt.dataTransfer) {
+          evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
+        }
+        
+      }else{
+        // Clear any previous content in the clone container
+        cloneIcon.innerHTML = '';
+        const markedBtns = this.getIDsOfAllTheMarkedButtons();
+
+        markedBtns.forEach(markedBtn =>{
+          const id = markedBtn.replace('iconBtn',Constants.EMPTY_STRING);
+          const srcIcon = document.getElementById(`filemngr_fig${id}`) as HTMLElement;
+
+          const spaceDiv = document.createElement('div');
+
+          // Add create an empty div that will be used for spacing between each cloned icon
+          spaceDiv.setAttribute('id', `spacediv${id}`);
+          spaceDiv.style.transform =  'translate(0, 0)';
+
+          spaceDiv.style.width =  'fit-content';
+          spaceDiv.style.height =  '10px';
+
+          cloneIcon.appendChild(srcIcon.cloneNode(true));
+          cloneIcon.appendChild(spaceDiv);
+        });
+
+        // Set the cloned icon as the drag image
+        if (evt.dataTransfer) {
+          evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
+        }
       }
     }
   }
@@ -583,7 +620,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   
 
   onMouseEnter(id:number):void{
-    if(!this.isMultiSelectActive){
+    if(!this.isMultiSelectActive || this.areMultipleIconsHighlighted){
       this.isMultiSelectEnabled = false;
       this.setBtnStyle(id, true);
     }
@@ -592,7 +629,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   onMouseLeave(id:number):void{
     this.isMultiSelectEnabled = true;
 
-    if(!this.isMultiSelectActive){
+    if(!this.isMultiSelectActive || this.areMultipleIconsHighlighted){
       if(id != this.selectedElementId){
         this.removeBtnStyle(id);
       }

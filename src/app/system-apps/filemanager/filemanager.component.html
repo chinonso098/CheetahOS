@@ -1,7 +1,7 @@
  <ol (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)"  (click)="handleIconHighLightState()"
- (mousedown)="activateMultiSelect($event)"
- (mouseup)="deActivateMultiSelect()"
- (mousemove)="updateDivWithAndSize($event)" id="filemngr_ol"> 
+   (mousedown)="activateMultiSelect($event)"
+   (mouseup)="deActivateMultiSelect()"
+   (mousemove)="updateDivWithAndSize($event)" id="filemngr_ol"> 
     <li *ngFor="let file of files; let i = index" id="filemngr_li">
         <button class="filemngr_btn" 
          (dblclick)="runProcess(file)" 
