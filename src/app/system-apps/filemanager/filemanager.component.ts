@@ -15,6 +15,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { GeneralMenu, MenuPositiom } from 'src/app/shared/system-component/menu/menu.types';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { mousePosition } from './filemanager.types';
 
 
 @Component({
@@ -70,11 +71,16 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   SECONDS_DELAY:number[] = [6000,250];
   renameForm!: FormGroup;
 
+  deskTopClickCounter = 0;
+
   cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
   shortCutImg = `${Constants.IMAGE_BASE_PATH}shortcut.png`;
 
   multiSelectElmnt!:HTMLDivElement | null;
   multiSelectStartingPosition!:MouseEvent | null;
+
+
+  markedBtnIds:string[] = [];
 
   files:FileInfo[] = [];
 
@@ -227,8 +233,11 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     const markedBtnCount = this.getCountOfAllTheMarkedButtons();
     if(markedBtnCount === 0)
       this.areMultipleIconsHighlighted = false;
-    else
+    else{
       this.areMultipleIconsHighlighted = true;
+      this.getIDsOfAllTheMarkedButtons();
+    }
+
   }
 
   updateDivWithAndSize(evt:any):void{
@@ -302,8 +311,10 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
       if(figElmnt && shortCutElmnt){
         const figElmntRect = figElmnt.getBoundingClientRect();
-        shortCutElmnt.style.top = `${figElmntRect.top + 18}px`
-        shortCutElmnt.style.left = `${figElmntRect.left + 20}px`
+        shortCutElmnt.style.top = `${figElmntRect.top + 18}px`;
+        shortCutElmnt.style.left = `${figElmntRect.left + 20}px`;
+        // shortCutElmnt.style.transform = `translate(0, 0)`;
+        // shortCutElmnt.style.position = 'absolute';
       }
     }
  }
@@ -313,16 +324,15 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   return btnIcons.length;
  }
 
- getIDsOfAllTheMarkedButtons():string[]{
-  const result:string[] = []
+ getIDsOfAllTheMarkedButtons():void{
   const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
-
   btnIcons.forEach(btnIcon => {
-    result.push(btnIcon.id);
+    const btnId = btnIcon.id.replace('iconBtn', Constants.EMPTY_STRING);
+    if(!this.markedBtnIds.includes(btnId))
+      this.markedBtnIds.push(btnId);
   });
-  return  result;
+  console.log('this.markedBtnIds:', this.markedBtnIds);
  }
-
 
  removeTransparentStyle(elmntId:string):void{
   const btnIconsElmnt = document.getElementById(elmntId) as HTMLButtonElement;
@@ -499,13 +509,24 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         this.isBtnClickEvt = false;
         this.btnClickCnt = 0;
       }
+      console.log('turn off - areMultipleIconsHighlighted')
+      this.areMultipleIconsHighlighted = false;
     }else{
       this.hideCntxtMenuEvtCnt++;
       this.isHideCntxtMenuEvt = true;
       //Second case - I was only clicking on the desktop
-      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= 1) && (!this.isBtnClickEvt && this.btnClickCnt == 0))
+      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= 1) && (!this.isBtnClickEvt && this.btnClickCnt == 0)){
+        this.deskTopClickCounter++;
         this.btnStyleAndValuesReset();
-      
+
+        //reset after clicking on the desktop 2wice
+        if(this.deskTopClickCounter >= 2){
+          console.log('turn off - areMultipleIconsHighlighted-1')
+          this.areMultipleIconsHighlighted = false;
+          this.deskTopClickCounter = 0;
+          this.markedBtnIds = [];
+        }
+      }
       //Third case - I was clicking on the desktop icons, then i click on the desktop.
       //clicking on the desktop triggers a hideContextMenuEvt
       if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt > 1))
@@ -513,71 +534,119 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
   }
 
-  onDragEnd(evt:any):void{
-    //console.log('event type:',evt.type);
+  onDragEnd(evt:DragEvent):void{
+    console.log('event type:',evt.type);
+    console.log('onDragEnd evt:',evt);
+    const mPos:mousePosition = {
+      clientX: evt.clientX,
+      clientY: evt.clientY,
+      offsetX: evt.offsetX,
+      offsetY: evt.offsetY,
+      x: evt.x,
+      y: evt.y,
+    }
+
+    this.moveBtnIconsToNewPosition(mPos);
     // const rect =  this.myBounds.nativeElement.getBoundingClientRect(); 
 
-    const btnTransform = window.getComputedStyle(evt);
-    const matrix = new DOMMatrixReadOnly(btnTransform.transform);
+    // const btnTransform = window.getComputedStyle(evt);
+    // const matrix = new DOMMatrixReadOnly(btnTransform.transform);
     
-    const transform = {
-      translateX: matrix.m41,
-      translateY: matrix.m42
-    }
+    // const transform = {
+    //   translateX: matrix.m41,
+    //   translateY: matrix.m42
+    // }
 
     // const transX = matrix.m41;
     // const transY = matrix.m42;
 
-    console.log('TODO:FileManagerComponent, Upgrade the basic state tracking/management logic:',transform);
+    // Get the cloneIcon container
+    const elementId = 'filemngr_clone_cntnr';
+    const cloneIcon = document.getElementById(elementId);
+
+    if(cloneIcon){        
+      //Clear any previous content in the clone container
+      cloneIcon.innerHTML = '';
+    }
+
+    //console.log('TODO:FileManagerComponent, Upgrade the basic state tracking/management logic:',transform);
   }
 
-
   onDragStart(evt:DragEvent, i: number): void {
-
-    console.log('onDragStart - started');
  
     // Get the cloneIcon container
     const elementId = 'filemngr_clone_cntnr';
     const cloneIcon = document.getElementById(elementId);
     const countOfMarkedBtns = this.getCountOfAllTheMarkedButtons();
+    const gridIndexHeight = 90;
+    let counter = 0;
 
     if(cloneIcon){
+      //Clear any previous content in the clone container
+      cloneIcon.innerHTML = Constants.EMPTY_STRING;
+
       if(countOfMarkedBtns <= 1){
-        const srcIcon = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
-      
-        // Clear any previous content in the clone container
-        cloneIcon.innerHTML = '';
-        cloneIcon.appendChild(srcIcon.cloneNode(true));
-    
-        cloneIcon.style.left = '-9999px';  // Move it out of view initially
+        const srcIconElmnt = document.getElementById(`iconBtn${i}`) as HTMLElement;
+        const srcShortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
+
+        const tmpTop = srcShortCutElmnt.style.top;
+        const tmpLeft = srcShortCutElmnt.style.left;
+
+        srcShortCutElmnt.style.top = '22px'; 
+        srcShortCutElmnt.style.left = '24px';
+        const clonedShortcut = srcShortCutElmnt.cloneNode(true);
+        
+        cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
+        cloneIcon.appendChild(clonedShortcut);
+
+        //restore old positions
+        srcShortCutElmnt.style.top = tmpTop;
+        srcShortCutElmnt.style.left = tmpLeft;
+        
+         // Move it out of view initially
+        cloneIcon.style.left = '-9999px';  
         cloneIcon.style.opacity = '0.2';
     
         // Set the cloned icon as the drag image
         if (evt.dataTransfer) {
           evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
         }
-        
       }else{
-        // Clear any previous content in the clone container
-        cloneIcon.innerHTML = '';
-        const markedBtns = this.getIDsOfAllTheMarkedButtons();
+        this.markedBtnIds.forEach(id =>{
+          const srcIconElmnt = document.getElementById(`iconBtn${id}`) as HTMLElement;
+          const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
 
-        markedBtns.forEach(markedBtn =>{
-          const id = markedBtn.replace('iconBtn',Constants.EMPTY_STRING);
-          const srcIcon = document.getElementById(`filemngr_fig${id}`) as HTMLElement;
+          const tmpTop = srcShortCutElmnt.style.top;
+          const tmpLeft = srcShortCutElmnt.style.left;
+  
+          if(counter === 0)
+            srcShortCutElmnt.style.top = '22px'; 
+          else{
+            const product = (gridIndexHeight * counter);
+            srcShortCutElmnt.style.top = `${22 + product}px`; 
+          }
+          srcShortCutElmnt.style.left = '24px';
+          const clonedShortcut = srcShortCutElmnt.cloneNode(true);
 
           const spaceDiv = document.createElement('div');
-
           // Add create an empty div that will be used for spacing between each cloned icon
           spaceDiv.setAttribute('id', `spacediv${id}`);
           spaceDiv.style.transform =  'translate(0, 0)';
-
           spaceDiv.style.width =  'fit-content';
-          spaceDiv.style.height =  '10px';
+          spaceDiv.style.height =  '20px';
 
-          cloneIcon.appendChild(srcIcon.cloneNode(true));
+          cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
+          cloneIcon.appendChild(clonedShortcut);
           cloneIcon.appendChild(spaceDiv);
+
+          //restore old positions
+          srcShortCutElmnt.style.top = tmpTop;
+          srcShortCutElmnt.style.left = tmpLeft;
+          counter++;
         });
+
+        cloneIcon.style.left = '-9999px';  // Move it out of view initially
+        cloneIcon.style.opacity = '0.2';
 
         // Set the cloned icon as the drag image
         if (evt.dataTransfer) {
@@ -587,37 +656,28 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
   }
 
-  onDragStart_One_Icon(evt:DragEvent, i: number): void {
- 
-    /**
-     * This method is mimick the functionality of Windows should a user attempt to drag n drop content from the 
-     * desktop to the FileExplorer, or another application that support DnD
-     * 
-     * The issue at the moment, is that it collide with the angular2-draggable functionailty. 
-     * for the time being, it is Off
-     */
-  
-    const iconA = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
-  
-    // Get the cloneIcon container
-    const elementId = 'filemngr_clone_cntnr';
-    const cloneIcon = document.getElementById(elementId);
-  
-    if(cloneIcon){
-      // Clear any previous content in the clone container
-      cloneIcon.innerHTML = '';
-      cloneIcon.appendChild(iconA.cloneNode(true));
-  
-      cloneIcon.style.left = '-9999px';  // Move it out of view initially
-      cloneIcon.style.opacity = '0.2';
-  
-      // Set the cloned icon as the drag image
-      if (evt.dataTransfer) {
-        evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
+  moveBtnIconsToNewPosition(mPos:mousePosition):void{
+    this.markedBtnIds.forEach(id =>{
+      const btnIcon = document.getElementById(`filemngr_li${id}`);
+      const btnIconElmnt = document.getElementById(`filemngr_li${id}`) as HTMLElement;
+
+      if(btnIcon){
+        const btnIconRect = btnIcon.getBoundingClientRect();
+        console.log('btnIconRect:',btnIconRect);
+
+        const xDiff = mPos.x - btnIconRect.x;
+        const newX = btnIconRect.left + xDiff;
+
+        const yDiff = btnIconRect.y - mPos.y;
+        const newY = btnIconRect.top - yDiff;
+
+        console.log(`newX:${newX} ----------- newY:${newY}`);
+
+        btnIconElmnt.style.transform = `translate(${newX}px, ${0}px)`;
       }
-    }
+    });
   }
-  
+
 
   onMouseEnter(id:number):void{
     if(!this.isMultiSelectActive || this.areMultipleIconsHighlighted){
@@ -629,7 +689,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   onMouseLeave(id:number):void{
     this.isMultiSelectEnabled = true;
 
-    if(!this.isMultiSelectActive || this.areMultipleIconsHighlighted){
+    if(!this.isMultiSelectActive || this.areMultipleIconsHighlighted ){
       if(id != this.selectedElementId){
         this.removeBtnStyle(id);
       }
