@@ -81,6 +81,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   multiSelectStartingPosition!:MouseEvent | null;
 
   markedBtnIds:string[] = [];
+  movedBtnIds:string[] = [];
   files:FileInfo[] = [];
 
   sourceData:GeneralMenu[] = [
@@ -291,18 +292,15 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         // Check if the item is inside the selection area
         if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
             btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
-            btnIcon.classList.add('filemngr-multi-select-highlight');
-            console.log('btnIcon:',btnIcon);       
+            btnIcon.classList.add('filemngr-multi-select-highlight'); 
         } else {
             btnIcon.classList.remove('filemngr-multi-select-highlight');
             this.removeTransparentStyle(btnIcon.id);
-            console.log('btnIcon:',btnIcon);
         }
     });
  }
 
  poitionShortCutIconProperly():void{
-
     for(let i = 0;  i < this.files.length; i++){
       const figElmnt = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
       const shortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
@@ -316,8 +314,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
  }
 
  getCountOfAllTheMarkedButtons():number{
-  const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
-  return btnIcons.length;
+   const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
+   return btnIcons.length;
  }
 
  getIDsOfAllTheMarkedButtons():void{
@@ -663,7 +661,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       const btnIcon = document.getElementById(`filemngr_li${id}`);
       const btnIconElmnt = document.getElementById(`filemngr_li${id}`) as HTMLElement;
       const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
-
+      this.movedBtnIds.push(id);
       if(btnIcon){
         const btnIconRect = btnIcon.getBoundingClientRect();
         const xDiff = mPos.x - btnIconRect.left;
@@ -744,20 +742,28 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   correctMisalignedIcons(): void {
-    const btnIcons = document.querySelectorAll('.filemngr_btn');
+ 
     const columnWidth = this.GRID_SIZE;
     const rowHeight = this.GRID_SIZE;
 
-    btnIcons.forEach((btnIcon) => {
-      const rect = btnIcon.getBoundingClientRect();
-      const correctedX = Math.round(rect.left / columnWidth) * columnWidth;
-      const correctedY = Math.round(rect.top / rowHeight) * rowHeight;
+    this.movedBtnIds.forEach((id) => {
+      const btnIcon = document.getElementById(`filemngr_li${id}`);
 
-      // Apply the transformation
-      const btnIconElmnt = btnIcon as HTMLElement
-      if(btnIconElmnt){
-        btnIconElmnt.style.position = 'absolute';
-        btnIconElmnt.style.transform = `translate(${correctedX}px, ${correctedY}px)`;
+      if(btnIcon){
+        const rect = btnIcon.getBoundingClientRect();
+        console.log('correctMisalignedIcons:',rect);
+
+        const correctedX = Math.round(rect.left / columnWidth) * columnWidth;
+        const correctedY = Math.round(rect.top / rowHeight) * rowHeight;
+
+        console.log(`New Position ->: X:${correctedX}, Y:${correctedY}`);
+
+        // Apply the transformation
+        const btnIconElmnt = btnIcon as HTMLElement
+        if(btnIconElmnt){
+          //btnIconElmnt.style.position = 'absolute';
+          btnIconElmnt.style.transform = `translate(${correctedX}px, ${correctedY}px)`;
+        }
       }
     });
   }
