@@ -57,6 +57,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
   private selectedElementId = -1;
+  private draggedElementId = -1;
   private prevSelectedElementId = -1; 
   private hideCntxtMenuEvtCnt = 0;
   private btnClickCnt = 0;
@@ -553,20 +554,13 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       y: evt.y,
     }
 
-    this.moveBtnIconsToNewPosition(mPos);
-    // const rect =  this.myBounds.nativeElement.getBoundingClientRect(); 
 
-    // const btnTransform = window.getComputedStyle(evt);
-    // const matrix = new DOMMatrixReadOnly(btnTransform.transform);
-    
-    // const transform = {
-    //   translateX: matrix.m41,
-    //   translateY: matrix.m42
-    // }
-
-    // const transX = matrix.m41;
-    // const transY = matrix.m42;
-
+    if(this.autoAlign){
+      this.moveBtnIconsToNewPositionAlignOn(mPos);
+    }else if (!this.autoAlign || this.markedBtnIds.length > 0){
+      this.moveBtnIconsToNewPositionAlignOff(mPos);
+    }
+ 
     // Get the cloneIcon container
     const elementId = 'filemngr_clone_cntnr';
     const cloneIcon = document.getElementById(elementId);
@@ -593,6 +587,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       cloneIcon.innerHTML = Constants.EMPTY_STRING;
 
       if(countOfMarkedBtns <= 1){
+        this.draggedElementId = i;
         const srcIconElmnt = document.getElementById(`iconBtn${i}`) as HTMLElement;
         const srcShortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
 
@@ -663,10 +658,15 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
   }
 
-  moveBtnIconsToNewPosition(mPos:mousePosition):void{
-
+  moveBtnIconsToNewPositionAlignOff(mPos:mousePosition):void{
     const gridIndexHeight = 90;
     let counter = 0;
+    let justAdded = false;
+
+    if(this.markedBtnIds.length === 0){
+      justAdded = true;
+      this.markedBtnIds.push(String(this.draggedElementId));
+    }
 
     this.markedBtnIds.forEach(id =>{
       const btnIcon = document.getElementById(`filemngr_li${id}`);
@@ -684,22 +684,53 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
             newY = mPos.y;
         else{
           const yDiff = btnIconRect.top - mPos.y;
-          newY = btnIconRect.top - yDiff + gridIndexHeight;
+          const product = (gridIndexHeight * counter);
+          newY = btnIconRect.top - yDiff + product;
         }
 
         btnIconElmnt.style.position = 'absolute';
         btnIconElmnt.style.transform = `translate(${Math.abs(newX)}px, ${Math.abs(newY)}px)`;
-
         //console.log(`New Position -> X:${newX}, Y:${newY}`);
       }
       counter++;
     });
-    
-    setTimeout(() => {
-      this.poitionShortCutIconProperly();
-    }, 10);
+
+    if(justAdded){
+      this.markedBtnIds.pop();
+    }
   }
 
+  moveBtnIconsToNewPositionAlignOn(mPos: mousePosition): void {
+    const fileManagerOl = document.getElementById('filemngr_ol') as HTMLElement;
+
+    const maxIconWidth = 90;
+    const maxIconHeight = 90;
+    
+    if (!fileManagerOl) return;
+  
+    const gridWidth = fileManagerOl.clientWidth; // Get total width of the container
+    console.log(`gridWidth: ${gridWidth}`);
+
+    const columnCount = Math.floor(gridWidth / maxIconWidth); // Assuming each icon is 100px wide
+    console.log(`columnCount: ${columnCount}`);
+
+    const columnWidth = Math.floor(gridWidth / columnCount) - 1; // Compute exact column width
+    console.log(`columnWidth: ${columnWidth}`);
+  
+    const btnIconElmnt = document.getElementById(`filemngr_li${this.draggedElementId}`) as HTMLElement;
+  
+    if (btnIconElmnt) {
+      // Calculate snap position
+      const newX = Math.round(mPos.x / columnWidth) * columnWidth;
+      const newY = Math.round(mPos.y / maxIconHeight) * maxIconHeight; // Snap Y to 100px increments
+
+      console.log(`Moving ID:  newX: ${newX}, newY: ${newY}`);
+
+      btnIconElmnt.style.position = 'absolute';
+      btnIconElmnt.style.transform = `translate(${newX}px, ${newY}px)`;
+    }
+  }
+  
 
   onMouseEnter(id:number):void{
     if(!this.isMultiSelectActive || this.areMultipleIconsHighlighted){
