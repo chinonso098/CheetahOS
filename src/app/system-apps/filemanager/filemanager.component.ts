@@ -313,8 +313,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         const figElmntRect = figElmnt.getBoundingClientRect();
         shortCutElmnt.style.top = `${figElmntRect.top + 18}px`;
         shortCutElmnt.style.left = `${figElmntRect.left + 20}px`;
-        // shortCutElmnt.style.transform = `translate(0, 0)`;
-        // shortCutElmnt.style.position = 'absolute';
       }
     }
  }
@@ -342,6 +340,14 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
  }
 
+ removeMarkFromBtn():void{
+  this.markedBtnIds.forEach(id =>{
+    const btnIcon = document.getElementById(`iconBtn${id}`);
+    if(btnIcon){
+      btnIcon.classList.remove('filemngr-multi-select-highlight');
+    }
+  })
+ }
 
   runProcess(file:FileInfo):void{
 
@@ -523,6 +529,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         if(this.deskTopClickCounter >= 2){
           console.log('turn off - areMultipleIconsHighlighted-1')
           this.areMultipleIconsHighlighted = false;
+          this.removeMarkFromBtn();
           this.deskTopClickCounter = 0;
           this.markedBtnIds = [];
         }
@@ -657,6 +664,10 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   moveBtnIconsToNewPosition(mPos:mousePosition):void{
+
+    const gridIndexHeight = 90;
+    let counter = 0;
+
     this.markedBtnIds.forEach(id =>{
       const btnIcon = document.getElementById(`filemngr_li${id}`);
       const btnIconElmnt = document.getElementById(`filemngr_li${id}`) as HTMLElement;
@@ -665,17 +676,28 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         const btnIconRect = btnIcon.getBoundingClientRect();
         console.log('btnIconRect:',btnIconRect);
 
-        const xDiff = mPos.x - btnIconRect.x;
+        const xDiff = mPos.x - btnIconRect.left;
         const newX = btnIconRect.left + xDiff;
 
-        const yDiff = btnIconRect.y - mPos.y;
-        const newY = btnIconRect.top - yDiff;
+        let newY = 0;
+        if(counter === 0)
+            newY = mPos.y;
+        else{
+          const yDiff = btnIconRect.top - mPos.y;
+          newY = btnIconRect.top - yDiff + gridIndexHeight;
+        }
 
-        console.log(`newX:${newX} ----------- newY:${newY}`);
+        btnIconElmnt.style.position = 'absolute';
+        btnIconElmnt.style.transform = `translate(${Math.abs(newX)}px, ${Math.abs(newY)}px)`;
 
-        btnIconElmnt.style.transform = `translate(${newX}px, ${0}px)`;
+        //console.log(`New Position -> X:${newX}, Y:${newY}`);
       }
+      counter++;
     });
+    
+    setTimeout(() => {
+      this.poitionShortCutIconProperly();
+    }, 10);
   }
 
 
