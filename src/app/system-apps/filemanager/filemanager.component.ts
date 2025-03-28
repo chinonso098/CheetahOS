@@ -68,7 +68,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   btnStyle:Record<string, unknown> = {};
 
   showCntxtMenu = false;
-  gridSize = 90; //column size of grid = 90px
+  readonly gridSize = 90; //column size of grid = 90px
   SECONDS_DELAY:number[] = [6000,250];
   renameForm!: FormGroup;
 
@@ -80,9 +80,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   multiSelectElmnt!:HTMLDivElement | null;
   multiSelectStartingPosition!:MouseEvent | null;
 
-
   markedBtnIds:string[] = [];
-
   files:FileInfo[] = [];
 
   sourceData:GeneralMenu[] = [
@@ -103,7 +101,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   
   fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
   menuOrder = '';
-
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -545,6 +542,9 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   onDragEnd(evt:DragEvent):void{
     console.log('event type:',evt.type);
     console.log('onDragEnd evt:',evt);
+
+    // Get the cloneIcon container
+    const elementId = 'filemngr_clone_cntnr';
     const mPos:mousePosition = {
       clientX: evt.clientX,
       clientY: evt.clientY,
@@ -557,20 +557,14 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
     if(this.autoAlign){
       this.moveBtnIconsToNewPositionAlignOn(mPos);
-    }else if (!this.autoAlign || this.markedBtnIds.length > 0){
+    }else if (!this.autoAlign && this.markedBtnIds.length > 0){
       this.moveBtnIconsToNewPositionAlignOff(mPos);
     }
- 
-    // Get the cloneIcon container
-    const elementId = 'filemngr_clone_cntnr';
-    const cloneIcon = document.getElementById(elementId);
 
+    const cloneIcon = document.getElementById(elementId);
     if(cloneIcon){        
-      //Clear any previous content in the clone container
       cloneIcon.innerHTML = '';
     }
-
-    //console.log('TODO:FileManagerComponent, Upgrade the basic state tracking/management logic:',transform);
   }
 
   onDragStart(evt:DragEvent, i: number): void {
@@ -579,7 +573,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     const elementId = 'filemngr_clone_cntnr';
     const cloneIcon = document.getElementById(elementId);
     const countOfMarkedBtns = this.getCountOfAllTheMarkedButtons();
-    const gridIndexHeight = 90;
     let counter = 0;
 
     if(cloneIcon){
@@ -624,7 +617,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
           if(counter === 0)
             srcShortCutElmnt.style.top = '22px'; 
           else{
-            const product = (gridIndexHeight * counter);
+            const product = (this.gridSize * counter);
             srcShortCutElmnt.style.top = `${22 + product}px`; 
           }
           srcShortCutElmnt.style.left = '24px';
@@ -659,7 +652,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   moveBtnIconsToNewPositionAlignOff(mPos:mousePosition):void{
-    const gridIndexHeight = 90;
     let counter = 0;
     let justAdded = false;
 
@@ -684,7 +676,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
             newY = mPos.y;
         else{
           const yDiff = btnIconRect.top - mPos.y;
-          const product = (gridIndexHeight * counter);
+          const product = (this.gridSize * counter);
           newY = btnIconRect.top - yDiff + product;
         }
 
@@ -700,9 +692,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
   }
 
-  moveBtnIconsToNewPositionAlignOn(mPos: mousePosition): void {
+  moveBtnIconsToNewPositionAlignOn_old(mPos: mousePosition): void {
     const fileManagerOl = document.getElementById('filemngr_ol') as HTMLElement;
-
     const maxIconWidth = 90;
     const maxIconHeight = 90;
     
@@ -730,7 +721,54 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       btnIconElmnt.style.transform = `translate(${newX}px, ${newY}px)`;
     }
   }
+
+  moveBtnIconsToNewPositionAlignOn(mPos: mousePosition): void {
+    const fileManagerOl = document.getElementById('filemngr_ol') as HTMLElement;
+    const maxIconWidth = 90;
+    const maxIconHeight = 90;
+    const offset = 5;
+    
+    if (!fileManagerOl) return;
   
+    const gridWidth = fileManagerOl.clientWidth; // Get total width of the container
+    const columnCount = Math.floor(gridWidth / maxIconWidth); // Assuming each icon is 100px wide
+    const columnWidth = Math.floor(gridWidth / columnCount) - 1; // Compute exact column width
+
+    let counter = 0;
+    let justAdded = false;
+    let newY = 0;
+
+    if(this.markedBtnIds.length === 0){
+      justAdded = true;
+      this.markedBtnIds.push(String(this.draggedElementId));
+    }
+
+    this.markedBtnIds.forEach(id =>{
+      const btnIcon = document.getElementById(`filemngr_li${id}`);
+      const btnIconElmnt = document.getElementById(`filemngr_li${id}`) as HTMLElement;
+
+      if(btnIcon){
+        // Calculate snap position
+        const newX = (Math.round(mPos.x / columnWidth) * columnWidth);
+
+        if(counter === 0)
+            newY = (Math.round(mPos.y / maxIconHeight) * maxIconHeight) + offset;
+        else{
+          const product = (this.gridSize * counter);
+          newY =(Math.round(mPos.y / maxIconHeight) * maxIconHeight) + product + offset;
+        }
+  
+        btnIconElmnt.style.position = 'absolute';
+        btnIconElmnt.style.transform = `translate(${Math.abs(newX)}px, ${Math.abs(newY)}px)`;
+      }
+
+      counter++;
+    });
+
+    if(justAdded){
+      this.markedBtnIds.pop();
+    }
+  }
 
   onMouseEnter(id:number):void{
     if(!this.isMultiSelectActive || this.areMultipleIconsHighlighted){
@@ -851,11 +889,11 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
   toggleAutoAlignIconsToGrid(alignIcon:boolean):void{
     this.autoAlign = alignIcon;
-    if(!this.autoAlign){
-      this.gridSize = 0;
-    }else{
-      this.gridSize = 90;
-    }
+    // if(!this.autoAlign){
+    //   this.gridSize = 0;
+    // }else{
+    //   this.gridSize = 90;
+    // }
   }
 
   toggleAutoArrangeIcons(arrangeIcon:boolean):void{

@@ -13,7 +13,6 @@
     z-index: 1;
 }
 
-
 li{
     display: flex;
     justify-content: center;
@@ -21,14 +20,12 @@ li{
     height: min-content;
 }
 
-
 figure{
     display: flex;
     flex-direction: column;
     margin-bottom: -2px;
     place-items:center;
 }
-
 
 figcaption{
     -webkit-box-orient: vertical;
@@ -141,7 +138,6 @@ input::selection{
     transform: rotate(180deg);
 }
 
-
 .clone-container{
     width: fit-content;
     height: fit-content;
@@ -153,4 +149,9 @@ input::selection{
 .filemngr-multi-select-highlight {
     background-color: rgba(0, 150, 255, 0.3);
     border: 0.5px solid rgb(56, 56, 169);
+}
+
+li, .filemngr_btn, figure {
+    margin: 0;
+    padding: 0;
 }
