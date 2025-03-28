@@ -630,7 +630,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
           cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
           cloneIcon.appendChild(clonedShortcut);
-          cloneIcon.appendChild(spaceDiv);
+          if(counter !== countOfMarkedBtns - 1)
+            cloneIcon.appendChild(spaceDiv);
 
           //restore old positions
           srcShortCutElmnt.style.top = tmpTop;
@@ -661,11 +662,10 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this.markedBtnIds.forEach(id =>{
       const btnIcon = document.getElementById(`filemngr_li${id}`);
       const btnIconElmnt = document.getElementById(`filemngr_li${id}`) as HTMLElement;
+      const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
 
       if(btnIcon){
         const btnIconRect = btnIcon.getBoundingClientRect();
-        console.log('btnIconRect:',btnIconRect);
-
         const xDiff = mPos.x - btnIconRect.left;
         const newX = btnIconRect.left + xDiff;
 
@@ -678,9 +678,12 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
           newY = btnIconRect.top - yDiff + product;
         }
 
+        srcShortCutElmnt.style.position = 'absolute';
+        srcShortCutElmnt.style.top = `${22}px`; 
+        srcShortCutElmnt.style.left = `${24}px`;
+
         btnIconElmnt.style.position = 'absolute';
         btnIconElmnt.style.transform = `translate(${Math.abs(newX)}px, ${Math.abs(newY)}px)`;
-        //console.log(`New Position -> X:${newX}, Y:${newY}`);
       }
       counter++;
     });
@@ -691,14 +694,14 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   moveBtnIconsToNewPositionAlignOn(mPos: mousePosition): void {
-    const fileManagerOl = document.getElementById('filemngr_ol') as HTMLElement;
+    const fileMngrOlElmnt = document.getElementById('filemngr_ol') as HTMLElement;
     const maxIconWidth = this.GRID_SIZE;
     const maxIconHeight = this.GRID_SIZE;
     const offset = 5;
     
-    if (!fileManagerOl) return;
+    if (!fileMngrOlElmnt) return;
   
-    const gridWidth = fileManagerOl.clientWidth; // Get total width of the container
+    const gridWidth = fileMngrOlElmnt.clientWidth; // Get total width of the container
     const columnCount = Math.floor(gridWidth / maxIconWidth); // Assuming each icon is 100px wide
     const columnWidth = Math.floor(gridWidth / columnCount) - 1; // Compute exact column width
 
@@ -712,10 +715,10 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
 
     this.markedBtnIds.forEach(id =>{
-      const btnIcon = document.getElementById(`filemngr_li${id}`);
       const btnIconElmnt = document.getElementById(`filemngr_li${id}`) as HTMLElement;
+      const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
 
-      if(btnIcon){
+      if(btnIconElmnt){
         // Calculate snap position
         const newX = (Math.round(mPos.x / columnWidth) * columnWidth);
         if(counter === 0)
@@ -725,6 +728,10 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
           newY =(Math.round(mPos.y / maxIconHeight) * maxIconHeight) + product + offset;
         }
   
+        srcShortCutElmnt.style.position = 'absolute';
+        srcShortCutElmnt.style.top = `${22}px`; 
+        srcShortCutElmnt.style.left = `${24}px`;
+
         btnIconElmnt.style.position = 'absolute';
         btnIconElmnt.style.transform = `translate(${Math.abs(newX)}px, ${Math.abs(newY)}px)`;
       }
@@ -735,6 +742,26 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     if(justAdded) 
       this.markedBtnIds.pop(); 
   }
+
+  correctMisalignedIcons(): void {
+    const btnIcons = document.querySelectorAll('.filemngr_btn');
+    const columnWidth = this.GRID_SIZE;
+    const rowHeight = this.GRID_SIZE;
+
+    btnIcons.forEach((btnIcon) => {
+      const rect = btnIcon.getBoundingClientRect();
+      const correctedX = Math.round(rect.left / columnWidth) * columnWidth;
+      const correctedY = Math.round(rect.top / rowHeight) * rowHeight;
+
+      // Apply the transformation
+      const btnIconElmnt = btnIcon as HTMLElement
+      if(btnIconElmnt){
+        btnIconElmnt.style.position = 'absolute';
+        btnIconElmnt.style.transform = `translate(${correctedX}px, ${correctedY}px)`;
+      }
+    });
+  }
+
 
   onMouseEnter(id:number):void{
     if(!this.isMultiSelectActive || this.areMultipleIconsHighlighted){
@@ -856,11 +883,9 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   toggleAutoAlignIconsToGrid(alignIcon:boolean):void{
     console.log('toggleAutoAlignIconsToGrid:',alignIcon);
     this.autoAlign = alignIcon;
-    // if(!this.autoAlign){
-    //   this.gridSize = 0;
-    // }else{
-    //   this.gridSize = 90;
-    // }
+    if(this.autoAlign){
+      this.correctMisalignedIcons();
+    }
   }
 
   toggleAutoArrangeIcons(arrangeIcon:boolean):void{

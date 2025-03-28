@@ -71,7 +71,8 @@ img{
     background-color: transparent;
     border: 2px solid transparent;
     width: 90px;
-    height: 70px; 
+    height: 70px;
+    transition: transform 0.1s ease-in-out; 
 }
 
 .rename-textbox{
@@ -141,7 +142,7 @@ input::selection{
 .clone-container{
     width: fit-content;
     height: fit-content;
-    background-color: #ccc;
+    /* background-color: #ccc; */
     z-index:  3;
     position: absolute;
 }
