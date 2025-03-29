@@ -301,14 +301,19 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
  }
 
  poitionShortCutIconProperly():void{
-    for(let i = 0;  i < this.files.length; i++){
-      const figElmnt = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
-      const shortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
 
-      if(figElmnt && shortCutElmnt){
-        const figElmntRect = figElmnt.getBoundingClientRect();
-        shortCutElmnt.style.top = `${figElmntRect.top + 18}px`;
-        shortCutElmnt.style.left = `${figElmntRect.left + 20}px`;
+  // when i move an icon from it's original position, exclude the icon id 
+    for(let i = 0;  i < this.files.length; i++){
+
+      if(!this.movedBtnIds.includes(String(i))){
+        const figElmnt = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
+        const shortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
+  
+        if(figElmnt && shortCutElmnt){
+          const figElmntRect = figElmnt.getBoundingClientRect();
+          shortCutElmnt.style.top = `${figElmntRect.top + 18}px`;
+          shortCutElmnt.style.left = `${figElmntRect.left + 20}px`;
+        }
       }
     }
  }
@@ -557,11 +562,13 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }else if (!this.autoAlign && this.markedBtnIds.length >= 0){
       this.moveBtnIconsToNewPositionAlignOff(mPos);
     }
+   
+    this.poitionShortCutIconProperly();
 
     const cloneIcon = document.getElementById(elementId);
-    if(cloneIcon){        
+    if(cloneIcon) 
       cloneIcon.innerHTML = '';
-    }
+    
   }
 
   onDragStart(evt:DragEvent, i: number): void {
@@ -715,7 +722,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     this.markedBtnIds.forEach(id =>{
       const btnIconElmnt = document.getElementById(`filemngr_li${id}`) as HTMLElement;
       const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
-
+      this.movedBtnIds.push(id);
+      
       if(btnIconElmnt){
         // Calculate snap position
         const newX = (Math.round(mPos.x / columnWidth) * columnWidth);
