@@ -1,14 +1,18 @@
-# CheetahOs
+# CheetahOS
 
 ![alt text](CheetahOS.png)
+--
+![alt text](CheetahOS1.png)
 
 Building a Dektop environment in the web browser.
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.0.0.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.0.0^.
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+1.) Run `npm install` to fetch all the necessary libraries .
+2.) Run `npm run build` to re-generate the osdrive file system directory. (Optional Step)
+3.) Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
 ## Code scaffolding
 ## Build
