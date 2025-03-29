@@ -145,7 +145,12 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
 
     // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
     this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    this._systemNotificationServices.showDesktopNotify.subscribe(() => {
+      this.desktopIsActive()
+      setTimeout(() => {
+        this.poitionShortCutIconProperly();
+      }, 10);
+    });
   }
 
   ngOnInit():void{
