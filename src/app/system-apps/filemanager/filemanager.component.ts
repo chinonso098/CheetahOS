@@ -212,93 +212,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }, this.SECONDS_DELAY[1]);
   }
 
-  activateMultiSelect(evt:MouseEvent):void{
-    if(this.isMultiSelectEnabled){    
-      this.isMultiSelectActive = true;
-      this.multiSelectElmnt = document.getElementById('dskTopMultiSelectPane') as HTMLDivElement;
-      this.multiSelectStartingPosition = evt;
-    }
-  }
-
-  deActivateMultiSelect():void{ 
-    if(this.multiSelectElmnt){
-      this.setDivWithAndSize(this.multiSelectElmnt, 0, 0, 0, 0, false);
-    }
-
-    this.multiSelectElmnt = null;
-    this.multiSelectStartingPosition = null;
-    this.isMultiSelectActive = false;
-
-    const markedBtnCount = this.getCountOfAllTheMarkedButtons();
-    if(markedBtnCount === 0)
-      this.areMultipleIconsHighlighted = false;
-    else{
-      this.areMultipleIconsHighlighted = true;
-      this.getIDsOfAllTheMarkedButtons();
-    }
-
-  }
-
-  updateDivWithAndSize(evt:any):void{
-    if(this.multiSelectStartingPosition && this.multiSelectElmnt){
-      const startingXPoint = this.multiSelectStartingPosition.clientX;
-      const startingYPoint = this.multiSelectStartingPosition.clientY;
-
-      const currentXPoint = evt.clientX;
-      const currentYPoint = evt.clientY;
-
-      const startX = Math.min(startingXPoint, currentXPoint);
-      const startY = Math.min(startingYPoint, currentYPoint);
-      const divWidth = Math.abs(startingXPoint - currentXPoint);
-      const divHeight = Math.abs(startingYPoint - currentYPoint);
-
-      this.setDivWithAndSize(this.multiSelectElmnt, startX, startY, divWidth, divHeight, true);
-
-      // Call function to check and highlight selected items
-      this.highlightSelectedItems(startX, startY, divWidth, divHeight);
-    }
-  }
-
-  setDivWithAndSize(divElmnt:HTMLDivElement, initX:number, initY:number, width:number, height:number, isShow:boolean):void{
-
-    divElmnt.style.position = 'absolute';
-    divElmnt.style.transform =  `translate(${initX}px , ${initY}px)`;
-    divElmnt.style.height =  `${height}px`;
-    divElmnt.style.width =  `${width}px`;
-
-    divElmnt.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
-    divElmnt.style.backdropFilter = 'blur(5px)';
-    if(isShow){
-      divElmnt.style.zIndex = '2';
-      divElmnt.style.display =  'block';
-    }else{
-      divElmnt.style.zIndex = '0';
-      divElmnt.style.display =  'none';
-    }
-  }
-
-  highlightSelectedItems(initX: number, initY: number, width: number, height: number): void {
-    const selectionRect = {
-        left: initX,
-        top: initY,
-        right: initX + width,
-        bottom: initY + height
-    };
-
-    const btnIcons = document.querySelectorAll('.filemngr_btn');
-    btnIcons.forEach((btnIcon) => {
-        const btnIconRect = btnIcon.getBoundingClientRect();
-
-        // Check if the item is inside the selection area
-        if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
-            btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
-            btnIcon.classList.add('filemngr-multi-select-highlight'); 
-        } else {
-            btnIcon.classList.remove('filemngr-multi-select-highlight');
-            this.removeTransparentStyle(btnIcon.id);
-        }
-    });
- }
 
  poitionShortCutIconProperly():void{
 
@@ -318,37 +231,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     }
  }
 
- getCountOfAllTheMarkedButtons():number{
-   const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
-   return btnIcons.length;
- }
-
- getIDsOfAllTheMarkedButtons():void{
-  const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
-  btnIcons.forEach(btnIcon => {
-    const btnId = btnIcon.id.replace('iconBtn', Constants.EMPTY_STRING);
-    if(!this.markedBtnIds.includes(btnId))
-      this.markedBtnIds.push(btnId);
-  });
-  console.log('this.markedBtnIds:', this.markedBtnIds);
- }
-
- removeTransparentStyle(elmntId:string):void{
-  const btnIconsElmnt = document.getElementById(elmntId) as HTMLButtonElement;
-  if(btnIconsElmnt){
-    btnIconsElmnt.style.backgroundColor = '';
-    btnIconsElmnt.style.borderColor = '';
-  }
- }
-
- removeMarkFromBtn():void{
-  this.markedBtnIds.forEach(id =>{
-    const btnIcon = document.getElementById(`iconBtn${id}`);
-    if(btnIcon){
-      btnIcon.classList.remove('filemngr-multi-select-highlight');
-    }
-  })
- }
 
   runProcess(file:FileInfo):void{
 
@@ -474,8 +356,121 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     const path = this.selectedFile.getCurrentPath;
     this._menuService.storeData.next([path, action]);
   }
+
   pinIconToTaskBar():void{
     this._menuService.pinToTaskBar.next(this.selectedFile);
+  }
+
+  onMouseEnter(id:number):void{
+    if(!this.isMultiSelectActive){
+      this.isMultiSelectEnabled = false;
+
+      if(this.markedBtnIds.includes(String(id))){
+        this.setMultiSelectStyleOnBtn(id, true);
+      } else{
+        this.setBtnStyle(id, true);
+      }
+    }
+  }
+
+  onMouseLeave(id:number):void{
+    this.isMultiSelectEnabled = true;
+
+    if(!this.isMultiSelectActive){
+      if(id != this.selectedElementId){
+        if(this.markedBtnIds.includes(String(id))){
+          this.setMultiSelectStyleOnBtn(id, false);
+        } else{
+          this.removeBtnStyle(id);
+        }
+      }
+      else if((id == this.selectedElementId) && !this.isIconInFocusDueToPriorAction){
+        this.setBtnStyle(id,false);
+      }
+    }
+  }
+
+  btnStyleAndValuesReset():void{
+    this.isBtnClickEvt = false;
+    this.btnClickCnt = 0;
+    this.removeBtnStyle(this.selectedElementId);
+    this.removeBtnStyle(this.prevSelectedElementId);
+    this.selectedElementId = -1;
+    this.prevSelectedElementId = -1;
+    this.btnClickCnt = 0;
+    this.isIconInFocusDueToPriorAction = false;
+  }
+
+  removeBtnStyle(id:number):void{
+    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
+    if(btnElement){
+      btnElement.style.backgroundColor = 'transparent';
+      btnElement.style.borderColor = 'transparent'
+    }
+  }
+
+  setBtnStyle(id:number, isMouseHover:boolean):void{
+    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
+    if(btnElement){
+      btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+      btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
+
+      if(this.selectedElementId == id){
+        (isMouseHover)? btnElement.style.backgroundColor ='#607c9c' : 
+          btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+      }
+
+      if(!isMouseHover && this.isIconInFocusDueToPriorAction){
+        btnElement.style.backgroundColor = 'transparent';
+        btnElement.style.border = '2px solid white'
+      }
+    }
+  }
+
+  setMultiSelectStyleOnBtn(id:number,  isMouseHover:boolean):void{
+    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
+    if(btnElement){
+      if(!isMouseHover){
+        btnElement.style.backgroundColor = 'rgba(0, 150, 255, 0.3)';
+        btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
+      }else{
+        btnElement.style.backgroundColor = '#607c9c';
+        btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
+      }
+    }
+  }
+
+  getCountOfAllTheMarkedButtons():number{
+    const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
+    return btnIcons.length;
+  }
+ 
+  getIDsOfAllTheMarkedButtons():void{
+   const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
+   btnIcons.forEach(btnIcon => {
+     const btnId = btnIcon.id.replace('iconBtn', Constants.EMPTY_STRING);
+     if(!this.markedBtnIds.includes(btnId))
+       this.markedBtnIds.push(btnId);
+   });
+   console.log('this.markedBtnIds:', this.markedBtnIds);
+  }
+ 
+  removeTransparentStyle(elmntId:string):void{
+   const btnIconsElmnt = document.getElementById(elmntId) as HTMLButtonElement;
+   if(btnIconsElmnt){
+     btnIconsElmnt.style.backgroundColor = '';
+     btnIconsElmnt.style.borderColor = '';
+   }
+  }
+ 
+  removeClassAndStyleFromBtn():void{
+   this.markedBtnIds.forEach(id =>{
+     const btnIcon = document.getElementById(`iconBtn${id}`);
+     if(btnIcon){
+       btnIcon.classList.remove('filemngr-multi-select-highlight');
+     }
+     this.removeBtnStyle(Number(id));
+   })
   }
 
   doBtnClickThings(id:number):void{
@@ -530,7 +525,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         if(this.deskTopClickCounter >= 2){
           console.log('turn off - areMultipleIconsHighlighted-1')
           this.areMultipleIconsHighlighted = false;
-          this.removeMarkFromBtn();
+          this.removeClassAndStyleFromBtn();
           this.deskTopClickCounter = 0;
           this.markedBtnIds = [];
         }
@@ -541,6 +536,94 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         this.btnStyleAndValuesReset();
     }
   }
+
+  activateMultiSelect(evt:MouseEvent):void{
+    if(this.isMultiSelectEnabled){    
+      this.isMultiSelectActive = true;
+      this.multiSelectElmnt = document.getElementById('dskTopMultiSelectPane') as HTMLDivElement;
+      this.multiSelectStartingPosition = evt;
+    }
+  }
+
+  deActivateMultiSelect():void{ 
+    if(this.multiSelectElmnt){
+      this.setDivWithAndSize(this.multiSelectElmnt, 0, 0, 0, 0, false);
+    }
+
+    this.multiSelectElmnt = null;
+    this.multiSelectStartingPosition = null;
+    this.isMultiSelectActive = false;
+
+    const markedBtnCount = this.getCountOfAllTheMarkedButtons();
+    if(markedBtnCount === 0)
+      this.areMultipleIconsHighlighted = false;
+    else{
+      this.areMultipleIconsHighlighted = true;
+      this.getIDsOfAllTheMarkedButtons();
+    }
+  }
+
+  updateDivWithAndSize(evt:any):void{
+    if(this.multiSelectStartingPosition && this.multiSelectElmnt){
+      const startingXPoint = this.multiSelectStartingPosition.clientX;
+      const startingYPoint = this.multiSelectStartingPosition.clientY;
+
+      const currentXPoint = evt.clientX;
+      const currentYPoint = evt.clientY;
+
+      const startX = Math.min(startingXPoint, currentXPoint);
+      const startY = Math.min(startingYPoint, currentYPoint);
+      const divWidth = Math.abs(startingXPoint - currentXPoint);
+      const divHeight = Math.abs(startingYPoint - currentYPoint);
+
+      this.setDivWithAndSize(this.multiSelectElmnt, startX, startY, divWidth, divHeight, true);
+
+      // Call function to check and highlight selected items
+      this.highlightSelectedItems(startX, startY, divWidth, divHeight);
+    }
+  }
+
+  setDivWithAndSize(divElmnt:HTMLDivElement, initX:number, initY:number, width:number, height:number, isShow:boolean):void{
+
+    divElmnt.style.position = 'absolute';
+    divElmnt.style.transform =  `translate(${initX}px , ${initY}px)`;
+    divElmnt.style.height =  `${height}px`;
+    divElmnt.style.width =  `${width}px`;
+
+    divElmnt.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+    divElmnt.style.backdropFilter = 'blur(5px)';
+    if(isShow){
+      divElmnt.style.zIndex = '2';
+      divElmnt.style.display =  'block';
+    }else{
+      divElmnt.style.zIndex = '0';
+      divElmnt.style.display =  'none';
+    }
+  }
+
+  highlightSelectedItems(initX: number, initY: number, width: number, height: number): void {
+    const selectionRect = {
+        left: initX,
+        top: initY,
+        right: initX + width,
+        bottom: initY + height
+    };
+
+    const btnIcons = document.querySelectorAll('.filemngr_btn');
+    btnIcons.forEach((btnIcon) => {
+        const btnIconRect = btnIcon.getBoundingClientRect();
+
+        // Check if the item is inside the selection area
+        if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
+            btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
+            btnIcon.classList.add('filemngr-multi-select-highlight'); 
+        } else {
+            btnIcon.classList.remove('filemngr-multi-select-highlight');
+            this.removeTransparentStyle(btnIcon.id);
+        }
+    });
+ }
+
 
   onDragEnd(evt:DragEvent):void{
     console.log('event type:',evt.type);
@@ -702,7 +785,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
     const fileMngrOlElmnt = document.getElementById('filemngr_ol') as HTMLElement;
     const maxIconWidth = this.GRID_SIZE;
     const maxIconHeight = this.GRID_SIZE;
-    const offset = 5;
+    const offset = 7;
     
     if (!fileMngrOlElmnt) return;
   
@@ -723,7 +806,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       const btnIconElmnt = document.getElementById(`filemngr_li${id}`) as HTMLElement;
       const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
       this.movedBtnIds.push(id);
-      
+
       if(btnIconElmnt){
         // Calculate snap position
         const newX = (Math.round(mPos.x / columnWidth) * columnWidth);
@@ -750,22 +833,20 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   correctMisalignedIcons(): void {
- 
     const columnWidth = this.GRID_SIZE;
     const rowHeight = this.GRID_SIZE;
-    const offset = 5;
+    const offset = 7;
 
     this.movedBtnIds.forEach((id) => {
       const btnIcon = document.getElementById(`filemngr_li${id}`);
 
       if(btnIcon){
         const rect = btnIcon.getBoundingClientRect();
-        console.log('correctMisalignedIcons:',rect);
+        //console.log('correctMisalignedIcons:',rect);
 
         const correctedX = Math.round(rect.left / columnWidth) * columnWidth;
         const correctedY = (Math.round(rect.top / rowHeight) * rowHeight) + offset;
-
-        console.log(`New Position ->: X:${correctedX}, Y:${correctedY}`);
+        //console.log(`New Position ->: X:${correctedX}, Y:${correctedY}`);
 
         // Apply the transformation
         const btnIconElmnt = btnIcon as HTMLElement
@@ -775,72 +856,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         }
       }
     });
-  }
-
-
-  onMouseEnter(id:number):void{
-    if(!this.isMultiSelectActive || this.areMultipleIconsHighlighted){
-      this.isMultiSelectEnabled = false;
-      this.setBtnStyle(id, true);
-    }
-  }
-
-  onMouseLeave(id:number):void{
-    this.isMultiSelectEnabled = true;
-
-    if(!this.isMultiSelectActive || this.areMultipleIconsHighlighted ){
-      if(id != this.selectedElementId){
-        this.removeBtnStyle(id);
-      }
-      else if((id == this.selectedElementId) && !this.isIconInFocusDueToPriorAction){
-        this.setBtnStyle(id,false);
-      }
-    }
-  }
-
-  btnStyleAndValuesReset():void{
-    this.isBtnClickEvt = false;
-    this.btnClickCnt = 0;
-    this.removeBtnStyle(this.selectedElementId);
-    this.removeBtnStyle(this.prevSelectedElementId);
-    this.selectedElementId = -1;
-    this.prevSelectedElementId = -1;
-    this.btnClickCnt = 0;
-    this.isIconInFocusDueToPriorAction = false;
-  }
-
-  removeBtnStyle(id:number):void{
-    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
-    if(btnElement){
-      btnElement.style.backgroundColor = 'transparent';
-      btnElement.style.borderColor = 'transparent'
-    }
-  }
-
-  setBtnStyle(id:number, isMouseHover:boolean):void{
-    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
-    if(btnElement){
-      btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
-      btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
-
-      if(this.selectedElementId == id){
-        (isMouseHover)? btnElement.style.backgroundColor ='#607c9c' : 
-          btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
-      }
-
-      if(!isMouseHover && this.isIconInFocusDueToPriorAction){
-        btnElement.style.backgroundColor = 'transparent';
-        btnElement.style.border = '0.5px solid white'
-      }
-    }
-  }
-
-  setBtnStyleOnMultiSelect(id:number):void{
-    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
-    if(btnElement){
-      btnElement.style.backgroundColor = 'rgba(0, 150, 255, 0.3)';
-      btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
-    }
   }
 
   sortIcons(sortBy:string):void {

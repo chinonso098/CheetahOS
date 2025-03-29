@@ -149,7 +149,7 @@ input::selection{
 
 .filemngr-multi-select-highlight {
     background-color: rgba(0, 150, 255, 0.3);
-    border: 0.5px solid rgb(56, 56, 169);
+    border: 2px solid hsla(0,0%,50%,25%);
 }
 
 li, .filemngr_btn, figure {
