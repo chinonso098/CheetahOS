@@ -34,7 +34,7 @@ export class CheetahComponent implements BaseComponent, OnInit, OnDestroy{
   type = ComponentType.System;
   displayName = 'CheetahOS';
   name = 'cheetah';
-  version = 'Version: 3.03.18';
+  version = 'Version: 3.03.29';
   year = `\u00A9 ${new Date().getFullYear()}`;
 
   readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}about_cheetah.mp3`;

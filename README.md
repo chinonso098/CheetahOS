@@ -11,7 +11,11 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 ## Development server
 
 1.) Run `npm install` to fetch all the necessary libraries .
+
+
 2.) Run `npm run build` to re-generate the osdrive file system directory. (Optional Step)
+
+
 3.) Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
 ## Code scaffolding
