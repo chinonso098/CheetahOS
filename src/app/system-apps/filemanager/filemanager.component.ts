@@ -745,6 +745,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
  
     const columnWidth = this.GRID_SIZE;
     const rowHeight = this.GRID_SIZE;
+    const offset = 5;
 
     this.movedBtnIds.forEach((id) => {
       const btnIcon = document.getElementById(`filemngr_li${id}`);
@@ -754,7 +755,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
         console.log('correctMisalignedIcons:',rect);
 
         const correctedX = Math.round(rect.left / columnWidth) * columnWidth;
-        const correctedY = Math.round(rect.top / rowHeight) * rowHeight;
+        const correctedY = (Math.round(rect.top / rowHeight) * rowHeight) + offset;
 
         console.log(`New Position ->: X:${correctedX}, Y:${correctedY}`);
 
