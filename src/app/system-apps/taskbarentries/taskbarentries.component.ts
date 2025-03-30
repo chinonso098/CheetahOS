@@ -248,8 +248,12 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     const rect =  liElemnt.getBoundingClientRect();
     const data:unknown[] = [rect, appName, iconPath];
 
-    if(this._runningProcessService.isProcessRunning(appName))
+    if(this._runningProcessService.isProcessRunning(appName)){
+
+      //liElemnt.style.backgroundColor 
       this._windowServices.showProcessPreviewWindowNotify.next(data);
+    }
+
   }
 
   onMouseLeave():void{

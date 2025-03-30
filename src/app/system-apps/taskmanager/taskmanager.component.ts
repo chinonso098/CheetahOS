@@ -1025,16 +1025,17 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       -20 (taskmgr nav buttons)
       -3  (span)
       -19 (tskmgr tabs)
-      -1px (body border solid px)
+      -2 (empty div )
+      -1 (body border solid px)
       -40 (windows taskbar)
       */
-      const pixelToSubtract = 45 + 30 + 20 + 3 + 19 + 1 + 40;
+      const pixelToSubtract = 45 + 30 + 20 + 3 + 19 + 2 + 1 + 40;
       this.tskmgrTblCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelToSubtract}px`;
       this.tskmgrTblCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
 
 
       //when next you decide to focus on the Window min/max, use the chrome dev mode to see what container, 
-      // do not return to their original size on minize. The minimize for taskmanger is 95% there 
+      // do not return to their original size on minimize. The minimize functionality for the taskmanger, is 95% there 
 
       //avoid setting these manully
       // this.tskMgrTableHeaderCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;

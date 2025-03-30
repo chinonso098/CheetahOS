@@ -1,4 +1,4 @@
-ol{
+.taskBar-Entries-ol{
     height: 100%;
     left: 60px;
     position: absolute;
@@ -9,14 +9,20 @@ ol{
     transition: all 0.075s;
 }
 
-li{
+.taskBar-Entries-li{
     height: 100%;
     min-width: 0px;
     border-bottom: 2px solid hsl(207deg 100%  72% / 90%);
 }
 
-.li-inactive{
+.taskBar-Entries-li-inactive{
     height: 100%;
     min-width: 0px;
     border-bottom: 2px solid transparent;
+}
+
+.taskBar-multi-instance{
+    position: relative;
+    height: 41px;
+    width: 8px;
 }

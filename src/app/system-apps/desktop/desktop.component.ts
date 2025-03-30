@@ -297,7 +297,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const evtOriginator = this._runningProcessService.getEventOrginator();
 
     if(evtOriginator === Constants.EMPTY_STRING){
-      const menuHeight = 281; //this is not ideal.. menu height should be gotten dynmically
+      const menuHeight = 306; //this is not ideal.. menu height should be gotten dynmically
       const menuWidth = 210;
   
       this._menuService.hideContextMenus.next();
@@ -828,12 +828,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   onShowTaskBarContextMenu(evt:MouseEvent):void{
     const menuHeight = 116;
     const menuWidth = 203;
+    const taskBarHeight = 40;
     this.showTskBarCntxtMenu = true;
 
-    const axis = this.checkAndHandleMenuBounds(evt, menuHeight, menuWidth);
+    const axis = this.checkAndHandleMenuBounds(evt, menuHeight, menuWidth);    
     this.tskBarCntxtMenuStyle = {
       'position':'absolute',
-      'transform':`translate(${String(axis.xAxis + 2)}px, ${String(evt.y - menuHeight)}px)`,
+      'transform':`translate(${axis.xAxis + 2}px, ${evt.y - menuHeight - taskBarHeight }px)`,
       'z-index': 5,
     }
   }

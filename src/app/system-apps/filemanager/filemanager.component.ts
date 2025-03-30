@@ -408,8 +408,8 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   removeBtnStyle(id:number):void{
     const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
     if(btnElement){
-      btnElement.style.backgroundColor = 'transparent';
-      btnElement.style.borderColor = 'transparent'
+      btnElement.style.backgroundColor = '';
+      btnElement.style.borderColor = ''
     }
   }
 
@@ -425,7 +425,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
       }
 
       if(!isMouseHover && this.isIconInFocusDueToPriorAction){
-        btnElement.style.backgroundColor = 'transparent';
+        btnElement.style.backgroundColor = '';
         btnElement.style.border = '2px solid white'
       }
     }
@@ -457,14 +457,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
        this.markedBtnIds.push(btnId);
    });
    console.log('this.markedBtnIds:', this.markedBtnIds);
-  }
- 
-  removeTransparentStyle(elmntId:string):void{
-   const btnIconsElmnt = document.getElementById(elmntId) as HTMLButtonElement;
-   if(btnIconsElmnt){
-     btnIconsElmnt.style.backgroundColor = '';
-     btnIconsElmnt.style.borderColor = '';
-   }
   }
  
   removeClassAndStyleFromBtn():void{
@@ -623,16 +615,12 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
             btnIcon.classList.add('filemngr-multi-select-highlight'); 
         } else {
             btnIcon.classList.remove('filemngr-multi-select-highlight');
-            this.removeTransparentStyle(btnIcon.id);
         }
     });
  }
 
 
   onDragEnd(evt:DragEvent):void{
-    console.log('event type:',evt.type);
-    console.log('onDragEnd evt:',evt);
-
     // Get the cloneIcon container
     const elementId = 'filemngr_clone_cntnr';
     const mPos:mousePosition = {

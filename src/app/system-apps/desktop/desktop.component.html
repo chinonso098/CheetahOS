@@ -1,7 +1,7 @@
  <main class="main-desktop" id="vanta"  
     (contextmenu)="showDesktopContextMenu($event)" 
     (click)="hideContextMenu(name)"
-    (mousemove)="resetLockScreenTimeOut()"    #desktopContainer> 
+    (mousemove)="resetLockScreenTimeOut()"  #desktopContainer> 
 
     @if(showDesktopScreenShotPreview){
         <div [@slideStatusAnimation]="slideState" class="dsktp-screen-preview-container" >
