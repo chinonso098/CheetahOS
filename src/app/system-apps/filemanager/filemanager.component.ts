@@ -265,7 +265,6 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   }
 
   onTriggerRunProcess():void{
-    this._audioService.play(this.cheetahNavAudio);
     this.runProcess(this.selectedFile);
   }
 
@@ -935,6 +934,7 @@ export class FileManagerComponent implements BaseComponent, OnInit, AfterViewIni
   async refreshIcons():Promise<void>{
     this.isIconInFocusDueToPriorAction = false;
     await this.loadFilesInfoAsync();
+    setTimeout(() => this.poitionShortCutIconProperly(), 10);
   }
 
   async onDeleteFile():Promise<void>{

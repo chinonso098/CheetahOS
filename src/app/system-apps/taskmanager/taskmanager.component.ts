@@ -598,12 +598,14 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     return num;
   }
 
-  sumRowValues(processes:Process[]):void{
-    this.cpuUtil = Math.round(processes.reduce((n, {getCpuUsage}) => n + getCpuUsage, 0));
-    this.memUtil = Math.round(processes.reduce((n, {getMemoryUsage}) => n + getMemoryUsage, 0));
-    this.diskUtil = Math.round(processes.reduce((n, {getDiskUsage}) => n + getDiskUsage, 0));
-    this.networkUtil = Math.round(processes.reduce((n, {getNetworkUsage}) => n + getNetworkUsage, 0));
-    this.gpuUtil = Math.round(processes.reduce((n, {getGpuUsage}) => n + getGpuUsage, 0));
+  sumRowValues(processes: Process[]): void {
+    const clamp = (value: number) => Math.min(100, Math.round(value));
+  
+    this.cpuUtil = clamp(processes.reduce((n, { getCpuUsage }) => n + getCpuUsage, 0));
+    this.memUtil = clamp(processes.reduce((n, { getMemoryUsage }) => n + getMemoryUsage, 0));
+    this.diskUtil = clamp(processes.reduce((n, { getDiskUsage }) => n + getDiskUsage, 0));
+    this.networkUtil = clamp(processes.reduce((n, { getNetworkUsage }) => n + getNetworkUsage, 0));
+    this.gpuUtil = clamp(processes.reduce((n, { getGpuUsage }) => n + getGpuUsage, 0));
   }
 
 
@@ -961,10 +963,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     const maxHighUtil = 100;
     const veryHighUtil = 90;
     const lowUtil = 10;
+
     if(cellName == sortColoumn){
-      const divElmnt =  document.getElementById(`${cellName.toLowerCase()}Div-${this.processId}`) as HTMLElement;  
-      const divElmnt1 =  document.getElementById(`${cellName.toLowerCase()}Div1-${this.processId}`) as HTMLElement; 
-      const utilDivElmnt =  document.getElementById(`${cellName.toLowerCase()}UtilDiv-${this.processId}`) as HTMLElement; 
+      const divElmnt =  document.getElementById(`${cellName.toLowerCase()}Div-${this.processId}`) as HTMLDivElement;  
+      const divElmnt1 =  document.getElementById(`${cellName.toLowerCase()}Div1-${this.processId}`) as HTMLDivElement; 
+      const utilDivElmnt =  document.getElementById(`${cellName.toLowerCase()}UtilDiv-${this.processId}`) as HTMLDivElement; 
 
       if(cellValue < lowUtil){
         divElmnt.style.backgroundColor = '#d0ecfc';
@@ -982,9 +985,9 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
     } 
     else{
-      const divElmnt =  document.getElementById(`${cellName.toLowerCase()}Div-${this.processId}`) as HTMLElement;  
-      const divElmnt1 =  document.getElementById(`${cellName.toLowerCase()}Div1-${this.processId}`) as HTMLElement;  
-      const utilDivElmnt =  document.getElementById(`${cellName.toLowerCase()}UtilDiv-${this.processId}`) as HTMLElement; 
+      const divElmnt =  document.getElementById(`${cellName.toLowerCase()}Div-${this.processId}`) as HTMLDivElement;  
+      const divElmnt1 =  document.getElementById(`${cellName.toLowerCase()}Div1-${this.processId}`) as HTMLDivElement;  
+      const utilDivElmnt =  document.getElementById(`${cellName.toLowerCase()}UtilDiv-${this.processId}`) as HTMLDivElement; 
 
       if(divElmnt && divElmnt1 && utilDivElmnt){      
         if(cellValue < lowUtil){
