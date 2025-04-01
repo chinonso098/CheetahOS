@@ -42,6 +42,10 @@ export namespace Constants{
     export const SYSTEM_RESTART = 'Restart';
     export const SYSTEM_SHUT_DOWN = 'Shutdown';
 
+
+    export const MERGED_TASKBAR_ENTRIES = 'Merged Entries Icon';
+    export const DISTINCT_TASKBAR_ENTRIES = 'Distinct Entries Icon';
+
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
         '.png',

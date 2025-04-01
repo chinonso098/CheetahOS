@@ -1,5 +1,4 @@
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -23,19 +22,16 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   private _menuService:MenuService;
   private _windowServices:WindowService;
 
-
-  private _processListChangeSub!: Subscription;
-  private _addIconToTaskbarSub!: Subscription;
-  private _removeIconFromTaskbarSub!: Subscription;
-  private _openApplicationFromTaskbarSub!: Subscription;
-  private _closeApplicationsFromTaskbarSub!: Subscription;
-
   private prevOpenedProccesses:string[]= [];
   SECONDS_DELAY = 100;
   runningProcess:Process[] = [];
   pinToTaskBarList:FileInfo[] = [];
   selectedFile!:FileInfo
 
+  readonly mergedIcons = Constants.MERGED_TASKBAR_ENTRIES;
+  readonly distinctIcons = Constants.DISTINCT_TASKBAR_ENTRIES;
+
+  taskBarEntriesIconState = Constants.DISTINCT_TASKBAR_ENTRIES;
   pinned = "pinned";
   unPinned = "unPinned";
   
@@ -57,11 +53,12 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
-    this._processListChangeSub = this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess()});
-    this._addIconToTaskbarSub = this._menuService.pinToTaskBar.subscribe((p)=>{this.pinIconToTaskBarList(p)});
-    this._removeIconFromTaskbarSub = this._menuService.unPinFromTaskBar.subscribe((p)=>{this.unPinIconFromTaskBarList(p)});
-    this._openApplicationFromTaskbarSub = this._menuService.openApplicationFromTaskBar.subscribe((p)=>{this.openApplication(p)});
-    this._closeApplicationsFromTaskbarSub = this._menuService.closeApplicationFromTaskBar.subscribe((p) =>{this.closeApplication(p)});
+    this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess()});
+    this._menuService.pinToTaskBar.subscribe((p)=>{this.pinIconToTaskBarList(p)});
+    this._menuService.unPinFromTaskBar.subscribe((p)=>{this.unPinIconFromTaskBarList(p)});
+    this._menuService.openApplicationFromTaskBar.subscribe((p)=>{this.openApplication(p)});
+    this._menuService.closeApplicationFromTaskBar.subscribe((p) =>{this.closeApplication(p)});
+    this._menuService.mergeUnMergeTaskBarIcon.subscribe(() =>{this.switchTaskEntriesIcon()});
   }
   
   ngAfterViewInit(): void {
@@ -72,11 +69,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._processListChangeSub?.unsubscribe();
-    this._addIconToTaskbarSub?.unsubscribe();
-    this._removeIconFromTaskbarSub?.unsubscribe();
-    this._openApplicationFromTaskbarSub?.unsubscribe();
-    this._closeApplicationsFromTaskbarSub?.unsubscribe();
+    1
   }
 
   updateRunningProcess():void{
@@ -106,9 +99,25 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     this.updateRunningProcess();
   }
 
+  switchTaskEntriesIcon():void{
+
+    if(this.taskBarEntriesIconState === this.mergedIcons)
+        this.taskBarEntriesIconState = this.distinctIcons;
+    else
+      this.taskBarEntriesIconState = this.mergedIcons;
+
+    this.filterProcesses();
+  }
+
   filterProcesses():Process[]{
-    const uniqueProccesses = this.getUniqueProccess();
     const proccessesNotInPinToStart:Process[] = [];
+    let uniqueProccesses:Process[] = []
+    
+    if(this.taskBarEntriesIconState === this.mergedIcons)
+      uniqueProccesses = this.getUniqueProccessWithWindows();
+    else
+      uniqueProccesses = this.getProccessWithWindows();
+
 
     this.storeHistory(uniqueProccesses);
     /**
@@ -130,7 +139,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     return proccessesNotInPinToStart;
   }
 
-  getUniqueProccess():Process[]{
+  getUniqueProccessWithWindows():Process[]{
     const uniqueProccesses:Process[] = [];
     /**
      * filter first on processes that have windows
@@ -147,6 +156,14 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     return uniqueProccesses
   }
 
+  getProccessWithWindows():Process[]{
+    /**
+     * filter first on processes that have windows
+     * then select unique instance of process with same proccess name
+     */
+    return this._runningProcessService.getProcesses().filter(p => p.getHasWindow == true);
+  }
+
   storeHistory(arg:Process[]):void{
     arg.forEach(x =>{
       if(!this.prevOpenedProccesses.includes(x.getProcessName)){
@@ -156,7 +173,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   }
 
   changeProcessStateIdentifier():void{
-    const runningProcess = this.getUniqueProccess();
+    const runningProcess = this.getUniqueProccessWithWindows();
     this.prevOpenedProccesses.forEach(x =>{
       if(!runningProcess.some(i => i.getProcessName === x)){
         this.setIconState(x,false);

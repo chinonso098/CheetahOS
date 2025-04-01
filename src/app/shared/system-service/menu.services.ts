@@ -38,6 +38,11 @@ export class MenuService implements BaseService{
     closePropertiesView: Subject<number> = new Subject<number>();
     createDesktopShortcut: Subject<void> = new Subject<void>();
 
+    hideShowTaskBar: Subject<void> = new Subject<void>();
+    mergeUnMergeTaskBarIcon: Subject<void> = new Subject<void>();
+    tiggerTaskManager: Subject<void> = new Subject<void>();
+    showTheDesktop: Subject<void> = new Subject<void>();
+
     private _isPasteActive = false;
     private _path = 'NOPATH';
     private _actions = '';
