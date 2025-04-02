@@ -32,6 +32,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   readonly distinctIcons = Constants.DISTINCT_TASKBAR_ENTRIES;
 
   taskBarEntriesIconState = Constants.DISTINCT_TASKBAR_ENTRIES;
+  hideShowLabel = 'showLabel';
   pinned = "pinned";
   unPinned = "unPinned";
   
@@ -101,10 +102,14 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
 
   switchTaskEntriesIcon():void{
 
-    if(this.taskBarEntriesIconState === this.mergedIcons)
-        this.taskBarEntriesIconState = this.distinctIcons;
-    else
+    if(this.taskBarEntriesIconState === this.mergedIcons){
+      this.taskBarEntriesIconState = this.distinctIcons;
+      this.hideShowLabel = 'showLabel';
+    }else{
       this.taskBarEntriesIconState = this.mergedIcons;
+      this.hideShowLabel = 'hideLabel';
+    }
+
 
     this.filterProcesses();
   }

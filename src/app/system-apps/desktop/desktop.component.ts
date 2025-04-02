@@ -749,16 +749,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   mergeTaskBarButton():void{
     const menuOption:GeneralMenu = {icon:'', label: 'Unmerge taskbar Icon', action:this.unMergeTaskBarButton.bind(this)}
-    // raise show the destop evt
-
+    this._menuService.mergeUnMergeTaskBarIcon.next();
     this.taskBarContextMenuData[3] = menuOption;
   }
 
   unMergeTaskBarButton():void{
     const menuOption:GeneralMenu = {icon:'', label: 'Merge taskbar Icon', action: this.mergeTaskBarButton.bind(this)}
-
-    //raise evt
-
+    this._menuService.mergeUnMergeTaskBarIcon.next();
     this.taskBarContextMenuData[3] = menuOption;
   }
 

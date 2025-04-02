@@ -28,13 +28,14 @@ export class TaskBarEntryComponent implements OnInit {
   displayName = Constants.EMPTY_STRING;
 
   constructor( ){
-    this.taskBarEntryType = this.taskBarHideLabelEntryOption;
+    //this.taskBarEntryType = this.taskBarHideLabelEntryOption;
   }
 
   ngOnInit(): void {
     this.icon = this.taskBarIconImgUrl;
     this.name = this.taskBarIconName;
     this.processId = this.taskBarPid;
+    //this.taskBarEntryType = this.taskBarHideLabelEntryOption;
   }
 
   restoreOrMinizeWindow() {
