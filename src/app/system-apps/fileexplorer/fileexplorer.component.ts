@@ -120,7 +120,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   nextPathEntries:string[] = [];
   recentPathEntries:string[] = [];
   upPathEntries:string[] = ['/Users/Desktop'];
-  _directoryHops:string[] = ['This PC'];
+  _directoryTraversalList:string[] = ['This PC'];
   fileTreeHistory:string[] = [];
   SECONDS_DELAY:number[] = [100, 1500, 6000, 12000, 250];
   
@@ -270,7 +270,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this.directory = this._fileInfo.getCurrentPath;
         const fileName = (this._fileInfo.getFileName === Constants.EMPTY_STRING)? Constants.NEW_FOLDER : this._fileInfo.getFileName;
 
-        this.populateHopsList();
+        this.populateTraversalList();
         this.setNavPathIcon(fileName, this._fileInfo.getCurrentPath);
         this.storeAppState(this._fileInfo.getCurrentPath);
       }
@@ -576,7 +576,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       this._audioService.play(this.cheetahNavAudio);
-      this.populateHopsList();
+      this.populateTraversalList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFilesInfoAsync();
     }
@@ -659,7 +659,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       this._audioService.play(this.cheetahNavAudio);
-      this.populateHopsList();
+      this.populateTraversalList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFilesInfoAsync();
     }
@@ -718,7 +718,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       this._audioService.play(this.cheetahNavAudio);
-      this.populateHopsList();
+      this.populateTraversalList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFilesInfoAsync();
     }
@@ -1012,7 +1012,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this.recentPathEntries.push(this.directory);
       }
 
-      this.populateHopsList();
+      this.populateTraversalList();
       this.setNavPathIcon(file.getFileName, file.getCurrentPath);
       this.storeAppState(file.getCurrentPath);
   
@@ -1053,7 +1053,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.recentPathEntries.push(this.directory);
     }
 
-    this.populateHopsList();
+    this.populateTraversalList();
     this.setNavPathIcon(fileName, path);
     this.storeAppState(path);
 
@@ -1695,19 +1695,19 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  populateHopsList():void{
+  populateTraversalList():void{
     const tmpArray = this.directory.split(Constants.ROOT).filter(x => x !== Constants.EMPTY_STRING);
     if(tmpArray.length === 0){ tmpArray[0]= Constants.THISPC; }
     else{ tmpArray.unshift(Constants.THISPC); }
 
     if(this.directory.includes('/Users')){
-      this._directoryHops = tmpArray;
+      this._directoryTraversalList = tmpArray;
     }else{
       tmpArray[1] = Constants.OSDISK;
-      this._directoryHops = tmpArray;
+      this._directoryTraversalList = tmpArray;
     }
 
-    console.log('this._directoryHops:', this._directoryHops);
+    console.log('this._directoryTraversalList:', this._directoryTraversalList);
   }
 
   showInvalidCharsToolTip():void{

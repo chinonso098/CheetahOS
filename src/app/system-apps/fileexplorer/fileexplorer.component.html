@@ -204,13 +204,13 @@
     
                         <div class="nav-path-gen-main-container" id="pathIconBox-{{this.processId}}" >
                             <span class="span head-nav-path-gen-cntnr0"><figure class="figure-nav-path-gen-cntnr"><img class="img-nav-path-gen-cntnr" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/></figure> </span>
-                            <div class="nav-path-gen-container" *ngFor="let dirHops of _directoryHops let j = index">
+                            <div class="nav-path-gen-container" *ngFor="let dirTraversal of _directoryTraversalList let j = index">
                                 <span *ngIf="j > 0" class="span head-nav-path-gen-cntnr">
                                     <figure class="figure-nav-path-gen-cntnr">
                                         <img class="img-nav-path-gen-cntnr" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/>
                                     </figure> 
                                 </span>
-                                <span class="span mid-nav-path-gen-cntnr">{{dirHops}}</span>
+                                <span class="span mid-nav-path-gen-cntnr">{{dirTraversal}}</span>
                             </div>
                         </div>
     
