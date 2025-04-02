@@ -614,8 +614,8 @@ import { SystemNotificationService } from '../../system-service/system.notificat
       glassPane.style.width =  `${this.defaultWidthOnOpen}px`;
 
       glassPane.style.zIndex =  String(this.HIDDEN_Z_INDEX);
-      glassPane.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
-      glassPane.style.backdropFilter = 'blur(5px)';
+      glassPane.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+      glassPane.style.backdropFilter = 'blur(2px)';
       glassPane.style.display =  'none';
 
       // Append to the body

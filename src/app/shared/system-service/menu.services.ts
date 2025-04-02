@@ -39,7 +39,8 @@ export class MenuService implements BaseService{
     createDesktopShortcut: Subject<void> = new Subject<void>();
 
     hideShowTaskBar: Subject<void> = new Subject<void>();
-    mergeUnMergeTaskBarIcon: Subject<void> = new Subject<void>();
+    UnMergeTaskBarIcon: Subject<void> = new Subject<void>();
+    mergeTaskBarIcon: Subject<void> = new Subject<void>();
     tiggerTaskManager: Subject<void> = new Subject<void>();
     showTheDesktop: Subject<void> = new Subject<void>();
 
