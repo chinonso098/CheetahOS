@@ -4,7 +4,7 @@
     position: absolute;
     right:80px;
     display: flex;
-    column-gap: 6px; /*reduce column gap to like 4 px*/
+    column-gap: 3px; /*reduce column gap to like 4 px*/
     margin: 0 1px;
     transition: all 0.075s;
 }

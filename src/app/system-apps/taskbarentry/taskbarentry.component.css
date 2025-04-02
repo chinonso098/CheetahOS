@@ -5,6 +5,14 @@
     margin: 0 4px;
 }
 
+.taskBar-Entry-li-ext{
+    display: flex;
+    height: 100%;
+    min-width: 70px;
+    width: 130px;
+    margin: 0 4px;
+}
+
 .taskBar-Entry-figure{
     align-items: center;
     display: flex;

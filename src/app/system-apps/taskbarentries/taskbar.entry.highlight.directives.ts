@@ -8,7 +8,7 @@ export class TaskBarEntryHighlightDirective {
 
   constructor(private el: ElementRef) { }
 
-  backgroundColor = 'hsl(206deg 77% 70%/20%)';
+  backgroundColor = 'hsl(206deg 77% 50%/20%)';
 
   @HostListener('mouseenter') onMouseEnter() {
     this.highlight(this.backgroundColor);

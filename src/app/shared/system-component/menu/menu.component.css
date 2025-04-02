@@ -1,7 +1,14 @@
 
-.dm-vertical-menu, .dm-tskbar-vertical-menu, .dm-tskbar-cntxt-vertical-menu{
+.dm-vertical-menu, .dm-tskbar-vertical-menu{
     position: absolute;
     width: 205px;
+    box-shadow: 2px 2px rgba(0, 0, 0, 0.3);
+    border: 1px solid #9c9898;
+}
+
+.dm-tskbar-cntxt-vertical-menu{
+    position: absolute;
+    width: 210px;
     box-shadow: 2px 2px rgba(0, 0, 0, 0.3);
     border: 1px solid #9c9898;
 }

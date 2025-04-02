@@ -748,13 +748,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   mergeTaskBarButton():void{
-    const menuOption:GeneralMenu = {icon:'', label: 'Unmerge taskbar Icon', action:this.unMergeTaskBarButton.bind(this)}
+    const menuOption:GeneralMenu = {icon:'', label: 'Unmerge taskbar Icons', action:this.unMergeTaskBarButton.bind(this)}
     this._menuService.mergeUnMergeTaskBarIcon.next();
     this.taskBarContextMenuData[3] = menuOption;
   }
 
   unMergeTaskBarButton():void{
-    const menuOption:GeneralMenu = {icon:'', label: 'Merge taskbar Icon', action: this.mergeTaskBarButton.bind(this)}
+    const menuOption:GeneralMenu = {icon:'', label: 'Merge taskbar Icons', action: this.mergeTaskBarButton.bind(this)}
     this._menuService.mergeUnMergeTaskBarIcon.next();
     this.taskBarContextMenuData[3] = menuOption;
   }
@@ -796,7 +796,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         {icon:'', label: 'Show the desktop', action: this.showTheDesktop.bind(this)},
         {icon:'', label: 'Task Manager', action: this.openTaskManager.bind(this)},
         {icon:'', label: 'Hide the taskbar', action:this.hideTheTaskBar.bind(this)},
-        {icon:'', label: 'Merge taskbar Icon', action: this.mergeTaskBarButton.bind(this)}
+        {icon:'', label: 'Merge taskbar Icons', action: this.mergeTaskBarButton.bind(this)}
       ]
   }
 

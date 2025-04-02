@@ -29,12 +29,14 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   selectedFile!:FileInfo
 
   readonly mergedIcons = Constants.MERGED_TASKBAR_ENTRIES;
-  readonly distinctIcons = Constants.DISTINCT_TASKBAR_ENTRIES;
+  readonly unMergedIcons = Constants.DISTINCT_TASKBAR_ENTRIES;
 
   taskBarEntriesIconState = Constants.DISTINCT_TASKBAR_ENTRIES;
   hideShowLabel = 'showLabel';
   pinned = "pinned";
   unPinned = "unPinned";
+  windowInFocusPid = 0;
+  prevWindowInFocusPid = 0;
   
   hasWindow = false;
   icon =  `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -53,13 +55,34 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     this._windowServices = windowServices;
 
     this.processId = this._processIdService.getNewProcessId();
+
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess()});
+
     this._menuService.pinToTaskBar.subscribe((p)=>{this.pinIconToTaskBarList(p)});
     this._menuService.unPinFromTaskBar.subscribe((p)=>{this.unPinIconFromTaskBarList(p)});
     this._menuService.openApplicationFromTaskBar.subscribe((p)=>{this.openApplication(p)});
     this._menuService.closeApplicationFromTaskBar.subscribe((p) =>{this.closeApplication(p)});
     this._menuService.mergeUnMergeTaskBarIcon.subscribe(() =>{this.switchTaskEntriesIcon()});
+
+    this._windowServices.focusOnCurrentProcessWindowNotify.subscribe((p)=>{
+      this.prevWindowInFocusPid = this.windowInFocusPid;
+      this.windowInFocusPid = p;
+      setTimeout(() => {
+        this.highlightTaskbarIcon();
+      }, 100);
+    
+    })
+
+    this._windowServices.currentProcessInFocusNotify.subscribe((p) =>{
+      this.prevWindowInFocusPid = this.windowInFocusPid;
+      this.windowInFocusPid = p;
+
+      setTimeout(() => {
+        this.highlightTaskbarIcon();
+      }, 100);
+
+    });
   }
   
   ngAfterViewInit(): void {
@@ -103,7 +126,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   switchTaskEntriesIcon():void{
 
     if(this.taskBarEntriesIconState === this.mergedIcons){
-      this.taskBarEntriesIconState = this.distinctIcons;
+      this.taskBarEntriesIconState = this.unMergedIcons;
       this.hideShowLabel = 'showLabel';
     }else{
       this.taskBarEntriesIconState = this.mergedIcons;
@@ -264,22 +287,128 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     evt.preventDefault();
   }
 
-  onMouseEnter(appName:string, iconPath:string, caller:string):void{
+  onMouseEnter(appName:string, pid:number, iconPath:string, caller:string):void{
     const prefix = (caller === "pinned")? 'tskbar': 'tskbar-UnPinned';
-    const liElemnt = document.getElementById(`${prefix}-${appName}`) as HTMLElement;
-    const rect =  liElemnt.getBoundingClientRect();
-    const data:unknown[] = [rect, appName, iconPath];
+    //const liElemnt = document.getElementById(`${prefix}-${appName}`) as HTMLElement;
+    //const rect =  liElemnt.getBoundingClientRect();
 
-    if(this._runningProcessService.isProcessRunning(appName)){
+    const rect = this.highlightTaskbarIconOnMouseHover(prefix, appName, pid);
 
-      //liElemnt.style.backgroundColor 
-      this._windowServices.showProcessPreviewWindowNotify.next(data);
+    if(rect){
+      console.log(`onMouseEnter -- rect:${rect}`);
+      const data:unknown[] = [rect, appName, iconPath];
+      if(this._runningProcessService.isProcessRunning(appName)){
+        this._windowServices.showProcessPreviewWindowNotify.next(data);
+      }
     }
-
   }
 
   onMouseLeave():void{
     this._windowServices.hideProcessPreviewWindowNotify.next();
+    this.highlightTaskbarIcon();
+  }
+
+  highlightTaskbarIconOnMouseHover(prefix:string, appName:string, pid:number): DOMRect | null{
+
+    console.log(`highlightTaskbarIconOnMouseHover -- prefix:${prefix}, appName:${appName}, pid:${pid}`);
+
+    //const proccess = this._runningProcessService.getProcess(pid);
+    const proccessInFocus = this._runningProcessService.getProcess(this.windowInFocusPid);
+
+    let liElemnt:HTMLElement;
+    if(this.taskBarEntriesIconState === this.mergedIcons){
+      liElemnt = document.getElementById(`${prefix}-${appName}`) as HTMLElement;
+      if(liElemnt){
+        if(proccessInFocus.getProcessName === appName){
+          liElemnt.style.backgroundColor ='#607c9c'
+        }else{
+          liElemnt.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+        }
+      }
+
+      liElemnt.getBoundingClientRect()
+    }else if(this.taskBarEntriesIconState === this.unMergedIcons){ 
+      liElemnt = document.getElementById(`${prefix}-${appName}-${pid}`) as HTMLElement;
+      if(liElemnt){
+        if(proccessInFocus.getProcessId === pid){
+          liElemnt.style.backgroundColor ='#607c9c'
+        }else{
+          liElemnt.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+        }
+      }
+      liElemnt.getBoundingClientRect()
+    }
+
+    return null;
+  }
+
+  highlightTaskbarIcon():void{
+
+    if(this.prevWindowInFocusPid === this.windowInFocusPid) return;
+
+    this.removeHighlightFromTaskbarIcon();
+
+    const proccess = this._runningProcessService.getProcess(this.windowInFocusPid);
+    const tskbar = 'tskbar';
+    const tskbarUnPinned = 'tskbar-UnPinned';
+
+    let liElemnt:HTMLElement;
+  
+    if(proccess){
+      if(this.taskBarEntriesIconState === this.mergedIcons){
+        liElemnt = document.getElementById(`${tskbar}-${proccess.getProcessName}`) as HTMLElement;
+        if(liElemnt){
+          liElemnt.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+        }else{
+          liElemnt = document.getElementById(`${tskbarUnPinned}-${proccess.getProcessName}`) as HTMLElement;
+          if(liElemnt){
+            liElemnt.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+          }
+        }
+      }else if(this.taskBarEntriesIconState === this.unMergedIcons){ 
+        liElemnt = document.getElementById(`${tskbar}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
+        if(liElemnt){
+          liElemnt.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+        }else{
+          liElemnt = document.getElementById(`${tskbarUnPinned}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
+          if(liElemnt){
+            liElemnt.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+          }
+        }
+      }
+    }
+  }
+
+  removeHighlightFromTaskbarIcon():void{
+    const proccess = this._runningProcessService.getProcess(this.prevWindowInFocusPid);
+    const tskbar = 'tskbar';
+    const tskbarUnPinned = 'tskbar-UnPinned';
+
+    let liElemnt:HTMLElement;
+  
+    if(proccess){
+      if(this.taskBarEntriesIconState === this.mergedIcons){
+        liElemnt = document.getElementById(`${tskbar}-${proccess.getProcessName}`) as HTMLElement;
+        if(liElemnt){
+          liElemnt.style.backgroundColor = '';
+        }else{
+          liElemnt = document.getElementById(`${tskbarUnPinned}-${proccess.getProcessName}`) as HTMLElement;
+          if(liElemnt){
+            liElemnt.style.backgroundColor = '';
+          }
+        }
+      }else if(this.taskBarEntriesIconState === this.unMergedIcons){ 
+        liElemnt = document.getElementById(`${tskbar}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
+        if(liElemnt){
+          liElemnt.style.backgroundColor = '';
+        }else{
+          liElemnt = document.getElementById(`${tskbarUnPinned}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
+          if(liElemnt){
+            liElemnt.style.backgroundColor = '';
+          }
+        }
+      }
+    }
   }
 
   restoreOrMinizeWindow(processId:number){

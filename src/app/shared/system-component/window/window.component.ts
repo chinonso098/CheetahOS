@@ -441,6 +441,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
           const nextProc = this.getNextProcess();
           if(nextProc){
             this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
+            this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
           }
         }
       }
@@ -637,6 +638,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
         const nextProc = this.getNextProcess();
         if(nextProc){
           this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
+          this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
         }
       },this.SECONDS_DELAY) ;
     }
@@ -658,6 +660,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 
     setFocusOnWindowInit(pid:number):void{
       this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pid);
+      this._windowService.currentProcessInFocusNotify.next(pid);
 
       this.setHeaderActive(pid);
     }
