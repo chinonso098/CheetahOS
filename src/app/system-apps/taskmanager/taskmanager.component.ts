@@ -599,7 +599,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   sumRowValues(processes: Process[]): void {
-    const clamp = (value: number) => Math.min(100, Math.round(value));
+    const clamp = (value: number) => Math.min(99, Math.round(value));
   
     this.cpuUtil = clamp(processes.reduce((n, { getCpuUsage }) => n + getCpuUsage, 0));
     this.memUtil = clamp(processes.reduce((n, { getMemoryUsage }) => n + getMemoryUsage, 0));

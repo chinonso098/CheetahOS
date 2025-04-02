@@ -129,6 +129,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   readonly TEXT_EDITOR_APP ="texteditor";
   readonly CODE_EDITOR_APP ="codeeditor";
   readonly MARKDOWN_VIEWER_APP ="markdownviewer";
+  readonly TASK_MANAGER_APP ="taskmanager";
 
   waveBkgrnd:WAVE =  {el:'#vanta'}
   ringsBkgrnd:RINGS =  {el:'#vanta'}
@@ -645,6 +646,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.openApplication(this.MARKDOWN_VIEWER_APP);
   }
 
+  openTaskManager():void{
+    this.openApplication(this.TASK_MANAGER_APP);
+  }
+
   async onPaste():Promise<void>{
     const cntntPath = this._menuService.getPath();
     const action = this._menuService.getActions();
@@ -723,6 +728,41 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     return sortByMenu
   }
 
+  showTheDesktop():void{
+    const menuOption:GeneralMenu = {icon:'', label: 'Show open windows', action:this.showOpenWindows.bind(this)}
+    // raise show the destop evt
+
+    this.taskBarContextMenuData[0] = menuOption;
+  }
+
+  showOpenWindows():void{
+    const menuOption:GeneralMenu = {icon:'', label: 'Show the desktop', action: this.showTheDesktop.bind(this)}
+
+    //raise evt
+
+    this.taskBarContextMenuData[0] = menuOption;
+  }
+
+  hideTheTaskBar():void{
+    1
+  }
+
+  mergeTaskBarButton():void{
+    const menuOption:GeneralMenu = {icon:'', label: 'Unmerge taskbar Icon', action:this.unMergeTaskBarButton.bind(this)}
+    // raise show the destop evt
+
+    this.taskBarContextMenuData[3] = menuOption;
+  }
+
+  unMergeTaskBarButton():void{
+    const menuOption:GeneralMenu = {icon:'', label: 'Merge taskbar Icon', action: this.mergeTaskBarButton.bind(this)}
+
+    //raise evt
+
+    this.taskBarContextMenuData[3] = menuOption;
+  }
+
+
   buildNewMenu(): NestedMenuItem[]{
 
     const newFolder:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action: this.createFolder.bind(this),  variables:true , 
@@ -741,25 +781,25 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   getDesktopMenuData():void{
     this.deskTopMenu = [
-          {icon1:'',  icon2: `${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'View', nest:this.buildViewByMenu(), action: ()=>'', action1: this.shiftViewSubMenu.bind(this), emptyline:false},
-          {icon1:'',  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=>'', action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
-          {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:this.refresh.bind(this), action1: ()=> '', emptyline:true},
-          {icon1:'',  icon2:'', label: 'Paste', nest:[], action:this.onPaste.bind(this), action1: ()=> '', emptyline:false},
-          {icon1:`${Constants.IMAGE_BASE_PATH}terminal.png`, icon2:'', label:'Open in Terminal', nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
-          {icon1:`${Constants.IMAGE_BASE_PATH}camera.png`, icon2:'', label:'Screen Shot', nest:[], action: this.captureComponentImg.bind(this), action1: ()=> '', emptyline:false},
-          {icon1:'',  icon2:'', label:'Next Background', nest:[], action: this.nextBackground.bind(this), action1: ()=> '', emptyline:false},
-          {icon1:'',  icon2:'', label:'Previous Background', nest:[], action: this.previousBackground.bind(this), action1: ()=> '', emptyline:true},
-          {icon1:'',  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
-          {icon1:'',  icon2:'', label:'Many Thanks', nest:[], action: this.openMarkDownViewer.bind(this), action1: ()=> '', emptyline:false}
+        {icon1:'',  icon2: `${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'View', nest:this.buildViewByMenu(), action: ()=>'', action1: this.shiftViewSubMenu.bind(this), emptyline:false},
+        {icon1:'',  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=>'', action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
+        {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:this.refresh.bind(this), action1: ()=> '', emptyline:true},
+        {icon1:'',  icon2:'', label: 'Paste', nest:[], action:this.onPaste.bind(this), action1: ()=> '', emptyline:false},
+        {icon1:`${Constants.IMAGE_BASE_PATH}terminal.png`, icon2:'', label:'Open in Terminal', nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
+        {icon1:`${Constants.IMAGE_BASE_PATH}camera.png`, icon2:'', label:'Screen Shot', nest:[], action: this.captureComponentImg.bind(this), action1: ()=> '', emptyline:false},
+        {icon1:'',  icon2:'', label:'Next Background', nest:[], action: this.nextBackground.bind(this), action1: ()=> '', emptyline:false},
+        {icon1:'',  icon2:'', label:'Previous Background', nest:[], action: this.previousBackground.bind(this), action1: ()=> '', emptyline:true},
+        {icon1:'',  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
+        {icon1:'',  icon2:'', label:'Many Thanks', nest:[], action: this.openMarkDownViewer.bind(this), action1: ()=> '', emptyline:false}
       ]
   }
 
   getTaskBarContextData():void{
     this.taskBarContextMenuData = [
-          {icon:'', label: 'Show the desktop', action:()=> ''},
-          {icon:'', label: 'Task Manager', action:()=> ''},
-          {icon:'', label: 'Hide the taskbar', action:()=> ''},
-          {icon:'', label: 'Merge taskbar buttons', action:()=> ''}
+        {icon:'', label: 'Show the desktop', action: this.showTheDesktop.bind(this)},
+        {icon:'', label: 'Task Manager', action: this.openTaskManager.bind(this)},
+        {icon:'', label: 'Hide the taskbar', action:this.hideTheTaskBar.bind(this)},
+        {icon:'', label: 'Merge taskbar Icon', action: this.mergeTaskBarButton.bind(this)}
       ]
   }
 
@@ -805,13 +845,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(processCount == 0){
       this.tskBarAppIconMenuStyle = {
         'position':'absolute',
-        'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 68.5)}px)`,
+        'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 72)}px)`,
         'z-index': 5,
       }
     }else {
       this.tskBarAppIconMenuStyle = {
         'position':'absolute',
-        'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 97.5)}px)`,
+        'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 104)}px)`,
         'z-index': 5,
       }
     }
@@ -875,7 +915,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     rowZero.label = file.getOpensWith;
     this.taskBarAppIconMenuData[0] = rowZero;
 
-    if(processCount === 1){
+    if(processCount === 0){
+      if(this.taskBarAppIconMenuData.length === 3){
+        this.taskBarAppIconMenuData.pop()
+      }
+    }else if(processCount === 1){
       if(this.taskBarAppIconMenuData.length === 2){
         const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}x_32.png`, label: 'Close window', action:this.closeApplicationFromTaskBar.bind(this)};
         this.taskBarAppIconMenuData.push(menuEntry);
@@ -884,7 +928,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         rowTwo.label = 'Close window';
         this.taskBarAppIconMenuData[2] = rowTwo;
       }
-    }else if(processCount > 1){
+    }else{
       const rowTwo = this.taskBarAppIconMenuData[2];
       if(!rowTwo){
         const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}x_32.png`, label: 'Close all windows', action:this.closeApplicationFromTaskBar.bind(this)};
