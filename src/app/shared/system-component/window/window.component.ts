@@ -136,6 +136,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 
       this.windowOpenCloseAction = 'open';
       this.uniqueId = `${this.name}-${this.processId}`;
+      this._runningProcessService.newProcessNotify.next(this.uniqueId);
       setTimeout(() => {
         this.stackWindow(); 
         this.setFocusOnWindowInit(this.processId)

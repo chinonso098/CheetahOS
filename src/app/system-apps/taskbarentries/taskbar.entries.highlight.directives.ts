@@ -15,7 +15,7 @@ export class TaskBarEntryHighlightDirective {
   }
 
   @HostListener('mouseleave') onMouseLeave() {
-    this.highlight('transparent'); 
+    this.highlight(''); 
   }
 
   private highlight(color: string){

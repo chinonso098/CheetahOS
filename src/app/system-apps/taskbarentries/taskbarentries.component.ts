@@ -8,6 +8,7 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { IconAppCurrentState, IconAppState, TaskBarFileInfo } from './taskbar.entries.type';
 
 @Component({
   selector: 'cos-taskbarentries',
@@ -25,16 +26,20 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   private prevOpenedProccesses:string[]= [];
   SECONDS_DELAY = 100;
   runningProcess:Process[] = [];
-  pinToTaskBarList:FileInfo[] = [];
+  pinToTaskBarList:TaskBarFileInfo[] = [];
+  //pinnedAppIconState:IconAppState[] = []
   selectedFile!:FileInfo
 
   readonly mergedIcons = Constants.MERGED_TASKBAR_ENTRIES;
   readonly unMergedIcons = Constants.DISTINCT_TASKBAR_ENTRIES;
 
   taskBarEntriesIconState = Constants.DISTINCT_TASKBAR_ENTRIES;
-  hideShowLabel = 'showLabel';
-  pinned = "pinned";
-  unPinned = "unPinned";
+  readonly hideLabel = 'hideLabel';
+  readonly showLabel = 'showLabel';
+  hideShowLabelState = 'showLabel';
+
+  readonly pinned = "pinned";
+  readonly unPinned = "unPinned";
   windowInFocusPid = 0;
   prevWindowInFocusPid = 0;
   
@@ -45,6 +50,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   type = ComponentType.System;
   displayName = '';
   appProcessId = 0;
+  newUniqueId = Constants.EMPTY_STRING;
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService,
               triggerProcessService:TriggerProcessService, windowServices:WindowService) { 
@@ -58,6 +64,13 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
 
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess()});
+    this._runningProcessService.newProcessNotify.subscribe((p) =>{
+
+      console.log('newUniqueId:', p)
+      
+      this.newUniqueId = p});
+
+    this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.IAmNotSureAboutMethodName(p)});
 
     this._menuService.pinToTaskBar.subscribe((p)=>{this.pinIconToTaskBarList(p)});
     this._menuService.unPinFromTaskBar.subscribe((p)=>{this.unPinIconFromTaskBarList(p)});
@@ -102,17 +115,58 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     },this.SECONDS_DELAY) 
   }
 
-  pinIconToTaskBarList(file:FileInfo):void{
-    if(!this.pinToTaskBarList.some(x => x.getOpensWith === file.getOpensWith))
-        this.pinToTaskBarList.push(file);
+  IAmNotSureAboutMethodName(process:Process):void{
+    if(this.taskBarEntriesIconState === this.unMergedIcons){
 
+      // const tmpFile:FileInfo = new FileInfo();
+      // tmpFile.setFileName = process.getProcessName;
+      // tmpFile.setOpensWith = process.getProcessName;
+
+      const uid = `${process.getProcessName}-${process.getProcessId}`;
+      console.log('uid:', uid);
+      this.updateTaskBarFileInfoInPinnedTaskbarList_(uid);
+      //this.hideShowIconLabel(tmpFile);
+    }
+  }
+
+  pinIconToTaskBarList(file:FileInfo):void{
+    let tskbarFileInfo!:TaskBarFileInfo 
+    if(!this.pinToTaskBarList.some(x => x.opensWith === file.getOpensWith)){
+      tskbarFileInfo = this.getTaskBarFileInfo(file);
+
+      console.log('pinIconToTaskBarList-tskbarFileInfo:', tskbarFileInfo);
+      this.pinToTaskBarList.push(tskbarFileInfo);
+    }
+    else return
+
+    //this.hideShowIconLabel(tskbarFileInfo);
+    this.updateRunningProcess();
+  }
+
+  pinIconToTaskBarList_unique(file:FileInfo):void{
+    // if(!this.pinToTaskBarList.some(x => x.getOpensWith === file.getOpensWith))
+    //     this.pinToTaskBarList.push(file);
+
+    //this.hideShowIconLabel(file);
+    this.updateRunningProcess();
+  }
+
+  unPinIconFromTaskBarList_unique(file:FileInfo):void{
+    const deleteCount = 1;
+    // const procIndex = this.pinToTaskBarList.findIndex((pin) => {
+    //     return pin.getOpensWith === file.getOpensWith;
+    //   });
+
+    // if(procIndex != -1){
+    //     this.pinToTaskBarList.splice(procIndex, deleteCount)
+    // }
     this.updateRunningProcess();
   }
 
   unPinIconFromTaskBarList(file:FileInfo):void{
     const deleteCount = 1;
     const procIndex = this.pinToTaskBarList.findIndex((pin) => {
-        return pin.getOpensWith === file.getOpensWith;
+        return pin.opensWith === file.getOpensWith;
       });
 
     if(procIndex != -1){
@@ -125,25 +179,20 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     this.taskBarEntriesIconState  = iconState;
 
     if(this.taskBarEntriesIconState === this.mergedIcons){
-      this.hideShowLabel = 'showLabel';
+      this.hideShowLabelState = this.showLabel;
     }else{
-      this.hideShowLabel = 'hideLabel';
+      this.hideShowLabelState = this.hideLabel;
     }
 
     this.filterProcesses();
   }
 
-  filterProcesses():Process[]{
+  filterProcesses_unique():Process[]{
     const proccessesNotInPinToStart:Process[] = [];
-    let uniqueProccesses:Process[] = []
+    const uniqueProccesses = this.getUniqueProccessWithWindows();
     
-    if(this.taskBarEntriesIconState === this.mergedIcons)
-      uniqueProccesses = this.getUniqueProccessWithWindows();
-    else{
-      uniqueProccesses = this.getProccessWithWindows();
-      this.storeHistory(uniqueProccesses);
-    }
 
+    this.storeHistory(uniqueProccesses);
     /**
      * i have 2 lists of varying lengths
      * list one can have duplicates of the same object, but list 2 only has unique objects
@@ -151,17 +200,18 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
      * setIconToActive
      * else, put object in a different list
      */
-    uniqueProccesses.forEach(x =>{
-      if(this.pinToTaskBarList.some( i => i.getOpensWith === x.getProcessName)){
-        this.appProcessId = x.getProcessId;
-        this.setIconState(x.getProcessName,true);
-      }else{
-        proccessesNotInPinToStart.push(x);
-      }
-    });
+    // uniqueProccesses.forEach(x =>{
+    //   if(this.pinToTaskBarList.some( i => i.getOpensWith === x.getProcessName)){
+    //     this.appProcessId = x.getProcessId;
+    //     this.setIconState(x.getProcessName,true);
+    //   }else{
+    //     proccessesNotInPinToStart.push(x);
+    //   }
+    // });
   
     return proccessesNotInPinToStart;
   }
+
 
   getUniqueProccessWithWindows():Process[]{
     const uniqueProccesses:Process[] = [];
@@ -180,12 +230,54 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     return uniqueProccesses
   }
 
+  filterProcesses():Process[]{
+    const proccessesNotInPinToStart:Process[] = [];
+    const proccesses = this.getProccessWithWindows()
+
+
+    this.storeHistory(proccesses);
+
+    /**
+     * i have 2 lists of varying lengths
+     * list one can have duplicates of the same object, but list 2 only has unique objects
+     * compare both lists, if object.name from list1 equal to object.name from list 2
+     * setIconToActive
+     * else, put object in a different list
+     */
+    proccesses.forEach(x =>{
+      if(this.pinToTaskBarList.some( i => i.opensWith === x.getProcessName)){
+        this.appProcessId = x.getProcessId;
+        this.setIconState(x.getProcessName,true);
+      }else{
+        proccessesNotInPinToStart.push(x);
+      }
+    });
+  
+    return proccessesNotInPinToStart;
+  }
+
   getProccessWithWindows():Process[]{
     /**
      * filter first on processes that have windows
      * then select unique instance of process with same proccess name
      */
     return this._runningProcessService.getProcesses().filter(p => p.getHasWindow == true);
+  }
+
+  getTaskBarFileInfo(file:FileInfo):TaskBarFileInfo{
+    const currentState = this.getIconAppCurrentState(file);
+
+    const taskBarFileInfo:TaskBarFileInfo = {
+      uid:`${file.getOpensWith}-0`,
+      pid:0,
+      opensWith:file.getOpensWith,
+      iconPath:file.getIconPath,
+      appName: file.getFileName,
+      showLabel:currentState.showLabel,
+      isRunning:currentState.isRunning,
+    }
+
+    return taskBarFileInfo;
   }
 
   storeHistory(arg:Process[]):void{
@@ -196,8 +288,20 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  changeProcessStateIdentifier():void{
+  changeProcessStateIdentifier_unique():void{
     const runningProcess = this.getUniqueProccessWithWindows();
+    this.prevOpenedProccesses.forEach(x =>{
+      if(!runningProcess.some(i => i.getProcessName === x)){
+        this.setIconState(x,false);
+      }else{
+        this.setIconState(x,true);
+      }
+    });
+  }
+
+
+  changeProcessStateIdentifier():void{
+    const runningProcess = this.getProccessWithWindows();
     this.prevOpenedProccesses.forEach(x =>{
       if(!runningProcess.some(i => i.getProcessName === x)){
         this.setIconState(x,false);
@@ -213,18 +317,106 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
       if(isActive)
         liElemnt.style.borderBottomColor = 'hsl(207deg 100%  72% / 90%)';
       else
-      liElemnt.style.borderBottomColor = 'transparent';
+      liElemnt.style.borderBottomColor = '';
     }
   }
 
-  onPinnedAppIconClick(file:FileInfo):void{
+  getIconAppCurrentState(file:FileInfo):IconAppCurrentState{
+
+    //check if an instance of this apps is running
+    const isRunning = this._runningProcessService.getProcesses()
+      .some( p=> p.getProcessName === file.getOpensWith);
+
+    let hideShowLabelState = Constants.EMPTY_STRING;
+
+    if((this.taskBarEntriesIconState === this.unMergedIcons) && !isRunning){
+      hideShowLabelState = this.hideLabel;
+    }else if((this.taskBarEntriesIconState === this.unMergedIcons) && isRunning){
+      hideShowLabelState = this.showLabel;
+    }else  if((this.taskBarEntriesIconState === this.mergedIcons) && !isRunning){
+      hideShowLabelState = this.hideLabel;
+    }else if((this.taskBarEntriesIconState === this.mergedIcons) && isRunning){
+      hideShowLabelState = this.hideLabel;
+    }
+
+    return {isRunning:isRunning, showLabel:hideShowLabelState}
+  }
+
+  updateTaskBarFileInfoInPinnedTaskbarList(file:TaskBarFileInfo):void{
+    const tmpUid = `${file.opensWith}-0`;
+    const idx = this.pinToTaskBarList.findIndex(x => x.uid === tmpUid);
+    const pinned = this.pinToTaskBarList[idx];
+
+    if(pinned){
+      //check if an instance of this apps is running
+      const isRunning = this._runningProcessService.getProcesses()
+        .some( p=> p.getProcessName === file.opensWith);
+
+      const pid = this.newUniqueId.split(Constants.DASH)[1];
+      pinned.uid = this.newUniqueId;
+      pinned.pid = Number(pid);
+      pinned.isRunning = isRunning;
+      pinned.showLabel = this.showLabel;
+
+      this.pinToTaskBarList[idx] = pinned;
+
+      console.log('pinned:', pinned);
+    }
+  }
+
+
+  updateTaskBarFileInfoInPinnedTaskbarList_(uid:string):void{
+
+    const appName = uid.split(Constants.DASH)[0];
+    const tmpUid = `${appName}-0`;
+    const idx = this.pinToTaskBarList.findIndex(x => x.uid === uid);
+    const pinned = this.pinToTaskBarList[idx];
+
+    if(pinned){
+      //check if an instance of this apps is running
+      const isRunning = this._runningProcessService.getProcesses()
+        .some( p=> p.getProcessName === appName);
+
+      pinned.uid = tmpUid;
+      pinned.pid = 0;
+      pinned.isRunning = isRunning;
+      pinned.showLabel = this.hideLabel;
+
+      this.pinToTaskBarList[idx] = pinned;
+
+      console.log('pinned:', pinned);
+    }
+  }
+
+  onPinnedAppIconClick_unique(file:FileInfo):void{
     // check if the give app is running
     // if it isn't running, then trigger it
     if(!this._runningProcessService.isProcessRunning(file.getOpensWith)){
       this._triggerProcessService.startApplication(file);
+      //this.hideShowIconLabel(file);
       return;
     }else{
       const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.getOpensWith);
+      this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process[0].getProcessId);
+    }
+  }
+
+  onPinnedAppIconClick(file:TaskBarFileInfo):void{
+    // check if the give app is running
+    // if it isn't running, then trigger it
+    if(!this._runningProcessService.isProcessRunning(file.opensWith)){
+      const tmpFile:FileInfo = new FileInfo();
+      tmpFile.setOpensWith = file.opensWith;
+
+      this._triggerProcessService.startApplication(tmpFile);
+
+      setTimeout(() => {
+        this.updateTaskBarFileInfoInPinnedTaskbarList(file);
+      }, 10);
+
+
+    }else{
+      const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.opensWith);
       this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process[0].getProcessId);
     }
   }
@@ -247,11 +439,11 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     this._windowServices.cleanUp(falseUid);
   }
 
-  onShowIconContextMenu(evt:MouseEvent, file:FileInfo):void{
+  onShowIconContextMenu(evt:MouseEvent, file:TaskBarFileInfo):void{
     /* My hand was forced, I had to let the desktop display the taskbar context menu.
      * This is due to the fact that the taskbar has a max height of 40px, which is not enough room to display the context menu
      */
-    const liElemnt = document.getElementById(`tskbar-${file.getOpensWith}`) as HTMLElement;
+    const liElemnt = document.getElementById(`tskbar-${file.opensWith}`) as HTMLElement;
     if(liElemnt){
       const rect =  liElemnt.getBoundingClientRect();
       const isPinned = true;
@@ -321,9 +513,9 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
         }else{
           liElemnt.style.backgroundColor = 'hsl(206deg 77% 40%/20%)';
         }
-      }
 
-      return liElemnt.getBoundingClientRect();
+        return liElemnt?.getBoundingClientRect();
+      }
     }else if(this.taskBarEntriesIconState === this.unMergedIcons){ 
       liElemnt = document.getElementById(`${prefix}-${appName}-${pid}`) as HTMLElement;
       if(liElemnt){
@@ -332,9 +524,9 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
         }else{
           liElemnt.style.backgroundColor = 'hsl(206deg 77% 40%/20%)';
         }
-      }
 
-      return liElemnt.getBoundingClientRect();
+        return liElemnt.getBoundingClientRect();
+      }
     }
 
     return null;

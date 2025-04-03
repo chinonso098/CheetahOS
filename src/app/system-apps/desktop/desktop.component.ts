@@ -828,30 +828,30 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   onShowTaskBarAppIconMenu(data:unknown[]):void{
     const rect = data[0] as DOMRect;
-    const file = data[1] as FileInfo;
-    const isPinned = data[2] as boolean;
-    this.selectedFileFromTaskBar = file;
+    // const file = data[1] as FileInfo; //This should be TaskBarFileInfo. for when you get to this
+    // const isPinned = data[2] as boolean;
+    // this.selectedFileFromTaskBar = file;
 
-    this.switchBetweenPinAndUnpin(isPinned);
-    // first count, then show the cntxt menu
-    const processCount = this.countInstaceAndSetMenu();
+    // this.switchBetweenPinAndUnpin(isPinned);
+    // // first count, then show the cntxt menu
+    // const processCount = this.countInstaceAndSetMenu();
 
-    this.removeOldTaskBarPreviewWindowNow();
-    this.showTskBarAppIconMenu = true;
+    // this.removeOldTaskBarPreviewWindowNow();
+    // this.showTskBarAppIconMenu = true;
 
-    if(processCount == 0){
-      this.tskBarAppIconMenuStyle = {
-        'position':'absolute',
-        'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 72)}px)`,
-        'z-index': 5,
-      }
-    }else {
-      this.tskBarAppIconMenuStyle = {
-        'position':'absolute',
-        'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 104)}px)`,
-        'z-index': 5,
-      }
-    }
+    // if(processCount == 0){
+    //   this.tskBarAppIconMenuStyle = {
+    //     'position':'absolute',
+    //     'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 72)}px)`,
+    //     'z-index': 5,
+    //   }
+    // }else {
+    //   this.tskBarAppIconMenuStyle = {
+    //     'position':'absolute',
+    //     'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 104)}px)`,
+    //     'z-index': 5,
+    //   }
+    // }
   }
 
   hideTaskBarAppIconMenu():void{

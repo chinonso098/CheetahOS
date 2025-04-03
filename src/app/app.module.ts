@@ -47,7 +47,7 @@ import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
 
 import { HighlightDirective } from './shared/system-component/window/window.btn.highlight.directives';
-import { TaskBarEntryHighlightDirective } from './system-apps/taskbarentries/taskbar.entry.highlight.directives';
+import { TaskBarEntryHighlightDirective } from './system-apps/taskbarentries/taskbar.entries.highlight.directives';
 import { LongPressDirective } from './system-apps/audioplayer/long.press.directive';
 import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.column-resize.directive';
 import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.capture.directive';

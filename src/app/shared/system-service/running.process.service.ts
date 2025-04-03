@@ -23,8 +23,10 @@ export class RunningProcessService implements BaseService{
      * Calling this on a process without one, will throw an error
      */
     closeProcessNotify: Subject<Process> = new Subject<Process>();
+    newProcessNotify: Subject<string> = new Subject<string>(); 
     changeProcessContentNotify:Subject<void> = new Subject<void>();
     processListChangeNotify: Subject<void> = new Subject<void>();
+    
     name = 'rning_proc_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
     /**
