@@ -31,10 +31,12 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
 
   readonly mergedIcons = Constants.MERGED_TASKBAR_ENTRIES;
   readonly unMergedIcons = Constants.DISTINCT_TASKBAR_ENTRIES;
-  taskBarEntriesIconState = Constants.MERGED_TASKBAR_ENTRIES;
+ 
   readonly hideLabel = 'hideLabel';
   readonly showLabel = 'showLabel';
-  hideShowLabelState = 'hideLabel';
+
+  taskBarEntriesIconState = this.unMergedIcons;
+  hideShowLabelState = this.showLabel;
 
   readonly pinned = "pinned";
   readonly unPinned = "unPinned";
@@ -68,8 +70,8 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     this._menuService.unPinFromTaskBar.subscribe((p)=>{this.onUnPinIconFromTaskBarList(p)});
     this._menuService.openApplicationFromTaskBar.subscribe((p)=>{this.openApplication(p)});
     this._menuService.closeApplicationFromTaskBar.subscribe((p) =>{this.closeApplication(p)});
-    this._menuService.UnMergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.mergedIcons)});
-    this._menuService.mergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.unMergedIcons)});
+    this._menuService.UnMergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.unMergedIcons)});
+    this._menuService.mergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.mergedIcons)});
 
     this._windowServices.focusOnCurrentProcessWindowNotify.subscribe((p)=>{
       this.prevWindowInFocusPid = this.windowInFocusPid;
@@ -146,7 +148,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
       this.hideShowLabelState = this.hideLabel;
     }
 
-    this.filterProcesses();
+    this.updateRunningProcess();
   }
 
   filterProcesses():Process[]{
