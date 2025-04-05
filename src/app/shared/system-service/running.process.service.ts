@@ -127,8 +127,13 @@ export class RunningProcessService implements BaseService{
         return this._runningServices;
     }
 
-    processCount():number{
+    getProcessesCount():number{
         return this._runningProcesses.length;
+    }
+
+    getProcessCount(processName:string):number{
+        const processList = this._runningProcesses.filter(process =>  process.getProcessName === processName);
+        return processList.length;
     }
 
 

@@ -10,8 +10,8 @@
           </li>
      
      
-          <li class="taskBar-Entries-li" taskBarEntryHighlight *ngFor="let rProcess of runningProcess" id="tskbar-UnPinned-{{rProcess.getProcessName}}" (mouseenter)="onMouseEnter(rProcess.getProcessName, rProcess.getProcessId, rProcess.getIcon, unPinned)" (mouseleave)="onMouseLeave()" (contextmenu)="onShowUnPinnedIconContextMenu($event, rProcess)">
-               <cos-taskbarentry [taskBarPid]="rProcess.getProcessId" [taskBarIconImgUrl]="rProcess.getIcon"  [taskBarIconName]="rProcess.getProcessName" (restoreOrMinizeWindowEvent)="restoreOrMinizeWindow($event)" [taskBarEntryType]="hideShowLabelState"> </cos-taskbarentry> 
+          <li class="taskBar-Entries-li" taskBarEntryHighlight *ngFor="let activeProcess of activeProcesses" id="tskbar-UnPinned-{{activeProcess.getProcessName}}" (mouseenter)="onMouseEnter(activeProcess.getProcessName, activeProcess.getProcessId, activeProcess.getIcon, unPinned)" (mouseleave)="onMouseLeave()" (contextmenu)="onShowUnPinnedIconContextMenu($event, activeProcess)">
+               <cos-taskbarentry [taskBarPid]="activeProcess.getProcessId" [taskBarIconImgUrl]="activeProcess.getIcon"  [taskBarIconName]="activeProcess.getProcessName" (restoreOrMinizeWindowEvent)="restoreOrMinizeWindow($event)" [taskBarEntryType]="hideShowLabelState"> </cos-taskbarentry> 
                <<div class="taskBar-multi-instance" id="multi-unpin-{{0}}"></div> 
           </li>
      </ol> -->
@@ -20,13 +20,13 @@
 
 <ng-template #unMergedTskBarIcons>
      <ol class="taskBar-Entries-ol"> 
-          <li class="taskBar-Entries-li-inactive" taskBarEntryHighlight *ngFor="let pin of pinToTaskBarList;  let i = index" id="tskbar-{{pin.opensWith}}" (mouseenter)="onMouseEnter(pin.opensWith, 0, pin.iconPath, pinned)" (mouseleave)="onMouseLeave()" (click)="onPinnedAppIconClick(pin)" (contextmenu)="onShowIconContextMenu($event, pin)">
-               <cos-taskbarentry  [taskBarPid]="appProcessId" [taskBarIconImgUrl]="pin.iconPath"  [taskBarIconName]="pin.opensWith" [taskBarEntryType]="pin.showLabel"> </cos-taskbarentry> 
+          <li class="taskBar-Entries-li-inactive" taskBarEntryHighlight *ngFor="let pin of pinToTaskBarList;  let i = index" id="tskbar-{{pin.opensWith}}-{{pin.pid}}" (mouseenter)="onMouseEnter(pin.opensWith, pin.pid, pin.iconPath, pinned)" (mouseleave)="onMouseLeave()" (click)="onPinnedAppIconClick(pin)" (contextmenu)="onShowIconContextMenu($event, pin)">
+               <cos-taskbarentry  [taskBarPid]="pin.pid" [taskBarIconImgUrl]="pin.iconPath"  [taskBarIconName]="pin.opensWith" [taskBarEntryType]="pin.showLabel"> </cos-taskbarentry> 
           </li>
      
      
-          <li class="taskBar-Entries-li" taskBarEntryHighlight *ngFor="let rProcess of runningProcess" id="tskbar-UnPinned-{{rProcess.getProcessName}}-{{rProcess.getProcessId}}" (mouseenter)="onMouseEnter(rProcess.getProcessName, rProcess.getProcessId, rProcess.getIcon, unPinned)" (mouseleave)="onMouseLeave()" (contextmenu)="onShowUnPinnedIconContextMenu($event, rProcess)">
-               <cos-taskbarentry [taskBarPid]="rProcess.getProcessId" [taskBarIconImgUrl]="rProcess.getIcon"  [taskBarIconName]="rProcess.getProcessName" (restoreOrMinizeWindowEvent)="restoreOrMinizeWindow($event)" [taskBarEntryType]="hideShowLabelState"> </cos-taskbarentry> 
+          <li class="taskBar-Entries-li" taskBarEntryHighlight *ngFor="let activeProcess of activeProcesses" id="tskbar-UnPinned-{{activeProcess.getProcessName}}-{{activeProcess.getProcessId}}" (mouseenter)="onMouseEnter(activeProcess.getProcessName, activeProcess.getProcessId, activeProcess.getIcon, unPinned)" (mouseleave)="onMouseLeave()" (contextmenu)="onShowUnPinnedIconContextMenu($event, activeProcess)">
+               <cos-taskbarentry [taskBarPid]="activeProcess.getProcessId" [taskBarIconImgUrl]="activeProcess.getIcon"  [taskBarIconName]="activeProcess.getProcessName" (restoreOrMinizeWindowEvent)="restoreOrMinizeWindow($event)" [taskBarEntryType]="hideShowLabelState"> </cos-taskbarentry> 
           </li>
      </ol>
 </ng-template>
