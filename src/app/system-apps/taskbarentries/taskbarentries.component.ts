@@ -31,10 +31,10 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
 
   readonly mergedIcons = Constants.MERGED_TASKBAR_ENTRIES;
   readonly unMergedIcons = Constants.DISTINCT_TASKBAR_ENTRIES;
-  taskBarEntriesIconState = Constants.DISTINCT_TASKBAR_ENTRIES;
+  taskBarEntriesIconState = Constants.MERGED_TASKBAR_ENTRIES;
   readonly hideLabel = 'hideLabel';
   readonly showLabel = 'showLabel';
-  hideShowLabelState = 'showLabel';
+  hideShowLabelState = 'hideLabel';
 
   readonly pinned = "pinned";
   readonly unPinned = "unPinned";
@@ -240,7 +240,6 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
       }
     });
   }
-
 
   changeProcessStateIdentifier():void{
     const runningProcess = this.getProccessWithWindows();
