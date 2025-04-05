@@ -8,7 +8,7 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { IconAppCurrentState, IconAppState, TaskBarFileInfo } from './taskbar.entries.type';
+import { IconAppCurrentState, TaskBarFileInfo } from './taskbar.entries.type';
 
 @Component({
   selector: 'cos-taskbarentries',
@@ -27,12 +27,10 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   SECONDS_DELAY = 100;
   activeProcesses:Process[] = [];
   pinToTaskBarList:TaskBarFileInfo[] = [];
-  //pinnedAppIconState:IconAppState[] = []
   selectedFile!:FileInfo
 
   readonly mergedIcons = Constants.MERGED_TASKBAR_ENTRIES;
   readonly unMergedIcons = Constants.DISTINCT_TASKBAR_ENTRIES;
-
   taskBarEntriesIconState = Constants.DISTINCT_TASKBAR_ENTRIES;
   readonly hideLabel = 'hideLabel';
   readonly showLabel = 'showLabel';
@@ -70,8 +68,8 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     this._menuService.unPinFromTaskBar.subscribe((p)=>{this.onUnPinIconFromTaskBarList(p)});
     this._menuService.openApplicationFromTaskBar.subscribe((p)=>{this.openApplication(p)});
     this._menuService.closeApplicationFromTaskBar.subscribe((p) =>{this.closeApplication(p)});
-    this._menuService.UnMergeTaskBarIcon.subscribe(() =>{this.mergeUnMergeTaskEntriesIcon(this.mergedIcons)});
-    this._menuService.mergeTaskBarIcon.subscribe(() =>{this.mergeUnMergeTaskEntriesIcon(this.unMergedIcons)});
+    this._menuService.UnMergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.mergedIcons)});
+    this._menuService.mergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.unMergedIcons)});
 
     this._windowServices.focusOnCurrentProcessWindowNotify.subscribe((p)=>{
       this.prevWindowInFocusPid = this.windowInFocusPid;
@@ -112,7 +110,6 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   IAmNotSureAboutMethodName(process:Process):void{
     if(this.taskBarEntriesIconState === this.unMergedIcons){
       this.updatePinnedTaskbarAppIconOnClose(process);
-
     }
   }
 
@@ -126,7 +123,6 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     }
     else return
 
-    //this.hideShowIconLabel(tskbarFileInfo);
     this.updateRunningProcess();
   }
 
@@ -142,72 +138,100 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     this.updateRunningProcess();
   }
 
-  mergeUnMergeTaskEntriesIcon(iconState:string):void{
+  changeTaskBarEntriesIconState(iconState:string):void{
     this.taskBarEntriesIconState  = iconState;
-
-    if(this.taskBarEntriesIconState === this.mergedIcons){
+    if(this.taskBarEntriesIconState === this.unMergedIcons){
       this.hideShowLabelState = this.showLabel;
-    }else{
+    }else if(this.taskBarEntriesIconState === this.mergedIcons){
       this.hideShowLabelState = this.hideLabel;
     }
 
     this.filterProcesses();
   }
 
-
   filterProcesses():Process[]{
     const proccessesNotInPinToStart:Process[] = [];
-    const proccesses = this.getProccessWithWindows()
+    if(this.taskBarEntriesIconState === this.unMergedIcons){
+      const proccesses = this.getProccessWithWindows()
+      this.storeHistory(proccesses);
+      /**
+       * i have 2 lists of varying lengths
+       * list one can have duplicates of the same object, but list 2 only has unique objects
+       * 
+       * when taskBarEntriesIconState is set to unMerged
+       * 
+       * compare both lists if object.name from list1 (pinToTaskBarList) equal to object.name from list 2 (runningProcess)
+       * get instance count of a matched process
+       * if count === 1, then  setIconToActive in the pinToTaskBarList
+       * if count > 1, then every subsequent entry, will be added to proccessesNotInPinToStart, as a process(appName) can only exist
+       * in the pinToTaskBarList once.
+       * 
+       * else, put object in a different list(proccessesNotInPinToStart)
+      */
+      for(const x of proccesses){
+        const tskBarFile = this.pinToTaskBarList.find( i => i.opensWith === x.getProcessName);
+        if(tskBarFile){
+          const proccessInstaceCount = this._runningProcessService.getProcessCount(x.getProcessName)
+          if(proccessInstaceCount === 1){
+            this.updatePinnedTaskbarAppIconOnFirstInit(tskBarFile, x);
+            setTimeout(() => {this.setIconState(true, x.getProcessName, x.getProcessId);}, 5);
 
-    this.storeHistory(proccesses);
+          }else if(proccessInstaceCount > 1){
+            // add only procs that are not in the pinToTaskBarList to the proccessesNotInPinToStart
+            if(!this.pinToTaskBarList.find(t => t.opensWith === x.getProcessName && t.pid === x.getProcessId))
+              proccessesNotInPinToStart.push(x);
 
-
-    /**
-     * i have 2 lists of varying lengths
-     * list one can have duplicates of the same object, but list 2 only has unique objects
-     * 
-     * when taskBarEntriesIconState is set to unMerged
-     * 
-     * compare both lists if object.name from list1 (pinToTaskBarList) equal to object.name from list 2 (runningProcess)
-     * get instance count of a matched process
-     * if count === 1, then  setIconToActive in the pinToTaskBarList
-     * if count > 1, then every subsequent entry, will be added to proccessesNotInPinToStart, as a process(appName) can only exist
-     * in the pinToTaskBarList once.
-     * 
-     * else, put object in a different list(proccessesNotInPinToStart)
-     */
-    for(const x of proccesses){
-      const tskBarFile = this.pinToTaskBarList.find( i => i.opensWith === x.getProcessName);
-      if(tskBarFile){
-        const proccessInstaceCount = this._runningProcessService.getProcessCount(x.getProcessName)
-        if(proccessInstaceCount === 1){
-          this.updatePinnedTaskbarAppIconOnFirstInit(tskBarFile, x);
-          setTimeout(() => {this.setIconState(true, x.getProcessName, x.getProcessId);}, 5);
-
-        }else if(proccessInstaceCount > 1){
-          // add only procs that are not in the pinToTaskBarList to the proccessesNotInPinToStart
-          if(!this.pinToTaskBarList.find(t => t.opensWith === x.getProcessName && t.pid === x.getProcessId))
-            proccessesNotInPinToStart.push(x);
-
-          this.setIconState(true, x.getProcessName, x.getProcessId);
+            this.setIconState(true, x.getProcessName, x.getProcessId);
+          }
+        }else{
+          proccessesNotInPinToStart.push(x);
         }
-      }else{
-        proccessesNotInPinToStart.push(x);
       }
+    }else if(this.taskBarEntriesIconState === this.mergedIcons){
+      const uniqueProccesses = this.getUniqueProccessWithWindows();
+      this.storeHistory(uniqueProccesses);
+      /**
+       * i have 2 lists of varying lengths
+       * list one can have duplicates of the same object, but list 2 only has unique objects
+       * compare both lists, if object.name from list1 equal to object.name from list 2
+       * setIconToActive
+       * else, put object in a different list
+       */
+      uniqueProccesses.forEach(x =>{
+        if(this.pinToTaskBarList.some( i => i.opensWith === x.getProcessName)){
+          //this.appProcessId = x.getProcessId;
+          this.setIconState(true, x.getProcessName);
+        }else{
+          proccessesNotInPinToStart.push(x);
+        }
+      });
     }
-  
     return proccessesNotInPinToStart;
+  }
+
+  getUniqueProccessWithWindows():Process[]{
+    const uniqueProccesses:Process[] = [];
+    /**
+     * filter first on processes that have windows
+     * then select unique instance of process with same proccess name
+     */
+    this._runningProcessService.getProcesses()
+      .filter(p => p.getHasWindow == true)
+      .forEach(x =>{
+        if(!uniqueProccesses.some(a => a.getProcessName === x.getProcessName)){
+          uniqueProccesses.push(x)
+        }
+    });
+
+    return uniqueProccesses
   }
 
   getProccessWithWindows():Process[]{
     /**
      * filter first on processes that have windows
-     * then select unique instance of process with same proccess name
      */
     return this._runningProcessService.getProcesses().filter(p => p.getHasWindow == true);
   }
-
-
 
   storeHistory(arg:Process[]):void{
     arg.forEach(x =>{
@@ -229,14 +253,13 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
           this.setIconState(true, x);
         }
       });
-    }else{
+    }else if(this.taskBarEntriesIconState === this.unMergedIcons){
       this.prevOpenedProccesses.forEach(x =>{
         if(!runningProcess.some(i => i.getProcessName === x)){
           this.setIconState(false, x, 0);
         }
       });
     }
-
   }
 
   setIconState(isActive:boolean, appName:string, pid?:number){
@@ -254,8 +277,10 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     if(liElemnt){
       if(isActive)
         liElemnt.style.borderBottomColor = 'hsl(207deg 100%  72% / 90%)';
-      else
-      liElemnt.style.borderBottomColor = '';
+      else{
+        liElemnt.style.borderBottomColor = Constants.EMPTY_STRING;
+        liElemnt.style.backgroundColor = Constants.EMPTY_STRING;
+      }
     }
   }
 
@@ -402,7 +427,13 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     /* My hand was forced, I had to let the desktop display the taskbar context menu.
      * This is due to the fact that the taskbar has a max height of 40px, which is not enough room to display the context menu
      */
-    const liElemnt = document.getElementById(`tskbar-${file.opensWith}`) as HTMLElement;
+    let liElemnt:HTMLElement;
+
+    if(this.taskBarEntriesIconState === this.mergedIcons)
+      liElemnt = document.getElementById(`tskbar-${file.opensWith}`) as HTMLElement;
+    else
+      liElemnt = document.getElementById(`tskbar-${file.opensWith}-${file.pid}`) as HTMLElement;
+
     if(liElemnt){
       const rect =  liElemnt.getBoundingClientRect();
       const isPinned = true;
@@ -418,12 +449,17 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   }
 
   onShowUnPinnedIconContextMenu(evt:MouseEvent, proccess:Process):void{
-
     const file = new FileInfo();
     file.setOpensWith = proccess.getProcessName;
     file.setIconPath = proccess.getIcon;
 
-    const liElemnt = document.getElementById(`tskbar-UnPinned-${file.getOpensWith}`) as HTMLElement;
+    let liElemnt:HTMLElement;
+
+    if(this.taskBarEntriesIconState === this.mergedIcons)
+     liElemnt = document.getElementById(`tskbar-UnPinned-${proccess.getProcessName}`) as HTMLElement;
+    else
+      liElemnt = document.getElementById(`tskbar-UnPinned-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
+
     if(liElemnt){
       const rect =  liElemnt.getBoundingClientRect();
       const isPinned = false;
@@ -541,7 +577,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     const tskbarUnPinned = 'tskbar-UnPinned';
 
     let liElemnt:HTMLElement;
-  
+
     if(proccess){
       if(this.taskBarEntriesIconState === this.mergedIcons){
         liElemnt = document.getElementById(`${tskbar}-${proccess.getProcessName}`) as HTMLElement;
@@ -574,5 +610,4 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }
-
 }
