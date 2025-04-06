@@ -26,6 +26,7 @@ import { FileTreeNode } from 'src/app/system-files/file.tree.node';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -50,7 +51,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _notificationService:UserNotificationService;
   private _windowService:WindowService;
   private _menuService:MenuService;
-   private _audioService:AudioService;
+  private _audioService:AudioService;
+  private _systemNotificationService:SystemNotificationService;
   private _formBuilder;
   private _appState!:AppState;
 
@@ -213,9 +215,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   hasWindow = true;
 
 
-  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, triggerProcessService:TriggerProcessService, 
-              formBuilder: FormBuilder, stateManagmentService:StateManagmentService, sessionManagmentService:SessionManagmentService,        
-              menuService:MenuService, notificationService:UserNotificationService ,windowService:WindowService, audioService:AudioService) { 
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, 
+              triggerProcessService:TriggerProcessService, formBuilder: FormBuilder, stateManagmentService:StateManagmentService, 
+              sessionManagmentService:SessionManagmentService, menuService:MenuService, notificationService:UserNotificationService,
+              windowService:WindowService, audioService:AudioService, systemNotificationService:SystemNotificationService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileService = fileService;
@@ -226,6 +229,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._notificationService = notificationService;
     this._windowService = windowService;
     this._audioService = audioService;
+    this._systemNotificationService = systemNotificationService;
     this._formBuilder = formBuilder;
 
     this.processId = this._processIdService.getNewProcessId();
@@ -1077,6 +1081,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }else{
       this.navPathIcon = `${Constants.IMAGE_BASE_PATH}folder_folder_small.png`;
     }
+
+    this._systemNotificationService.taskBarIconInfoChangeNotify.next([String(this.processId), fileName, this.navPathIcon]);
   }
 
   onTriggerRunProcess():void{

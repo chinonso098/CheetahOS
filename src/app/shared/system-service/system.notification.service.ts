@@ -24,6 +24,7 @@ export class SystemNotificationService implements BaseService{
     resetLockScreenTimeOutNotify: Subject<void> = new Subject<void>();
     restartSystemNotify: Subject<void> = new Subject<void>();
     shutDownSystemNotify: Subject<void> = new Subject<void>();
+    taskBarIconInfoChangeNotify: Subject<string[]> = new Subject<string[]>();
 
     name = 'sys_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;

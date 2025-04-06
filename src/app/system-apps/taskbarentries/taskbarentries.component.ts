@@ -277,13 +277,9 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   setIconState(isActive:boolean, appName:string, pid?:number){
     let liElemnt!:HTMLElement;
 
-    console.log(`setIconState -- appName:${appName}, pid:${pid}`);
-
     if(this.taskBarEntriesIconState === this.unMergedIcons){
       liElemnt = document.getElementById(`tskbar-${appName}-${pid}`) as HTMLElement;
-      console.log(`tskbar-${appName}-${pid}`)
-      console.log('setIconState:', liElemnt);
-    }else{
+    }else if(this.taskBarEntriesIconState === this.mergedIcons){
       liElemnt = document.getElementById(`tskbar-${appName}`) as HTMLElement;
     }
     if(liElemnt){
@@ -366,8 +362,6 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         pinned.showLabel = this.hideLabel;
         this.pinToTaskBarList[idx] = pinned;
       }
-
-      console.log('pinned:', pinned);
     }
   }
 
@@ -499,9 +493,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   highlightTaskbarIconOnMouseHover(prefix:string, appName:string, pid:number): DOMRect | null{
 
-    console.log(`highlightTaskbarIconOnMouseHover -- prefix:${prefix}, appName:${appName}, pid:${pid}`);
-
-    //const proccess = this._runningProcessService.getProcess(pid);
+    //console.log(`highlightTaskbarIconOnMouseHover -- prefix:${prefix}, appName:${appName}, pid:${pid}`);
     const proccessInFocus = this._runningProcessService.getProcess(this.windowInFocusPid);
 
     let liElemnt:HTMLElement;
