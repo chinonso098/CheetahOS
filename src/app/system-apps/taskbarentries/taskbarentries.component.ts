@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -15,7 +15,7 @@ import { IconAppCurrentState, TaskBarFileInfo } from './taskbar.entries.type';
   templateUrl: './taskbarentries.component.html',
   styleUrls: ['./taskbarentries.component.css']
 })
-export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
+export class TaskBarEntriesComponent implements AfterViewInit {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -24,7 +24,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   private _windowServices:WindowService;
 
   private prevOpenedProccesses:string[]= [];
-  SECONDS_DELAY = 100;
+  SECONDS_DELAY = 100; //100 millisecs
   activeProcesses:Process[] = [];
   pinToTaskBarList:TaskBarFileInfo[] = [];
   selectedFile!:FileInfo
@@ -49,7 +49,6 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   processId = 0;
   type = ComponentType.System;
   displayName = '';
-  //appProcessId = 0;
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService,
               triggerProcessService:TriggerProcessService, windowServices:WindowService) { 
@@ -64,7 +63,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess()});
 
-    this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.IAmNotSureAboutMethodName(p)});
+    this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.onCloseProcessNotify(p)});
 
     this._menuService.pinToTaskBar.subscribe((p)=>{this.onPinIconToTaskBarList(p)});
     this._menuService.unPinFromTaskBar.subscribe((p)=>{this.onUnPinIconFromTaskBarList(p)});
@@ -78,7 +77,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
       this.windowInFocusPid = p;
       setTimeout(() => {
         this.highlightTaskbarIcon();
-      }, 100);
+      }, this.SECONDS_DELAY);
     });
 
     this._windowServices.currentProcessInFocusNotify.subscribe((p) =>{
@@ -86,19 +85,16 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
       this.windowInFocusPid = p;
       setTimeout(() => {
         this.highlightTaskbarIcon();
-      }, 100);
+      }, this.SECONDS_DELAY);
     });
   }
   
   ngAfterViewInit(): void {
+    const delay = 1500; //1.5 secs
     //change detection is the better solution
     setTimeout(() => {
       this.activeProcesses = this.filterProcesses();
-    }, 1500);
-  }
-
-  ngOnDestroy(): void {
-    1
+    }, delay);
   }
 
   updateRunningProcess():void{
@@ -109,7 +105,7 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     }, this.SECONDS_DELAY)
   }
 
-  IAmNotSureAboutMethodName(process:Process):void{
+  onCloseProcessNotify(process:Process):void{
     if(this.taskBarEntriesIconState === this.unMergedIcons){
       this.updatePinnedTaskbarAppIconOnClose(process);
     }
@@ -119,8 +115,6 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     let tskbarFileInfo!:TaskBarFileInfo 
     if(!this.pinToTaskBarList.some(x => x.opensWith === file.getOpensWith)){
       tskbarFileInfo = this.getTaskBarFileInfo(file);
-
-      console.log('pinIconToTaskBarList-tskbarFileInfo:', tskbarFileInfo);
       this.pinToTaskBarList.push(tskbarFileInfo);
     }
     else return
@@ -148,11 +142,27 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
       this.hideShowLabelState = this.hideLabel;
     }
 
-    this.updateRunningProcess();
+    this.retriggerRunningProcess();
+  }
+
+  retriggerRunningProcess():void{
+    this.activeProcesses = this.filterProcesses();
+
+    setTimeout(()=>{
+      this.changeProcessStateIdentifier();
+    }, this.SECONDS_DELAY)
+
+    if(this.taskBarEntriesIconState === this.unMergedIcons){
+
+      setTimeout(() => {
+        this.highlightTaskbarIcon();
+      }, 50);
+    }
   }
 
   filterProcesses():Process[]{
     const proccessesNotInPinToStart:Process[] = [];
+    const delay = 5; // 5 millisecs
     if(this.taskBarEntriesIconState === this.unMergedIcons){
       const proccesses = this.getProccessWithWindows()
       this.storeHistory(proccesses);
@@ -176,14 +186,14 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
           const proccessInstaceCount = this._runningProcessService.getProcessCount(x.getProcessName)
           if(proccessInstaceCount === 1){
             this.updatePinnedTaskbarAppIconOnFirstInit(tskBarFile, x);
-            setTimeout(() => {this.setIconState(true, x.getProcessName, x.getProcessId);}, 5);
+            setTimeout(() => {this.setIconState(true, x.getProcessName, x.getProcessId);}, delay);
 
           }else if(proccessInstaceCount > 1){
             // add only procs that are not in the pinToTaskBarList to the proccessesNotInPinToStart
             if(!this.pinToTaskBarList.find(t => t.opensWith === x.getProcessName && t.pid === x.getProcessId))
               proccessesNotInPinToStart.push(x);
 
-            this.setIconState(true, x.getProcessName, x.getProcessId);
+            setTimeout(() => {this.setIconState(true, x.getProcessName, x.getProcessId);}, delay);
           }
         }else{
           proccessesNotInPinToStart.push(x);
@@ -201,7 +211,6 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
        */
       uniqueProccesses.forEach(x =>{
         if(this.pinToTaskBarList.some( i => i.opensWith === x.getProcessName)){
-          //this.appProcessId = x.getProcessId;
           this.setIconState(true, x.getProcessName);
         }else{
           proccessesNotInPinToStart.push(x);
@@ -258,6 +267,8 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
       this.prevOpenedProccesses.forEach(x =>{
         if(!runningProcess.some(i => i.getProcessName === x)){
           this.setIconState(false, x, 0);
+        }else{
+          //this.setIconState(true, x, i.);
         }
       });
     }
@@ -311,8 +322,6 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
     const idx = this.pinToTaskBarList.findIndex(x => x.uid === tmpUid);
     const pinned = this.pinToTaskBarList[idx];
 
-    console.log('step 1 - pinned:', pinned);
-
     if(pinned){
       //check if an instance of this apps is running
       const isRunning = this._runningProcessService.getProcesses()
@@ -324,8 +333,6 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
       pinned.showLabel = this.showLabel;
 
       this.pinToTaskBarList[idx] = pinned;
-
-      console.log('step 2 - pinned:', pinned);
     }
   }
 
@@ -381,8 +388,6 @@ export class TaskBarEntriesComponent implements AfterViewInit, OnDestroy {
   }
 
   public removeActiveProcess(pid:number):void{
-
-    console.log('removeActiveProcess:',pid);
     const deleteCount = 1;
     const procIndex = this.activeProcesses.findIndex((process) => {
         return process.getProcessId === pid;
