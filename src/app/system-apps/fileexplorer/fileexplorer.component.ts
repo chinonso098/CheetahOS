@@ -1082,7 +1082,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.navPathIcon = `${Constants.IMAGE_BASE_PATH}folder_folder_small.png`;
     }
 
-    this._systemNotificationService.taskBarIconInfoChangeNotify.next([String(this.processId), fileName, this.navPathIcon]);
+    const taskBarAppIconInfo:Map<number, string[]> = new Map<number, string[]>();
+    taskBarAppIconInfo.set(this.processId, [fileName, this.navPathIcon]);
+    this._systemNotificationService.setAppIconNotication(this.processId, [fileName, this.navPathIcon])
+    
+    this._systemNotificationService.taskBarIconInfoChangeNotify.next(taskBarAppIconInfo);
   }
 
   onTriggerRunProcess():void{

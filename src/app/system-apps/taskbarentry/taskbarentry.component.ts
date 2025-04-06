@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { Constants } from 'src/app/system-files/constants';
@@ -9,7 +9,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
   templateUrl: './taskbarentry.component.html',
   styleUrls: ['./taskbarentry.component.css']
 })
-export class TaskBarEntryComponent implements OnInit, OnDestroy {
+export class TaskBarEntryComponent implements OnInit, OnDestroy, OnChanges {
 
   @Input() taskBarIconImgUrl = Constants.EMPTY_STRING;
   @Input() taskBarIconName = Constants.EMPTY_STRING;
@@ -52,19 +52,42 @@ export class TaskBarEntryComponent implements OnInit, OnDestroy {
     this._taskBarIconInfoChangeSub?.unsubscribe();
   }
 
-  onTaskBarIconInfoChange(info:string[]):void{
-    console.log('onTaskBarIconInfoChange:',info);
-    if(this.setTaskBarEntryType === this.taskBarShowLabelEntryOption){
-      const pid = Number(info[0]);
-      if(this.processId === pid){
-        this.name = info[1];
-        this.icon = info[2];
-      }
-    }
+  ngOnChanges(changes: SimpleChanges):void{
+    console.log('WINDOW onCHANGES:',changes);
+    this.setTaskBarEntryType = this.taskBarEntryType;
 
+    setTimeout(() => {
+      this.onTaskBarIconInfoChange();
+    }, 10);
   }
 
-  restoreOrMinizeWindow() {
+  onTaskBarIconInfoChange(info?:Map<number, string[]>):void{
+    if(info){
+      console.log('onTaskBarIconInfoChange:',info);
+      const firstEntry = info.entries().next().value;
+      if (firstEntry) {
+        const [key, value] = firstEntry;
+        console.log("First Key:", key);
+        console.log("First Value:", value);
+        if(this.setTaskBarEntryType === this.taskBarShowLabelEntryOption){
+          const pid = key;
+          if(this.processId === pid){
+            this.name = value[1];
+            this.icon = value[2];
+          }
+        }        
+      } else { console.log("The map is empty."); }
+    }else{
+      const tmpInfo = this._systemNotificationService.getAppIconNotication(this.taskBarPid);
+       if(this.setTaskBarEntryType === this.taskBarShowLabelEntryOption){
+        console.log('onTaskBarIconInfoChange -tmp:',tmpInfo);
+        this.icon = tmpInfo[1];
+        this.name = tmpInfo[2];
+      }
+    }
+  }
+
+  restoreOrMinizeWindow():void {
     this.restoreOrMinizeWindowEvent.emit(this.taskBarPid);
   }
 }

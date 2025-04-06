@@ -18,13 +18,14 @@ export class SystemNotificationService implements BaseService{
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
     private _systemMessage = Constants.EMPTY_STRING;
+    private _appIconNotificationStore:Map<number, string[]>; 
 
     showLockScreenNotify: Subject<void> = new Subject<void>();
     showDesktopNotify: Subject<void> = new Subject<void>();
     resetLockScreenTimeOutNotify: Subject<void> = new Subject<void>();
     restartSystemNotify: Subject<void> = new Subject<void>();
     shutDownSystemNotify: Subject<void> = new Subject<void>();
-    taskBarIconInfoChangeNotify: Subject<string[]> = new Subject<string[]>();
+    taskBarIconInfoChangeNotify: Subject<Map<number, string[]>> = new Subject<Map<number, string[]>>();
 
     name = 'sys_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -37,6 +38,7 @@ export class SystemNotificationService implements BaseService{
     constructor(){
         this._processIdService = ProcessIDService.instance;
         this._runningProcessService = RunningProcessService.instance;
+        this._appIconNotificationStore = new Map<number, string[]>();
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
@@ -47,6 +49,18 @@ export class SystemNotificationService implements BaseService{
         this._systemMessage = msg;
     }
 
+    setAppIconNotication(msgKey:number, msgValue:string[]):void{
+        this._appIconNotificationStore.set(msgKey, msgValue);
+    }
+
+    getAppIconNotication(msgKey:number):string[]{
+        if(this._appIconNotificationStore.has(msgKey)){
+            return this._appIconNotificationStore.get(msgKey) || [];
+        }
+
+        return [];
+    }
+
     getSystemMessage():string{
         /**
          * system message is cleared after it is retrieved
@@ -54,6 +68,12 @@ export class SystemNotificationService implements BaseService{
         const tmpMsg = this._systemMessage;
         this._systemMessage = Constants.EMPTY_STRING;
         return tmpMsg;
+    }
+
+    removeAppIconNotication(msgKey:number):void{
+        if(this._appIconNotificationStore.has(msgKey)){
+            this._appIconNotificationStore.delete(msgKey);
+        }
     }
 
     private getProcessDetail():Process{

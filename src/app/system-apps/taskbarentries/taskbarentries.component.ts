@@ -9,6 +9,7 @@ import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { IconAppCurrentState, TaskBarFileInfo } from './taskbar.entries.type';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 
 @Component({
   selector: 'cos-taskbarentries',
@@ -22,6 +23,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   private _triggerProcessService:TriggerProcessService;
   private _menuService:MenuService;
   private _windowServices:WindowService;
+  private _systemNotificationService:SystemNotificationService;
+  private _taskBarAppIconInfo:Map<number, string[]>; 
 
   private prevOpenedProccesses:string[]= [];
   SECONDS_DELAY = 100; //100 millisecs
@@ -49,14 +52,17 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   processId = 0;
   type = ComponentType.System;
   displayName = '';
+  tmpInfo!:string[];
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService,
-              triggerProcessService:TriggerProcessService, windowServices:WindowService) { 
+              triggerProcessService:TriggerProcessService, windowServices:WindowService, systemNotificationService:SystemNotificationService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._triggerProcessService = triggerProcessService;
     this._menuService = menuService;
     this._windowServices = windowServices;
+    this._systemNotificationService = systemNotificationService;
+    this._taskBarAppIconInfo = new Map<number, string[]>();
 
     this.processId = this._processIdService.getNewProcessId();
 
@@ -71,6 +77,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     this._menuService.closeApplicationFromTaskBar.subscribe((p) =>{this.closeApplication(p)});
     this._menuService.UnMergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.unMergedIcons)});
     this._menuService.mergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.mergedIcons)});
+    this._systemNotificationService.taskBarIconInfoChangeNotify.subscribe((p) =>{this.onTaskBarIconInfoChange(p); });
 
     this._windowServices.focusOnCurrentProcessWindowNotify.subscribe((p)=>{
       this.prevWindowInFocusPid = this.windowInFocusPid;
@@ -598,6 +605,46 @@ export class TaskBarEntriesComponent implements AfterViewInit {
           }
         }
       }
+    }
+  }
+
+
+  onTaskBarIconInfoChange(info:Map<number, string[]>):void{
+
+    if(info){
+      for(const [key, value] of info){
+        this._taskBarAppIconInfo.set(key, value);
+      }
+
+    }
+
+    if(info){
+      console.log('onTaskBarIconInfoChange:',info);
+      // if(this.hideShowLabelState === this.showLabel){
+      //   const pid = Number(info[0]);
+      //   if(this.processId === pid){
+      //     this.tmpInfo.push(...info);
+      //     this.name = info[1];
+      //     this.icon = info[2];
+      //   }
+      // }
+    }else{
+      // if(this.setTaskBarEntryType === this.taskBarHideLabelEntryOption){
+      //   console.log('onTaskBarIconInfoChange -tmp:',this.tmpInfo);
+      //   const pid = Number(this.tmpInfo[0]);
+      //   if(this.processId === pid){
+      //     console.log('onTaskBarIconInfoChange:',this.setTaskBarEntryType);
+      //     this.icon = this.defaultIcon;
+      //   }
+      // }else if(this.setTaskBarEntryType === this.taskBarShowLabelEntryOption){
+      //   console.log('onTaskBarIconInfoChange -tmp:',this.tmpInfo);
+      //   const pid = Number(this.tmpInfo[0]);
+      //   if(this.processId === pid){
+      //     console.log('onTaskBarIconInfoChange:',this.setTaskBarEntryType);
+      //     this.icon = this.tmpInfo[1];
+      //     this.name = this.tmpInfo[2];
+      //   }
+      // }
     }
   }
 
