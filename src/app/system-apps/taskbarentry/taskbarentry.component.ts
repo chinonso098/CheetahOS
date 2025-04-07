@@ -53,36 +53,35 @@ export class TaskBarEntryComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges):void{
+    const delay = 10;
     console.log('WINDOW onCHANGES:',changes);
     this.setTaskBarEntryType = this.taskBarEntryType;
 
     setTimeout(() => {
       this.onTaskBarIconInfoChange();
-    }, 10);
+    }, delay);
   }
 
   onTaskBarIconInfoChange(info?:Map<number, string[]>):void{
     if(info){
-      console.log('onTaskBarIconInfoChange:',info);
       const firstEntry = info.entries().next().value;
       if (firstEntry) {
         const [key, value] = firstEntry;
-        console.log("First Key:", key);
-        console.log("First Value:", value);
         if(this.setTaskBarEntryType === this.taskBarShowLabelEntryOption){
           const pid = key;
           if(this.processId === pid){
-            this.name = value[1];
-            this.icon = value[2];
+            this.name = value[0];
+            this.icon = value[1];
           }
         }        
       } else { console.log("The map is empty."); }
     }else{
       const tmpInfo = this._systemNotificationService.getAppIconNotication(this.taskBarPid);
        if(this.setTaskBarEntryType === this.taskBarShowLabelEntryOption){
-        console.log('onTaskBarIconInfoChange -tmp:',tmpInfo);
-        this.icon = tmpInfo[1];
-        this.name = tmpInfo[2];
+        if(tmpInfo.length > 0){
+          this.name = tmpInfo[0];
+          this.icon = tmpInfo[1];
+        }
       }
     }
   }

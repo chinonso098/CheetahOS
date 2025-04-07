@@ -315,6 +315,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   ngOnDestroy(): void {
+    this._systemNotificationService.removeAppIconNotication(this.processId);
     this._viewByNotifySub?.unsubscribe();
     this._sortByNotifySub?.unsubscribe();
     this._refreshNotifySub?.unsubscribe();
@@ -1085,7 +1086,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const taskBarAppIconInfo:Map<number, string[]> = new Map<number, string[]>();
     taskBarAppIconInfo.set(this.processId, [fileName, this.navPathIcon]);
     this._systemNotificationService.setAppIconNotication(this.processId, [fileName, this.navPathIcon])
-    
+
     this._systemNotificationService.taskBarIconInfoChangeNotify.next(taskBarAppIconInfo);
   }
 
