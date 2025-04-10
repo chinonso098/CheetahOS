@@ -153,12 +153,9 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       this.changeProcessStateIdentifier();
     }, this.SECONDS_DELAY)
 
-    if(this.taskBarEntriesIconState === this.unMergedIcons){
-
-      setTimeout(() => {
-        this.highlightTaskbarIcon();
-      }, 50);
-    }
+    setTimeout(() => {
+      this.highlightTaskbarIcon();
+    }, 50);
   }
 
   filterProcesses():Process[]{
@@ -268,8 +265,6 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       this.prevOpenedProccesses.forEach(x =>{
         if(!runningProcess.some(i => i.getProcessName === x)){
           this.setIconState(false, x, 0);
-        }else{
-          //this.setIconState(true, x, i.);
         }
       });
     }
@@ -332,7 +327,6 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       this.pinToTaskBarList[idx] = pinned;
     }
   }
-
 
   updatePinnedTaskbarAppIconOnClose(process:Process):void{
     const uid = `${process.getProcessName}-${process.getProcessId}`;
