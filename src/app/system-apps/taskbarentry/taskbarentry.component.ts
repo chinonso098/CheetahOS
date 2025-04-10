@@ -81,7 +81,7 @@ export class TaskBarEntryComponent implements OnInit, OnDestroy, OnChanges {
         }
       }else if(this.setTaskBarEntryType === this.taskBarHideLabelEntryOption){
         if(this.processId === 0){
-          this.icon = this.defaultIcon;
+          this.icon = this.taskBarIconImgUrl;
         }
       }
     }

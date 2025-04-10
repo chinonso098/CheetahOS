@@ -7,6 +7,7 @@
     column-gap: 3px;
     margin: 0 1px;
     transition: all 0.075s;
+    overflow-x: hidden;
 }
 
 .taskBar-Entries-li{

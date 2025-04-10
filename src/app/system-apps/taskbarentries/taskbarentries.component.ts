@@ -596,6 +596,21 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }
   }
 
+  adjustTaskbarEntryWidths() {
+    const items = document.querySelectorAll('.taskBar-Entry-li-ext');
+    const container = document.querySelector('.taskBar-li') as HTMLElement;
+  
+    if (!container || items.length === 0) return;
+  
+    const totalWidth = container.clientWidth;
+    const newWidth = Math.max(50, Math.min(130, (totalWidth - (items.length * 8)) / items.length)); // 8 = margin * 2
+  
+    items.forEach((item: Element) => {
+      (item as HTMLElement).style.width = `${newWidth}px`;
+    });
+  }
+  
+
   restoreOrMinizeWindow(processId:number){
     this._windowServices.restoreOrMinimizeProcessWindowNotify.next(processId)
   }

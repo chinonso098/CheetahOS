@@ -6,14 +6,23 @@
 }
 
 .taskBar-Entry-li-ext{
-    display: flex;
+    flex: 1 1 130px;
     height: 100%;
-    min-width: 70px;
-    width: 130px;
+    min-width: 50px;
+    max-width: 130px;
     margin: 0 4px;
 }
 
 .taskBar-Entry-figure{
+    align-items: center;
+    display: flex;
+    min-width: 0px;
+    padding: 4px;
+}
+
+.taskBar-Entry-figure-ext{
+    position: relative;
+    top: 3px;
     align-items: center;
     display: flex;
     min-width: 0px;
