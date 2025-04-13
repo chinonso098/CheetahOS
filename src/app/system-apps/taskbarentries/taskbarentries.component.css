@@ -12,7 +12,7 @@
 
 .taskBar-Entries-li{
     height: 100%;
-    min-width: 0px;
+    display: flex;
     border-bottom: 2px solid hsl(207deg 100%  72% / 90%);
 }
 
