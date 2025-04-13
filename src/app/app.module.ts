@@ -40,6 +40,7 @@ import { RunSystemComponent } from './system-apps/runsystem/runsystem.component'
 import { VolumeControlComponent } from './system-apps/volumecontrol/volumecontrol.component';
 import { LoginComponent } from './system-apps/login/login.component';
 import { PowerOnOffComponent } from './system-apps/poweronoff/poweronoff.component';
+import { SearchComponent } from './system-apps/search/search.component';
 import { SystemtrayComponent } from './system-apps/systemtray/systemtray.component';
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
@@ -89,6 +90,7 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     VolumeControlComponent,
     LoginComponent,
     PowerOnOffComponent,
+    SearchComponent,
     SystemtrayComponent,
 
     HighlightDirective,

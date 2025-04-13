@@ -18,10 +18,9 @@ export class SystemtrayComponent implements OnInit {
   private _runningProcessService;
   private _systemNotificationServices:SystemNotificationService;
   private _audioService!:AudioService;
+  private currentVolume = 0;
 
   taskBarArrowIcon = `${Constants.IMAGE_BASE_PATH}taskbar_arrow_up.png`;
-
-  private currentVolume = 0;
   audioIcon = `${Constants.IMAGE_BASE_PATH}no_volume.png`;
   currentVolumeTxt = Constants.EMPTY_STRING;
 

@@ -90,8 +90,6 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     }, this.SECONDS_DELAY);
   }
 
- 
-
   // Store listener for removal
   private overlaySlideOutListener = () => {
     const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
@@ -122,7 +120,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   }
 
 
-    // Hide Overlay Function
+  // Hide Overlay Function
   startMenuOverlaySlideIn(): void {
     clearTimeout(this.delayStartMenuOverlayShowTimeoutId);
     clearTimeout(this.delayStartMenuOverlayHideTimeoutId);
@@ -186,8 +184,6 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     //   }
     // })
   }
-
-
 
   private async loadFilesInfoAsync():Promise<void>{
     this.startMenuFiles = [];

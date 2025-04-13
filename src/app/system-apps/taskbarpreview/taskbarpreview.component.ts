@@ -55,7 +55,7 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit {
 
   shortAppInfo():void{
     this.appInfo = this.name;
-    const limit = 26;
+    const limit = 30;
     const ellipsis = '...';
 
     this.appInfo = (this.appInfo.length > limit) ? this.appInfo.substring(0, limit) + ellipsis : this.appInfo;
