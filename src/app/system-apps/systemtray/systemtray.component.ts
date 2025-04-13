@@ -19,6 +19,8 @@ export class SystemtrayComponent implements OnInit {
   private _systemNotificationServices:SystemNotificationService;
   private _audioService!:AudioService;
 
+  taskBarArrowIcon = `${Constants.IMAGE_BASE_PATH}taskbar_arrow_up.png`;
+
   private currentVolume = 0;
   audioIcon = `${Constants.IMAGE_BASE_PATH}no_volume.png`;
   currentVolumeTxt = Constants.EMPTY_STRING;
@@ -47,7 +49,6 @@ export class SystemtrayComponent implements OnInit {
     this._audioService.changeVolumeNotify.subscribe(() => { this.upadateVolume()}); 
     this._systemNotificationServices.showDesktopNotify.subscribe(() =>{this.upadateVolume()})
   }
-
 
   ngOnInit():void {
     const secondsDelay = [1000, 360000]; 
@@ -79,18 +80,16 @@ export class SystemtrayComponent implements OnInit {
     this.subscribeDate = `${dateTime.getMonth() + 1}/${dateTime.getDate()}/${dateTime.getFullYear()}`;
   }
 
-
-
   setVolumeIcon():void{
-    const tskBarVolumeElmnt = document.getElementById('taskBarVolumeImg') as HTMLImageElement;
+    const tskBarVolumeElmnt = document.getElementById('taskBarVolumeFig') as HTMLImageElement;
 
     if(tskBarVolumeElmnt){
       if(this.currentVolume === 0){
         this.audioIcon =  `${Constants.IMAGE_BASE_PATH}no_volume.png`;
-        tskBarVolumeElmnt.style.left = '2px';
+        tskBarVolumeElmnt.style.left = '3px';
       }else  if(this.currentVolume > 0 && this.currentVolume <= 0.3){
           this.audioIcon =  `${Constants.IMAGE_BASE_PATH}low_volume.png`;
-          tskBarVolumeElmnt.style.left = '2px';
+          tskBarVolumeElmnt.style.left = '3px';
       }else  if(this.currentVolume >= 0.4 && this.currentVolume <= 0.7){
         this.audioIcon =  `${Constants.IMAGE_BASE_PATH}medium_volume.png`;
         tskBarVolumeElmnt.style.left = '1px';

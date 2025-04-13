@@ -1,8 +1,14 @@
 <div class="main-taskbar-system-tray">
 
+    <div class="main-taskbar-arrow-div"> 
+        <figure  class="taskbar-arrow-fig">
+            <img class="taskbar-arrow-img" [src]="taskBarArrowIcon">
+        </figure>
+    </div>
+
     <div class="main-taskbar-volume-div"> 
-        <figure  class="taskbar-volume-fig" (click)="showVolumeControl()">
-            <img class="taskbar-volume-img" [src]="audioIcon" [alt]="name" id="taskBarVolumeImg" [title]="currentVolumeTxt">
+        <figure  class="taskbar-volume-fig" (click)="showVolumeControl()" id="taskBarVolumeFig">
+            <img class="taskbar-volume-img" [src]="audioIcon" [alt]="name"  [title]="currentVolumeTxt">
         </figure>
     </div>
     
