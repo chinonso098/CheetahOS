@@ -472,6 +472,18 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     const prefix = (caller === "pinned")? 'tskbar': 'tskbar-UnPinned';
     const rect = this.highlightTaskbarIconOnMouseHover(prefix, appName, pid);
     if(rect){
+      if(this.checkForMultipleActiveInstance(appName)) {
+        rect.x = this.getAverageOfRectX(prefix, appName);
+        const c = 0;
+        const tmpX= (rect.x * 0.5); 
+        const offSet = this.calculateOffset(prefix, appName);
+        rect.x = tmpX - offSet - c;
+      }else{
+        const tmpX= (rect.x * 0.5); 
+        rect.x = tmpX;
+      }
+
+      
       console.log(`onMouseEnter -- rect:${rect}`);
       const data:unknown[] = [rect, appName, iconPath];
       if(this._runningProcessService.isProcessRunning(appName)){
@@ -480,26 +492,53 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }
   }
 
-  adjustTaskbarEntryWidths(appName:string) {
+  checkForMultipleActiveInstance(appName:string):boolean {
     if(this.taskBarEntriesIconState === this.unMergedIcons){
-      // const items = document.querySelectorAll('.taskBar-Entry-li-ext');
-      // const container = document.querySelector('.taskBar-list') as HTMLElement;
-    
-      // if (!container || items.length === 0) return;
-    
-      // const totalWidth = container.clientWidth;
-      // const newWidth = Math.max(50, Math.min(130, (totalWidth - (items.length * 8)) / items.length)); // 8 = margin * 2
-    
-      // items.forEach((item: Element) => {
-      //   (item as HTMLElement).style.width = `${newWidth}px`;
-      // });
-
       const instanceCount = this._runningProcessService.getProcessCount(appName);
       if(instanceCount > 1){
-        // if the is more than one, get the average of all the rects
+        return true;
       }
     }
+    return false;
+  }
 
+  getAverageOfRectX(prefix:string, appName:string):number {
+    let xSum = 0;
+    let xAvg = 0;
+
+    const instanceCount = this._runningProcessService.getProcessCount(appName);
+    const instances = this._runningProcessService.getProcesses().filter( x => x.getProcessName === appName);
+    const instancIds =  instances.map(i => {
+        return i.getProcessId;
+    });
+
+    instancIds.forEach((pid:number) =>{
+      const liElemnt = document.getElementById(`${prefix}-${appName}-${pid}`);
+      if(liElemnt){
+        const liElmntRect = liElemnt.getBoundingClientRect();
+        xSum += liElmntRect.x;
+      }
+    });
+
+    xAvg = (xSum/instanceCount);
+    return xAvg;
+  }
+
+  calculateOffset(prefix:string, appName:string):number{
+    const firstInstance = this._runningProcessService.getProcesses().find(x => x.getProcessName === appName);
+    if(firstInstance){
+      const liElemnt = document.getElementById(`${prefix}-${appName}-${firstInstance.getProcessId}`);
+      if(liElemnt){
+        const liElmntRect = liElemnt.getBoundingClientRect();
+        const width = liElmntRect.width;
+
+        // the width of a preivew window is set to 185px
+        const prevWidth = 185;
+        const offSet = Math.round(prevWidth - width);
+        return offSet;
+      }
+    }
+    return 0;
   }
   
 
