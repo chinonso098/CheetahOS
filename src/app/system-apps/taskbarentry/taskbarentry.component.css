@@ -19,11 +19,18 @@
 .taskBar-Entry-figure-ext{
     position: relative;
     display: flex;
-    flex-direction: row;
     top: 0.5px;
     align-items: center;
     min-width: 40px;
     padding: 4px;
+}
+
+
+.taskBar-Entry-img{
+    position: relative;
+    top: 1px;
+    height: 25px;
+    width: 25px;
 }
 
 .taskBar-Entry-figcaption{
@@ -36,11 +43,4 @@
     white-space: nowrap;
     max-width: 92px;
     min-width: 0;
-}
-
-.taskBar-Entry-img{
-    position: relative;
-    top: 1px;
-    height: 25px;
-    width: 25px;
 }

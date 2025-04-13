@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ClockComponent } from './clock.component';
+import { SystemtrayComponent } from './systemtray.component';
 
-describe('ClockComponent', () => {
-  let component: ClockComponent;
-  let fixture: ComponentFixture<ClockComponent>;
+describe('SystemtrayComponent', () => {
+  let component: SystemtrayComponent;
+  let fixture: ComponentFixture<SystemtrayComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ClockComponent ]
+      imports: [SystemtrayComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ClockComponent);
+    fixture = TestBed.createComponent(SystemtrayComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

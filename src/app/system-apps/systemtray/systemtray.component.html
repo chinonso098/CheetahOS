@@ -1,0 +1,21 @@
+<div class="main-taskbar-system-tray">
+
+    <div class="main-taskbar-volume-div"> 
+        <figure  class="taskbar-volume-fig" (click)="showVolumeControl()">
+            <img class="taskbar-volume-img" [src]="audioIcon" [alt]="name" id="taskBarVolumeImg" [title]="currentVolumeTxt">
+        </figure>
+    </div>
+    
+
+    <div class="main-taskbar-date-and-time-cntnr"
+        [ngStyle]=" hover ? 
+        {'background-color': 'hsla(0,0%,25%,60%)'}:
+        {'color': 'white'}"  (mouseover)="hover=true" (mouseleave)="hover=false">
+        <span class="taskbar-time-cntnr">
+            {{subscribeTime}}
+        </span>
+        <span class="taskbar-date-cntnr">
+            {{subscribeDate}}
+        </span>
+    </div>
+</div>

@@ -411,7 +411,6 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       this._runningProcessService.closeProcessNotify.next(proccess[i]);
     }
 
-
     // this removes other window state data
     const falsePid = 0;
     const falseUid = `${process.getProcessName}-${falsePid}`;
@@ -480,6 +479,29 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       }
     }
   }
+
+  adjustTaskbarEntryWidths(appName:string) {
+    if(this.taskBarEntriesIconState === this.unMergedIcons){
+      // const items = document.querySelectorAll('.taskBar-Entry-li-ext');
+      // const container = document.querySelector('.taskBar-list') as HTMLElement;
+    
+      // if (!container || items.length === 0) return;
+    
+      // const totalWidth = container.clientWidth;
+      // const newWidth = Math.max(50, Math.min(130, (totalWidth - (items.length * 8)) / items.length)); // 8 = margin * 2
+    
+      // items.forEach((item: Element) => {
+      //   (item as HTMLElement).style.width = `${newWidth}px`;
+      // });
+
+      const instanceCount = this._runningProcessService.getProcessCount(appName);
+      if(instanceCount > 1){
+        // if the is more than one, get the average of all the rects
+      }
+    }
+
+  }
+  
 
   onMouseLeave():void{
     this._windowServices.hideProcessPreviewWindowNotify.next();

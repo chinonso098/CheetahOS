@@ -10,7 +10,6 @@ import { AppComponent } from './app.component';
 import { TitleComponent } from './user-apps/title/title.component';
 import { DesktopComponent } from './system-apps/desktop/desktop.component';
 import { TaskbarComponent } from './system-apps/taskbar/taskbar.component';
-import { ClockComponent } from './system-apps/clock/clock.component';
 import { StartButtonComponent } from './system-apps/startbutton/startbutton.component';
 import { StartMenuComponent } from './system-apps/startmenu/startmenu.component';
 import { TaskBarPreviewComponent } from './system-apps/taskbarpreview/taskbarpreview.component';
@@ -38,10 +37,10 @@ import { CheetahComponent } from './system-apps/cheetah/cheetah.component';
 import { ClippyComponent } from "./system-apps/clippy/clippy.component";
 import { ChatterComponent } from './system-apps/chatter/chatter.component';
 import { RunSystemComponent } from './system-apps/runsystem/runsystem.component';
-import { VolumeComponent } from './system-apps/volume/volume.component';
 import { VolumeControlComponent } from './system-apps/volumecontrol/volumecontrol.component';
 import { LoginComponent } from './system-apps/login/login.component';
 import { PowerOnOffComponent } from './system-apps/poweronoff/poweronoff.component';
+import { SystemtrayComponent } from './system-apps/systemtray/systemtray.component';
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
@@ -60,7 +59,6 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     AppComponent,
     DesktopComponent,
     TaskbarComponent,
-    ClockComponent,
     StartButtonComponent,
     StartMenuComponent,
     TaskBarPreviewComponent,
@@ -88,10 +86,10 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     ClippyComponent,
     ChatterComponent,
     RunSystemComponent,
-    VolumeComponent,
     VolumeControlComponent,
     LoginComponent,
     PowerOnOffComponent,
+    SystemtrayComponent,
 
     HighlightDirective,
     TaskBarEntryHighlightDirective,
