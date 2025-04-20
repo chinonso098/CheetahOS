@@ -124,6 +124,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
 
       const cmpntImg:TaskBarPreviewImage = {
         pid: this.processId,
+        appName: this.name,
         imageData: htmlImg
       }
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);

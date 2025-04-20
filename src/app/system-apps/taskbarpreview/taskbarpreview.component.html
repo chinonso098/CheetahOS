@@ -1,5 +1,5 @@
 <div  [@fadeAnimation]="fadeState" class="taskbar-preview-main-container" (mouseenter)="keepTaskBarPreviewWindow()" (mouseleave)="hideTaskBarPreviewWindowAndRestoreDesktop()">
-    <div class="taskbar-preview-content" *ngFor="let cmpntImage of componentImages" >
+    <div class="taskbar-preview-content" *ngFor="let cmpntImage of componentImages" id="tskBar-prev-{{cmpntImage.appName}}-{{cmpntImage.pid}}">
         <div class="taskbar-preview-header-container" tabindex="0">
             <div class="taskbar-preview-left-header-section">
                 <h1 class="taskbar-preview-h1">

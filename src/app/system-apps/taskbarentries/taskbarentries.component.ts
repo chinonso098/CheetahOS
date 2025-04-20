@@ -474,10 +474,10 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     if(rect){
       if(this.checkForMultipleActiveInstance(appName)) {
         rect.x = this.getAverageOfRectX(prefix, appName);
-        const c = 0;
+        const cnstnt = 4;
         const tmpX= (rect.x * 0.5); 
         const offSet = this.calculateOffset(prefix, appName);
-        rect.x = tmpX - offSet - c;
+        rect.x = tmpX - offSet + cnstnt;
       }else{
         const tmpX= (rect.x * 0.5); 
         rect.x = tmpX;

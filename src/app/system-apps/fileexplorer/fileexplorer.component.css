@@ -66,14 +66,16 @@
 
 .figure-header-toggle{
     position: fixed;
+    height: 25px;
+    width: 15px;
     right: 4%;
 }
 
 .figure-header-tab{
     position: relative;
-    width: 15px;
-    height: 21.5px;
-    place-items:center;
+    height: 10px; 
+    width: 10px;
+    top: 6px
 }
 
 .img-header-tab{
@@ -82,23 +84,23 @@
     width: 10px;
 }
 
-
 .question-header-cntnr{
     position: fixed;
+    height: 25px;
+    width: 15px;
     right: 1%;
 }
 
 .question-figure-header-tab{
     position: relative;
+    height: 15px; 
     width: 15px;
-    height: 21.5px;
+    top: 5px;
 }
 
 .question-img-header-tab{
-    position: relative;
     height: 15px; 
     width: 15px;
-    top: 2.5px;
 }
 
   
@@ -1113,24 +1115,25 @@ span.mid-search-entry{
 
 .footer-img-cntnr-1{
     position: fixed;
+    height: 100%;
     right: 4%;
 }
 .footer-img-cntnr-2{
     position: fixed;
+    height: 100%;
     right: 1%;
 }
 
 .footer-figure-header-tab{
     position: relative;
     width: 15px;
-    height: 24px;
+    height: 15px;
+    top: 5.5px;
 }
 
 .footer-img-header-tab{
-    position: relative;
     height: 15px; 
     width: 15px;
-    top: 3px;
 }
 /*-----################################---Footer View Ended-----################################---*/
 

@@ -67,6 +67,7 @@ export class TitleComponent implements BaseComponent, OnDestroy, AfterViewInit{
 
       const cmpntImg:TaskBarPreviewImage = {
         pid: this.processId,
+        appName: this.name,
         imageData: htmlImg
       }
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);

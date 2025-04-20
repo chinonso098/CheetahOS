@@ -209,6 +209,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
   
         const cmpntImg:TaskBarPreviewImage = {
           pid: this.processId,
+          appName: this.name,
           imageData: htmlImg
         }
         this._windowService.addProcessPreviewImage(this.name, cmpntImg);

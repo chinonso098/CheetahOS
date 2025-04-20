@@ -195,6 +195,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
       const cmpntImg:TaskBarPreviewImage = {
         pid: this.processId,
+        appName: this.name,
         imageData: htmlImg
       }
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);

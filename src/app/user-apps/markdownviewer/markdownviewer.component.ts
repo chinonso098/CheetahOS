@@ -123,6 +123,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
 
       const cmpntImg:TaskBarPreviewImage = {
         pid: this.processId,
+        appName: this.name,
         imageData: htmlImg
       }
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);

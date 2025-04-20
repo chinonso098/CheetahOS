@@ -115,6 +115,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
       //console.log('img data:',htmlImg);
       const cmpntImg:TaskBarPreviewImage = {
         pid: this.processId,
+        appName: this.name,
         imageData: htmlImg
       }
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);
