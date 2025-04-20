@@ -114,6 +114,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   ribbonMenuBtnStyle:Record<string, unknown> = {};
   ribbonMenuCntnrStyle:Record<string, unknown> = {};
   olClassName = 'ol-icon-size-view';
+  btnTypeRibbon = 'Ribbon';
+  btnTypeFooter = 'Footer';
 
   fileExplrFiles:FileInfo[] = [];
   fileTreeNode:FileTreeNode[] = [];
@@ -379,22 +381,36 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  changeFileExplorerLayoutCSS(inputViewOption:any){
-    if(inputViewOption == this.smallIconsView || inputViewOption == this.mediumIconsView ||inputViewOption == this.largeIconsView || inputViewOption== this.extraLargeIconsView){
+  toggleLargeIconsView():void{
+    this.currentViewOption = this.largeIconsView;
+    this.changeLayoutCss( this.currentViewOption );
+    this.changeOrderedlistStyle( this.currentViewOption );
+    this.changeButtonAndImageSize( this.currentViewOption );
+  }
+
+  toggleDetailsView():void{
+    this.currentViewOption = this.detailsView;
+    this.changeLayoutCss( this.currentViewOption );
+    this.changeOrderedlistStyle( this.currentViewOption );
+    this.changeButtonAndImageSize( this.currentViewOption );
+  }
+
+  changeFileExplorerLayoutCSS(inputViewOption:any):void{
+    if(inputViewOption === this.smallIconsView || inputViewOption === this.mediumIconsView ||inputViewOption === this.largeIconsView || inputViewOption === this.extraLargeIconsView){
       this.currentViewOption = inputViewOption;
       this.changeLayoutCss(inputViewOption);
       this.changeOrderedlistStyle(inputViewOption);
       this.changeButtonAndImageSize(inputViewOption);
     }
 
-    if(inputViewOption == this.listView || inputViewOption == this.detailsView || inputViewOption == this.tilesView || inputViewOption == this.contentView){
+    if(inputViewOption === this.listView || inputViewOption === this.detailsView || inputViewOption === this.tilesView || inputViewOption === this.contentView){
       this.currentViewOption = inputViewOption;
       this.changeLayoutCss(inputViewOption);
       this.changeOrderedlistStyle(inputViewOption);
     }
   }
 
-  changeTabLayoutIconCntnrCSS(id:number, isMouseHover:boolean){
+  changeTabLayoutIconCntnrCSS(id:number, isMouseHover:boolean):void{
     const btnElement = document.getElementById(`tabLayoutIconCntnr-${this.processId}-${id}`) as HTMLElement;
     if(this.currentViewOptionId == id){
       if(btnElement){
@@ -588,8 +604,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  toggleRibbobMenu():void{
+  toggleRibbonMenu():void{
     this.showRibbonMenu = !this.showRibbonMenu
+  }
+
+  questionBtn():void{
+   console.log('do somthing');
   }
 
   colorRibbonMenuCntnr():void{
@@ -601,6 +621,26 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   uncolorRibbonMenuCntnr():void{
     this.ribbonMenuCntnrStyle ={
       'background-color': '#080404'
+    }
+  }
+
+  colorBtnCntnr(btnId:string):void{
+    const btnElmnt = document.getElementById(btnId) as HTMLElement;
+    if(btnElmnt){
+      btnElmnt.style.backgroundColor = '#ccc';
+    }
+  }
+
+  uncolorBtnCntnr(type:string, btnId:string):void{
+    const btnElmnt = document.getElementById(btnId) as HTMLElement;
+    if(type === this.btnTypeRibbon){
+      if(btnElmnt){
+        btnElmnt.style.backgroundColor = '#080404';
+      }
+    }else{
+      if(btnElmnt){
+        btnElmnt.style.backgroundColor = '';
+      }
     }
   }
 
@@ -745,8 +785,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onNavPaneBtnLeave():void{
     const btnElement = document.getElementById(`navPaneIconCntnr-${this.processId}`) as HTMLDivElement;
     if(btnElement){
-      btnElement.style.backgroundColor = 'transparent';
-      btnElement.style.borderColor = 'transparent';
+      btnElement.style.backgroundColor = '';
+      btnElement.style.borderColor = '';
     }
   }
 
@@ -775,8 +815,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const btnElement = document.getElementById(`prevPaneIconCntnr-${this.processId}`) as HTMLDivElement;
     if(btnElement){
       if(!this.showPreviewPane){
-        btnElement.style.backgroundColor = 'transparent';
-        btnElement.style.borderColor = 'transparent';
+        btnElement.style.backgroundColor = '';
+        btnElement.style.borderColor = '';
       }else{
         btnElement.style.borderColor = '#ccc';
         btnElement.style.backgroundColor = '#605c5c';
@@ -809,8 +849,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const btnElement = document.getElementById(`detailsPaneIconCntnr-${this.processId}`) as HTMLDivElement;
     if(btnElement){
       if(!this.showDetailsPane){
-        btnElement.style.backgroundColor = 'transparent';
-        btnElement.style.borderColor = 'transparent';
+        btnElement.style.backgroundColor = '';
+        btnElement.style.borderColor = '';
       }else{
         btnElement.style.borderColor = '#ccc';
         btnElement.style.backgroundColor = '#605c5c';
@@ -821,8 +861,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   removePaneBtnStyle(id:string):void{
     const btnElement = document.getElementById(id) as HTMLDivElement;
     if(btnElement){
-      btnElement.style.backgroundColor = 'transparent';
-      btnElement.style.borderColor = 'transparent';
+      btnElement.style.backgroundColor = '';
+      btnElement.style.borderColor = '';
     }
   }
 
@@ -1303,7 +1343,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
 
         if(!isMouseHover && this.isIconInFocusDueToPriorAction){
-          btnElement.style.backgroundColor = 'transparent';
+          btnElement.style.backgroundColor = '';
           btnElement.style.border = '0.5px solid white'
         }
       }
@@ -1334,7 +1374,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   removeBtnStyle(id:number):void{
     const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
     if(btnElement){
-      btnElement.style.backgroundColor = 'transparent';
+      btnElement.style.backgroundColor = '';
       btnElement.style.border = 'none'
     }
   }

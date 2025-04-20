@@ -9,6 +9,7 @@ import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { IconAppCurrentState, TaskBarFileInfo } from './taskbar.entries.type';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 
 @Component({
   selector: 'cos-taskbarentries',
@@ -20,6 +21,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _triggerProcessService:TriggerProcessService;
+  private _systemNotificationService:SystemNotificationService;
   private _menuService:MenuService;
   private _windowServices:WindowService;
 
@@ -52,12 +54,13 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   tmpInfo!:string[];
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService,
-              triggerProcessService:TriggerProcessService, windowServices:WindowService) { 
+              triggerProcessService:TriggerProcessService, windowServices:WindowService, systemNotificationService:SystemNotificationService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._triggerProcessService = triggerProcessService;
     this._menuService = menuService;
     this._windowServices = windowServices;
+    this._systemNotificationService = systemNotificationService;
 
     this.processId = this._processIdService.getNewProcessId();
 
@@ -542,8 +545,12 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
   
 
-  onMouseLeave():void{
+  onMouseLeave(appName?:string, pid?:number):void{
     this._windowServices.hideProcessPreviewWindowNotify.next();
+
+    if(appName && pid)
+      this._systemNotificationService.taskBarPreviewHighlightNotify.next(`${appName}-${pid}`);
+    
     this.highlightTaskbarIcon();
   }
 
@@ -582,6 +589,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
           liElemnt.style.backgroundColor = 'hsl(206deg 77% 40%/20%)';
         }
 
+        this._systemNotificationService.taskBarPreviewHighlightNotify.next(`${appName}-${pid}`);
         return liElemnt.getBoundingClientRect();
       }
     }

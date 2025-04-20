@@ -6,7 +6,7 @@
               <div class="fileexp-tab highlight-default">File</div>
               <div class="fileexp-tab">Home</div>
               <div class="fileexp-tab active">View</div>
-              <div class="figure-header-toggle" (click)="toggleRibbobMenu()" (mouseenter)="colorRibbonMenuCntnr()" (mouseleave)="uncolorRibbonMenuCntnr()" [style]="ribbonMenuCntnrStyle">
+              <div class="figure-header-toggle" (click)="toggleRibbonMenu()" (mouseenter)="colorBtnCntnr('fileMngr-RibbonMenuToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeRibbon, 'fileMngr-RibbonMenuToggle-'+processId)" id="fileMngr-RibbonMenuToggle-{{processId}}">
                 <figure class="figure-header-tab">  
                     <div class="img-header-tab">
                         <svg xmlns="http://www.w3.org/2000/svg" 
@@ -22,7 +22,7 @@
                     </div>
                 </figure>
               </div>
-              <div class="question-header-cntnr" (click)="toggleRibbobMenu()" (mouseenter)="colorRibbonMenuCntnr()" (mouseleave)="uncolorRibbonMenuCntnr()" [style]="ribbonMenuCntnrStyle">
+              <div class="question-header-cntnr" (click)="questionBtn()" (mouseenter)="colorBtnCntnr('fileMngr-QuestionBtn-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeRibbon, 'fileMngr-QuestionBtn-'+processId)" id="fileMngr-QuestionBtn-{{processId}}">
                 <figure class="question-figure-header-tab">  
                     <img class="question-img-header-tab" [src]="'osdrive/Cheetah/System/Imageres/question.png'"/>
                 </figure>
@@ -447,12 +447,12 @@
             <span class="span-footer">|</span> -->
 
 
-            <div class="footer-img-cntnr-1" (click)="toggleRibbobMenu()" (mouseenter)="colorRibbonMenuCntnr()" (mouseleave)="uncolorRibbonMenuCntnr()" [style]="ribbonMenuCntnrStyle">
+            <div class="footer-img-cntnr-1" (click)="toggleDetailsView()" (mouseenter)="colorBtnCntnr('fileMngr-detailsViewToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-detailsViewToggle-'+processId)" id="fileMngr-detailsViewToggle-{{processId}}">
                 <figure class="footer-figure-header-tab">  
                     <img class="footer-img-header-tab" [src]="'osdrive/Cheetah/System/Imageres/details_view.png'"/>
                 </figure>
               </div>
-              <div class="footer-img-cntnr-2" (click)="toggleRibbobMenu()" (mouseenter)="colorRibbonMenuCntnr()" (mouseleave)="uncolorRibbonMenuCntnr()" [style]="ribbonMenuCntnrStyle">
+              <div class="footer-img-cntnr-2" (click)="toggleLargeIconsView()" (mouseenter)="colorBtnCntnr('fileMngr-largeIconToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-largeIconToggle-'+processId)" id="fileMngr-largeIconToggle-{{processId}}">
                 <figure class="footer-figure-header-tab">  
                     <img class="footer-img-header-tab" [src]="'osdrive/Cheetah/System/Imageres/large_image.png'"/>
                 </figure>

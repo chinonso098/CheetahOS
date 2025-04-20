@@ -26,6 +26,8 @@ export class SystemNotificationService implements BaseService{
     restartSystemNotify: Subject<void> = new Subject<void>();
     shutDownSystemNotify: Subject<void> = new Subject<void>();
     taskBarIconInfoChangeNotify: Subject<Map<number, string[]>> = new Subject<Map<number, string[]>>();
+    taskBarPreviewHighlightNotify: Subject<string> = new Subject<string>();
+    taskBarPreviewUnHighlightNotify: Subject<string> = new Subject<string>();
 
     name = 'sys_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
