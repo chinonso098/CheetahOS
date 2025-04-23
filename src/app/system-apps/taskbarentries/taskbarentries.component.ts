@@ -486,11 +486,17 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         rect.x = tmpX;
       }
 
-      
       console.log(`onMouseEnter -- rect:${rect}`);
       const data:unknown[] = [rect, appName, iconPath];
       if(this._runningProcessService.isProcessRunning(appName)){
+        const delay = 400;
         this._windowServices.showProcessPreviewWindowNotify.next(data);
+
+        if(this.taskBarEntriesIconState === this.unMergedIcons){
+          setTimeout(() => {
+            this._systemNotificationService.taskBarPreviewHighlightNotify.next(`${appName}-${pid}`);
+          }, delay);
+        }
       }
     }
   }
@@ -574,7 +580,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
           liElemnt.style.backgroundColor = 'hsl(206deg 77% 40%/20%)';
         }
 
-        return liElemnt?.getBoundingClientRect();
+        return liElemnt.getBoundingClientRect();
       }
     }else if(this.taskBarEntriesIconState === this.unMergedIcons){ 
       liElemnt = document.getElementById(`${prefix}-${appName}-${pid}`) as HTMLElement;
@@ -588,8 +594,6 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         }else{
           liElemnt.style.backgroundColor = 'hsl(206deg 77% 40%/20%)';
         }
-
-        this._systemNotificationService.taskBarPreviewHighlightNotify.next(`${appName}-${pid}`);
         return liElemnt.getBoundingClientRect();
       }
     }
