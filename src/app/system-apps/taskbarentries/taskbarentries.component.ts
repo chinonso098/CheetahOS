@@ -535,8 +535,31 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       }
     });
 
-    xAvg = (xSum/instanceCount);
+    xAvg = (xSum /instanceCount);
     return xAvg;
+  }
+
+  getCorrectXOffset(prefix:string, appName:string):number {
+    let xSum = 0;
+    const instanceCount = this._runningProcessService.getProcessCount(appName);
+    const instances = this._runningProcessService.getProcesses().filter( x => x.getProcessName === appName);
+    const instancIds =  instances.map(i => {
+        return i.getProcessId;
+    });
+    const prevWidth = 185;
+
+    instancIds.forEach((pid:number) =>{
+      const liElemnt = document.getElementById(`${prefix}-${appName}-${pid}`);
+      if(liElemnt){
+        const liElmntRect = liElemnt.getBoundingClientRect();
+        xSum += liElmntRect.width;
+      }
+    });
+
+    const fixedWidth = (prevWidth * instanceCount);
+    const xOffset = ((fixedWidth - xSum) * 0.5);
+
+    return xOffset;
   }
 
   calculateOffset(prefix:string, appName:string):number{
