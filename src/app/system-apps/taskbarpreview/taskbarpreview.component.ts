@@ -108,23 +108,53 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit, OnDest
     this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
   }
 
-  highLightTasktBarPreview(uid:string):void{
+  highLightTasktBarPreview(uid: string): void {
+    const pid = uid.split('-')[1];
+    const delay = 5;
+    const highlight = () => {
+      const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uid}`) as HTMLElement;
+      if(tskBarPrevElmnt){
+        tskBarPrevElmnt.style.backgroundColor = 'hsla(0,0%,25%,60%)';
 
-    const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uid}`) as HTMLElement;
-    if(tskBarPrevElmnt){
-      tskBarPrevElmnt.style.backgroundColor ='hsla(0,0%,25%,60%)';
-      tskBarPrevElmnt.style.color ='red';
-    }
-    if(!tskBarPrevElmnt){
-      //wait till it exists 
+        const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+        if(closeBtnElmnt){
+          closeBtnElmnt.style.backgroundColor = 'black';
+        }
+
+        const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
+        if(svgIconElmnt){
+          svgIconElmnt.style.fill = '#ababab';
+        }
+        return true;
+      }
+      return false;
+    };
+  
+    if(!highlight()){
+      const intervalId = setInterval(() => {
+        if (highlight()) {
+          clearInterval(intervalId);
+        }
+      }, delay); // checks every 5ms
     }
   }
 
   unHighLightTasktBarPreview(uid:string):void{
     console.log(`highLightTasktBarPreview:${uid}`);
+    const pid = uid.split('-')[1];
     const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uid}`) as HTMLElement;
     if(tskBarPrevElmnt){
       tskBarPrevElmnt.style.backgroundColor ='';
+    }
+
+    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+    if(closeBtnElmnt){
+      closeBtnElmnt.style.backgroundColor = '';
+    }
+
+    const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
+    if(svgIconElmnt){
+      svgIconElmnt.style.fill = '';
     }
   }
 }

@@ -477,7 +477,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     if(rect){
       if(this.checkForMultipleActiveInstance(appName)) {
         rect.x = this.getAverageOfRectX(prefix, appName);
-        const cnstnt = 4;
+        const cnstnt = 0;
         const tmpX= (rect.x * 0.5); 
         const offSet = this.calculateOffset(prefix, appName);
         rect.x = tmpX - offSet + cnstnt;
@@ -555,7 +555,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     this._windowServices.hideProcessPreviewWindowNotify.next();
 
     if(appName && pid)
-      this._systemNotificationService.taskBarPreviewHighlightNotify.next(`${appName}-${pid}`);
+      this._systemNotificationService.taskBarPreviewUnHighlightNotify.next(`${appName}-${pid}`);
     
     this.highlightTaskbarIcon();
   }
