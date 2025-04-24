@@ -42,6 +42,9 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   readonly pinned = "pinned";
   readonly unPinned = "unPinned";
+  readonly tskbar = "tskbar";
+  readonly tskbarUnPinned = 'tskbar-UnPinned';
+
   windowInFocusPid = 0;
   prevWindowInFocusPid = 0;
   
@@ -427,9 +430,9 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     let liElemnt:HTMLElement;
 
     if(this.taskBarEntriesIconState === this.mergedIcons)
-      liElemnt = document.getElementById(`tskbar-${file.opensWith}`) as HTMLElement;
+      liElemnt = document.getElementById(`${this.tskbar}-${file.opensWith}`) as HTMLElement;
     else
-      liElemnt = document.getElementById(`tskbar-${file.opensWith}-${file.pid}`) as HTMLElement;
+      liElemnt = document.getElementById(`${this.tskbar}-${file.opensWith}-${file.pid}`) as HTMLElement;
 
     if(liElemnt){
       const rect =  liElemnt.getBoundingClientRect();
@@ -453,9 +456,9 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     let liElemnt:HTMLElement;
 
     if(this.taskBarEntriesIconState === this.mergedIcons)
-     liElemnt = document.getElementById(`tskbar-UnPinned-${proccess.getProcessName}`) as HTMLElement;
+     liElemnt = document.getElementById(`${this.tskbarUnPinned}-${proccess.getProcessName}`) as HTMLElement;
     else
-      liElemnt = document.getElementById(`tskbar-UnPinned-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
+      liElemnt = document.getElementById(`${this.tskbarUnPinned}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
 
     if(liElemnt){
       const rect =  liElemnt.getBoundingClientRect();
@@ -472,7 +475,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
 
   onMouseEnter(appName:string, pid:number, iconPath:string, caller:string):void{
-    const prefix = (caller === "pinned")? 'tskbar': 'tskbar-UnPinned';
+    const prefix = (caller === this.pinned)? this.tskbar: this.tskbarUnPinned;
     const rect = this.highlightTaskbarIconOnMouseHover(prefix, appName, pid);
     if(rect){
       if(this.checkForMultipleActiveInstance(appName)) {
@@ -482,7 +485,10 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         const offSet = this.calculateOffset(prefix, appName);
         rect.x = tmpX - offSet + cnstnt;
       }else{
-        const tmpX= (rect.x * 0.5); 
+        // the width of a preivew window is set to 185px
+        const prevWidth = 185;
+        const xOffset = ((prevWidth - rect.width) * 0.5);
+        const tmpX = rect.x - xOffset ;
         rect.x = tmpX;
       }
 
@@ -607,28 +613,25 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     this.removeHighlightFromTaskbarIcon();
 
     const proccess = this._runningProcessService.getProcess(this.windowInFocusPid);
-    const tskbar = 'tskbar';
-    const tskbarUnPinned = 'tskbar-UnPinned';
-
     let liElemnt:HTMLElement;
   
     if(proccess){
       if(this.taskBarEntriesIconState === this.mergedIcons){
-        liElemnt = document.getElementById(`${tskbar}-${proccess.getProcessName}`) as HTMLElement;
+        liElemnt = document.getElementById(`${this.tskbar}-${proccess.getProcessName}`) as HTMLElement;
         if(liElemnt){
           liElemnt.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
         }else{
-          liElemnt = document.getElementById(`${tskbarUnPinned}-${proccess.getProcessName}`) as HTMLElement;
+          liElemnt = document.getElementById(`${this.tskbarUnPinned}-${proccess.getProcessName}`) as HTMLElement;
           if(liElemnt){
             liElemnt.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
           }
         }
       }else if(this.taskBarEntriesIconState === this.unMergedIcons){ 
-        liElemnt = document.getElementById(`${tskbar}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
+        liElemnt = document.getElementById(`${this.tskbar}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
         if(liElemnt){
           liElemnt.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
         }else{
-          liElemnt = document.getElementById(`${tskbarUnPinned}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
+          liElemnt = document.getElementById(`${this.tskbarUnPinned}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
           if(liElemnt){
             liElemnt.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
           }
@@ -639,28 +642,25 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   removeHighlightFromTaskbarIcon():void{
     const proccess = this._runningProcessService.getProcess(this.prevWindowInFocusPid);
-    const tskbar = 'tskbar';
-    const tskbarUnPinned = 'tskbar-UnPinned';
-
     let liElemnt:HTMLElement;
 
     if(proccess){
       if(this.taskBarEntriesIconState === this.mergedIcons){
-        liElemnt = document.getElementById(`${tskbar}-${proccess.getProcessName}`) as HTMLElement;
+        liElemnt = document.getElementById(`${this.tskbar}-${proccess.getProcessName}`) as HTMLElement;
         if(liElemnt){
           liElemnt.style.backgroundColor = '';
         }else{
-          liElemnt = document.getElementById(`${tskbarUnPinned}-${proccess.getProcessName}`) as HTMLElement;
+          liElemnt = document.getElementById(`${this.tskbarUnPinned}-${proccess.getProcessName}`) as HTMLElement;
           if(liElemnt){
             liElemnt.style.backgroundColor = '';
           }
         }
       }else if(this.taskBarEntriesIconState === this.unMergedIcons){ 
-        liElemnt = document.getElementById(`${tskbar}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
+        liElemnt = document.getElementById(`${this.tskbar}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
         if(liElemnt){
           liElemnt.style.backgroundColor = '';
         }else{
-          liElemnt = document.getElementById(`${tskbarUnPinned}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
+          liElemnt = document.getElementById(`${this.tskbarUnPinned}-${proccess.getProcessName}-${proccess.getProcessId}`) as HTMLElement;
           if(liElemnt){
             liElemnt.style.backgroundColor = '';
           }

@@ -604,7 +604,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   loadOtherBackgrounds(i:number):void{
-    const names:string[] = ["vanta-waves","rings","halo", "globe", "birds"]
+    const names:string[] = ["vanta-waves","vanta-rings","vanta-halo", "vanta-globe", "vanta-birds"]
     const bkgrounds:string[] = ["osdrive/Program-Files/Backgrounds/vanta.waves.min.js", "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
                                  "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
         
@@ -762,14 +762,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   buildNewMenu(): NestedMenuItem[]{
 
-    const newFolder:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action: this.createFolder.bind(this),  variables:true , 
-      emptyline:false, styleOption:'C' }
+    const newFolder:NestedMenuItem={icon:`${Constants.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action: this.createFolder.bind(this),  variables:true , 
+      emptyline:false, styleOption:'C'}
 
-    const textEditor:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}quill.png`, label:'Rich Text',  action: this.openTextEditor.bind(this),  variables:true , 
-      emptyline:false, styleOption:'C' }
+    const textEditor:NestedMenuItem={icon:`${Constants.IMAGE_BASE_PATH}quill.png`, label:'Rich Text',  action: this.openTextEditor.bind(this),  variables:true , 
+      emptyline:false, styleOption:'C'}
 
-    const codeEditor:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}vs_code.png`, label:'Code Editor',  action: this.openCodeEditor.bind(this),  variables:true , 
-        emptyline:false, styleOption:'C' }
+    const codeEditor:NestedMenuItem={icon:`${Constants.IMAGE_BASE_PATH}vs_code.png`, label:'Code Editor',  action: this.openCodeEditor.bind(this),  variables:true , 
+        emptyline:false, styleOption:'C'}
 
     const sortByMenu = [newFolder, textEditor, codeEditor ]
 
@@ -793,11 +793,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   getTaskBarContextData():void{
     this.taskBarContextMenuData = [
-        {icon:'', label: 'Show the desktop', action: this.showTheDesktop.bind(this)},
-        {icon:'', label: 'Task Manager', action: this.openTaskManager.bind(this)},
-        {icon:'', label: 'Hide the taskbar', action:this.hideTheTaskBar.bind(this)},
-        {icon:'', label: 'Merge taskbar Icons', action: this.mergeTaskBarButton.bind(this)}
-      ]
+      {icon:'', label: 'Show the desktop', action: this.showTheDesktop.bind(this)},
+      {icon:'', label: 'Task Manager', action: this.openTaskManager.bind(this)},
+      {icon:'', label: 'Hide the taskbar', action:this.hideTheTaskBar.bind(this)},
+      {icon:'', label: 'Merge taskbar Icons', action: this.mergeTaskBarButton.bind(this)}
+    ]
   }
 
   private buildVantaEffect(n:number) {
@@ -967,7 +967,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   showTaskBarPreviewWindow(data:unknown[]):void{
-    const taskbarHideDelay = 400;
+    const taskbarHideDelay = 350;
     const rect = data[0] as DOMRect;
     const appName = data[1] as string;
     const iconPath = data[2] as string;
