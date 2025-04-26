@@ -1,3 +1,3 @@
-<div class="task-bar-nav" (click)="hideContextMenus()" (contextmenu)="showTaskBarContextMenu($event)" id="the-window-taskbar"> 
+<div class="task-bar-nav" [@tskBarSlideStatusAnimation]="slideState" (click)="hideContextMenus()" (contextmenu)="showTaskBarContextMenu($event)" id="the-window-taskbar"> 
     <ng-content> </ng-content> 
 </div>

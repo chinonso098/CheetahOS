@@ -25,6 +25,10 @@ export class SystemNotificationService implements BaseService{
     resetLockScreenTimeOutNotify: Subject<void> = new Subject<void>();
     restartSystemNotify: Subject<void> = new Subject<void>();
     shutDownSystemNotify: Subject<void> = new Subject<void>();
+
+
+    hideTaskBarNotify: Subject<void> = new Subject<void>();
+    showTaskBarNotify: Subject<void> = new Subject<void>();
     taskBarIconInfoChangeNotify: Subject<Map<number, string[]>> = new Subject<Map<number, string[]>>();
     taskBarPreviewHighlightNotify: Subject<string> = new Subject<string>();
     taskBarPreviewUnHighlightNotify: Subject<string> = new Subject<string>();

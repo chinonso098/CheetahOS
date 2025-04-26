@@ -6,11 +6,25 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
   selector: 'cos-taskbar',
   templateUrl: './taskbar.component.html',
-  styleUrls: ['./taskbar.component.css']
+  styleUrls: ['./taskbar.component.css'],
+    animations: [
+    trigger('tskBarSlideStatusAnimation', [
+      state('slideDown', style({ bottom: '-40px' })),
+      state('slideUp', style({ bottom: '0px' })),
+
+      transition('* => slideUp', [
+        animate('0.3s ease-in')
+      ]),
+      transition('slideUp => slideDown', [
+        animate('0.4s ease-out')
+      ]),
+    ])
+  ]
 })
 export class TaskbarComponent implements AfterViewInit{
 
@@ -22,6 +36,7 @@ export class TaskbarComponent implements AfterViewInit{
 
   
   SECONDS_DELAY = 250;
+  slideState = 'slideUp';
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -44,6 +59,8 @@ export class TaskbarComponent implements AfterViewInit{
      // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
     this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
     this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    this._systemNotificationServices.showTaskBarNotify.subscribe(() => {this.showTaskBar()});
+    this._systemNotificationServices.hideTaskBarNotify.subscribe(() => {this.hideTaskBar()});
   }
 
   
@@ -56,11 +73,26 @@ export class TaskbarComponent implements AfterViewInit{
         tskBar.style.zIndex = '';
       }
     }, this.SECONDS_DELAY);
+
+
+
+    // setTimeout(()=>{
+    //   this.slideState = 'slideDown';
+    //   this.slideOnUp();
+    // },10000);
   }
 
   hideContextMenus():void{
     this._menuService.hideContextMenus.next();
   }
+
+
+  slideOnUp(): void {
+    setTimeout(()=>{
+      this.slideState = 'slideUp';
+    },5000);
+  }
+
 
   showTaskBarContextMenu(evt:MouseEvent):void{
     if(this._runningProcessService.getEventOrginator() === Constants.EMPTY_STRING){
@@ -85,6 +117,14 @@ export class TaskbarComponent implements AfterViewInit{
     if(taskBarElmnt){
       taskBarElmnt.style.zIndex = '4';
     }
+  }
+
+  showTaskBar():void{
+    this.slideState = 'slideUp';
+  }
+
+  hideTaskBar():void{
+    this.slideState = 'slideDown';
   }
 
   private getComponentDetail():Process{

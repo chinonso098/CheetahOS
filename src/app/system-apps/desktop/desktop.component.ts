@@ -90,6 +90,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   isSortBySize = false;
   isSortByDateModified = false;
   isShiftSubMenuLeft = false;
+  isTaskBarHidden = false
+  isTaskBarTemporarilyVisible = false
 
   autoAlignIcons = true;
   autoArrangeIcons = true;
@@ -467,8 +469,52 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
   }
 
+  performTasks(evt:MouseEvent):void{
+    this.resetLockScreenTimeOut();
+
+    if(this.isTaskBarHidden){
+      this.showTaskBarTemporarily(evt);
+    }
+  }
+
   resetLockScreenTimeOut():void{
     this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
+  }
+
+  showTaskBarTemporarily(evt:MouseEvent):void{
+    const mainWindow = document.getElementById('vanta');
+    if(mainWindow){
+      const maxHeight = mainWindow.offsetHeight;
+      const clientY = evt.clientY;
+      const diff = (maxHeight - clientY);
+      if(!this.isTaskBarTemporarilyVisible){
+        if(diff <= 5){
+          this.isTaskBarTemporarilyVisible = true;
+          this._systemNotificationServices.showTaskBarNotify.next();
+          this.showTaskBarTemporarilyHelper();
+        }
+      }else if(this.isTaskBarTemporarilyVisible){
+        if(diff <= 40){
+          this.isTaskBarTemporarilyVisible = true;
+        }else{
+          this.isTaskBarTemporarilyVisible = false;
+          this._systemNotificationServices.hideTaskBarNotify.next();
+        }
+      }
+    }
+    console.log('Mouse evt:',evt);
+  }
+
+  // if mouse remains withing 40px of the bottom, keep showing the taksbar
+  showTaskBarTemporarilyHelper():void{
+    const delay = 10; //10ms
+    const intervalId = setInterval(() => {
+      if (!this.isTaskBarTemporarilyVisible) {
+        clearInterval(intervalId);
+      }else{
+        this._systemNotificationServices.showTaskBarNotify.next();
+      }
+    }, delay);
   }
 
   hideShowVolumeControl():void{
@@ -744,7 +790,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   hideTheTaskBar():void{
-    1
+    const menuOption:GeneralMenu = {icon:'', label: 'Show the taskbar', action:this.showTheTaskBar.bind(this)}
+    this.isTaskBarHidden = true;
+    this._systemNotificationServices.hideTaskBarNotify.next();
+    this.taskBarContextMenuData[2] = menuOption;
+  }
+
+  showTheTaskBar():void{
+    const menuOption:GeneralMenu = {icon:'', label: 'Hide the taskbar', action:this.hideTheTaskBar.bind(this)}
+    this.isTaskBarHidden = false;
+    this._systemNotificationServices.showTaskBarNotify.next();
+    this.taskBarContextMenuData[2] = menuOption;
   }
 
   mergeTaskBarButton():void{
@@ -1024,5 +1080,4 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }
-
 }
