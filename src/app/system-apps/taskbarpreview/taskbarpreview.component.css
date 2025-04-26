@@ -96,9 +96,6 @@
     background-color: hsla(0,0%,25%,60%);
 }
 
-.taskbar-preview-content:hover .taskbar-preview-button{
-    background-color: black;
-}
 
 .taskbar-preview-content:hover .taskbar-preview-svg{
     fill: #ababab;

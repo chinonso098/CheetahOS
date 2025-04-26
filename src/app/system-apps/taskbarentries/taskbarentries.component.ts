@@ -29,6 +29,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   SECONDS_DELAY = 100; //100 millisecs
   activeProcesses:Process[] = [];
   pinToTaskBarList:TaskBarFileInfo[] = [];
+  unMergedTaskBarList:TaskBarFileInfo[] = [];
   selectedFile!:FileInfo
 
   readonly mergedIcons = Constants.MERGED_TASKBAR_ENTRIES;
@@ -377,6 +378,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       appName: file.getFileName,
       showLabel:currentState.showLabel,
       isRunning:currentState.isRunning,
+      isPinned:true
     }
 
     return taskBarFileInfo;

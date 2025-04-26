@@ -5,7 +5,8 @@ export interface TaskBarFileInfo{
     opensWith:string,
     appName:string,
     showLabel:string,
-    isRunning:boolean
+    isRunning:boolean,
+    isPinned:boolean
 }
 
 

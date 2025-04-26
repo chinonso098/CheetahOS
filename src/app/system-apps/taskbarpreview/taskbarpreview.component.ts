@@ -98,14 +98,31 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit, OnDest
 
   setWindowToFocusOnMouseHover(pid:number):void{
     this._windowServices.setProcessWindowToFocusOnMouseHoverNotify.next(pid);
+    this.setCloseBtnColor(pid, false);
   }
 
   restoreWindowOnMouseLeave(pid:number):void{
     this._windowServices.restoreProcessWindowOnMouseLeaveNotify.next(pid);
+    this.removeCloseBtnColor(pid);
   }
 
   showOrSetWindowToFocusOnClick(pid:number):void{
     this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
+  }
+
+
+  setCloseBtnColor(pid:number, isBtnHover:boolean):void{
+    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+    if(closeBtnElmnt){
+      closeBtnElmnt.style.backgroundColor = (isBtnHover)? 'rgb(232,17,35)' : 'black';
+    }
+  }
+
+  removeCloseBtnColor(pid:number):void{
+    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+    if(closeBtnElmnt){
+      closeBtnElmnt.style.backgroundColor = '';
+    }
   }
 
   highLightTasktBarPreview(uid: string): void {
