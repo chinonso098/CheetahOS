@@ -502,7 +502,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         }
       }
     }
-    console.log('Mouse evt:',evt);
   }
 
   // if mouse remains withing 40px of the bottom, keep showing the taksbar
@@ -511,8 +510,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const intervalId = setInterval(() => {
       if (!this.isTaskBarTemporarilyVisible) {
         clearInterval(intervalId);
-      }else{
-        this._systemNotificationServices.showTaskBarNotify.next();
       }
     }, delay);
   }

@@ -73,26 +73,11 @@ export class TaskbarComponent implements AfterViewInit{
         tskBar.style.zIndex = '';
       }
     }, this.SECONDS_DELAY);
-
-
-
-    // setTimeout(()=>{
-    //   this.slideState = 'slideDown';
-    //   this.slideOnUp();
-    // },10000);
   }
 
   hideContextMenus():void{
     this._menuService.hideContextMenus.next();
   }
-
-
-  slideOnUp(): void {
-    setTimeout(()=>{
-      this.slideState = 'slideUp';
-    },5000);
-  }
-
 
   showTaskBarContextMenu(evt:MouseEvent):void{
     if(this._runningProcessService.getEventOrginator() === Constants.EMPTY_STRING){
