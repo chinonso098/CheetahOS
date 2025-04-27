@@ -1,8 +1,8 @@
 .taskBar-Entries-ol{
     height: 100%;
-    left: 75px;
+    left: 80px;
     position: absolute;
-    right:80px;
+    right:116px;
     display: flex;
     column-gap: 3px;
     margin: 0 1px;
