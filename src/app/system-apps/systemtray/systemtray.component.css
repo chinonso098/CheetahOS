@@ -18,7 +18,7 @@
     padding: 0 1px;
     position: relative;
     top:11px;
-    left: 4px;
+    left: 5px;
 }
 
 .taskbar-arrow-img{
@@ -27,7 +27,7 @@
 }
 
 .main-taskbar-arrow-div:hover{
-    background-color: hsla(0,0%,25%,60%);
+    background-color:hsla(0,0%,30%,60%);
 }
 
 /* volume  */
@@ -54,7 +54,7 @@
 }
 
 .main-taskbar-volume-div:hover{
-    background-color: hsla(0,0%,25%,60%);
+    background-color:hsla(0,0%,30%,60%);
 }
 
 /* datetime */
@@ -66,6 +66,10 @@
     place-items: center;
     position: absolute;
     right: 0;
+}
+
+.main-taskbar-date-and-time-cntnr:hover{
+    background-color:hsla(0,0%,30%,60%);
 }
 
 .taskbar-time-cntnr{

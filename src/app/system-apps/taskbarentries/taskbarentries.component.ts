@@ -8,7 +8,7 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { IconAppCurrentState, TaskBarFileInfo } from './taskbar.entries.type';
+import { IconAppCurrentState, TaskBarIconInfo } from './taskbar.entries.type';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { Subscription } from 'rxjs';
 
@@ -31,8 +31,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   private prevOpenedProccesses:string[]= [];
   SECONDS_DELAY = 100; //100 millisecs
   activeProcesses:Process[] = [];
-  pinToTaskBarList:TaskBarFileInfo[] = [];
-  unMergedTaskBarList:TaskBarFileInfo[] = [];
+  mergedTaskBarIconList:TaskBarIconInfo[] = [];
+  unMergedTaskBarIconList:TaskBarIconInfo[] = [];
   selectedFile!:FileInfo
 
   readonly mergedIcons = Constants.MERGED_TASKBAR_ENTRIES;
@@ -76,7 +76,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
     this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.onCloseProcessNotify(p)});
 
-    this._menuService.pinToTaskBar.subscribe((p)=>{this.onPinIconToTaskBarList(p)});
+    this._menuService.pinToTaskBar.subscribe((p)=>{this.onPinIconToTaskBarIconList(p)});
     this._menuService.unPinFromTaskBar.subscribe((p)=>{this.onUnPinIconFromTaskBarList(p)});
     this._menuService.openApplicationFromTaskBar.subscribe((p)=>{this.openApplication(p)});
     this._menuService.closeApplicationFromTaskBar.subscribe((p) =>{this.closeApplication(p)});
@@ -123,18 +123,18 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }
   }
 
-  onPinIconToTaskBarList(file:FileInfo):void{
-    let tskbarFileInfo!:TaskBarFileInfo 
+  onPinIconToTaskBarIconList(file:FileInfo):void{
+    let tskbarFileInfo!:TaskBarIconInfo 
 
     if(this.taskBarEntriesIconState === this.mergedIcons){
-      if(!this.pinToTaskBarList.some(x => x.opensWith === file.getOpensWith)){
-        tskbarFileInfo = this.getTaskBarFileInfo(file,undefined);
-        this.pinToTaskBarList.push(tskbarFileInfo);
+      if(!this.mergedTaskBarIconList.some(x => x.opensWith === file.getOpensWith)){
+        tskbarFileInfo = this.getTaskBarIconInfo(file,undefined);
+        this.mergedTaskBarIconList.push(tskbarFileInfo);
       }
     }else if(this.taskBarEntriesIconState === this.unMergedIcons){
-      if(!this.unMergedTaskBarList.some(x => x.opensWith === file.getOpensWith)){
-        tskbarFileInfo = this.getTaskBarFileInfo(file,undefined);
-        this.unMergedTaskBarList.push(tskbarFileInfo);
+      if(!this.unMergedTaskBarIconList.some(x => x.opensWith === file.getOpensWith)){
+        tskbarFileInfo = this.getTaskBarIconInfo(file,undefined);
+        this.unMergedTaskBarIconList.push(tskbarFileInfo);
       }
     }
 
@@ -144,20 +144,20 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   onUnPinIconFromTaskBarList(file:FileInfo):void{
     const deleteCount = 1;
     if(this.taskBarEntriesIconState === this.mergedIcons){
-      const procIndex = this.pinToTaskBarList.findIndex((pin) => {
+      const procIndex = this.mergedTaskBarIconList.findIndex((pin) => {
         return pin.opensWith === file.getOpensWith;
       });
 
       if(procIndex != -1){
-          this.pinToTaskBarList.splice(procIndex, deleteCount)
+          this.mergedTaskBarIconList.splice(procIndex, deleteCount)
       }
     }else if(this.taskBarEntriesIconState === this.unMergedIcons){
-      const procIndex = this.unMergedTaskBarList.findIndex((pin) => {
+      const procIndex = this.unMergedTaskBarIconList.findIndex((pin) => {
         return pin.opensWith === file.getOpensWith;
       });
 
     if(procIndex != -1){
-        this.unMergedTaskBarList.splice(procIndex, deleteCount)
+        this.unMergedTaskBarIconList.splice(procIndex, deleteCount)
     }
     }
     this.updateRunningProcess();
@@ -194,7 +194,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       this.storeHistory(proccesses);
 
       for(const process of proccesses){
-        const tskBarFile = this.unMergedTaskBarList.find(i => i.opensWith === process.getProcessName);
+        const tskBarFile = this.unMergedTaskBarIconList.find(i => i.opensWith === process.getProcessName);
         if(tskBarFile){
           const proccessInstaceCount = this._runningProcessService.getProcessCount(process.getProcessName)
           if(proccessInstaceCount === 1){
@@ -203,15 +203,15 @@ export class TaskBarEntriesComponent implements AfterViewInit {
             }
           }else if(proccessInstaceCount > 1){
             // add only unique instances
-            if(!this.unMergedTaskBarList.find(i => i.opensWith === process.getProcessName && i.pid === process.getProcessId)){
-              const tskbarFileInfo = this.getTaskBarFileInfo(undefined, process);
-              this.unMergedTaskBarList.push(tskbarFileInfo);
+            if(!this.unMergedTaskBarIconList.find(i => i.opensWith === process.getProcessName && i.pid === process.getProcessId)){
+              const tskbarFileInfo = this.getTaskBarIconInfo(undefined, process);
+              this.unMergedTaskBarIconList.push(tskbarFileInfo);
             }
           }
           setTimeout(() => {this.setIconState(true, process.getProcessName, process.getProcessId);}, delay);
         }else{
-          const tskbarFileInfo = this.getTaskBarFileInfo(undefined, process);
-          this.unMergedTaskBarList.push(tskbarFileInfo);
+          const tskbarFileInfo = this.getTaskBarIconInfo(undefined, process);
+          this.unMergedTaskBarIconList.push(tskbarFileInfo);
           setTimeout(() => {this.setIconState(true, process.getProcessName, process.getProcessId);}, delay);
         }
       }
@@ -226,7 +226,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
        * else, put object in a different list
        */
       uniqueProccesses.forEach(x =>{
-        if(this.pinToTaskBarList.some( i => i.opensWith === x.getProcessName)){
+        if(this.mergedTaskBarIconList.some( i => i.opensWith === x.getProcessName)){
           this.setIconState(true, x.getProcessName);
         }else{
           proccessesNotInPinToStart.push(x);
@@ -335,8 +335,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   updatePinnedTaskbarIconOnInit(process:Process):void{
     const tmpUid = `${process.getProcessName}-0`;
-    const idx = this.unMergedTaskBarList.findIndex(x => x.uid === tmpUid);
-    const pinned = this.unMergedTaskBarList[idx];
+    const idx = this.unMergedTaskBarIconList.findIndex(x => x.uid === tmpUid);
+    const pinned = this.unMergedTaskBarIconList[idx];
 
     if(pinned){
       //check if an instance of this apps is running
@@ -348,18 +348,18 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       pinned.isRunning = isRunning;
       pinned.showLabel = this.showLabel;
 
-      this.unMergedTaskBarList[idx] = pinned;
+      this.unMergedTaskBarIconList[idx] = pinned;
     }
   }
 
   updateUnMergedTaskbarIconOnClose(process:Process):void{
     const uid = `${process.getProcessName}-${process.getProcessId}`;
     const tmpUid = `${process.getProcessName}-0`;
-    const idx = this.unMergedTaskBarList.findIndex(x => x.uid === uid);
+    const idx = this.unMergedTaskBarIconList.findIndex(x => x.uid === uid);
 
     if(idx === -1) return;
 
-    const tskBarIcon = this.unMergedTaskBarList[idx];
+    const tskBarIcon = this.unMergedTaskBarIconList[idx];
     if(tskBarIcon){
       // if the instace that was closed, was the pinned instance
       if(tskBarIcon.isPinned){      
@@ -381,14 +381,14 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
             
 
-            this.unMergedTaskBarList[idx] = tskBarIcon;
+            this.unMergedTaskBarIconList[idx] = tskBarIcon;
           }
         }else{
           tskBarIcon.uid = tmpUid;
           tskBarIcon.pid = 0;
           tskBarIcon.isRunning = isRunning;
           tskBarIcon.showLabel = this.hideLabel;
-          this.unMergedTaskBarList[idx] = tskBarIcon;
+          this.unMergedTaskBarIconList[idx] = tskBarIcon;
         }
       }else if(!tskBarIcon.isPinned){
         this.removeActiveProcessFromUnMergedTasBarList(process.getProcessId);
@@ -396,17 +396,17 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }
   }
 
-  getTaskBarFileInfo(file?:FileInfo , process?:Process):TaskBarFileInfo{
+  getTaskBarIconInfo(file?:FileInfo , process?:Process):TaskBarIconInfo{
 
-    let taskBarFileInfo:TaskBarFileInfo = { pid: 0, uid: '', iconPath: '', firstIconPath:'', opensWith: '', appName: '', displayName:'', showLabel: '', isRunning: false, isPinned: false};
+    let taskBarIconInfo:TaskBarIconInfo = { pid: 0, uid: '', iconPath: '', defaultIconPath:'', opensWith: '', appName: '', displayName:'', showLabel: '', isRunning: false, isPinned: false};
     if(file){
       const currentState = this.getIconAppCurrentState(file,undefined);
-       taskBarFileInfo = {
+       taskBarIconInfo = {
         uid:`${file.getOpensWith}-0`,
         pid:0,
         opensWith:file.getOpensWith,
         iconPath:file.getIconPath,
-        firstIconPath: file.getIconPath,
+        defaultIconPath: file.getIconPath,
         appName: file.getFileName,
         displayName: file.getFileName,
         showLabel:currentState.showLabel,
@@ -415,12 +415,12 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       }
     }else if(process){
       const currentState = this.getIconAppCurrentState(undefined,process);
-      taskBarFileInfo = {
+      taskBarIconInfo = {
         uid:`${process.getProcessName}-${process.getProcessId}`,
         pid:process.getProcessId,
         opensWith: process.getProcessName,
         iconPath: process.getIcon,
-        firstIconPath: process.getIcon,
+        defaultIconPath: process.getIcon,
         appName: process.getProcessName,
         displayName: process.getProcessName,
         showLabel:currentState.showLabel,
@@ -429,21 +429,21 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       }
     }
 
-    return taskBarFileInfo;
+    return taskBarIconInfo;
   }
 
   removeActiveProcessFromUnMergedTasBarList(pid:number):void{
     const deleteCount = 1;
-    const procIndex = this.unMergedTaskBarList.findIndex((process) => {
+    const procIndex = this.unMergedTaskBarIconList.findIndex((process) => {
         return process.pid === pid;
       });
 
     if(procIndex != -1){
-      this.unMergedTaskBarList.splice(procIndex, deleteCount)
+      this.unMergedTaskBarIconList.splice(procIndex, deleteCount)
     }
  }
 
-  onPinnedAppIconClick(file:TaskBarFileInfo):void{
+  onPinnedTaskBarIconClick(file:TaskBarIconInfo):void{
     // check if the give app is running
     // if it isn't running, then trigger it
     if(!this._runningProcessService.isProcessRunning(file.opensWith)){
@@ -473,7 +473,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     this._windowServices.cleanUp(falseUid);
   }
 
-  onShowIconContextMenu(evt:MouseEvent, file:TaskBarFileInfo):void{
+  onShowIconContextMenu(evt:MouseEvent, file:TaskBarIconInfo):void{
     /* My hand was forced, I had to let the desktop display the taskbar context menu.
      * This is due to the fact that the taskbar has a max height of 40px, which is not enough room to display the context menu
      */
@@ -645,15 +645,15 @@ export class TaskBarEntriesComponent implements AfterViewInit {
           console.log('map value:',value);
 
 
-          const tskBarFileInfoIdx = this.unMergedTaskBarList.findIndex(x => x.pid === key);
+          const tskBarFileInfoIdx = this.unMergedTaskBarIconList.findIndex(x => x.pid === key);
           console.log('tskBarFileInfoIdx:',tskBarFileInfoIdx);
-          const tskBarFileInfo = this.unMergedTaskBarList.find(x => x.pid === key);
+          const tskBarFileInfo = this.unMergedTaskBarIconList.find(x => x.pid === key);
           console.log('tskBarFileInfo:',tskBarFileInfo);
           if(tskBarFileInfo){
             tskBarFileInfo.displayName = value[0];
             tskBarFileInfo.iconPath = value[1];
 
-            this.unMergedTaskBarList[tskBarFileInfoIdx] = tskBarFileInfo;
+            this.unMergedTaskBarIconList[tskBarFileInfoIdx] = tskBarFileInfo;
           }
         }        
       }

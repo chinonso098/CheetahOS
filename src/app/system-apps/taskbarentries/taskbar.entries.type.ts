@@ -1,8 +1,8 @@
-export interface TaskBarFileInfo{
+export interface TaskBarIconInfo{
     pid:number,
     uid:string,
     iconPath:string,
-    firstIconPath:string,
+    defaultIconPath:string,
     opensWith:string,
     appName:string,
     displayName:string
