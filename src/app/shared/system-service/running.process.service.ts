@@ -65,9 +65,7 @@ export class RunningProcessService implements BaseService{
 
     removeProcess(proccessToRemove:Process):void{
         const deleteCount = 1;
-        const procIndex = this._runningProcesses.findIndex((process) => {
-            return process.getProcessId === proccessToRemove.getProcessId;
-          });
+        const procIndex = this._runningProcesses.findIndex(process => process.getProcessId === proccessToRemove.getProcessId);
 
         if(procIndex != -1){
             this._runningProcesses.splice(procIndex, deleteCount)

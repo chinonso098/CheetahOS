@@ -10,7 +10,6 @@ import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { IconAppCurrentState, TaskBarIconInfo } from './taskbar.entries.type';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'cos-taskbarentries',
@@ -25,8 +24,6 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   private _systemNotificationService:SystemNotificationService;
   private _menuService:MenuService;
   private _windowServices:WindowService;
-
-  private _taskBarIconInfoChangeSub!: Subscription;
 
   private prevOpenedProccesses:string[]= [];
   SECONDS_DELAY = 100; //100 millisecs
@@ -77,12 +74,14 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.onCloseProcessNotify(p)});
 
     this._menuService.pinToTaskBar.subscribe((p)=>{this.onPinIconToTaskBarIconList(p)});
-    this._menuService.unPinFromTaskBar.subscribe((p)=>{this.onUnPinIconFromTaskBarList(p)});
+    this._menuService.unPinFromTaskBar.subscribe((p)=>{this.onUnPinIconFromTaskBarIconList(p)});
     this._menuService.openApplicationFromTaskBar.subscribe((p)=>{this.openApplication(p)});
     this._menuService.closeApplicationFromTaskBar.subscribe((p) =>{this.closeApplication(p)});
     this._menuService.UnMergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.unMergedIcons)});
     this._menuService.mergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.mergedIcons)});
-    this._taskBarIconInfoChangeSub = this._systemNotificationService.taskBarIconInfoChangeNotify.subscribe((p) =>{this.updateTaskBarIcon(p); });
+
+    //tskbar never closes so no need to unsub
+    this._systemNotificationService.taskBarIconInfoChangeNotify.subscribe((p) =>{this.updateTaskBarIcon(p); });
 
     this._windowServices.focusOnCurrentProcessWindowNotify.subscribe((p)=>{
       this.prevWindowInFocusPid = this.windowInFocusPid;
@@ -119,7 +118,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   onCloseProcessNotify(process:Process):void{
     if(this.taskBarEntriesIconState === this.unMergedIcons){
-      this.updateUnMergedTaskbarIconOnClose(process);
+      this.updateUnMergedTaskbarIconListOnClose(process);
     }
   }
 
@@ -141,20 +140,16 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     this.updateRunningProcess();
   }
 
-  onUnPinIconFromTaskBarList(file:FileInfo):void{
+  onUnPinIconFromTaskBarIconList(file:FileInfo):void{
     const deleteCount = 1;
     if(this.taskBarEntriesIconState === this.mergedIcons){
-      const procIndex = this.mergedTaskBarIconList.findIndex((pin) => {
-        return pin.opensWith === file.getOpensWith;
-      });
+      const procIndex = this.mergedTaskBarIconList.findIndex( x => x.opensWith === file.getOpensWith);
 
       if(procIndex != -1){
           this.mergedTaskBarIconList.splice(procIndex, deleteCount)
       }
     }else if(this.taskBarEntriesIconState === this.unMergedIcons){
-      const procIndex = this.unMergedTaskBarIconList.findIndex((pin) => {
-        return pin.opensWith === file.getOpensWith;
-      });
+      const procIndex = this.unMergedTaskBarIconList.findIndex( x => x.opensWith === file.getOpensWith);
 
     if(procIndex != -1){
         this.unMergedTaskBarIconList.splice(procIndex, deleteCount)
@@ -352,7 +347,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }
   }
 
-  updateUnMergedTaskbarIconOnClose(process:Process):void{
+  updateUnMergedTaskbarIconListOnClose(process:Process):void{
     const uid = `${process.getProcessName}-${process.getProcessId}`;
     const tmpUid = `${process.getProcessName}-0`;
     const idx = this.unMergedTaskBarIconList.findIndex(x => x.uid === uid);
@@ -434,10 +429,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   removeActiveProcessFromUnMergedTasBarList(pid:number):void{
     const deleteCount = 1;
-    const procIndex = this.unMergedTaskBarIconList.findIndex((process) => {
-        return process.pid === pid;
-      });
-
+    const procIndex = this.unMergedTaskBarIconList.findIndex(x => x.pid === pid);
+    
     if(procIndex != -1){
       this.unMergedTaskBarIconList.splice(procIndex, deleteCount)
     }

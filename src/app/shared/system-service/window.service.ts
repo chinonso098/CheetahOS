@@ -165,9 +165,7 @@ export class WindowService implements BaseService{
         const deleteCount = 1;
         if(this._processPreviewImages.has(appName)){
             const currImages = this._processPreviewImages.get(appName) || [];
-            const dataIndex = currImages.findIndex((d) => {
-                return d.pid  === pid;
-              });
+            const dataIndex = currImages.findIndex(d => d.pid  === pid);
     
             if(dataIndex != -1){
                 currImages.splice(dataIndex || 0, deleteCount)
@@ -181,9 +179,7 @@ export class WindowService implements BaseService{
 
     removeWindowState(pid:number):void{
         const deleteCount = 1;
-        const winStateIdx = this._processWindowStates.findIndex((p) => {
-            return p.pid === pid;
-          });
+        const winStateIdx = this._processWindowStates.findIndex(p => p.pid === pid);
 
         if(winStateIdx != -1){
             this._processWindowStates.splice(winStateIdx, deleteCount)
