@@ -36,7 +36,7 @@ export class TaskBarEntryComponent implements OnInit, OnDestroy, OnChanges {
 
   constructor(systemNotificationService:SystemNotificationService){
     this._systemNotificationService = systemNotificationService;
-    this._taskBarIconInfoChangeSub = this._systemNotificationService.taskBarIconInfoChangeNotify.subscribe((p) =>{this.onTaskBarIconInfoChange(p); });
+    //this._taskBarIconInfoChangeSub = this._systemNotificationService.taskBarIconInfoChangeNotify.subscribe((p) =>{this.onTaskBarIconInfoChange(p); });
   }
 
   ngOnInit(): void {

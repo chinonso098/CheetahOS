@@ -19,7 +19,7 @@
 <ng-template #unMergedTskBarIcons>
      <ol class="taskBar-Entries-ol"> 
           <li class="taskBar-Entries-li-inactive" taskBarEntryHighlight *ngFor="let app of unMergedTaskBarList;  let i = index" id="tskbar-{{app.opensWith}}-{{app.pid}}" (mouseenter)="onMouseEnter(app.opensWith, app.pid, app.iconPath, pinned)" (mouseleave)="onMouseLeave(app.opensWith, app.pid)" (click)="onPinnedAppIconClick(app)" (contextmenu)="onShowIconContextMenu($event, app)">
-               <cos-taskbarentry  [taskBarPid]="app.pid" [taskBarIconImgUrl]="app.iconPath"  [taskBarIconName]="app.opensWith" (restoreOrMinizeWindowEvent)="restoreOrMinizeWindow($event)" [taskBarEntryType]="app.showLabel"> </cos-taskbarentry> 
+               <cos-taskbarentry  [taskBarPid]="app.pid" [taskBarIconImgUrl]="app.iconPath"  [taskBarIconName]="app.displayName" (restoreOrMinizeWindowEvent)="restoreOrMinizeWindow($event)" [taskBarEntryType]="app.showLabel"> </cos-taskbarentry> 
           </li>
      </ol>
 </ng-template>
