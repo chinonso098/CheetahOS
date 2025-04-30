@@ -29,6 +29,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   SECONDS_DELAY = 100; //100 millisecs
   mergedTaskBarIconList:TaskBarIconInfo[] = [];
   unMergedTaskBarIconList:TaskBarIconInfo[] = [];
+  pinnedTaskBarIconList:TaskBarIconInfo[] = [];
+
   selectedFile!:FileInfo
 
   readonly mergedIcons = Constants.MERGED_TASKBAR_ENTRIES;
@@ -76,8 +78,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     this._menuService.unPinFromTaskBar.subscribe((p)=>{this.onUnPinIconFromTaskBarIconList(p)});
     this._menuService.openApplicationFromTaskBar.subscribe((p)=>{this.openApplication(p)});
     this._menuService.closeApplicationFromTaskBar.subscribe((p) =>{this.closeApplication(p)});
-    this._menuService.UnMergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.unMergedIcons)});
-    this._menuService.mergeTaskBarIcon.subscribe(() =>{this.changeTaskBarEntriesIconState(this.mergedIcons)});
+    this._menuService.UnMergeTaskBarIcon.subscribe(() =>{this.onChangeTaskBarIconState(this.unMergedIcons)});
+    this._menuService.mergeTaskBarIcon.subscribe(() =>{this.onChangeTaskBarIconState(this.mergedIcons)});
 
     //tskbar never closes so no need to unsub
     this._systemNotificationService.taskBarIconInfoChangeNotify.subscribe((p) =>{this.updateTaskBarIcon(p); });
@@ -103,12 +105,12 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     const delay = 1500; //1.5 secs
     //change detection is the better solution
     setTimeout(() => {
-      this.filterProcesses();
+      this.setIconsBasedOnTaskbarMode();
     }, delay);
   }
 
   updateRunningProcess():void{
-    this.filterProcesses();
+    this.setIconsBasedOnTaskbarMode();
 
     setTimeout(()=>{
       this.changeProcessStateIdentifier();
@@ -145,31 +147,34 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       const procIndex = this.mergedTaskBarIconList.findIndex( x => x.opensWith === file.getOpensWith);
 
       if(procIndex != -1){
-          this.mergedTaskBarIconList.splice(procIndex, deleteCount)
+        this.mergedTaskBarIconList.splice(procIndex, deleteCount)
       }
     }else if(this.taskBarEntriesIconState === this.unMergedIcons){
       const procIndex = this.unMergedTaskBarIconList.findIndex( x => x.opensWith === file.getOpensWith);
 
-    if(procIndex != -1){
+      if(procIndex != -1){
         this.unMergedTaskBarIconList.splice(procIndex, deleteCount)
-    }
+      }
     }
     this.updateRunningProcess();
   }
 
-  changeTaskBarEntriesIconState(iconState:string):void{
+  onChangeTaskBarIconState(iconState:string):void{
     this.taskBarEntriesIconState  = iconState;
+    this.pinnedTaskBarIconList = [];
     if(this.taskBarEntriesIconState === this.unMergedIcons){
       this.hideShowLabelState = this.showLabel;
+      this.pinnedTaskBarIconList.push(...this.mergedTaskBarIconList.filter(x => x.isPinned));
     }else if(this.taskBarEntriesIconState === this.mergedIcons){
       this.hideShowLabelState = this.hideLabel;
+      this.pinnedTaskBarIconList.push(...this.unMergedTaskBarIconList.filter(x => x.isPinned));
     }
 
     this.retriggerRunningProcess();
   }
 
   retriggerRunningProcess():void{
-   this.filterProcesses();
+   this.setIconsBasedOnTaskbarMode();
 
     setTimeout(()=>{
       this.changeProcessStateIdentifier();
@@ -180,59 +185,63 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }, 50);
   }
 
-  filterProcesses():void{
-    const proccessesNotInPinToStart:Process[] = [];
-    const delay = 5; // 5 millisecs
-    if(this.taskBarEntriesIconState === this.unMergedIcons){
-      const proccesses = this.getProccessWithWindows()
-      this.storeHistory(proccesses);
-
-      for(const process of proccesses){
-        const tskBarIcon = this.unMergedTaskBarIconList.find(i => i.opensWith === process.getProcessName);
-        if(tskBarIcon){
-          const proccessInstaceCount = this._runningProcessService.getProcessCount(process.getProcessName)
-          if(proccessInstaceCount === 1){
-            if(tskBarIcon.isPinned){
-              this.updatePinnedTaskbarIconOnInit(process);
-            }
-          }else if(proccessInstaceCount > 1){
-            // add only unique instances
-            if(!this.unMergedTaskBarIconList.find(i => i.opensWith === process.getProcessName && i.pid === process.getProcessId)){
-              const tskBarIcon = this.getTaskBarIconInfo(undefined, process);
-              this.unMergedTaskBarIconList.push(tskBarIcon);
-            }
-          }
-          setTimeout(() => {this.setIconState(true, process.getProcessName, process.getProcessId);}, delay);
-        }else{
-          const tskBarIcon = this.getTaskBarIconInfo(undefined, process);
-          this.unMergedTaskBarIconList.push(tskBarIcon);
-          setTimeout(() => {this.setIconState(true, process.getProcessName, process.getProcessId);}, delay);
-        }
-      }
-    }else if(this.taskBarEntriesIconState === this.mergedIcons){
-      const uniqueProccesses = this.getUniqueProccessWithWindows();
-      this.storeHistory(uniqueProccesses);
-      /**
-       * i have a lists of varying lengths
-       * list one can have duplicates of the same object, but list 2 only has unique objects
-       * compare both lists, if object.name from list1 equal to object.name from list 2
-       * setIconToActive
-       * else, put object in a different list
-       */
-      uniqueProccesses.forEach(process =>{
-        //const tskBarIcon = this.mergedTaskBarIconList.find(i => i.opensWith === process.getProcessName);
-
-        if(this.mergedTaskBarIconList.some( i => i.opensWith === process.getProcessName)){
-          this.setIconState(true, process.getProcessName);
-        }else{
-          const tskBarIcon = this.getTaskBarIconInfo(undefined, process);
-          this.mergedTaskBarIconList.push(tskBarIcon);
-        }
-      });
+  setIconsBasedOnTaskbarMode(): void {
+    if (this.taskBarEntriesIconState === this.unMergedIcons) {
+      this.handleUnmergedTaskbarIcons();
+    } else if (this.taskBarEntriesIconState === this.mergedIcons) {
+      this.handleMergedTaskbarIcons();
     }
   }
 
-  groupTaskBarIconsByEntryOrder(tskBarInfo:TaskBarIconInfo[]):TaskBarIconInfo[]{
+  handleUnmergedTaskbarIcons():void{
+    const delay = 5; // 5 millisecs
+    const proccesses = this.getProccessWithWindows()
+    this.storeHistory(proccesses);
+
+    for(const process of proccesses){
+      const existingIcon = this.unMergedTaskBarIconList.find(i => i.opensWith === process.getProcessName);
+      const isPinned = this.checkIfIconWasPinned(process.getProcessName)
+      if(existingIcon){
+        const instaceCount = this._runningProcessService.getProcessCount(process.getProcessName)
+        if(instaceCount === 1 && existingIcon.isPinned){
+          this.updatePinnedTaskbarIconOnInit(process);
+        }else if((instaceCount > 1) 
+          && (!this.unMergedTaskBarIconList.find(i => i.opensWith === process.getProcessName && i.pid === process.getProcessId))){
+          // add only unique instances
+          const newIcon = this.getTaskBarIconInfo(undefined, process);
+          newIcon.isPinned = isPinned;
+          this.unMergedTaskBarIconList.push(newIcon);
+        }
+      }else{
+        const newIcon = this.getTaskBarIconInfo(undefined, process);
+        newIcon.isPinned = isPinned;
+        this.unMergedTaskBarIconList.push(newIcon);
+      }
+
+      setTimeout(() => {this.setIconState(true, process.getProcessName, process.getProcessId);}, delay);
+    }
+    //this.groupTaskBarIconsByEntryOrder(this.unMergedTaskBarIconList);
+  }
+
+  handleMergedTaskbarIcons():void{
+    const delay = 5; // 5 millisecs
+    const uniqueProccesses = this.getUniqueProccessWithWindows();
+    this.storeHistory(uniqueProccesses);
+
+    uniqueProccesses.forEach(process =>{
+      //const tskBarIcon = this.mergedTaskBarIconList.find(i => i.opensWith === process.getProcessName);
+      const isPinned = this.checkIfIconWasPinned(process.getProcessName)
+      if(this.mergedTaskBarIconList.some( i => i.opensWith === process.getProcessName)){
+        setTimeout(() => { this.setIconState(true, process.getProcessName);}, delay);
+      }else{
+        const newIcon = this.getTaskBarIconInfo(undefined, process);
+        newIcon.isPinned = isPinned;
+        this.mergedTaskBarIconList.push(newIcon);
+      }
+    });
+  }
+
+  groupTaskBarIconsByEntryOrder(tskBarInfo:TaskBarIconInfo[]):void{
     const groupedIcons = new Map<string, TaskBarIconInfo[]>();
   
     for (const iconInfo of tskBarInfo) {
@@ -243,7 +252,19 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }
   
     // Flatten the values
-    return Array.from(groupedIcons.values()).flat();
+    const result =  Array.from(groupedIcons.values()).flat();
+    this.unMergedTaskBarIconList = [];
+    this.unMergedTaskBarIconList.push(...result);
+  }
+
+  checkIfIconWasPinned(appName:string):boolean{
+    const deleteCount = 1;
+    const pinnedIconIdx = this.pinnedTaskBarIconList.findIndex(x => x.appName === appName);
+
+    if (pinnedIconIdx === -1) return false;
+  
+    this.pinnedTaskBarIconList.splice(pinnedIconIdx, deleteCount);
+    return true;
   }
   
 
