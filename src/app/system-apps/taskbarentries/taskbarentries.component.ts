@@ -200,7 +200,9 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
     for(const process of proccesses){
       const existingIcon = this.unMergedTaskBarIconList.find(i => i.opensWith === process.getProcessName);
-      const isPinned = this.checkIfIconWasPinned(process.getProcessName)
+      const isPinned = this.checkIfIconWasPinned(process.getProcessName);
+      const iconPath = this.checkForPriorIcon(process.getProcessId, process.getIcon)
+
       if(existingIcon){
         const instaceCount = this._runningProcessService.getProcessCount(process.getProcessName)
         if(instaceCount === 1 && existingIcon.isPinned){
@@ -210,11 +212,13 @@ export class TaskBarEntriesComponent implements AfterViewInit {
           // add only unique instances
           const newIcon = this.getTaskBarIconInfo(undefined, process);
           newIcon.isPinned = isPinned;
+          newIcon.iconPath = iconPath;
           this.unMergedTaskBarIconList.push(newIcon);
         }
       }else{
         const newIcon = this.getTaskBarIconInfo(undefined, process);
         newIcon.isPinned = isPinned;
+        newIcon.iconPath = iconPath;
         this.unMergedTaskBarIconList.push(newIcon);
       }
 
@@ -265,6 +269,16 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   
     this.pinnedTaskBarIconList.splice(pinnedIconIdx, deleteCount);
     return true;
+  }
+
+  checkForPriorIcon(pid:number, iconPath:string):string{
+    const tmpInfo = this._systemNotificationService.getAppIconNotication(pid);
+    if(tmpInfo.length > 0){
+      const priorIcon = tmpInfo[1];
+      return priorIcon;
+    }
+
+    return iconPath;
   }
   
 
