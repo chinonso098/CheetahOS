@@ -111,10 +111,6 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   updateRunningProcess():void{
     this.setIconsBasedOnTaskbarMode();
-
-    // setTimeout(()=>{
-    //   this.changeProcessStateIdentifier();
-    // }, this.SECONDS_DELAY)
   }
 
   onCloseProcessNotify(process:Process):void{
@@ -176,11 +172,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   retriggerRunningProcess():void{
    this.setIconsBasedOnTaskbarMode();
-
-    // setTimeout(()=>{
-    //   this.changeProcessStateIdentifier();
-    // }, this.SECONDS_DELAY)
-
+   
     setTimeout(() => {
       this.highlightTaskbarIcon();
     }, 50);
@@ -312,26 +304,6 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         this.prevOpenedProccesses.push(x.getProcessName)
       }
     });
-  }
-
-  changeProcessStateIdentifier():void{
-    const runningProcess = this.getProccessWithWindows();
-
-    if(this.taskBarEntriesIconState === this.mergedIcons){
-      this.prevOpenedProccesses.forEach(x =>{
-        if(!runningProcess.some(i => i.getProcessName === x)){
-          this.setIconState(false, x);
-        }else{
-          this.setIconState(true, x);
-        }
-      });
-    }else if(this.taskBarEntriesIconState === this.unMergedIcons){
-      this.prevOpenedProccesses.forEach(x =>{
-        if(!runningProcess.some(i => i.getProcessName === x)){
-          this.setIconState(false, x, 0);
-        }
-      });
-    }
   }
 
   setIconState(isActive:boolean, opensWith:string, pid?:number){
