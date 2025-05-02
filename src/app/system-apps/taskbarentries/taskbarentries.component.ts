@@ -144,10 +144,13 @@ export class TaskBarEntriesComponent implements AfterViewInit {
           const existingIconIdx = tskBarIcons.findIndex(x => x.opensWith === existingIcon.opensWith && x.pid === existingIcon.pid);
           const updatedIcon = {...existingIcon};
           updatedIcon.isPinned = true;
+          updatedIcon.isOtherPinned = true;
           tskBarIcons[existingIconIdx] = updatedIcon;
 
           //update other instances of app, set isOtherPinned = true;
           const result = this.updateIsOtherPinnedState(tskBarIcons, existingIcon.pid, existingIcon.opensWith, true);
+          tskBarIcons = [];
+          tskBarIcons.push(...result);
         }
       }
     }
@@ -176,6 +179,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
        //update other instances of app, set isOtherPinned = false;
        const result = this.updateIsOtherPinnedState(tskBarIcons, pinnedIcon.pid, pinnedIcon.opensWith, false);
+       tskBarIcons = [];
+       tskBarIcons.push(...result);
      }
     }
 
