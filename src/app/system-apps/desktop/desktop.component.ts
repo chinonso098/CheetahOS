@@ -19,6 +19,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { TaskBarIconInfo } from '../taskbarentries/taskbar.entries.type';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
@@ -116,7 +117,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   tskBarAppIconMenuOption =  Constants.TASK_BAR_APP_ICON_MENU_OPTION;
   tskBarContextMenuOption = Constants.TASK_BAR_CONTEXT_MENU_OPTION
   menuOrder = Constants.DEFAULT_MENU_ORDER;
-  selectedFileFromTaskBar!:FileInfo;
+  selectedTaskBarFile!:FileInfo;
   appToPreview = '';
   appToPreviewIcon = '';
   previousDisplayedTaskbarPreview = '';
@@ -881,30 +882,33 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   onShowTaskBarAppIconMenu(data:unknown[]):void{
     const rect = data[0] as DOMRect;
-    // const file = data[1] as FileInfo; //This should be TaskBarFileInfo. for when you get to this
-    // const isPinned = data[2] as boolean;
-    // this.selectedFileFromTaskBar = file;
+    const tskBarIcon = data[1] as TaskBarIconInfo; 
+   
+    const file = new FileInfo();
+    file.setOpensWith = tskBarIcon.opensWith;
+    file.setIconPath = tskBarIcon.defaultIconPath;
+    this.selectedTaskBarFile = file;
 
-    // this.switchBetweenPinAndUnpin(isPinned);
-    // // first count, then show the cntxt menu
-    // const processCount = this.countInstaceAndSetMenu();
+    this.switchBetweenPinAndUnpin(tskBarIcon.isPinned);
+    // first count, then show the cntxt menu
+    const processCount = this.countInstaceAndSetMenu();
 
-    // this.removeOldTaskBarPreviewWindowNow();
-    // this.showTskBarAppIconMenu = true;
+    this.removeOldTaskBarPreviewWindowNow();
+    this.showTskBarAppIconMenu = true;
 
-    // if(processCount == 0){
-    //   this.tskBarAppIconMenuStyle = {
-    //     'position':'absolute',
-    //     'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 72)}px)`,
-    //     'z-index': 5,
-    //   }
-    // }else {
-    //   this.tskBarAppIconMenuStyle = {
-    //     'position':'absolute',
-    //     'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 104)}px)`,
-    //     'z-index': 5,
-    //   }
-    // }
+    if(processCount == 0){
+      this.tskBarAppIconMenuStyle = {
+        'position':'absolute',
+        'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 72)}px)`,
+        'z-index': 5,
+      }
+    }else {
+      this.tskBarAppIconMenuStyle = {
+        'position':'absolute',
+        'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 104)}px)`,
+        'z-index': 5,
+      }
+    }
   }
 
   hideTaskBarAppIconMenu():void{
@@ -956,7 +960,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   countInstaceAndSetMenu():number{
-    const file = this.selectedFileFromTaskBar;
+    const file = this.selectedTaskBarFile;
     const processCount = this._runningProcessService.getProcesses()
       .filter(p => p.getProcessName === file.getOpensWith).length;
 
@@ -994,13 +998,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   openApplicationFromTaskBar():void{
     this.showTskBarAppIconMenu = false;
-    const file = this.selectedFileFromTaskBar;  
+    const file = this.selectedTaskBarFile;  
     this._triggerProcessService.startApplication(file);
   }
 
   closeApplicationFromTaskBar():void{
     this.showTskBarAppIconMenu = false;
-    const file = this.selectedFileFromTaskBar;
+    const file = this.selectedTaskBarFile;
     const proccesses = this._runningProcessService.getProcesses()
       .filter(p => p.getProcessName === file.getOpensWith);
 
@@ -1009,13 +1013,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   pinApplicationFromTaskBar():void{
     this.showTskBarAppIconMenu = false;
-    const file = this.selectedFileFromTaskBar;
+    const file = this.selectedTaskBarFile;
     this._menuService.pinToTaskBar.next(file);
   }
 
   unPinApplicationFromTaskBar():void{
     this.showTskBarAppIconMenu = false;
-    const file = this.selectedFileFromTaskBar;
+    const file = this.selectedTaskBarFile;
     this._menuService.unPinFromTaskBar.next(file);
   }
 

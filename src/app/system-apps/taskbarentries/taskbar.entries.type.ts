@@ -8,7 +8,8 @@ export interface TaskBarIconInfo{
     displayName:string
     showLabel:string,
     isRunning:boolean,
-    isPinned:boolean
+    isPinned:boolean,
+    isOtherPinned:boolean
 }
 
 
