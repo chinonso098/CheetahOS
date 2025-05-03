@@ -10,12 +10,6 @@
     overflow-x: hidden;
 }
 
-/* .taskBar-Entries-li{
-    height: 100%;
-    display: flex;
-    border-bottom: 2px solid hsl(207deg 100%  72% / 90%);
-} */
-
 .taskBar-Entries-li{
     height: 100%;
     display: flex;

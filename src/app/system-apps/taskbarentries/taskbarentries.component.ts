@@ -175,7 +175,6 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       this.pinnedTaskBarIconList.push(...this.unMergedTaskBarIconList.filter(x => x.isPinned));
     }
 
-    console.log('pinnedTaskBarIconList:',this.pinnedTaskBarIconList);
     this.retriggerRunningProcess();
   }
 
@@ -290,13 +289,12 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   
       // Move to next group if all of currentVal is collected
       if (collected === map.get(currentVal)) {
-        if (set.length === 0) break;
+        if(set.length === 0) break;
         currentVal = set.shift()!;
         collected = 0;
       }
     }
 
-    console.log('Grouped input:', tskBarIcons);
   }
 
   checkIfIconWasPinned(procName:string):boolean{
@@ -563,7 +561,6 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
 
   onMouseEnter(opensWith:string, pid:number, iconPath:string):void{
-
     const rect = this.highlightTaskbarIconOnMouseHover(opensWith, pid);
     if(rect){
       if(this.checkForMultipleActiveInstance(opensWith)) {
