@@ -230,6 +230,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       setTimeout(() => {this.setIconState(true, process.getProcessName, process.getProcessId);}, delay);
     }
     //this.groupTaskBarIconsByEntryOrder(this.unMergedTaskBarIconList);
+    this.groupTaskBarIconsByReshufflingIndex();
   }
 
   handleMergedTaskbarIcons():void{
@@ -249,20 +250,79 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }
   }
 
-  groupTaskBarIconsByEntryOrder(tskBarInfo:TaskBarIconInfo[]):void{
-    const groupedIcons = new Map<string, TaskBarIconInfo[]>();
+  // groupTaskBarIconsByEntryOrder(tskBarInfo:TaskBarIconInfo[]):void{
+  //   const groupedIcons = new Map<string, TaskBarIconInfo[]>();
   
-    for (const iconInfo of tskBarInfo) {
-      if (!groupedIcons.has(iconInfo.opensWith)) {
-        groupedIcons.set(iconInfo.opensWith, []);
-      }
-      groupedIcons.get(iconInfo.opensWith)?.push(iconInfo);
+  //   for (const iconInfo of tskBarInfo) {
+  //     if (!groupedIcons.has(iconInfo.opensWith)) {
+  //       groupedIcons.set(iconInfo.opensWith, []);
+  //     }
+  //     groupedIcons.get(iconInfo.opensWith)?.push(iconInfo);
+  //   }
+  
+  //   // Flatten the values
+  //   const result =  Array.from(groupedIcons.values()).flat();
+  //   this.unMergedTaskBarIconList = [];
+  //   this.unMergedTaskBarIconList.push(...result);
+  // }
+
+  groupTaskBarIconsByReshufflingIndex():void{
+    const input = [1, 4, 3, 1, 1, 2, 3, 3, 2, 2, 4];
+    const set:number[] = [];
+    let ptrA = 0;
+    let ptrB = input.length -1;
+    let prevVal = 0;
+    let enter = false;
+    let swapCount = 1;
+    const map = new Map<number, number>();
+
+    for (const num of input) {
+      if(!set.includes(num)){ set.push(num) }
+      if (!map.has(num)) {
+        map.set(num, 1);
+      }else {
+         let count = map.get(num) || 0;
+         count = count + 1;
+         map.set(num, count);
+      } //?.push(num);
     }
-  
-    // Flatten the values
-    const result =  Array.from(groupedIcons.values()).flat();
-    this.unMergedTaskBarIconList = [];
-    this.unMergedTaskBarIconList.push(...result);
+
+    prevVal = set.shift() || -1;
+    while(ptrA !== input.length - 1){
+      const curVal = input[ptrA];
+      if(prevVal === curVal){
+        ptrA++;
+      } else if(prevVal !== curVal){
+        enter = false;
+
+        const tmpVal = input[ptrB];
+        if(tmpVal === prevVal){
+          //swtich positions of the tmpVal and curVal
+          input[ptrA] = tmpVal;
+          input[ptrB] = curVal;
+
+          swapCount = swapCount + 1;
+          const count = map.get(prevVal) 
+          if(swapCount === count){
+
+            prevVal = set.shift() || -1;
+            console.log('value removed from set:',prevVal)
+            swapCount = 1;
+            ptrA = ptrA + 1;
+          }
+
+          //set ptrB back to the end
+          ptrB = input.length -1;
+          enter = true;
+        }
+
+        if(ptrB !== 0){
+          ptrB--;
+          if(enter)
+            ptrB = input.length -1;
+        }
+      }
+    }
   }
 
   checkIfIconWasPinned(procName:string):boolean{
@@ -294,7 +354,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       .filter(p => p.getHasWindow == true)
       .forEach(x =>{
         if(!uniqueProccesses.some(a => a.getProcessName === x.getProcessName)){
-          uniqueProccesses.push(x)
+          uniqueProccesses.push(x);
         }
     });
 
@@ -311,7 +371,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   storeHistory(arg:Process[]):void{
     arg.forEach(x =>{
       if(!this.prevOpenedProccesses.includes(x.getProcessName)){
-        this.prevOpenedProccesses.push(x.getProcessName)
+        this.prevOpenedProccesses.push(x.getProcessName);
       }
     });
   }
