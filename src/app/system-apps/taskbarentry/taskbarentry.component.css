@@ -1,4 +1,4 @@
-.taskBar-Entry-li{
+.taskBar-Entry-div{
     display: flex;
     height: 100%;
     margin: 0 4px;
@@ -10,7 +10,7 @@
     padding: 4px;
 }
 
-.taskBar-Entry-li-ext{
+.taskBar-Entry-div-ext{
     display: flex;
     height: 100%;
     margin: 0 4px;
@@ -21,6 +21,7 @@
     display: flex;
     top: 0.5px;
     align-items: center;
+    flex: 0 1 130px;
     min-width: 40px;
     padding: 4px;
 }

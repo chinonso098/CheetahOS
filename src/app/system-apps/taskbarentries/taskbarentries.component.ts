@@ -228,8 +228,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
       setTimeout(() => {this.setIconState(true, process.getProcessName, process.getProcessId);}, delay);
     }
-    //this.groupTaskBarIconsByEntryOrder(this.unMergedTaskBarIconList);
-    this.groupTaskBarIconsByIndexAndEntryOrder();
+    this.groupTaskBarIconsByOpensWithAndEntryOrder();
   }
 
   handleMergedTaskbarIcons():void{
@@ -249,7 +248,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }
   }
 
-  groupTaskBarIconsByIndexAndEntryOrder():void{
+  groupTaskBarIconsByOpensWithAndEntryOrder():void{
     const tskBarIcons = this.unMergedTaskBarIconList;
     const map = new Map<string, number>();
     const set: string[] = [];
