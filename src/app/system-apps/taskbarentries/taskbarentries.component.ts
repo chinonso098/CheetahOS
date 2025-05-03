@@ -372,10 +372,10 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       tskBarIcon.pid = process.getProcessId;
       tskBarIcon.isRunning = isRunning;
       tskBarIcon.showLabel = this.showLabel;
-      tskBarIcon.isPinned = true
-      tskBarIcon.isOtherPinned = true
+      tskBarIcon.isPinned = true;
+      tskBarIcon.isOtherPinned = true;
 
-      this.unMergedTaskBarIconList[idx] = tskBarIcon;
+      //this.unMergedTaskBarIconList[idx] = tskBarIcon;
     }
   }
 
@@ -383,6 +383,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     const uid = `${process.getProcessName}-${process.getProcessId}`;
     const tmpUid = `${process.getProcessName}-0`;
     const idx = this.unMergedTaskBarIconList.findIndex(x => x.uid === uid);
+    const delay = 5; //5ms
 
     if(idx === -1) return;
 
@@ -413,13 +414,16 @@ export class TaskBarEntriesComponent implements AfterViewInit {
           }
         }
       }else{
-        const replacementIcon:TaskBarIconInfo = {...tskBarIcon};
-        replacementIcon.uid = tmpUid;
-        replacementIcon.pid = 0;
-        replacementIcon.isRunning = isAppRunning;
-        replacementIcon.showLabel = this.hideLabel;
-        replacementIcon.iconPath = tskBarIcon.defaultIconPath;
-        this.unMergedTaskBarIconList[idx] = replacementIcon;
+        tskBarIcon.uid = tmpUid;
+        tskBarIcon.pid = 0;
+        tskBarIcon.isRunning = isAppRunning;
+        tskBarIcon.showLabel = this.hideLabel;
+        tskBarIcon.iconPath = tskBarIcon.defaultIconPath;
+        tskBarIcon.displayName = tskBarIcon.opensWith;
+
+        setTimeout(() => {
+          this.setIconState(false,tskBarIcon.opensWith,tskBarIcon.pid);
+        }, delay);
       }
     }else if(!tskBarIcon.isPinned){
       this.removeIconFromUnMergedTaskBarIconList(process.getProcessId);
