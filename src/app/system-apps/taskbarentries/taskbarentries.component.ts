@@ -116,25 +116,9 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
 
   onPinIconToTaskBarIconList(file:FileInfo):void{
-    let result:TaskBarIconInfo[] = [];
-
-    if(this.taskBarEntriesIconState === this.mergedIcons){
-      result = this.onPinTaskBarIconHelper(this.mergedTaskBarIconList, file);
-      this.mergedTaskBarIconList = [];
-      this.mergedTaskBarIconList.push(...result);
-    }else if(this.taskBarEntriesIconState === this.unMergedIcons){
-      result = this.onPinTaskBarIconHelper(this.unMergedTaskBarIconList, file);
-      this.unMergedTaskBarIconList = [];
-      this.unMergedTaskBarIconList.push(...result);
-    }
-
-    // setTimeout(() => {
-    //   this.highlightTaskbarIcon();
-    // }, this.SECONDS_DELAY);
-  }
-
-  onPinTaskBarIconHelper(tskBarIcons:TaskBarIconInfo[], file:FileInfo):TaskBarIconInfo[]{
+    const isMerged = (this.taskBarEntriesIconState === this.mergedIcons);
     let tskbarFileInfo!:TaskBarIconInfo 
+    const tskBarIcons = (isMerged)? this.mergedTaskBarIconList : this.unMergedTaskBarIconList;
 
     if(!tskBarIcons.some(x => x.opensWith === file.getOpensWith)){
       tskbarFileInfo = this.getTaskBarIconInfo(file,undefined);
@@ -143,65 +127,41 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       if(!tskBarIcons.some(x => x.opensWith === file.getOpensWith && x.isPinned)){
         const unPinnedIcon = tskBarIcons.find(x => x.opensWith === file.getOpensWith);
         if(unPinnedIcon){
-          const unPinnedIconIdx = tskBarIcons.findIndex(x => x.opensWith === unPinnedIcon.opensWith && x.pid === unPinnedIcon.pid);
-          const updatedIcon = {...unPinnedIcon};
-          updatedIcon.isPinned = true;
-          updatedIcon.isOtherPinned = true;
-          tskBarIcons[unPinnedIconIdx] = updatedIcon;
+          unPinnedIcon.isPinned = true;
+          unPinnedIcon.isOtherPinned = true;
 
-          //update other instances of app, set isOtherPinned = true;
-          const result = this.updateIsOtherPinnedState(tskBarIcons, unPinnedIcon.pid, unPinnedIcon.opensWith, true);
-          tskBarIcons = [];
-          tskBarIcons.push(...result);
+          tskBarIcons.forEach(item => {
+            if (item.opensWith === unPinnedIcon.opensWith && item.pid !== unPinnedIcon.pid) {
+              item.isOtherPinned = true;
+            }
+          });
         }
       }
     }
 
-    return tskBarIcons;
+    setTimeout(() => {
+      this.highlightTaskbarIcon();
+    }, this.SECONDS_DELAY);
   }
 
   onUnPinIconFromTaskBarIconList(file:FileInfo):void{
-    let result:TaskBarIconInfo[] = [];
-    if(this.taskBarEntriesIconState === this.mergedIcons){
-      result = this.onUnPinIconFromTaskBarHelper(this.mergedTaskBarIconList, file);
-      this.mergedTaskBarIconList = [];
-      this.mergedTaskBarIconList.push(...result);
-    }else if(this.taskBarEntriesIconState === this.unMergedIcons){
-      result = this.onUnPinIconFromTaskBarHelper(this.unMergedTaskBarIconList, file);
-      this.unMergedTaskBarIconList = [];
-      this.unMergedTaskBarIconList.push(...result);
-    }
+    const isMerged = (this.taskBarEntriesIconState === this.mergedIcons);
+    const tskBarIcons = (isMerged)? this.mergedTaskBarIconList : this.unMergedTaskBarIconList;
 
-    // setTimeout(() => {
-    //   this.highlightTaskbarIcon();
-    // }, this.SECONDS_DELAY);
-  }
-
-  onUnPinIconFromTaskBarHelper(tskBarIcons:TaskBarIconInfo[], file:FileInfo):TaskBarIconInfo[]{
     const pinnedIconIdx = tskBarIcons.findIndex( x => x.opensWith === file.getOpensWith && x.isPinned);
 
-    if(pinnedIconIdx === -1) return tskBarIcons;
+    if(pinnedIconIdx === -1) return;
     
     const pinnedIcon = tskBarIcons[pinnedIconIdx]
-    const updatedIcon = {...pinnedIcon};
-    updatedIcon.isPinned = false;
-    updatedIcon.isOtherPinned = false;
-    tskBarIcons[pinnedIconIdx] = updatedIcon;
+    pinnedIcon.isPinned = false;
+    pinnedIcon.isOtherPinned = false;
 
     //update other instances of app, set isOtherPinned = false;
-    const result = this.updateIsOtherPinnedState(tskBarIcons, pinnedIcon.pid, pinnedIcon.opensWith, false);
-    tskBarIcons = [];
-    tskBarIcons.push(...result);
-
-    return tskBarIcons;
-  }
-
-  updateIsOtherPinnedState(tskBarIcons:TaskBarIconInfo[], pid:number, opensWith:string, isOtherPinned:boolean):TaskBarIconInfo[]{
-    const updated = tskBarIcons.map(item =>
-      (item.opensWith === opensWith && item.pid !== pid) ? { ...item, isOtherPinned: isOtherPinned } : item
-    );
-
-    return updated;
+    tskBarIcons.forEach(item => {
+      if (item.opensWith === pinnedIcon.opensWith && item.pid !== pinnedIcon.pid) {
+        item.isOtherPinned = false;
+      }
+    });
   }
 
   onChangeTaskBarIconState(iconState:string):void{
