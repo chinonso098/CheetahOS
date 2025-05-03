@@ -889,7 +889,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     file.setIconPath = tskBarIcon.defaultIconPath;
     this.selectedTaskBarFile = file;
 
-    this.switchBetweenPinAndUnpin(tskBarIcon.isPinned);
+    if((tskBarIcon.isPinned && tskBarIcon.isOtherPinned) || (!tskBarIcon.isPinned && tskBarIcon.isOtherPinned))
+      this.switchBetweenPinAndUnpin(true);
+    else
+      this.switchBetweenPinAndUnpin(false);
     // first count, then show the cntxt menu
     const processCount = this.countInstaceAndSetMenu();
 
@@ -961,8 +964,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   countInstaceAndSetMenu():number{
     const file = this.selectedTaskBarFile;
-    const processCount = this._runningProcessService.getProcesses()
-      .filter(p => p.getProcessName === file.getOpensWith).length;
+    const processCount = this._runningProcessService.getProcessCount(file.getOpensWith);
 
     const rowZero = this.taskBarAppIconMenuData[0];
     rowZero.icon = file.getIconPath;
