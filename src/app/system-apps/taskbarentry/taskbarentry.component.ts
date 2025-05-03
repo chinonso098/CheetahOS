@@ -1,6 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { Constants } from 'src/app/system-files/constants';
 import { ComponentType } from 'src/app/system-files/system.types';
 
@@ -9,16 +7,13 @@ import { ComponentType } from 'src/app/system-files/system.types';
   templateUrl: './taskbarentry.component.html',
   styleUrls: ['./taskbarentry.component.css']
 })
-export class TaskBarEntryComponent implements OnInit, OnDestroy, OnChanges {
+export class TaskBarEntryComponent implements OnInit, OnChanges {
 
   @Input() taskBarIconImgUrl = Constants.EMPTY_STRING;
   @Input() taskBarIconName = Constants.EMPTY_STRING;
   @Input() taskBarPid = 0;
   @Input() taskBarEntryType = Constants.EMPTY_STRING;
   @Output() restoreOrMinizeWindowEvent = new EventEmitter<number>();
-
-  private _systemNotificationService:SystemNotificationService;
-  private _taskBarIconInfoChangeSub!: Subscription;
 
   taskBarShowLabelEntryOption = 'showLabel';
   taskBarHideLabelEntryOption = 'hideLabel';
@@ -34,11 +29,6 @@ export class TaskBarEntryComponent implements OnInit, OnDestroy, OnChanges {
   displayName = Constants.EMPTY_STRING;
   defaultIcon = Constants.EMPTY_STRING;
 
-  constructor(systemNotificationService:SystemNotificationService){
-    this._systemNotificationService = systemNotificationService;
-    //this._taskBarIconInfoChangeSub = this._systemNotificationService.taskBarIconInfoChangeNotify.subscribe((p) =>{this.onTaskBarIconInfoChange(p); });
-  }
-
   ngOnInit(): void {
     this.icon = this.taskBarIconImgUrl;
     this.defaultIcon = this.taskBarIconImgUrl;
@@ -46,44 +36,20 @@ export class TaskBarEntryComponent implements OnInit, OnDestroy, OnChanges {
     this.processId = this.taskBarPid;
   }
 
-  ngOnDestroy(): void {
-    this._taskBarIconInfoChangeSub?.unsubscribe();
-  }
-
   ngOnChanges(changes: SimpleChanges):void{
     console.log('WINDOW onCHANGES:',changes);
-    const delay = 10;
+    const delay = 5;
 
     this.setTaskBarEntryType = this.taskBarEntryType;
     this.processId = this.taskBarPid;
     setTimeout(() => {
       this.onTaskBarIconInfoChange();
     }, delay);
-
   }
 
-  onTaskBarIconInfoChange(info?:Map<number, string[]>):void{
-    if(info){
-      const firstEntry = info.entries().next().value;
-      if (firstEntry) {
-        const [key, value] = firstEntry;
-        if(this.setTaskBarEntryType === this.taskBarShowLabelEntryOption){
-          const pid = key;
-          if(this.processId === pid){
-            this.name = value[0];
-            this.icon = value[1];
-          }
-        }        
-      }
-    }else{
-      const tmpInfo = this._systemNotificationService.getAppIconNotication(this.processId);
-       if(this.setTaskBarEntryType === this.taskBarShowLabelEntryOption){
-        if(tmpInfo.length > 0){
-          this.name = tmpInfo[0];
-          this.icon = tmpInfo[1];
-        }
-      }
-    }
+  onTaskBarIconInfoChange():void{
+    this.name = this.taskBarIconName;
+    this.icon = this.taskBarIconImgUrl;
   }
 
   restoreOrMinizeWindow():void {
