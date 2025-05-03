@@ -37,7 +37,7 @@ export class TaskBarEntryComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges):void{
-    console.log('WINDOW onCHANGES:',changes);
+    //console.log('WINDOW onCHANGES:',changes);
     const delay = 5;
 
     this.setTaskBarEntryType = this.taskBarEntryType;

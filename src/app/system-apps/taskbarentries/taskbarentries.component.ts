@@ -505,17 +505,12 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }
   }
 
-  onPinnedTaskBarIconClick(file:TaskBarIconInfo):void{
-    // check if the give app is running
-    // if it isn't running, then trigger it
+  onTaskBarIconClick(file:TaskBarIconInfo):void{
     if(!this._runningProcessService.isProcessRunning(file.opensWith)){
       const tmpFile:FileInfo = new FileInfo();
       tmpFile.setOpensWith = file.opensWith;
       this._triggerProcessService.startApplication(tmpFile);
-    }else{
-      const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.opensWith);
-      this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process[0].getProcessId);
-    }
+    } 
   }
 
   openApplication(file:FileInfo):void{
