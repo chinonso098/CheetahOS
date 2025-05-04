@@ -1,0 +1,24 @@
+<div class="taskbar-preview-header-container" tabindex="0">
+    <div class="taskbar-preview-left-header-section">
+        <h1 class="taskbar-preview-h1">
+            <figure class="taskbar-preview-figure">
+                <img class="taskbar-preview-img" [src]="icon"/>
+                <figcaption class="taskbar-preview-figcaption"> {{appInfo}} </figcaption>
+            </figure>
+        </h1>
+    </div>
+    <div class="taskbar-preview-right-header-section">
+        <nav class="taskbar-preview-nav">
+            <button class="taskbar-preview-button" id="tskBar-prev-closeBtn-{{pid}}"  (click)="onClosePreviewWindow(pid)" (mouseenter)="setCloseBtnColor(pid, true)"   title="Close" >
+                <svg class="taskbar-preview-svg" width="10" viewBox="0 0 10 10" id="tskBar-prev-svgIcon-{{pid}}">
+                    <path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z" fill = "#FFFFF"/>
+                </svg>
+            </button>
+        </nav>
+    </div>
+</div>
+<div class="taskbar-preview-image-container"  (contextmenu)="showTaskBarPreviewContextMenu($event, pid)" (mouseenter)="setWindowToFocusOnMouseHover(pid)" (mouseleave)="restoreWindowOnMouseLeave(pid)"  (click)="showOrSetWindowToFocusOnClick(pid)">
+    <figure class="taskbar-preview-figure1">
+        <img  [ngClass]="imageData ? 'taskbar-preview-img1-sec':'taskbar-preview-img1-pri'" [src]="imageData || icon"/>
+    </figure>
+</div>

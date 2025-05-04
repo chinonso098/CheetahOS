@@ -171,6 +171,9 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       const cmpntImg:TaskBarPreviewImage = {
         pid: this.processId,
         appName: this.name,
+        displayName: this.name,
+        icon : this.icon,
+        defaultIcon: this.icon,
         imageData: htmlImg
       }
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);

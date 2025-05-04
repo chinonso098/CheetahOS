@@ -339,6 +339,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const cmpntImg:TaskBarPreviewImage = {
         pid: this.processId,
         appName: this.name,
+        displayName: this.name,
+        icon : this.icon,
+        defaultIcon: this.icon,
         imageData: htmlImg
       }
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);

@@ -52,6 +52,7 @@ import { LongPressDirective } from './system-apps/audioplayer/long.press.directi
 import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.column-resize.directive';
 import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.capture.directive';
 import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.directives';
+import { TaskbarpreviewsComponent } from './system-apps/taskbarpreviews/taskbarpreviews.component';
 
 
 @NgModule({
@@ -101,7 +102,8 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     AlphaNumericDirective,
 
     SafeUrlPipe,
-    TruncatePipe
+    TruncatePipe,
+    TaskbarpreviewsComponent
     
   ],
   imports: [
