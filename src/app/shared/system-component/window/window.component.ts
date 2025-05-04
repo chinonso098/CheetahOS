@@ -121,7 +121,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
       this._restoreProcessesSub = this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
       this._lockScreenActiveSub = this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
       this._desktopActiveSub = this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
-      //this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)})
+      this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)})
     }
 
     get getDivWindowElement(): HTMLElement {
@@ -765,19 +765,11 @@ import { SystemNotificationService } from '../../system-service/system.notificat
         if(windowState){
           if(!windowState.is_visible){
             this.windowHide = !this.windowHide;
-  
-            this.currentStyles = {
-              'top': `${this.windowTop}%`,
-              'left': `${this.windowLeft}%`,
-              'transform': `translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`,
-              'opacity': 1,
-            };
-  
+            this.windowHideShowAction = this.windowHide ? 'hidden' : 'visible';
             windowState.is_visible = true;
             this._windowService.addWindowState(windowState);
           }
-  
-          this.setFocsuOnThisWindow(windowState.pid)
+          this.setFocsuOnThisWindow(windowState.pid);
         }
       }
     }
@@ -802,11 +794,20 @@ import { SystemNotificationService } from '../../system-service/system.notificat
           this._windowService.addWindowState(windowState);
           this._windowService.addProcessWindowIDWithHighestZIndex(pid);
   
+          // this.currentStyles = {
+          //   'top': `${this.windowTop}%`,
+          //   'left': `${this.windowLeft}%`,
+          //   'z-index':this.MAX_Z_INDEX
+          // };
+
           this.currentStyles = {
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
-            'z-index':this.MAX_Z_INDEX
+            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
+            'z-index':this.MAX_Z_INDEX,
+            'opacity': 1,
           };
+
           this.setHeaderActive(pid);
           this.setFocusOnDiv();
         }     

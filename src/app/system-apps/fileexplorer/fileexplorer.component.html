@@ -439,7 +439,7 @@
 
             </div>
         </div>
-        <div class="fileexp-footer-container" >
+        <div class="fileexp-footer-container">
             <span class="span-footer"> </span>
             <span class="span-footer">{{fileExplrFiles.length}} items</span>
             <span class="span-footer">|</span>
@@ -447,16 +447,17 @@
             <span class="span-footer">|</span> -->
 
 
-            <div class="footer-img-cntnr-1" (click)="toggleDetailsView()" (mouseenter)="colorBtnCntnr('fileMngr-detailsViewToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-detailsViewToggle-'+processId)" id="fileMngr-detailsViewToggle-{{processId}}">
-                <figure class="footer-figure-header-tab">  
-                    <img class="footer-img-header-tab" [src]="'osdrive/Cheetah/System/Imageres/details_view.png'"/>
+            <div class="fileexp-footer-img-cntnr-1" (click)="toggleDetailsView()" (mouseenter)="colorBtnCntnr('fileMngr-detailsViewToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-detailsViewToggle-'+processId)" id="fileMngr-detailsViewToggle-{{processId}}">
+                <figure class="fileexp-footer-figure">  
+                    <img class="fileexp-footer-img" [src]="'osdrive/Cheetah/System/Imageres/details_view.png'"/>
                 </figure>
-              </div>
-              <div class="footer-img-cntnr-2" (click)="toggleLargeIconsView()" (mouseenter)="colorBtnCntnr('fileMngr-largeIconToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-largeIconToggle-'+processId)" id="fileMngr-largeIconToggle-{{processId}}">
-                <figure class="footer-figure-header-tab">  
-                    <img class="footer-img-header-tab" [src]="'osdrive/Cheetah/System/Imageres/large_image.png'"/>
+            </div>
+
+            <div class="fileexp-footer-img-cntnr-2" (click)="toggleLargeIconsView()" (mouseenter)="colorBtnCntnr('fileMngr-largeIconToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-largeIconToggle-'+processId)" id="fileMngr-largeIconToggle-{{processId}}">
+                <figure class="fileexp-footer-figure">  
+                    <img class="fileexp-footer-img" [src]="'osdrive/Cheetah/System/Imageres/large_image.png'"/>
                 </figure>
-              </div> 
+            </div> 
         </div>
     </div>
 

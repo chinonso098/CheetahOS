@@ -64,7 +64,6 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit, OnDest
   }
 
   ngOnDestroy(): void {
-    
     this._highLightTaskBarPreviewSub?.unsubscribe();
     this._unHighLightTaskBarPreviewSub?.unsubscribe();
   }
@@ -88,7 +87,6 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit, OnDest
 
   hideTaskBarPreviewWindowAndRestoreDesktop():void{
     this._windowServices.hideProcessPreviewWindowNotify.next();
-
     this._windowServices.restoreProcessesWindowNotify.next();
   }
 
@@ -107,7 +105,14 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit, OnDest
   }
 
   showOrSetWindowToFocusOnClick(pid:number):void{
-    this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
+    const delay = 100; //100ms
+    this.restoreWindowOnMouseLeave(pid);
+
+    this.hideTaskBarPreviewWindowAndRestoreDesktop();
+
+    setTimeout(() => {
+      this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
+    }, delay);
   }
 
 

@@ -510,7 +510,15 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       const tmpFile:FileInfo = new FileInfo();
       tmpFile.setOpensWith = file.opensWith;
       this._triggerProcessService.startApplication(tmpFile);
-    } 
+    }else{
+      if(this.taskBarEntriesIconState === this.mergedIcons){
+        const instanceCount = this._runningProcessService.getProcessCount(file.opensWith);
+        if(instanceCount === 1){
+          const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.opensWith);
+          this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process[0].getProcessId);
+        }
+      }
+    }
   }
 
   openApplication(file:FileInfo):void{
@@ -743,7 +751,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
 
   restoreOrMinizeWindow(processId:number){
-    this._windowServices.restoreOrMinimizeProcessWindowNotify.next(processId)
+    this._windowServices.restoreOrMinimizeProcessWindowNotify.next(processId);
   }
 
   private getComponentDetail():Process{
