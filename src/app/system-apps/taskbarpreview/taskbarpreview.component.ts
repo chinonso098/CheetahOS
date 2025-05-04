@@ -1,9 +1,9 @@
-import { Component, Input, OnInit, AfterViewInit, OnDestroy} from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit} from '@angular/core';
 import { TaskBarPreviewImage } from './taskbar.preview';
 import { trigger, state, style, animate, transition } from '@angular/animations'
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
-import { Subscription } from 'rxjs';
+
 @Component({
   selector: 'cos-taskbarpreview',
   templateUrl: './taskbarpreview.component.html',
@@ -21,12 +21,9 @@ import { Subscription } from 'rxjs';
     ])
   ]
 })
-export class TaskBarPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
+export class TaskBarPreviewComponent implements OnInit, AfterViewInit {
   private _systemNotificationService:SystemNotificationService
   private _windowServices:WindowService;
-
-  private _highLightTaskBarPreviewSub!: Subscription;
-  private _unHighLightTaskBarPreviewSub!: Subscription;
 
   @Input() name = '';
   @Input() icon = '';
@@ -49,11 +46,6 @@ export class TaskBarPreviewComponent implements OnInit, AfterViewInit, OnDestroy
     setTimeout(() => {
       this.checkForUpdatedTaskBarPrevInfo();
     }, delay);
-  }
-
-  ngOnDestroy():void{
-    this._highLightTaskBarPreviewSub?.unsubscribe();
-    this._unHighLightTaskBarPreviewSub?.unsubscribe();
   }
 
   keepTaskBarPreviewWindow():void{

@@ -1,17 +1,9 @@
-.taskbar-preview-ol{
-    height: 100%;
-    position: absolute;
-    display: flex;
-    column-gap: 1px; /*reduce column gap to like 4 px*/
-    margin: 0 1px;
-    transition: all 0.075s;
-}
-
 .taskbar-preview-header-container{
     width:185px;
     height:25px;
     position: relative;
     display: flex;
+    transition: all 0.025s;
 }
 
 .taskbar-preview-left-header-section{
@@ -52,7 +44,6 @@
     top: 1px
 }
   
-
 .taskbar-preview-figcaption{
     padding-left: 3px;
     color: #fff;
@@ -80,7 +71,6 @@
 .taskbar-preview-content:hover {
     background-color: hsla(0,0%,25%,60%);
 }
-
 
 .taskbar-preview-content:hover .taskbar-preview-svg{
     fill: #ababab;

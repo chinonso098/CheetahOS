@@ -1,4 +1,4 @@
-import { Component, Input, SimpleChanges, OnChanges, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, Input, AfterViewInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
@@ -10,8 +10,8 @@ import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
   templateUrl: './taskbarpreviews.component.html',
   styleUrl: './taskbarpreviews.component.css'
 })
-export class TaskbarpreviewsComponent implements OnChanges, AfterViewInit, OnDestroy {
-  
+export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
+
   private _runningProcessService:RunningProcessService;
   private _systemNotificationService:SystemNotificationService
   private _windowServices:WindowService;
@@ -25,8 +25,6 @@ export class TaskbarpreviewsComponent implements OnChanges, AfterViewInit, OnDes
   @Input() pid = 0;
 
   appInfo = '';
-  componentImages!:TaskBarPreviewImage[];
- 
   SECONDS_DELAY = 20;
 
 
@@ -39,134 +37,135 @@ export class TaskbarpreviewsComponent implements OnChanges, AfterViewInit, OnDes
     this._unHighLightTaskBarPreviewSub = this._systemNotificationService.taskBarPreviewUnHighlightNotify.subscribe((p) => {this.unHighLightTasktBarPreview(p)});
   }
 
-   ngOnChanges(changes: SimpleChanges):void{
-      1
-      //console.log('PREVIEW onCHANGES:',changes);
-      // console.log('this.name:',this.name);
-      // console.log('this.fadeState:',this.fadeState);
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.shortAppInfo();
+    }, this.SECONDS_DELAY);
+  }
+
+  ngOnDestroy(): void {
+    this._highLightTaskBarPreviewSub?.unsubscribe();
+    this._unHighLightTaskBarPreviewSub?.unsubscribe();
+  }
+
+  shortAppInfo():void{
+    this.appInfo = this.name;
+    const limit = 30;
+    const ellipsis = '...';
+
+    this.appInfo = (this.appInfo.length > limit) ? this.appInfo.substring(0, limit) + ellipsis : this.appInfo;
+  }
+
+  onClosePreviewWindow(pid:number):void{
+    const processToClose = this._runningProcessService.getProcess(pid);
+    this._runningProcessService.closeProcessNotify.next(processToClose);
+  }
+
+  keepTaskBarPreviewWindow():void{
+    this._windowServices.keepProcessPreviewWindowNotify.next();
+  }
+
+  hideTaskBarPreviewWindowAndRestoreDesktop():void{
+    this._windowServices.hideProcessPreviewWindowNotify.next();
+    this._windowServices.restoreProcessesWindowNotify.next();
+  }
+
+  showTaskBarPreviewContextMenu(evt:MouseEvent, pid:number):void{
+    console.log('I will implement the TaskBarPreview Context Window.........later');
+  }
+
+  setWindowToFocusOnMouseHover(pid:number):void{
+    this._windowServices.setProcessWindowToFocusOnMouseHoverNotify.next(pid);
+    this.setCloseBtnColor(pid, false);
+    this.setSvgIconColor(pid);
+  }
+
+  restoreWindowOnMouseLeave(pid:number):void{
+    this._windowServices.restoreProcessWindowOnMouseLeaveNotify.next(pid);
+    this.removeCloseBtnColor(pid);
+  }
+
+  showOrSetWindowToFocusOnClick(pid:number):void{
+    const delay = 100; //100ms
+    this.restoreWindowOnMouseLeave(pid);
+
+    this.hideTaskBarPreviewWindowAndRestoreDesktop();
+
+    setTimeout(() => {
+      this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
+    }, delay);
+  }
+
+
+  setCloseBtnColor(pid:number, isBtnHover:boolean):void{
+    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+    if(closeBtnElmnt){
+      closeBtnElmnt.style.backgroundColor = (isBtnHover)? 'rgb(232,17,35)' : 'black';
     }
-  
-    ngAfterViewInit(): void {
-      setTimeout(() => {
-        this.shortAppInfo();
-      }, this.SECONDS_DELAY);
+  }
+
+  setSvgIconColor(pid:number):void{
+    const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
+    if(svgIconElmnt){
+      svgIconElmnt.style.fill = '#ababab';
     }
-  
-    ngOnDestroy(): void {
-      this._highLightTaskBarPreviewSub?.unsubscribe();
-      this._unHighLightTaskBarPreviewSub?.unsubscribe();
+  }
+
+  removeCloseBtnColor(pid:number):void{
+    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+    if(closeBtnElmnt){
+      closeBtnElmnt.style.backgroundColor = '';
     }
-  
-    shortAppInfo():void{
-      this.appInfo = this.name;
-      const limit = 30;
-      const ellipsis = '...';
-  
-      this.appInfo = (this.appInfo.length > limit) ? this.appInfo.substring(0, limit) + ellipsis : this.appInfo;
-    }
-  
-    onClosePreviewWindow(pid:number):void{
-      const processToClose = this._runningProcessService.getProcess(pid);
-      this._runningProcessService.closeProcessNotify.next(processToClose);
-    }
-  
-    keepTaskBarPreviewWindow():void{
-      this._windowServices.keepProcessPreviewWindowNotify.next();
-    }
-  
-    hideTaskBarPreviewWindowAndRestoreDesktop():void{
-      this._windowServices.hideProcessPreviewWindowNotify.next();
-      this._windowServices.restoreProcessesWindowNotify.next();
-    }
-  
-    showTaskBarPreviewContextMenu(evt:MouseEvent, pid:number):void{
-      console.log('I will implement the TaskBarPreview Context Window.........later');
-    }
-  
-    setWindowToFocusOnMouseHover(pid:number):void{
-      this._windowServices.setProcessWindowToFocusOnMouseHoverNotify.next(pid);
-      this.setCloseBtnColor(pid, false);
-    }
-  
-    restoreWindowOnMouseLeave(pid:number):void{
-      this._windowServices.restoreProcessWindowOnMouseLeaveNotify.next(pid);
-      this.removeCloseBtnColor(pid);
-    }
-  
-    showOrSetWindowToFocusOnClick(pid:number):void{
-      const delay = 100; //100ms
-      this.restoreWindowOnMouseLeave(pid);
-  
-      this.hideTaskBarPreviewWindowAndRestoreDesktop();
-  
-      setTimeout(() => {
-        this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
-      }, delay);
-    }
-  
-  
-    setCloseBtnColor(pid:number, isBtnHover:boolean):void{
-      const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
-      if(closeBtnElmnt){
-        closeBtnElmnt.style.backgroundColor = (isBtnHover)? 'rgb(232,17,35)' : 'black';
-      }
-    }
-  
-    removeCloseBtnColor(pid:number):void{
-      const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
-      if(closeBtnElmnt){
-        closeBtnElmnt.style.backgroundColor = '';
-      }
-    }
-  
-    highLightTasktBarPreview(uid: string): void {
-      const pid = uid.split('-')[1];
-      const delay = 5;
-      const highlight = () => {
-        const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uid}`) as HTMLElement;
-        if(tskBarPrevElmnt){
-          tskBarPrevElmnt.style.backgroundColor = 'hsla(0,0%,25%,60%)';
-  
-          const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
-          if(closeBtnElmnt){
-            closeBtnElmnt.style.backgroundColor = 'black';
-          }
-  
-          const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
-          if(svgIconElmnt){
-            svgIconElmnt.style.fill = '#ababab';
-          }
-          return true;
-        }
-        return false;
-      };
-    
-      if(!highlight()){
-        const intervalId = setInterval(() => {
-          if (highlight()) {
-            clearInterval(intervalId);
-          }
-        }, delay); // checks every 5ms
-      }
-    }
-  
-    unHighLightTasktBarPreview(uid:string):void{
-      console.log(`highLightTasktBarPreview:${uid}`);
-      const pid = uid.split('-')[1];
+  }
+
+  highLightTasktBarPreview(uid: string): void {
+    const pid = uid.split('-')[1];
+    const delay = 5;
+    const highlight = () => {
       const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uid}`) as HTMLElement;
       if(tskBarPrevElmnt){
-        tskBarPrevElmnt.style.backgroundColor ='';
+        tskBarPrevElmnt.style.backgroundColor = 'hsla(0,0%,25%,60%)';
+
+        const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+        if(closeBtnElmnt){
+          closeBtnElmnt.style.backgroundColor = 'black';
+        }
+
+        const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
+        if(svgIconElmnt){
+          svgIconElmnt.style.fill = '#ababab';
+        }
+        return true;
       }
+      return false;
+    };
   
-      const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
-      if(closeBtnElmnt){
-        closeBtnElmnt.style.backgroundColor = '';
-      }
-  
-      const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
-      if(svgIconElmnt){
-        svgIconElmnt.style.fill = '';
-      }
+    if(!highlight()){
+      const intervalId = setInterval(() => {
+        if (highlight()) {
+          clearInterval(intervalId);
+        }
+      }, delay); // checks every 5ms
     }
+  }
+
+  unHighLightTasktBarPreview(uid:string):void{
+    console.log(`highLightTasktBarPreview:${uid}`);
+    const pid = uid.split('-')[1];
+    const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uid}`) as HTMLElement;
+    if(tskBarPrevElmnt){
+      tskBarPrevElmnt.style.backgroundColor ='';
+    }
+
+    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+    if(closeBtnElmnt){
+      closeBtnElmnt.style.backgroundColor = '';
+    }
+
+    const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
+    if(svgIconElmnt){
+      svgIconElmnt.style.fill = '';
+    }
+  }
 
 }
