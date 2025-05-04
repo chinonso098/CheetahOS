@@ -299,6 +299,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 
     restoreHiddenWindow(pid:number):void{
       if(this.processId === pid){
+        //this.setZIndexToOne(pid);
         this.setHideAndShow();
       }
     }
@@ -443,7 +444,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
       if(this.windowHide && windowState){
         if(windowState.pid == this.processId){
           windowState.is_visible = false;
-          windowState.z_index = this.MIN_Z_INDEX;
+          windowState.z_index = this.HIDDEN_Z_INDEX;
           this._windowService.addWindowState(windowState);
 
           this.setHeaderInActive(windowState.pid);
@@ -451,7 +452,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-            'z-index':this.MIN_Z_INDEX 
+            'z-index':this.HIDDEN_Z_INDEX 
           };
 
           const nextProc = this.getNextProcess();
@@ -473,6 +474,23 @@ import { SystemNotificationService } from '../../system-service/system.notificat
         }
       }
     }
+
+    // setZIndexToOne(pid:number):void{
+    //   const windowState = this._windowService.getWindowState(this.processId);
+    //   if(windowState){
+    //     if(windowState.pid == pid){
+    //       windowState.is_visible = false;
+    //       windowState.z_index = this.MIN_Z_INDEX;
+    //       this._windowService.addWindowState(windowState);
+    //       this.currentStyles = { 
+    //         'top': `${this.windowTop}%`,
+    //         'left': `${this.windowLeft}%`,
+    //         'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
+    //         'z-index':this.MIN_Z_INDEX 
+    //       };
+    //     }
+    //   }
+    // }
 
     setMaximizeAndUnMaximize():void{
       const windowState = this._windowService.getWindowState(this.processId);
@@ -765,7 +783,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
             this.updateWindowZIndex(window, this.MAX_Z_INDEX);
           }
         } else if(!window.is_visible){
-          // using a z-index of less than 1, breaks hide/show animation, the show part to be exact.
+          // using a z-index of less than 1, breaks hide/show animation, the show part to be exact.####
           this.setWindowToPriorHiddenState(window, this.MIN_Z_INDEX);
         }
       }
@@ -795,7 +813,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
           this.resetWindowBoundsState();
         }
       }
-     }
+    }
 
     setWindowToFocusById(pid:number):void{
       const windowState = this._windowService.getWindowState(pid);

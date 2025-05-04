@@ -1,6 +1,7 @@
 import {trigger, transition, state, animate, style, keyframes} from '@angular/animations';
     
-const HIDDEN_Z_INDEX = 1;
+const HIDDEN_Z_INDEX = 0;
+const MIN_Z_INDEX = 1;
 const MAX_Z_INDEX = 2;
 
   // Routable animations
@@ -32,7 +33,7 @@ const MAX_Z_INDEX = 2;
         trigger('hideShow', [
             state('hidden', style({
                 opacity: 0,
-                zIndex: HIDDEN_Z_INDEX,
+                zIndex: MIN_Z_INDEX,
             })),
             state('visible', style({
                 opacity: 1,
