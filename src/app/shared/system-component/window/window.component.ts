@@ -91,7 +91,6 @@ import { SystemNotificationService } from '../../system-service/system.notificat
   defaultWidthOnOpen = 0;
   defaultHeightOnOpen = 0;
   private readonly z_index = '25914523'; // this number = zindex
-  //private pid_with_highest_z_index = 0;
 
   hasWindow = false;
   icon = '';
@@ -114,7 +113,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 
       this._restoreOrMinSub = this._windowService.restoreOrMinimizeProcessWindowNotify.subscribe((p) => {this.restoreHiddenWindow(p)});
       this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusAndResetWindowBoundsByPid(p)});
-      this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p,true)});
+      this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p)});
       this._removeFocusOnOtherProcessesSub = this._windowService.removeFocusOnOtherProcessesWindowNotify.subscribe((p) => {this.removeFocusOnWindowNotMatchingPid(p)});
       this._showOnlyCurrentProcessSub = this._windowService.setProcessWindowToFocusOnMouseHoverNotify.subscribe((p) => {this.setWindowToFocusOnMouseHover(p)});
       this._hideOtherProcessSub = this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.hideWindowNotMatchingPidOnMouseHover(p)});
@@ -361,8 +360,8 @@ import { SystemNotificationService } from '../../system-service/system.notificat
       const x_axis = matrix1.m41;
       const y_axis = matrix1.m42;
 
-      console.log('tstIncrement:',this.tstIncrement); //TBD
-      
+      console.log('tstIncrement---:',this.tstIncrement); //TBD
+
       //ignore false drag
       if( x_axis!== 0  && y_axis !== 0){
         const windowState = this._windowService.getWindowState(this.processId);
@@ -391,30 +390,12 @@ import { SystemNotificationService } from '../../system-service/system.notificat
     onDragStart(input:HTMLElement, pid:number):void{
       console.log('onDragStart-Started. But this function will also call  setFocusOnWindow()'); //TBD
 
-      const style = window.getComputedStyle(input);
-      const matrix1 = new WebKitCSSMatrix(style.transform);
-      const x_axis = matrix1.m41;
-      const y_axis = matrix1.m42;
+      // const style = window.getComputedStyle(input);
+      // const matrix1 = new WebKitCSSMatrix(style.transform);
+      // const x_axis = matrix1.m41;
+      // const y_axis = matrix1.m42;
 
-      //this.resetWindowBoundsState();
-
-      //ignore false drag
-      if( x_axis === 0  && y_axis === 0){
-        console.log('False start drag'); //TBD
-        console.log(`translate(${x_axis}px , ${y_axis}px)`);
-        this.setFocsuOnThisWindow(pid,true);
-      }else{
-        console.log('Non-False start drag'); //TBD
-        console.log(`translate(${x_axis}px , ${y_axis}px)`);
-        console.log('tstIncrement:',this.tstIncrement); //TBD
-
-        if(this.tstIncrement === 0)
-           this.setFocsuOnThisWindow(pid,true);
-        else{
-          this.setFocsuOnThisWindow(pid,false);
-        }
-        this.tstIncrement++;
-      }
+      this.setFocsuOnThisWindow(pid);
     }
 
     onRZStop(input:any):void{
@@ -485,7 +466,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
           }
           windowState.is_visible = true;
           this._windowService.addWindowState(windowState);
-          this.setFocsuOnThisWindow(windowState.pid, true);
+          this.setFocsuOnThisWindow(windowState.pid);
         }
       }
     }
@@ -675,7 +656,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
       },this.SECONDS_DELAY) ;
     }
 
-    setFocsuOnThisWindow(pid:number, isAfterWindowRestore:boolean):void{
+    setFocsuOnThisWindow(pid:number):void{
       /**
        * If you want to make a non-focusable element focusable, 
        * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
@@ -683,9 +664,8 @@ import { SystemNotificationService } from '../../system-service/system.notificat
       const uid = `${this.name}-${pid}`;
       if((this.uniqueId === uid) && (!this.windowHide)){
         this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pid);
-        
-        //this.setHeaderActive(pid);
-        this.setWindowToFocusById(pid, isAfterWindowRestore);
+
+        this.setWindowToFocusById(pid);
         this.resetWindowBoundsState();
       }
     }
@@ -793,25 +773,11 @@ import { SystemNotificationService } from '../../system-service/system.notificat
       if(this.processId === pid){
         const windowState = this._windowService.getWindowState(pid);
         if(windowState){
-
           if(!windowState.is_visible){
-            this.windowHide = !this.windowHide;
-            this.windowHideShowAction = this.windowHide ? 'hidden' : 'visible';
-
-            this.currentStyles = {
-              'top': `${this.windowTop}%`,
-              'left': `${this.windowLeft}%`,
-              'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-              'z-index':this.MAX_Z_INDEX,
-              'opacity': 1,
-            };
-
-            windowState.is_visible = true;
-            windowState.z_index = this.MAX_Z_INDEX
-            this._windowService.addWindowState(windowState);
+            this.restoreHiddenWindow(pid);
+          }else{
+            this.setFocsuOnThisWindow(windowState.pid);
           }
-
-          this.setFocsuOnThisWindow(windowState.pid,false);
         }
       }
     }
@@ -820,7 +786,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
       if(this.processId === pid){
         const window = this._windowService.getWindowState(this.processId);
         if(window && window.is_visible){
-          this.setWindowToFocusById(window.pid, true);
+          this.setWindowToFocusById(window.pid);
   
           //reset window bound when a window is closed or hidden.
           this.resetWindowBoundsState();
@@ -828,7 +794,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
       }
      }
 
-    setWindowToFocusById(pid:number, isAfterWindowRestore:boolean):void{
+    setWindowToFocusById(pid:number):void{
       const windowState = this._windowService.getWindowState(pid);
       if(windowState){
         if((windowState.pid === pid) && (windowState.z_index < this.MAX_Z_INDEX)){
@@ -836,20 +802,13 @@ import { SystemNotificationService } from '../../system-service/system.notificat
           this._windowService.addWindowState(windowState);
           this._windowService.addProcessWindowIDWithHighestZIndex(pid);
 
-          if(isAfterWindowRestore){
-            this.currentStyles = {
-              'top': `${this.windowTop}%`,
-              'left': `${this.windowLeft}%`,
-              'z-index':this.MAX_Z_INDEX,
-              'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
-            };
-          }else{
-            this.currentStyles = {
-              'top': `${this.windowTop}%`,
-              'left': `${this.windowLeft}%`,
-              'z-index':this.MAX_Z_INDEX
-            };
-          }
+          this.currentStyles = {
+            'top': `${this.windowTop}%`,
+            'left': `${this.windowLeft}%`,
+            'z-index':this.MAX_Z_INDEX,
+            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
+          };
+
           this.setHeaderActive(pid);
           this.setFocusOnDiv();
         }else if((windowState.pid === pid) && (windowState.z_index === this.MAX_Z_INDEX)){
@@ -887,7 +846,8 @@ import { SystemNotificationService } from '../../system-service/system.notificat
           this.currentStyles = {
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
-            'z-index':z_index
+            'z-index':z_index,
+            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
           };
         }
       }
@@ -899,9 +859,9 @@ import { SystemNotificationService } from '../../system-service/system.notificat
         this.currentStyles = {
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
-          'z-index':this.HIDDEN_Z_INDEX
+          'z-index':this.HIDDEN_Z_INDEX,
+          'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
         };
-
         this._windowService.addWindowState(windowState);   
       }
     }
@@ -913,13 +873,15 @@ import { SystemNotificationService } from '../../system-service/system.notificat
           this.currentStyles = {
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
-            'z-index':this.MAX_Z_INDEX
+            'z-index':this.MAX_Z_INDEX,
+            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
           };
         }else{
           this.currentStyles = {
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
-            'z-index':this.MIN_Z_INDEX
+            'z-index':this.MIN_Z_INDEX,
+            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
           };
         }
         this._windowService.addWindowState(windowState);   

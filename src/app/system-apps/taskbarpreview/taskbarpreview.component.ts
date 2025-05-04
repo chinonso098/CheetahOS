@@ -30,6 +30,7 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit, OnDest
 
   private _highLightTaskBarPreviewSub!: Subscription;
   private _unHighLightTaskBarPreviewSub!: Subscription;
+  private _taskBarPreviewIconInfoChangeSub!: Subscription;
 
   @Input() name = '';
   @Input() icon = '';
@@ -59,6 +60,7 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit, OnDest
   ngAfterViewInit(): void {
     setTimeout(() => {
       this.componentImages = this._windowServices.getProcessPreviewImages(this.name);
+      this.checkForUpdatedTaskBarPrevInfo();
       this.shortAppInfo();
     }, this.SECONDS_DELAY);
   }
@@ -105,15 +107,13 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit, OnDest
   }
 
   showOrSetWindowToFocusOnClick(pid:number):void{
-    const delay = 700; //100ms
+    const delay = 100; //100ms
     this.restoreWindowOnMouseLeave(pid);
 
     this.hideTaskBarPreviewWindowAndRestoreDesktop();
 
     setTimeout(() => {
-      //this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
-
-      this._windowServices.restoreOrMinimizeProcessWindowNotify.next(pid);
+      this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
     }, delay);
   }
 
@@ -179,6 +179,19 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit, OnDest
     const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
     if(svgIconElmnt){
       svgIconElmnt.style.fill = '';
+    }
+  }
+
+
+  checkForUpdatedTaskBarPrevInfo():void{
+
+    for(const cpmtImage of this.componentImages){
+      const tmpInfo = this._systemNotificationService.getAppIconNotication(cpmtImage.pid);
+      if(tmpInfo.length > 0){
+       console.log('onTaskBarIconInfoChange -tmp:',tmpInfo);
+       this.name = tmpInfo[0];
+       this.icon = tmpInfo[1];
+      }
     }
   }
 }
