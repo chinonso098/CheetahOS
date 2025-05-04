@@ -105,13 +105,15 @@ export class TaskBarPreviewComponent implements OnChanges, AfterViewInit, OnDest
   }
 
   showOrSetWindowToFocusOnClick(pid:number):void{
-    const delay = 100; //100ms
+    const delay = 700; //100ms
     this.restoreWindowOnMouseLeave(pid);
 
     this.hideTaskBarPreviewWindowAndRestoreDesktop();
 
     setTimeout(() => {
-      this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
+      //this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
+
+      this._windowServices.restoreOrMinimizeProcessWindowNotify.next(pid);
     }, delay);
   }
 
