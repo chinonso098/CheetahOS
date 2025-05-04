@@ -33,11 +33,9 @@ const MAX_Z_INDEX = 2;
         trigger('hideShow', [
             state('hidden', style({
                 opacity: 0,
-                zIndex: MIN_Z_INDEX,
             })),
             state('visible', style({
                 opacity: 1,
-                zIndex: MAX_Z_INDEX,
             })),
             transition('visible => hidden', [
                 animate("0.45s cubic-bezier(0.4, 0, 0.2, 1)", keyframes([

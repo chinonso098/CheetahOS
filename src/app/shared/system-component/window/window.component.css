@@ -124,3 +124,7 @@ nav{
 .ng-resizable-diagonal{ 
   border-bottom: 12px solid transparent; 
 }
+
+.non-interactive {
+  pointer-events: none;
+}

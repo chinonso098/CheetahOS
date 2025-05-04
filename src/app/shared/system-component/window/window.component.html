@@ -4,10 +4,15 @@
     value: windowOpenCloseAction,
     params:{ wt0p: windowTransform0p, wt50p: windowTransform50p, wt100p: windowTransform100p }
 }" 
+
 [@hideShow]="{
     value: windowHideShowAction,
-    params:{ yAxis0p : yAxis0p, yAxis50p : yAxis50p,  yAxis100p : yAxis100p }
-}"
+    params: { yAxis0p: yAxis0p, yAxis50p: yAxis50p, yAxis100p: yAxis100p }
+  }"
+  (@hideShow.done)="hideShowAnimationDone($event)"
+  [style.z-index]="hsZIndex"
+  [class.non-interactive]="windowHideShowAction === 'hidden'"
+
 [@minimizeMaximize]="{
     value: windowMinMaxAction,
     params:{ winWidth: windowWidth, winHeight: windowHeight, winTransform: windowTransform, winZIndex:windowZIndex }

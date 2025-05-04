@@ -7,6 +7,7 @@ import {Subscription } from 'rxjs';
 import { BaseState } from 'src/app/system-files/state/state.interface';
 import { WindowBoundsState, WindowState } from './windows.types';
 import {openCloseAnimation, hideShowAnimation, minimizeMaximizeAnimation} from 'src/app/shared/system-component/window/animation/animations';
+import { AnimationEvent } from '@angular/animations';
 
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 
@@ -75,6 +76,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
   windowWidth = '0px';
   windowHeight = '0px';
   windowZIndex = '0';
+  hsZIndex = 2;
 
   xAxisTmp = 0;
   yAxisTmp = 0;
@@ -299,7 +301,6 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 
     restoreHiddenWindow(pid:number):void{
       if(this.processId === pid){
-        //this.setZIndexToOne(pid);
         this.setHideAndShow();
       }
     }
@@ -434,6 +435,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
     }
 
     setHideAndShow():void{
+      const delay = 450; //450ms
       this.windowHide = !this.windowHide;
       this.windowHideShowAction = this.windowHide ? 'hidden' : 'visible';
       this.generateHideAnimationValues(this.xAxisTmp, this.yAxisTmp);
@@ -447,19 +449,20 @@ import { SystemNotificationService } from '../../system-service/system.notificat
           windowState.z_index = this.HIDDEN_Z_INDEX;
           this._windowService.addWindowState(windowState);
 
-          this.setHeaderInActive(windowState.pid);
-          this.currentStyles = { 
-            'top': `${this.windowTop}%`,
-            'left': `${this.windowLeft}%`,
-            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-            'z-index':this.HIDDEN_Z_INDEX 
-          };
-
-          const nextProc = this.getNextProcess();
-          if(nextProc){
-            this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
-            this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
-          }
+          setTimeout(() => {
+            this.setHeaderInActive(windowState.pid);
+            this.currentStyles = { 
+              'top': `${this.windowTop}%`,
+              'left': `${this.windowLeft}%`,
+              'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
+              'z-index':this.HIDDEN_Z_INDEX 
+            };
+            const nextProc = this.getNextProcess();
+            if(nextProc){
+              this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
+              this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
+            }
+          }, delay);
         }
       }
       else if(!this.windowHide && windowState){
@@ -491,6 +494,14 @@ import { SystemNotificationService } from '../../system-service/system.notificat
     //     }
     //   }
     // }
+
+    hideShowAnimationDone(event: AnimationEvent) {
+      if (event.toState === 'hidden') {
+        this.hsZIndex = this.HIDDEN_Z_INDEX
+      } else {
+        this.hsZIndex = this.MAX_Z_INDEX
+      }
+    }
 
     setMaximizeAndUnMaximize():void{
       const windowState = this._windowService.getWindowState(this.processId);
@@ -784,7 +795,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
           }
         } else if(!window.is_visible){
           // using a z-index of less than 1, breaks hide/show animation, the show part to be exact.####
-          this.setWindowToPriorHiddenState(window, this.MIN_Z_INDEX);
+          this.setWindowToPriorHiddenState(window, this.HIDDEN_Z_INDEX);
         }
       }
     }
