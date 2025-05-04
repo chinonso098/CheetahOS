@@ -579,17 +579,22 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         rect.x = tmpX;
       }
 
-      console.log(`onMouseEnter -- rect:${rect}`);
-      const data:unknown[] = [rect, opensWith, iconPath];
-      if(this._runningProcessService.isProcessRunning(opensWith)){
-        const delay = 400;
-        this._windowServices.showProcessPreviewWindowNotify.next(data);
+      this.showTaskBarPreviewWindow(rect, opensWith, pid, iconPath);
+    }
+  }
 
-        if(this.taskBarEntriesIconState === this.unMergedIcons){
-          setTimeout(() => {
-            this._systemNotificationService.taskBarPreviewHighlightNotify.next(`${opensWith}-${pid}`);
-          }, delay);
-        }
+  showTaskBarPreviewWindow(rect:DOMRect, opensWith:string, pid:number, iconPath:string):void{
+    const delay = 400;//400ms
+    const data:unknown[] = [rect, opensWith, iconPath];
+
+    if(this._runningProcessService.isProcessRunning(opensWith)){
+
+      this._windowServices.showProcessPreviewWindowNotify.next(data);
+
+      if(this.taskBarEntriesIconState === this.unMergedIcons){
+        setTimeout(() => {
+          this._systemNotificationService.taskBarPreviewHighlightNotify.next(`${opensWith}-${pid}`);
+        }, delay);
       }
     }
   }

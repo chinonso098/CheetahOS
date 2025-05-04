@@ -1,7 +1,7 @@
 import {trigger, transition, state, animate, style, keyframes} from '@angular/animations';
     
-const HIDDEN_Z_INDEX = 0;
-const MIN_Z_INDEX = 1;
+//const HIDDEN_Z_INDEX = 0;
+//const MIN_Z_INDEX = 1;
 const MAX_Z_INDEX = 2;
 
   // Routable animations
