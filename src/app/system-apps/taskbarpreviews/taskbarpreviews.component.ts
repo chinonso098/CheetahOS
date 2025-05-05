@@ -3,7 +3,6 @@ import { Subscription } from 'rxjs';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 
 @Component({
   selector: 'cos-taskbarpreviews',
@@ -120,32 +119,19 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
 
   highLightTasktBarPreview(uid: string): void {
     const pid = uid.split('-')[1];
-    const delay = 5;
-    const highlight = () => {
-      const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uid}`) as HTMLElement;
-      if(tskBarPrevElmnt){
-        tskBarPrevElmnt.style.backgroundColor = 'hsla(0,0%,25%,60%)';
+    const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uid}`) as HTMLElement;
+    if(tskBarPrevElmnt){
+      tskBarPrevElmnt.style.backgroundColor = 'hsla(0,0%,25%,60%)';
 
-        const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
-        if(closeBtnElmnt){
-          closeBtnElmnt.style.backgroundColor = 'black';
-        }
-
-        const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
-        if(svgIconElmnt){
-          svgIconElmnt.style.fill = '#ababab';
-        }
-        return true;
+      const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+      if(closeBtnElmnt){
+        closeBtnElmnt.style.backgroundColor = 'black';
       }
-      return false;
-    };
-  
-    if(!highlight()){
-      const intervalId = setInterval(() => {
-        if (highlight()) {
-          clearInterval(intervalId);
-        }
-      }, delay); // checks every 5ms
+
+      const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
+      if(svgIconElmnt){
+        svgIconElmnt.style.fill = '#ababab';
+      }
     }
   }
 
