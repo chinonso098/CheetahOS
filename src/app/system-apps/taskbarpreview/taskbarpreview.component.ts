@@ -65,5 +65,9 @@ export class TaskBarPreviewComponent implements OnInit, AfterViewInit {
         cmptImage.icon = tmpInfo[1];
       }
     }
+
+    //For mergedlist, you will have to search by opensWith/ProcessName to get the pids from runnngSystemSerice
+    //A way to differentiate between merged and unMerged is needed ####
+    //HMMMMMMM wait this should work regardless....i'll need to look into this
   }
 }

@@ -15,6 +15,7 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Process } from 'src/app/system-files/process';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
+import { MenuService } from '../../system-service/menu.services';
 
  @Component({
    selector: 'cos-window',
@@ -36,6 +37,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
    private _systemNotificationServices:SystemNotificationService;
    private _windowService:WindowService;
    private _originalWindowsState!:WindowState;
+   private _menuService!:MenuService;
 
    private _restoreOrMinSub!:Subscription
    private _focusOnNextProcessSub!:Subscription;
@@ -48,6 +50,8 @@ import { SystemNotificationService } from '../../system-service/system.notificat
    private _showOrSetProcessWindowToFocusSub!:Subscription;
    private _lockScreenActiveSub!:Subscription;
    private _desktopActiveSub!:Subscription;
+   private _showTheDesktopSub!:Subscription;
+   private _showOpenWindowsSub!:Subscription;
 
   readonly SECONDS_DELAY = 450;
   readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
@@ -105,11 +109,13 @@ import { SystemNotificationService } from '../../system-service/system.notificat
   
 
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, private renderer: Renderer2,
-                windowService:WindowService, sessionManagmentService: SessionManagmentService, systemNotificationServices:SystemNotificationService){
+                windowService:WindowService, sessionManagmentService: SessionManagmentService, systemNotificationServices:SystemNotificationService,
+                menuService: MenuService,){
       this._runningProcessService = runningProcessService;
       this._sessionManagmentService = sessionManagmentService;
       this._windowService = windowService;
       this._systemNotificationServices = systemNotificationServices;
+      this._menuService = menuService;
  
       this.retrievePastSessionData();
 
@@ -121,9 +127,14 @@ import { SystemNotificationService } from '../../system-service/system.notificat
       this._hideOtherProcessSub = this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.hideWindowNotMatchingPidOnMouseHover(p)});
       this._restoreProcessSub = this._windowService.restoreProcessWindowOnMouseLeaveNotify.subscribe((p) => {this.restoreWindowOnMouseLeave(p)});
       this._restoreProcessesSub = this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
+
       this._lockScreenActiveSub = this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
       this._desktopActiveSub = this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
-      this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)})
+
+      this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)});
+
+      this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideOrShowAllVisibleWindows()});
+      this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => {this.setHideOrShowAllVisibleWindows()});
     }
 
     get getDivWindowElement(): HTMLElement {
@@ -193,6 +204,8 @@ import { SystemNotificationService } from '../../system-service/system.notificat
       this._showOrSetProcessWindowToFocusSub?.unsubscribe();
       this._lockScreenActiveSub?.unsubscribe();
       this._desktopActiveSub?.unsubscribe();
+      this._showTheDesktopSub?.unsubscribe();
+      this._showOpenWindowsSub?.unsubscribe();
     }
 
     ngOnChanges(changes: SimpleChanges):void{
@@ -473,27 +486,63 @@ import { SystemNotificationService } from '../../system-service/system.notificat
           }
           windowState.is_visible = true;
           this._windowService.addWindowState(windowState);
+          this._windowService.resetHiddenOrVisibleWindowsList();
           this.setFocsuOnThisWindow(windowState.pid);
         }
       }
     }
 
-    // setZIndexToOne(pid:number):void{
-    //   const windowState = this._windowService.getWindowState(this.processId);
-    //   if(windowState){
-    //     if(windowState.pid == pid){
-    //       windowState.is_visible = false;
-    //       windowState.z_index = this.MIN_Z_INDEX;
-    //       this._windowService.addWindowState(windowState);
-    //       this.currentStyles = { 
-    //         'top': `${this.windowTop}%`,
-    //         'left': `${this.windowLeft}%`,
-    //         'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-    //         'z-index':this.MIN_Z_INDEX 
-    //       };
-    //     }
-    //   }
-    // }
+    setHideOrShowAllVisibleWindows():void{
+      const windowState = this._windowService.getWindowState(this.processId);
+      if(windowState?.is_visible){
+        this.windowHide = !this.windowHide;
+        this.windowHideShowAction = this.windowHide ? 'hidden' : 'visible';
+        this.generateHideAnimationValues(this.xAxisTmp, this.yAxisTmp);
+        // CSS styles: set per current state of component properties
+
+        if(this.windowHide && windowState){
+          if(windowState.pid == this.processId){
+            windowState.is_visible = false;
+            windowState.z_index = this.HIDDEN_Z_INDEX;
+            this._windowService.addWindowState(windowState);
+            this._windowService.addProcessIDToHiddenOrVisibleWindows(this.processId);
+  
+            this.setHeaderInActive(windowState.pid);
+            this.currentStyles = { 
+              'top': `${this.windowTop}%`,
+              'left': `${this.windowLeft}%`,
+              'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
+              'z-index':this.HIDDEN_Z_INDEX 
+            };
+          }
+        }
+      }else if(!windowState?.is_visible){
+        const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
+        if(windowList.includes(this.processId)){
+
+          this.windowHide = !this.windowHide;
+          this.windowHideShowAction = this.windowHide ? 'hidden' : 'visible';
+          this.generateHideAnimationValues(this.xAxisTmp, this.yAxisTmp);
+
+          if(!this.windowHide && windowState){
+            if(windowState.pid == this.processId){
+              if(this.currentWindowSizeState){ 
+                // if window was in full screen when hidden, give the proper z-index when unhidden
+                this.setWindowToFullScreen(this.processId, windowState.z_index);
+              }
+              windowState.is_visible = true;
+              this._windowService.addWindowState(windowState);
+
+              const window_with_highest_zIndex = this._windowService.getProcessWindowIDWithHighestZIndex();
+              if(window_with_highest_zIndex === this.processId){
+                this.setFocsuOnThisWindow(windowState.pid);
+              }
+            }
+          }
+        }
+      }
+    }
+
 
     hideShowAnimationDone(event: AnimationEvent) {
       if (event.toState === 'hidden') {

@@ -24,6 +24,7 @@ export class WindowService implements BaseService{
     private _processWindows:Map<string, string[]>;
     private _processWindowBounds:Map<string, WindowBoundsState>;
     private _processWindowStates:WindowState[];
+    private _hiddenOrVisibleWindows:number[];
     private _eventOriginator = '';
     private _processWindowWithTheHighestZIndex = 0;
 
@@ -66,6 +67,7 @@ export class WindowService implements BaseService{
         this._processWindows = new Map<string, string[]>();
         this._processWindowBounds = new Map<string, WindowBoundsState>();
         this._processWindowStates = [];
+        this._hiddenOrVisibleWindows = [];
 
         this._processIdService = ProcessIDService.instance;
         this._runningProcessService = RunningProcessService.instance;
@@ -121,6 +123,10 @@ export class WindowService implements BaseService{
 
     addProcessWindowIDWithHighestZIndex(pid:number):void{
         this._processWindowWithTheHighestZIndex = pid;
+    }
+
+    addProcessIDToHiddenOrVisibleWindows(pid:number):void{
+        this._hiddenOrVisibleWindows.push(pid);
     }
 
     removeProcessPreviewImages(appName:string):void{
@@ -245,6 +251,14 @@ export class WindowService implements BaseService{
     getEventOrginator():string{
         return this._eventOriginator;
     }
+
+    getProcessIDOfHiddenOrVisibleWindows():number[]{
+       return this._hiddenOrVisibleWindows;
+    }
+
+    resetHiddenOrVisibleWindowsList():void{
+        this._hiddenOrVisibleWindows = [];
+     }
 
     cleanUp(uid:string):void{
         const appName = uid.split(Constants.DASH)[0];

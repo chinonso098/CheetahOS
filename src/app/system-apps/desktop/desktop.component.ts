@@ -775,16 +775,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showTheDesktop():void{
     const menuOption:GeneralMenu = {icon:'', label: 'Show open windows', action:this.showOpenWindows.bind(this)}
     // raise show the destop evt
-
+    this._menuService.showTheDesktop.next();
     this.taskBarContextMenuData[0] = menuOption;
   }
 
   showOpenWindows():void{
     const menuOption:GeneralMenu = {icon:'', label: 'Show the desktop', action: this.showTheDesktop.bind(this)}
+    const menuOption1:GeneralMenu = {icon:'', label: 'Show open windows', action:this.showOpenWindows.bind(this)}
 
-    //raise evt
-
-    this.taskBarContextMenuData[0] = menuOption;
+    const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
+    if(windowList.length > 0){
+      //raise evt
+      this._menuService.showOpenWindows.next();
+      this.taskBarContextMenuData[0] = menuOption;
+    }else{
+      this.taskBarContextMenuData[0] = menuOption1;
+    }
   }
 
   hideTheTaskBar():void{
