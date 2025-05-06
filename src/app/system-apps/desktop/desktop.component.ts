@@ -199,7 +199,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.hideVolumeControl();
     });
 
-    this._menuService.updateTaskBarContextMenu.subscribe(()=>{this.showOpenWindows()});
+    this._menuService.updateTaskBarContextMenu.subscribe(()=>{this.resetMenuOption()});
 
 
     this.processId = this._processIdService.getNewProcessId()
@@ -781,18 +781,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.taskBarContextMenuData[0] = menuOption;
   }
 
+  resetMenuOption():void{
+    const menuOption:GeneralMenu = {icon:'', label: 'Show the desktop', action: this.showTheDesktop.bind(this)}
+    this.taskBarContextMenuData[0] = menuOption;
+  }
+
   showOpenWindows():void{
     const menuOption:GeneralMenu = {icon:'', label: 'Show the desktop', action: this.showTheDesktop.bind(this)}
-    const menuOption1:GeneralMenu = {icon:'', label: 'Show open windows', action:this.showOpenWindows.bind(this)}
-
-    const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
-    if(windowList.length > 0){
-      //raise evt
-      this._menuService.showOpenWindows.next();
-      this.taskBarContextMenuData[0] = menuOption;
-    }else{
-      this.taskBarContextMenuData[0] = menuOption1;
-    }
+    this._menuService.showOpenWindows.next();
+    this.taskBarContextMenuData[0] = menuOption;
   }
 
   hideTheTaskBar():void{
