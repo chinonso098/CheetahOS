@@ -44,6 +44,7 @@ export class MenuService implements BaseService{
     tiggerTaskManager: Subject<void> = new Subject<void>();
     showTheDesktop: Subject<void> = new Subject<void>();
     showOpenWindows: Subject<void> = new Subject<void>();
+    updateTaskBarContextMenu:Subject<void> = new Subject<void>();
 
     private _isPasteActive = false;
     private _path = 'NOPATH';

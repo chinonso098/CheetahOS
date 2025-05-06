@@ -25,7 +25,7 @@ import { MenuService } from '../../system-service/menu.services';
  })
  export class WindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
    @ViewChild('divWindow') divWindow!: ElementRef;
-   @ViewChild('glassPaneContainer') glassPaneContainer!: ElementRef; //glassPaneContainer
+   @ViewChild('glassPaneContainer') glassPaneContainer!: ElementRef;
 
    @Input() runningProcessID = 0;  
    @Input() processAppIcon = '';  
@@ -96,7 +96,7 @@ import { MenuService } from '../../system-service/menu.services';
   closeBtnStyles: Record<string, unknown> = {};
   defaultWidthOnOpen = 0;
   defaultHeightOnOpen = 0;
-  private readonly z_index = '25914523'; // this number = zindex
+  //private readonly z_index = '25914523'; // this number = zindex
 
   hasWindow = false;
   icon = '';
@@ -133,8 +133,8 @@ import { MenuService } from '../../system-service/menu.services';
 
       this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)});
 
-      this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideOrShowAllVisibleWindows()});
-      this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => {this.setHideOrShowAllVisibleWindows()});
+      this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
+      this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
     }
 
     get getDivWindowElement(): HTMLElement {
@@ -155,7 +155,9 @@ import { MenuService } from '../../system-service/menu.services';
         this.setFocusOnWindowInit(this.processId)
       }, 0);
 
-      this._windowService.addProcessWindowToWindows(this.uniqueId ); 
+      this._windowService.addProcessWindowToWindows(this.uniqueId); 
+      this.resetHideShowWindowsList();
+    
     }
 
     ngAfterViewInit():void{
@@ -486,21 +488,22 @@ import { MenuService } from '../../system-service/menu.services';
           }
           windowState.is_visible = true;
           this._windowService.addWindowState(windowState);
-          this._windowService.resetHiddenOrVisibleWindowsList();
           this.setFocsuOnThisWindow(windowState.pid);
+
+          this.resetHideShowWindowsList();
         }
       }
     }
 
-    setHideOrShowAllVisibleWindows():void{
+    setHideAndShowAllVisibleWindows():void{
       const windowState = this._windowService.getWindowState(this.processId);
-      if(windowState?.is_visible){
+      if(windowState && windowState.is_visible){
         this.windowHide = !this.windowHide;
         this.windowHideShowAction = this.windowHide ? 'hidden' : 'visible';
         this.generateHideAnimationValues(this.xAxisTmp, this.yAxisTmp);
         // CSS styles: set per current state of component properties
 
-        if(this.windowHide && windowState){
+        if(this.windowHide){
           if(windowState.pid == this.processId){
             windowState.is_visible = false;
             windowState.z_index = this.HIDDEN_Z_INDEX;
@@ -516,15 +519,14 @@ import { MenuService } from '../../system-service/menu.services';
             };
           }
         }
-      }else if(!windowState?.is_visible){
+      }else if(windowState && !windowState.is_visible){
         const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
         if(windowList.includes(this.processId)){
-
           this.windowHide = !this.windowHide;
           this.windowHideShowAction = this.windowHide ? 'hidden' : 'visible';
           this.generateHideAnimationValues(this.xAxisTmp, this.yAxisTmp);
 
-          if(!this.windowHide && windowState){
+          if(!this.windowHide){
             if(windowState.pid == this.processId){
               if(this.currentWindowSizeState){ 
                 // if window was in full screen when hidden, give the proper z-index when unhidden
@@ -536,6 +538,8 @@ import { MenuService } from '../../system-service/menu.services';
               const window_with_highest_zIndex = this._windowService.getProcessWindowIDWithHighestZIndex();
               if(window_with_highest_zIndex === this.processId){
                 this.setFocsuOnThisWindow(windowState.pid);
+              }else{
+                this.setWindowToPriorHiddenState(windowState, this.MIN_Z_INDEX);
               }
             }
           }
@@ -543,13 +547,17 @@ import { MenuService } from '../../system-service/menu.services';
       }
     }
 
-
     hideShowAnimationDone(event: AnimationEvent) {
       if (event.toState === 'hidden') {
         this.hsZIndex = this.HIDDEN_Z_INDEX
       } else {
         this.hsZIndex = this.MAX_Z_INDEX
       }
+    }
+
+    resetHideShowWindowsList():void{
+      this._windowService.resetHiddenOrVisibleWindowsList();
+      this._menuService.updateTaskBarContextMenu.next();
     }
 
     setMaximizeAndUnMaximize():void{
@@ -571,7 +579,7 @@ import { MenuService } from '../../system-service/menu.services';
           if(windowState.pid == this.processId){
             this.windowWidth = `${String(windowState.width)}px`;
             this.windowHeight = `${String(windowState.height)}px`;
-            this.windowTransform =  `translate(${String(windowState.x_axis)}px, ${String(windowState.y_axis)}px)`;
+            this.windowTransform =  `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`;
             this.windowZIndex =   String(windowState.z_index);
   
             const windowTitleBarHeight = 30;
@@ -823,8 +831,7 @@ import { MenuService } from '../../system-service/menu.services';
           this.updateWindowZIndex(windowState, this.HIDDEN_Z_INDEX);
         }
         else if(windowState && !windowState.is_visible){
-          // using a z-index of less than 1, breaks hide/show animation, the show part to be exact.
-          this.setWindowToPriorHiddenState(windowState, this.MIN_Z_INDEX);
+          this.setWindowToPriorHiddenState(windowState, this.HIDDEN_Z_INDEX);
         }
       }
     }
@@ -843,7 +850,6 @@ import { MenuService } from '../../system-service/menu.services';
             this.updateWindowZIndex(window, this.MAX_Z_INDEX);
           }
         } else if(!window.is_visible){
-          // using a z-index of less than 1, breaks hide/show animation, the show part to be exact.####
           this.setWindowToPriorHiddenState(window, this.HIDDEN_Z_INDEX);
         }
       }

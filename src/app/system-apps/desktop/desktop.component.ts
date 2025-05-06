@@ -199,6 +199,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.hideVolumeControl();
     });
 
+    this._menuService.updateTaskBarContextMenu.subscribe(()=>{this.showOpenWindows()});
+
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -937,7 +939,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const axis = this.checkAndHandleMenuBounds(evt, menuHeight, menuWidth);    
     this.tskBarCntxtMenuStyle = {
       'position':'absolute',
-      'transform':`translate(${axis.xAxis + 2}px, ${evt.y - menuHeight - taskBarHeight }px)`,
+      'transform':`translate(${axis.xAxis + 2}px, ${evt.y - menuHeight - taskBarHeight}px)`,
       'z-index': 5,
     }
   }
