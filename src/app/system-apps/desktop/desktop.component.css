@@ -26,9 +26,7 @@
     object-fit: contain;
 }
 
-
-
-ol{
+.dsktp-ol{
     /* column-gap: 1px; */
     position: relative;
     display: grid;
@@ -42,21 +40,21 @@ ol{
     z-index: 1;
 }
 
-li{
+.dsktp-li{
     display: flex;
     justify-content: center;
     padding: 2px;
     height: min-content;
 }
 
-figure{
+.dsktp-figure{
     display: flex;
     flex-direction: column;
     margin-bottom: -2px;
     place-items:center;
 }
 
-figcaption{
+.dsktp-figcaption{
     -webkit-box-orient: vertical;
     color: #fff;
     display: -webkit-box;
@@ -85,7 +83,7 @@ figcaption{
     word-break: break-all;
 }
 
-img{
+.dsktp-img{
     height: 45px; 
     width: 45px;
 }
@@ -96,7 +94,7 @@ img{
     width: 24px;
 }
 
-.filemngr_btn{
+.dsktpmngr_btn{
     background-color: transparent;
     border: 2px solid transparent;
     width: 90px;
@@ -104,7 +102,7 @@ img{
     transition: transform 0.1s ease-in-out; 
 }
 
-.rename-textbox{
+.dsktp-rename-textbox{
     position: relative;
     display: none;
     top: 2px;
@@ -116,14 +114,14 @@ img{
     z-index: 2;
  }
 
-input {
+.dsktp-input{
     text-align:calc(75px / 2 px);
     font-size: 11.5px;
     /* text-overflow:ellipsis; */
     padding-left: 4px;
 }
 
-input::selection{
+.dsktp-input::selection{
     background-color: #0056b3;
     color: #fff;
 }
@@ -168,20 +166,19 @@ input::selection{
     transform: rotate(180deg);
 }
 
-.clone-container{
+.dsktp-clone-container{
     width: fit-content;
     height: fit-content;
-    /* background-color: #ccc; */
     z-index:  3;
     position: absolute;
 }
 
-.filemngr-multi-select-highlight {
+.dsktpmngr-multi-select-highlight {
     background-color: rgba(0, 150, 255, 0.3);
     border: 2px solid hsla(0,0%,50%,25%);
 }
 
-li, .filemngr_btn, figure {
+.dsktp-li, .dsktpmngr_btn, .dsktp-figure {
     margin: 0;
     padding: 0;
 }

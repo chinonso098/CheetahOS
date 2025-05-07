@@ -225,12 +225,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   menuData:GeneralMenu[] =[];
   
-  fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
-  // menuOrder = '';
-
-
-
-
+  dsktpMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -270,6 +265,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
     this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
 
+    this._fileService.dirFilesUpdateNotify.subscribe(() =>{
+      if(this._fileService.getEventOriginator() === this.name){
+        this.loadFilesInfoAsync();
+        this._fileService.removeEventOriginator();
+      }
+    });
 
     // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destroyed
     this._systemNotificationServices.showDesktopNotify.subscribe(() => {
@@ -536,8 +537,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const folderName = Constants.NEW_FOLDER;
     const result =  await this._fileService.createFolderAsync(this.DESKTOP_DIRECTORY, folderName);
     if(result){
-      this._fileService.addEventOriginator('desktop');
-      this._fileService.dirFilesUpdateNotify.next();
+      // this._fileService.addEventOriginator('desktop');
+      // this._fileService.dirFilesUpdateNotify.next();
+      this.refresh();
     }
   }
 
@@ -1262,7 +1264,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     for(let i = 0;  i < this.files.length; i++){
 
       if(!this.movedBtnIds.includes(String(i))){
-        const figElmnt = document.getElementById(`filemngr_fig${i}`) as HTMLElement;
+        const figElmnt = document.getElementById(`dsktpmngr_fig${i}`) as HTMLElement;
         const shortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
   
         if(figElmnt && shortCutElmnt){
@@ -1277,7 +1279,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   runProcess(file:FileInfo):void{
 
-    console.log('filemanager-runProcess:',file)
+    console.log('desktopmanager-runProcess:',file)
     this._audioService.play(this.cheetahNavAudio);
     this._triggerProcessService.startApplication(file);
     this.btnStyleAndValuesReset();
@@ -1483,12 +1485,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   getCountOfAllTheMarkedButtons():number{
-    const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
+    const btnIcons = document.querySelectorAll('.dsktpmngr-multi-select-highlight');
     return btnIcons.length;
   }
   
   getIDsOfAllTheMarkedButtons():void{
-    const btnIcons = document.querySelectorAll('.filemngr-multi-select-highlight');
+    const btnIcons = document.querySelectorAll('.dsktpmngr-multi-select-highlight');
     btnIcons.forEach(btnIcon => {
       const btnId = btnIcon.id.replace('iconBtn', Constants.EMPTY_STRING);
       if(!this.markedBtnIds.includes(btnId))
@@ -1501,7 +1503,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.markedBtnIds.forEach(id =>{
       const btnIcon = document.getElementById(`iconBtn${id}`);
       if(btnIcon){
-        btnIcon.classList.remove('filemngr-multi-select-highlight');
+        btnIcon.classList.remove('dsktpmngr-multi-select-highlight');
       }
       this.removeBtnStyle(Number(id));
     })
@@ -1643,16 +1645,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         bottom: initY + height
     };
 
-    const btnIcons = document.querySelectorAll('.filemngr_btn');
+    const btnIcons = document.querySelectorAll('.dsktpmngr_btn');
     btnIcons.forEach((btnIcon) => {
         const btnIconRect = btnIcon.getBoundingClientRect();
 
         // Check if the item is inside the selection area
         if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
             btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
-            btnIcon.classList.add('filemngr-multi-select-highlight'); 
+            btnIcon.classList.add('dsktpmngr-multi-select-highlight'); 
         } else {
-            btnIcon.classList.remove('filemngr-multi-select-highlight');
+            btnIcon.classList.remove('dsktpmngr-multi-select-highlight');
         }
     });
   }
@@ -1660,7 +1662,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   onDragEnd(evt:DragEvent):void{
     // Get the cloneIcon container
-    const elementId = 'filemngr_clone_cntnr';
+    const elementId = 'dsktpmngr_clone_cntnr';
     const mPos:mousePosition = {
       clientX: evt.clientX,
       clientY: evt.clientY,
@@ -1687,7 +1689,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   onDragStart(evt:DragEvent, i: number): void {
   
     // Get the cloneIcon container
-    const elementId = 'filemngr_clone_cntnr';
+    const elementId = 'dsktpmngr_clone_cntnr';
     const cloneIcon = document.getElementById(elementId);
     const countOfMarkedBtns = this.getCountOfAllTheMarkedButtons();
     let counter = 0;
@@ -1778,8 +1780,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
 
     this.markedBtnIds.forEach(id =>{
-      const btnIcon = document.getElementById(`filemngr_li${id}`);
-      const btnIconElmnt = document.getElementById(`filemngr_li${id}`) as HTMLElement;
+      const btnIcon = document.getElementById(`dsktpmngr_li${id}`);
+      const btnIconElmnt = document.getElementById(`dsktpmngr_li${id}`) as HTMLElement;
       const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
       this.movedBtnIds.push(id);
       if(btnIcon){
@@ -1812,14 +1814,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
   
   moveBtnIconsToNewPositionAlignOn(mPos: mousePosition): void {
-    const fileMngrOlElmnt = document.getElementById('filemngr_ol') as HTMLElement;
+    const dsktpmngrOlElmnt = document.getElementById('dsktpmngr_ol') as HTMLElement;
     const maxIconWidth = this.GRID_SIZE;
     const maxIconHeight = this.GRID_SIZE;
     const offset = 7;
     
-    if (!fileMngrOlElmnt) return;
+    if (!dsktpmngrOlElmnt) return;
   
-    const gridWidth = fileMngrOlElmnt.clientWidth; // Get total width of the container
+    const gridWidth = dsktpmngrOlElmnt.clientWidth; // Get total width of the container
     const columnCount = Math.floor(gridWidth / maxIconWidth); // Assuming each icon is 100px wide
     const columnWidth = Math.floor(gridWidth / columnCount) - 1; // Compute exact column width
 
@@ -1833,7 +1835,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
 
     this.markedBtnIds.forEach(id =>{
-      const btnIconElmnt = document.getElementById(`filemngr_li${id}`) as HTMLElement;
+      const btnIconElmnt = document.getElementById(`dsktpmngr_li${id}`) as HTMLElement;
       const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
       this.movedBtnIds.push(id);
 
@@ -1868,7 +1870,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const offset = 7;
 
     this.movedBtnIds.forEach((id) => {
-      const btnIcon = document.getElementById(`filemngr_li${id}`);
+      const btnIcon = document.getElementById(`dsktpmngr_li${id}`);
 
       if(btnIcon){
         const rect = btnIcon.getBoundingClientRect();
@@ -1928,18 +1930,18 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
   
 
-async onDeleteFile():Promise<void>{
-  let result = false;
-  if(this.selectedFile.getIsFile){
-    result = await this._fileService.deleteFileAsync(this.selectedFile.getCurrentPath);
-  }else{
-    result = await this._fileService.deleteFolderAsync(this.selectedFile.getCurrentPath)
-  }
+  async onDeleteFile():Promise<void>{
+    let result = false;
+    if(this.selectedFile.getIsFile){
+      result = await this._fileService.deleteFileAsync(this.selectedFile.getCurrentPath);
+    }else{
+      result = await this._fileService.deleteFolderAsync(this.selectedFile.getCurrentPath)
+    }
 
-  if(result){
-    await this.loadFilesInfoAsync();
+    if(result){
+      await this.loadFilesInfoAsync();
+    }
   }
-}
 
   async createShortCut(): Promise<void>{
     const selectedFile = this.selectedFile;
@@ -2109,14 +2111,6 @@ OpensWith=${selectedFile.getOpensWith}
     this.showDesktopIcon();
   }
   
-    
-
-
-
-
-
-
-
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }

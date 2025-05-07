@@ -4,12 +4,12 @@
     (mousemove)="performTasks($event)"  #desktopContainer> 
 
 
-    <ol (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)"  (click)="handleIconHighLightState()"
+    <ol class="dsktp-ol" (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)"  (click)="handleIconHighLightState()"
         (mousedown)="activateMultiSelect($event)"
         (mouseup)="deActivateMultiSelect()"
-        (mousemove)="updateDivWithAndSize($event)" id="filemngr_ol"> 
-        <li *ngFor="let file of files; let i = index" id="filemngr_li{{i}}">
-            <button class="filemngr_btn" 
+        (mousemove)="updateDivWithAndSize($event)" id="dsktpmngr_ol"> 
+        <li class="dsktp-li" *ngFor="let file of files; let i = index" id="dsktpmngr_li{{i}}">
+            <button class="dsktpmngr_btn" 
             (dblclick)="runProcess(file)" 
             (mouseenter)="onMouseEnter(i)" 
             (mouseleave)="onMouseLeave(i)"  
@@ -19,17 +19,17 @@
             (dragstart)="onDragStart($event, i)"
             (dragend)="onDragEnd($event)"
             id="iconBtn{{i}}"  [style]="btnStyle">
-                <figure  id="filemngr_fig{{i}}">
-                    <img [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconSizeStyle"/>
+                <figure class="dsktp-figure"  id="dsktpmngr_fig{{i}}">
+                    <img class="dsktp-img" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconSizeStyle"/>
                     <ng-container *ngIf="file.getIsShortCut">
                         <img class="shortcut-img" [src]="shortCutImg"  id="shortCut{{i}}"/>
                     </ng-container>
-                    <figcaption  id="figCap{{i}}">
+                    <figcaption class="dsktp-figcaption"  id="figCap{{i}}">
                             {{file.getFileName}}
                     </figcaption>
-                    <div class="rename-textbox"  id="renameContainer{{i}}">
+                    <div class="dsktp-rename-textbox"  id="renameContainer{{i}}">
                         <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                            <input type="text" formControlName="renameInput"  (keydown)="onInputChange($event)" autofocus spellcheck="false" id="renameTxtBox{{i}}"/>
+                            <input class="dsktp-input" type="text" formControlName="renameInput"  (keydown)="onInputChange($event)" autofocus spellcheck="false" id="renameTxtBox{{i}}"/>
                         </form>
                     </div>
                 </figure>
@@ -37,7 +37,7 @@
         </li>
 
         <ng-container  *ngIf="showCntxtMenu">
-            <cos-menu [generalMenu]="menuData" [style]="iconCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
+            <cos-menu [generalMenu]="menuData" [style]="iconCntxtMenuStyle" [menuType]="dsktpMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
         </ng-container>
 
         <ng-container *ngIf="showDesktopCntxtMenu">
@@ -75,7 +75,7 @@
             </div>
         </div>
 
-        <div  class="clone-container"  id="filemngr_clone_cntnr"> </div>
+        <div  class="dsktp-clone-container"  id="dsktpmngr_clone_cntnr"> </div>
 
         <ng-content> </ng-content>
 
