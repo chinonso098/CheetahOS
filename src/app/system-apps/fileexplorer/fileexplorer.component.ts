@@ -2159,7 +2159,7 @@ Do you want the shortcut to be placed on the desktop instead?`;
     shortCut.setFileName= `${this.selectedFile.getFileName} - ${Constants.SHORTCUT}${Constants.URL}`;
     const result = await this._fileService.writeFileAsync(dsktpPath, shortCut);
     if(result){
-      this._fileService.addEventOriginator('filemanager');
+      this._fileService.addEventOriginator('desktop');
       this._fileService.dirFilesUpdateNotify.next();
     }
   }

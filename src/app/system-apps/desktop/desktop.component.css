@@ -14,22 +14,17 @@
 .dsktp-screen-preview-container{
     z-index: 2;
     position: absolute;
-    width: 200px;
-    height: 120px;
-    right: 2px;
-    bottom: 41px;
+    width: 480px;
+    height: 270px;
+    right: 0;
+    bottom: 0;
 }
 
 .dsktp-screen-preview-container img{
     height: 100%;
     width: 100%;
-}
-
-.dsktp-screen-preview-container img{
     object-fit: contain;
 }
-
-
 
 
 

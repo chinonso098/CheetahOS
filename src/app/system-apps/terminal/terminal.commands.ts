@@ -1009,7 +1009,7 @@ Mandatory argument to long options are mandotory for short options too.
 
     private sendDirectoryUpdateNotification(arg0:string):void{
         if(arg0.includes('Users/Desktop')){
-            this._fileService.addEventOriginator('filemanager');
+            this._fileService.addEventOriginator('desktop');
         }else{
             this._fileService.addEventOriginator('fileexplorer');
         }

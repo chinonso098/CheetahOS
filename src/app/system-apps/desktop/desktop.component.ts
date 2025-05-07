@@ -5,7 +5,6 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { BIRDS, GLOBE, HALO, RINGS, WAVE } from './vanta-object/vanta.interfaces';
 import { IconsSizes, SortBys } from './desktop.enums';
-import { FileManagerService } from 'src/app/shared/system-service/file.manager.services';
 import { Colors } from './colorutil/colors';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
@@ -32,11 +31,11 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
   styleUrls: ['./desktop.component.css'],
   animations: [
     trigger('slideStatusAnimation', [
-      state('slideOut', style({ right: '-200px' })),
-      state('slideIn', style({ right: '2px' })),
+      state('slideOut', style({ right: '-400px' })),
+      state('slideIn', style({ right: '0px' })),
 
       transition('* => slideIn', [
-        animate('1s ease-in')
+        animate('150ms ease-in')
       ]),
       transition('slideIn => slideOut', [
         animate('2s ease-out')
@@ -46,12 +45,11 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
     trigger('slideStartMenuAnimation', [
       transition(':enter', [
         style({ transform: 'translateY(200%)', opacity: 0 }),
-        animate('250ms ease-out', style({ transform: 'translateY(0)',  opacity: 1})),
+        animate('300ms ease-out', style({ transform: 'translateY(0%)', opacity: 1 })),
       ]),
-      // transition(':leave', [
-      //   style({transform: 'translateY(0)', opacity: 0}),
-      //   animate('250ms ease-out', style({ transform: 'translateY(200%)' , opacity: 0.5}))
-      // ]),
+      transition(':leave', [
+        animate('300ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 })),
+      ]),
     ])
   ]
 })
@@ -67,7 +65,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _elRef:ElementRef;
   private _directoryFilesEntries!:FileEntry[];
   private _triggerProcessService:TriggerProcessService;
-  private _fileManagerService:FileManagerService;
+
   private _audioService:AudioService;
   private _menuService:MenuService;
   private _systemNotificationServices:SystemNotificationService;
@@ -110,7 +108,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showVolumeControl = false;
   showClippy = true;
   dsktpPrevImg = '';
-  slideState = 'slideIn';
+  slideState = 'slideOut'
 
   dskTopCntxtMenuStyle:Record<string, unknown> = {};
   tskBarAppIconMenuStyle:Record<string, unknown> = {};
@@ -168,10 +166,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   ];
 
   /////////////////////////////////////////////////
-  private autoAlign = true;
-  private autoArrange = false;
   private currentIconName = '';
-  //private showDesktopIcon = true;
+
 
   private isRenameActive = false;
   private isIconInFocusDueToPriorAction = false;
@@ -245,14 +241,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   directory ='/Users/Desktop';
 
 
-  constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService,fileManagerServices:FileManagerService,
-              triggerProcessService:TriggerProcessService, scriptService: ScriptService, audioService: AudioService, 
-              menuService: MenuService, fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
+  constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService, 
+              scriptService: ScriptService, audioService: AudioService, menuService: MenuService, 
+              fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
               formBuilder: FormBuilder, elRef: ElementRef ) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
-    this._fileManagerService = fileManagerServices;
+  
     this._triggerProcessService = triggerProcessService;
     this._scriptService = scriptService;
     this._menuService = menuService;
@@ -274,14 +270,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
     this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
 
-    this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.startClippy()})
+
+    // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destroyed
+    this._systemNotificationServices.showDesktopNotify.subscribe(() => {
+      this.startClippy();
+      this.desktopIsActive();
+      setTimeout(() => {
+        this.poitionShortCutIconProperly();
+      }, 10);
+    })
     this._systemNotificationServices.showLockScreenNotify.subscribe(() => {
       this.stopClippy(); 
       this.hideVolumeControl();
+      this.lockScreenIsActive();
     });
 
     this._menuService.updateTaskBarContextMenu.subscribe(()=>{this.resetMenuOption()});
-
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -328,8 +332,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     event.stopPropagation();
     event.preventDefault();
   }
-
-
 
  /** Generates the next color dynamically */
   getNextColor(): number {
@@ -534,7 +536,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const folderName = Constants.NEW_FOLDER;
     const result =  await this._fileService.createFolderAsync(this.DESKTOP_DIRECTORY, folderName);
     if(result){
-      this._fileService.addEventOriginator('filemanager');
+      this._fileService.addEventOriginator('desktop');
       this._fileService.dirFilesUpdateNotify.next();
     }
   }
@@ -655,7 +657,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.isLargeIcon = false;
     }
 
-    //this._fileManagerServices.viewByNotify.next(viewBy);
+    this.changeIconsSize(viewBy);
     this.getDesktopMenuData();
   }
 
@@ -703,29 +705,45 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.isSortBySize = false;
     }
 
-    //this._fileManagerServices.sortByNotify.next(sortBy);
+    this.sortIcons(sortBy);
     this.getDesktopMenuData();
   }
 
   autoArrangeIcon():void{
     this.autoArrangeIcons = !this.autoArrangeIcons
-    //this._fileManagerServices.autoArrangeIconsNotify.next(this.autoArrangeIcons);
+    if(this.autoArrangeIcons){
+      // clear (x,y) position of icons in memory
+      this.refresh();
+    }
     this.getDesktopMenuData();
   }
 
   autoAlignIcon():void{
     this.autoAlignIcons = !this.autoAlignIcons
-    //this._fileManagerServices.alignIconsToGridNotify.next(this.autoAlignIcons);
+    console.log('toggleAutoAlignIconsToGrid:',this.autoAlignIcons);
+    if(this.autoAlignIcons){
+      this.correctMisalignedIcons();
+    }
     this.getDesktopMenuData();
   }
 
-  refresh():void{
-   // this._fileManagerServices.refreshNotify.next();
+  async refresh():Promise<void>{
+    this.isIconInFocusDueToPriorAction = false;
+    await this.loadFilesInfoAsync();
+    setTimeout(() => this.poitionShortCutIconProperly(), 10);
   }
 
   showDesktopIcon():void{
     this.showDesktopIcons = !this.showDesktopIcons
-    //this._fileManagerServices.showDesktopIconsNotify.next(this.showDesktopIcons);
+    if(!this.showDesktopIcons){
+      this.btnStyle ={
+        'display': 'none',
+      }
+    }else{
+      this.btnStyle ={
+        'display': 'block',
+      }
+    }
     this.getDesktopMenuData();
   }
 
@@ -1206,7 +1224,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(droppedFiles.length >= 1){
       const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
       if(result){
-        this._fileService.addEventOriginator('filemanager');
+        this._fileService.addEventOriginator('desktop');
         this._fileService.dirFilesUpdateNotify.next();
       }
     }
@@ -1652,9 +1670,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       y: evt.y,
     }
 
-    if(this.autoAlign && this.markedBtnIds.length >= 0){
+    if(this.autoAlignIcons && this.markedBtnIds.length >= 0){
       this.moveBtnIconsToNewPositionAlignOn(mPos);
-    }else if (!this.autoAlign && this.markedBtnIds.length >= 0){
+    }else if (!this.autoAlignIcons && this.markedBtnIds.length >= 0){
       this.moveBtnIconsToNewPositionAlignOff(mPos);
     }
     
@@ -1908,42 +1926,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
     }
   }
-
-  toggleDesktopIcons(showIcons:boolean):void{
-    //this.showDesktopIcon = showIcons;
-    if(!this.showDesktopIcon){
-      this.btnStyle ={
-        'display': 'none',
-      }
-    }else{
-      this.btnStyle ={
-        'display': 'block',
-      }
-    }
-  }
   
-  toggleAutoAlignIconsToGrid(alignIcon:boolean):void{
-    console.log('toggleAutoAlignIconsToGrid:',alignIcon);
-    this.autoAlign = alignIcon;
-    if(this.autoAlign){
-      this.correctMisalignedIcons();
-    }
-  }
-
-  toggleAutoArrangeIcons(arrangeIcon:boolean):void{
-    this.autoArrange = arrangeIcon;
-
-    if(this.autoArrange){
-      // clear (x,y) position of icons in memory
-      this.refreshIcons();
-    }
-  }
-
-  async refreshIcons():Promise<void>{
-    this.isIconInFocusDueToPriorAction = false;
-    await this.loadFilesInfoAsync();
-    setTimeout(() => this.poitionShortCutIconProperly(), 10);
-  }
 
 async onDeleteFile():Promise<void>{
   let result = false;
@@ -2117,11 +2100,13 @@ OpensWith=${selectedFile.getOpensWith}
   }
 
   lockScreenIsActive():void{
-    this.toggleDesktopIcons(false);
+    this.showDesktopIcons = !this.showDesktopIcons
+    this.showDesktopIcon();
   }
 
   desktopIsActive():void{
-    this.toggleDesktopIcons(true);
+    this.showDesktopIcons = !this.showDesktopIcons
+    this.showDesktopIcon();
   }
   
     
