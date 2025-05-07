@@ -17,7 +17,7 @@ import { TaskBarEntriesComponent } from './system-apps/taskbarentries/taskbarent
 import { TaskBarEntryComponent } from './system-apps/taskbarentry/taskbarentry.component';
 import { FileExplorerComponent } from './system-apps/fileexplorer/fileexplorer.component';
 import { WindowComponent } from './shared/system-component/window/window.component';
-import { FileManagerComponent } from './system-apps/filemanager/filemanager.component';
+// import { FileManagerComponent } from './system-apps/filemanager/filemanager.component';
 import { GreetingComponent } from './user-apps/greeting/greeting.component';
 import { TaskmanagerComponent } from './system-apps/taskmanager/taskmanager.component';
 import { JSdosComponent } from './user-apps/jsdos/jsdos.component';
@@ -68,7 +68,7 @@ import { TaskbarpreviewsComponent } from './system-apps/taskbarpreviews/taskbarp
     TaskBarEntryComponent,
     FileExplorerComponent,
     WindowComponent,
-    FileManagerComponent,
+    // FileManagerComponent,
     GreetingComponent,
     TaskmanagerComponent,
     JSdosComponent,
