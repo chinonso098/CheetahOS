@@ -4,7 +4,6 @@
     (mousemove)="performTasks($event)"  #desktopContainer> 
 
 
-
     <ol (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)"  (click)="handleIconHighLightState()"
         (mousedown)="activateMultiSelect($event)"
         (mouseup)="deActivateMultiSelect()"
@@ -37,6 +36,38 @@
             </button>
         </li>
 
+        <ng-container  *ngIf="showCntxtMenu">
+            <cos-menu [generalMenu]="menuData" [style]="iconCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
+        </ng-container>
+
+        <ng-container *ngIf="showDesktopCntxtMenu">
+            <cos-menu [nestedMenu]="deskTopMenu"  [style]="dskTopCntxtMenuStyle" [menuType]="deskTopMenuOption"> </cos-menu>
+        </ng-container>
+
+        <ng-container *ngIf="showTskBarPreviewWindow" >
+            <cos-taskbarpreview  [fadeState]="tskBarPreviewWindowState" [name]="appToPreview" [icon]="appToPreviewIcon"  [style]="tskBarPrevWindowStyle">  </cos-taskbarpreview>
+        </ng-container>
+
+        <ng-container  *ngIf="showTskBarAppIconMenu" >
+            <cos-menu [generalMenu]="taskBarAppIconMenuData" [style]="tskBarAppIconMenuStyle" [menuType]="tskBarAppIconMenuOption"> </cos-menu>
+        </ng-container>
+
+        <ng-container  *ngIf="showTskBarCntxtMenu">
+            <cos-menu [generalMenu]="taskBarContextMenuData"  [style]="tskBarCntxtMenuStyle" [menuType]="tskBarContextMenuOption"> </cos-menu>
+        </ng-container>
+
+        @if(showVolumeControl){
+            <cos-volumecontrol></cos-volumecontrol>
+        }
+        
+        @if(showDesktopScreenShotPreview){
+            <div [@slideStatusAnimation]="slideState" class="dsktp-screen-preview-container" >
+                <img [src]="dsktpPrevImg"/>
+            </div>
+        }
+    
+        <div #selectPaneContainer id="dskTopMultiSelectPane"></div>
+
         <div class="tool-tip-container" id="invalidChars">
             <div class="tool-tip-arrow"> </div>
             <div class="tool-tip-base"> A file name can't contain any of the following characters: <br /><br />
@@ -46,32 +77,18 @@
 
         <div  class="clone-container"  id="filemngr_clone_cntnr"> </div>
 
-        <ng-container  *ngIf="showCntxtMenu">
-            <cos-menu [generalMenu]="menuData" [style]="iconCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
-        </ng-container>
+        <ng-content> </ng-content>
 
-        @if(showDesktopScreenShotPreview){
-            <div [@slideStatusAnimation]="slideState" class="dsktp-screen-preview-container" >
-                <img [src]="dsktpPrevImg"/>
-            </div>
-        }
-        
-        <cos-menu [nestedMenu]="deskTopMenu" *ngIf="showDesktopCntxtMenu" [style]="dskTopCntxtMenuStyle" [menuType]="deskTopMenuOption"> </cos-menu>
-        <cos-taskbarpreview  [fadeState]="tskBarPreviewWindowState" [name]="appToPreview" [icon]="appToPreviewIcon" *ngIf="showTskBarPreviewWindow"  [ngStyle]="tskBarPrevWindowStyle">  </cos-taskbarpreview>
-        <cos-menu [generalMenu]="taskBarAppIconMenuData" *ngIf="showTskBarAppIconMenu" [style]="tskBarAppIconMenuStyle" [menuType]="tskBarAppIconMenuOption"> </cos-menu>
-        <cos-menu [generalMenu]="taskBarContextMenuData" *ngIf="showTskBarCntxtMenu" [style]="tskBarCntxtMenuStyle" [menuType]="tskBarContextMenuOption"> </cos-menu>
-        
-        
-        @if(showVolumeControl){
-            <cos-volumecontrol></cos-volumecontrol>
-        }
-        
+        <cos-taskbar> 
+            <cos-startbutton></cos-startbutton>
+            <cos-search></cos-search>
+            <cos-taskbarentries> </cos-taskbarentries>
+            <cos-systemtray></cos-systemtray>
+        </cos-taskbar>
+
         @if(showStartMenu){
             <cos-startmenu [@slideStartMenuAnimation]></cos-startmenu>
+            <!-- <cos-startmenu ></cos-startmenu> -->
         }
-
-        <div #selectPaneContainer id="dskTopMultiSelectPane"></div>
     </ol>
-    
-    <ng-content> </ng-content>
 </main>
