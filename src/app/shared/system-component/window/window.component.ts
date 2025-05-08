@@ -476,6 +476,8 @@ import { MenuService } from '../../system-service/menu.services';
             if(nextProc){
               this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
               this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
+            }else{
+              this._windowService.noProcessInFocusNotify.next()
             }
           }, delay);
         }

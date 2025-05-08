@@ -34,6 +34,7 @@ export class WindowService implements BaseService{
     focusOnNextProcessWindowNotify: Subject<number> = new Subject<number>();
 
     currentProcessInFocusNotify: Subject<number> = new Subject<number>();
+    noProcessInFocusNotify: Subject<void> = new Subject<void>();
   
     hideProcessPreviewWindowNotify: Subject<void> = new Subject<void>();
     hideOtherProcessesWindowNotify: Subject<number> = new Subject<number>();

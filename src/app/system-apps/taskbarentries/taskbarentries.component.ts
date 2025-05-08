@@ -95,6 +95,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         this.highlightTaskbarIcon();
       }, this.SECONDS_DELAY);
     });
+
+    this._windowServices.noProcessInFocusNotify.subscribe(()=>{this.removeHighlightFromTaskbarIcon()})
   }
   
   ngAfterViewInit(): void {
@@ -793,6 +795,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
   
   removeHighlightFromTaskbarIcon():void{
+    console.log('prevWindowInFocusPid:',this.prevWindowInFocusPid);
+    const pid = (this.prevWindowInFocusPid !== 0) ? this.prevWindowInFocusPid : this.windowInFocusPid;
     const process = this._runningProcessService.getProcess(this.prevWindowInFocusPid);
     if (!process) return;
 

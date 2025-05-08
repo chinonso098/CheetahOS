@@ -2096,12 +2096,10 @@ OpensWith=${selectedFile.getOpensWith}
   }
 
   lockScreenIsActive():void{
-    this.showDesktopIcons = !this.showDesktopIcons
     this.showDesktopIcon();
   }
 
   desktopIsActive():void{
-    this.showDesktopIcons = !this.showDesktopIcons
     this.showDesktopIcon();
   }
   

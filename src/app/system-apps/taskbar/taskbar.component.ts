@@ -93,14 +93,14 @@ export class TaskbarComponent implements AfterViewInit{
   lockScreenIsActive():void{
     const taskBarElmnt = document.getElementById('the-window-taskbar') as HTMLDivElement;
     if(taskBarElmnt){
-      taskBarElmnt.style.zIndex = '0';
+      taskBarElmnt.style.opacity = '0';
     }
   }
 
   desktopIsActive():void{
     const taskBarElmnt = document.getElementById('the-window-taskbar') as HTMLDivElement;
     if(taskBarElmnt){
-      taskBarElmnt.style.zIndex = '4';
+      taskBarElmnt.style.opacity = '1';
     }
   }
 
