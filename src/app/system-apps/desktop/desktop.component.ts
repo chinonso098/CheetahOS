@@ -265,13 +265,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
     this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
 
-    this._fileService.dirFilesUpdateNotify.subscribe(() =>{
-      if(this._fileService.getEventOriginator() === this.name){
-        this.loadFilesInfoAsync();
-        this._fileService.removeEventOriginator();
-      }
-    });
-
     // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destroyed
     this._systemNotificationServices.showDesktopNotify.subscribe(() => {
       this.startClippy();
@@ -1228,6 +1221,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(result){
         this._fileService.addEventOriginator('desktop');
         this._fileService.dirFilesUpdateNotify.next();
+        this.refresh();
       }
     }
         
