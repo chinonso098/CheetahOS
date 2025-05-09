@@ -16,6 +16,7 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
 import { Process } from 'src/app/system-files/process';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
 import { MenuService } from '../../system-service/menu.services';
+import { Constants } from 'src/app/system-files/constants';
 
  @Component({
    selector: 'cos-window',
@@ -27,9 +28,9 @@ import { MenuService } from '../../system-service/menu.services';
    @ViewChild('divWindow') divWindow!: ElementRef;
    @ViewChild('glassPaneContainer') glassPaneContainer!: ElementRef;
 
-   @Input() runningProcessID = 0;  
-   @Input() processAppIcon = '';  
-   @Input() processAppName = '';  
+   @Input() runningProcessID = Constants.ZERO;  
+   @Input() processAppIcon = Constants.EMPTY_STRING;  
+   @Input() processAppName = Constants.EMPTY_STRING;  
    @Input() isMaximizable = true;  
    
    private _runningProcessService:RunningProcessService;
@@ -87,7 +88,6 @@ import { MenuService } from '../../system-service/menu.services';
 
   windowTop = 0;
   windowLeft = 0;
-  tstIncrement = 0;
 
   isWindowMaximizable = true;
   currentWindowSizeState = false;
@@ -380,8 +380,6 @@ import { MenuService } from '../../system-service/menu.services';
       const x_axis = matrix1.m41;
       const y_axis = matrix1.m42;
 
-      console.log('tstIncrement---:',this.tstIncrement); //TBD
-
       //ignore false drag
       if( x_axis!== 0  && y_axis !== 0){
         const windowState = this._windowService.getWindowState(this.processId);
@@ -403,8 +401,6 @@ import { MenuService } from '../../system-service/menu.services';
           glassPane.style.transform =  `translate(${x_axis}px , ${y_axis}px)`;   
         }
       }
-
-      this.tstIncrement = 0;
     }
 
     onDragStart(input:HTMLElement, pid:number):void{

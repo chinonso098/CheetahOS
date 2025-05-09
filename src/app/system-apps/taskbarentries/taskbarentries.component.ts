@@ -96,8 +96,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       }, this.SECONDS_DELAY);
     });
 
-    this._windowServices.noProcessInFocusNotify.subscribe(()=>{this.removeHighlightFromTaskbarIcon()})
-  }
+    this._windowServices.noProcessInFocusNotify.subscribe(()=>{this.removeHighlightFromTaskbarIcon(this.windowInFocusPid)})}
   
   ngAfterViewInit(): void {
     const delay = 1500; //1.5 secs
@@ -793,11 +792,17 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       liElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
     }
   }
-  
-  removeHighlightFromTaskbarIcon():void{
-    console.log('prevWindowInFocusPid:',this.prevWindowInFocusPid);
-    const pid = (this.prevWindowInFocusPid !== 0) ? this.prevWindowInFocusPid : this.windowInFocusPid;
-    const process = this._runningProcessService.getProcess(this.prevWindowInFocusPid);
+
+  removeHighlightFromTaskbarIcon(pid?:number):void{
+
+     console.log('removeHighlightFromTaskbarIcon:',pid);
+    let process:Process;
+    if(pid){
+      process = this._runningProcessService.getProcess(pid);
+    }else{
+      process = this._runningProcessService.getProcess(this.prevWindowInFocusPid);
+    }
+ 
     if (!process) return;
 
     const isMerged = this.taskBarEntriesIconState === this.mergedIcons;

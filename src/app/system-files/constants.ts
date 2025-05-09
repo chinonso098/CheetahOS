@@ -37,6 +37,8 @@ export namespace Constants{
     export const POWER_MENU_OPTION = 'power-menu';
 
     export const RESERVED_ID_RUNNING_PROCESS_SERVICE = 4;
+    export const ZERO = 0;
+    export const ONE = 1;
     export const SERVICES_STATE_RUNNING = 'Running';
     export const SERVICES_STATE_STOPPED = 'Stopped';
     export const SYSTEM_RESTART = 'Restart';

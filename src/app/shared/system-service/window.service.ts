@@ -228,10 +228,14 @@ export class WindowService implements BaseService{
             width: 0, height: 0,  x_axis: 0,  y_axis: 0, z_index: 0,is_visible: false,  pid: 0, app_name: ""
         }
 
+        if(this._processWindowStates.length === 0)
+            return winState.pid;
+
         for(let i = this._processWindowStates.length - 1; i >= 0;  i--){
-            winState = this._processWindowStates[i];
-            if(winState.is_visible)
+            if(this._processWindowStates[i].is_visible){
+                winState = this._processWindowStates[i];
                 break;
+            }
         }
 
         return winState.pid;
