@@ -83,11 +83,11 @@ import { Constants } from 'src/app/system-files/constants';
   windowZIndex = '0';
   hsZIndex = 2;
 
-  xAxisTmp = 0;
-  yAxisTmp = 0;
+  xAxisTmp = Constants.ZERO;
+  yAxisTmp = Constants.ZERO;
 
-  windowTop = 0;
-  windowLeft = 0;
+  windowTop = Constants.ZERO;
+  windowLeft = Constants.ZERO;
 
   isWindowMaximizable = true;
   currentWindowSizeState = false;
@@ -99,13 +99,13 @@ import { Constants } from 'src/app/system-files/constants';
   //private readonly z_index = '25914523'; // this number = zindex
 
   hasWindow = false;
-  icon = '';
+  icon = Constants.EMPTY_STRING;
   name = 'Window';
-  processId = 0;
-  uniqueId = '';
-  uniqueGPId = '';
+  processId = Constants.ZERO;
+  uniqueId = Constants.EMPTY_STRING;
+  uniqueGPId = Constants.EMPTY_STRING;
   type = ComponentType.System;
-  displayName = '';
+  displayName = Constants.EMPTY_STRING;
   
 
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, private renderer: Renderer2,
@@ -381,7 +381,7 @@ import { Constants } from 'src/app/system-files/constants';
       const y_axis = matrix1.m42;
 
       //ignore false drag
-      if( x_axis!== 0  && y_axis !== 0){
+      if( x_axis!== Constants.ZERO  && y_axis !== Constants.ZERO){
         const windowState = this._windowService.getWindowState(this.processId);
         const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
 
@@ -593,10 +593,10 @@ import { Constants } from 'src/app/system-files/constants';
     stackWindow():void{
       let newTop = this.WIN_TOP;
       let newLeft = this.WIN_LEFT;
-      let mainWindowWidth = 0;
-      let adjMainWindowWidth = 0;
-      let mainWindowHeight = 0;
-      let adjMainWindowHeight = 0;
+      let mainWindowWidth = Constants.ZERO;
+      let adjMainWindowWidth = Constants.ZERO;
+      let mainWindowHeight = Constants.ZERO;
+      let adjMainWindowHeight = Constants.ZERO;
 
       const offset = 2;
       const taskBarHeight = 40;
@@ -636,10 +636,10 @@ import { Constants } from 'src/app/system-files/constants';
         const availableVerticalRoom = adjMainWindowHeight - taskBarHeight - winCmpnt.height;
   
         // handle out of bounds
-        if((availableVerticalRoom < 0) || (availableHorizontalRoom < 0)){
+        if((availableVerticalRoom < Constants.ZERO) || (availableHorizontalRoom < Constants.ZERO)){
           //horizontally out of bounds
-          if(availableHorizontalRoom < 0){
-            const  leftSubtraction = (currentBound?.x_bounds_subtraction || 0) - offset;
+          if(availableHorizontalRoom < Constants.ZERO){
+            const  leftSubtraction = (currentBound?.x_bounds_subtraction || Constants.ZERO) - offset;
             const resetLeft = this.WIN_LEFT - (leftSubtraction * -1);
             newLeft = resetLeft;
             newTop = this.WIN_TOP;
@@ -652,8 +652,8 @@ import { Constants } from 'src/app/system-files/constants';
           }
   
           //vertinally out of bounds
-          if(availableVerticalRoom < 0){
-            const  topSubtraction = (currentBound?.y_bounds_subtraction || 0) - offset;
+          if(availableVerticalRoom < Constants.ZERO){
+            const  topSubtraction = (currentBound?.y_bounds_subtraction || Constants.ZERO) - offset;
             const resetTop = this.WIN_TOP - (topSubtraction * -1);
             newTop = resetTop;
             newLeft = this.WIN_LEFT;
@@ -678,8 +678,8 @@ import { Constants } from 'src/app/system-files/constants';
     }
 
     resetWindowBoundsState():void{
-      let newLeft = 0;
-      let newTop = 0;
+      let newLeft = Constants.ZERO;
+      let newTop = Constants.ZERO;
 
       const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
       const mainWindow = document.getElementById('vanta')?.getBoundingClientRect();
@@ -693,8 +693,8 @@ import { Constants } from 'src/app/system-files/constants';
         if(currentBound){
           currentBound.x_offset = newLeft;
           currentBound.y_offset = newTop
-          currentBound.x_bounds_subtraction = 0;
-          currentBound.y_bounds_subtraction = 0;
+          currentBound.x_bounds_subtraction = Constants.ZERO;
+          currentBound.y_bounds_subtraction = Constants.ZERO;
 
           this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
         }
@@ -985,7 +985,7 @@ import { Constants } from 'src/app/system-files/constants';
    retrievePastSessionData():void{
     const pickUpKey = this._sessionManagmentService._pickUpKey;
     if(this._sessionManagmentService.hasTempSession(pickUpKey)){
-      const tmpSessKey = this._sessionManagmentService.getTempSession(pickUpKey) || ''; 
+      const tmpSessKey = this._sessionManagmentService.getTempSession(pickUpKey) || Constants.EMPTY_STRING; 
 
       const retrievedSessionData = this._sessionManagmentService.getSession(tmpSessKey) as BaseState[];
       

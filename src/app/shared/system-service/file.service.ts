@@ -33,7 +33,7 @@ export class FileService implements BaseService{
     private _directoryFileEntires:FileEntry[]=[];
     private _fileExistsMap!:Map<string,number>; 
     private _fileAndAppIconAssociation!:Map<string,string>; 
-    private _eventOriginator = '';
+    private _eventOriginator = Constants.EMPTY_STRING;
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
@@ -46,7 +46,7 @@ export class FileService implements BaseService{
 
     name = 'file_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = 0;
+    processId = Constants.ZERO;
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
@@ -73,7 +73,7 @@ export class FileService implements BaseService{
         // Using setTimeout ensures it runs after the constructor has returned
         setTimeout(() => {
             this.initBrowserFsAsync();
-        }, 0);
+        }, Constants.ZERO);
     }
 
     private async initBrowserFsAsync():Promise<void>{
@@ -148,7 +148,7 @@ export class FileService implements BaseService{
         const destPath = this.pathCorrection(destinationPath);
         console.log(`Destination: ${destPath}/${fileName}`);
         return new Promise<boolean>((resolve, reject) =>{
-             this._fileSystem.readFile(sourcePath,(err, contents = Buffer.from('')) =>{
+             this._fileSystem.readFile(sourcePath,(err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
                 if(err){
                     console.log('copyFileAsync error:',err)
                     reject(false)
@@ -167,7 +167,7 @@ export class FileService implements BaseService{
                             });
                         }else{
                             //console.log('copyFileAsync Error:',err);
-                            this._fileExistsMap.set(`${destPath}/${fileName}`,0);
+                            this._fileExistsMap.set(`${destPath}/${fileName}`, Constants.ZERO);
                             resolve(true);
                         }
                     });
@@ -231,7 +231,7 @@ export class FileService implements BaseService{
                     });
                 }else{
                     console.log(`err:${err}`);
-                    this._fileExistsMap.set(`${directory}/${fileName}`,0);
+                    this._fileExistsMap.set(`${directory}/${fileName}`,Constants.ZERO);
                     resolve(true);
                 }
             });
@@ -295,7 +295,7 @@ export class FileService implements BaseService{
         }
 
        return new Promise((resolve, reject) =>{
-            this._fileSystem.readFile(path,(err, contents = Buffer.from('')) =>{
+            this._fileSystem.readFile(path,(err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
                 if(err){
                     console.log('getFileAsync error:',err)
                     reject(err)
@@ -324,7 +324,7 @@ export class FileService implements BaseService{
         }
 
         return new Promise((resolve, reject) =>{
-            this._fileSystem.readFile(path,(err, contents = Buffer.from('')) =>{
+            this._fileSystem.readFile(path,(err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
                 if(err){
                     console.log('getFileBlobAsync error:',err)
                     reject(err);
@@ -461,7 +461,7 @@ export class FileService implements BaseService{
     public async getFileConetentFromB64DataUrlAsync(path:string, contentType:string):Promise<FileContent> {
 
         return new Promise((resolve, reject) =>{
-            this._fileSystem.readFile(path, (err, contents = Buffer.from('')) =>{
+            this._fileSystem.readFile(path, (err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
                 if(err){
                     console.log('getFileConetentFromB64DataUrlAsync error:',err)
                     reject(err)
@@ -480,18 +480,18 @@ export class FileService implements BaseService{
                         const fileUrl =  this.bufferToUrl(cntntData);
 
                         if(stringData.substring(0, 10) == 'data:image')
-                            resolve(new FileContent(fileUrl, basename(path, extname(path)),'',fileUrl,''));
+                            resolve(new FileContent(fileUrl, basename(path, extname(path)),Constants.EMPTY_STRING,fileUrl,Constants.EMPTY_STRING));
                         else
-                            resolve(new FileContent('', basename(path, extname(path)),'',fileUrl,''));
+                            resolve(new FileContent(Constants.EMPTY_STRING, basename(path, extname(path)),Constants.EMPTY_STRING,fileUrl,Constants.EMPTY_STRING));
                     }else{
                         const fileUrl = this.bufferToUrl2(contents)
                         if(contentType === 'image')
-                            resolve(new FileContent(fileUrl, basename(path, extname(path)),'',fileUrl,''));
+                            resolve(new FileContent(fileUrl, basename(path, extname(path)),Constants.EMPTY_STRING,fileUrl,Constants.EMPTY_STRING));
                         else
-                            resolve(new FileContent('', basename(path, extname(path)),'',fileUrl,''));
+                            resolve(new FileContent(Constants.EMPTY_STRING, basename(path, extname(path)),Constants.EMPTY_STRING,fileUrl,Constants.EMPTY_STRING));
                     }
                 }else{
-                    resolve(new FileContent('', basename(path, extname(path)),'',this.bufferToUrl2(contents),''));
+                    resolve(new FileContent(Constants.EMPTY_STRING, basename(path, extname(path)),Constants.EMPTY_STRING,this.bufferToUrl2(contents),Constants.EMPTY_STRING));
                 }
             });
         });
@@ -500,13 +500,13 @@ export class FileService implements BaseService{
     public async getShortCutFromURLAsync(path:string):Promise<ShortCut>{
 
         return new Promise<ShortCut>((resolve, reject) =>{
-            this._fileSystem.readFile(path, function(err, contents = Buffer.from('')){
+            this._fileSystem.readFile(path, function(err, contents = Buffer.from(Constants.EMPTY_STRING)){
                 if(err){
                     console.log('getShortCutAsync error:',err)
-                    reject(new ShortCut('','','','',''));
+                    reject(new ShortCut(Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING));
                 }
-                const stage = contents? contents.toString(): Buffer.from('').toString();
-                const shortCut = ini.parse(stage) as unknown || {InternetShortcut:{ FileName:'hi', IconPath:'', FileType:'',ContentPath:'', OpensWith:''}};
+                const stage = contents? contents.toString(): Buffer.from(Constants.EMPTY_STRING).toString();
+                const shortCut = ini.parse(stage) as unknown || {InternetShortcut:{ FileName:'hi', IconPath:Constants.EMPTY_STRING, FileType:Constants.EMPTY_STRING,ContentPath:Constants.EMPTY_STRING, OpensWith:Constants.EMPTY_STRING}};
                 if (typeof shortCut === 'object') {
                     const iSCut = (shortCut as {InternetShortcut:unknown})?.['InternetShortcut'];
                     const  fileName=  (iSCut as {FileName:unknown})?.['FileName'] as string;
@@ -522,10 +522,10 @@ export class FileService implements BaseService{
 
     public async movehandler(destinationArg:string, folderQueue:string[]):Promise<boolean>{
 
-        if(folderQueue.length === 0)
+        if(folderQueue.length === Constants.ZERO)
             return true;
 
-        const sourcePath = folderQueue.shift() || '';
+        const sourcePath = folderQueue.shift() || Constants.EMPTY_STRING;
         const folderName = this.getFileName(sourcePath);
 
         const checkIfDirResult = await this.checkIfDirectory(`${sourcePath}`);
@@ -586,7 +586,7 @@ export class FileService implements BaseService{
                                 resolve(true);
                             });
                         }else{
-                            this._fileExistsMap.set(`${directory}/${file.name}`,0);
+                            this._fileExistsMap.set(`${directory}/${file.name}`, Constants.ZERO);
                             resolve(true);
                         }
                     });
@@ -614,7 +614,7 @@ export class FileService implements BaseService{
                         resolve(true);
                     });
                 }else{
-                    this._fileExistsMap.set(`${destPath}/${file.getFileName}`,0);
+                    this._fileExistsMap.set(`${destPath}/${file.getFileName}`,Constants.ZERO);
                     resolve(true);
                 }
             });
@@ -662,7 +662,7 @@ export class FileService implements BaseService{
     public async renameAsync(path:string, newFileName:string, isFile:boolean): Promise<boolean> {
  
         return new Promise<boolean>((resolve, reject) =>{
-            let rename = ''; let type = ''
+            let rename = Constants.EMPTY_STRING; let type = Constants.EMPTY_STRING
             if(isFile){  rename = `${dirname(path)}/${newFileName}${extname(path)}`; type = 'file';
             }else{ rename = `${dirname(path)}/${newFileName}`;  type = 'folder'; }
 
@@ -694,7 +694,7 @@ export class FileService implements BaseService{
             const fileName = this.getFileName(currentPath);
             const newlocation = `${newPath}/${fileName}`;
 
-            this._fileSystem.readFile(currentPath, (err, contents = Buffer.from('')) =>{
+            this._fileSystem.readFile(currentPath, (err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
                 if(err){
                     console.log('getFile in moveAsync error:',err)
                     reject(false)
@@ -727,8 +727,8 @@ export class FileService implements BaseService{
         const extension = extname(path);
         const filename = basename(path, extension);
 
-        let count = this._fileExistsMap.get(path) || 0;
-        count = count + 1;
+        let count = this._fileExistsMap.get(path) || Constants.ZERO;
+        count = count + Constants.ONE;
         this._fileExistsMap.set(path, count);
 
         return `${dirname(path)}/${filename} (${count})${extension}`;
@@ -742,7 +742,7 @@ export class FileService implements BaseService{
                     this._fileSystem.stat(path,(err, stats) =>{
                         if(err){
                             console.log('setFolderValuesAsync error:',err)
-                            reject(new FileContent('','','','',''));
+                            reject(new FileContent(Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING));
                         }
         
                         const isDirectory = (stats)? stats.isDirectory(): false;
@@ -753,7 +753,7 @@ export class FileService implements BaseService{
                     });
                 }else{
                    console.log('setFolderValuesAsync :Does not exists',exits);
-                   resolve(new FileContent('','','','','' ));
+                   resolve(new FileContent(Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING ));
                 }
            });
             
@@ -771,12 +771,12 @@ export class FileService implements BaseService{
     }
 
     getAppAssociaton(appname:string):string{
-        return this._fileAndAppIconAssociation.get(appname) || '';
+        return this._fileAndAppIconAssociation.get(appname) || Constants.EMPTY_STRING;
     }
 
     pathCorrection(path:string):string{
-        if(path.slice(-1) === Constants.ROOT)
-            return path.slice(0, -1);
+        if(path.slice(Constants.MINUS_ONE) === Constants.ROOT)
+            return path.slice(Constants.ZERO, Constants.MINUS_ONE);
         else
             return path;
     }
@@ -815,7 +815,7 @@ export class FileService implements BaseService{
     }
 
     removeEventOriginator():void{
-        this._eventOriginator = '';
+        this._eventOriginator = Constants.EMPTY_STRING;
     }
 
 

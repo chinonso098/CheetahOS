@@ -1,5 +1,4 @@
 import {Component,ViewChild, ViewContainerRef, ViewRef, OnDestroy, Type, OnInit, AfterViewInit} from '@angular/core';
-import { Subscription } from 'rxjs';
 
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from './shared/system-service/running.process.service';
@@ -71,15 +70,15 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   private userOpenedAppsList:string[] = [];
   private retreivedKeys:string[] = [];
   private userOpenedAppsKey = "openedApps";
-  private reOpendAppsCounter = 0;
+  private reOpendAppsCounter = Constants.ZERO;
   private SECONDS_DELAY:number[] =[1500, 1500];
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'system';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
-  displayName = '';
+  displayName = Constants.EMPTY_STRING;
 
   //:TODO when you have more apps with a UI worth looking at, add a way to select the right component for the give
   //appname
@@ -241,10 +240,10 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private deleteEntryFromUserOpenedAppsAndSession(proccess:Process):void{
-      const deleteCount = 1
+      const deleteCount = Constants.ONE
       const pidIndex = this.userOpenedAppsList.indexOf(proccess.getProcessName)
 
-      if (pidIndex !== -1) 
+      if (pidIndex !== Constants.MINUS_ONE) 
         this.userOpenedAppsList.splice(pidIndex, deleteCount);
 
       this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList)
@@ -263,7 +262,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private getSessionKey(priorOpendApps:string[]):string[]{
    
-    if(priorOpendApps.length > 0){
+    if(priorOpendApps.length > Constants.ZERO){
       const sessionKeys = this._sessionMangamentServices.getKeys();
 
       for(let i= 0; i < priorOpendApps.length; i++){
@@ -281,11 +280,11 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     const pickUpKey = this._sessionMangamentServices._pickUpKey;
 
     const interval =  setInterval((pSessionData) => {
-      let tmpCounter = 0;
+      let tmpCounter = Constants.ZERO;
       let i = this.reOpendAppsCounter;
 
       for(i; i < pSessionData.length; i++){
-        if (tmpCounter < 1){
+        if (tmpCounter < Constants.ONE){
           const appName = priorSessionData[i].split('-')[0];
           this._sessionMangamentServices.addSession(pickUpKey, priorSessionData[i]);
           this.loadApps(appName);
@@ -294,7 +293,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
         }
       }
 
-      if(this.reOpendAppsCounter == pSessionData.length - 1)
+      if(this.reOpendAppsCounter == pSessionData.length - Constants.ONE)
         clearInterval(interval);
 
       this.reOpendAppsCounter++;

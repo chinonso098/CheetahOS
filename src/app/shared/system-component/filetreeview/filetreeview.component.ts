@@ -11,8 +11,8 @@ import { Constants } from 'src/app/system-files/constants';
   styleUrl: './filetreeview.component.css'
 })
 export class FileTreeViewComponent implements OnInit, OnChanges {
-  @Input() pid = 0;
-  @Input() level = 0;
+  @Input() pid = Constants.ZERO;
+  @Input() level = Constants.ZERO;
   @Input() showRoot = true;
   @Input() isHoverActive = false;
   @Input() levelSrcId = '';
@@ -26,8 +26,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   expandedViews:string[]= [];
   selectedElementId = '';
   isClicked = false;
-  processId = 0;
-  nextLevel = 0;
+  processId = Constants.ZERO;
+  nextLevel = Constants.ZERO;
   nextLevelSrcId = Constants.EMPTY_STRING;
   negTen = -10;
   name = 'filetreeview';
@@ -77,7 +77,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   showChildren(name:string):void{
-    let ulId = '';   let imgId = ''; const lvl = 0;
+    let ulId = Constants.EMPTY_STRING;   let imgId = Constants.EMPTY_STRING; const lvl = Constants.ZERO;
 
     if(name === 'tp-fileExplrTreeView'){
       ulId = `ul-${this.pid}-${lvl}`;
@@ -299,7 +299,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   colorChevron(id?:number, id1?:number):void{
-    let imgId = ''
+    let imgId = Constants.EMPTY_STRING;
 
     if(id === this.negTen && id1 === this.negTen ){
       imgId = `qa-fileExplrTreeView-img-${this.pid}`;

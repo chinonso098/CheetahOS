@@ -43,15 +43,15 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   taskBarEntriesIconState = this.unMergedIcons;
   hideShowLabelState = this.showLabel;
 
-  windowInFocusPid = 0;
-  prevWindowInFocusPid = 0;
+  windowInFocusPid = Constants.ZERO;
+  prevWindowInFocusPid = Constants.ZERO;
   
   hasWindow = false;
   icon =  `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'taskbarentry';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
-  displayName = '';
+  displayName = Constants.EMPTY_STRING;
   tmpInfo!:string[];
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService,
@@ -313,10 +313,10 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
 
   checkIfIconWasPinned(procName:string):boolean{
-    const deleteCount = 1;
+    const deleteCount = Constants.ONE;
     const pinnedIconIdx = this.pinnedTaskBarIconList.findIndex(x => x.opensWith === procName);
 
-    if (pinnedIconIdx === -1) return false;
+    if (pinnedIconIdx === Constants.MINUS_ONE) return false;
   
     this.pinnedTaskBarIconList.splice(pinnedIconIdx, deleteCount);
     return true;
@@ -324,7 +324,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   checkForPriorIcon(pid:number, iconPath:string):string{
     const tmpInfo = this._systemNotificationService.getAppIconNotication(pid);
-    if(tmpInfo.length > 0){
+    if(tmpInfo.length > Constants.ZERO){
       const priorIcon = tmpInfo[1];
       return priorIcon;
     }
@@ -543,17 +543,17 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   removeIconFromTaskBarIconList(pid:number, opensWith:string, isDefault:boolean):void{
     const isMerged = (this.taskBarEntriesIconState === this.mergedIcons)
-    const deleteCount = 1;
+    const deleteCount = Constants.ONE;
     const tskBarIcons = (isMerged)? this.mergedTaskBarIconList : this.unMergedTaskBarIconList;
 
-    let procIndex  = -2;
+    let procIndex  = Constants.ZERO;
     if(isDefault){
       procIndex = (isMerged)? tskBarIcons.findIndex(x => x.opensWith === opensWith) : tskBarIcons.findIndex(x => x.pid === pid);
     }else{
       procIndex = tskBarIcons.findIndex(x => x.opensWith === opensWith)
     }
     
-    if(procIndex === -1) return;
+    if(procIndex === Constants.MINUS_ONE) return;
 
     tskBarIcons.splice(procIndex, deleteCount);
   }
@@ -566,7 +566,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }else{
       if(this.taskBarEntriesIconState === this.mergedIcons){
         const instanceCount = this._runningProcessService.getProcessCount(file.opensWith);
-        if(instanceCount === 1){
+        if(instanceCount === Constants.ONE){
           const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.opensWith);
           this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process[0].getProcessId);
         }

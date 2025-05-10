@@ -48,12 +48,12 @@ export class MenuService implements BaseService{
 
     private _isPasteActive = false;
     private _path = 'NOPATH';
-    private _actions = '';
-    private _stageData = '';
+    private _actions = Constants.EMPTY_STRING;
+    private _stageData = Constants.EMPTY_STRING;
 
     name = 'menu_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = 0;
+    processId = Constants.ZERO;
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
