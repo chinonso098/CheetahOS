@@ -91,6 +91,9 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     });
 
     this._windowServices.currentProcessInFocusNotify.subscribe((p) =>{
+
+      console.log('currentProcessInFocusNotify answered');
+
       this.prevWindowInFocusPid = this.windowInFocusPid;
       this.windowInFocusPid = p;
       this.isAnyWindowInFocus = true;
@@ -617,7 +620,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     }
 
     // this removes other window state data
-    const falsePid = 0;
+    const falsePid = Constants.ZERO;
     const falseUid = `${process.getProcessName}-${falsePid}`;
     this._windowServices.cleanUp(falseUid);
   }
@@ -651,7 +654,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     if(rect){
       if(this.checkForMultipleActiveInstance(opensWith)) {
         rect.x = this.getAverageOfRectX(opensWith);
-        const cnstnt = 0;
+        const cnstnt = Constants.ZERO;
         const tmpX= (rect.x * 0.5); 
         const offSet = this.calculateOffset(opensWith);
         rect.x = tmpX - offSet + cnstnt;
@@ -663,7 +666,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         rect.x = tmpX;
       }
 
-      //this.showTaskBarPreviewWindow(rect, opensWith, pid, iconPath);
+      this.showTaskBarPreviewWindow(rect, opensWith, pid, iconPath);
     }
   }
 
@@ -806,11 +809,13 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
   
   highlightTaskbarIcon(): void {
-    if (this.prevWindowInFocusPid === this.windowInFocusPid) return;
+        console.log('highlightTaskbarIcon - windowInFocusPid:', this.windowInFocusPid);
+        console.log('highlightTaskbarIcon - prevWindowInFocusPid',this.prevWindowInFocusPid);
+    //if (this.prevWindowInFocusPid === this.windowInFocusPid) return;
 
     if(!this.isAnyWindowInFocus) return;
 
-      console.log('highlightTaskbarIcon called rHLFTI:');
+    console.log('highlightTaskbarIcon called rHLFTI:');
     this.removeHighlightFromTaskbarIcon();
 
     const process = this._runningProcessService.getProcess(this.windowInFocusPid);
