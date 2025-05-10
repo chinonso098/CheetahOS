@@ -45,6 +45,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   windowInFocusPid = Constants.ZERO;
   prevWindowInFocusPid = Constants.ZERO;
+  isAnyWindowInFocus = false;
   
   hasWindow = false;
   icon =  `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -83,6 +84,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     this._windowServices.focusOnCurrentProcessWindowNotify.subscribe((p)=>{
       this.prevWindowInFocusPid = this.windowInFocusPid;
       this.windowInFocusPid = p;
+      this.isAnyWindowInFocus = true;
       setTimeout(() => {
         this.highlightTaskbarIcon();
       }, this.SECONDS_DELAY);
@@ -91,12 +93,16 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     this._windowServices.currentProcessInFocusNotify.subscribe((p) =>{
       this.prevWindowInFocusPid = this.windowInFocusPid;
       this.windowInFocusPid = p;
+      this.isAnyWindowInFocus = true;
       setTimeout(() => {
         this.highlightTaskbarIcon();
       }, this.SECONDS_DELAY);
     });
 
-    this._windowServices.noProcessInFocusNotify.subscribe(()=>{this.removeHighlightFromTaskbarIcon(this.windowInFocusPid)})}
+    this._windowServices.noProcessInFocusNotify.subscribe(()=>{
+      console.log('noProcessInFocusNotify called rHLFTI');
+      this.isAnyWindowInFocus = false;
+      this.removeHighlightFromTaskbarIcon(this.windowInFocusPid)})}
   
   ngAfterViewInit(): void {
     const delay = 1500; //1.5 secs
@@ -565,10 +571,35 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       this._triggerProcessService.startApplication(tmpFile);
     }else{
       if(this.taskBarEntriesIconState === this.mergedIcons){
+        console.log(' MERGED- PEW PEW!!')
         const instanceCount = this._runningProcessService.getProcessCount(file.opensWith);
         if(instanceCount === Constants.ONE){
+
+        //isWindow Visible? no
+          // Make Window Visible
+          // otherwise, if Window is visible, set window to focus
+
           const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.opensWith);
           this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process[0].getProcessId);
+        }
+      }else if(this.taskBarEntriesIconState === this.unMergedIcons){
+        if(file.pid === Constants.ZERO) return;
+
+        //isWindow Visible? no
+          // Make Window Visible
+        // otherwise, if Window is visible, set window to focus
+        const windowState = this._windowServices.getWindowState(file.pid);
+        const pidWHZ_Index = this._windowServices.getProcessWindowIDWithHighestZIndex();
+
+        if(windowState && !windowState.is_visible){ 
+          console.log(' UN-MERGED- MAKES VISIBLE!!')
+          this._windowServices.restoreOrMinimizeProcessWindowNotify.next(file.pid);
+        } else if((windowState && windowState.is_visible) && (windowState.pid !== pidWHZ_Index)){
+           console.log(' UN-MERGED- SET TO FOCUS!!')
+          this._windowServices.focusOnCurrentProcessWindowNotify.next(file.pid);
+        }else{
+          console.log(' UN-MERGED- MAKES HIDDEN!!')
+          this._windowServices.restoreOrMinimizeProcessWindowNotify.next(file.pid);
         }
       }
     }
@@ -632,7 +663,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         rect.x = tmpX;
       }
 
-      this.showTaskBarPreviewWindow(rect, opensWith, pid, iconPath);
+      //this.showTaskBarPreviewWindow(rect, opensWith, pid, iconPath);
     }
   }
 
@@ -777,6 +808,9 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   highlightTaskbarIcon(): void {
     if (this.prevWindowInFocusPid === this.windowInFocusPid) return;
 
+    if(!this.isAnyWindowInFocus) return;
+
+      console.log('highlightTaskbarIcon called rHLFTI:');
     this.removeHighlightFromTaskbarIcon();
 
     const process = this._runningProcessService.getProcess(this.windowInFocusPid);
@@ -795,7 +829,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   removeHighlightFromTaskbarIcon(pid?:number):void{
 
-     console.log('removeHighlightFromTaskbarIcon:',pid);
+     console.log('rHLFTI:',pid);
     let process:Process;
     if(pid){
       process = this._runningProcessService.getProcess(pid);

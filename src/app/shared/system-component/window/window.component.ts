@@ -398,7 +398,7 @@ import { Constants } from 'src/app/system-files/constants';
         }
 
         if(glassPane){
-          glassPane.style.transform =  `translate(${x_axis}px , ${y_axis}px)`;   
+          glassPane.style.transform = `translate(${x_axis}px , ${y_axis}px)`;   
         }
       }
     }
@@ -468,14 +468,16 @@ import { Constants } from 'src/app/system-files/constants';
               'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
               'z-index':this.HIDDEN_Z_INDEX 
             };
-            const nextProc = this.getNextProcess();
-            if(nextProc){
-              this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
-              this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
-            }else{
-              this._windowService.noProcessInFocusNotify.next()
-            }
           }, delay);
+
+          const nextProc = this.getNextProcess();
+          console.log('nextProc:', nextProc);
+          if(nextProc){
+            this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
+            //this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
+          }else{
+            this._windowService.noProcessInFocusNotify.next()
+          }
         }
       }
       else if(!this.windowHide && windowState){
@@ -487,7 +489,7 @@ import { Constants } from 'src/app/system-files/constants';
           windowState.is_visible = true;
           this._windowService.addWindowState(windowState);
           this.setFocsuOnThisWindow(windowState.pid);
-
+          //this._windowService.currentProcessInFocusNotify.next(windowState.pid);
           this.resetHideShowWindowsList();
         }
       }
@@ -536,6 +538,7 @@ import { Constants } from 'src/app/system-files/constants';
               const window_with_highest_zIndex = this._windowService.getProcessWindowIDWithHighestZIndex();
               if(window_with_highest_zIndex === this.processId){
                 this.setFocsuOnThisWindow(windowState.pid);
+                this._windowService.currentProcessInFocusNotify.next(windowState.pid);
               }else{
                 this.setWindowToPriorHiddenState(windowState, this.MIN_Z_INDEX);
               }
@@ -901,7 +904,7 @@ import { Constants } from 'src/app/system-files/constants';
 
           this.setHeaderActive(pid);
           this.setFocusOnDiv();
-        }   
+        }  
       }
     }
 

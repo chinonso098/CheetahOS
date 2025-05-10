@@ -11,7 +11,7 @@ export class TaskBarEntryComponent implements OnInit, OnChanges {
 
   @Input() taskBarIconImgUrl = Constants.EMPTY_STRING;
   @Input() taskBarIconName = Constants.EMPTY_STRING;
-  @Input() taskBarPid = 0;
+  @Input() taskBarPid = Constants.ZERO;
   @Input() taskBarEntryType = Constants.EMPTY_STRING;
   @Output() restoreOrMinizeWindowEvent = new EventEmitter<number>();
 
@@ -24,7 +24,7 @@ export class TaskBarEntryComponent implements OnInit, OnChanges {
   hover = false;
   icon = Constants.EMPTY_STRING;
   name = Constants.EMPTY_STRING;
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   defaultIcon = Constants.EMPTY_STRING;
@@ -53,6 +53,7 @@ export class TaskBarEntryComponent implements OnInit, OnChanges {
   }
 
   restoreOrMinizeWindow():void {
-    this.restoreOrMinizeWindowEvent.emit(this.taskBarPid);
+    // console.log(' I WAS ALSO CALLLED!!')
+    // this.restoreOrMinizeWindowEvent.emit(this.taskBarPid);
   }
 }
