@@ -326,6 +326,7 @@ import { Constants } from 'src/app/system-files/constants';
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
           'z-index':zIndex,
+          'opacity': (zIndex > Constants.ZERO)? Constants.ONE : Constants.ZERO,
           'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
         };
         window.z_index = zIndex;
@@ -339,7 +340,7 @@ import { Constants } from 'src/app/system-files/constants';
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
           'z-index':zIndex,
-          'opacity': 0,
+          'opacity': (zIndex > Constants.ZERO)?  Constants.ONE : Constants.ZERO,
           'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
         };
       }

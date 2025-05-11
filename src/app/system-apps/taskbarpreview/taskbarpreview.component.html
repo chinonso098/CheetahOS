@@ -1,5 +1,5 @@
 <div  [@fadeAnimation]="fadeState" class="taskbar-preview-main-container" (mouseenter)="keepTaskBarPreviewWindow()" (mouseleave)="hideTaskBarPreviewWindowAndRestoreDesktop()" id="tskBar-prev-cntnr">
     <ol class="taskbar-preview-content" *ngFor="let cmpntImage of componentImages" id="tskBar-prev-{{cmpntImage.appName}}-{{cmpntImage.pid}}">
-        <cos-taskbarpreviews [pid]="cmpntImage.pid" [imageData]="cmpntImage.imageData" [icon]="icon" [name]="cmpntImage.displayName"> </cos-taskbarpreviews>
+        <cos-taskbarpreviews [pid]="cmpntImage.pid" [imageData]="cmpntImage.imageData" [icon]="cmpntImage.icon" [name]="cmpntImage.displayName"> </cos-taskbarpreviews>
     </ol>
 </div>
