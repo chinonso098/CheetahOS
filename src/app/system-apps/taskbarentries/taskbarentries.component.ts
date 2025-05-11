@@ -573,35 +573,31 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       tmpFile.setOpensWith = file.opensWith;
       this._triggerProcessService.startApplication(tmpFile);
     }else{
+      const pidWHZ_Index = this._windowServices.getProcessWindowIDWithHighestZIndex();
+
       if(this.taskBarEntriesIconState === this.mergedIcons){
-        console.log(' MERGED- PEW PEW!!')
         const instanceCount = this._runningProcessService.getProcessCount(file.opensWith);
         if(instanceCount === Constants.ONE){
+          const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.opensWith)[0];
 
-        //isWindow Visible? no
-          // Make Window Visible
-          // otherwise, if Window is visible, set window to focus
-
-          const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.opensWith);
-          this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process[0].getProcessId);
+          const windowState = this._windowServices.getWindowState(process.getProcessId);
+          if(windowState && !windowState.is_visible){ // make window visible
+            this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process.getProcessId);
+          } else if((windowState && windowState.is_visible) && (windowState.pid !== pidWHZ_Index)){ //set window to focus
+            this._windowServices.focusOnCurrentProcessWindowNotify.next(process.getProcessId);
+          }else{ // make window hidden
+            this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process.getProcessId);
+          }
         }
       }else if(this.taskBarEntriesIconState === this.unMergedIcons){
         if(file.pid === Constants.ZERO) return;
 
-        //isWindow Visible? no
-          // Make Window Visible
-        // otherwise, if Window is visible, set window to focus
         const windowState = this._windowServices.getWindowState(file.pid);
-        const pidWHZ_Index = this._windowServices.getProcessWindowIDWithHighestZIndex();
-
-        if(windowState && !windowState.is_visible){ 
-          console.log(' UN-MERGED- MAKES VISIBLE!!')
+        if(windowState && !windowState.is_visible){ // make window visible
           this._windowServices.restoreOrMinimizeProcessWindowNotify.next(file.pid);
-        } else if((windowState && windowState.is_visible) && (windowState.pid !== pidWHZ_Index)){
-           console.log(' UN-MERGED- SET TO FOCUS!!')
+        } else if((windowState && windowState.is_visible) && (windowState.pid !== pidWHZ_Index)){ //set window to focus
           this._windowServices.focusOnCurrentProcessWindowNotify.next(file.pid);
-        }else{
-          console.log(' UN-MERGED- MAKES HIDDEN!!')
+        }else{ // make window hidden
           this._windowServices.restoreOrMinimizeProcessWindowNotify.next(file.pid);
         }
       }
@@ -809,13 +805,10 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
   
   highlightTaskbarIcon(): void {
-        console.log('highlightTaskbarIcon - windowInFocusPid:', this.windowInFocusPid);
-        console.log('highlightTaskbarIcon - prevWindowInFocusPid',this.prevWindowInFocusPid);
     //if (this.prevWindowInFocusPid === this.windowInFocusPid) return;
 
     if(!this.isAnyWindowInFocus) return;
 
-    console.log('highlightTaskbarIcon called rHLFTI:');
     this.removeHighlightFromTaskbarIcon();
 
     const process = this._runningProcessService.getProcess(this.windowInFocusPid);
@@ -833,8 +826,6 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
 
   removeHighlightFromTaskbarIcon(pid?:number):void{
-
-     console.log('rHLFTI:',pid);
     let process:Process;
     if(pid){
       process = this._runningProcessService.getProcess(pid);
@@ -851,7 +842,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
     const liElemnt = document.getElementById(elementId) as HTMLElement | null;
     if (liElemnt) {
-      liElemnt.style.backgroundColor = '';
+      liElemnt.style.backgroundColor = Constants.EMPTY_STRING;
     }
   }
 
