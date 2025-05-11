@@ -174,7 +174,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private isBtnClickEvt= false;
   private isHideCntxtMenuEvt= false;
 
-  isDraggable = true;
+  isWindowDragActive = false;
   isMultiSelectEnabled = true;
   isMultiSelectActive = false;
   areMultipleIconsHighlighted = false;
@@ -261,6 +261,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.hideContextMenus.subscribe(() => { this.hideContextMenu()});
     this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
     this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
+    this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;});
+    this._windowService.windowDragIsInActive.subscribe(() => {this.isWindowDragActive = false;});
     this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
     this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
     this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
@@ -287,7 +289,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   ngOnInit():void{
-
     this.renameForm = this._formBuilder.nonNullable.group({
       renameInput: '',
     });
@@ -310,7 +311,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   ngOnDestroy(): void {
     this._vantaEffect?.destroy();
   }
-
 
   async ngAfterViewInit():Promise<void>{
     this.startVantaWaveColorChange();
@@ -1568,6 +1568,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   activateMultiSelect(evt:MouseEvent):void{
+    if(this.isWindowDragActive) return;
+
     if(this.isMultiSelectEnabled){    
       this.isMultiSelectActive = true;
       this.multiSelectElmnt = document.getElementById('dskTopMultiSelectPane') as HTMLDivElement;

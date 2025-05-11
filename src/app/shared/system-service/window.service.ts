@@ -52,6 +52,9 @@ export class WindowService implements BaseService{
     restoreOrMinimizeProcessWindowNotify: Subject<number> = new Subject<number>();
     restoreProcessWindowOnMouseLeaveNotify: Subject<number> = new Subject<number>();
     restoreProcessesWindowNotify: Subject<void> = new Subject<void>();
+
+    windowDragIsActive: Subject<void> = new Subject<void>();
+    windowDragIsInActive: Subject<void> = new Subject<void>();
     
     name = 'window_mgmt_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;

@@ -85,25 +85,23 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       this.prevWindowInFocusPid = this.windowInFocusPid;
       this.windowInFocusPid = p;
       this.isAnyWindowInFocus = true;
+      
       setTimeout(() => {
         this.highlightTaskbarIcon();
       }, this.SECONDS_DELAY);
     });
 
     this._windowServices.currentProcessInFocusNotify.subscribe((p) =>{
-
-      console.log('currentProcessInFocusNotify answered');
-
       this.prevWindowInFocusPid = this.windowInFocusPid;
       this.windowInFocusPid = p;
       this.isAnyWindowInFocus = true;
+
       setTimeout(() => {
         this.highlightTaskbarIcon();
       }, this.SECONDS_DELAY);
     });
 
     this._windowServices.noProcessInFocusNotify.subscribe(()=>{
-      console.log('noProcessInFocusNotify called rHLFTI');
       this.isAnyWindowInFocus = false;
       this.removeHighlightFromTaskbarIcon(this.windowInFocusPid)})}
   
@@ -572,35 +570,37 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       const tmpFile:FileInfo = new FileInfo();
       tmpFile.setOpensWith = file.opensWith;
       this._triggerProcessService.startApplication(tmpFile);
-    }else{
-      const pidWHZ_Index = this._windowServices.getProcessWindowIDWithHighestZIndex();
+      return;
+    }
 
-      if(this.taskBarEntriesIconState === this.mergedIcons){
-        const instanceCount = this._runningProcessService.getProcessCount(file.opensWith);
-        if(instanceCount === Constants.ONE){
-          const process = this._runningProcessService.getProcesses().filter(x => x.getProcessName === file.opensWith)[0];
+    const pidWithHighestZIndex = this._windowServices.getProcessWindowIDWithHighestZIndex();
 
-          const windowState = this._windowServices.getWindowState(process.getProcessId);
-          if(windowState && !windowState.is_visible){ // make window visible
-            this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process.getProcessId);
-          } else if((windowState && windowState.is_visible) && (windowState.pid !== pidWHZ_Index)){ //set window to focus
-            this._windowServices.focusOnCurrentProcessWindowNotify.next(process.getProcessId);
-          }else{ // make window hidden
-            this._windowServices.restoreOrMinimizeProcessWindowNotify.next(process.getProcessId);
-          }
-        }
-      }else if(this.taskBarEntriesIconState === this.unMergedIcons){
-        if(file.pid === Constants.ZERO) return;
-
-        const windowState = this._windowServices.getWindowState(file.pid);
-        if(windowState && !windowState.is_visible){ // make window visible
-          this._windowServices.restoreOrMinimizeProcessWindowNotify.next(file.pid);
-        } else if((windowState && windowState.is_visible) && (windowState.pid !== pidWHZ_Index)){ //set window to focus
-          this._windowServices.focusOnCurrentProcessWindowNotify.next(file.pid);
-        }else{ // make window hidden
-          this._windowServices.restoreOrMinimizeProcessWindowNotify.next(file.pid);
+    if(this.taskBarEntriesIconState === this.mergedIcons){
+      const instanceCount = this._runningProcessService.getProcessCount(file.opensWith);
+      if(instanceCount === Constants.ONE){
+        const process = this._runningProcessService.getProcesses().find(x => x.getProcessName === file.opensWith);
+        if(process){
+          this.handleWindowState(process.getProcessId, pidWithHighestZIndex); 
         }
       }
+    }else if(this.taskBarEntriesIconState === this.unMergedIcons){
+      if(file.pid === Constants.ZERO) return;
+
+      this.handleWindowState(file.pid, pidWithHighestZIndex);   
+    }
+  }
+
+  private handleWindowState(pid: number, pidWithHighestZIndex: number): void {
+    const windowState = this._windowServices.getWindowState(pid);
+
+    if (!windowState) return;
+
+    if(!windowState.is_visible){ // make window visible
+      this._windowServices.restoreOrMinimizeProcessWindowNotify.next(pid);
+    } else if(windowState.is_visible && (windowState.pid !== pidWithHighestZIndex)){ //set window to focus
+      this._windowServices.focusOnCurrentProcessWindowNotify.next(pid);
+    }else{ // make window hidden
+      this._windowServices.restoreOrMinimizeProcessWindowNotify.next(pid);
     }
   }
 

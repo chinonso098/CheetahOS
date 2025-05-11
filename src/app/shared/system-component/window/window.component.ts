@@ -401,6 +401,7 @@ import { Constants } from 'src/app/system-files/constants';
           glassPane.style.transform = `translate(${x_axis}px , ${y_axis}px)`;   
         }
       }
+      this._windowService.windowDragIsInActive.next();
     }
 
     onDragStart(input:HTMLElement, pid:number):void{
@@ -412,6 +413,8 @@ import { Constants } from 'src/app/system-files/constants';
       // const y_axis = matrix1.m42;
 
       this.setFocsuOnThisWindow(pid);
+      this._windowService.currentProcessInFocusNotify.next(pid);
+      this._windowService.windowDragIsActive.next();
     }
 
     onRZStop(input:any):void{
