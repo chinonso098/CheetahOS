@@ -175,8 +175,8 @@ import { Constants } from 'src/app/system-files/constants';
         pid : this.processId,
         height:this.defaultHeightOnOpen,
         width: this.defaultWidthOnOpen,
-        x_axis: 0,
-        y_axis: 0,
+        x_axis: Constants.ZERO,
+        y_axis: Constants.ZERO,
         z_index:this.MAX_Z_INDEX,
         is_visible:true
       }
@@ -405,8 +405,6 @@ import { Constants } from 'src/app/system-files/constants';
     }
 
     onDragStart(input:HTMLElement, pid:number):void{
-      console.log('onDragStart-Started. But this function will also call  setFocusOnWindow()'); //TBD
-
       // const style = window.getComputedStyle(input);
       // const matrix1 = new WebKitCSSMatrix(style.transform);
       // const x_axis = matrix1.m41;

@@ -1,8 +1,7 @@
  <main class="main-desktop" id="vanta"  
     (contextmenu)="showDesktopContextMenu($event)" 
-    (click)="hideContextMenu(name)"
+    (click)="hideDesktopContextMenuAndOthers(name)"
     (mousemove)="performTasks($event)"  #desktopContainer> 
-
 
     <ol class="dsktp-ol" (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)"  (click)="handleIconHighLightState()"
         (mousedown)="activateMultiSelect($event)"
@@ -14,7 +13,7 @@
             (mouseenter)="onMouseEnter(i)" 
             (mouseleave)="onMouseLeave(i)"  
             zIndex="1"  
-            (contextmenu)="onShowIconContextMenu($event, file, i)" 
+            (contextmenu)="onShowDesktopIconCntxtMenu($event, file, i)" 
             (click)="onBtnClick($event, i)"
             (dragstart)="onDragStart($event, i)"
             (dragend)="onDragEnd($event)"
@@ -36,7 +35,7 @@
             </button>
         </li>
 
-        <ng-container  *ngIf="showCntxtMenu">
+        <ng-container  *ngIf="showDesktopIconCntxtMenu">
             <cos-menu [generalMenu]="menuData" [style]="iconCntxtMenuStyle" [menuType]="dsktpMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
         </ng-container>
 
