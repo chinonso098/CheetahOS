@@ -951,7 +951,7 @@ import { Constants } from 'src/app/system-files/constants';
           'left': `${this.windowLeft}%`,
           'z-index':this.HIDDEN_Z_INDEX,
           'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-          'opacity': 0,
+          'opacity': Constants.ZERO,
         };
         this._windowService.addWindowState(windowState);   
       }
@@ -966,7 +966,7 @@ import { Constants } from 'src/app/system-files/constants';
             'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-            'opacity': 1
+            'opacity': Constants.ONE
           };
         }else{
           this.currentStyles = {
@@ -974,7 +974,7 @@ import { Constants } from 'src/app/system-files/constants';
             'left': `${this.windowLeft}%`,
             'z-index':this.MIN_Z_INDEX,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-            'opacity': 1
+            'opacity': Constants.ONE
           };
         }
         this._windowService.addWindowState(windowState);   

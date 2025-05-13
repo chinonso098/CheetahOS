@@ -491,9 +491,9 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   updateMergedTaskbarIconListOnClose(process:Process):void{
     const idx = this.mergedTaskBarIconList.findIndex(x => x.opensWith === process.getProcessName);
-    const delay = 5; //5ms
+    const delay = Constants.FIVE; //5ms
 
-    if(idx === -1) return;
+    if(idx === Constants.MINUS_ONE) return;
 
     const tskBarIcon = this.mergedTaskBarIconList[idx];
 
@@ -505,9 +505,12 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       .some(p=> p.getProcessName === process.getProcessName);
 
     if(!isAppRunning && !tskBarIcon.isPinned){
-      this.removeIconFromTaskBarIconList(0, process.getProcessName, true);
+      this.removeIconFromTaskBarIconList(Constants.ZERO, process.getProcessName, true);
 
     }else if((isAppRunning && tskBarIcon.isPinned) || (isAppRunning && !tskBarIcon.isPinned)){
+      const instanceCount = this._runningProcessService.getProcessCount(process.getProcessName);
+      tskBarIcon.instanceCount = instanceCount;
+
       setTimeout(() => {
         this.setIconState(true,tskBarIcon.opensWith,tskBarIcon.pid);
       }, delay);
