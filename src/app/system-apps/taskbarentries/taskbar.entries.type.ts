@@ -9,7 +9,8 @@ export interface TaskBarIconInfo{
     showLabel:string,
     isRunning:boolean,
     isPinned:boolean,
-    isOtherPinned:boolean
+    isOtherPinned:boolean,
+    instanceCount:number
 }
 
 

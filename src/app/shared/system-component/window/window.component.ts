@@ -950,7 +950,8 @@ import { Constants } from 'src/app/system-files/constants';
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
           'z-index':this.HIDDEN_Z_INDEX,
-          'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
+          'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
+          'opacity': 0,
         };
         this._windowService.addWindowState(windowState);   
       }
@@ -964,14 +965,16 @@ import { Constants } from 'src/app/system-files/constants';
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
-            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
+            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
+            'opacity': 1
           };
         }else{
           this.currentStyles = {
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
             'z-index':this.MIN_Z_INDEX,
-            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
+            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
+            'opacity': 1
           };
         }
         this._windowService.addWindowState(windowState);   

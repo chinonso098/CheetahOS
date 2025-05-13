@@ -265,7 +265,14 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         const newIcon = this.getTaskBarIconInfo(undefined, process);
         newIcon.isPinned = isPinned;
         newIcon.isOtherPinned = isPinned;
+        newIcon.instanceCount = Constants.ONE;
         this.mergedTaskBarIconList.push(newIcon);
+      }else{
+        // increment instance counter
+        const tskBarIcon = this.mergedTaskBarIconList.find(i => i.opensWith === process.getProcessName);
+        if(tskBarIcon){
+          tskBarIcon.instanceCount = tskBarIcon.instanceCount + Constants.ONE;
+        }
       }
 
       setTimeout(() => { this.setIconState(true, process.getProcessName);}, delay);
@@ -512,7 +519,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
 
   getTaskBarIconInfo(file?:FileInfo , process?:Process):TaskBarIconInfo{
-    let taskBarIconInfo:TaskBarIconInfo = { pid: 0, uid: '', iconPath: '', defaultIconPath:'', opensWith: '', appName: '', displayName:'', showLabel: '', isRunning: false, isPinned: false, isOtherPinned:false};
+    let taskBarIconInfo:TaskBarIconInfo = { pid: 0, uid: '', iconPath: '', defaultIconPath:'', opensWith: '', appName: '', displayName:'', showLabel: '', isRunning: false, isPinned: false, isOtherPinned:false, instanceCount: 0};
     if(file){
       const currentState = this.getAppCurrentState(file,undefined);
        taskBarIconInfo = {
@@ -526,7 +533,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         showLabel:currentState.showLabel,
         isRunning:currentState.isRunning,
         isPinned:true,
-        isOtherPinned:true
+        isOtherPinned:true,
+        instanceCount: Constants.ZERO,
       }
     }else if(process){
       const currentState = this.getAppCurrentState(undefined,process);
@@ -541,7 +549,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         showLabel:currentState.showLabel,
         isRunning:currentState.isRunning,
         isPinned:false,
-        isOtherPinned:false
+        isOtherPinned:false,
+        instanceCount: Constants.ZERO,
       }
     }
 
@@ -787,7 +796,9 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   
     const isMerged = this.taskBarEntriesIconState === this.mergedIcons;
     const elementId = isMerged ? `${this.tskbar}-${processName}` : `${this.tskbar}-${processName}-${pid}`;
+    const pillElementId =`${this.tskbar}-pill-${processName}`;
     const liElement = document.getElementById(elementId) as HTMLElement | null;
+    const pillElement = document.getElementById(pillElementId) as HTMLElement | null;
   
     if (!liElement) return null;
   
@@ -801,6 +812,10 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         : processInFocus.getProcessId === pid);
   
     liElement.style.backgroundColor = shouldHighlight ? highlightColor : defaultColor;
+
+    if(pillElement){
+       pillElement.style.backgroundColor = shouldHighlight ? highlightColor : defaultColor;
+    }
     return liElement.getBoundingClientRect();
   }
   
@@ -818,10 +833,16 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     const elementId = isMerged
       ? `${this.tskbar}-${process.getProcessName}`
       : `${this.tskbar}-${process.getProcessName}-${process.getProcessId}`;
-  
+ 
     const liElement = document.getElementById(elementId) as HTMLElement | null;
     if (liElement) {
       liElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+    }
+
+    const pillElementId =`${this.tskbar}-pill-${process.getProcessName}`;
+    const pillElement = document.getElementById(pillElementId) as HTMLElement | null;
+    if (pillElement) {
+      pillElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
     }
   }
 

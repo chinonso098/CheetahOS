@@ -16,8 +16,16 @@
     border-bottom: 2px solid transparent;
 }
 
-.taskBar-multi-instance{
-    position: relative;
-    height: 41px;
-    width: 8px;
+.li-pill-cntnr {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+.li-pill-divider {
+    width: 4px;
+    height: 40px;
+    opacity: 0.75;
+    border-bottom: 2px solid hsl(207deg 100%  72% / 90%);
+    border-left: 0.5px solid #333;
 }
