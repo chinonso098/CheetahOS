@@ -269,9 +269,16 @@ export class TaskBarEntriesComponent implements AfterViewInit {
         this.mergedTaskBarIconList.push(newIcon);
       }else{
         // increment instance counter
+        //check to ensure that the pid and processname, aren't already in the list
         const tskBarIcon = this.mergedTaskBarIconList.find(i => i.opensWith === process.getProcessName);
         if(tskBarIcon){
-          tskBarIcon.instanceCount = tskBarIcon.instanceCount + Constants.ONE;
+          if(tskBarIcon.pid === Constants.ZERO){
+            tskBarIcon.pid = process.getProcessId;
+            tskBarIcon.instanceCount = tskBarIcon.instanceCount + Constants.ONE;
+          }else{
+            const instanceCount = this._runningProcessService.getProcessCount(process.getProcessName);
+            tskBarIcon.instanceCount = instanceCount;
+          }
         }
       }
 
