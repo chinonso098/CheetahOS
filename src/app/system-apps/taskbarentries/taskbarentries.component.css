@@ -27,5 +27,5 @@
     height: 40px;
     opacity: 0.75;
     border-bottom: 2px solid hsl(207deg 100%  72% / 90%);
-    border-left: 0.5px solid #333;
+    /* border-left: 0.5px solid #333; */
 }

@@ -255,7 +255,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
 
   handleMergedTaskbarIcons():void{
-    const delay = 5; // 5 millisecs
+    const delay = Constants.FIVE; // 5 millisecs
     const uniqueProccesses = this.getUniqueProccessWithWindows();
     this.storeHistory(uniqueProccesses);
 
@@ -824,7 +824,8 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     liElement.style.backgroundColor = shouldHighlight ? highlightColor : defaultColor;
 
     if(pillElement){
-       pillElement.style.backgroundColor = shouldHighlight ? highlightColor : defaultColor;
+      pillElement.style.backgroundColor = shouldHighlight ? highlightColor : defaultColor;
+      pillElement.style.borderLeft= '0.5px solid #333';
     }
     return liElement.getBoundingClientRect();
   }
@@ -853,6 +854,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     const pillElement = document.getElementById(pillElementId) as HTMLElement | null;
     if (pillElement) {
       pillElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+      pillElement.style.borderLeft= '0.5px solid #333';
     }
   }
 
@@ -874,6 +876,13 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     const liElemnt = document.getElementById(elementId) as HTMLElement | null;
     if (liElemnt) {
       liElemnt.style.backgroundColor = Constants.EMPTY_STRING;
+    }
+
+    const pillElementId =`${this.tskbar}-pill-${process.getProcessName}`;
+    const pillElement = document.getElementById(pillElementId) as HTMLElement | null;
+    if (pillElement) {
+      pillElement.style.backgroundColor = Constants.EMPTY_STRING;
+      pillElement.style.borderLeft= Constants.EMPTY_STRING;
     }
   }
 
