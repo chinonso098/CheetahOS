@@ -846,13 +846,13 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       : `${this.tskbar}-${process.getProcessName}-${process.getProcessId}`;
  
     const liElement = document.getElementById(elementId) as HTMLElement | null;
-    if (liElement) {
+    if(liElement){
       liElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
     }
 
     const pillElementId =`${this.tskbar}-pill-${process.getProcessName}`;
     const pillElement = document.getElementById(pillElementId) as HTMLElement | null;
-    if (pillElement) {
+    if(pillElement){
       pillElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
       pillElement.style.borderLeft= '0.5px solid #333';
     }
@@ -874,13 +874,13 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       : `${this.tskbar}-${process.getProcessName}-${process.getProcessId}`;
 
     const liElemnt = document.getElementById(elementId) as HTMLElement | null;
-    if (liElemnt) {
+    if(liElemnt){
       liElemnt.style.backgroundColor = Constants.EMPTY_STRING;
     }
 
     const pillElementId =`${this.tskbar}-pill-${process.getProcessName}`;
     const pillElement = document.getElementById(pillElementId) as HTMLElement | null;
-    if (pillElement) {
+    if(pillElement){
       pillElement.style.backgroundColor = Constants.EMPTY_STRING;
       pillElement.style.borderLeft= Constants.EMPTY_STRING;
     }

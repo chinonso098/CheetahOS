@@ -57,7 +57,6 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
 export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   @ViewChild('desktopContainer', {static: true}) desktopContainer!: ElementRef; 
-  @ViewChild('myBounds', {static: true}) myBounds!: ElementRef;
   
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
