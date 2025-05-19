@@ -12,6 +12,7 @@ import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import * as htmlToImage from 'html-to-image';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { Service } from 'src/app/system-files/service';
 
 
 @Component({
@@ -85,6 +86,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   SECONDS_DELAY = 250;
 
   processes:Process[] =[];
+  services:Service[] = [];
   closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu", "volume",
     "cmpnt_ref_svc", "file_mgr_svc", "file_svc", "menu_svc", "notification_svc", "pid_gen_svc", "rning_proc_svc", "scripts_svc",
     "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc", "window_mgmt_svc", "audio_svc"];
@@ -133,6 +135,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   ngOnInit(): void {
    this.processes = this._runningProcessService.getProcesses();
+   this.services = this._runningProcessService.getServices();
    //this.groupTableBy(); -- work on table grouping...someday
   }
 

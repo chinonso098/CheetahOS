@@ -474,7 +474,7 @@
             <div class='card'>
               <div class='card-body' #tskmgrCardBody>
                 <div class='tskmgr-table-cntnr' #tskmgrTblCntnr> 
-                  <table class='tskmgr-table' *ngIf = 'processes.length > 0' #tskMgrTable>
+                  <table class='tskmgr-table' *ngIf = 'services.length > 0' #tskMgrTable>
                     <div class='tskmgr-table-header-cntnr' #tskMgrTableHeaderCntnr>
                       <thead #tskMgrTableHeaderCntnt>
                         <div style="height:10px; border-top: none;"></div>
@@ -596,27 +596,18 @@
 
                     <div class='tskmgr-table-body-cntnr'  #tskMgrTableBodyCntnr>
                       <tbody #tskMgrTableBodyCntnt>
-                        <tr *ngFor='let process of processes; let i = index'(click)="onProcessSelected(i,process.getProcessId)" [class.active]="i === selectedRow"  id="trElmnt-{{this.processId}}-{{i}}">
+                        <tr *ngFor='let svc of services; let i = index'>
                             <td style="padding-left:16px;">
                                 <figure class="tskmgr-figure0"> 
-                                    <img class="tskmgr-img0" [src]="process.getIcon">
-                                    <figcaption class="tskmgr-figcaption0"><p class="truncate" id="procName-{{i}}">{{process.getProcessName}}</p></figcaption>
+                                    <img class="tskmgr-img0" [src]="svc.getIcon">
+                                    <figcaption class="tskmgr-figcaption0"><p class="truncate">{{svc.getProcessName}}</p></figcaption>
                                 </figure>
                             </td>
-                            <td> <p class="truncate" id="procType-{{i}}">{{process.getType}}</p></td>
-                            <td>
-                                <figure class="tskmgr-figcaption0" *ngIf = 'process.getProcessStatus === "Suspended"' style="top: 1px; position: relative; right: -75%;"> 
-                                    <img class="tskmgr-img0" style="height: 14px; width: 14px;" [src]="'osdrive/Cheetah/System/Imageres/econo.png'">
-                                </figure>
-                            </td>
-                            <td style="text-align:right">{{ process.getProcessId}}</td>
-                            <td>{{ process.getProcessName}}</td>
-                            <td [style]="setUtilColoumnColors(process.getCpuUsage)" id="tdCpuElmnt-{{this.processId}}-{{i}}">{{ process.getCpuUsage}}%</td>
-                            <td [style]="setUtilColoumnColors(process.getMemoryUsage)" #memoryId>{{ process.getMemoryUsage}} MB</td>
-                            <td [style]="setUtilColoumnColors(process.getDiskUsage)" #diskId>{{ process.getDiskUsage}} MB/s</td>
-                            <td [style]="setUtilColoumnColors(process.getNetworkUsage)" #networkId>{{ process.getNetworkUsage}} Mbps</td>
-                            <td [style]="setUtilColoumnColors(process.getGpuUsage)" #gpuId>{{ process.getGpuUsage}}%</td>
-                            <td [style]="setUtilColoumnColors(process.getPowerUsage)" #pwruseId> {{ process.getPowerUsage}}</td>
+                            <td style="text-align:right">{{ svc.getProcessId}}</td>
+                            <td  style="text-align:left">{{ svc.getServiceDescription}}</td>
+                            <td  style="text-align:left">{{ svc.getServiceStatus}}</td>
+                    
+                            <td> <p class="truncate" id="procType-{{i}}">{{svc.getType}}</p></td>
                         </tr>
                       </tbody>
                     </div>
