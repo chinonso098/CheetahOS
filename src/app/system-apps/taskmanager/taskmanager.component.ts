@@ -37,7 +37,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _notificationService:UserNotificationService;
-    private _windowService:WindowService;
+  private _windowService:WindowService;
   private _renderer: Renderer2;
 
 
@@ -153,6 +153,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   ngAfterViewInit(): void {
 
     //this.setTaskMangrWindowToFocus(this.processId); 
+
     this.hideContextMenu();
 
 
@@ -306,11 +307,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? -1 : 1;
+          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.ONE;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? -1 : 1
+          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.ONE
         }).reverse();
       }
     }else if(column == TableColumns.PROCESS_NAME){
@@ -319,11 +320,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? -1 : 1;
+          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.ONE;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? -1 : 1
+          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.ONE
         }).reverse();
       }
     }else if(column == TableColumns.POWER_USAGE){
@@ -332,11 +333,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getPowerUsage < objB.getPowerUsage ? -1 : 1;
+          return objA.getPowerUsage < objB.getPowerUsage ? Constants.MINUS_ONE : Constants.ONE;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getPowerUsage < objB.getPowerUsage ? -1 : 1
+          return objA.getPowerUsage < objB.getPowerUsage ? Constants.MINUS_ONE : Constants.ONE
         }).reverse();
       }
     }else if(column == TableColumns.TYPE){
@@ -345,11 +346,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getType < objB.getType ? -1 : 1;
+          return objA.getType < objB.getType ? Constants.MINUS_ONE : Constants.ONE;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getType < objB.getType ? -1 : 1
+          return objA.getType < objB.getType ? Constants.MINUS_ONE : Constants.ONE
         }).reverse();
       }
     }
@@ -367,8 +368,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       'display': 'block', 
       'width': '180px', 
       'transform':`translate(${x}px, ${y - 65}px)`,
-      'z-index': 2,
-      'opacity':1
+      'z-index': Constants.TWO,
+      'opacity': Constants.ONE
     }
 
     evt.preventDefault();
@@ -384,7 +385,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     let menuElmt:HTMLElement;
     this.showBtnNavMenu = !this.showBtnNavMenu;
 
-    if(menuName == ''){
+    if(menuName == Constants.EMPTY_STRING){
       menuElmt =  document.getElementById(`tskmgr-nav-file-menu-${this.processId}`) as HTMLElement;
       if(menuElmt)
         menuElmt.style.display ='none';
@@ -393,7 +394,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       if(menuElmt)
         menuElmt.style.display ='none';
     }
-    else if(menuName != ''){
+    else if(menuName != Constants.EMPTY_STRING){
       if(menuName == 'tskmgr-nav-file-menu' && this.showBtnNavMenu){
         menuElmt =  document.getElementById(`tskmgr-nav-file-menu-${this.processId}`) as HTMLElement;  
         menuElmt.style.display ='block';
@@ -444,18 +445,62 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     }
   }
 
+  showDefaultPane():void{
+    const tskmgrProcessPane = document.getElementById('tskmgr-process-pane');
+    const tskmgrProcessTab = document.getElementById('tskmgr-process-tab');
+
+    if(tskmgrProcessTab && tskmgrProcessPane){
+
+      tskmgrProcessTab.classList.add('active');
+      tskmgrProcessPane.classList.add('active');
+    }
+  }
+
+  showProcessesPane():void{
+    const tskmgrProcessPane = document.getElementById('tskmgr-process-pane');
+    const tskmgrProcessTab = document.getElementById('tskmgr-process-tab');
+    const tskmgrServicePane = document.getElementById('tskmgr-service-pane');
+    const tskmgrServiceTab = document.getElementById('tskmgr-service-tab');
+
+    if(tskmgrProcessTab && tskmgrServiceTab){
+      tskmgrProcessTab.classList.add('active');
+      tskmgrServiceTab.classList.remove('active');
+    }
+    if(tskmgrProcessPane && tskmgrServicePane){
+      tskmgrProcessPane.classList.add('active');
+      tskmgrServicePane.classList.remove('active');
+    }
+  }
+
+  showServicesPane():void{
+    const tskmgrProcessPane = document.getElementById('tskmgr-process-pane');
+    const tskmgrProcessTab = document.getElementById('tskmgr-process-tab');
+    const tskmgrServicePane = document.getElementById('tskmgr-service-pane');
+    const tskmgrServiceTab = document.getElementById('tskmgr-service-tab');
+
+    if(tskmgrProcessTab && tskmgrServiceTab){
+      tskmgrProcessTab.classList.add('active');
+      tskmgrServiceTab.classList.remove('active');
+    }
+
+    if(tskmgrProcessPane && tskmgrServicePane){
+      tskmgrServicePane.classList.add('active');
+      tskmgrProcessPane.classList.remove('active');
+    }
+  }
+
   generateLies():void{
     const processes:Process[] = this._runningProcessService.getProcesses();
     const powerLevels:string[] = ['Very low','Low','Moderate','High','Very high'];
 
     const maxAppUtilNum = 30; // should be 100
-    const minAppUtilNum = 0;
+    const minAppUtilNum = Constants.ZERO;
 
-    const maxBkgrndProcUtilNum = 3;
-    const minBkgrndProcUtilNum = 0;
+    const maxBkgrndProcUtilNum = Constants.THREE;
+    const minBkgrndProcUtilNum = Constants.ZERO;
 
-    const maxCheetahProcUtilNum = 2;
-    const minCheetahProcUtilNum = 0;
+    const maxCheetahProcUtilNum = Constants.TWO;
+    const minCheetahProcUtilNum = Constants.ZERO;
     const suspended = 'Suspended';
 
     const maxNum = 10;
@@ -470,7 +515,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     for(let i =0; i < processes.length; i++){
 
       const currProcess = processes[i];
-      currProcess.setProcessStatus = '';
+      currProcess.setProcessStatus = Constants.EMPTY_STRING;
       currProcess.setPowerUsage = powerLevels[0];
 
       //background proc

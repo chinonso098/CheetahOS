@@ -67,10 +67,10 @@
         <span style="height:3px; background-color: #ffffff;  border-top: none; "></span>
 
         <div class="tskmgr-tabs">
-          <div class="tskmgr-tab active">Processes</div>
-          <div class="tskmgr-tab">Performance</div>
-          <div class="tskmgr-tab">App history</div>
-          <div class="tskmgr-tab">Services</div>
+          <div class="tskmgr-tab active" (click)="showProcessesPane()" id="tskmgr-process-tab">Processes</div>
+          <div class="tskmgr-tab" (click)="hideShowNavMenu('tskmgr-nav-view-menu')">Performance</div>
+          <div class="tskmgr-tab" (click)="hideShowNavMenu('tskmgr-nav-view-menu')">App history</div>
+          <div class="tskmgr-tab" (click)="showServicesPane()" id="tskmgr-service-tab">Services</div>
         </div>
         
         <div class="tskmgr-tab-content">
@@ -606,7 +606,6 @@
                             <td style="text-align:right">{{ svc.getProcessId}}</td>
                             <td  style="text-align:left">{{ svc.getServiceDescription}}</td>
                             <td  style="text-align:left">{{ svc.getServiceStatus}}</td>
-                    
                             <td> <p class="truncate" id="procType-{{i}}">{{svc.getType}}</p></td>
                         </tr>
                       </tbody>
