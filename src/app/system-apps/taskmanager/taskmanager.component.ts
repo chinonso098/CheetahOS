@@ -475,12 +475,13 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   showServicesPane():void{
     const tskmgrProcessPane = document.getElementById('tskmgr-process-pane');
     const tskmgrProcessTab = document.getElementById('tskmgr-process-tab');
+
     const tskmgrServicePane = document.getElementById('tskmgr-service-pane');
     const tskmgrServiceTab = document.getElementById('tskmgr-service-tab');
 
     if(tskmgrProcessTab && tskmgrServiceTab){
-      tskmgrProcessTab.classList.add('active');
-      tskmgrServiceTab.classList.remove('active');
+      tskmgrServiceTab.classList.add('active');
+      tskmgrProcessTab.classList.remove('active');
     }
 
     if(tskmgrProcessPane && tskmgrServicePane){

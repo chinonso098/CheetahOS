@@ -59,7 +59,7 @@
 
 /*----------------------------------------Table CSS START --------------------------*/
 /* Custom styles for .table-responsive (Optional) */
-.tskmgr-table-cntnr {
+.tskmgr-table-cntnr, .tskmgr-table-svc-cntnr {
     /* width: 640px; */
   width: 715px;
   height:310px;
@@ -70,8 +70,9 @@
   overflow-x: auto;
 }
 
+
 /* Custom styles for the table */
-.tskmgr-table {
+.tskmgr-table, .tskmgr-table-svc {
     /*overflow: scroll; */   /* Enable horizontal scrolling when needed */
     border-collapse: collapse; /* Remove spacing between table cells */
     width: 100%; /* Set the table width to 100% of its container */
@@ -95,8 +96,12 @@
   height: 50px ;
 }
 
+.tskmgr-table-svc-header-cntnr{ 
+  height: 20px;
+}
+
 /* Custom styles for table headers */
-.tskmgr-table th {
+.tskmgr-table th , .tskmgr-table-svc th {
   background-color: #ffffff; /* Header background color */
   color: #333; /* Header text color */
   padding: 0; /* Header cell padding */
@@ -109,12 +114,20 @@
   vertical-align: middle;
 }
 
-.tskmgr-table-body-cntnr{  
+.tskmgr-table-svc th {
+  height: 20px;
+}
+
+.tskmgr-table-body-cntnr, .tskmgr-table-svc-body-cntnr{  
   /* width:715px; */
   /* width: 400px; */
   height:260px;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.tskmgr-table-svc-body-cntnr{
+  height: 280px;
 }
 
 tbody{
@@ -126,14 +139,26 @@ tbody{
 .tskmgr-table tr {
   background-color: #ffffff; /* Row background color */
 }
-  
+ 
+.tskmgr-table-svc tr {
+  background-color: #ffffff; /* Row background color */
+}
+
 /* Alternate row background color (zebra-striping) */
 .tskmgr-table tr:nth-child(even) {
   background-color: #ffffff; 
 }
 
+.tskmgr-table-svc tr:nth-child(even) {
+  background-color: #ffffff; 
+}
+
 /* Custom styles for table cells */
 .tskmgr-table th {
+  min-width: 81px;
+}
+
+.tskmgr-table-svc th {
   min-width: 81px;
 }
   
@@ -151,7 +176,25 @@ tbody{
   border-bottom:none;
 }
 
+.tskmgr-table-svc td {
+  padding: 3px 5px; /* Cell padding */
+  min-width: 81px;
+  margin-left: 5px;
+  margin-right: 5px;
+  font-size: 12px;
+  font-weight:lighter; 
+  text-align: left; /* Header text alignment */
+  border: 0.5px solid #ccc; /* Cell border  #1a127b*/
+  border-top:none; 
+  border-bottom:none;
+}
+
 .tskmgr-table td:first-child td:last-child{
+  border-left: 0;
+  border-right: 0;
+}
+
+.tskmgr-table-svc td:first-child td:last-child{
   border-left: 0;
   border-right: 0;
 }
@@ -161,10 +204,17 @@ tbody{
   background-color: #e8f4fc;
 }
 
+.tskmgr-table-svc tr:hover {
+  background-color: #e8f4fc;
+}
+
 .tskmgr-table tr.active td {
   background-color:#d0ecfc !important;
 }
 
+.tskmgr-table-svc tr.active td {
+  background-color:#d0ecfc !important;
+}
 
 /* Add this to your component's CSS or global styles */
 th[columnResize], td[columnResize] {
@@ -201,6 +251,12 @@ span {
   height: 50%;
 }
 
+.tskmgr-svc-th-div-name-cntnr-l{
+  display: flex;
+  padding-left:5px; 
+  height:14px;
+}
+
 .tskmgr-th-div-name-cntnr-r{
   display: flex;
   padding-left:70%; 
@@ -212,17 +268,30 @@ span {
   margin-left:50%;
 }
 
+.tskmgr-svc-sort-icon-cntnr-basic{
+  height: 6px;
+  left:50%;
+}
+
 .tskmgr-sort-icon{
   font-size:13px; 
 }
 
-.tskmgr-th-span-name{
+.tskmgr-svc-sort-icon{
+  font-size:13px; 
+  align-items: center;
+}
+
+.tskmgr-th-span-name, .tskmgr-svc-th-span-name{
   position: relative;
   font-size: 12px;
   font-weight: normal;
   color: #043e7c;
   text-overflow: ellipsis;
   top: 18%;
+}
+.tskmgr-svc-th-span-name{
+  top: 1%;
 }
 
 .tskmgr-numeric-th-div-cntnr{

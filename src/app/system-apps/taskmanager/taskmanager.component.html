@@ -473,128 +473,125 @@
           <div class="tskmgr-tab-pane" id="tskmgr-service-pane">
             <div class='card'>
               <div class='card-body' #tskmgrCardBody>
-                <div class='tskmgr-table-cntnr' #tskmgrTblCntnr> 
-                  <table class='tskmgr-table' *ngIf = 'services.length > 0' #tskMgrTable>
-                    <div class='tskmgr-table-header-cntnr' #tskMgrTableHeaderCntnr>
+                <div class='tskmgr-table-svc-cntnr' #tskmgrTblCntnr> 
+                  <table class='tskmgr-table-svc' *ngIf = 'services.length > 0' #tskMgrTable>
+                    <div style="height:10px; border-top: none;"></div>
+                    <div style="height:1px; background-color:#ccc;"></div>
+                    <div class='tskmgr-table-svc-header-cntnr' #tskMgrTableHeaderCntnr>
                       <thead #tskMgrTableHeaderCntnt>
-                        <div style="height:10px; border-top: none;"></div>
-                        <tr (contextmenu)="showContextMenu($event)" (click)="hideContextMenu()">      
-                          <th [style]="thStyle" (click)="sortTable('Name', true)"  columnResize  (dataEvent)="updateTableFieldSize($event)" id="th-0">
-                            <div  class="tskmgr-sort-icon-cntnr-basic">
-                              <span class="tskmgr-sort-icon"  *ngIf="isDescSorting('Name')">
+                        <tr>      
+                          <th (click)="sortTable('Name', true)"  columnResize  (dataEvent)="updateTableFieldSize($event)" id="th-0">
+                            <div  class="tskmgr-svc-sort-icon-cntnr-basic">
+                              <span class="tskmgr-svc-sort-icon"  *ngIf="isDescSorting('Name')">
                                 <svg xmlns="http://www.w3.org/2000/svg" 
-                                  height="10" width="10" 
+                                  height="6" width="20" 
                                   viewBox="0 0 512 512" >
                                   <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
                                 </svg>
                               </span>
-                                <span class="tskmgr-sort-icon"  *ngIf="isAscSorting('Name')">
+                                <span class="tskmgr-svc-sort-icon"  *ngIf="isAscSorting('Name')">
                                   <svg xmlns="http://www.w3.org/2000/svg" 
-                                    height="10" width="10" 
+                                    height="6" width="20" 
                                     viewBox="0 0 512 512">
                                     <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
                                   </svg>
                               </span>
                             </div>
-                            <div class="tskmgr-th-div-name-cntnr-l">
-                              <span class="tskmgr-th-span-name"> Name </span>
+                            <div class="tskmgr-svc-th-div-name-cntnr-l">
+                              <span class="tskmgr-svc-th-span-name"> Name </span>
                             </div>
                           </th>
 
-                          <th [style]="thStyle2" (click)="sortTable('PID', true)" columnResize id="th-1">               
-                            <div class ="tskmgr-sort-icon-cntnr-basic">
+                          <th (click)="sortTable('PID', true)" columnResize id="th-1">               
+                            <div class ="tskmgr-svc-sort-icon-cntnr-basic">
                               <span *ngIf="isDescSorting('PID')">
                                 <svg xmlns="http://www.w3.org/2000/svg" 
-                                  height="10" width="10" 
+                                  height="6" width="20" 
                                   viewBox="0 0 512 512" >
                                   <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
                                 </svg>
                               </span>
                               <span *ngIf="isAscSorting('PID')">
                                 <svg xmlns="http://www.w3.org/2000/svg" 
-                                  height="10" width="10" 
+                                  height="6" width="20" 
                                   viewBox="0 0 512 512">
                                   <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
                                 </svg>
                               </span>
                             </div>
-                            <div class="tskmgr-th-div-name-cntnr-r">
-                              <span class="tskmgr-th-span-name"> PID </span>
+                            <div class="tskmgr-svc-th-div-name-cntnr-l">
+                              <span class="tskmgr-svc-th-span-name"> PID </span>
                             </div>
                           </th>
-                          <th [style]="thStyle3" (click)="sortTable('Process name', true)" columnResize id="th-2">               
-                            <div class ="tskmgr-sort-icon-cntnr-basic">
+                          <th (click)="sortTable('Process name', true)" columnResize id="th-2">               
+                            <div class ="tskmgr-svc-sort-icon-cntnr-basic">
                               <span *ngIf="isDescSorting('Process name')">
                                 <svg xmlns="http://www.w3.org/2000/svg" 
-                                  height="10" width="10" 
+                                  height="6" width="15" 
                                   viewBox="0 0 512 512" >
                                   <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
                                 </svg>
                               </span>
                               <span *ngIf="isAscSorting('Process name')">
                                 <svg xmlns="http://www.w3.org/2000/svg" 
-                                  height="10" width="10" 
+                                  height="6" width="15" 
                                   viewBox="0 0 512 512">
                                   <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
                                 </svg>
                               </span>
                             </div>
-                            <div class="tskmgr-th-div-name-cntnr-l">
-                              <span class="tskmgr-th-span-name"> Description </span>
+                            <div class="tskmgr-svc-th-div-name-cntnr-l">
+                              <span class="tskmgr-svc-th-span-name"> Description </span>
                             </div>
                           </th>
 
                           <th columnResize  id="th-3">
-                            <div class="tskmgr-sort-icon-cntnr-basic">
+                            <div class="tskmgr-svc-sort-icon-cntnr-basic">
                               <span *ngIf="isDescSorting('Status')">
                                 <svg xmlns="http://www.w3.org/2000/svg" 
-                                  height="10" width="10" 
+                                  height="6" width="15" 
                                   viewBox="0 0 512 512" >
                                   <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
                                 </svg>
                               </span>
                               <span *ngIf="isAscSorting('Status')">
                                 <svg xmlns="http://www.w3.org/2000/svg" 
-                                  height="10" width="10" 
+                                  height="6" width="15" 
                                   viewBox="0 0 512 512">
                                   <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
                                 </svg>
                               </span>
                             </div>
-                            <div class="tskmgr-th-div-name-cntnr-l">
-                              <span class="tskmgr-th-span-name"> Status </span>
+                            <div class="tskmgr-svc-th-div-name-cntnr-l">
+                              <span class="tskmgr-svc-th-span-name"> Status </span>
                             </div>
                           </th>
 
-                          <th [style]="thStyle1" (click)="sortTable('Type', true)" columnResize (dataEvent)="updateTableFieldSize($event)" id="th-4">               
-                            <div  class="tskmgr-sort-icon-cntnr-basic">
+                          <th (click)="sortTable('Type', true)" columnResize (dataEvent)="updateTableFieldSize($event)" id="th-4">               
+                            <div  class="tskmgr-svc-sort-icon-cntnr-basic">
                               <span *ngIf="isDescSorting('Type')">
                                 <svg xmlns="http://www.w3.org/2000/svg" 
-                                  height="10" width="10" 
+                                  height="6" width="15" 
                                   viewBox="0 0 512 512" >
                                   <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
                                 </svg>
                               </span>
                               <span *ngIf="isAscSorting('Type')">
                                 <svg xmlns="http://www.w3.org/2000/svg" 
-                                  height="10" width="10" 
+                                  height="6" width="15" 
                                   viewBox="0 0 512 512">
                                   <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
                                 </svg>
                               </span>
                             </div>
-                            <div class="tskmgr-th-div-name-cntnr-l">
-                              <span class="tskmgr-th-span-name"> Group </span>
+                            <div class="tskmgr-svc-th-div-name-cntnr-l">
+                              <span class="tskmgr-svc-th-span-name"> Group </span>
                             </div>
                           </th>
                         </tr>
                       </thead>
                     </div>
-
-                    <div style="height: 2px;"></div>
-                    <div style="height:1px; background-color:#ccc;"></div>
-
-                    <div class='tskmgr-table-body-cntnr'  #tskMgrTableBodyCntnr>
+                    <div class='tskmgr-table-svc-body-cntnr'  #tskMgrTableBodyCntnr>
                       <tbody #tskMgrTableBodyCntnt>
                         <tr *ngFor='let svc of services; let i = index'>
                             <td style="padding-left:16px;">
@@ -604,14 +601,14 @@
                                 </figure>
                             </td>
                             <td style="text-align:right">{{ svc.getProcessId}}</td>
-                            <td  style="text-align:left">{{ svc.getServiceDescription}}</td>
+                            <td  style="text-align:left"><p class="truncate">{{ svc.getServiceDescription}}</p></td>
                             <td  style="text-align:left">{{ svc.getServiceStatus}}</td>
-                            <td> <p class="truncate" id="procType-{{i}}">{{svc.getType}}</p></td>
+                            <td> <p class="truncate">{{svc.getType}}</p></td>
                         </tr>
                       </tbody>
                     </div>
-
                   </table>
+                    <div style="height:1px; background-color:#ccc;"></div>
                 </div>
               </div>
             </div>
