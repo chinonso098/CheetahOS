@@ -159,7 +159,7 @@ tbody{
 }
 
 .tskmgr-table-svc th {
-  min-width: 81px;
+  /* min-width: 130px; */
 }
   
 /* Custom styles for table cells */
@@ -178,7 +178,7 @@ tbody{
 
 .tskmgr-table-svc td {
   padding: 3px 5px; /* Cell padding */
-  min-width: 81px;
+  /* min-width: 130px; */
   margin-left: 5px;
   margin-right: 5px;
   font-size: 12px;
@@ -233,11 +233,23 @@ th[columnResize]::after {
 }
 
 
-.truncate {
+.truncate, .truncate_svc, .truncate_svc1, .truncate_svc2 {
   white-space: nowrap; /* Prevent text from wrapping */
   overflow: hidden; /* Hide overflow */
   text-overflow: ellipsis; /* Add "..." when text overflows */
   width: 80px; /* Set a fixed width */
+}
+
+.truncate_svc {
+  width: 106px; /* Set a fixed width */
+}
+
+.truncate_svc1 {
+  width: 120px; /* Set a fixed width */
+}
+
+.truncate_svc2{
+    width: 180px; /* Set a fixed width */
 }
 /*----------------------------------------Table CSS END --------------------------*/
 
