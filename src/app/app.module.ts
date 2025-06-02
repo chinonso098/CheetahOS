@@ -42,6 +42,9 @@ import { LoginComponent } from './system-apps/login/login.component';
 import { PowerOnOffComponent } from './system-apps/poweronoff/poweronoff.component';
 import { SearchComponent } from './system-apps/search/search.component';
 import { SystemtrayComponent } from './system-apps/systemtray/systemtray.component';
+import { TaskbarpreviewsComponent } from './system-apps/taskbarpreviews/taskbarpreviews.component';
+import { WarpingstarfieldComponent } from './user-apps/warpingstarfield/warpingstarfield.component';
+import { BoidsComponent } from './user-apps/boids/boids.component';
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
@@ -52,7 +55,7 @@ import { LongPressDirective } from './system-apps/audioplayer/long.press.directi
 import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.column-resize.directive';
 import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.capture.directive';
 import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.directives';
-import { TaskbarpreviewsComponent } from './system-apps/taskbarpreviews/taskbarpreviews.component';
+
 
 
 @NgModule({
@@ -68,7 +71,6 @@ import { TaskbarpreviewsComponent } from './system-apps/taskbarpreviews/taskbarp
     TaskBarEntryComponent,
     FileExplorerComponent,
     WindowComponent,
-    // FileManagerComponent,
     GreetingComponent,
     TaskmanagerComponent,
     JSdosComponent,
@@ -103,7 +105,9 @@ import { TaskbarpreviewsComponent } from './system-apps/taskbarpreviews/taskbarp
 
     SafeUrlPipe,
     TruncatePipe,
-    TaskbarpreviewsComponent
+    TaskbarpreviewsComponent,
+    WarpingstarfieldComponent,
+    BoidsComponent
     
   ],
   imports: [
