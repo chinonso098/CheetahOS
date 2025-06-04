@@ -37,8 +37,8 @@ import { MarkDownViewerComponent } from './user-apps/markdownviewer/markdownview
 import { PropertiesComponent } from './shared/system-component/properties/properties.component';
 import { ChatterComponent } from './system-apps/chatter/chatter.component';
 import { RunSystemComponent } from './system-apps/runsystem/runsystem.component';
+import { WarpingstarfieldComponent } from './user-apps/warpingstarfield/warpingstarfield.component';
 import { FileInfo } from './system-files/file.info';
-
 
 @Component({
   selector: 'cos-root',
@@ -101,6 +101,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     {type: RuffleComponent},
     {type: CodeEditorComponent},
     {type: MarkDownViewerComponent},
+    {type: WarpingstarfieldComponent}
   ];
 
 

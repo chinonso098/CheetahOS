@@ -42,7 +42,7 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
 
 
   hasWindow = true;
-  icon = `${Constants.IMAGE_BASE_PATH}angular.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}star_field.png`;
   isMaximizable = false;
   name = 'starfield';
   processId = 0;
