@@ -39,6 +39,7 @@ import { ChatterComponent } from './system-apps/chatter/chatter.component';
 import { RunSystemComponent } from './system-apps/runsystem/runsystem.component';
 import { WarpingstarfieldComponent } from './user-apps/warpingstarfield/warpingstarfield.component';
 import { FileInfo } from './system-files/file.info';
+import { BoidsComponent } from './user-apps/boids/boids.component';
 
 @Component({
   selector: 'cos-root',
@@ -95,7 +96,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     {type: PhotoViewerComponent},
     {type: RunSystemComponent},
     {type: TextEditorComponent},
-    {type: TitleComponent},
+    {type: BoidsComponent},
     {type: GreetingComponent},
     {type: JSdosComponent},
     {type: RuffleComponent},

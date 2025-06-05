@@ -199,7 +199,7 @@
     
             <div class="header-nav-path-container" id="hdrNavPathCntnr-{{this.processId}}">
                 <form [formGroup]="pathForm"  (ngSubmit)="isFormDirty()">
-                    <div class="nav-path-container" (click)="showPathTextBox()" (focusout)="hidePathTextBox()">
+                    <div class="nav-path-container" (click)="showPathTextBox()"> <!--(focusout)="hidePathTextBox()"-->
                         <span class="span head-nav-path-cntnr"><figure class="figure-nav-path-cntnr"><img class="img-nav-path-cntnr" [src]="navPathIcon | safeResourceUrl"/></figure></span>
     
                         <div class="nav-path-gen-main-container" id="pathIconBox-{{this.processId}}" >
@@ -259,7 +259,7 @@
         </div>
         <div class="header-empty-line-container2"></div>
         <div class="fileexp-main-container" #fileExplorerMainContainer>
-            <div class="fileexp-content-container">
+            <div class="fileexp-content-container" (click)="onFileExplrCntntClick()">
                 <ng-container *ngIf="showNavigationPane">
                     <div class="navigation-content-container"  (mouseenter)="showExpandTreeIconBtn()" (mouseleave)="hideExpandTreeIconBtn()" #navExplorerContainer>
                         <div style="height: 10px; width: 100%;"></div>

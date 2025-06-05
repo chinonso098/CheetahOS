@@ -1,0 +1,30 @@
+.boid-main-cntnr{
+  width: 1280px;
+  height: 720px;
+}
+
+.boid-cntnr {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  z-index: 1;
+}
+
+.controls {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  width: 220px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1rem;
+  border-radius: 12px;
+  z-index: 2;
+}
+
+.control {
+  margin-bottom: 1rem;
+}
+
+input[type="range"] {
+  width: 100%;
+}
