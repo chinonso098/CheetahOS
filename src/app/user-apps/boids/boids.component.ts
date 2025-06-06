@@ -39,11 +39,12 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   };
 
  form!:FormGroup;
+  sliders = ['align', 'cohesion', 'separation'];
 
   name= 'boids';
   hasWindow = true;
   isMaximizable=false;
-  icon = `${Constants.IMAGE_BASE_PATH}audioplayer.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}bird_oid.png`;
   processId = 0;
   type = ComponentType.User;
   displayName = 'Boids';
@@ -68,28 +69,22 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   }
 
   ngOnInit(): void {
-
     this.form = this.fb.group({
       align: [1.2],
       cohesion: [1.5],
-      separation: [1.8]
+      separation: [1.4]
     });
 
     this._scriptService.loadScript("P5JS","osdrive/Cheetah/System/P5JS/p5.min.js").then(()=>{
       console.log('p5 loaded');
     });
-    // this._scriptService.loadScript("TweakPane","osdrive/Cheetah/System/TweakPaneJS/tweakpane.min.js").then(()=>{
-    //       console.log('tweakpane loaded');
-    //     this._scriptService.loadScript("P5JS","osdrive/Cheetah/System/P5JS/p5.min.js").then(()=>{
-    //       console.log('p5 loaded');
-    //     });
-    // });
   }
 
   ngAfterViewInit():void{
+    const delay = 500; //500ms
     setTimeout(() => {
       this.p5Instance = new p5(this.sketch.bind(this), this.boidCanvas.nativeElement);
-    }, 1000);
+    }, delay);
   }
 
   ngOnDestroy(): void {
@@ -98,19 +93,11 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     }
   }
 
-  sketch_old(p: any) {
-    console.log('What is this:', p);
+  sketch(p: any) {
     const boidCntnr = document.getElementById('boidCntnr');
-    let pane: any;
-
     p.setup = () => {
       p.createCanvas(boidCntnr?.offsetWidth, boidCntnr?.offsetHeight);
 
-      pane = new Tweakpane.Pane();
-      pane.addInput(this.params, 'align', { min: 0, max: 2 });
-      pane.addInput(this.params, 'cohesion', { min: 0, max: 2 });
-      pane.addInput(this.params, 'separation', { min: 0, max: 2 });
-
       for (let i = 0; i < 100; i++) {
         this.flocks.push(new Boid(p));
       }
@@ -118,30 +105,6 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
     p.draw = () => {
       p.background('#393e46');
-      for (const particle of this.flocks) {
-        particle.edges();
-        particle.behavior(this.flocks, this.params);
-        particle.update();
-        particle.draw();
-      }
-    };
-
-    p.windowResized = () => {
-      p.resizeCanvas(boidCntnr?.offsetWidth, boidCntnr?.offsetHeight);
-    };
-  }
-
-  sketch(p: any) {
-    p.setup = () => {
-      p.createCanvas(p.windowWidth, p.windowHeight);
-      for (let i = 0; i < 100; i++) {
-        this.flocks.push(new Boid(p));
-      }
-    };
-
-    p.draw = () => {
-      p.background('#393e46');
-
       const params = this.form.value;
 
       for (const boid of this.flocks) {
@@ -153,7 +116,7 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     };
 
     p.windowResized = () => {
-      p.resizeCanvas(p.windowWidth, p.windowHeight);
+      p.resizeCanvas(boidCntnr?.offsetWidth, boidCntnr?.offsetHeight);
     };
   }
 
