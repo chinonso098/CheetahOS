@@ -1692,7 +1692,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   showPathTextBox():void{
-    console.log('HEY HEY HEY');
     const pathTxtBoxCntrElement = document.getElementById(`pathTxtBoxCntr-${this.processId}`) as HTMLElement;
     const pathTxtBoxElement = document.getElementById(`pathTxtBox-${this.processId}`) as HTMLInputElement;
     const pathIconBoxElement = document.getElementById(`pathIconBox-${this.processId}`) as HTMLElement;

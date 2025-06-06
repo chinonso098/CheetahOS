@@ -96,13 +96,14 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     {type: PhotoViewerComponent},
     {type: RunSystemComponent},
     {type: TextEditorComponent},
-    {type: BoidsComponent},
+    {type: TitleComponent},
     {type: GreetingComponent},
     {type: JSdosComponent},
     {type: RuffleComponent},
     {type: CodeEditorComponent},
     {type: MarkDownViewerComponent},
-    {type: WarpingstarfieldComponent}
+    {type: WarpingstarfieldComponent},
+     {type: BoidsComponent},
   ];
 
 

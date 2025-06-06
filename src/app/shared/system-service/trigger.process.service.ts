@@ -36,7 +36,7 @@ export class TriggerProcessService implements BaseService{
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
-    description = 'inits componenets ';
+    description = 'inits components ';
         
 
     constructor(runningProcessService:RunningProcessService){
