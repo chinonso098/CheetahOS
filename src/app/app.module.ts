@@ -45,6 +45,7 @@ import { SystemtrayComponent } from './system-apps/systemtray/systemtray.compone
 import { TaskbarpreviewsComponent } from './system-apps/taskbarpreviews/taskbarpreviews.component';
 import { WarpingstarfieldComponent } from './user-apps/warpingstarfield/warpingstarfield.component';
 import { BoidsComponent } from './user-apps/boids/boids.component';
+import { BasicWindowComponent } from './shared/system-component/basicwindow/basicwindow.component';
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
@@ -55,6 +56,8 @@ import { LongPressDirective } from './system-apps/audioplayer/long.press.directi
 import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.column-resize.directive';
 import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.capture.directive';
 import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.directives';
+
+
 
 
 
@@ -107,7 +110,8 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     TruncatePipe,
     TaskbarpreviewsComponent,
     WarpingstarfieldComponent,
-    BoidsComponent
+    BoidsComponent,
+    BasicWindowComponent
     
   ],
   imports: [
