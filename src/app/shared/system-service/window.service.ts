@@ -18,8 +18,7 @@ export class WindowService implements BaseService{
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
-
-    static instance: WindowService;
+    
     private _processPreviewImages:Map<string, TaskBarPreviewImage[]>;
     private _processWindows:Map<string, string[]>;
     private _processWindowBounds:Map<string, WindowBoundsState>;
@@ -64,17 +63,15 @@ export class WindowService implements BaseService{
     hasWindow = false;
     description = 'keeps track of all procs windows';
 
-    constructor(){
-        WindowService.instance = this; //I added this to access the service from a class, not component
-
+    constructor(processIDService:ProcessIDService, punningProcessService:RunningProcessService){
         this._processPreviewImages = new Map<string, TaskBarPreviewImage[]>();
         this._processWindows = new Map<string, string[]>();
         this._processWindowBounds = new Map<string, WindowBoundsState>();
         this._processWindowStates = [];
         this._hiddenOrVisibleWindows = [];
 
-        this._processIdService = ProcessIDService.instance;
-        this._runningProcessService = RunningProcessService.instance;
+        this._processIdService = processIDService;
+        this._runningProcessService = punningProcessService;
   
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());

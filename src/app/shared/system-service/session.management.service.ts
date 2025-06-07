@@ -31,7 +31,7 @@ export class SessionManagmentService implements BaseService{
     description = 'handles load/save of user session ';
         
 
-    constructor(){
+    constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){
         if(sessionStorage.getItem(this._sessionName)){
             const sessData = sessionStorage.getItem(this._sessionName) as string;
             this._sessionDataDict = new Map(JSON.parse(sessData));
@@ -42,8 +42,8 @@ export class SessionManagmentService implements BaseService{
             SessionManagmentService.instance = this;
         }
 
-        this._processIdService = ProcessIDService.instance;
-        this._runningProcessService = RunningProcessService.instance;
+        this._processIdService = processIDService;
+        this._runningProcessService = runningProcessService;
   
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());

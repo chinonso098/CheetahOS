@@ -8,7 +8,7 @@ import { FileEntry } from 'src/app/system-files/file.entry';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { Subscription } from 'rxjs';
-import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ViewOptions } from './fileexplorer.enums';
@@ -45,7 +45,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _runningProcessService:RunningProcessService;
   private _fileService:FileService;
   private _directoryFilesEntires!:FileEntry[];
-  private _triggerProcessService:TriggerProcessService;
+  private _controlProcessService:ControlProcessService;
   private _stateManagmentService: StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _notificationService:UserNotificationService;
@@ -218,13 +218,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, 
-              triggerProcessService:TriggerProcessService, formBuilder: FormBuilder, stateManagmentService:StateManagmentService, 
+              triggerProcessService:ControlProcessService, formBuilder: FormBuilder, stateManagmentService:StateManagmentService, 
               sessionManagmentService:SessionManagmentService, menuService:MenuService, notificationService:UserNotificationService,
               windowService:WindowService, audioService:AudioService, systemNotificationService:SystemNotificationService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileService = fileService;
-    this._triggerProcessService = triggerProcessService;
+    this._controlProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
     this._menuService = menuService;
@@ -268,7 +268,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   ngOnInit():void{
-    this._fileInfo = this._triggerProcessService.getLastProcessTrigger();
+    this._fileInfo = this._controlProcessService.getLastProcessTrigger();
 
     if(this._fileInfo){
       // is this a URL or and Actual Folder
@@ -1074,7 +1074,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       //APPS opened from the fileexplore do not have their windows in focus,
       // and this is due to the mouse click event that causes fileexplorer to trigger setFocusOnWindow event
       setTimeout(() => {
-        this._triggerProcessService.startApplication(file);
+        this._controlProcessService.startApplication(file);
       }, this.SECONDS_DELAY[4]);
     }
   }

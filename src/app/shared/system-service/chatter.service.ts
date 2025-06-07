@@ -69,10 +69,10 @@ export class ChatterService implements BaseService{
     //possibleIDs = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P'];
     //chatterServiceID =  `ChatterServiceID_${this.possibleIDs[Math.floor(Math.random() * this.possibleIDs.length)]}`;
 
-    constructor() {
-        this._processIdService = ProcessIDService.instance;
-        this._runningProcessService = RunningProcessService.instance;
-        this._sessionManagmentService = SessionManagmentService.instance;
+    constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, sessionManagmentService:SessionManagmentService) {
+        this._processIdService = processIDService;
+        this._runningProcessService = runningProcessService;
+        this._sessionManagmentService = sessionManagmentService;
 
         // this._socketService = SocketService.instance;
         // console.log('Chatter constructor 1st:', this._socketService);

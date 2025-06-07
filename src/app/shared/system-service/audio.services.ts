@@ -18,7 +18,6 @@ declare const Howl:any;
 
 export class AudioService implements BaseService {
 
-  static instace:AudioService;
   private _runningProcessService:RunningProcessService;
   private _scriptService:ScriptService;
   private _processIdService:ProcessIDService;
@@ -41,11 +40,10 @@ export class AudioService implements BaseService {
   description = 'handles system audio';
 
     
-  constructor(){
-    AudioService.instace = this;
-    this._scriptService = ScriptService.instace;
-    this._processIdService = ProcessIDService.instance;
-    this._runningProcessService = RunningProcessService.instance;
+  constructor(scriptService:ScriptService, processIDService:ProcessIDService, runningProcessService:RunningProcessService){
+    this._scriptService = scriptService;
+    this._processIdService = processIDService;
+    this._runningProcessService = runningProcessService;
     this._externalAudioSrc = new Map<string, any>();
 
     this.loadAudioScript();

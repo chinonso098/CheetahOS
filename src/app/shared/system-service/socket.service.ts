@@ -14,7 +14,6 @@ import { BaseService } from './base.service.interface';
 @Injectable()
 export class SocketService implements BaseService {
   private socket: Socket;
-  static instance: SocketService;
   private _runningProcessService:RunningProcessService;
   private _processIdService:ProcessIDService;
 
@@ -26,13 +25,12 @@ export class SocketService implements BaseService {
   hasWindow = false;
   description = '';
   
-  constructor() {
+  constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService) {
     //this.socket = io('http://chinonsosnas.local:3000');
     this.socket = io('http://localhost:3000');
-    SocketService.instance = this;
 
-    this._processIdService = ProcessIDService.instance;
-    this._runningProcessService = RunningProcessService.instance;
+    this._processIdService = processIDService;
+    this._runningProcessService = runningProcessService;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getProcessDetail());

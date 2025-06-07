@@ -7,7 +7,7 @@ import { BIRDS, GLOBE, HALO, RINGS, WAVE } from './vanta-object/vanta.interfaces
 import { IconsSizes, SortBys } from './desktop.enums';
 import { Colors } from './colorutil/colors';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { GeneralMenu, MenuPositiom, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
@@ -63,7 +63,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _fileService:FileService;
   private _elRef:ElementRef;
   private _directoryFilesEntries!:FileEntry[];
-  private _triggerProcessService:TriggerProcessService;
+  private _controlProcessService:ControlProcessService;
 
   private _audioService:AudioService;
   private _menuService:MenuService;
@@ -235,7 +235,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   directory ='/Users/Desktop';
 
 
-  constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService, 
+  constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ControlProcessService, 
               scriptService: ScriptService, audioService: AudioService, menuService: MenuService, 
               fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
               formBuilder: FormBuilder, elRef: ElementRef ) { 
@@ -243,7 +243,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
   
-    this._triggerProcessService = triggerProcessService;
+    this._controlProcessService = triggerProcessService;
     this._scriptService = scriptService;
     this._menuService = menuService;
     this._fileService = fileService;
@@ -839,7 +839,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       file.setContentPath = '/Users/Documents/Credits.md';
     }
 
-    this._triggerProcessService.startApplication(file);
+    this._controlProcessService.startApplication(file);
   }
 
   buildViewByMenu():NestedMenuItem[]{
@@ -1118,7 +1118,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   openApplicationFromTaskBar():void{
     this.showTskBarAppIconMenu = false;
     const file = this.selectedTaskBarFile;  
-    this._triggerProcessService.startApplication(file);
+    this._controlProcessService.startApplication(file);
   }
 
   closeApplicationFromTaskBar():void{
@@ -1275,7 +1275,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     console.log('desktopmanager-runProcess:',file)
     this._audioService.play(this.cheetahNavAudio);
-    this._triggerProcessService.startApplication(file);
+    this._controlProcessService.startApplication(file);
     this.btnStyleAndValuesReset();
     
     // console.log('what was clicked:',file.getFileName +'-----' + file.getOpensWith +'---'+ file.getCurrentPath +'----'+ file.getIcon) TBD
@@ -1283,11 +1283,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     //     //this.directory = file.getCurrentPath;
     //    // await this.loadFilesInfoAsync();
 
-    //    this._triggerProcessService.startApplication(file);
+    //    this._controlProcessService.startApplication(file);
     //    this.btnStyleAndValuesReset();
 
     // }else{
-    //     this._triggerProcessService.startApplication(file);
+    //     this._controlProcessService.startApplication(file);
     //     this.btnStyleAndValuesReset();
     // }
   }

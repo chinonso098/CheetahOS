@@ -3,7 +3,7 @@ import {Component,ViewChild, ViewContainerRef, ViewRef, OnDestroy, Type, OnInit,
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from './shared/system-service/running.process.service';
 import { ComponentReferenceService } from './shared/system-service/component.reference.service';
-import { TriggerProcessService } from './shared/system-service/trigger.process.service';
+import { ControlProcessService } from './shared/system-service/trigger.process.service';
 import { SessionManagmentService } from './shared/system-service/session.management.service';
 import { UserNotificationService } from './shared/system-service/user.notification.service';
 import { StateManagmentService } from './shared/system-service/state.management.service';
@@ -60,7 +60,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _componentReferenceService:ComponentReferenceService;
-  private _triggerProcessService:TriggerProcessService;
+  private _controlProcessService:ControlProcessService;
   private _sessionMangamentServices:SessionManagmentService;
   private _notificationServices:UserNotificationService;
   private _stateManagmentService:StateManagmentService;
@@ -112,14 +112,14 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   // the order of the service init matter.
   //runningProcesssService must come first
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService,  windowService:WindowService,
-    componentReferenceService:ComponentReferenceService, triggerProcessService:TriggerProcessService, sessionMangamentServices:SessionManagmentService,
-    scriptService:ScriptService, notificationServices:UserNotificationService, stateManagmentService:StateManagmentService, menuService:MenuService){
+    componentReferenceService:ComponentReferenceService, menuService:MenuService, triggerProcessService:ControlProcessService, sessionMangamentServices:SessionManagmentService,
+    scriptService:ScriptService, notificationServices:UserNotificationService, stateManagmentService:StateManagmentService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
     this._componentReferenceService = componentReferenceService;
     this._runningProcessService = runningProcessService;
-    this._triggerProcessService = triggerProcessService;
+    this._controlProcessService = triggerProcessService;
     this._sessionMangamentServices = sessionMangamentServices;
     this._notificationServices = notificationServices;
     this._stateManagmentService = stateManagmentService;
@@ -128,9 +128,9 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
     // these are all subs, but the app cmpnt will not be closed, unsubsribe is not needed
-    this._triggerProcessService.startProcessNotify.subscribe((appName) =>{this.loadApps(appName)})
-    this._triggerProcessService.appNotFoundNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.Error,appName)})
-    this._triggerProcessService.appIsRunningNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.Info,appName)})
+    this._controlProcessService.startProcessNotify.subscribe((appName) =>{this.loadApps(appName)})
+    this._controlProcessService.appNotFoundNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.Error,appName)})
+    this._controlProcessService.appIsRunningNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.Info,appName)})
 
     this._notificationServices.errorNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.Error,appName)})
     this._notificationServices.InfoNotify.subscribe((appName) =>{this.showDialogMsgBox(UserNotificationType.Info,appName)})
@@ -141,7 +141,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.onCloseBtnClicked(p)})
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    this._menuService.showPropertiesView.subscribe((p) => this.showPropertiesWindow(p));
+    //this._menuService.showPropertiesView.subscribe((p) => this.showPropertiesWindow(p));
     this._menuService.closePropertiesView.subscribe((p) => this.closeDialogMsgBoxOrPropertiesView(p));
 
     this._appDirectory = new AppDirectory();
@@ -155,6 +155,10 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     // This quiets the - Expression has changed after it was checked.
     //TODO: change detection is the better solution TBD
     setTimeout(()=> {
+
+      if(this.itemViewContainer)
+        this._controlProcessService.setViewContainerRef(this.itemViewContainer);
+
         const priorSessionInfo = this.fetchPriorSessionInfo();
         const sessionKeys = this.getSessionKey(priorSessionInfo);
         this.restorePriorSession(sessionKeys);
@@ -206,21 +210,21 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private showPropertiesWindow(fileInput:FileInfo):void{
+  // private showPropertiesWindow(fileInput:FileInfo):void{
 
-    // checkif property view is already visible
-    console.log('propertyView:', fileInput);
-    const fileName =`${Constants.WIN_EXPLR +  fileInput.getFileName}`;
-    console.log('propertyView fileName:', fileName);
+  //   // checkif property view is already visible
+  //   console.log('propertyView:', fileInput);
+  //   const fileName =`${Constants.WIN_EXPLR +  fileInput.getFileName}`;
+  //   console.log('propertyView fileName:', fileName);
 
-    const process = this._runningProcessService.getProcessByName(fileName);
-    if(!process){
-      const componentRef = this.itemViewContainer.createComponent(PropertiesComponent);
-      const propertyId = componentRef.instance.processId;
-      this._componentReferenceService.addComponentReference(propertyId, componentRef);
-      componentRef.setInput('fileInput',fileInput);
-    }
-  }
+  //   const process = this._runningProcessService.getProcessByName(fileName);
+  //   if(!process){
+  //     const componentRef = this.itemViewContainer.createComponent(PropertiesComponent);
+  //     const propertyId = componentRef.instance.processId;
+  //     this._componentReferenceService.addComponentReference(propertyId, componentRef);
+  //     componentRef.setInput('fileInput',fileInput);
+  //   }
+  // }
 
   private closeDialogMsgBoxOrPropertiesView(dialogId:number):void{
     const componentToDelete = this._componentReferenceService.getComponentReference(dialogId);

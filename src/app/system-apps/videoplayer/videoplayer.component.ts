@@ -5,7 +5,7 @@ import {extname} from 'path';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { Constants } from "src/app/system-files/constants";
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
@@ -38,7 +38,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _triggerProcessService:TriggerProcessService;
+  private _controlProcessService:ControlProcessService;
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
@@ -65,12 +65,12 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   showTopMenu = false;
 
 
-  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ControlProcessService,
     stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService,
     windowService:WindowService, audioService:AudioService) { 
 
     this._processIdService = processIdService;
-    this._triggerProcessService = triggerProcessService;
+    this._controlProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._runningProcessService = runningProcessService;
     this._sessionManagmentService= sessionManagmentService;
@@ -88,7 +88,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   ngOnInit(): void {
-    this._fileInfo = this._triggerProcessService.getLastProcessTrigger();
+    this._fileInfo = this._controlProcessService.getLastProcessTrigger();
   }
 
   showMenu(): void{
@@ -165,7 +165,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.fileType = Constants.EMPTY_STRING;
 
     if(this._runningProcessService.getEventOrginator() === uid){
-      this._fileInfo = this._triggerProcessService.getLastProcessTrigger();
+      this._fileInfo = this._controlProcessService.getLastProcessTrigger();
       //console.log('new this._fileInfo:',  this._fileInfo);
 
       this.player.pause(); // Pause the video
@@ -320,7 +320,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._triggerProcessService.getLastProcessTrigger)
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._controlProcessService.getLastProcessTrigger)
   }
 
 }

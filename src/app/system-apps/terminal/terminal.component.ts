@@ -17,6 +17,8 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ITabState, IState } from './model/terminal.types';
+import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { FileService } from 'src/app/shared/system-service/file.service';
 
 @Component({
   selector: 'cos-terminal',
@@ -98,7 +100,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   type = ComponentType.System;
   displayName = 'Terminal';
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, formBuilder:FormBuilder,
+  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, controlProcessService:ControlProcessService, fileService:FileService,  formBuilder:FormBuilder,
                stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService,windowService:WindowService ) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -107,7 +109,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     this._sessionManagmentService = sessionManagmentService;
     this._windowService = windowService;
     
-    this._terminaCommandsProc = new TerminalCommandProcessor();
+    this._terminaCommandsProc = new TerminalCommandProcessor(controlProcessService,runningProcessService,fileService);
 
     this.retrievePastSessionData();
 

@@ -33,9 +33,9 @@ export class UserNotificationService implements BaseService{
     hasWindow = false;
     description = ' ';
     
-    constructor(){
-        this._processIdService = ProcessIDService.instance;
-        this._runningProcessService = RunningProcessService.instance;
+    constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){
+        this._processIdService = processIDService;
+        this._runningProcessService = runningProcessService;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());

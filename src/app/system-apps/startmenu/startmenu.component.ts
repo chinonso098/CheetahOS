@@ -11,7 +11,7 @@ import { FileService } from 'src/app/shared/system-service/file.service';
 import { FileEntry } from 'src/app/system-files/file.entry';
 
 import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
-import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 
 
@@ -24,7 +24,7 @@ import { UserNotificationService } from 'src/app/shared/system-service/user.noti
 export class StartMenuComponent implements OnInit, AfterViewInit {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _triggerProcessService:TriggerProcessService;
+  private _controlProcessService:ControlProcessService;
   private _userNotificationService:UserNotificationService;
   private _fileService:FileService;
   private _elRef:ElementRef;
@@ -49,13 +49,13 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   type = ComponentType.System
   displayName = '';
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
+  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ControlProcessService,
               elRef: ElementRef, fileService:FileService, userNotificationService:UserNotificationService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._elRef = elRef;
     this._fileService = fileService;
-    this._triggerProcessService = triggerProcessService;
+    this._controlProcessService = triggerProcessService;
     this._userNotificationService = userNotificationService;
 
     this.processId = this._processIdService.getNewProcessId()
@@ -200,7 +200,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
   runProcess(file:FileInfo):void{
     console.log('startmanager-runProcess:',file)
-    this._triggerProcessService.startApplication(file);
+    this._controlProcessService.startApplication(file);
   }
 
 

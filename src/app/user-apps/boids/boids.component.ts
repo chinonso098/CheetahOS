@@ -2,7 +2,7 @@ import { Component, ElementRef, OnDestroy, OnInit, AfterViewInit, ViewChild } fr
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
-import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { Constants } from 'src/app/system-files/constants';
@@ -27,7 +27,7 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   
   private _scriptService: ScriptService;
   private _windowService:WindowService;
-  private _triggerProcessService:TriggerProcessService;
+  private _controlProcessService:ControlProcessService;
 
   private p5Instance: any;
   flocks: Boid[] = [];
@@ -51,12 +51,12 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService,  scriptService: ScriptService, 
-              windowService:WindowService, triggerProcessService:TriggerProcessService, private fb: FormBuilder) { 
+              windowService:WindowService, triggerProcessService:ControlProcessService, private fb: FormBuilder) { 
                 
     this._processIdService = processIdService;
     this._scriptService = scriptService;
     this._windowService = windowService;
-    this._triggerProcessService = triggerProcessService;
+    this._controlProcessService = triggerProcessService;
 
     this.processId = this._processIdService.getNewProcessId();
 
@@ -125,7 +125,7 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   }
 
   private getComponentDetail():Process{
-  return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._triggerProcessService.getLastProcessTrigger)
+  return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._controlProcessService.getLastProcessTrigger)
 }
 }
 

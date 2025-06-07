@@ -12,8 +12,6 @@ import { BaseService } from "./base.service.interface";
 })
 
 export class RunningProcessService implements BaseService{
-
-    static instance: RunningProcessService;
     private _runningProcesses:Process[];
     private _runningServices:Service[];
     private _eventOriginator = '';
@@ -44,7 +42,6 @@ export class RunningProcessService implements BaseService{
     constructor(){
         this._runningProcesses = [];
         this._runningServices = [];
-        RunningProcessService.instance = this; //I added this to access the service from a class, not component
 
         this.addProcess(this.getProcessDetail());
         this.addService(this.getServiceDetail());

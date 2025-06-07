@@ -12,7 +12,6 @@ import { Service } from "src/app/system-files/service";
 })
 
 export class ComponentReferenceService implements BaseService{
-
     private _componentsReferences:Map<number, ComponentRef<unknown>>; 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
@@ -25,10 +24,10 @@ export class ComponentReferenceService implements BaseService{
     hasWindow = false;
     description = 'mananges add/remmove of cmpnt reference';
     
-    constructor(){
+    constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){
         this._componentsReferences = new Map<number, ComponentRef<unknown>>();
-        this._processIdService = ProcessIDService.instance;
-        this._runningProcessService = RunningProcessService.instance;
+        this._processIdService = processIDService;
+        this._runningProcessService = runningProcessService;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());

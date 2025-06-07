@@ -15,7 +15,6 @@ import { BaseService } from "./base.service.interface";
 
 export class StateManagmentService implements BaseService{
 
-    static instance: StateManagmentService;
     private _appStateManagmentService:Map<string, unknown>;  
     private _sessionManagmentService: SessionManagmentService 
     private _runningProcessService:RunningProcessService;
@@ -30,13 +29,12 @@ export class StateManagmentService implements BaseService{
     description = ' componenet reference mananger adds/remmoves component refs.. ';
         
 
-    constructor(){
+    constructor(sessionManagmentService:SessionManagmentService, processIDService:ProcessIDService, runningProcessService:RunningProcessService){
         this._appStateManagmentService = new Map<string, unknown>();
-        StateManagmentService.instance = this; //I added this to access the service from a class, not component
-        this._sessionManagmentService = SessionManagmentService.instance;
+        this._sessionManagmentService = sessionManagmentService;
 
-        this._processIdService = ProcessIDService.instance;
-        this._runningProcessService = RunningProcessService.instance;
+        this._processIdService = processIDService;
+        this._runningProcessService = runningProcessService;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());

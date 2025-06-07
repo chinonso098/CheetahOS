@@ -1,6 +1,6 @@
 import { GenericResult, ITraverseResult, LSResult, TerminalCommand } from "./model/terminal.types";
 import { AppDirectory } from "src/app/system-files/app.directory";
-import { TriggerProcessService } from "src/app/shared/system-service/trigger.process.service";
+import { ControlProcessService } from "src/app/shared/system-service/trigger.process.service";
 import { FileInfo } from "src/app/system-files/file.info";
 import { RunningProcessService } from "src/app/shared/system-service/running.process.service";
 import { StateManagmentService } from "src/app/shared/system-service/state.management.service";
@@ -19,7 +19,7 @@ export interface OctalRepresentation {
 
 export class TerminalCommandProcessor{
 
-    private _triggerProcessService:TriggerProcessService;
+    private _controlProcessService:ControlProcessService;
     private _runningProcessService:RunningProcessService;
     private _fileService:FileService;
     private _directoryFilesEntries!:FileEntry[];
@@ -38,10 +38,10 @@ export class TerminalCommandProcessor{
     private currentDirectoryPath = Constants.ROOT;
     private fallBackDirPath = Constants.EMPTY_STRING;
 
-    constructor() { 
-        this._triggerProcessService = TriggerProcessService.instance;
-        this._runningProcessService = RunningProcessService.instance;
-        this._fileService = FileService.instace;
+    constructor(controlProcessService:ControlProcessService, runningProcessService:RunningProcessService, fileService:FileService) { 
+        this._controlProcessService = controlProcessService;
+        this._runningProcessService = runningProcessService;
+        this._fileService = fileService;
         this.permissionChart = new Map<number, OctalRepresentation>();
         this.genPermissionsRepresentation();
     }
@@ -278,8 +278,8 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             const file = new FileInfo()
             file.setOpensWith = arg1;
 
-            if(this._triggerProcessService){
-                this._triggerProcessService.startApplication(file);
+            if(this._controlProcessService){
+                this._controlProcessService.startApplication(file);
             }
             return `opening app ${arg1}`;
         }else{

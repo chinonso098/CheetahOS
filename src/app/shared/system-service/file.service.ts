@@ -25,8 +25,6 @@ import { Service } from "src/app/system-files/service";
 })
 
 export class FileService implements BaseService{ 
-
-    static instace:FileService;
     private _fileInfo!:FileInfo;
   
     private _fileSystem!:FSModule;
@@ -53,15 +51,13 @@ export class FileService implements BaseService{
     description = 'Mediates btwn ui & filesystem ';
 
     
-    constructor(){ 
+    constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){ 
 
         this.initBrowserFS();
         this._fileExistsMap =  new Map<string, number>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
-        FileService.instace = this;
-
-        this._processIdService = ProcessIDService.instance;
-        this._runningProcessService = RunningProcessService.instance;
+        this._processIdService = processIDService;
+        this._runningProcessService = runningProcessService;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());

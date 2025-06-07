@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } fr
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
-import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
@@ -38,7 +38,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   private _runningProcessService:RunningProcessService;
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
-  private _triggerProcessService:TriggerProcessService;
+  private _controlProcessService:ControlProcessService;
   private _scriptService: ScriptService;
   private _fileService:FileService;
   private _windowService:WindowService;
@@ -60,7 +60,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   displayName = '';
 
 
-  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ControlProcessService,
               fileService:FileService,  sessionManagmentService: SessionManagmentService,  stateManagmentService:StateManagmentService, 
               scriptService: ScriptService ,windowService:WindowService){
 
@@ -68,7 +68,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService = runningProcessService;
     this._stateManagmentService = stateManagmentService;
-    this._triggerProcessService = triggerProcessService;
+    this._controlProcessService = triggerProcessService;
     this._sessionManagmentService = sessionManagmentService;
     this._scriptService = scriptService;
     this._fileService = fileService;
@@ -79,7 +79,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   }
 
   ngOnInit():void{
-    this._fileInfo = this._triggerProcessService.getLastProcessTrigger();
+    this._fileInfo = this._controlProcessService.getLastProcessTrigger();
   }
 
 
@@ -211,6 +211,6 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
 
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._triggerProcessService.getLastProcessTrigger)
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._controlProcessService.getLastProcessTrigger)
   }
 }

@@ -59,8 +59,8 @@ import { Constants } from 'src/app/system-files/constants';
   xAxisTmp = Constants.ZERO;
   yAxisTmp = Constants.ZERO;
 
-  windowTop = Constants.ZERO;
-  windowLeft = Constants.ZERO;
+  // windowTop = Constants.ZERO;
+  // windowLeft = Constants.ZERO;
 
   isWindowMaximizable = true;
   currentWinStyles: Record<string, unknown> = {};
@@ -210,8 +210,8 @@ import { Constants } from 'src/app/system-files/constants';
           glassPane.style.position = 'absolute';
           glassPane.style.display = 'block';
           glassPane.style.zIndex = String(this.MIN_Z_INDEX);
-          glassPane.style.top =  `${this.windowTop}%`;
-          glassPane.style.left =  `${this.windowLeft}%`;
+          // glassPane.style.top =  `${this.windowTop}%`;
+          // glassPane.style.left =  `${this.windowLeft}%`;
         }
       }
     }
@@ -247,8 +247,8 @@ import { Constants } from 'src/app/system-files/constants';
     updateWindowZIndex(window: WindowState, zIndex:number):void{
       if(this.processId == window.pid){
         this.currentWinStyles = {
-          'top': `${this.windowTop}%`,
-          'left': `${this.windowLeft}%`,
+          // 'top': `${this.windowTop}%`,
+          // 'left': `${this.windowLeft}%`,
           'z-index':zIndex,
           'opacity': (zIndex > Constants.ZERO)? Constants.ONE : Constants.ZERO,
           'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
@@ -261,8 +261,8 @@ import { Constants } from 'src/app/system-files/constants';
     setWindowToPriorHiddenState(window: WindowState, zIndex:number):void{
       if(this.processId === window.pid){
         this.currentWinStyles = {
-          'top': `${this.windowTop}%`,
-          'left': `${this.windowLeft}%`,
+          // 'top': `${this.windowTop}%`,
+          // 'left': `${this.windowLeft}%`,
           'z-index':zIndex,
           'opacity': (zIndex > Constants.ZERO)?  Constants.ONE : Constants.ZERO,
           'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
@@ -318,8 +318,8 @@ import { Constants } from 'src/app/system-files/constants';
   
             this.setHeaderInActive(windowState.pid);
             this.currentWinStyles = { 
-              'top': `${this.windowTop}%`,
-              'left': `${this.windowLeft}%`,
+              // 'top': `${this.windowTop}%`,
+              // 'left': `${this.windowLeft}%`,
               'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
               'z-index':this.HIDDEN_Z_INDEX 
             };
@@ -529,8 +529,8 @@ import { Constants } from 'src/app/system-files/constants';
           this._windowService.addProcessWindowIDWithHighestZIndex(pid);
 
           this.currentWinStyles = {
-            'top': `${this.windowTop}%`,
-            'left': `${this.windowLeft}%`,
+            // 'top': `${this.windowTop}%`,
+            // 'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
           };
@@ -562,16 +562,16 @@ import { Constants } from 'src/app/system-files/constants';
         const z_index = this.TMP_MAX_Z_INDEX;
         if(!windowState.is_visible){
           this.currentWinStyles = {
-            'top': `${this.windowTop}%`,
-            'left': `${this.windowLeft}%`,
+            // 'top': `${this.windowTop}%`,
+            // 'left': `${this.windowLeft}%`,
             'z-index':z_index,
             'opacity': 1,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
           };
         }else{
           this.currentWinStyles = {
-            'top': `${this.windowTop}%`,
-            'left': `${this.windowLeft}%`,
+            // 'top': `${this.windowTop}%`,
+            // 'left': `${this.windowLeft}%`,
             'z-index':z_index,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
           };
@@ -583,8 +583,8 @@ import { Constants } from 'src/app/system-files/constants';
       const windowState = this._windowService.getWindowState(this.processId);
       if(windowState && windowState.is_visible){
         this.currentWinStyles = {
-          'top': `${this.windowTop}%`,
-          'left': `${this.windowLeft}%`,
+          // 'top': `${this.windowTop}%`,
+          // 'left': `${this.windowLeft}%`,
           'z-index':this.HIDDEN_Z_INDEX,
           'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
           'opacity': Constants.ZERO,
@@ -598,16 +598,16 @@ import { Constants } from 'src/app/system-files/constants';
       if(windowState){
         if(windowState.pid === this._windowService.getProcessWindowIDWithHighestZIndex()){
           this.currentWinStyles = {
-            'top': `${this.windowTop}%`,
-            'left': `${this.windowLeft}%`,
+            // 'top': `${this.windowTop}%`,
+            // 'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
             'opacity': Constants.ONE
           };
         }else{
           this.currentWinStyles = {
-            'top': `${this.windowTop}%`,
-            'left': `${this.windowLeft}%`,
+            // 'top': `${this.windowTop}%`,
+            // 'left': `${this.windowLeft}%`,
             'z-index':this.MIN_Z_INDEX,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
             'opacity': Constants.ONE

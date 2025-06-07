@@ -22,8 +22,6 @@ interface Scripts {
 
 export class ScriptService implements BaseService {
 
-
-  static instace:ScriptService;
   private _runningProcessService:RunningProcessService;
   private _processIdService:ProcessIDService;
   private scripts: Scripts = {};
@@ -36,10 +34,9 @@ export class ScriptService implements BaseService {
   hasWindow = false;
   description = 'handles loading of js scripts ';
     
-  constructor(){
-      ScriptService.instace = this;
-      this._processIdService = ProcessIDService.instance;
-      this._runningProcessService = RunningProcessService.instance;
+  constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){
+      this._processIdService = processIDService;
+      this._runningProcessService = runningProcessService;
 
       this.processId = this._processIdService.getNewProcessId();
       this._runningProcessService.addProcess(this.getProcessDetail());

@@ -5,7 +5,7 @@ import {extname} from 'path';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { Constants } from "src/app/system-files/constants";
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
@@ -54,7 +54,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _triggerProcessService:TriggerProcessService;
+  private _controlProcessService:ControlProcessService;
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
@@ -87,11 +87,11 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   duration = '0:00' ;
 
  
-  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ControlProcessService,
     stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService, 
     windowService:WindowService, audioService:AudioService) { 
     this._processIdService = processIdService;
-    this._triggerProcessService = triggerProcessService;
+    this._controlProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService= sessionManagmentService;
     this._scriptService = scriptService;
@@ -110,7 +110,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
 
   ngOnInit(): void {
-    this._fileInfo = this._triggerProcessService.getLastProcessTrigger();
+    this._fileInfo = this._controlProcessService.getLastProcessTrigger();
   }
 
   ngAfterViewInit():void{  
@@ -188,7 +188,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.audioSrc = Constants.EMPTY_STRING;
     console.log('previous audio source-1:',  this.audioSrc);
     if(this._runningProcessService.getEventOrginator() === uid){
-      this._fileInfo = this._triggerProcessService.getLastProcessTrigger();
+      this._fileInfo = this._controlProcessService.getLastProcessTrigger();
 
       this.audioSrc = (this.audioSrc !== Constants.EMPTY_STRING)? 
       this.audioSrc :this.getAudioSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
@@ -567,7 +567,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._triggerProcessService.getLastProcessTrigger)
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._controlProcessService.getLastProcessTrigger)
   }
 
 }

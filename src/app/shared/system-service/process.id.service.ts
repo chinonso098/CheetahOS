@@ -13,8 +13,6 @@ import { Service } from "src/app/system-files/service";
 export class ProcessIDService implements BaseService{
 
     private _activeProcessIds: number[];
-    static instance: ProcessIDService;
-
     private _runningProcessService:RunningProcessService;
     
     name = 'pid_gen_svc';
@@ -25,10 +23,9 @@ export class ProcessIDService implements BaseService{
     hasWindow = false;
     description = 'mananges add/remmove of pids ';
 
-    constructor(){
+    constructor(runningProcessService:RunningProcessService){
         this._activeProcessIds = [];
-        ProcessIDService.instance = this; //I added this to access the service from a class, not component
-        this._runningProcessService = RunningProcessService.instance;
+        this._runningProcessService = runningProcessService;
 
         this.processId = this.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());

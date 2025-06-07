@@ -6,7 +6,7 @@ import {extname, dirname} from 'path';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { TriggerProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
@@ -58,7 +58,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _fileService:FileService;
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _triggerProcessService:TriggerProcessService;
+  private _controlProcessService:ControlProcessService;
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
     private _windowService:WindowService;
@@ -87,11 +87,11 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   protected animationDirection = signal<'right' | 'left'>('right');
   
 
-  constructor(fileService:FileService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:TriggerProcessService,
+  constructor(fileService:FileService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ControlProcessService,
     stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, private changeDetectorRef: ChangeDetectorRef ,windowService:WindowService) { 
     this._fileService = fileService
     this._processIdService = processIdService;
-    this._triggerProcessService = triggerProcessService;
+    this._controlProcessService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
     this._windowService = windowService;
@@ -105,7 +105,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
 
   async ngOnInit():Promise<void> {
-    this._fileInfo = this._triggerProcessService.getLastProcessTrigger();
+    this._fileInfo = this._controlProcessService.getLastProcessTrigger();
 
     if(this.imageList.length > 0)
       this.images = signal([this.imageList[0]]);
@@ -310,7 +310,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._triggerProcessService.getLastProcessTrigger)
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._controlProcessService.getLastProcessTrigger)
   }
 
 
