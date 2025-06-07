@@ -52,8 +52,10 @@ import { BoidsComponent } from './user-apps/boids/boids.component';
  */
 export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
  
-  @ViewChild('processContainerRef',  { read: ViewContainerRef })
-  private itemViewContainer!: ViewContainerRef
+  // @ViewChild('processContainerRef',  { read: ViewContainerRef })
+  // private itemViewContainer!: ViewContainerRef
+  
+  @ViewChild('processContainerRef', { read: ViewContainerRef })itemViewContainer!: ViewContainerRef
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -205,10 +207,19 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private showPropertiesWindow(fileInput:FileInfo):void{
-    const componentRef = this.itemViewContainer.createComponent(PropertiesComponent);
-    const propertyId = componentRef.instance.propertyId;
-    this._componentReferenceService.addComponentReference(propertyId, componentRef);
-    componentRef.setInput('fileInput',fileInput);
+
+    // checkif property view is already visible
+    console.log('propertyView:', fileInput);
+    const fileName =`${Constants.WIN_EXPLR +  fileInput.getFileName}`;
+    console.log('propertyView fileName:', fileName);
+
+    const process = this._runningProcessService.getProcessByName(fileName);
+    if(!process){
+      const componentRef = this.itemViewContainer.createComponent(PropertiesComponent);
+      const propertyId = componentRef.instance.processId;
+      this._componentReferenceService.addComponentReference(propertyId, componentRef);
+      componentRef.setInput('fileInput',fileInput);
+    }
   }
 
   private closeDialogMsgBoxOrPropertiesView(dialogId:number):void{

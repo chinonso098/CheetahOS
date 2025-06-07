@@ -1,1 +1,33 @@
-<p>basicwindow works!</p>
+
+<div
+    #bdivWindow class="window-container  window-dd-box" [ngStyle]="currentStyles"   tabindex="0" 
+    ngDraggable [handle]="leftHS" (stopped)="onDragEnd($event)" (started)="onDragStart($event, this.processId)" 
+    id="bwincmpnt-{{uniqueId}}">
+
+    <div class="header-container"
+        appHighlight tabindex="0"
+        [ngStyle]="headerActiveStyles">
+        <div #leftHS class="left-header-section">
+            <h1>
+                <figure>
+                    <img [src]="this.icon" [alt]="this.name"/>
+                    <figcaption> {{this.displayName}} </figcaption>
+                </figure>
+            </h1>
+        </div>
+        <div class="right-header-section">
+            <nav>
+                <button [ngStyle]="closeBtnStyles" id="closeBtn" appHighlight (click)="onCloseBtnClick()"  title="Close" >
+                    <svg width="10" viewBox="0 0 10 10">
+                        <path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z" fill = "#FFFFF"/>
+                    </svg>
+                </button>
+            </nav>
+        </div>
+    </div>
+    <div tabindex="0" class="window-content-container">
+        <ng-content> </ng-content>
+    </div>
+</div> 
+
+<div #bglassPaneContainer></div>

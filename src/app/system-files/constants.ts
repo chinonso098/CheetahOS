@@ -22,6 +22,7 @@ export namespace Constants{
     export const AUDIO_BASE_PATH = 'osdrive/Cheetah/System/Media/';
     export const NEW_FOLDER = 'New Folder';
     export const CHEETAH = 'cheetah';
+    export const WIN_EXPLR = 'win_explr_';
 
     export const DEFAULT_MENU_ORDER = 'DefaultMenuOrder';
     export const DEFAULT_FILE_MENU_ORDER = 'DefaultFileMenuOrder';
