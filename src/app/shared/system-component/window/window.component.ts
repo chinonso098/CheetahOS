@@ -56,10 +56,10 @@ import { Constants } from 'src/app/system-files/constants';
 
   readonly SECONDS_DELAY = 450;
   readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
-  readonly HIDDEN_Z_INDEX = 0;
-  readonly MIN_Z_INDEX = 1;
-  readonly MAX_Z_INDEX = 2;
-  readonly TMP_MAX_Z_INDEX = 3;
+  readonly HIDDEN_Z_INDEX = Constants.ZERO;
+  readonly MIN_Z_INDEX = Constants.ONE;
+  readonly MAX_Z_INDEX = Constants.TWO;
+  readonly TMP_MAX_Z_INDEX = Constants.THREE;
   readonly WIN_TOP = 25;
   readonly WIN_LEFT = 25;
 
@@ -81,7 +81,7 @@ import { Constants } from 'src/app/system-files/constants';
   windowWidth = '0px';
   windowHeight = '0px';
   windowZIndex = '0';
-  hsZIndex = 2;
+  hsZIndex = Constants.TWO;
 
   xAxisTmp = Constants.ZERO;
   yAxisTmp = Constants.ZERO;

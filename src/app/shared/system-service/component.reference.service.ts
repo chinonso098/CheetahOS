@@ -23,7 +23,7 @@ export class ComponentReferenceService implements BaseService{
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
-    description = ' componenet reference mananger adds/remmoves component refs.. ';
+    description = 'mananges add/remmove of cmpnt reference';
     
     constructor(){
         this._componentsReferences = new Map<number, ComponentRef<unknown>>();

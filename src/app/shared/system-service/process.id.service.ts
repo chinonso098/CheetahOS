@@ -23,7 +23,7 @@ export class ProcessIDService implements BaseService{
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
-    description = 'mananges adds/remmoves pids ';
+    description = 'mananges add/remmove of pids ';
 
     constructor(){
         this._activeProcessIds = [];

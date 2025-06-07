@@ -38,7 +38,7 @@ export class RunningProcessService implements BaseService{
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
-    description = 'keeps track of all procs';
+    description = 'manages add/remove of all processes';
 
 
     constructor(){
