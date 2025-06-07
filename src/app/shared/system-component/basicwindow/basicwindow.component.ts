@@ -4,7 +4,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import {Subscription } from 'rxjs';
-import { WindowBoundsState, WindowState  } from '../window/windows.types';
+import { WindowState  } from '../window/windows.types';
 
 import { Process } from 'src/app/system-files/process';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
@@ -24,7 +24,6 @@ import { Constants } from 'src/app/system-files/constants';
    @Input() processAppIcon = Constants.EMPTY_STRING;  
    @Input() processAppName = Constants.EMPTY_STRING;  
 
-   
    private _runningProcessService:RunningProcessService;
    private _systemNotificationServices:SystemNotificationService;
    private _windowService:WindowService;
@@ -49,8 +48,6 @@ import { Constants } from 'src/app/system-files/constants';
   readonly MIN_Z_INDEX = Constants.ONE;
   readonly MAX_Z_INDEX = Constants.TWO;
   readonly TMP_MAX_Z_INDEX = Constants.THREE;
-  readonly WIN_TOP = 25;
-  readonly WIN_LEFT = 25;
 
   windowHide = false;
   windowMaximize = false;
@@ -58,7 +55,6 @@ import { Constants } from 'src/app/system-files/constants';
   windowWidth = '0px';
   windowHeight = '0px';
   windowZIndex = '0';
-  hsZIndex = Constants.TWO;
 
   xAxisTmp = Constants.ZERO;
   yAxisTmp = Constants.ZERO;
@@ -67,7 +63,7 @@ import { Constants } from 'src/app/system-files/constants';
   windowLeft = Constants.ZERO;
 
   isWindowMaximizable = true;
-  currentStyles: Record<string, unknown> = {};
+  currentWinStyles: Record<string, unknown> = {};
   headerActiveStyles: Record<string, unknown> = {}; 
   closeBtnStyles: Record<string, unknown> = {};
   defaultWidthOnOpen = 0;
@@ -201,7 +197,7 @@ import { Constants } from 'src/app/system-files/constants';
     setHeaderActive(pid:number):void{
       if(this.processId == pid){
         this.headerActiveStyles = {
-          'background-color':'rgb(24,60,124)'
+          'background-color':'hsla(0, 0%, 100%, 1)'
         };
       }
     }
@@ -250,7 +246,7 @@ import { Constants } from 'src/app/system-files/constants';
 
     updateWindowZIndex(window: WindowState, zIndex:number):void{
       if(this.processId == window.pid){
-        this.currentStyles = {
+        this.currentWinStyles = {
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
           'z-index':zIndex,
@@ -264,7 +260,7 @@ import { Constants } from 'src/app/system-files/constants';
 
     setWindowToPriorHiddenState(window: WindowState, zIndex:number):void{
       if(this.processId === window.pid){
-        this.currentStyles = {
+        this.currentWinStyles = {
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
           'z-index':zIndex,
@@ -321,7 +317,7 @@ import { Constants } from 'src/app/system-files/constants';
             this._windowService.addProcessIDToHiddenOrVisibleWindows(this.processId);
   
             this.setHeaderInActive(windowState.pid);
-            this.currentStyles = { 
+            this.currentWinStyles = { 
               'top': `${this.windowTop}%`,
               'left': `${this.windowLeft}%`,
               'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
@@ -532,7 +528,7 @@ import { Constants } from 'src/app/system-files/constants';
           this._windowService.addWindowState(windowState);
           this._windowService.addProcessWindowIDWithHighestZIndex(pid);
 
-          this.currentStyles = {
+          this.currentWinStyles = {
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
@@ -565,7 +561,7 @@ import { Constants } from 'src/app/system-files/constants';
       if(windowState && (windowState.pid == pid)){
         const z_index = this.TMP_MAX_Z_INDEX;
         if(!windowState.is_visible){
-          this.currentStyles = {
+          this.currentWinStyles = {
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
             'z-index':z_index,
@@ -573,7 +569,7 @@ import { Constants } from 'src/app/system-files/constants';
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
           };
         }else{
-          this.currentStyles = {
+          this.currentWinStyles = {
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
             'z-index':z_index,
@@ -586,7 +582,7 @@ import { Constants } from 'src/app/system-files/constants';
     lockScreenIsActive():void{
       const windowState = this._windowService.getWindowState(this.processId);
       if(windowState && windowState.is_visible){
-        this.currentStyles = {
+        this.currentWinStyles = {
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
           'z-index':this.HIDDEN_Z_INDEX,
@@ -601,7 +597,7 @@ import { Constants } from 'src/app/system-files/constants';
       const windowState = this._windowService.getWindowState(this.processId);
       if(windowState){
         if(windowState.pid === this._windowService.getProcessWindowIDWithHighestZIndex()){
-          this.currentStyles = {
+          this.currentWinStyles = {
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
@@ -609,7 +605,7 @@ import { Constants } from 'src/app/system-files/constants';
             'opacity': Constants.ONE
           };
         }else{
-          this.currentStyles = {
+          this.currentWinStyles = {
             'top': `${this.windowTop}%`,
             'left': `${this.windowLeft}%`,
             'z-index':this.MIN_Z_INDEX,

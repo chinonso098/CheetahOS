@@ -1,6 +1,6 @@
 
 <div
-    #bdivWindow class="window-container  window-dd-box" [ngStyle]="currentStyles"   tabindex="0" 
+    #bdivWindow class="window-container  window-dd-box" [ngStyle]="currentWinStyles"   tabindex="0" 
     ngDraggable [handle]="leftHS" (stopped)="onDragEnd($event)" (started)="onDragStart($event, this.processId)" 
     id="bwincmpnt-{{uniqueId}}">
 
@@ -19,7 +19,7 @@
             <nav>
                 <button [ngStyle]="closeBtnStyles" id="closeBtn" appHighlight (click)="onCloseBtnClick()"  title="Close" >
                     <svg width="10" viewBox="0 0 10 10">
-                        <path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z" fill = "#FFFFF"/>
+                        <path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z" fill = "#000000"/>
                     </svg>
                 </button>
             </nav>
