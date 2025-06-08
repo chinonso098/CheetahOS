@@ -27,8 +27,6 @@ export class WindowService implements BaseService{
     private _eventOriginator = Constants.EMPTY_STRING;
     private _processWindowWithTheHighestZIndex = Constants.ZERO;
 
-    //WWC - without window component
-    focusOnCurrentProcess_WWC_Notify: Subject<number> = new Subject<number>();
     focusOnCurrentProcessWindowNotify: Subject<number> = new Subject<number>();
     focusOnNextProcessWindowNotify: Subject<number> = new Subject<number>();
 

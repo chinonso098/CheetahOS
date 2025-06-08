@@ -1,4 +1,20 @@
-<div ngDraggable [handle]="leftHS4"  class="cheetah-main-container" id="cheetahAboutMainCntnr">
+<cos-basicwindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setCheetahWindowToFocus(this.processId)">
+    <div class="cheetah-main-container" id="cheetahAboutMainCntnr">
+        <div class="cheetah-body-container">
+            <div class="os-info"> 
+                <div class="os-image">
+                    <img [src]="cheetahIcon" />
+                </div>
+                <div class="cheetah-div"> <p class="os-name">{{displayName}}</p> </div>
+                <div class="cheetah-div"> <p class="os-version"> {{version}}</p></div>
+                <div class="cheetah-div"> <p class="os-year">{{year}}</p></div>
+            </div>
+        </div>
+    </div>
+</cos-basicwindow>
+
+
+<!-- <div ngDraggable [handle]="leftHS4"  class="cheetah-main-container" id="cheetahAboutMainCntnr">
     <div class="cheetah-header-container" tabindex="0">
         <div #leftHS4 class="cheetah-left-header-section">
             <h1 class="cheetah-h1">
@@ -28,4 +44,4 @@
             <div class="cheetah-div"> <p class="os-year">{{year}}</p></div>
         </div>
     </div>
-</div>
+</div> -->

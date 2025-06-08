@@ -39,7 +39,7 @@ import { UserNotificationService } from "./user.notification.service";
     providedIn: 'root'
 })
 
-export class ControlProcessService implements BaseService{
+export class ProcessHandlerService implements BaseService{
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
@@ -49,15 +49,6 @@ export class ControlProcessService implements BaseService{
     private _menuService:MenuService;
     private _userNotificationService:UserNotificationService;
 
-    //   private _componentReferenceService:ComponentReferenceService;
-    //   private _controlProcessService:ControlProcessService;
-    //   private _sessionMangamentServices:SessionManagmentService;
-    //   
-    //   private _stateManagmentService:StateManagmentService;
-    //   private _menuService:MenuService;
-    //   private _windowService:WindowService;
-
-    //   private _appDirectory:AppDirectory;
     private _appDirectory:AppDirectory;
     private _TriggerList:FileInfo[];
 
@@ -88,7 +79,6 @@ export class ControlProcessService implements BaseService{
         {type: FileExplorerComponent},
         {type: TaskmanagerComponent},
         {type: TerminalComponent},
-        // {type: TaskmanagerMiniComponent},
         {type: VideoPlayerComponent},
         {type: PhotoViewerComponent},
         {type: RunSystemComponent},
@@ -128,8 +118,8 @@ export class ControlProcessService implements BaseService{
     }
 
 
-    startApplication(file:FileInfo):void{
-        let msg = '';
+    startApplicationProcess(file:FileInfo):void{
+        let msg = Constants.EMPTY_STRING;
         if(this._appDirectory.appExist(file.getOpensWith)){
 
             if(!this._runningProcessService.isProcessRunning(file.getOpensWith) || 
@@ -144,9 +134,8 @@ export class ControlProcessService implements BaseService{
                     //this._userNotificationService.showInfoNotification(msg);
 
                     if(runningProcess){
-                        if(runningProcess.getProcessName ==="runsystem" || runningProcess.getProcessName ==="cheetah"){
-                            this._windowService.focusOnCurrentProcess_WWC_Notify.next(runningProcess.getProcessId);
-                        }else if(runningProcess.getProcessName ==="taskmanager" || runningProcess.getProcessName ==="chatter"){
+                        if(runningProcess.getProcessName ==="taskmanager" || runningProcess.getProcessName ==="chatter"
+                            || runningProcess.getProcessName ==="runsystem" || runningProcess.getProcessName ==="cheetah"){
                             this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
                         }else{
                             const uid = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
@@ -211,13 +200,6 @@ export class ControlProcessService implements BaseService{
             this._windowService.focusOnCurrentProcessWindowNotify.next(process.getProcessId);
         }
     }
-
-    // private closePropertiesView(dialogId:number):void{
-    //     const componentToDelete = this._componentReferenceService.getComponentReference(dialogId);
-    //     this._componentRefView = componentToDelete.hostView;
-    //     const iVCntr  = this._viewContainerRef.indexOf(this._componentRefView);
-    //     this._viewContainerRef.remove(iVCntr);
-    // }
 
     closeApplicationProcess(eventData:Process):void{
         // remove component ref

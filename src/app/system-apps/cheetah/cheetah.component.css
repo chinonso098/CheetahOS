@@ -1,13 +1,6 @@
 .cheetah-main-container{
     font-size: 1rem;
     text-align: center;
-    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%);
-    position: absolute;
-    /* Centering the element */
-    top: 25%;
-    left: 30%;
-    outline: 1px hsl(0deg 0% 20%/70%);
-    z-index: 2;
     height: fit-content;
     width: fit-content;
 }

@@ -3,7 +3,7 @@ import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
-import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -28,7 +28,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _stateManagmentService:StateManagmentService;
-  private _controlProcessService:ControlProcessService;
+  private _processHandlerService:ProcessHandlerService;
     private _windowService:WindowService;
 
 
@@ -51,13 +51,13 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   type = ComponentType.User;
   displayName = '';
 
-  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ControlProcessService,
+  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
                 stateManagmentService:StateManagmentService ,windowService:WindowService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService = runningProcessService;
     this._stateManagmentService = stateManagmentService;
-    this._controlProcessService = triggerProcessService;
+    this._processHandlerService = triggerProcessService;
     this._windowService = windowService;
 
 
@@ -129,7 +129,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._controlProcessService.getLastProcessTrigger)
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
   }
 
 }

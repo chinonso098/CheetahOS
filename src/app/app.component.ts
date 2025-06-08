@@ -2,7 +2,7 @@ import {Component,ViewChild, ViewContainerRef, OnDestroy, OnInit, AfterViewInit}
 
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from './shared/system-service/running.process.service';
-import { ControlProcessService } from './shared/system-service/trigger.process.service';
+import { ProcessHandlerService } from './shared/system-service/process.handler.service';
 
 import { ComponentType } from './system-files/system.types';
 import { Process } from './system-files/process';
@@ -29,7 +29,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _componentReferenceService:ComponentReferenceService;
-  private _controlProcessService:ControlProcessService;
+  private _processHandlerService:ProcessHandlerService;
 
 
 
@@ -49,12 +49,12 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   
   // the order of the service init matter.
   //runningProcesssService must come first
-  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, controlProcessService:ControlProcessService, componentReferenceService:ComponentReferenceService){
+  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, controlProcessService:ProcessHandlerService, componentReferenceService:ComponentReferenceService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
     this._runningProcessService = runningProcessService;
-    this._controlProcessService = controlProcessService; 
+    this._processHandlerService = controlProcessService; 
     this._componentReferenceService = componentReferenceService; 
     this._runningProcessService.addProcess(this.getComponentDetail());
   }

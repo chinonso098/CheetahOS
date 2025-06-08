@@ -2,7 +2,7 @@ import { AfterViewInit, Component } from '@angular/core';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { Process } from 'src/app/system-files/process';
@@ -20,7 +20,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _controlProcessService:ControlProcessService;
+  private _processHandlerService:ProcessHandlerService;
   private _systemNotificationService:SystemNotificationService;
   private _menuService:MenuService;
   private _windowServices:WindowService;
@@ -56,10 +56,10 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   tmpInfo!:string[];
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService,
-              triggerProcessService:ControlProcessService, windowServices:WindowService, systemNotificationService:SystemNotificationService) { 
+              triggerProcessService:ProcessHandlerService, windowServices:WindowService, systemNotificationService:SystemNotificationService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
-    this._controlProcessService = triggerProcessService;
+    this._processHandlerService = triggerProcessService;
     this._menuService = menuService;
     this._windowServices = windowServices;
     this._systemNotificationService = systemNotificationService;
@@ -588,7 +588,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
     if(!this._runningProcessService.isProcessRunning(file.opensWith)){
       const tmpFile:FileInfo = new FileInfo();
       tmpFile.setOpensWith = file.opensWith;
-      this._controlProcessService.startApplication(tmpFile);
+      this._processHandlerService.startApplicationProcess(tmpFile);
       return;
     }
 
@@ -624,7 +624,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   }
 
   openApplication(file:FileInfo):void{
-    this._controlProcessService.startApplication(file);
+    this._processHandlerService.startApplicationProcess(file);
   }
 
   closeApplication(proccess:Process[]):void{

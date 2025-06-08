@@ -10,7 +10,7 @@ import { Process } from 'src/app/system-files/process';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
 import { MenuService } from '../../system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
-import { ControlProcessService } from '../../system-service/trigger.process.service';
+import { ProcessHandlerService } from '../../system-service/process.handler.service';
 
 @Component({
   selector: 'cos-basicwindow',
@@ -30,7 +30,7 @@ import { ControlProcessService } from '../../system-service/trigger.process.serv
    private _windowService:WindowService;
    private _originalWindowsState!:WindowState;
    private _menuService!:MenuService;
-   private _controlProcessService!:ControlProcessService;
+   private _processHandlerService!:ProcessHandlerService;
 
    private _focusOnNextProcessSub!:Subscription;
    private _focusOnCurrentProcessSub!:Subscription;
@@ -83,12 +83,12 @@ import { ControlProcessService } from '../../system-service/trigger.process.serv
 
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, private renderer: Renderer2,
                 windowService:WindowService, systemNotificationServices:SystemNotificationService, menuService: MenuService, 
-                controlProcessService:ControlProcessService){
+                controlProcessService:ProcessHandlerService){
       this._runningProcessService = runningProcessService;
       this._windowService = windowService;
       this._systemNotificationServices = systemNotificationServices;
       this._menuService = menuService;
-      this._controlProcessService = controlProcessService;
+      this._processHandlerService = controlProcessService;
  
       this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusAndResetWindowBoundsByPid(p)});
       this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p)});
@@ -391,7 +391,7 @@ import { ControlProcessService } from '../../system-service/trigger.process.serv
 
       const processToClose = this._runningProcessService.getProcess(this.processId);
       if(processToClose){
-        this._controlProcessService.closeApplicationProcess(processToClose);
+        this._processHandlerService.closeApplicationProcess(processToClose);
         this._windowService.cleanUp(this.uniqueId);
       }
 

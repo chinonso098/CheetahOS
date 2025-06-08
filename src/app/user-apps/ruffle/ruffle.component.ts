@@ -5,7 +5,7 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { Process } from 'src/app/system-files/process';
 import {extname} from 'path';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
@@ -29,7 +29,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _controlProcessService:ControlProcessService;
+  private _processHandlerService:ProcessHandlerService;
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
@@ -51,11 +51,11 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   type = ComponentType.User;
   displayName = 'Ruffle-EM';
 
-  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ControlProcessService,
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
     stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService, windowService:WindowService) { 
     
     this._processIdService = processIdService;
-    this._controlProcessService = triggerProcessService;
+    this._processHandlerService = triggerProcessService;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
     this._scriptService = scriptService;
@@ -70,7 +70,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this._fileInfo = this._controlProcessService.getLastProcessTrigger();
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
   async ngAfterViewInit() {
@@ -179,7 +179,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._controlProcessService.getLastProcessTrigger)
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
   }
 
 

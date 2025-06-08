@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
-import { ControlProcessService } from 'src/app/shared/system-service/trigger.process.service';
+import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { Process } from 'src/app/system-files/process';
 import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
@@ -37,7 +37,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   private _runningProcessService:RunningProcessService;
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
-  private _controlProcessService:ControlProcessService;
+  private _processHandlerService:ProcessHandlerService;
   private _scriptService: ScriptService;
   private _fileService:FileService;
   private _windowService:WindowService;
@@ -63,14 +63,14 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   displayName = '';
 
 
-  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ControlProcessService,
+  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
                 stateManagmentService:StateManagmentService, scriptService: ScriptService,fileService:FileService, 
                 sessionManagmentService: SessionManagmentService, renderer: Renderer2, sanitizer: DomSanitizer,windowService:WindowService){
     this._processIdService = processIdService
     this._runningProcessService = runningProcessService;
     this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
-    this._controlProcessService = triggerProcessService;
+    this._processHandlerService = triggerProcessService;
     this._scriptService = scriptService;
     this._fileService = fileService;
     this._windowService = windowService;
@@ -86,7 +86,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   }
 
   ngOnInit():void{
-    this._fileInfo = this._controlProcessService.getLastProcessTrigger();
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
   ngAfterViewInit(): void{
@@ -210,7 +210,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._controlProcessService.getLastProcessTrigger)
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
   }
 
 }

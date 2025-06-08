@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy} from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Constants } from "src/app/system-files/constants";
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -6,8 +6,7 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
-import { Subscription } from 'rxjs';
-import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 
 @Component({
   selector:'cos-cheetah',
@@ -15,17 +14,12 @@ import { SystemNotificationService } from 'src/app/shared/system-service/system.
   styleUrls: ["./cheetah.component.css"]
 })
 
-export class CheetahComponent implements BaseComponent, OnInit, OnDestroy{
+export class CheetahComponent implements BaseComponent, OnInit{
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _audioService:AudioService;
-  private _systemNotificationServices:SystemNotificationService;
+  private _windowService:WindowService;
 
-  private _deskTopIsActiveSub!:Subscription;
-  private _lockScreenIsActiveSub!:Subscription;
-
-
-  SECONDS_DELAY = 100;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
@@ -34,27 +28,19 @@ export class CheetahComponent implements BaseComponent, OnInit, OnDestroy{
   type = ComponentType.System;
   displayName = 'CheetahOS';
   name = 'cheetah';
-  version = 'Version: 3.03.29';
+  version = 'Version: 3.06.08';
   year = `\u00A9 ${new Date().getFullYear()}`;
 
   readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}about_cheetah.mp3`;
 
-  constructor(processIdService:ProcessIDService,  runningProcessService:RunningProcessService, audioService:AudioService, systemNotificationServices:SystemNotificationService) { 
+  constructor(processIdService:ProcessIDService,  runningProcessService:RunningProcessService, audioService:AudioService, windowService:WindowService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._audioService = audioService;
-    this._systemNotificationServices = systemNotificationServices;
+    this._windowService = windowService;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
-
-    this._lockScreenIsActiveSub = this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._deskTopIsActiveSub = this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
-  }
-
-  onClosePropertyView():void{
-    const processToClose = this._runningProcessService.getProcess(this.processId);
-    this._runningProcessService.closeProcessNotify.next(processToClose);
   }
 
   ngOnInit(): void {
@@ -63,37 +49,12 @@ export class CheetahComponent implements BaseComponent, OnInit, OnDestroy{
     setTimeout(() => {
       this._audioService.play(this.defaultAudio);
     }, secondsDelay);
-
-    this.removeUnWantedStyle();
   }
 
-  ngOnDestroy(): void {
-    this._deskTopIsActiveSub?.unsubscribe();
-    this._lockScreenIsActiveSub?.unsubscribe();
+  setCheetahWindowToFocus(pid:number):void{
+     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
-  removeUnWantedStyle():void{
-    setTimeout(()=> {
-      const cheetahElmnt = document.getElementById('cheetahAboutMainCntnr') as HTMLDivElement;
-      if(cheetahElmnt) {
-        cheetahElmnt.style.transform = Constants.EMPTY_STRING;
-      }
-    }, this.SECONDS_DELAY);
-  }
-
-  lockScreenIsActive():void{
-    const cheetahElmnt = document.getElementById('cheetahAboutMainCntnr') as HTMLDivElement;
-    if(cheetahElmnt) {
-      cheetahElmnt.style.zIndex = '0';
-    }
-  }
-
-  desktopIsActive():void{
-    const cheetahElmnt = document.getElementById('cheetahAboutMainCntnr') as HTMLDivElement;
-    if(cheetahElmnt) {
-      cheetahElmnt.style.zIndex = '2';
-    }
-  }
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type);
   }
