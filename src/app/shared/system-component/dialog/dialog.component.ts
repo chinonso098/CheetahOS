@@ -6,6 +6,7 @@ import { MenuService } from '../../system-service/menu.services';
 import { Subscription } from 'rxjs';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
 import { Constants } from 'src/app/system-files/constants';
+import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 
 @Component({
   selector: 'cos-dialog',
@@ -13,7 +14,7 @@ import { Constants } from 'src/app/system-files/constants';
   styleUrls: ['./dialog.component.css']
 })
 
-export class DialogComponent implements OnChanges, OnDestroy {
+export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
 
   @Input() inputMsg = '';
   @Input() notificationType = '';
@@ -45,13 +46,21 @@ export class DialogComponent implements OnChanges, OnDestroy {
   type = ComponentType.System;
   displayMgs = '';
 
+
+  name = Constants.EMPTY_STRING;
+  hasWindow = false;
+  isMaximizable = false;
+  icon = Constants.EMPTY_STRING;
+  processId = Constants.ZERO;
+  displayName = Constants.EMPTY_STRING;
+
   constructor(notificationServices:UserNotificationService, systemNotificationServices:SystemNotificationService,
     menuService:MenuService){
     this._notificationServices = notificationServices;
     this._menuService = menuService;
     this._systemNotificationServices = systemNotificationServices;
 
-    this.notificationId = this.generateNotificationId();
+    this.processId = this.generateNotificationId();
     this._lockScreenIsActiveSub = this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
     this._deskTopIsActiveSub = this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
@@ -75,7 +84,7 @@ export class DialogComponent implements OnChanges, OnDestroy {
   }
 
   onCloseDialogBox():void{
-    this._notificationServices.closeDialogBoxNotify.next(this.notificationId);
+    this._notificationServices.closeDialogMsgBox(this.processId);
   }
 
   onPwrOptionSelect(event: any):void{
@@ -93,49 +102,49 @@ export class DialogComponent implements OnChanges, OnDestroy {
     //Yes! it is notification id, not process id. so why the range below 1000, 
     // becuase PropertiesId range from 500 - 999. And it is still a component, compoenets are retrieved by id. 
     const min = 10;
-    const max = 499;
+    const max = 999;
     return Math.floor(Math.random() * (max - min + 1)) + min; 
   }
 
   lockScreenIsActive():void{
-    const errDiagElmnt = document.getElementById(`error-dialog-${this.notificationId}`) as HTMLDivElement;
+    const errDiagElmnt = document.getElementById(`error-dialog-${this.processId}`) as HTMLDivElement;
     if(errDiagElmnt) {
       errDiagElmnt.style.zIndex = '0';
     }
 
-    const infoDiagElmnt = document.getElementById(`info-dialog-${this.notificationId}`) as HTMLDivElement;
+    const infoDiagElmnt = document.getElementById(`info-dialog-${this.processId}`) as HTMLDivElement;
     if(infoDiagElmnt) {
       infoDiagElmnt.style.zIndex = '0';
     }
 
-    const warnDiagElmnt = document.getElementById(`warning-dialog-${this.notificationId}`) as HTMLDivElement;
+    const warnDiagElmnt = document.getElementById(`warning-dialog-${this.processId}`) as HTMLDivElement;
     if(warnDiagElmnt) {
       warnDiagElmnt.style.zIndex = '0';
     }
 
-    const pwrDiagElmnt = document.getElementById(`shutdown-restart-dialog-${this.notificationId}`) as HTMLDivElement;
+    const pwrDiagElmnt = document.getElementById(`shutdown-restart-dialog-${this.processId}`) as HTMLDivElement;
     if(pwrDiagElmnt) {
       pwrDiagElmnt.style.zIndex = '0';
     }
   }
 
   desktopIsActive():void{
-    const errDiagElmnt = document.getElementById(`error-dialog-${this.notificationId}`) as HTMLDivElement;
+    const errDiagElmnt = document.getElementById(`error-dialog-${this.processId}`) as HTMLDivElement;
     if(errDiagElmnt) {
       errDiagElmnt.style.zIndex = '2';
     }
 
-    const infoDiagElmnt = document.getElementById(`info-dialog-${this.notificationId}`) as HTMLDivElement;
+    const infoDiagElmnt = document.getElementById(`info-dialog-${this.processId}`) as HTMLDivElement;
     if(infoDiagElmnt) {
       infoDiagElmnt.style.zIndex = '2';
     }
 
-    const warnDiagElmnt = document.getElementById(`warning-dialog-${this.notificationId}`) as HTMLDivElement;
+    const warnDiagElmnt = document.getElementById(`warning-dialog-${this.processId}`) as HTMLDivElement;
     if(warnDiagElmnt) {
       warnDiagElmnt.style.zIndex = '2';
     }
 
-    const pwrDiagElmnt = document.getElementById(`shutdown-restart-dialog-${this.notificationId}`) as HTMLDivElement;
+    const pwrDiagElmnt = document.getElementById(`shutdown-restart-dialog-${this.processId}`) as HTMLDivElement;
     if(pwrDiagElmnt) {
       pwrDiagElmnt.style.zIndex = '2';
     }

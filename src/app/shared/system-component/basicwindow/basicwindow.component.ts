@@ -10,6 +10,7 @@ import { Process } from 'src/app/system-files/process';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
 import { MenuService } from '../../system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
+import { ControlProcessService } from '../../system-service/trigger.process.service';
 
 @Component({
   selector: 'cos-basicwindow',
@@ -29,8 +30,8 @@ import { Constants } from 'src/app/system-files/constants';
    private _windowService:WindowService;
    private _originalWindowsState!:WindowState;
    private _menuService!:MenuService;
+   private _controlProcessService!:ControlProcessService;
 
-   private _restoreOrMinSub!:Subscription
    private _focusOnNextProcessSub!:Subscription;
    private _focusOnCurrentProcessSub!:Subscription;
    private _showOnlyCurrentProcessSub!:Subscription;
@@ -43,6 +44,7 @@ import { Constants } from 'src/app/system-files/constants';
    private _desktopActiveSub!:Subscription;
    private _showTheDesktopSub!:Subscription;
    private _showOpenWindowsSub!:Subscription;
+   private _closeCurrentProcessSub!:Subscription;
 
   readonly HIDDEN_Z_INDEX = Constants.ZERO;
   readonly MIN_Z_INDEX = Constants.ONE;
@@ -80,12 +82,13 @@ import { Constants } from 'src/app/system-files/constants';
   
 
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, private renderer: Renderer2,
-                windowService:WindowService, systemNotificationServices:SystemNotificationService,
-                menuService: MenuService,){
+                windowService:WindowService, systemNotificationServices:SystemNotificationService, menuService: MenuService, 
+                controlProcessService:ControlProcessService){
       this._runningProcessService = runningProcessService;
       this._windowService = windowService;
       this._systemNotificationServices = systemNotificationServices;
       this._menuService = menuService;
+      this._controlProcessService = controlProcessService;
  
       this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusAndResetWindowBoundsByPid(p)});
       this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p)});
@@ -99,6 +102,10 @@ import { Constants } from 'src/app/system-files/constants';
       this._desktopActiveSub = this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
 
       this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)});
+      this._closeCurrentProcessSub = this._windowService.closeWindowProcessNotify.subscribe((p) => {
+          if(this.processId === p){
+            this.closeWindow();
+          }});
 
       this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
       this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
@@ -153,7 +160,7 @@ import { Constants } from 'src/app/system-files/constants';
     }
 
     ngOnDestroy():void{
-      this._restoreOrMinSub?.unsubscribe();
+      this._closeCurrentProcessSub?.unsubscribe();
       this._focusOnNextProcessSub?.unsubscribe();
       this._focusOnCurrentProcessSub?.unsubscribe();
       this._removeFocusOnOtherProcessesSub?.unsubscribe();
@@ -375,12 +382,16 @@ import { Constants } from 'src/app/system-files/constants';
     }
 
     onCloseBtnClick():void{
+      this.closeWindow();
+    }
+
+    closeWindow():void{
       this._windowService.removeWindowState(this.processId);
       this.removeSilhouette(this.processId);
 
       const processToClose = this._runningProcessService.getProcess(this.processId);
       if(processToClose){
-        this._runningProcessService.closeProcessNotify.next(processToClose);
+        this._controlProcessService.closeApplicationProcess(processToClose);
         this._windowService.cleanUp(this.uniqueId);
       }
 

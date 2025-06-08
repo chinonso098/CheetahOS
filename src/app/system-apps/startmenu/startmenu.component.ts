@@ -218,7 +218,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
   power():void{
     const msg = 'Shut Down Cheetah'
-    this._userNotificationService.powerOnOffNotify.next(msg);
+    this._userNotificationService.showPowerOnOffNotification(msg);
     //location.reload();
   }
 

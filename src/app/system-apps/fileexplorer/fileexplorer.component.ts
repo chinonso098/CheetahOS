@@ -2142,7 +2142,7 @@ Do you want the shortcut to be placed on the desktop instead?`;
 
       this._audioService.play(this.cheetahGenericNotifyAudio);
       this._menuService.setStageData(fileContent);
-      this._notificationService.warningNotify.next(msg);
+      this._notificationService.showWarningNotification(msg);
       return;
     }
 

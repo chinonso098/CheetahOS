@@ -4,7 +4,6 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FileService } from 'src/app/shared/system-service/file.service';
-import { MenuService } from '../../system-service/menu.services';
 
 import { Process } from 'src/app/system-files/process';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -22,7 +21,6 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   @Input() fileInput!:FileInfo;
 
   private _fileService:FileService;
-  private _menuService:MenuService;
   private _runningProcessService:RunningProcessService;
   private _processIdService:ProcessIDService
   private _windowService:WindowService;
@@ -42,10 +40,9 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
-      windowService:WindowService,fileInfoService:FileService, menuService:MenuService) { 
+      windowService:WindowService,fileInfoService:FileService) { 
     this._processIdService = processIdService;
     this._fileService = fileInfoService;
-    this._menuService = menuService;
     this._windowService = windowService;
 
     this.processId = this._processIdService.getNewProcessId();
@@ -64,7 +61,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   }
 
   onClosePropertyView():void{
-    this._menuService.closePropertiesView.next(this.processId);
+    this._windowService.closeWindowProcessNotify.next(this.processId);
   }
 
   setPropertyWindowToFocus(pid:number):void{

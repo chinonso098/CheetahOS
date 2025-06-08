@@ -35,7 +35,7 @@ export class MenuService implements BaseService{
     storeData: Subject<string[]> = new Subject<string[]>();
     addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();
     showPropertiesView: Subject<FileInfo> = new Subject<FileInfo>();
-    closePropertiesView: Subject<number> = new Subject<number>();
+    //closePropertiesView: Subject<number> = new Subject<number>();
     createDesktopShortcut: Subject<void> = new Subject<void>();
 
     hideShowTaskBar: Subject<void> = new Subject<void>();

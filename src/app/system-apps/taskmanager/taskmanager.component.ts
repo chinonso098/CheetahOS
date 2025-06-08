@@ -702,7 +702,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     }else{
       //alert(`The app: ${processToClose.getProcessName} is not allowed to be closed`)
       const msg = `The proc:${processToClose.getProcessName} is not allowed to be closed`;
-      this._notificationService.InfoNotify.next(msg);
+      this._notificationService.showInfoNotification(msg);
     }
   }
 

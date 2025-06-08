@@ -54,6 +54,9 @@ export class WindowService implements BaseService{
 
     windowDragIsActive: Subject<void> = new Subject<void>();
     windowDragIsInActive: Subject<void> = new Subject<void>();
+
+    closeWindowProcessNotify:Subject<number> = new Subject<number>();
+
     
     name = 'window_mgmt_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
