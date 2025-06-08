@@ -50,7 +50,6 @@ export class ProcessIDService implements BaseService{
     }
 
     public removeProcessId(pid:number):void{
-        
        const deleteCount = Constants.ONE;
        const pidIndex = this._activeProcessIds.indexOf(pid)
        if (pidIndex !== Constants.MINUS_ONE) {

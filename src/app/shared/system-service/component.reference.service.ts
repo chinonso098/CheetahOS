@@ -47,13 +47,16 @@ export class ComponentReferenceService implements BaseService{
         return componentRef;
     }
 
-    private removeComponentReference(processId:number): void{
+    private removeComponentReference(processId:number):void{
         this._componentsReferences.delete(processId)
     }
 
-
-    setViewContainerRef(ref: ViewContainerRef) {
+    setViewContainerRef(ref: ViewContainerRef):void {
         this._viewContainerRef = ref;
+    }
+
+    clearViewContainerRef():void {
+        this._viewContainerRef.clear();
     }
 
     createComponent(componentToLoad: Type<BaseComponent>):ComponentRef<BaseComponent>{

@@ -22,20 +22,19 @@ export class MenuService implements BaseService{
 
     pinToTaskBar: Subject<FileInfo> = new Subject<FileInfo>();
     unPinFromTaskBar: Subject<FileInfo> = new Subject<FileInfo>();
-    // openApplication: Subject<FileInfo> = new Subject<FileInfo>();
-    // closeApplication: Subject<FileInfo[]> = new Subject<FileInfo[]>();
+
     openApplicationFromTaskBar: Subject<FileInfo> = new Subject<FileInfo>();
     closeApplicationFromTaskBar: Subject<Process[]> = new Subject<Process[]>();
     showTaskBarAppIconMenu: Subject<unknown[]> = new Subject<unknown[]>();
     showTaskBarConextMenu: Subject<MouseEvent> = new Subject<MouseEvent>();
-    // keepTaskBarMenu: Subject<void> = new Subject<void>();
+
     hideStartMenu: Subject<void> = new Subject<void>();
     showStartMenu: Subject<void> = new Subject<void>();
     hideContextMenus: Subject<void> = new Subject<void>();
     storeData: Subject<string[]> = new Subject<string[]>();
     addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();
     showPropertiesView: Subject<FileInfo> = new Subject<FileInfo>();
-    //closePropertiesView: Subject<number> = new Subject<number>();
+    
     createDesktopShortcut: Subject<void> = new Subject<void>();
 
     hideShowTaskBar: Subject<void> = new Subject<void>();
