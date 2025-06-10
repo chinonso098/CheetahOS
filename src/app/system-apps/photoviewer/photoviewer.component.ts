@@ -61,10 +61,10 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _processHandlerService:ProcessHandlerService;
   private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
-    private _windowService:WindowService;
+  private _windowService:WindowService;
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
-  private picSrc = '';
+  private picSrc = Constants.EMPTY_STRING;
 
 
 
@@ -85,6 +85,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   protected images: WritableSignal<string[]> =  signal([this.imageList[0]]);
   protected selectedIndex = signal(1);
   protected animationDirection = signal<'right' | 'left'>('right');
+  disableAnimations = true;
   
 
   constructor(fileService:FileService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,

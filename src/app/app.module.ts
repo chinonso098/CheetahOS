@@ -55,6 +55,7 @@ import { LongPressDirective } from './system-apps/audioplayer/long.press.directi
 import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.column-resize.directive';
 import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.capture.directive';
 import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.directives';
+import { WindowpaneComponent } from './shared/system-component/windowpane/windowpane.component';
 
 
 
@@ -110,7 +111,8 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     TaskbarpreviewsComponent,
     WarpingstarfieldComponent,
     BoidsComponent,
-    BasicWindowComponent
+    BasicWindowComponent,
+    WindowpaneComponent
     
   ],
   imports: [

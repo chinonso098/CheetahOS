@@ -176,7 +176,7 @@ export class ProcessHandlerService implements BaseService{
         const componentToLoad = this.apps[appPosition];
         if(componentToLoad !== undefined){   
             const cmpntRef =  this._componentReferenceService.createComponent(componentToLoad.type);
-            this.addEntryFromUserOpenedApps(cmpntRef.instance.name);
+            this.addEntryFromUserOpenedAppssAndSession(cmpntRef.instance.name);
 
             //alert subscribers
             if(this._runningProcessService !== undefined){
@@ -186,12 +186,7 @@ export class ProcessHandlerService implements BaseService{
     }
     
     private showPropertiesWindow(fileInput:FileInfo):void{
-
-        // checkif property view is already visible
-        console.log('propertyView:', fileInput);
         const fileName =`${Constants.WIN_EXPLR +  fileInput.getFileName}`;
-        console.log('propertyView fileName:', fileName);
-
         const process = this._runningProcessService.getProcessByName(fileName);
         if(!process){
             const cmpntRef =  this._componentReferenceService.createComponent(PropertiesComponent);
@@ -280,7 +275,7 @@ export class ProcessHandlerService implements BaseService{
 
     }
 
-    private addEntryFromUserOpenedApps(proccessName:string):void{
+    private addEntryFromUserOpenedAppssAndSession(proccessName:string):void{
         this.userOpenedAppsList.push(proccessName);
         this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList)
     }

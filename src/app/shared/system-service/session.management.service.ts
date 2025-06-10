@@ -16,30 +16,27 @@ export class SessionManagmentService implements BaseService{
     private _sessionName = "main-session";
     public readonly _pickUpKey = "temp-session-retrieval-key";
     private _sessionDataDict: Map<string, unknown>; 
-    static instance: SessionManagmentService;
-    private _sessionRetrievalCounter = 0;
 
+    private _sessionRetrievalCounter = Constants.ZERO;
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
   
     name = 'session_mgmt_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = 0;
+    processId = Constants.ZERO;
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
-    description = 'handles load/save of user session ';
+    description = 'handles load/save of user session';
         
 
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){
         if(sessionStorage.getItem(this._sessionName)){
             const sessData = sessionStorage.getItem(this._sessionName) as string;
             this._sessionDataDict = new Map(JSON.parse(sessData));
-            SessionManagmentService.instance = this;
         }
         else{
             this._sessionDataDict = new  Map<string, unknown>();
-            SessionManagmentService.instance = this;
         }
 
         this._processIdService = processIDService;
@@ -70,7 +67,7 @@ export class SessionManagmentService implements BaseService{
         if(this._sessionRetrievalCounter <= 1){
             // console.log(`counter:${this._sessionRetrievalCounter} -----  retrievedSess:${this._sessionRetrievalCounter}`);
 
-            result = sessionStorage.getItem(key) || '';
+            result = sessionStorage.getItem(key) || Constants.EMPTY_STRING;
             if(this._sessionRetrievalCounter === 1){
                 sessionStorage.removeItem(key);
                 this._sessionRetrievalCounter = 0;
