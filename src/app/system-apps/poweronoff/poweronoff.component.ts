@@ -2,6 +2,7 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
@@ -18,12 +19,15 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   private _runningProcessService:RunningProcessService;
   private _systemNotificationService:SystemNotificationService;
   private _audioService:AudioService;
+  private _sessionManagmentService:SessionManagmentService;
 
   password = Constants.EMPTY_STRING;
   currentTime = Constants.EMPTY_STRING;
   currentDate = Constants.EMPTY_STRING;
   authFormTimeoutId!: NodeJS.Timeout;
   lockScreenTimeoutId!: NodeJS.Timeout;
+
+  readonly cheetahPwrKey = 'cheetahPwrState';
 
   isSystemPowered = false;
   showPowerBtn = true;
@@ -41,17 +45,18 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'cheetah_pwr_mgt';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
-    systemNotificationService:SystemNotificationService){
+              systemNotificationService:SystemNotificationService, sessionManagmentService:SessionManagmentService){
     this._processIdService = processIdService;
-    this.processId = this._processIdService.getNewProcessId();
     this._audioService = audioService;
     this._systemNotificationService = systemNotificationService;
+    this._sessionManagmentService = sessionManagmentService;
 
+    this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
 
@@ -59,7 +64,10 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    1 
+    this.retrievePastSessionData();
+    // if(this.isSystemPowered){
+    //   this.showLockScreen();
+    // }
   }
 
   ngAfterViewInit(): void {
@@ -110,6 +118,7 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
       powerOnOffElmnt.style.display = 'none';
       // play startup sound
       this._audioService.play(this.powerOnAudio);
+      this.storeState(Constants.SYSTEM_ON);
     }
 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
@@ -122,6 +131,19 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
     this.showStartUpGif = false;
     this.showPowerBtn = true;
     this.loadingMessage = 'Pwr On';
+    this.storeState(Constants.SYSTEM_SHUT_DOWN);
+  }
+
+  storeState(state:string):void{
+    this._sessionManagmentService.addSession(this.cheetahPwrKey, state);
+  }
+  
+  retrievePastSessionData():void{
+    const sessionData = this._sessionManagmentService.getSession(this.cheetahPwrKey) as string;
+    console.log('pwr-psession:', sessionData);
+    if(sessionData === Constants.EMPTY_STRING || sessionData === Constants.SYSTEM_SHUT_DOWN){
+      this.isSystemPowered = false;
+    }else{ this.isSystemPowered = true;}
   }
 
   private getComponentDetail():Process{

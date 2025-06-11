@@ -4,6 +4,7 @@ import { GeneralMenu } from 'src/app/shared/system-component/menu/menu.types';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
@@ -20,6 +21,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _systemNotificationServices:SystemNotificationService;
+  private _sessionManagmentService:SessionManagmentService
   private _audioService:AudioService;
 
   loginForm!: FormGroup;
@@ -41,11 +43,13 @@ export class LoginComponent implements OnInit, AfterViewInit {
   showPowerMenu = false;
   isPowerMenuVisible = false;
   isScreenLocked = true;
+  isUserLogedIn = false;
+  isFirstLogIn = false;
 
   powerMenuStyle:Record<string, unknown> = {};
-
   powerMenuOption = Constants.POWER_MENU_OPTION;
 
+  readonly cheetahLogonKey = 'cheetahLogonState';
   incorrectPassword = 'The password is incorrect. Try again.';
   exitMessage = Constants.EMPTY_STRING;
   authForm = 'AuthenticationForm';
@@ -64,7 +68,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'cheetah_authentication';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   
@@ -72,12 +76,13 @@ export class LoginComponent implements OnInit, AfterViewInit {
   menuData:GeneralMenu[] = [];
 
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
-    formBuilder: FormBuilder, systemNotificationServices:SystemNotificationService){
+              formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, systemNotificationServices:SystemNotificationService){
     this._processIdService = processIdService;
     this.processId = this._processIdService.getNewProcessId();
     this._audioService = audioService;
     this._formBuilder = formBuilder;
     this._systemNotificationServices = systemNotificationServices;
+    this._sessionManagmentService = sessionManagmentService;
 
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -85,11 +90,33 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit():void {
+    this.retrievePastSessionData();
+    this.firstToDo();
 
+    // if(this.isUserLogedIn){
+    //   this.showDesktop();
+    // }else{this.showLockScreen()}
+  }
+
+  ngAfterViewInit(): void {
+    1//this._runningProcessService.showLockScreenNotify.next();
+  }
+
+  updateTime():void {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    //const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
+    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+
+    this.currentTime = `${formattedHours}:${formattedMinutes}`;
+  }
+
+  firstToDo():void{
     this.loginForm = this._formBuilder.nonNullable.group({
       loginInput: '',
     });
-
 
     this.viewOptions =  this.currentDateTime;
     const secondsDelay = [1000, 360000];  // Update time every second
@@ -106,21 +133,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
     this._systemNotificationServices.showLockScreenNotify.next();
     this.getPowerMenuData();
-  }
-
-  ngAfterViewInit(): void {
-    1//this._runningProcessService.showLockScreenNotify.next();
-  }
-
-  updateTime():void {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    //const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
-    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-
-    this.currentTime = `${formattedHours}:${formattedMinutes}`;
   }
 
   getDate():void{
@@ -212,9 +224,12 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.isScreenLocked = false;
       this._systemNotificationServices.showDesktopNotify.next();
       this.startLockScreenTimeOut();
-      this._audioService.play(this.cheetahUnlockAudio);
+
+      if(this.isUserLogedIn  && this.isFirstLogIn)
+          this._audioService.play(this.cheetahUnlockAudio);
 
       this.resetAuthFormState();
+      this.storeState(Constants.SIGNED_IN);
     }
   }
 
@@ -228,6 +243,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.isScreenLocked = true;
       this.loginForm.controls[this.formCntrlName].setValue(null);
       this._systemNotificationServices.showLockScreenNotify.next();
+      this.storeState(Constants.SIGNED_OUT);
     }
   }
 
@@ -346,6 +362,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.showRestartShutDown = true;
     this._audioService.play(this.cheetahRestarAndShutDownAudio);
     this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_SHUT_DOWN);
+    this.storeState(Constants.SIGNED_OUT);
 
     setTimeout(() => {
       this.showPowerOnOffScreen();
@@ -361,6 +378,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.showRestartShutDown = true;
     this._audioService.play(this.cheetahRestarAndShutDownAudio);
     this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_RESTART);
+    this.storeState(Constants.SIGNED_OUT);
  
     setTimeout(() => {
       this.showPowerOnOffScreen();
@@ -377,6 +395,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.resetAuthFormState();
       this.changeLockScreenLogonPosition(25);
       this.showPowerBtn();
+      this.storeState(Constants.SIGNED_OUT);
       // raise events to close opened apps
     }
   }
@@ -399,6 +418,17 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
+  storeState(state:string):void{
+    this._sessionManagmentService.addSession(this.cheetahLogonKey, state);
+  }
+  
+  retrievePastSessionData():void{
+    const sessionData = this._sessionManagmentService.getSession(this.cheetahLogonKey) as string;
+    console.log('login-psession:', sessionData);
+    if(sessionData === Constants.EMPTY_STRING || sessionData === Constants.SIGNED_OUT){
+      this.isUserLogedIn = false;
+    }else{ this.isUserLogedIn = true;}
+  }
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }

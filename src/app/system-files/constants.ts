@@ -45,10 +45,16 @@ export namespace Constants{
     export const FOUR = 4;
     export const FIVE = 5;
     export const MINUS_ONE = -1;
+
     export const SERVICES_STATE_RUNNING = 'Running';
     export const SERVICES_STATE_STOPPED = 'Stopped';
+
     export const SYSTEM_RESTART = 'Restart';
     export const SYSTEM_SHUT_DOWN = 'Shutdown';
+    export const SYSTEM_ON = 'On';
+
+    export const SIGNED_OUT = 'sOut';
+    export const SIGNED_IN = 'sIn';
 
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';

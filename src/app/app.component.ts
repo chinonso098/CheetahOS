@@ -8,6 +8,7 @@ import { ComponentType } from './system-files/system.types';
 import { Process } from './system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { ComponentReferenceService } from './shared/system-service/component.reference.service';
+import { AudioService } from './shared/system-service/audio.services';
 
 
 @Component({
@@ -30,6 +31,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   private _runningProcessService:RunningProcessService;
   private _componentReferenceService:ComponentReferenceService;
   private _processHandlerService:ProcessHandlerService;
+  private _audioService:AudioService;
 
 
   private SECONDS_DELAY =1500;
@@ -44,12 +46,14 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   
   // the order of the service init matter.
   //runningProcesssService must come first
-  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, controlProcessService:ProcessHandlerService, componentReferenceService:ComponentReferenceService){
+  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, controlProcessService:ProcessHandlerService, 
+              audioService:AudioService, componentReferenceService:ComponentReferenceService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
     this._runningProcessService = runningProcessService;
     this._processHandlerService = controlProcessService; 
+    this._audioService = audioService;
     this._componentReferenceService = componentReferenceService; 
     this._runningProcessService.addProcess(this.getComponentDetail());
   }

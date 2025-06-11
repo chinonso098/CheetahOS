@@ -57,14 +57,12 @@ export class ProcessHandlerService implements BaseService{
 
     private userOpenedAppsList:string[] = [];
     private openedAppInstanceUID:string[] = [];
-    private retreivedKeys:string[] = [];
     private userOpenedAppsKey = Constants.USER_OPENED_APPS;
     private appsInstanceUIDKey = Constants.USER_OPENED_APPS_INSTANCE;
-    private reOpendAppsCounter = Constants.ZERO;
 
     name = 'trgr_proc_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = 0;
+    processId = Constants.ZERO;
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
