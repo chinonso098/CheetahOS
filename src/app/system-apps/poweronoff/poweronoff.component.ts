@@ -27,9 +27,10 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   authFormTimeoutId!: NodeJS.Timeout;
   lockScreenTimeoutId!: NodeJS.Timeout;
 
-  readonly cheetahPwrKey = 'cheetahPwrState';
+  readonly cheetahPwrKey = Constants.CHEETAH_PWR_KEY;
 
   isSystemPowered = false;
+  isFirstPwrOn = true;
   showPowerBtn = true;
   pwrBtnIcon = `${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`;
   showStartUpGif = false;
@@ -65,9 +66,9 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.retrievePastSessionData();
-    // if(this.isSystemPowered){
-    //   this.showLockScreen();
-    // }
+    if(this.isSystemPowered){
+      this.showLockScreen();
+    }
   }
 
   ngAfterViewInit(): void {
@@ -77,12 +78,14 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   powerOnSystem():void{
     if(this.showPowerBtn){
       this.showPowerBtn = false;
+      this.storeState(Constants.SYSTEM_ON);
       this.simulateBusy();
     }
   }
 
   simulateBusy() {
     this.showStartUpGif = true;
+    this.isSystemPowered = true;
     let index = 0;
     this.loadingMessage = 'Powering On';
     const secondsDelay = 2000; //2 seconds
@@ -99,6 +102,8 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   }
 
   simulateRestart(): void {
+    this.isFirstPwrOn = true;
+    this.isSystemPowered = false;
     this.showPowerBtn = false;
     this.loadingMessage = Constants.EMPTY_STRING;
     const delay = 1000;
@@ -116,9 +121,13 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
     if(powerOnOffElmnt){
       powerOnOffElmnt.style.zIndex = '-2';
       powerOnOffElmnt.style.display = 'none';
+
+
       // play startup sound
-      this._audioService.play(this.powerOnAudio);
-      this.storeState(Constants.SYSTEM_ON);
+      if(this.isSystemPowered && this.isFirstPwrOn){
+        this._audioService.play(this.powerOnAudio);
+        this.isFirstPwrOn = false;
+      }
     }
 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
@@ -131,7 +140,7 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
     this.showStartUpGif = false;
     this.showPowerBtn = true;
     this.loadingMessage = 'Pwr On';
-    this.storeState(Constants.SYSTEM_SHUT_DOWN);
+    //this.storeState(Constants.SYSTEM_SHUT_DOWN);
   }
 
   storeState(state:string):void{
@@ -141,9 +150,13 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   retrievePastSessionData():void{
     const sessionData = this._sessionManagmentService.getSession(this.cheetahPwrKey) as string;
     console.log('pwr-psession:', sessionData);
-    if(sessionData === Constants.EMPTY_STRING || sessionData === Constants.SYSTEM_SHUT_DOWN){
+    if(!sessionData || sessionData === Constants.SYSTEM_SHUT_DOWN){
       this.isSystemPowered = false;
-    }else{ this.isSystemPowered = true;}
+      this.isFirstPwrOn = true;
+    }else{ 
+      this.isSystemPowered = true;
+      this.isFirstPwrOn = false;
+    }
   }
 
   private getComponentDetail():Process{

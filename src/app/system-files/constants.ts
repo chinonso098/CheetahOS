@@ -56,6 +56,9 @@ export namespace Constants{
     export const SIGNED_OUT = 'sOut';
     export const SIGNED_IN = 'sIn';
 
+    export const CHEETAH_PWR_KEY = 'cheetahPwrKey';
+    export const CHEETAH_LOGON_KEY = 'cheetahLogonKey';
+
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';
     // export const APP_STATE_DATE = 'appsd:';

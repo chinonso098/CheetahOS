@@ -85,7 +85,7 @@ export class AudioService implements BaseService {
   }
 
   play(path:string):void{
-    const delay = 0;
+    const delay = this.determineDelay();
     this.audioSrc = Constants.EMPTY_STRING;
     this.audioSrc = path;
 
@@ -104,6 +104,15 @@ export class AudioService implements BaseService {
         })
         .catch(error => { console.error('Error loading track:', error); });
     }, delay);
+  }
+
+  determineDelay():number{
+
+    //if cheetahLogonState is sOut && cheetahPwrState is On
+    //50
+    //else 0
+    
+    return 50;
   }
 
   private playSound():void{

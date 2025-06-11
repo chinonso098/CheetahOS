@@ -728,17 +728,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     setTimeout(() => this.poitionShortCutIconProperly(), 10);
   }
 
-  showDesktopIcon():void{
-    this.showDesktopIcons = !this.showDesktopIcons
-    if(!this.showDesktopIcons){
-      this.btnStyle ={
+  hideDesktopIcon():void{
+    this.showDesktopIcons = false;
+    this.btnStyle ={
         'display': 'none',
-      }
-    }else{
+    }
+    this.getDesktopMenuData();
+  }
+
+  showDesktopIcon():void{
+    this.showDesktopIcons = true;
       this.btnStyle ={
         'display': 'block',
       }
-    }
     this.getDesktopMenuData();
   }
 
@@ -2098,7 +2100,7 @@ OpensWith=${selectedFile.getOpensWith}
   }
 
   lockScreenIsActive():void{
-    this.showDesktopIcon();
+    this.hideDesktopIcon();
   }
 
   desktopIsActive():void{

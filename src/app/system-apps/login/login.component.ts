@@ -49,7 +49,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   powerMenuStyle:Record<string, unknown> = {};
   powerMenuOption = Constants.POWER_MENU_OPTION;
 
-  readonly cheetahLogonKey = 'cheetahLogonState';
+  readonly cheetahLogonKey = Constants.CHEETAH_LOGON_KEY;
+  readonly cheetahPwrKey = Constants.CHEETAH_PWR_KEY;
+
   incorrectPassword = 'The password is incorrect. Try again.';
   exitMessage = Constants.EMPTY_STRING;
   authForm = 'AuthenticationForm';
@@ -90,12 +92,13 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit():void {
-    this.retrievePastSessionData();
     this.firstToDo();
+    this.retrievePastSessionData();
 
-    // if(this.isUserLogedIn){
-    //   this.showDesktop();
-    // }else{this.showLockScreen()}
+
+    if(this.isUserLogedIn){
+      this.showDesktop();
+    }else{this.showLockScreen()}
   }
 
   ngAfterViewInit(): void {
@@ -187,6 +190,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     if(evt?.key === "Enter"){
       const loginTxt = this.loginForm.value.loginInput as string;
       if(loginTxt === this.defaultPassWord){
+        this.isUserLogedIn = true;
         this.showPasswordEntry = false;
         this.showLoading = true;
         setTimeout(() => {
@@ -225,7 +229,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this._systemNotificationServices.showDesktopNotify.next();
       this.startLockScreenTimeOut();
 
-      if(this.isUserLogedIn  && this.isFirstLogIn)
+      if(this.isUserLogedIn && this.isFirstLogIn)
           this._audioService.play(this.cheetahUnlockAudio);
 
       this.resetAuthFormState();
@@ -363,6 +367,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this._audioService.play(this.cheetahRestarAndShutDownAudio);
     this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_SHUT_DOWN);
     this.storeState(Constants.SIGNED_OUT);
+    this.storePwrState(Constants.SYSTEM_SHUT_DOWN);
 
     setTimeout(() => {
       this.showPowerOnOffScreen();
@@ -379,6 +384,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this._audioService.play(this.cheetahRestarAndShutDownAudio);
     this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_RESTART);
     this.storeState(Constants.SIGNED_OUT);
+    this.storePwrState(Constants.SYSTEM_RESTART);
  
     setTimeout(() => {
       this.showPowerOnOffScreen();
@@ -421,13 +427,21 @@ export class LoginComponent implements OnInit, AfterViewInit {
   storeState(state:string):void{
     this._sessionManagmentService.addSession(this.cheetahLogonKey, state);
   }
+
+  storePwrState(state:string):void{
+    this._sessionManagmentService.addSession(this.cheetahPwrKey, state);
+  }
   
   retrievePastSessionData():void{
     const sessionData = this._sessionManagmentService.getSession(this.cheetahLogonKey) as string;
     console.log('login-psession:', sessionData);
-    if(sessionData === Constants.EMPTY_STRING || sessionData === Constants.SIGNED_OUT){
+    if(!sessionData || sessionData === Constants.SIGNED_OUT){
       this.isUserLogedIn = false;
-    }else{ this.isUserLogedIn = true;}
+      this.isFirstLogIn = true;
+    }else{ 
+      this.isUserLogedIn = true;
+      this.isFirstLogIn = false;
+    }
   }
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)

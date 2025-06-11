@@ -34,7 +34,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   private _audioService:AudioService;
 
 
-  private SECONDS_DELAY =1500;
+  private SECONDS_DELAY = 1500;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -43,11 +43,13 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
 
+  noAudio = `${Constants.AUDIO_BASE_PATH}no_audio.mp3`;
+
   
   // the order of the service init matter.
   //runningProcesssService must come first
-  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, controlProcessService:ProcessHandlerService, 
-              audioService:AudioService, componentReferenceService:ComponentReferenceService){
+  constructor(audioService:AudioService, runningProcessService:RunningProcessService, processIdService:ProcessIDService, 
+              controlProcessService:ProcessHandlerService,  componentReferenceService:ComponentReferenceService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
@@ -63,8 +65,8 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit():void{
-    // This quiets the - Expression has changed after it was checked.
-    //TODO: change detection is the better solution TBD
+    // This quiets the - audioservice error
+    this._audioService.play(this.noAudio);
 
     if(this.itemViewContainer)
       this._componentReferenceService.setViewContainerRef(this.itemViewContainer);

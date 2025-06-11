@@ -18,7 +18,7 @@ export class SystemtrayComponent implements OnInit {
   private _runningProcessService;
   private _systemNotificationServices:SystemNotificationService;
   private _audioService!:AudioService;
-  private currentVolume = 0;
+  private currentVolume = Constants.ZERO;
 
   taskBarArrowIcon = `${Constants.IMAGE_BASE_PATH}taskbar_arrow_up.png`;
   audioIcon = `${Constants.IMAGE_BASE_PATH}no_volume.png`;
@@ -31,7 +31,7 @@ export class SystemtrayComponent implements OnInit {
   hover = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'system tray';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService,audioService:AudioService, systemNotificationServices:SystemNotificationService) { 
@@ -102,8 +102,11 @@ export class SystemtrayComponent implements OnInit {
   }
 
   upadateVolume():void{
-    this.currentVolume = this._audioService.getVolume();
-    this.setVolumeIcon();
+    const delay = 250;
+    setTimeout(() => {
+      this.currentVolume = this._audioService.getVolume();
+      this.setVolumeIcon();
+    }, delay);
   }
 
   showVolumeControl():void{
