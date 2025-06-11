@@ -12,7 +12,7 @@ import { ProcessHandlerService } from 'src/app/shared/system-service/process.han
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ViewOptions } from './fileexplorer.enums';
 import {basename} from 'path';
-import { AppSessionData, BaseState } from 'src/app/system-files/state/state.interface';
+import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { GeneralMenu, MenuPositiom, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import { Constants } from 'src/app/system-files/constants';
@@ -53,7 +53,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _audioService:AudioService;
   private _systemNotificationService:SystemNotificationService;
   private _formBuilder;
-  private _appState!:AppSessionData;
+  private _appState!:AppState;
 
 
   private _viewByNotifySub!:Subscription;

@@ -11,7 +11,7 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { AppSessionData } from 'src/app/system-files/state/state.interface';
+import { AppState } from 'src/app/system-files/state/state.interface';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 
 import {extname} from 'path';
@@ -42,7 +42,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   private _windowService:WindowService;
 
   private _fileInfo!:FileInfo;
-  private _appState!:AppSessionData;
+  private _appState!:AppState;
   private _maximizeWindowSub!: Subscription;
   private fileSrc = Constants.EMPTY_STRING;
   private quill: any;

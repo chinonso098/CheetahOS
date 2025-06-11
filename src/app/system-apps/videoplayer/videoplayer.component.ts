@@ -8,7 +8,7 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { Constants } from "src/app/system-files/constants";
-import { AppSessionData } from 'src/app/system-files/state/state.interface';
+import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { Subscription } from 'rxjs';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
@@ -46,7 +46,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _fileInfo!:FileInfo;
   private player: any;
 
-  private _appState!:AppSessionData;
+  private _appState!:AppState;
   private videoSrc = Constants.EMPTY_STRING;
   private fileType = Constants.EMPTY_STRING;
 

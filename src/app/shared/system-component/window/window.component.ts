@@ -96,7 +96,6 @@ import { Constants } from 'src/app/system-files/constants';
   closeBtnStyles: Record<string, unknown> = {};
   defaultWidthOnOpen = 0;
   defaultHeightOnOpen = 0;
-  //private readonly z_index = '25914523'; // this number = zindex
 
   hasWindow = false;
   icon = Constants.EMPTY_STRING;

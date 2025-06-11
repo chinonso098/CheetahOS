@@ -6,7 +6,7 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { Process } from 'src/app/system-files/process';
-import { AppSessionData } from 'src/app/system-files/state/state.interface';
+import { AppState } from 'src/app/system-files/state/state.interface';
 
 import {extname} from 'path';
 
@@ -47,7 +47,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   private _renderer: Renderer2;
 
   private _fileInfo!:FileInfo;
-  private _appState!:AppSessionData;
+  private _appState!:AppState;
   private _maximizeWindowSub!: Subscription;
   private fileSrc = Constants.EMPTY_STRING;
   mkdDwnHtml:SafeHtml = Constants.EMPTY_STRING;

@@ -8,7 +8,7 @@ import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { AppSessionData } from 'src/app/system-files/state/state.interface';
+import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
@@ -61,7 +61,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _sessionManagmentService: SessionManagmentService;
   private _windowService:WindowService;
   private _fileInfo!:FileInfo;
-  private _appState!:AppSessionData;
+  private _appState!:AppState;
   private picSrc = Constants.EMPTY_STRING;
 
 

@@ -13,7 +13,7 @@ import { Process } from 'src/app/system-files/process';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
-import { AppSessionData } from 'src/app/system-files/state/state.interface';
+import { AppState } from 'src/app/system-files/state/state.interface';
 
 // import { DiffEditorModel } from 'ngx-monaco-editor-v2';
 
@@ -39,7 +39,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   private _maximizeWindowSub!: Subscription;
   SECONDS_DELAY = 250;
 
-  private _appState!:AppSessionData;
+  private _appState!:AppState;
     
   editorOptions = {
     language: 'javascript', // java, javascript, python, csharp, html, markdown, ruby

@@ -6,7 +6,7 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { Service } from "src/app/system-files/service";
 import { BaseService } from "./base.service.interface";
-import { AppSessionData } from "src/app/system-files/state/state.interface";
+import { AppState } from "src/app/system-files/state/state.interface";
 
 @Injectable({
     providedIn: 'root'
@@ -50,7 +50,7 @@ export class SessionManagmentService implements BaseService{
         this.saveSession(this._sessionDataDict);
     }
 
-    addAppSession(key:string, dataToAdd:AppSessionData): void{
+    addAppSession(key:string, dataToAdd:AppState): void{
         const data =  JSON.stringify(dataToAdd);
         sessionStorage.setItem(key, data);
     }
@@ -60,10 +60,10 @@ export class SessionManagmentService implements BaseService{
         return stateData;
     }
 
-    getAppSession(key:string):AppSessionData | null{
+    getAppSession(key:string):AppState | null{
         const appDataStr = sessionStorage.getItem(key);
         if(appDataStr){
-            const appData = JSON.parse(appDataStr) as AppSessionData;
+            const appData = JSON.parse(appDataStr) as AppState;
             return appData;
         }
         return null;

@@ -7,7 +7,7 @@ import {extname} from 'path';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { AppSessionData } from 'src/app/system-files/state/state.interface';
+import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
@@ -36,7 +36,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
 
   
   private _fileInfo!:FileInfo;
-  private _appState!:AppSessionData;
+  private _appState!:AppState;
   private gameSrc = Constants.EMPTY_STRING;
 
   SECONDS_DELAY = 250;

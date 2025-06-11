@@ -8,7 +8,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { TerminalCommand } from './model/terminal.types';
 import { TerminalCommandProcessor } from './terminal.commands';
-import { AppSessionData } from 'src/app/system-files/state/state.interface';
+import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
@@ -39,7 +39,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private _terminaCommandsProc!:TerminalCommandProcessor;
   private _sessionManagmentService: SessionManagmentService;
   private _windowService:WindowService;
-  private _appState!:AppSessionData;
+  private _appState!:AppState;
 
 
   private msgPosCounter = Constants.ZERO;
