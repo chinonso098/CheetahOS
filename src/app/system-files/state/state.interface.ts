@@ -17,5 +17,12 @@ export interface WindowState extends BaseState{
 
 export interface AppState extends BaseState{
     app_data:unknown,
-    unique_id:string
+    unique_id:string,
+}
+
+
+export interface AppSessionData extends BaseState{
+    app_data:unknown,
+    unique_id:string,
+    window:WindowState,
 }

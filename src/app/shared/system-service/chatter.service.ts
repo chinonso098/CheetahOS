@@ -119,11 +119,11 @@ export class ChatterService implements BaseService{
         this._socketService.sendMessage(this.USER_IS_TYPING_EVT, data);
     }
  
-    saveUserData(value: IUserData) {
+    saveUserData(value: IUserData) { // re-examine
         this._sessionManagmentService.addSession(this.name, value);
     }
 
-    getUserData() {
+    getUserData() {// re-examine
         return this._sessionManagmentService.getSession(this.name);
     }
 

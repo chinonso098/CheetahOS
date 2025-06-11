@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, AfterViewInit, OnDestroy, Input } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -30,6 +30,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   @ViewChild('terminalCntnr', {static: true}) terminalCntnr!: ElementRef;
   @ViewChild('terminalOutputCntnr', {static: true}) terminalOutputCntnr!: ElementRef;
   @ViewChild('terminalHistoryOutput', {static: true}) terminalHistoryOutput!: ElementRef;
+  
+  @Input() priorUId = Constants.EMPTY_STRING;
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;

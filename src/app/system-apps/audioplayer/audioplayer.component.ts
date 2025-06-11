@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
 import {extname} from 'path';
@@ -47,6 +47,8 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   @ViewChild('barFull', {static: true}) barFull!: ElementRef;
   @ViewChild('barEmpty', {static: true}) barEmpty!: ElementRef;
   @ViewChild('sliderBtn', {static: true}) sliderBtn!: ElementRef;
+
+  @Input() priorUId = Constants.EMPTY_STRING;
 
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;

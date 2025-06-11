@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, AfterViewInit, ViewChild, Input } from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -26,6 +26,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   private rufflePlayer:any;
   @ViewChild('ruffleContainer', { static: true }) ruffleContainer!: ElementRef;
+  @Input() priorUId = Constants.EMPTY_STRING;
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -39,7 +40,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
-  private gameSrc = '';
+  private gameSrc = Constants.EMPTY_STRING;
 
   SECONDS_DELAY = 250;
 

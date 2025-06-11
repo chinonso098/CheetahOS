@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -19,7 +19,8 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 export class TitleComponent implements BaseComponent, OnDestroy, AfterViewInit{
 
   @ViewChild('titleContent', {static: true}) titleContent!: ElementRef;
-
+  @Input() priorUId = Constants.EMPTY_STRING;
+  
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _windowService:WindowService;

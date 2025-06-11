@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -23,6 +23,7 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
 
   @ViewChild('chatHistoryOutput', {static: true}) chatHistoryOutput!: ElementRef;
+  @Input() priorUId = Constants.EMPTY_STRING;
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;

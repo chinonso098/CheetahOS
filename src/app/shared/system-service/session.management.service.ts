@@ -6,6 +6,7 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { Service } from "src/app/system-files/service";
 import { BaseService } from "./base.service.interface";
+import { AppSessionData } from "src/app/system-files/state/state.interface";
 
 @Injectable({
     providedIn: 'root'
@@ -48,18 +49,27 @@ export class SessionManagmentService implements BaseService{
     }
 
     addSession(key:string, dataToAdd:unknown): void{
+        this._sessionDataDict.set(key, dataToAdd)
+        this.saveSession(this._sessionDataDict);
+    }
 
-        if(key === this._pickUpKey){
-            this.addTempSession(dataToAdd);
-        }else{
-            this._sessionDataDict.set(key,dataToAdd)
-            this.saveSession(this._sessionDataDict);
-        }
+    addAppSession(key:string, dataToAdd:AppSessionData): void{
+        const data =  JSON.stringify(dataToAdd);
+        sessionStorage.setItem(key, data);
     }
 
     getSession(key:string):unknown{
         const stateData = this._sessionDataDict.get(key);
         return stateData;
+    }
+
+    getAppSession(key:string):AppSessionData | null{
+        const appDataStr = sessionStorage.getItem(key);
+        if(appDataStr){
+            const appData = JSON.parse(appDataStr) as AppSessionData;
+            return appData;
+        }
+        return null;
     }
 
     getTempSession(key:string):string{
@@ -98,6 +108,10 @@ export class SessionManagmentService implements BaseService{
         this.saveSession(this._sessionDataDict);
     }
 
+    removeAppSession(key:string): void{
+        sessionStorage.removeItem(key);
+    }
+
     resetSession(): void{
         this._sessionDataDict = new Map<string, unknown>;
         sessionStorage.clear()
@@ -108,9 +122,9 @@ export class SessionManagmentService implements BaseService{
         sessionStorage.setItem(this._sessionName, data);
     }
 
-    private addTempSession(sessionData:unknown){
-        sessionStorage.setItem(this._pickUpKey, sessionData as string);
-    }
+    // private addTempSession(sessionData:unknown){
+    //     sessionStorage.setItem(this._pickUpKey, sessionData as string);
+    // }
 
 
     private getProcessDetail():Process{

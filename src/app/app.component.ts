@@ -32,12 +32,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   private _processHandlerService:ProcessHandlerService;
 
 
-
-  // private userOpenedAppsList:string[] = [];
-  // private retreivedKeys:string[] = [];
-  // private userOpenedAppsKey = "openedApps";
-  // private reOpendAppsCounter = Constants.ZERO;
-  private SECONDS_DELAY:number[] =[1500, 1500];
+  private SECONDS_DELAY =1500;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -71,10 +66,8 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
       this._componentReferenceService.setViewContainerRef(this.itemViewContainer);
 
     setTimeout(()=> {
-        // const priorSessionInfo = this.fetchPriorSessionInfo();
-        // const sessionKeys = this.getSessionKey(priorSessionInfo);
-        // this.restorePriorSession(sessionKeys);
-    }, this.SECONDS_DELAY[0]);
+      this._processHandlerService.checkAndRestore();
+    }, this.SECONDS_DELAY);
 
   }
 

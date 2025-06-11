@@ -16,8 +16,8 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
 
 export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
 
-  @Input() inputMsg = '';
-  @Input() notificationType = '';
+  @Input() inputMsg = Constants.EMPTY_STRING;
+  @Input() notificationType = Constants.EMPTY_STRING;
 
   private _notificationServices:UserNotificationService;
   private _systemNotificationServices:SystemNotificationService;
@@ -26,7 +26,7 @@ export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
   private _deskTopIsActiveSub!:Subscription;
   private _lockScreenIsActiveSub!:Subscription;
 
-  notificationOption = '';
+  notificationOption = Constants.EMPTY_STRING;
   errorNotification = UserNotificationType.Error;
   warnNotification = UserNotificationType.Warning;
   infoNotification =  UserNotificationType.Info;

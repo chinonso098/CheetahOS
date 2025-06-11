@@ -1,4 +1,4 @@
-import { Component, OnInit,OnDestroy, AfterViewInit, ViewChild, ElementRef, Renderer2} from '@angular/core';
+import { Component, OnInit,OnDestroy, AfterViewInit, ViewChild, ElementRef, Renderer2, Input} from '@angular/core';
 import { Subject, Subscription, interval, switchMap } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -30,6 +30,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   @ViewChild('tskMgrTableBodyCntnr') tskMgrTableBodyCntnr!: ElementRef;  
   @ViewChild('tskMgrTableHeaderCntnt') tskMgrTableHeaderCntnt!: ElementRef;  
   @ViewChild('tskMgrTableBodyCntnt') tskMgrTableBodyCntnt!: ElementRef;  
+  @Input() priorUId = Constants.EMPTY_STRING;
 
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;

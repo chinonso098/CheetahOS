@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef, signal, WritableSignal } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef, signal, WritableSignal, Input } from '@angular/core';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -8,7 +8,7 @@ import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
+import { AppSessionData, BaseState } from 'src/app/system-files/state/state.interface';
 import { StateType } from 'src/app/system-files/state/state.type';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
@@ -54,6 +54,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
 
   @ViewChild('photoContainer', {static: true}) photoContainer!: ElementRef; 
+  @Input() priorUId = Constants.EMPTY_STRING;
 
   private _fileService:FileService;
   private _processIdService:ProcessIDService;
@@ -63,7 +64,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _sessionManagmentService: SessionManagmentService;
   private _windowService:WindowService;
   private _fileInfo!:FileInfo;
-  private _appState!:AppState;
+  private _appState!:AppSessionData;
   private picSrc = Constants.EMPTY_STRING;
 
 
@@ -73,7 +74,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}photoviewer.png`;
   isMaximizable = false;
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
   displayName = 'PhotoViewer';
   private defaultPath = '/Users/Pictures/';
@@ -265,14 +266,15 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   storeAppState(app_data:unknown):void{
     const uid = `${this.name}-${this.processId}`;
-
     this._appState = {
       pid: this.processId,
       app_data: app_data,
       app_name: this.name,
-      unique_id: uid
+      unique_id: uid,
+      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
     }
-    this._stateManagmentService.addState(uid, this._appState, StateType.App);
+
+    this._sessionManagmentService.addAppSession(uid, this._appState);
   }
 
 
@@ -283,7 +285,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
       const retrievedSessionData = this._sessionManagmentService.getSession(tmpSessKey) as BaseState[];
 
       if(retrievedSessionData !== undefined){
-        const appSessionData = retrievedSessionData[0] as AppState;
+        const appSessionData = retrievedSessionData[0] as AppSessionData;
         if(appSessionData !== undefined  && appSessionData.app_data != ''){
           if(typeof appSessionData.app_data === 'string')
             this.picSrc = appSessionData.app_data as string; 

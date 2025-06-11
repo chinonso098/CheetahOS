@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
@@ -33,6 +33,7 @@ declare const Quill:any;
 export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterViewInit, OnInit  {
 
   @ViewChild('editorContainer', {static: true}) editorContainer!: ElementRef;
+  @Input() priorUId = Constants.EMPTY_STRING;
   
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;

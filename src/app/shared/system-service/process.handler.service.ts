@@ -1,4 +1,4 @@
-import { Injectable, Type} from "@angular/core";
+import { ComponentRef, Injectable, Type} from "@angular/core";
 import { RunningProcessService } from "./running.process.service";
 import { AppDirectory } from "src/app/system-files/app.directory";
 import { FileInfo } from "src/app/system-files/file.info";
@@ -56,8 +56,10 @@ export class ProcessHandlerService implements BaseService{
         "ruffle", "runsystem", "taskmanager", "videoplayer"];
 
     private userOpenedAppsList:string[] = [];
+    private openedAppInstanceUID:string[] = [];
     private retreivedKeys:string[] = [];
-    private userOpenedAppsKey = "openedApps";
+    private userOpenedAppsKey = Constants.USER_OPENED_APPS;
+    private appsInstanceUIDKey = Constants.USER_OPENED_APPS_INSTANCE;
     private reOpendAppsCounter = Constants.ZERO;
 
     name = 'trgr_proc_svc';
@@ -66,8 +68,13 @@ export class ProcessHandlerService implements BaseService{
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
-    description = 'inits components ';
-        
+    description = 'inits components';
+
+    readonly TASK_MANAGER = "taskmanager";
+    readonly CHATTER ="chatter";
+    readonly RUN_SYSTEM = "runsystem";
+    readonly CHEETAH = "cheetah";
+    
 
     //:TODO when you have more apps with a UI worth looking at, add a way to select the right component for the give
     //appname
@@ -134,8 +141,8 @@ export class ProcessHandlerService implements BaseService{
                     //this._userNotificationService.showInfoNotification(msg);
 
                     if(runningProcess){
-                        if(runningProcess.getProcessName ==="taskmanager" || runningProcess.getProcessName ==="chatter"
-                            || runningProcess.getProcessName ==="runsystem" || runningProcess.getProcessName ==="cheetah"){
+                        if(runningProcess.getProcessName === this.TASK_MANAGER || runningProcess.getProcessName === this.CHATTER
+                            || runningProcess.getProcessName === this.RUN_SYSTEM || runningProcess.getProcessName === this.CHEETAH){
                             this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
                         }else{
                             const uid = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
@@ -168,16 +175,19 @@ export class ProcessHandlerService implements BaseService{
         return new FileInfo;
     }
 
-    async loadApps(appName:string):Promise<void>{
-        this.lazyLoadComponment(this._appDirectory.getAppPosition(appName));
+    async loadApps(appName:string, priorUID?:string):Promise<void>{
+        this.lazyLoadComponment(this._appDirectory.getAppPosition(appName), priorUID);
     }
 
-    private async lazyLoadComponment(appPosition:number) {
+    private async lazyLoadComponment(appPosition:number, priorUID?:string) {
         const componentToLoad = this.apps[appPosition];
         if(componentToLoad !== undefined){   
             const cmpntRef =  this._componentReferenceService.createComponent(componentToLoad.type);
-            this.addEntryFromUserOpenedAppssAndSession(cmpntRef.instance.name);
 
+            if(priorUID)
+                cmpntRef.setInput('priorUId',priorUID);
+
+            this.addEntryFromUserOpenedAppssAndSession(cmpntRef);
             //alert subscribers
             if(this._runningProcessService !== undefined){
                 this._runningProcessService.processListChangeNotify.next();
@@ -200,86 +210,91 @@ export class ProcessHandlerService implements BaseService{
         // remove component ref
         this._componentReferenceService.removeComponent(eventData.getProcessId)
 
-        //remove state data
-        const uid = `${eventData.getProcessName}-${eventData.getProcessId}`;
-        //this._stateManagmentService.removeState(uid);
-
-
         this._processIdService.removeProcessId(eventData.getProcessId);
 
         this._windowService.removeProcessPreviewImage(eventData.getProcessName, eventData.getProcessId);
  
+        this.deleteEntryFromUserOpenedAppsAndSession(eventData);
+
         this._runningProcessService.removeProcess(eventData);
         this._runningProcessService.processListChangeNotify.next();
     }
 
     private deleteEntryFromUserOpenedAppsAndSession(proccess:Process):void{
-      const deleteCount = Constants.ONE
-      const pidIndex = this.userOpenedAppsList.indexOf(proccess.getProcessName)
+      const deleteCount = Constants.ONE;
+      const uid = `${proccess.getProcessName}-${proccess.getProcessId}`;
 
-      if (pidIndex !== Constants.MINUS_ONE) 
+      let pidIndex = this.userOpenedAppsList.indexOf(proccess.getProcessName);
+      if(pidIndex !== Constants.MINUS_ONE) 
         this.userOpenedAppsList.splice(pidIndex, deleteCount);
 
-      this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList)
-      const uid = `${proccess.getProcessName}-${proccess.getProcessId}`;
-      this._sessionMangamentServices.removeSession(uid);
+      this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList);
+
+      pidIndex = this.openedAppInstanceUID.indexOf(uid);
+      if(pidIndex !== Constants.MINUS_ONE) 
+        this.openedAppInstanceUID.splice(pidIndex, deleteCount);
+
+        this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUID);
+
+      this._sessionMangamentServices.removeSession(uid); 
+      this._sessionMangamentServices.removeAppSession(uid); 
     }
 
     private fetchPriorSessionInfo():string[]{
         const openedAppList = this._sessionMangamentServices.getSession(this.userOpenedAppsKey) as string[];
-
-        if(openedAppList != null || openedAppList != undefined)
-        return openedAppList;
+        //console.log('openedAppList:', openedAppList);
+        if(openedAppList)
+            return openedAppList;
 
         return [];
     }
 
-    private getSessionKey(priorOpendApps:string[]):string[]{
-    
-        if(priorOpendApps.length > Constants.ZERO){
-        const sessionKeys = this._sessionMangamentServices.getKeys();
+    private restorePriorSession(priorOpenedApps: string[]):void{
+        if (priorOpenedApps.length > 0) {
+            const openedAppInstList = this._sessionMangamentServices.getSession(this.appsInstanceUIDKey) as string[];
+            //console.log('openedAppInstList:', openedAppInstList);
 
-        for(let i= 0; i < priorOpendApps.length; i++){
-            const tmpKey = sessionKeys.filter(x => x.includes(priorOpendApps[i]));
-            
-            for(let j = 0; j < tmpKey.length; j++)
-            this.retreivedKeys.push(tmpKey[j]);
-        }
-        }
+            const tasks: [string, string][] = [];
 
-        return this.retreivedKeys;
-    }
-
-    private restorePriorSession(priorSessionData:string[]):void{
-        const pickUpKey = this._sessionMangamentServices._pickUpKey;
-
-        const interval =  setInterval((pSessionData) => {
-        let tmpCounter = Constants.ZERO;
-        let i = this.reOpendAppsCounter;
-
-        for(i; i < pSessionData.length; i++){
-            if (tmpCounter < Constants.ONE){
-            const appName = priorSessionData[i].split('-')[0];
-            this._sessionMangamentServices.addSession(pickUpKey, priorSessionData[i]);
-            this.loadApps(appName);
-
-            tmpCounter++;
+            for (const pName of priorOpenedApps) {
+                const tmpKeys = openedAppInstList.filter(x => x.includes(pName));
+                for (const pUId of tmpKeys) {
+                    tasks.push([pName, pUId]);
+                }
             }
+
+            const loadWithDelay = (index: number) => {
+                if (index >= tasks.length) 
+                    return;
+
+                const [pName, pUId] = tasks[index];
+                this.loadApps(pName, pUId);
+
+                setTimeout(() => loadWithDelay(index + 1), 250);
+            };
+
+            loadWithDelay(0);
         }
-
-        if(this.reOpendAppsCounter == pSessionData.length - Constants.ONE)
-            clearInterval(interval);
-
-        this.reOpendAppsCounter++;
-        },1500, priorSessionData);
-
     }
 
-    private addEntryFromUserOpenedAppssAndSession(proccessName:string):void{
-        this.userOpenedAppsList.push(proccessName);
-        this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList)
+    private addEntryFromUserOpenedAppssAndSession(cmpntRef:ComponentRef<BaseComponent>):void{
+        const pName = cmpntRef.instance.name;
+        const pID = cmpntRef.instance.processId;
+        const uID = `${pName}-${pID}`;
+
+        if(!this.userOpenedAppsList.includes(pName))
+            this.userOpenedAppsList.push(pName);
+
+        this.openedAppInstanceUID.push(uID);
+
+        this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList);
+        this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUID);
     }
 
+    checkAndRestore():void{
+        const priorSessionInfo = this.fetchPriorSessionInfo();
+        this.restorePriorSession(priorSessionInfo);
+    }
 
     private getProcessDetail():Process{
         return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)

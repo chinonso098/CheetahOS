@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
+import { Constants } from 'src/app/system-files/constants';
 import { ComponentType } from 'src/app/system-files/system.types';
 
 @Component({
@@ -8,13 +9,15 @@ import { ComponentType } from 'src/app/system-files/system.types';
   styleUrls: ['./greeting.component.css']
 })
 export class GreetingComponent implements OnInit, BaseComponent {
-
+  @Input() priorUId = Constants.EMPTY_STRING;
+  
   hasWindow = true;
   icon = 'favicon.ico';
   name = 'greeting';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.User;
-  displayName = '';
+  displayName = Constants.EMPTY_STRING;
+
   constructor() {
     //
    }

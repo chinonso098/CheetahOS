@@ -50,6 +50,10 @@ export namespace Constants{
     export const SYSTEM_RESTART = 'Restart';
     export const SYSTEM_SHUT_DOWN = 'Shutdown';
 
+    export const USER_OPENED_APPS = 'usrOpenedApps'; 
+    export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';
+    // export const APP_STATE_DATE = 'appsd:';
+    // export const OTHER_STATE_DATE = 'othsd:';
 
     export const MERGED_TASKBAR_ENTRIES = 'Merged Entries Icon';
     export const DISTINCT_TASKBAR_ENTRIES = 'Distinct Entries Icon';

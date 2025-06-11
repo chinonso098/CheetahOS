@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, AfterViewInit, ViewChild, Input } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
@@ -11,7 +11,6 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Boid } from './boid';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
-declare const Tweakpane:any;
 declare const p5:any;
 
 @Component({
@@ -21,7 +20,8 @@ declare const p5:any;
 })
 export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
   @ViewChild('boidCanvas', { static: true }) boidCanvas!: ElementRef;
-
+  @Input() priorUId = Constants.EMPTY_STRING;
+  
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   
@@ -59,12 +59,7 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     this._processHandlerService = triggerProcessService;
 
     this.processId = this._processIdService.getNewProcessId();
-
-
     this._runningProcessService = runningProcessService;
-    // this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
-    // this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
-    // this._changeContentSub = this._runningProcessService.changeProcessContentNotify.subscribe(() =>{this.changeContent()})
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 

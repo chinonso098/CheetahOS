@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, OnInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, OnInit, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -24,7 +24,8 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterViewInit, OnInit {
 
   @ViewChild('monacoContent', {static: true}) monacoContent!: ElementRef;
-
+  @Input() priorUId = Constants.EMPTY_STRING;
+  
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _stateManagmentService:StateManagmentService;

@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, AfterViewInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, ElementRef, OnInit, AfterViewInit, ViewChild, OnDestroy, Input } from '@angular/core';
 
 import {extname} from 'path';
 import { FileService } from 'src/app/shared/system-service/file.service';
@@ -27,6 +27,7 @@ declare let Dos: any;
 })
 export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
   @ViewChild('doswindow') dosWindow!: ElementRef; 
+  @Input() priorUId = Constants.EMPTY_STRING;
 
   private _fileService:FileService;
   private _processIdService:ProcessIDService;
@@ -49,7 +50,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}js-dos_emulator.png`;
   isMaximizable = false;
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.User;
   displayName = 'JS-Dos';
 
@@ -130,10 +131,10 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   }
 
   getGamesSrc(pathOne:string, pathTwo:string):string{
-    let gameSrc = '';
+    let gameSrc = Constants.EMPTY_STRING;
 
     if(this.checkForExt(pathOne,pathTwo)){
-      gameSrc = '/' + this._fileInfo.getContentPath;
+      gameSrc = Constants.ROOT + this._fileInfo.getContentPath;
     }else{
       gameSrc =  this._fileInfo.getCurrentPath;
     }
@@ -147,7 +148,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     const ext = ".jsdos";
     let res = false;
 
-    if(contentExt != '' && contentExt == ext){
+    if(contentExt != Constants.EMPTY_STRING && contentExt == ext){
       res = true;
     }else if( currentPathExt == ext){
       res = false;

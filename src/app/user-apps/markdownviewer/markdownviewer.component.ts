@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit, Renderer2} from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit, Renderer2, Input} from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Subscription } from 'rxjs';
@@ -32,7 +32,8 @@ declare const marked:any;
 export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, AfterViewInit, OnInit {
 
   @ViewChild('markDownContent', {static: true}) markDownContent!: ElementRef;
-
+  @Input() priorUId = Constants.EMPTY_STRING;
+  
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _stateManagmentService:StateManagmentService;

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild, ElementRef, ViewEncapsulation} from '@angular/core';
+import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild, ElementRef, ViewEncapsulation, Input} from '@angular/core';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -13,8 +13,7 @@ import { StateManagmentService } from 'src/app/shared/system-service/state.manag
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ViewOptions } from './fileexplorer.enums';
 import {basename} from 'path';
-import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
-import { StateType } from 'src/app/system-files/state/state.type';
+import { AppSessionData, BaseState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { GeneralMenu, MenuPositiom, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import { Constants } from 'src/app/system-files/constants';
@@ -40,6 +39,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   @ViewChild('fileExplorerRootContainer', {static: true}) fileExplorerRootContainer!: ElementRef; 
   @ViewChild('fileExplorerContentContainer', {static: true}) fileExplrCntntCntnr!: ElementRef;
   @ViewChild('navExplorerContainer', {static: true}) navExplorerCntnr!: ElementRef; 
+
+  @Input() priorUId = Constants.EMPTY_STRING;
  
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -54,7 +55,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _audioService:AudioService;
   private _systemNotificationService:SystemNotificationService;
   private _formBuilder;
-  private _appState!:AppState;
+  private _appState!:AppSessionData;
 
 
   private _viewByNotifySub!:Subscription;
@@ -278,7 +279,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
         this.populateTraversalList();
         this.setNavPathIcon(fileName, this._fileInfo.getCurrentPath);
-        this.storeAppState(this._fileInfo.getCurrentPath);
       }
     }
 
@@ -294,6 +294,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.setNavButtonsColor();
     this.getFileExplorerMenuData();
+    this.storeAppState(this._fileInfo.getCurrentPath);
   }
 
   async ngAfterViewInit():Promise<void>{
@@ -1933,15 +1934,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   storeAppState(app_data:unknown):void{
     const uid = `${this.name}-${this.processId}`;
-
     this._appState = {
       pid: this.processId,
       app_data: app_data,
       app_name: this.name,
-      unique_id: uid
+      unique_id: uid,
+      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
     }
-    
-    this._stateManagmentService.addState(uid, this._appState, StateType.App);
+
+    this._sessionManagmentService.addAppSession(uid, this._appState);
   }
 
   retrievePastSessionData():void{
@@ -1951,7 +1952,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const retrievedSessionData = this._sessionManagmentService.getSession(tmpSessKey) as BaseState[];
 
       if(retrievedSessionData !== undefined){
-        const appSessionData = retrievedSessionData[0] as AppState;
+        const appSessionData = retrievedSessionData[0] as AppSessionData;
         if(appSessionData !== undefined  && appSessionData.app_data != Constants.EMPTY_STRING){
           this.directory = appSessionData.app_data as string;
         }

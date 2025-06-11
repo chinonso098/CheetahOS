@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -23,7 +23,8 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
 
   @ViewChild('canvas', {static: true}) canvasRef!: ElementRef;
   @ViewChild('starfield', {static: true}) starfield!: ElementRef;
-
+  @Input() priorUId = Constants.EMPTY_STRING;
+  
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _windowService:WindowService;
