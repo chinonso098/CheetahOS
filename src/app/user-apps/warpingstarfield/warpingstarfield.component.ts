@@ -9,6 +9,8 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { AppState } from 'src/app/system-files/state/state.interface';
 
 declare const THREE: any; 
 
@@ -28,13 +30,17 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _windowService:WindowService;
+  private _sessionManagmentService:SessionManagmentService;
+
   private _maximizeWindowSub!: Subscription;
 
+  private _appState!:AppState;
+   
   private renderer!: any;
   private camera!: any
   private scene!: any
  
-  private animationId = 0;
+  private animationId = Constants.ZERO;
   private PARTICLE_SIZE = 500;
   private SPREAD_RADIUS = 450;
 
@@ -46,14 +52,16 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
   icon = `${Constants.IMAGE_BASE_PATH}star_field.png`;
   isMaximizable = false;
   name = 'starfield';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.User;
   displayName = 'StarField';
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService,windowService:WindowService) { 
+  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, windowService:WindowService,
+    sessionManagmentService:SessionManagmentService){ 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
+    this._sessionManagmentService = sessionManagmentService;
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
@@ -61,6 +69,10 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
   }
 
   
+  ngOnInit(): void {
+    this.retrievePastSessionData();
+  }
+
   ngAfterViewInit(): void {
     this.initScene();
     this.animate();
@@ -205,6 +217,25 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
 
   setTitleWindowToFocus(pid:number):void{
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  }
+
+  storeAppState(app_data:unknown):void{
+    const uid = `${this.name}-${this.processId}`;
+    this._appState = {
+      pid: this.processId,
+      app_data: app_data as string,
+      app_name: this.name,
+      unique_id: uid,
+      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+    }
+    this._sessionManagmentService.addAppSession(uid, this._appState);
+  }
+  
+  retrievePastSessionData():void{
+    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
+      //
+    }
   }
 
   private getComponentDetail():Process{

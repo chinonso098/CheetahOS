@@ -97,7 +97,6 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._audioService = audioService;
 
     this.processId = this._processIdService.getNewProcessId();
-    this.retrievePastSessionData();
 
     this._runningProcessService = runningProcessService;
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
@@ -106,15 +105,15 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
-
   ngOnInit(): void {
+    this.retrievePastSessionData();
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
   ngAfterViewInit():void{  
 
     //this.setAudioWindowToFocus(this.processId); 
-    this.audioSrc = (this.audioSrc !== '')? 
+    this.audioSrc = (this.audioSrc !== Constants.EMPTY_STRING)? 
       this.audioSrc :this.getAudioSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
       this._scriptService.loadScript("howler","osdrive/Program-Files/Howler/howler.min.js").then(()=>{
@@ -132,7 +131,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
             frequency: 2
           });
   
-          if(this.playList.length == 0){
+          if(this.playList.length == Constants.ZERO){
             this.loadHowlSingleTrackObjectAsync()
                 .then(howl => { this.audioPlayer = howl; 
                   this._audioService.addExternalAudioSrc(this.name, howl);

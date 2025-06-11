@@ -13,6 +13,8 @@ import * as htmlToImage from 'html-to-image';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { Service } from 'src/app/system-files/service';
+import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { AppState } from 'src/app/system-files/state/state.interface';
 
 
 @Component({
@@ -39,7 +41,9 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   private _runningProcessService:RunningProcessService;
   private _notificationService:UserNotificationService;
   private _windowService:WindowService;
+  private _sessionManagmentService:SessionManagmentService;
   private _renderer: Renderer2;
+  private _appState!:AppState;
 
 
   private _processListChangeSub!: Subscription;
@@ -52,11 +56,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     order: 'asc',
   }  
 
-  private sleepNumber = 0;
-  private sleepCounter = 0;
-  private processNumberToSuspend = 0;
-  private refreshRateInterval = 0;
-  private processIdToClose = 0;
+  private sleepNumber = Constants.ZERO;
+  private sleepCounter = Constants.ZERO;
+  private processNumberToSuspend = Constants.ZERO;
+  private refreshRateInterval = Constants.ZERO;
+  private processIdToClose = Constants.ZERO;
 
   statusColumnVisible = true;
   cpuColumnVisible = true;
@@ -78,11 +82,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   isActive = false;
   isFocus = false;
 
-  selectedRow = -1;
+  selectedRow = Constants.MINUS_ONE;
   showBtnNavMenu = false;
 
   detailedView = DisplayViews.DETAILED_VIEW;
-  viewOptions = '';
+  viewOptions = Constants.EMPTY_STRING;
 
   SECONDS_DELAY = 250;
 
@@ -92,31 +96,32 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     "cmpnt_ref_svc", "file_mgr_svc", "file_svc", "menu_svc", "notification_svc", "pid_gen_svc", "rning_proc_svc", "scripts_svc",
     "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc", "window_mgmt_svc", "audio_svc"];
   groupedData: any = {};
-  selectedRefreshRate = 0;
+  selectedRefreshRate = Constants.ZERO;
 
-  cpuUtil = 0;
-  memUtil = 0;
-  diskUtil = 0;
-  networkUtil = 0;
-  gpuUtil = 0;
+  cpuUtil = Constants.ZERO;
+  memUtil = Constants.ZERO;
+  diskUtil = Constants.ZERO;
+  networkUtil = Constants.ZERO;
+  gpuUtil = Constants.ZERO;
   powerUtil = 'Very low';
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}taskmanager.png`;
   isMaximizable=false;
   name = 'taskmanager';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
   displayName = 'Task Manager';
 
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService,
+  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, sessionManagmentService:SessionManagmentService,
                notificationService:UserNotificationService, renderer: Renderer2 ,windowService:WindowService) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._notificationService = notificationService;
     this._windowService = windowService;
+    this._sessionManagmentService = sessionManagmentService;
     this._renderer = renderer;
 
     this.processId = this._processIdService.getNewProcessId()
@@ -1088,7 +1093,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.tskmgrTblCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
 
 
-      //when next you decide to focus on the Window min/max, use the chrome dev mode to see what container, 
+      //when next you decide to focus on the Window min/max, use the chrome dev mode to see whhich containers 
       // do not return to their original size on minimize. The minimize functionality for the taskmanger, is 95% there 
 
       //avoid setting these manully
@@ -1111,8 +1116,30 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
       this.tskmgrTblCntnr.nativeElement.style.width = `${arg[0]}px`;
       
-      // this.audioContainer.nativeElement.style.width = `${arg[0]}px`;
-      // this.audioContainer.nativeElement.style.height = `${arg[1]}px`;
+      // this.tskmgrTblCntnr.nativeElement.style.width = `${arg[0]}px`;
+      // this.tskmgrTblCntnr.nativeElement.style.height = `${arg[1]}px`;
+    }
+  }
+
+  storeAppState(app_data:unknown):void{
+    //store refresh state, sort state, and view state
+    const uid = `${this.name}-${this.processId}`;
+    this._appState = {
+      pid: this.processId,
+      app_data: app_data,
+      app_name: this.name,
+      unique_id: uid,
+      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+    }
+    this._sessionManagmentService.addAppSession(uid, this._appState);
+  }
+
+
+  retrievePastSessionData():void{
+    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
+    
+      //retrieve refresh state, sort state, and view state
     }
   }
 

@@ -2,17 +2,21 @@ import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChi
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { WindowService } from 'src/app/shared/system-service/window.service';
+import { ChatterService } from 'src/app/shared/system-service/chatter.service';
+import { AudioService } from 'src/app/shared/system-service/audio.services';
+import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { SocketService } from 'src/app/shared/system-service/socket.service';
+
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
-import { WindowService } from 'src/app/shared/system-service/window.service';
-import { ChatterService } from 'src/app/shared/system-service/chatter.service';
+
 import { ChatMessage } from './model/chat.message';
 import { IUser, IUserData, IUserList } from './model/chat.interfaces';
 import { Subscription } from 'rxjs';
-import { AudioService } from 'src/app/shared/system-service/audio.services';
+import { AppState } from 'src/app/system-files/state/state.interface';
 
 @Component({
   selector: 'cos-chatter',
@@ -31,6 +35,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _chatService:ChatterService;
   private _socketService:SocketService;
   private _audioService:AudioService;
+  private _sessionManagmentService: SessionManagmentService;
 
   private _newChatMessageSub!: Subscription;
   private _userCountChangeSub!: Subscription;
@@ -45,9 +50,11 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   userNameAcronymStyle:Record<string, unknown> = {};
 
+  private _appState!:AppState;
+
   ADD_AND_BROADCAST = 'Add&Broadcast';
   UPDATE = 'Update';
-  A_NEW_USER_HAS_JOINED_THE_CHAT_MSG = 0;
+  A_NEW_USER_HAS_JOINED_THE_CHAT_MSG = Constants.ZERO;
   USER_HAS_LEFT_THE_CHAT_MSG = 1;
   USER_CHANGED_NAME_MSG = 2;
   SCROLL_DELAY = 300;
@@ -56,24 +63,24 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   showUserNameForm = false;
   isTyping = false;
   isFirstOnlineUserUpdateResponse = true;
-  messageLastRecieved = '';
-  scrollCounter = 0;
-  userCount = 0;
+  messageLastRecieved = Constants.EMPTY_STRING;
+  scrollCounter = Constants.ZERO;
+  userCount = Constants.ZERO;
 
-  userNameAcronym = '';
-  bkgrndIconColor = '';
-  userName = '';
-  userId= '';
+  userNameAcronym = Constants.EMPTY_STRING;
+  bkgrndIconColor = Constants.EMPTY_STRING;
+  userName = Constants.EMPTY_STRING;
+  userId= Constants.EMPTY_STRING;
 
   chatData: ChatMessage[] = [];
   onlineUsers: IUserData[] = [];
-  onlineUsersListFirstUpdateTS = 0;
+  onlineUsersListFirstUpdateTS = Constants.ZERO;
   chatUser!: IUser;
   chatUserData!:IUserData;
 
   RETRIEVAL_DELAY = 150;
-  currIteration = 0;
-  prevScrollHeight = 0;
+  currIteration = Constants.ZERO;
+  prevScrollHeight = Constants.ZERO;
 
 
   logonAudio = `${Constants.AUDIO_BASE_PATH}cheetah_logon.wav`;
@@ -85,18 +92,21 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
   name = 'chatter';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
   displayName = 'Chatter';
 
   constructor(socketService:SocketService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
-    windowService:WindowService, formBuilder:FormBuilder, chatService:ChatterService, audioService:AudioService) { 
+              windowService:WindowService, formBuilder:FormBuilder, chatService:ChatterService, audioService:AudioService,
+              sessionManagmentService: SessionManagmentService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
     this._socketService = socketService;
     this._audioService = audioService;
     this._chatService = chatService;
+    this._sessionManagmentService = sessionManagmentService;
+
     this._chatService.setSocketInstance(socketService);
     this._chatService.setSubscriptions();
     this._formBuilder = formBuilder
@@ -367,7 +377,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
   
   getRandomNum(min?:number, max?:number):number {
-    const defaultMin = 0;
+    const defaultMin = Constants.ZERO;
     const defaultMax = 100000;
     min =(min === undefined)? defaultMin :min;
     max =(max === undefined)? defaultMax : max;
@@ -376,7 +386,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
    /** Generates the next color dynamically */
   geIconColor(): string {
-    const defaultMin = 0;
+    const defaultMin = Constants.ZERO;
     const defaultMax = 36;
     const colorSet = ['#00FFFF', '#AAFF00', '#228B22', '#7CFC00', '#00A36C', '#32CD32', '#00FF7F','#FFBF00','#ECFFDC',
       '#F88379', '#FF4433', '#FF00FF', '#FFB6C1', '#E30B5C', '#800080', '#D8BFD8', '#AA98A9', '#7F00FF','#7B68EE',
@@ -452,7 +462,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     const remainingMessages = chatHistory.length - this.chatData.length;
     if (remainingMessages <= 0) return;
 
-    const startIdx = Math.max(remainingMessages - batchSize, 0);
+    const startIdx = Math.max(remainingMessages - batchSize, Constants.ZERO);
     const moreMessages = chatHistory.slice(startIdx, remainingMessages);
 
     this.chatData.unshift(...moreMessages);
@@ -468,6 +478,25 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   setChatterWindowToFocus(pid:number):void{
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  }
+
+  storeAppState(app_data:unknown):void{
+    const uid = `${this.name}-${this.processId}`;
+    this._appState = {
+      pid: this.processId,
+      app_data: app_data,
+      app_name: this.name,
+      unique_id: uid,
+      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+    }
+    this._sessionManagmentService.addAppSession(uid, this._appState);
+  }
+
+  retrievePastSessionData():void{
+    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    if(appSessionData !== null &&  appSessionData.app_data != Constants.EMPTY_STRING){
+      //const data = appSessionData.app_data as string;
+    }
   }
 
   private getComponentDetail():Process{

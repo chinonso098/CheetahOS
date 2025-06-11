@@ -57,7 +57,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   hasWindow = true;
   isMaximizable=false;
   icon = `${Constants.IMAGE_BASE_PATH}videoplayer.png`;
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
   displayName = 'Video-js';
   showTopMenu = false;
@@ -76,7 +76,6 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._audioService = audioService;
 
     this.processId = this._processIdService.getNewProcessId();
-    this.retrievePastSessionData();
 
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
     this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minmizeWindow(p)})
@@ -85,6 +84,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   ngOnInit(): void {
+    this.retrievePastSessionData();
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 

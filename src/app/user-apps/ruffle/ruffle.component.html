@@ -1,3 +1,3 @@
-<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" (click)="setRuffleWindowToFocus(this.processId)">
+<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId" (click)="setRuffleWindowToFocus(this.processId)">
     <div #ruffleContainer  style="height:400px; width:600px; position: relative;" ></div> 
 </cos-window>

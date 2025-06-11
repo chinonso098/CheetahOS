@@ -69,13 +69,12 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     this._windowService = windowService;
     this.processId = this._processIdService.getNewProcessId();
     
-    this.retrievePastSessionData();
-
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
   ngOnInit(): void {
+    this.retrievePastSessionData();
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 

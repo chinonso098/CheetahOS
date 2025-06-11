@@ -12,7 +12,7 @@ import { ProcessHandlerService } from 'src/app/shared/system-service/process.han
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ViewOptions } from './fileexplorer.enums';
 import {basename} from 'path';
-import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
+import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { GeneralMenu, MenuPositiom, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import { Constants } from 'src/app/system-files/constants';
@@ -83,11 +83,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
-  private selectedElementId = -1;
-  private prevSelectedElementId = -1; 
-  private hideCntxtMenuEvtCnt = 0;
-  private btnClickCnt = 0;
-  private renameFileTriggerCnt = 0; 
+  private selectedElementId = Constants.MINUS_ONE;
+  private prevSelectedElementId = Constants.MINUS_ONE; 
+  private hideCntxtMenuEvtCnt = Constants.ZERO;
+  private btnClickCnt = Constants.ZERO;
+  private renameFileTriggerCnt = Constants.ZERO; 
   private currentIconName = Constants.EMPTY_STRING;
 
   isSearchBoxNotEmpty = false;
@@ -97,8 +97,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showIconCntxtMenu = false;
   showFileExplrCntxtMenu = false;
   showInformationTip = false;
-  iconCntxtCntr = 0;
-  fileExplrCntxtCntr = 0;
+  iconCntxtCntr = Constants.ZERO;
+  fileExplrCntxtCntr = Constants.ZERO;
   //hideInformationTip = false;
 
   fileExplrCntxtMenuStyle:Record<string, unknown> = {};
@@ -129,7 +129,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
   defaultviewOption = ViewOptions.MEDIUM_ICON_VIEW;
   currentViewOption = ViewOptions.MEDIUM_ICON_VIEW;
-  currentViewOptionId = 3;
+  currentViewOptionId = Constants.THREE;
   
   readonly smallIconsView = ViewOptions.SMALL_ICON_VIEW;
   readonly mediumIconsView = ViewOptions.MEDIUM_ICON_VIEW;
@@ -235,7 +235,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
-    this.retrievePastSessionData();
 
     this._dirFilesUpdatedSub = this._fileService.dirFilesUpdateNotify.subscribe(() =>{
       if(this._fileService.getEventOriginator() === this.name){
@@ -268,7 +267,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   ngOnInit():void{
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
-
+    this.retrievePastSessionData();
+    
     if(this._fileInfo){
       // is this a URL or and Actual Folder
       if(this._fileInfo.getOpensWith === 'fileexplorer' && !this._fileInfo.getIsFile){ //Actual Folder

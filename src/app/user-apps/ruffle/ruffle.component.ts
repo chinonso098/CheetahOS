@@ -31,10 +31,8 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   private _processHandlerService:ProcessHandlerService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
-    private _windowService:WindowService;
+  private _windowService:WindowService;
 
-
-  
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private gameSrc = Constants.EMPTY_STRING;
@@ -45,7 +43,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}ruffle.png`;
   isMaximizable = false;
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.User;
   displayName = 'Ruffle-EM';
 
@@ -59,14 +57,12 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
     this._windowService = windowService;
 
     this.processId = this._processIdService.getNewProcessId();
-
-    this.retrievePastSessionData();
-
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
   ngOnInit(): void {
+    this.retrievePastSessionData();
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
@@ -122,10 +118,10 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
 }
 
   getGamesSrc(pathOne:string, pathTwo:string):string{
-    let gameSrc = '';
+    let gameSrc = Constants.EMPTY_STRING;
 
     if(this.checkForExt(pathOne,pathTwo)){
-      gameSrc = '/' + this._fileInfo.getContentPath;
+      gameSrc = Constants.ROOT + this._fileInfo.getContentPath;
     }else{
       gameSrc =  'osdrive' +this._fileInfo.getCurrentPath;
     }
@@ -165,7 +161,6 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
       this.gameSrc = appSessionData.app_data as string;
     }
   }
-
 
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)

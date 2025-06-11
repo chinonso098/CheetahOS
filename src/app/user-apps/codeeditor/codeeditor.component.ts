@@ -71,7 +71,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   }
 
   ngOnInit(): void {
-    1
+    this.retrievePastSessionData();
   }
 
   ngAfterViewInit(): void {
@@ -91,8 +91,6 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
 
   captureComponentImg():void{
     htmlToImage.toPng(this.monacoContent.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
-
       const cmpntImg:TaskBarPreviewImage = {
         pid: this.processId,
         appName: this.name,
@@ -132,6 +130,13 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
       window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
     }
     this._sessionManagmentService.addAppSession(uid, this._appState);
+  }
+
+  retrievePastSessionData():void{
+    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    if(appSessionData !== null && appSessionData.app_data != Constants.EMPTY_STRING){
+        this.code =  appSessionData.app_data as string;
+    }
   }
 
   getCode():string{

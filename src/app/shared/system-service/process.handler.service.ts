@@ -184,7 +184,7 @@ export class ProcessHandlerService implements BaseService{
         if(componentToLoad !== undefined){   
             const cmpntRef =  this._componentReferenceService.createComponent(componentToLoad.type);
 
-            if(priorUID)
+            if(priorUID && priorUID !== Constants.EMPTY_STRING)
                 cmpntRef.setInput('priorUId',priorUID);
 
             this.addEntryFromUserOpenedAppssAndSession(cmpntRef);

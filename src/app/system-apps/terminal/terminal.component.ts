@@ -108,8 +108,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     
     this._terminaCommandsProc = new TerminalCommandProcessor(controlProcessService,runningProcessService,fileService);
 
-    this.retrievePastSessionData();
-
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
@@ -120,6 +118,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     this.terminalForm = this._formBuilder.nonNullable.group({
       terminalCmd: '',
     });
+
+    this.retrievePastSessionData();
 
     this.banner = this.getTerminalBanner();
     this.allCommands = [...this.echoCommands, ...this.utilityCommands];

@@ -76,6 +76,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   }
 
   ngOnInit():void{
+    this.retrievePastSessionData();
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
@@ -97,7 +98,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     this._scriptService.loadScript("quilljs","osdrive/Program-Files/Quill/quill.js").then( async() =>{
   
       const textCntnt = await this._fileService.getFileAsync(this.fileSrc);
-      const index = 0;
+      const index = Constants.ZERO;
 
       this.quill = new Quill(this.editorContainer.nativeElement, options)
       this.quill.insertText(index, textCntnt, {

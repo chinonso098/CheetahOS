@@ -65,7 +65,6 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private picSrc = Constants.EMPTY_STRING;
 
 
-
   SECONDS_DELAY = 250;
   name= 'photoviewer';
   hasWindow = true;
@@ -96,17 +95,16 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._windowService = windowService;
     this.processId = this._processIdService.getNewProcessId();
 
-    this.retrievePastSessionData();
-
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
 
   async ngOnInit():Promise<void> {
+    this.retrievePastSessionData();
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
 
-    if(this.imageList.length > 0)
+    if(this.imageList.length > Constants.ZERO)
       this.images = signal([this.imageList[0]]);
     else{
       const currentImg = await this._fileService.getFileBlobAsync(this.defaultImg);
@@ -115,14 +113,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   } 
 
   async ngAfterViewInit():Promise<void> {
-    //this.setImageViewerWindowToFocus(this.processId); 
-
-    this.picSrc = (this.picSrc !=='') ? 
+    this.picSrc = (this.picSrc !== Constants.EMPTY_STRING) ? 
     this.picSrc : this.getPictureSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
-    //this.picSrc = '';
 
-    console.log('this.picSrc ',this.picSrc);
-  
     await this.getCurrentPicturePathAndSearchForOthers();
     if(this.imageList.length > 0)
       this.images = signal([this.imageList[0]]);

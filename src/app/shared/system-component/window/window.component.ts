@@ -116,8 +116,6 @@ import { Constants } from 'src/app/system-files/constants';
       this._systemNotificationServices = systemNotificationServices;
       this._menuService = menuService;
  
-      this.retrievePastSessionData();
-
       this._restoreOrMinSub = this._windowService.restoreOrMinimizeProcessWindowNotify.subscribe((p) => {this.restoreHiddenWindow(p)});
       this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusAndResetWindowBoundsByPid(p)});
       this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p)});
@@ -146,6 +144,7 @@ import { Constants } from 'src/app/system-files/constants';
       this.name = this.processAppName;
       this.isWindowMaximizable = this.isMaximizable;
 
+      this.retrievePastSessionData();
       this.windowOpenCloseAction = 'open';
       this.uniqueId = `${this.name}-${this.processId}`;
       this._runningProcessService.newProcessNotify.next(this.uniqueId);
@@ -156,7 +155,6 @@ import { Constants } from 'src/app/system-files/constants';
 
       this._windowService.addProcessWindowToWindows(this.uniqueId); 
       this.resetHideShowWindowsList();
-    
     }
 
     ngAfterViewInit():void{

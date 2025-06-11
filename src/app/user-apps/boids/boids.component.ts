@@ -10,6 +10,8 @@ import { Process } from 'src/app/system-files/process';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Boid } from './boid';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { AppState } from 'src/app/system-files/state/state.interface';
+import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 
 declare const p5:any;
 
@@ -22,13 +24,15 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   @ViewChild('boidCanvas', { static: true }) boidCanvas!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
   
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  
-  private _scriptService: ScriptService;
   private _windowService:WindowService;
+  private _scriptService: ScriptService;
+  private _processIdService:ProcessIDService;
   private _processHandlerService:ProcessHandlerService;
+  private _runningProcessService:RunningProcessService;
+  private _sessionManagmentService:SessionManagmentService;
 
+
+  private _appState!:AppState;
   private p5Instance: any;
   flocks: Boid[] = [];
 
@@ -51,12 +55,14 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService,  scriptService: ScriptService, 
-              windowService:WindowService, triggerProcessService:ProcessHandlerService, private fb: FormBuilder) { 
+              windowService:WindowService, triggerProcessService:ProcessHandlerService, private fb: FormBuilder,
+              sessionManagmentService:SessionManagmentService) { 
                 
     this._processIdService = processIdService;
     this._scriptService = scriptService;
     this._windowService = windowService;
     this._processHandlerService = triggerProcessService;
+    this._sessionManagmentService = sessionManagmentService;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService = runningProcessService;
@@ -73,6 +79,8 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     this._scriptService.loadScript("P5JS","osdrive/Cheetah/System/P5JS/p5.min.js").then(()=>{
       console.log('p5 loaded');
     });
+
+    this.retrievePastSessionData();
   }
 
   ngAfterViewInit():void{
@@ -118,7 +126,25 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   setBoidWindowToFocus(pid:number):void{
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
-
+  
+  storeAppState(app_data:unknown):void{
+    const uid = `${this.name}-${this.processId}`;
+    this._appState = {
+      pid: this.processId,
+      app_data: app_data as string,
+      app_name: this.name,
+      unique_id: uid,
+      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+    }
+    this._sessionManagmentService.addAppSession(uid, this._appState);
+  }
+  
+  retrievePastSessionData():void{
+    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
+      //
+    }
+  }
   private getComponentDetail():Process{
   return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
 }
