@@ -9,7 +9,6 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { Subscription } from 'rxjs';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
-import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ViewOptions } from './fileexplorer.enums';
 import {basename} from 'path';
@@ -47,7 +46,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _fileService:FileService;
   private _directoryFilesEntires!:FileEntry[];
   private _processHandlerService:ProcessHandlerService;
-  private _stateManagmentService: StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _notificationService:UserNotificationService;
   private _windowService:WindowService;
@@ -211,7 +209,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   navPathIcon = `${Constants.IMAGE_BASE_PATH}this_pc.png`;
   isMaximizable = false;
   name = 'fileexplorer';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
   directory =Constants.ROOT;
   displayName = 'fileexplorer';
@@ -219,14 +217,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, 
-              triggerProcessService:ProcessHandlerService, formBuilder: FormBuilder, stateManagmentService:StateManagmentService, 
-              sessionManagmentService:SessionManagmentService, menuService:MenuService, notificationService:UserNotificationService,
-              windowService:WindowService, audioService:AudioService, systemNotificationService:SystemNotificationService) { 
+              triggerProcessService:ProcessHandlerService, formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, 
+              menuService:MenuService, notificationService:UserNotificationService, windowService:WindowService, 
+              audioService:AudioService, systemNotificationService:SystemNotificationService) { 
+
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileService = fileService;
     this._processHandlerService = triggerProcessService;
-    this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
     this._menuService = menuService;
     this._notificationService = notificationService;
@@ -1946,18 +1944,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   retrievePastSessionData():void{
-    const pickUpKey = this._sessionManagmentService._pickUpKey;
-    if(this._sessionManagmentService.hasTempSession(pickUpKey)){
-      const tmpSessKey = this._sessionManagmentService.getTempSession(pickUpKey) || Constants.EMPTY_STRING; 
-      const retrievedSessionData = this._sessionManagmentService.getSession(tmpSessKey) as BaseState[];
+      const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
 
-      if(retrievedSessionData !== undefined){
-        const appSessionData = retrievedSessionData[0] as AppSessionData;
-        if(appSessionData !== undefined  && appSessionData.app_data != Constants.EMPTY_STRING){
+        if(appSessionData !== null  && appSessionData.app_data != Constants.EMPTY_STRING){
           this.directory = appSessionData.app_data as string;
         }
-      }
-    }
   }
 
   maximizeWindow():void{

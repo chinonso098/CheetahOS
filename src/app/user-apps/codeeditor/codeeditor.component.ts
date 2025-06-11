@@ -2,8 +2,9 @@ import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, OnInit, Inp
 import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
+import { WindowService } from 'src/app/shared/system-service/window.service';
+import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -12,7 +13,8 @@ import { Process } from 'src/app/system-files/process';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
-import { WindowService } from 'src/app/shared/system-service/window.service';
+import { AppSessionData } from 'src/app/system-files/state/state.interface';
+
 // import { DiffEditorModel } from 'ngx-monaco-editor-v2';
 
 
@@ -28,14 +30,17 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _stateManagmentService:StateManagmentService;
+
   private _processHandlerService:ProcessHandlerService;
-    private _windowService:WindowService;
+  private _windowService:WindowService;
+  private _sessionManagmentService:SessionManagmentService
 
 
   private _maximizeWindowSub!: Subscription;
   SECONDS_DELAY = 250;
 
+  private _appState!:AppSessionData;
+    
   editorOptions = {
     language: 'javascript', // java, javascript, python, csharp, html, markdown, ruby
     theme: 'vs-dark', // vs, vs-dark, hc-black
@@ -48,16 +53,16 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   icon = `${Constants.IMAGE_BASE_PATH}vs_code.png`;
   isMaximizable = false;
   name = 'codeeditor';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.User;
-  displayName = '';
+  displayName = Constants.EMPTY_STRING;
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-                stateManagmentService:StateManagmentService ,windowService:WindowService){
+               sessionManagmentService:SessionManagmentService ,windowService:WindowService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService = runningProcessService;
-    this._stateManagmentService = stateManagmentService;
+    this._sessionManagmentService = sessionManagmentService;
     this._processHandlerService = triggerProcessService;
     this._windowService = windowService;
 
@@ -76,6 +81,8 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
     // setTimeout(()=>{
     //   this.captureComponentImg();
     // },this.SECONDS_DELAY) 
+
+    //this.storeAppState();
   }
 
   ngOnDestroy():void{
@@ -113,6 +120,18 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
       this.monacoContent.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
 
     }
+  }
+
+  storeAppState(app_data:unknown):void{
+    const uid = `${this.name}-${this.processId}`;
+    this._appState = {
+      pid: this.processId,
+      app_data: app_data,
+      app_name: this.name,
+      unique_id: uid,
+      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+    }
+    this._sessionManagmentService.addAppSession(uid, this._appState);
   }
 
   getCode():string{

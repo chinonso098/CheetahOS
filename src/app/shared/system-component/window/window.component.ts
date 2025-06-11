@@ -3,13 +3,12 @@ import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChange
 import { ComponentType } from 'src/app/system-files/system.types';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+
 import {Subscription } from 'rxjs';
-import { BaseState } from 'src/app/system-files/state/state.interface';
 import { WindowBoundsState, WindowState } from './windows.types';
 import {openCloseAnimation, hideShowAnimation, minimizeMaximizeAnimation} from 'src/app/shared/system-component/window/animation/animations';
 import { AnimationEvent } from '@angular/animations';
-
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
@@ -31,6 +30,7 @@ import { Constants } from 'src/app/system-files/constants';
    @Input() runningProcessID = Constants.ZERO;  
    @Input() processAppIcon = Constants.EMPTY_STRING;  
    @Input() processAppName = Constants.EMPTY_STRING;  
+   @Input() priorUId = Constants.EMPTY_STRING;  
    @Input() isMaximizable = true;  
    
    private _runningProcessService:RunningProcessService;
@@ -985,23 +985,15 @@ import { Constants } from 'src/app/system-files/constants';
      * this method returns a process that has a windows, with a visible state
      * @returns Process
      */
-   getNextProcess():Process | undefined{
-    const nextPid = this._windowService.getNextPidInWindowStateList();
-    return this._runningProcessService.getProcesses().find(p => p.getProcessId === nextPid);
-   }
+    getNextProcess():Process | undefined{
+      const nextPid = this._windowService.getNextPidInWindowStateList();
+      return this._runningProcessService.getProcesses().find(p => p.getProcessId === nextPid);
+    }
 
-   retrievePastSessionData():void{
-    const pickUpKey = this._sessionManagmentService._pickUpKey;
-    if(this._sessionManagmentService.hasTempSession(pickUpKey)){
-      const tmpSessKey = this._sessionManagmentService.getTempSession(pickUpKey) || Constants.EMPTY_STRING; 
+    retrievePastSessionData():void{
 
-      const retrievedSessionData = this._sessionManagmentService.getSession(tmpSessKey) as BaseState[];
-      
-      if(retrievedSessionData !== undefined){
-        const windowSessionData = retrievedSessionData[1] as WindowState;
-
-        if(windowSessionData !== undefined ){
-          
+      const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+      if(appSessionData !== null && appSessionData.window !== undefined){
           // this.currentStyles = {
           //   'transform': 'translate(0,0)',
           //   'width': '100%',
@@ -1012,26 +1004,24 @@ import { Constants } from 'src/app/system-files/constants';
           //   'bottom': '0', 
           //   'z-index': z_index
           // };
-        }
-      }
 
       /*
-       Why i am removing the session below. Once window has it's size and position data, the session data is no longer needed
+          Why i am removing the session below. Once window has it's size and position data, the session data is no longer needed
 
-      --- Order of Operation ---   the application open first, followed by creating a window component for it's presentation.
+          --- Order of Operation ---   the application open first, followed by creating a window component for it's presentation.
 
-        1. For the App Component
-          1. The constructor executes first
+            1. For the App Component
+              1. The constructor executes first
 
-        2.For the Windows Component
-          1. The constructor executes first
+            2.For the Windows Component
+              1. The constructor executes first
 
-          2. ngOnChange executes next
+              2. ngOnChange executes next
 
-          3.  Then followed by ngOnInit
+              3.  Then followed by ngOnInit
       */
-      this._sessionManagmentService.removeSession(tmpSessKey);
+        this._sessionManagmentService.removeAppSession(this.priorUId);
+      }
     }
-  }
 
 }

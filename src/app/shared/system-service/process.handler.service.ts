@@ -250,21 +250,20 @@ export class ProcessHandlerService implements BaseService{
     }
 
     private restorePriorSession(priorOpenedApps: string[]):void{
-        if (priorOpenedApps.length > 0) {
+        if(priorOpenedApps.length > 0){
             const openedAppInstList = this._sessionMangamentServices.getSession(this.appsInstanceUIDKey) as string[];
             //console.log('openedAppInstList:', openedAppInstList);
 
             const tasks: [string, string][] = [];
-
-            for (const pName of priorOpenedApps) {
+            for(const pName of priorOpenedApps){
                 const tmpKeys = openedAppInstList.filter(x => x.includes(pName));
-                for (const pUId of tmpKeys) {
+                for(const pUId of tmpKeys){
                     tasks.push([pName, pUId]);
                 }
             }
 
-            const loadWithDelay = (index: number) => {
-                if (index >= tasks.length) 
+            const loadWithDelay = (index: number)=>{
+                if(index >= tasks.length) 
                     return;
 
                 const [pName, pUId] = tasks[index];

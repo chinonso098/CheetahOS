@@ -8,9 +8,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { TerminalCommand } from './model/terminal.types';
 import { TerminalCommandProcessor } from './terminal.commands';
-import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
-import { StateType } from 'src/app/system-files/state/state.type';
-import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
+import { AppSessionData } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
@@ -39,15 +37,13 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private _minimizeWindowSub!: Subscription;
   private _formBuilder;
   private _terminaCommandsProc!:TerminalCommandProcessor;
-  private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _windowService:WindowService;
-  private _appState!:AppState;
+  private _appState!:AppSessionData;
 
 
-  private msgPosCounter = 0;
-  private scrollCounter = 0
-  private prevPtrIndex = 0;
+  private msgPosCounter = Constants.ZERO;
+  private prevPtrIndex = Constants.ZERO;
   private versionNum = '1.0.4.4';
   private SECONDS_DELAY:number[] = [120,250];
   private doesDirExist = true;
@@ -61,16 +57,16 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   stateOne = 'S1';
   stateTwo = 'S2';
 
-  Success = 1;
-  Fail = 2;
-  Warning = 3;
-  Options = 4;
+  Success = Constants.ONE;
+  Fail = Constants.TWO;
+  Warning = Constants.THREE;
+  Options = Constants.FOUR;
 
   isBannerVisible = true;
   isWelcomeVisible = true;
 
-  banner = '';
-  welcomeMessage = '';
+  banner = Constants.EMPTY_STRING;
+  welcomeMessage = Constants.EMPTY_STRING;
   terminalPrompt = ">";
   commandHistory:TerminalCommand[] = [];
   echoCommands:string[] = ["close", "curl","date", "echo", "help", "hostname", "list", "open", "version", "whoami", "weather","pwd"];
@@ -78,19 +74,19 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   fetchedDirectoryList:string[] = [];
   generatedArguments:string[] = [];
   allCommands:string[] = [];
-  haveISeenThisRootArg = '';
-  haveISeenThisAutoCmplt = '';
+  haveISeenThisRootArg = Constants.EMPTY_STRING;
+  haveISeenThisAutoCmplt = Constants.EMPTY_STRING;
 
   terminalForm!: FormGroup;
-  dirEntryTraverseCntr = 0;
-  directoryTraversalDepth = 0;
+  dirEntryTraverseCntr = Constants.ZERO;
+  directoryTraversalDepth = Constants.ZERO;
   readonly SCROLL_DELAY = 300;
   firstSection = true;
   secondSection = false;
-  sectionTabPressCntnr = 0;
+  sectionTabPressCntnr = Constants.ZERO;
 
-  firstSectionCntr = -1;
-  secondSectionCntr = -1;
+  firstSectionCntr = Constants.MINUS_ONE;
+  secondSectionCntr = Constants.MINUS_ONE;
   currentState =  this.stateOne;
   swtichToNextSection = false;
 
@@ -98,16 +94,15 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   isMaximizable = false;
   icon = `${Constants.IMAGE_BASE_PATH}terminal.png`;
   name = 'terminal';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
   displayName = 'Terminal';
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, controlProcessService:ProcessHandlerService, fileService:FileService,  formBuilder:FormBuilder,
-               stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService,windowService:WindowService ) { 
+               sessionManagmentService: SessionManagmentService,windowService:WindowService ) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._formBuilder = formBuilder;
-    this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
     this._windowService = windowService;
     
@@ -157,7 +152,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         imageData: htmlImg
       }
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+    });
+
+    this.storeAppState();
 }
 
   getYear():number {
@@ -1060,7 +1057,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
   }
 
-
   setTerminalWindowToFocus(pid:number):void{
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
@@ -1073,34 +1069,26 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     for(let i = 0; i < cmdHistory.length; i++){
       cmdList.push(cmdHistory[i].getCommand);
     }
-  
+
     this._appState = {
       pid: this.processId,
       app_data: cmdList,
       app_name: this.name,
-      unique_id: uid
+      unique_id: uid,
+      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
     }
 
-    this._stateManagmentService.addState(uid, this._appState, StateType.App);
+    this._sessionManagmentService.addAppSession(uid, this._appState);
   }
 
   retrievePastSessionData():void{
-    const pickUpKey = this._sessionManagmentService._pickUpKey;
-    if(this._sessionManagmentService.hasTempSession(pickUpKey)){
-      const tmpSessKey = this._sessionManagmentService.getTempSession(pickUpKey) || ''; 
-      const retrievedSessionData = this._sessionManagmentService.getSession(tmpSessKey) as BaseState[];
-
-      if(retrievedSessionData !== undefined){
-        const appSessionData = retrievedSessionData[0] as AppState;
-        if(appSessionData !== undefined  && appSessionData.app_data != ''){
-  
-          const terminalCmds =  appSessionData.app_data as string[];
-          for(let i = 0; i < terminalCmds.length; i++){
-            const cmd = new TerminalCommand(terminalCmds[i], 0, '');
-            this.commandHistory.push(cmd);
-          }
+    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    if(appSessionData !== null && appSessionData.app_data != Constants.EMPTY_STRING){
+        const terminalCmds =  appSessionData.app_data as string[];
+        for(let i = 0; i < terminalCmds.length; i++){
+          const cmd = new TerminalCommand(terminalCmds[i], Constants.ZERO, Constants.EMPTY_STRING);
+          this.commandHistory.push(cmd);
         }
-      }
     }
   }
 

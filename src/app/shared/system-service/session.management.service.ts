@@ -15,10 +15,8 @@ import { AppSessionData } from "src/app/system-files/state/state.interface";
 export class SessionManagmentService implements BaseService{
 
     private _sessionName = "main-session";
-    public readonly _pickUpKey = "temp-session-retrieval-key";
     private _sessionDataDict: Map<string, unknown>; 
 
-    private _sessionRetrievalCounter = Constants.ZERO;
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
   
@@ -30,7 +28,6 @@ export class SessionManagmentService implements BaseService{
     hasWindow = false;
     description = 'handles load/save of user session';
         
-
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){
         if(sessionStorage.getItem(this._sessionName)){
             const sessData = sessionStorage.getItem(this._sessionName) as string;
@@ -72,36 +69,7 @@ export class SessionManagmentService implements BaseService{
         return null;
     }
 
-    getTempSession(key:string):string{
-        let result= '';
-        if(this._sessionRetrievalCounter <= 1){
-            // console.log(`counter:${this._sessionRetrievalCounter} -----  retrievedSess:${this._sessionRetrievalCounter}`);
 
-            result = sessionStorage.getItem(key) || Constants.EMPTY_STRING;
-            if(this._sessionRetrievalCounter === 1){
-                sessionStorage.removeItem(key);
-                this._sessionRetrievalCounter = 0;
-                return  result;
-            }
-            this._sessionRetrievalCounter++;
-            return  result;
-        }
-        return result;
-    }
-       
-
-    getKeys():string[]{
-        const keys:string[] = [];
-
-        for(const key of this._sessionDataDict.keys()){
-            keys.push(key)
-        }
-        return keys;
-    }
-
-    hasTempSession(key:string):boolean{
-        return (sessionStorage.getItem(key) !==null) ? true : false;
-    }
 
     removeSession(key:string): void{
         this._sessionDataDict.delete(key)
@@ -112,7 +80,7 @@ export class SessionManagmentService implements BaseService{
         sessionStorage.removeItem(key);
     }
 
-    resetSession(): void{
+    clearSession(): void{
         this._sessionDataDict = new Map<string, unknown>;
         sessionStorage.clear()
     }
@@ -121,10 +89,6 @@ export class SessionManagmentService implements BaseService{
         const data =  JSON.stringify(Array.from(sessionData.entries()));
         sessionStorage.setItem(this._sessionName, data);
     }
-
-    // private addTempSession(sessionData:unknown){
-    //     sessionStorage.setItem(this._pickUpKey, sessionData as string);
-    // }
 
 
     private getProcessDetail():Process{

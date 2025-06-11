@@ -4,11 +4,10 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { Process } from 'src/app/system-files/process';
-import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
-import { StateType } from 'src/app/system-files/state/state.type';
+import { AppSessionData } from 'src/app/system-files/state/state.interface';
+
 import {extname} from 'path';
 
 import * as htmlToImage from 'html-to-image';
@@ -36,7 +35,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _stateManagmentService:StateManagmentService;
+
   private _sessionManagmentService: SessionManagmentService;
   private _processHandlerService:ProcessHandlerService;
   private _scriptService: ScriptService;
@@ -48,10 +47,10 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   private _renderer: Renderer2;
 
   private _fileInfo!:FileInfo;
-  private _appState!:AppState;
+  private _appState!:AppSessionData;
   private _maximizeWindowSub!: Subscription;
-  private fileSrc = '';
-  mkdDwnHtml:SafeHtml = '';
+  private fileSrc = Constants.EMPTY_STRING;
+  mkdDwnHtml:SafeHtml = Constants.EMPTY_STRING;
 
   SECONDS_DELAY = 250;
 
@@ -59,17 +58,17 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   icon = `${Constants.IMAGE_BASE_PATH}markdown.png`;
   isMaximizable = false;
   name = 'markdownviewer';
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
-  displayName = '';
+  displayName = Constants.EMPTY_STRING;
 
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-                stateManagmentService:StateManagmentService, scriptService: ScriptService,fileService:FileService, 
-                sessionManagmentService: SessionManagmentService, renderer: Renderer2, sanitizer: DomSanitizer,windowService:WindowService){
+                scriptService: ScriptService,fileService:FileService,  sessionManagmentService: SessionManagmentService, renderer: Renderer2, 
+                sanitizer: DomSanitizer,windowService:WindowService){
+                  
     this._processIdService = processIdService
     this._runningProcessService = runningProcessService;
-    this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService = sessionManagmentService;
     this._processHandlerService = triggerProcessService;
     this._scriptService = scriptService;
@@ -157,10 +156,10 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   }
 
   getFileSrc(pathOne:string, pathTwo:string):string{
-    let fileSrc = '';
+    let fileSrc = Constants.EMPTY_STRING;
 
     if(this.checkForExt(pathOne,pathTwo)){
-      fileSrc = '/' + this._fileInfo.getContentPath;
+      fileSrc = Constants.ROOT + this._fileInfo.getContentPath;
     }else{
       fileSrc =  this._fileInfo.getCurrentPath;
     }
@@ -174,7 +173,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
     const ext = ".md";
     let res = false;
 
-    if(contentExt != '' && contentExt == ext){
+    if(contentExt != Constants.EMPTY_STRING && contentExt == ext){
       res = true;
     }else if( currentPathExt == ext){
       res = false;
@@ -184,29 +183,20 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
 
   storeAppState(app_data:unknown):void{
     const uid = `${this.name}-${this.processId}`;
-
     this._appState = {
       pid: this.processId,
-      app_data: app_data as string,
+      app_data: app_data,
       app_name: this.name,
-      unique_id: uid
+      unique_id: uid,
+      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
     }
-
-    this._stateManagmentService.addState(uid, this._appState, StateType.App);
+    this._sessionManagmentService.addAppSession(uid, this._appState);
   }
 
   retrievePastSessionData():void{
-    const pickUpKey = this._sessionManagmentService._pickUpKey;
-    if(this._sessionManagmentService.hasTempSession(pickUpKey)){
-      const tmpSessKey = this._sessionManagmentService.getTempSession(pickUpKey) || ''; 
-      const retrievedSessionData = this._sessionManagmentService.getSession(tmpSessKey) as BaseState[];
-
-      if(retrievedSessionData !== undefined){
-        const appSessionData = retrievedSessionData[0] as AppState;
-        if(appSessionData !== undefined  && appSessionData.app_data != ''){
-          this.fileSrc = appSessionData.app_data as string;
-        }
-      }
+    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
+      this.fileSrc = appSessionData.app_data as string;
     }
   }
 

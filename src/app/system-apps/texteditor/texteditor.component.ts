@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { FileService } from 'src/app/shared/system-service/file.service';
@@ -12,8 +11,7 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
-import { StateType } from 'src/app/system-files/state/state.type';
+import { AppSessionData } from 'src/app/system-files/state/state.interface';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 
 import {extname} from 'path';
@@ -37,7 +35,6 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _processHandlerService:ProcessHandlerService;
   private _scriptService: ScriptService;
@@ -45,9 +42,9 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   private _windowService:WindowService;
 
   private _fileInfo!:FileInfo;
-  private _appState!:AppState;
+  private _appState!:AppSessionData;
   private _maximizeWindowSub!: Subscription;
-  private fileSrc = '';
+  private fileSrc = Constants.EMPTY_STRING;
   private quill: any;
 
   SECONDS_DELAY = 250;
@@ -56,19 +53,18 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   icon = `${Constants.IMAGE_BASE_PATH}text_editor.png`;
   name = 'texteditor';
   isMaximizable = false;
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.System;
-  displayName = '';
+  displayName = Constants.EMPTY_STRING;
 
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-              fileService:FileService,  sessionManagmentService: SessionManagmentService,  stateManagmentService:StateManagmentService, 
-              scriptService: ScriptService ,windowService:WindowService){
+              fileService:FileService,  sessionManagmentService: SessionManagmentService, scriptService: ScriptService,
+              windowService:WindowService){
 
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService = runningProcessService;
-    this._stateManagmentService = stateManagmentService;
     this._processHandlerService = triggerProcessService;
     this._sessionManagmentService = sessionManagmentService;
     this._scriptService = scriptService;
@@ -87,7 +83,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   ngAfterViewInit(): void {
     //this.setTextEditorWindowToFocus(this.processId); 
 
-    this.fileSrc = (this.fileSrc !=='')? 
+    this.fileSrc = (this.fileSrc !== Constants.EMPTY_STRING)? 
     this.fileSrc : this.getFileSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
     const options = {
@@ -157,10 +153,10 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   }
 
   getFileSrc(pathOne:string, pathTwo:string):string{
-    let fileSrc = '';
+    let fileSrc = Constants.EMPTY_STRING;
 
     if(this.checkForExt(pathOne,pathTwo)){
-      fileSrc = '/' + this._fileInfo.getContentPath;
+      fileSrc = Constants.ROOT + this._fileInfo.getContentPath;
     }else{
       fileSrc =  this._fileInfo.getCurrentPath;
     }
@@ -174,7 +170,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     const ext = ".txt";
     let res = false;
 
-    if(contentExt != '' && contentExt == ext){
+    if(contentExt != Constants.EMPTY_STRING && contentExt == ext){
       res = true;
     }else if( currentPathExt == ext){
       res = false;
@@ -184,29 +180,20 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
 
   storeAppState(app_data:unknown):void{
     const uid = `${this.name}-${this.processId}`;
-
     this._appState = {
       pid: this.processId,
       app_data: app_data as string,
       app_name: this.name,
-      unique_id: uid
+      unique_id: uid,
+      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
     }
-
-    this._stateManagmentService.addState(uid, this._appState, StateType.App);
+    this._sessionManagmentService.addAppSession(uid, this._appState);
   }
 
   retrievePastSessionData():void{
-    const pickUpKey = this._sessionManagmentService._pickUpKey;
-    if(this._sessionManagmentService.hasTempSession(pickUpKey)){
-      const tmpSessKey = this._sessionManagmentService.getTempSession(pickUpKey) || ''; 
-      const retrievedSessionData = this._sessionManagmentService.getSession(tmpSessKey) as BaseState[];
-
-      if(retrievedSessionData !== undefined){
-        const appSessionData = retrievedSessionData[0] as AppState;
-        if(appSessionData !== undefined  && appSessionData.app_data != ''){
-          this.fileSrc = appSessionData.app_data as string;
-        }
-      }
+    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
+      this.fileSrc = appSessionData.app_data as string;
     }
   }
 

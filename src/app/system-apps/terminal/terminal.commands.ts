@@ -3,7 +3,6 @@ import { AppDirectory } from "src/app/system-files/app.directory";
 import { ProcessHandlerService } from "src/app/shared/system-service/process.handler.service";
 import { FileInfo } from "src/app/system-files/file.info";
 import { RunningProcessService } from "src/app/shared/system-service/running.process.service";
-import { StateManagmentService } from "src/app/shared/system-service/state.management.service";
 import {extname, basename, resolve, dirname} from 'path';
 import { FileService } from "src/app/shared/system-service/file.service";
 import { FileEntry } from 'src/app/system-files/file.entry';

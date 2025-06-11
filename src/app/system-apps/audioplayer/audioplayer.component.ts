@@ -8,9 +8,7 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { Constants } from "src/app/system-files/constants";
-import { StateManagmentService } from 'src/app/shared/system-service/state.management.service';
-import { AppState, BaseState } from 'src/app/system-files/state/state.interface';
-import { StateType } from 'src/app/system-files/state/state.type';
+import { AppSessionData } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { Subscription } from 'rxjs';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
@@ -57,17 +55,16 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _processHandlerService:ProcessHandlerService;
-  private _stateManagmentService:StateManagmentService;
   private _sessionManagmentService: SessionManagmentService;
   private _scriptService: ScriptService;
   private _windowService:WindowService;
   private _audioService:AudioService;
 
   private _fileInfo!:FileInfo;
-  private _appState!:AppState;
+  private _appState!:AppSessionData;
 
   SECONDS_DELAY = 250;
-  private audioSrc = '';
+  private audioSrc = Constants.EMPTY_STRING;
   private audioPlayer: any;
   private siriWave: any;
   private isSliderDown = false;
@@ -79,7 +76,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   hasWindow = true;
   isMaximizable=false;
   icon = `${Constants.IMAGE_BASE_PATH}audioplayer.png`;
-  processId = 0;
+  processId = Constants.ZERO;
   type = ComponentType.User;
   displayName = 'Howlerjs';
   showTopMenu = false;
@@ -90,11 +87,10 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
  
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-    stateManagmentService: StateManagmentService, sessionManagmentService: SessionManagmentService, scriptService: ScriptService, 
+              sessionManagmentService: SessionManagmentService, scriptService: ScriptService, 
     windowService:WindowService, audioService:AudioService) { 
     this._processIdService = processIdService;
     this._processHandlerService = triggerProcessService;
-    this._stateManagmentService = stateManagmentService;
     this._sessionManagmentService= sessionManagmentService;
     this._scriptService = scriptService;
     this._windowService = windowService;
@@ -502,11 +498,11 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
 
   getAudioSrc(pathOne:string, pathTwo:string):string{
-    let audioSrc = '';
+    let audioSrc = Constants.EMPTY_STRING;
     if(pathOne.includes('blob:http')){
       return pathOne;
     }else if(this.checkForExt(pathOne,pathTwo)){
-      audioSrc = '/' + this._fileInfo.getContentPath;
+      audioSrc = Constants.ROOT + this._fileInfo.getContentPath;
     }else{
       audioSrc = this._fileInfo.getCurrentPath;
     }
@@ -529,7 +525,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   getExt(contentPath:string, currentPath:string):string{
     const contentExt = extname(contentPath);
     const currentPathExt = extname(currentPath);
-    let res = '';
+    let res = Constants.EMPTY_STRING;
 
     if(Constants.AUDIO_FILE_EXTENSIONS.includes(contentExt)){
       res = contentExt;
@@ -546,25 +542,16 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       pid: this.processId,
       app_data: app_data,
       app_name: this.name,
-      unique_id: uid
+      unique_id: uid,
+      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
     }
-
-    this._stateManagmentService.addState(uid, this._appState, StateType.App);
+    this._sessionManagmentService.addAppSession(uid, this._appState);
   }
 
   retrievePastSessionData():void{
-    const pickUpKey = this._sessionManagmentService._pickUpKey;
-    if(this._sessionManagmentService.hasTempSession(pickUpKey)){
-      const tmpSessKey = this._sessionManagmentService.getTempSession(pickUpKey) || ''; 
-      const retrievedSessionData = this._sessionManagmentService.getSession(tmpSessKey) as BaseState[];
-
-      if(retrievedSessionData !== undefined){
-        const appSessionData = retrievedSessionData[0] as AppState;
-  
-        if(appSessionData !== undefined  && appSessionData.app_data != ''){
-          this.audioSrc = appSessionData.app_data as string;
-        }
-      }
+    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    if(appSessionData !== null &&  appSessionData.app_data != Constants.EMPTY_STRING){
+      this.audioSrc = appSessionData.app_data as string;
     }
   }
 
