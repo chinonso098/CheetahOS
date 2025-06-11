@@ -250,6 +250,7 @@ export class ProcessHandlerService implements BaseService{
     }
 
     private restorePriorSession(priorOpenedApps: string[]):void{
+        const delay = 400; //400ms
         if(priorOpenedApps.length > 0){
             const openedAppInstList = this._sessionMangamentServices.getSession(this.appsInstanceUIDKey) as string[];
             //console.log('openedAppInstList:', openedAppInstList);
@@ -262,17 +263,17 @@ export class ProcessHandlerService implements BaseService{
                 }
             }
 
-            const loadWithDelay = (index: number)=>{
+            const loadApp = (index: number)=>{
                 if(index >= tasks.length) 
                     return;
 
                 const [pName, pUId] = tasks[index];
                 this.loadApps(pName, pUId);
 
-                setTimeout(() => loadWithDelay(index + 1), 250);
+                setTimeout(() => loadApp(index + 1), delay);
             };
 
-            loadWithDelay(0);
+            loadApp(0);
         }
     }
 

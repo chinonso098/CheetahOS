@@ -69,8 +69,6 @@ export class SessionManagmentService implements BaseService{
         return null;
     }
 
-
-
     removeSession(key:string): void{
         this._sessionDataDict.delete(key)
         this.saveSession(this._sessionDataDict);
