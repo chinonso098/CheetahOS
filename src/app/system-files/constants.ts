@@ -6,6 +6,7 @@ export namespace Constants{
     export const ROOT = '/';
     export const COLON = ':';
     export const COMMA = ',';
+    export const DOT = '.';
     export const BACK_TICK= '`';
     export const TILDE= '~';
     export const DASH= '-';
@@ -38,6 +39,7 @@ export namespace Constants{
     export const POWER_MENU_OPTION = 'power-menu';
 
     export const RESERVED_ID_RUNNING_PROCESS_SERVICE = 4;
+    
     export const ZERO = 0;
     export const ONE = 1;
     export const TWO = 2;
@@ -61,8 +63,6 @@ export namespace Constants{
 
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';
-    // export const APP_STATE_DATE = 'appsd:';
-    // export const OTHER_STATE_DATE = 'othsd:';
 
     export const MERGED_TASKBAR_ENTRIES = 'Merged Entries Icon';
     export const DISTINCT_TASKBAR_ENTRIES = 'Distinct Entries Icon';

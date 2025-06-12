@@ -33,7 +33,7 @@ export class AudioService implements BaseService {
   
   name = 'audio_svc';
   icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-  processId = 0;
+  processId = Constants.ZERO;
   type = ProcessType.Cheetah;
   status  = Constants.SERVICES_STATE_RUNNING;
   hasWindow = false;
@@ -66,10 +66,10 @@ export class AudioService implements BaseService {
   async loadHowlSingleTrackObjectAsync(): Promise<any> {
     // Your asynchronous code here
     return new Promise<any>((resolve, reject) => {
-      const ext = this.getExt('', this.audioSrc);
+      const ext = this.getExt(Constants.EMPTY_STRING, this.audioSrc);
       const audioPlayer = new Howl({
         src:[this.audioSrc],
-        format: [ext.replace('.','')],
+        format: [ext.replace(Constants.DOT, Constants.EMPTY_STRING)],
         autoplay: false,
         loop: false,
         volume: 0.5,
@@ -151,7 +151,7 @@ export class AudioService implements BaseService {
     if(check)
       this._externalAudioSrc.delete(srcName);
     
-    if(this._externalAudioSrc.size === 0)
+    if(this._externalAudioSrc.size === Constants.ZERO)
       this.isExternalAudioSrcPresent = false;
   }
 
@@ -172,7 +172,7 @@ export class AudioService implements BaseService {
   getExt(contentPath:string, currentPath:string):string{
     const contentExt = extname(contentPath);
     const currentPathExt = extname(currentPath);
-    let res = '';
+    let res = Constants.EMPTY_STRING;
 
     if(Constants.AUDIO_FILE_EXTENSIONS.includes(contentExt)){
       res = contentExt;

@@ -29,8 +29,8 @@ export class SessionManagmentService implements BaseService{
     description = 'handles load/save of user session';
         
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){
-        if(sessionStorage.getItem(this._sessionName)){
-            const sessData = sessionStorage.getItem(this._sessionName) as string;
+        if(localStorage.getItem(this._sessionName)){
+            const sessData = localStorage.getItem(this._sessionName) as string;
             this._sessionDataDict = new Map(JSON.parse(sessData));
         }
         else{
@@ -52,7 +52,7 @@ export class SessionManagmentService implements BaseService{
 
     addAppSession(key:string, dataToAdd:AppState): void{
         const data =  JSON.stringify(dataToAdd);
-        sessionStorage.setItem(key, data);
+        localStorage.setItem(key, data);
     }
 
     getSession(key:string):unknown{
@@ -61,7 +61,7 @@ export class SessionManagmentService implements BaseService{
     }
 
     getAppSession(key:string):AppState | null{
-        const appDataStr = sessionStorage.getItem(key);
+        const appDataStr = localStorage.getItem(key);
         if(appDataStr){
             const appData = JSON.parse(appDataStr) as AppState;
             return appData;
@@ -75,12 +75,12 @@ export class SessionManagmentService implements BaseService{
     }
 
     removeAppSession(key:string): void{
-        sessionStorage.removeItem(key);
+        localStorage.removeItem(key);
     }
 
     clearSession(): void{
         this._sessionDataDict = new Map<string, unknown>;
-        sessionStorage.clear()
+        localStorage.clear()
     }
 
     clearAppSession(): void{
@@ -98,7 +98,7 @@ export class SessionManagmentService implements BaseService{
 
     private saveSession(sessionData:Map<string, unknown>){
         const data =  JSON.stringify(Array.from(sessionData.entries()));
-        sessionStorage.setItem(this._sessionName, data);
+        localStorage.setItem(this._sessionName, data);
     }
 
 
