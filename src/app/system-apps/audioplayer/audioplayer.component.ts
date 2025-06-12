@@ -397,7 +397,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       const ext = this.getExt(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
       const audioPlayer = new Howl({
         src:[this.audioSrc],
-        format: [ext.replace('.','')],
+        format: [ext.replace(Constants.DOT, Constants.EMPTY_STRING)],
         autoplay: false,
         loop: false,
         volume: 0.5,
@@ -443,7 +443,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
         autoSuspend: false,
         onend:()=>{
           //console.log('Finished!');
-          this.siriWave.canvas.style.opacity = 0;
+          this.siriWave.canvas.style.opacity = Constants.ZERO;
           this.bar.nativeElement.style.display = 'block';
           this.pauseBtn.nativeElement.style.display = 'none';
           this.playBtn.nativeElement.style.display = 'block';

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { OnInit, AfterViewInit, Component } from '@angular/core';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -10,13 +10,14 @@ import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { IconAppCurrentState, TaskBarIconInfo } from './taskbar.entries.type';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 
 @Component({
   selector: 'cos-taskbarentries',
   templateUrl: './taskbarentries.component.html',
   styleUrls: ['./taskbarentries.component.css']
 })
-export class TaskBarEntriesComponent implements AfterViewInit {
+export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
@@ -24,6 +25,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   private _systemNotificationService:SystemNotificationService;
   private _menuService:MenuService;
   private _windowServices:WindowService;
+  private _sessionManagmentService:SessionManagmentService
 
   private prevOpenedProccesses:string[]= [];
   SECONDS_DELAY = 50; //50 millisecs
@@ -39,6 +41,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   readonly hideLabel = 'hideLabel';
   readonly showLabel = 'showLabel';
   readonly tskbar = 'tskbar';
+  readonly cheetahTskBarKey = 'cheetahTskBarKey';
 
   taskBarEntriesIconState = this.unMergedIcons;
   hideShowLabelState = this.showLabel;
@@ -56,13 +59,15 @@ export class TaskBarEntriesComponent implements AfterViewInit {
   tmpInfo!:string[];
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService,
-              triggerProcessService:ProcessHandlerService, windowServices:WindowService, systemNotificationService:SystemNotificationService) { 
+              triggerProcessService:ProcessHandlerService, windowServices:WindowService, systemNotificationService:SystemNotificationService,
+              sessionManagmentService:SessionManagmentService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._processHandlerService = triggerProcessService;
     this._menuService = menuService;
     this._windowServices = windowServices;
     this._systemNotificationService = systemNotificationService;
+    this._sessionManagmentService = sessionManagmentService;
 
     this.processId = this._processIdService.getNewProcessId();
 
@@ -105,6 +110,11 @@ export class TaskBarEntriesComponent implements AfterViewInit {
       this.isAnyWindowInFocus = false;
       this.removeHighlightFromTaskbarIcon(this.windowInFocusPid)})}
   
+
+  ngOnInit(): void {
+    this.retrievePastSessionData();
+  }
+
   ngAfterViewInit(): void {
     const delay = 1500; //1.5 secs
     //change detection is the better solution
@@ -164,7 +174,7 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
     if(pinnedIconIdx === -1) return;
     
-    const pinnedIcon = tskBarIcons[pinnedIconIdx]
+    const pinnedIcon = tskBarIcons[pinnedIconIdx];
     pinnedIcon.isPinned = false;
     pinnedIcon.isOtherPinned = false;
 
@@ -888,6 +898,14 @@ export class TaskBarEntriesComponent implements AfterViewInit {
 
   restoreOrMinizeWindow(processId:number){
     this._windowServices.restoreOrMinimizeProcessWindowNotify.next(processId);
+  }
+
+  storeAppState(app_data:TaskBarIconInfo[]):void{
+    this._sessionManagmentService.addSession(this.cheetahTskBarKey, app_data);
+  }
+
+  retrievePastSessionData():void{
+    const tskBarData = this._sessionManagmentService.getSession(this.cheetahTskBarKey) as TaskBarIconInfo[];
   }
 
   private getComponentDetail():Process{
