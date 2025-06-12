@@ -182,7 +182,7 @@ export class ProcessHandlerService implements BaseService{
         if(componentToLoad !== undefined){   
             const cmpntRef =  this._componentReferenceService.createComponent(componentToLoad.type);
 
-            if(priorUID && priorUID !== Constants.EMPTY_STRING)
+            if(priorUID && (priorUID !== Constants.EMPTY_STRING))
                 cmpntRef.setInput('priorUId',priorUID);
 
             this.addEntryFromUserOpenedAppssAndSession(cmpntRef);
@@ -248,7 +248,7 @@ export class ProcessHandlerService implements BaseService{
     }
 
     private restorePriorSession(priorOpenedApps: string[]):void{
-        const delay = 400; //400ms
+        const delay = 750; //400ms
         if(priorOpenedApps.length > 0){
             const openedAppInstList = this._sessionMangamentServices.getSession(this.appsInstanceUIDKey) as string[];
             //console.log('openedAppInstList:', openedAppInstList);

@@ -178,6 +178,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   isMultiSelectEnabled = true;
   isMultiSelectActive = false;
   areMultipleIconsHighlighted = false;
+  isRestored = false;
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
@@ -193,7 +194,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   btnStyle:Record<string, unknown> = {};
 
   readonly GRID_SIZE = 90; //column size of grid = 90px
-  SECONDS_DELAY:number[] = [6000,250];
+  SECONDS_DELAY:number[] = [6000, 250, 4000];
   renameForm!: FormGroup;
 
   deskTopClickCounter = Constants.ZERO;
@@ -372,7 +373,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   stopClippy():void{
     this.showClippy = false;
+    const appName = 'clippy';
     clearInterval(this.clippyIntervalId);
+
+    //check if clippy is running, and end it
+    const clippy = this._runningProcessService.getProcessByName(appName);
+    if(clippy)
+      this._runningProcessService.closeProcessNotify.next(clippy)
   }
 
   startClippy():void{
@@ -2099,12 +2106,23 @@ OpensWith=${selectedFile.getOpensWith}
     this.isIconInFocusDueToPriorAction = true;
   }
 
+  restorPriorOpenApps():void{
+    if(!this.isRestored){
+      setTimeout(()=> {
+        console.log('reopening apps......')
+        this._processHandlerService.checkAndRestore();
+        this.isRestored = true;
+      }, this.SECONDS_DELAY[2]);
+    }
+  }
+
   lockScreenIsActive():void{
     this.hideDesktopIcon();
   }
 
   desktopIsActive():void{
     this.showDesktopIcon();
+    this.restorPriorOpenApps();
   }
   
   private getComponentDetail():Process{

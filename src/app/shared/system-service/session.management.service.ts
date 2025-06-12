@@ -83,6 +83,19 @@ export class SessionManagmentService implements BaseService{
         sessionStorage.clear()
     }
 
+    clearAppSession(): void{
+        const userOpenedAppsKey = Constants.USER_OPENED_APPS;
+        const appsInstanceUIDKey = Constants.USER_OPENED_APPS_INSTANCE;
+        this.removeSession(userOpenedAppsKey);
+        this.removeSession(appsInstanceUIDKey);
+
+        const processWithWindows = this._runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
+        for(const proccess of processWithWindows){
+            const uid = `${proccess.getProcessName}-${proccess.getProcessId}`;
+            this.removeAppSession(uid);
+        }
+    }
+
     private saveSession(sessionData:Map<string, unknown>){
         const data =  JSON.stringify(Array.from(sessionData.entries()));
         sessionStorage.setItem(this._sessionName, data);

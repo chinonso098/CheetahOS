@@ -1,4 +1,4 @@
-import {Component,ViewChild, ViewContainerRef, OnDestroy, OnInit, AfterViewInit} from '@angular/core';
+import {Component,ViewChild, ViewContainerRef, AfterViewInit} from '@angular/core';
 
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from './shared/system-service/running.process.service';
@@ -20,7 +20,7 @@ import { AudioService } from './shared/system-service/audio.services';
 /**
  *  This is the main app component
  */
-export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
+export class AppComponent implements AfterViewInit {
  
   // @ViewChild('processContainerRef',  { read: ViewContainerRef })
   // private itemViewContainer!: ViewContainerRef
@@ -30,11 +30,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _componentReferenceService:ComponentReferenceService;
-  private _processHandlerService:ProcessHandlerService;
   private _audioService:AudioService;
-
-
-  private SECONDS_DELAY = 1500;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -49,19 +45,14 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   // the order of the service init matter.
   //runningProcesssService must come first
   constructor(audioService:AudioService, runningProcessService:RunningProcessService, processIdService:ProcessIDService, 
-              controlProcessService:ProcessHandlerService,  componentReferenceService:ComponentReferenceService){
+              componentReferenceService:ComponentReferenceService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
     this._runningProcessService = runningProcessService;
-    this._processHandlerService = controlProcessService; 
     this._audioService = audioService;
     this._componentReferenceService = componentReferenceService; 
     this._runningProcessService.addProcess(this.getComponentDetail());
-  }
-
-  ngOnInit(): void {
-    1
   }
 
   ngAfterViewInit():void{
@@ -70,15 +61,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
     if(this.itemViewContainer)
       this._componentReferenceService.setViewContainerRef(this.itemViewContainer);
-
-    setTimeout(()=> {
-      this._processHandlerService.checkAndRestore();
-    }, this.SECONDS_DELAY);
-
-  }
-
-  ngOnDestroy():void{
-    1
   }
 
   private getComponentDetail():Process{

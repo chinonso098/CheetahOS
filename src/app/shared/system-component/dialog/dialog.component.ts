@@ -1,12 +1,16 @@
 import {Component, Input, OnChanges, OnDestroy, SimpleChanges} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
-import { UserNotificationService } from '../../system-service/user.notification.service';
 import { UserNotificationType } from 'src/app/system-files/notification.type';
+
 import { MenuService } from '../../system-service/menu.services';
-import { Subscription } from 'rxjs';
+import { UserNotificationService } from '../../system-service/user.notification.service';
+import { SessionManagmentService } from '../../system-service/session.management.service';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
+
+import { Subscription } from 'rxjs';
 import { Constants } from 'src/app/system-files/constants';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
+
 
 @Component({
   selector: 'cos-dialog',
@@ -21,6 +25,7 @@ export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
 
   private _notificationServices:UserNotificationService;
   private _systemNotificationServices:SystemNotificationService;
+  private _sessionManagementService: SessionManagmentService;
   private _menuService:MenuService;
 
   private _deskTopIsActiveSub!:Subscription;
@@ -40,11 +45,13 @@ export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
     { value: 'Restart', label: 'Closes all apps and turns off the PC, and turns it on again.' }
   ];
 
+  isReopenWindowsChecked = false;
+
   selectedOption = 'Shut down';
   pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
-  notificationId = 0;
+  notificationId = Constants.ZERO;
   type = ComponentType.System;
-  displayMgs = '';
+  displayMgs = Constants.EMPTY_STRING;
 
 
   name = Constants.EMPTY_STRING;
@@ -54,11 +61,12 @@ export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
   processId = Constants.ZERO;
   displayName = Constants.EMPTY_STRING;
 
-  constructor(notificationServices:UserNotificationService, systemNotificationServices:SystemNotificationService,
-    menuService:MenuService){
+  constructor(notificationServices:UserNotificationService, systemNotificationServices:SystemNotificationService, menuService:MenuService,
+              sessionManagementService:SessionManagmentService){
     this._notificationServices = notificationServices;
     this._menuService = menuService;
     this._systemNotificationServices = systemNotificationServices;
+    this._sessionManagementService = sessionManagementService;
 
     this.processId = this.generateNotificationId();
     this._lockScreenIsActiveSub = this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
@@ -75,12 +83,22 @@ export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
     this._menuService.createDesktopShortcut.next();
   }
 
+  onCheckboxChange() {
+    console.log('Checkbox is checked:', this.isReopenWindowsChecked);
+  }
+
   onYesPowerDialogBox():void{
-    // if(this.selectedOption === Constants.SYSTEM_RESTART){
-    //   this._systemNotificationServices.restartSystemNotify.next();
-    // }else{
-    //   this._systemNotificationServices.shutDownSystemNotify.next();
-    // }
+    if(this.selectedOption === Constants.SYSTEM_RESTART){
+      if(!this.isReopenWindowsChecked)
+        this._sessionManagementService.clearAppSession();
+
+      this._systemNotificationServices.restartSystemNotify.next();
+    }else{
+      if(!this.isReopenWindowsChecked)
+        this._sessionManagementService.clearAppSession();
+
+      this._systemNotificationServices.shutDownSystemNotify.next();
+    }
   }
 
   onCloseDialogBox():void{

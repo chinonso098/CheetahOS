@@ -24,6 +24,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private _sessionManagmentService:SessionManagmentService
   private _audioService:AudioService;
 
+
   loginForm!: FormGroup;
   _formBuilder!:FormBuilder
   formCntrlName = 'loginInput';
@@ -89,6 +90,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._systemNotificationServices.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
+
+    this._systemNotificationServices.shutDownSystemNotify.subscribe(() => { this.shutDownOS()});
+    this._systemNotificationServices.restartSystemNotify.subscribe(() => { this.restartOS()});
   }
 
   ngOnInit():void {
@@ -135,6 +139,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }, secondsDelay[1]); 
 
     this._systemNotificationServices.showLockScreenNotify.next();
+    this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked);
     this.getPowerMenuData();
   }
 
@@ -227,6 +232,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
       this.isScreenLocked = false;
       this._systemNotificationServices.showDesktopNotify.next();
+      this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked );
       this.startLockScreenTimeOut();
 
       if(this.isUserLogedIn && this.isFirstLogIn)
@@ -247,6 +253,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.isScreenLocked = true;
       this.loginForm.controls[this.formCntrlName].setValue(null);
       this._systemNotificationServices.showLockScreenNotify.next();
+      this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked);
       this.storeState(Constants.SIGNED_OUT);
     }
   }

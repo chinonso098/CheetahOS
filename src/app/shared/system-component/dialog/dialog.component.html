@@ -162,14 +162,14 @@
         <div class="shutdown-restart-section shutdown-restart-section3">
             <div class="sr-section3-question">
                 <div class="sr-section3-chxbox">
-                    <input type="checkbox">
+                    <input type="checkbox" [(ngModel)]="isReopenWindowsChecked" (change)="onCheckboxChange()">
                 </div>
                 <div class="sr-section3-txt">
                     Reopen windows when loggin back in
                 </div>
             </div>
             <div class="sr-section3-btns">
-                <button class="btn btn-primary-pwr" (click)="onYesDialogBox()" >OK</button>
+                <button class="btn btn-primary-pwr" (click)="onYesPowerDialogBox()" >OK</button>
                 <button class="btn btn-secondary-pwr" (click)="onCloseDialogBox()">Cancel</button>
             </div>
         </div>
