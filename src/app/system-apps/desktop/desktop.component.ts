@@ -132,13 +132,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   clippyIntervalId!: NodeJS.Timeout;
   colorChgIntervalId!: NodeJS.Timeout;
 
-  readonly DESKTOP_DIRECTORY ='/Users/Desktop';
-  readonly DESKTOP_SCREEN_SHOT_DIRECTORY ='/Users/Documents/Screen-Shots';
-  readonly TERMINAL_APP ="terminal";
-  readonly TEXT_EDITOR_APP ="texteditor";
-  readonly CODE_EDITOR_APP ="codeeditor";
-  readonly MARKDOWN_VIEWER_APP ="markdownviewer";
-  readonly TASK_MANAGER_APP ="taskmanager";
+  private readonly DESKTOP_DIRECTORY ='/Users/Desktop';
+  private readonly DESKTOP_SCREEN_SHOT_DIRECTORY ='/Users/Documents/Screen-Shots';
+  private readonly TERMINAL_APP ="terminal";
+  private readonly TEXT_EDITOR_APP ="texteditor";
+  private readonly CODE_EDITOR_APP ="codeeditor";
+  private readonly MARKDOWN_VIEWER_APP ="markdownviewer";
+  private readonly TASK_MANAGER_APP ="taskmanager";
 
   waveBkgrnd:WAVE =  {el:'#vanta'}
   ringsBkgrnd:RINGS =  {el:'#vanta'}
@@ -147,27 +147,28 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   birdBkgrnd:BIRDS =  {el:'#vanta'}
 
   VANTAS:any = [this.waveBkgrnd, this.ringsBkgrnd,this.haloBkgrnd, this.globeBkgrnd, this.birdBkgrnd ];
-  private MIN_NUMS_OF_DESKTOPS = Constants.NUM_ZERO;
-  private MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - Constants.NUM_ONE;
-  private CURRENT_DESTOP_NUM = Constants.NUM_ZERO;
-  private CLIPPY_INIT_DELAY = 300000; // 5mins
-  private COLOR_CHANGE_DELAY = 60000; // 1min
-  private COLOR_TRANSITION_DURATION = 2000; // 2sec
+  private readonly MIN_NUMS_OF_DESKTOPS = Constants.NUM_ZERO;
+  private readonly MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - Constants.NUM_ONE;
+  private readonly CLIPPY_INIT_DELAY = 300000; // 5mins
+  private readonly COLOR_CHANGE_DELAY = 60000; // 1min
+  private readonly COLOR_TRANSITION_DURATION = 2000; // 2sec
+  private readonly MIN_NUM_COLOR_RANGE = 200;
+  private readonly MAX_NUM_COLOR_RANGE = 99999;
+  private readonly DEFAULT_COLOR = 0x274c;
 
-  private MIN_NUM_COLOR_RANGE = 200;
-  private MAX_NUM_COLOR_RANGE = 99999;
-  private DEFAULT_COLOR = 0x274c;
-  
+  private currentDesktopNum = Constants.NUM_ZERO;
+
+  readonly cheetahDsktpIconSortKey = 'cheetahDsktpIconSortKey';
+  readonly cheetahDsktpIconSizeKey = 'cheetahDsktpIconSizeKey';
+  readonly cheetahDsktpHideTaskBarKey = 'cheetahDsktpHideTaskBarKey';
+
+
   deskTopMenu:NestedMenu[] = [];
   taskBarContextMenuData:GeneralMenu[] = [];
   taskBarAppIconMenuData:GeneralMenu[] = [
     {icon:'', label: '', action: this.openApplicationFromTaskBar.bind(this)},
     {icon:'', label: '', action: ()=> console.log() },
   ];
-
-  /////////////////////////////////////////////////
-  private currentIconName = Constants.EMPTY_STRING;
-
 
   private isRenameActive = false;
   private isIconInFocusDueToPriorAction = false;
@@ -188,6 +189,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private hideCntxtMenuEvtCnt = Constants.NUM_ZERO;
   private btnClickCnt = Constants.NUM_ZERO;
   private renameFileTriggerCnt = Constants.NUM_ZERO; 
+  private currentIconName = Constants.EMPTY_STRING;
 
   iconCntxtMenuStyle:Record<string, unknown> = {};
   iconSizeStyle:Record<string, unknown> = {};
@@ -269,15 +271,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destroyed
     this._systemNotificationServices.showDesktopNotify.subscribe(() => {
-      this.startClippy();
       this.desktopIsActive();
       setTimeout(() => {
         this.poitionShortCutIconProperly();
       }, 10);
     })
     this._systemNotificationServices.showLockScreenNotify.subscribe(() => {
-      this.stopClippy(); 
-      this.hideVolumeControl();
       this.lockScreenIsActive();
     });
 
@@ -348,7 +347,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const startTime = performance.now();
 
     //Vanta wave
-    if(this.CURRENT_DESTOP_NUM === 0){
+    if(this.currentDesktopNum === 0){
       const animateColorTransition = (time: number) => {
         const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
         const interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
@@ -752,18 +751,18 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   previousBackground():void{
-    if(this.CURRENT_DESTOP_NUM > this.MIN_NUMS_OF_DESKTOPS){
-      this.CURRENT_DESTOP_NUM --;
-      const curNum = this.CURRENT_DESTOP_NUM;
+    if(this.currentDesktopNum > this.MIN_NUMS_OF_DESKTOPS){
+      this.currentDesktopNum --;
+      const curNum = this.currentDesktopNum;
       this.loadOtherBackgrounds(curNum);
     }
     this.hideDesktopContextMenuAndOthers();
   }
 
   nextBackground():void{
-    if(this.CURRENT_DESTOP_NUM < this.MAX_NUMS_OF_DESKTOPS){
-      this.CURRENT_DESTOP_NUM ++;
-      const curNum = this.CURRENT_DESTOP_NUM;
+    if(this.currentDesktopNum < this.MAX_NUMS_OF_DESKTOPS){
+      this.currentDesktopNum ++;
+      const curNum = this.currentDesktopNum;
       this.loadOtherBackgrounds(curNum);
     }
     
@@ -1206,17 +1205,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     clearTimeout(this.removeTskBarPrevWindowFromDOMTimeoutId);
   }
 
-
-  /* ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** **  
-    * ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** 
-    * ** ** ** ** ** ** ** ** ** ** ** ** MERGE POINT ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** 
-    * ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** 
-  */
-
   async onDrop(event:DragEvent):Promise<void>{
-  
     //Some about z-index is causing the drop to desktop to act funny.
-
     event.preventDefault();
     let droppedFiles:File[] = [];
 
@@ -1664,7 +1654,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     });
   }
 
-
   onDragEnd(evt:DragEvent):void{
     // Get the cloneIcon container
     const elementId = 'dsktpmngr_clone_cntnr';
@@ -1933,7 +1922,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
     }
   }
-  
 
   async onDeleteFile():Promise<void>{
     let result = false;
@@ -2109,7 +2097,7 @@ OpensWith=${selectedFile.getOpensWith}
   restorPriorOpenApps():void{
     if(!this.isRestored){
       setTimeout(()=> {
-        console.log('reopening apps......')
+        console.log('check for apps re-open......')
         this._processHandlerService.checkAndRestore();
         this.isRestored = true;
       }, this.SECONDS_DELAY[2]);
@@ -2118,11 +2106,14 @@ OpensWith=${selectedFile.getOpensWith}
 
   lockScreenIsActive():void{
     this.hideDesktopIcon();
+    this.stopClippy(); 
+    this.hideVolumeControl();
   }
 
   desktopIsActive():void{
     this.showDesktopIcon();
     this.restorPriorOpenApps();
+    this.startClippy();
   }
   
   private getComponentDetail():Process{

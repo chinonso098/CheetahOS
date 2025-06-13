@@ -50,7 +50,7 @@ export namespace Constants{
     export const NUM_SEVEN = 7;
     export const NUM_EIGHT = 8;
     export const NUM_NINE = 9;
-    export const NUM_TEN = 510;
+    export const NUM_TEN = 10;
     export const MINUS_ONE = -1;
 
     export const SERVICES_STATE_RUNNING = 'Running';
@@ -71,6 +71,8 @@ export namespace Constants{
 
     export const MERGED_TASKBAR_ENTRIES = 'Merged Entries Icon';
     export const DISTINCT_TASKBAR_ENTRIES = 'Distinct Entries Icon';
+
+    export const CHEETAH_TASKBAR_ENTRY_OPTION_KEY = 'cheetahTskBarEntryOptKey';
 
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
