@@ -49,7 +49,7 @@ export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
 
   selectedOption = 'Shut down';
   pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
-  notificationId = Constants.ZERO;
+  notificationId = Constants.NUM_ZERO;
   type = ComponentType.System;
   displayMgs = Constants.EMPTY_STRING;
 
@@ -58,7 +58,7 @@ export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
   hasWindow = false;
   isMaximizable = false;
   icon = Constants.EMPTY_STRING;
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   displayName = Constants.EMPTY_STRING;
 
   constructor(notificationServices:UserNotificationService, systemNotificationServices:SystemNotificationService, menuService:MenuService,

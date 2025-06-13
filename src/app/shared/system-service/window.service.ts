@@ -25,7 +25,7 @@ export class WindowService implements BaseService{
     private _processWindowStates:WindowState[];
     private _hiddenOrVisibleWindows:number[];
     private _eventOriginator = Constants.EMPTY_STRING;
-    private _processWindowWithTheHighestZIndex = Constants.ZERO;
+    private _processWindowWithTheHighestZIndex = Constants.NUM_ZERO;
 
     focusOnCurrentProcessWindowNotify: Subject<number> = new Subject<number>();
     focusOnNextProcessWindowNotify: Subject<number> = new Subject<number>();
@@ -58,7 +58,7 @@ export class WindowService implements BaseService{
     
     name = 'window_mgmt_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = Constants.ZERO;
+    processId = Constants.NUM_ZERO;
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
@@ -142,14 +142,14 @@ export class WindowService implements BaseService{
         if(this._processWindows.has(appName)){
             const currUids = this._processWindows.get(appName) || [];
 
-            const deleteCount = Constants.ONE;
+            const deleteCount = Constants.NUM_ONE;
             const uidIndex = currUids.indexOf(uid)
             if(uidIndex !== -1) {
                 currUids.splice(uidIndex, deleteCount);
                 this._processWindows.set(appName, currUids);
             }
 
-            if(currUids.length === Constants.ONE)
+            if(currUids.length === Constants.NUM_ONE)
                 this._processWindows.delete(appName);
         }
     }
@@ -170,7 +170,7 @@ export class WindowService implements BaseService{
     }
 
     removeProcessPreviewImage(appName:string, pid:number):void{
-        const deleteCount = Constants.ONE;
+        const deleteCount = Constants.NUM_ONE;
         if(this._processPreviewImages.has(appName)){
             const currImages = this._processPreviewImages.get(appName) || [];
             const dataIndex = currImages.findIndex(d => d.pid  === pid);
@@ -186,7 +186,7 @@ export class WindowService implements BaseService{
     }
 
     removeWindowState(pid:number):void{
-        const deleteCount = Constants.ONE;
+        const deleteCount = Constants.NUM_ONE;
         const winStateIdx = this._processWindowStates.findIndex(p => p.pid === pid);
 
         if(winStateIdx != -1){
@@ -229,7 +229,7 @@ export class WindowService implements BaseService{
             width: 0, height: 0,  x_axis: 0,  y_axis: 0, z_index: 0,is_visible: false,  pid: 0, app_name: ""
         }
 
-        if(this._processWindowStates.length === Constants.ZERO)
+        if(this._processWindowStates.length === Constants.NUM_ZERO)
             return winState.pid;
 
         for(let i = this._processWindowStates.length - 1; i >= 0;  i--){

@@ -22,7 +22,7 @@ export class ChatterService implements BaseService{
     private _sessionManagmentService:SessionManagmentService
     private _socketService!:SocketService;
 
-    private _connectedUserCounter = Constants.ZERO;
+    private _connectedUserCounter = Constants.NUM_ZERO;
     private _listTS = Constants.MINUS_ONE;
     private _comeOnlineTS = Constants.MINUS_ONE;
     private _chatData:ChatMessage[] = [];
@@ -59,7 +59,7 @@ export class ChatterService implements BaseService{
   
     name = 'chatter_msg_svc';
     icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
-    processId = Constants.ZERO;
+    processId = Constants.NUM_ZERO;
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
@@ -151,7 +151,7 @@ export class ChatterService implements BaseService{
             this._connectedUserCounter--;
         }
 
-        this.userCountChangeNotify.next(Constants.ZERO);
+        this.userCountChangeNotify.next(Constants.NUM_ZERO);
     }
 
     private updateUserCountAfterComparing(userCount:any){
@@ -161,7 +161,7 @@ export class ChatterService implements BaseService{
 
             if(tStamp < this._comeOnlineTS &&  uCount > this._connectedUserCounter){
                 this._connectedUserCounter = uCount;
-                this.userCountChangeNotify.next(Constants.ONE);
+                this.userCountChangeNotify.next(Constants.NUM_ONE);
             }
         }
     }
@@ -259,7 +259,7 @@ export class ChatterService implements BaseService{
                 isTyping:userInfo.isTyping as boolean,
             }
 
-           const deleteCount = Constants.ONE;
+           const deleteCount = Constants.NUM_ONE;
            const userInfoIdx = this._onlineUsers.findIndex(x => x.userId === offlineUser.userId);
            if (userInfoIdx !== Constants.MINUS_ONE) {
                 this._onlineUsers.splice(userInfoIdx, deleteCount);

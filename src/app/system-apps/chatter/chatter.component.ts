@@ -54,7 +54,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   ADD_AND_BROADCAST = 'Add&Broadcast';
   UPDATE = 'Update';
-  A_NEW_USER_HAS_JOINED_THE_CHAT_MSG = Constants.ZERO;
+  A_NEW_USER_HAS_JOINED_THE_CHAT_MSG = Constants.NUM_ZERO;
   USER_HAS_LEFT_THE_CHAT_MSG = 1;
   USER_CHANGED_NAME_MSG = 2;
   SCROLL_DELAY = 300;
@@ -64,8 +64,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   isTyping = false;
   isFirstOnlineUserUpdateResponse = true;
   messageLastRecieved = Constants.EMPTY_STRING;
-  scrollCounter = Constants.ZERO;
-  userCount = Constants.ZERO;
+  scrollCounter = Constants.NUM_ZERO;
+  userCount = Constants.NUM_ZERO;
 
   userNameAcronym = Constants.EMPTY_STRING;
   bkgrndIconColor = Constants.EMPTY_STRING;
@@ -74,13 +74,13 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   chatData: ChatMessage[] = [];
   onlineUsers: IUserData[] = [];
-  onlineUsersListFirstUpdateTS = Constants.ZERO;
+  onlineUsersListFirstUpdateTS = Constants.NUM_ZERO;
   chatUser!: IUser;
   chatUserData!:IUserData;
 
   RETRIEVAL_DELAY = 150;
-  currIteration = Constants.ZERO;
-  prevScrollHeight = Constants.ZERO;
+  currIteration = Constants.NUM_ZERO;
+  prevScrollHeight = Constants.NUM_ZERO;
 
 
   logonAudio = `${Constants.AUDIO_BASE_PATH}cheetah_logon.wav`;
@@ -92,7 +92,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
   name = 'chatter';
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.System;
   displayName = 'Chatter';
 
@@ -377,7 +377,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
   
   getRandomNum(min?:number, max?:number):number {
-    const defaultMin = Constants.ZERO;
+    const defaultMin = Constants.NUM_ZERO;
     const defaultMax = 100000;
     min =(min === undefined)? defaultMin :min;
     max =(max === undefined)? defaultMax : max;
@@ -386,7 +386,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
    /** Generates the next color dynamically */
   geIconColor(): string {
-    const defaultMin = Constants.ZERO;
+    const defaultMin = Constants.NUM_ZERO;
     const defaultMax = 36;
     const colorSet = ['#00FFFF', '#AAFF00', '#228B22', '#7CFC00', '#00A36C', '#32CD32', '#00FF7F','#FFBF00','#ECFFDC',
       '#F88379', '#FF4433', '#FF00FF', '#FFB6C1', '#E30B5C', '#800080', '#D8BFD8', '#AA98A9', '#7F00FF','#7B68EE',
@@ -462,7 +462,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     const remainingMessages = chatHistory.length - this.chatData.length;
     if (remainingMessages <= 0) return;
 
-    const startIdx = Math.max(remainingMessages - batchSize, Constants.ZERO);
+    const startIdx = Math.max(remainingMessages - batchSize, Constants.NUM_ZERO);
     const moreMessages = chatHistory.slice(startIdx, remainingMessages);
 
     this.chatData.unshift(...moreMessages);

@@ -27,7 +27,7 @@ import { Constants } from 'src/app/system-files/constants';
    @ViewChild('divWindow') divWindow!: ElementRef;
    @ViewChild('glassPaneContainer') glassPaneContainer!: ElementRef;
 
-   @Input() runningProcessID = Constants.ZERO;  
+   @Input() runningProcessID = Constants.NUM_ZERO;  
    @Input() processAppIcon = Constants.EMPTY_STRING;  
    @Input() processAppName = Constants.EMPTY_STRING;  
    @Input() priorUId = Constants.EMPTY_STRING;  
@@ -56,10 +56,10 @@ import { Constants } from 'src/app/system-files/constants';
 
   readonly SECONDS_DELAY = 450;
   readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
-  readonly HIDDEN_Z_INDEX = Constants.ZERO;
-  readonly MIN_Z_INDEX = Constants.ONE;
-  readonly MAX_Z_INDEX = Constants.TWO;
-  readonly TMP_MAX_Z_INDEX = Constants.THREE;
+  readonly HIDDEN_Z_INDEX = Constants.NUM_ZERO;
+  readonly MIN_Z_INDEX = Constants.NUM_ONE;
+  readonly MAX_Z_INDEX = Constants.NUM_TWO;
+  readonly TMP_MAX_Z_INDEX = Constants.NUM_THREE;
   readonly WIN_TOP = 25;
   readonly WIN_LEFT = 25;
 
@@ -81,13 +81,13 @@ import { Constants } from 'src/app/system-files/constants';
   windowWidth = '0px';
   windowHeight = '0px';
   windowZIndex = '0';
-  hsZIndex = Constants.TWO;
+  hsZIndex = Constants.NUM_TWO;
 
-  xAxisTmp = Constants.ZERO;
-  yAxisTmp = Constants.ZERO;
+  xAxisTmp = Constants.NUM_ZERO;
+  yAxisTmp = Constants.NUM_ZERO;
 
-  windowTop = Constants.ZERO;
-  windowLeft = Constants.ZERO;
+  windowTop = Constants.NUM_ZERO;
+  windowLeft = Constants.NUM_ZERO;
 
   isWindowMaximizable = true;
   currentWindowSizeState = false;
@@ -100,7 +100,7 @@ import { Constants } from 'src/app/system-files/constants';
   hasWindow = false;
   icon = Constants.EMPTY_STRING;
   name = 'Window';
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   uniqueId = Constants.EMPTY_STRING;
   uniqueGPId = Constants.EMPTY_STRING;
   type = ComponentType.System;
@@ -172,8 +172,8 @@ import { Constants } from 'src/app/system-files/constants';
         pid : this.processId,
         height:this.defaultHeightOnOpen,
         width: this.defaultWidthOnOpen,
-        x_axis: Constants.ZERO,
-        y_axis: Constants.ZERO,
+        x_axis: Constants.NUM_ZERO,
+        y_axis: Constants.NUM_ZERO,
         z_index:this.MAX_Z_INDEX,
         is_visible:true
       }
@@ -323,7 +323,7 @@ import { Constants } from 'src/app/system-files/constants';
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
           'z-index':zIndex,
-          'opacity': (zIndex > Constants.ZERO)? Constants.ONE : Constants.ZERO,
+          'opacity': (zIndex > Constants.NUM_ZERO)? Constants.NUM_ONE : Constants.NUM_ZERO,
           'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
         };
         window.z_index = zIndex;
@@ -337,7 +337,7 @@ import { Constants } from 'src/app/system-files/constants';
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
           'z-index':zIndex,
-          'opacity': (zIndex > Constants.ZERO)?  Constants.ONE : Constants.ZERO,
+          'opacity': (zIndex > Constants.NUM_ZERO)?  Constants.NUM_ONE : Constants.NUM_ZERO,
           'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
         };
       }
@@ -379,7 +379,7 @@ import { Constants } from 'src/app/system-files/constants';
       const y_axis = matrix1.m42;
 
       //ignore false drag
-      if( x_axis!== Constants.ZERO  && y_axis !== Constants.ZERO){
+      if( x_axis!== Constants.NUM_ZERO  && y_axis !== Constants.NUM_ZERO){
         const windowState = this._windowService.getWindowState(this.processId);
         const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
 
@@ -595,10 +595,10 @@ import { Constants } from 'src/app/system-files/constants';
     stackWindow():void{
       let newTop = this.WIN_TOP;
       let newLeft = this.WIN_LEFT;
-      let mainWindowWidth = Constants.ZERO;
-      let adjMainWindowWidth = Constants.ZERO;
-      let mainWindowHeight = Constants.ZERO;
-      let adjMainWindowHeight = Constants.ZERO;
+      let mainWindowWidth = Constants.NUM_ZERO;
+      let adjMainWindowWidth = Constants.NUM_ZERO;
+      let mainWindowHeight = Constants.NUM_ZERO;
+      let adjMainWindowHeight = Constants.NUM_ZERO;
 
       const offset = 2;
       const taskBarHeight = 40;
@@ -638,10 +638,10 @@ import { Constants } from 'src/app/system-files/constants';
         const availableVerticalRoom = adjMainWindowHeight - taskBarHeight - winCmpnt.height;
   
         // handle out of bounds
-        if((availableVerticalRoom < Constants.ZERO) || (availableHorizontalRoom < Constants.ZERO)){
+        if((availableVerticalRoom < Constants.NUM_ZERO) || (availableHorizontalRoom < Constants.NUM_ZERO)){
           //horizontally out of bounds
-          if(availableHorizontalRoom < Constants.ZERO){
-            const  leftSubtraction = (currentBound?.x_bounds_subtraction || Constants.ZERO) - offset;
+          if(availableHorizontalRoom < Constants.NUM_ZERO){
+            const  leftSubtraction = (currentBound?.x_bounds_subtraction || Constants.NUM_ZERO) - offset;
             const resetLeft = this.WIN_LEFT - (leftSubtraction * -1);
             newLeft = resetLeft;
             newTop = this.WIN_TOP;
@@ -654,8 +654,8 @@ import { Constants } from 'src/app/system-files/constants';
           }
   
           //vertinally out of bounds
-          if(availableVerticalRoom < Constants.ZERO){
-            const  topSubtraction = (currentBound?.y_bounds_subtraction || Constants.ZERO) - offset;
+          if(availableVerticalRoom < Constants.NUM_ZERO){
+            const  topSubtraction = (currentBound?.y_bounds_subtraction || Constants.NUM_ZERO) - offset;
             const resetTop = this.WIN_TOP - (topSubtraction * -1);
             newTop = resetTop;
             newLeft = this.WIN_LEFT;
@@ -680,8 +680,8 @@ import { Constants } from 'src/app/system-files/constants';
     }
 
     resetWindowBoundsState():void{
-      let newLeft = Constants.ZERO;
-      let newTop = Constants.ZERO;
+      let newLeft = Constants.NUM_ZERO;
+      let newTop = Constants.NUM_ZERO;
 
       const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
       const mainWindow = document.getElementById('vanta')?.getBoundingClientRect();
@@ -695,8 +695,8 @@ import { Constants } from 'src/app/system-files/constants';
         if(currentBound){
           currentBound.x_offset = newLeft;
           currentBound.y_offset = newTop
-          currentBound.x_bounds_subtraction = Constants.ZERO;
-          currentBound.y_bounds_subtraction = Constants.ZERO;
+          currentBound.x_bounds_subtraction = Constants.NUM_ZERO;
+          currentBound.y_bounds_subtraction = Constants.NUM_ZERO;
 
           this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
         }
@@ -948,7 +948,7 @@ import { Constants } from 'src/app/system-files/constants';
           'left': `${this.windowLeft}%`,
           'z-index':this.HIDDEN_Z_INDEX,
           'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-          'opacity': Constants.ZERO,
+          'opacity': Constants.NUM_ZERO,
         };
         this._windowService.addWindowState(windowState);   
       }
@@ -963,7 +963,7 @@ import { Constants } from 'src/app/system-files/constants';
             'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-            'opacity': Constants.ONE
+            'opacity': Constants.NUM_ONE
           };
         }else{
           this.currentStyles = {
@@ -971,7 +971,7 @@ import { Constants } from 'src/app/system-files/constants';
             'left': `${this.windowLeft}%`,
             'z-index':this.MIN_Z_INDEX,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-            'opacity': Constants.ONE
+            'opacity': Constants.NUM_ONE
           };
         }
         this._windowService.addWindowState(windowState);   

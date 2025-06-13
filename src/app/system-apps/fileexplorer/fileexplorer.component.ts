@@ -85,9 +85,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private propertiesViewFile!:FileInfo
   private selectedElementId = Constants.MINUS_ONE;
   private prevSelectedElementId = Constants.MINUS_ONE; 
-  private hideCntxtMenuEvtCnt = Constants.ZERO;
-  private btnClickCnt = Constants.ZERO;
-  private renameFileTriggerCnt = Constants.ZERO; 
+  private hideCntxtMenuEvtCnt = Constants.NUM_ZERO;
+  private btnClickCnt = Constants.NUM_ZERO;
+  private renameFileTriggerCnt = Constants.NUM_ZERO; 
   private currentIconName = Constants.EMPTY_STRING;
 
   isSearchBoxNotEmpty = false;
@@ -97,8 +97,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showIconCntxtMenu = false;
   showFileExplrCntxtMenu = false;
   showInformationTip = false;
-  iconCntxtCntr = Constants.ZERO;
-  fileExplrCntxtCntr = Constants.ZERO;
+  iconCntxtCntr = Constants.NUM_ZERO;
+  fileExplrCntxtCntr = Constants.NUM_ZERO;
   //hideInformationTip = false;
 
   fileExplrCntxtMenuStyle:Record<string, unknown> = {};
@@ -129,7 +129,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
   defaultviewOption = ViewOptions.MEDIUM_ICON_VIEW;
   currentViewOption = ViewOptions.MEDIUM_ICON_VIEW;
-  currentViewOptionId = Constants.THREE;
+  currentViewOptionId = Constants.NUM_THREE;
   
   readonly smallIconsView = ViewOptions.SMALL_ICON_VIEW;
   readonly mediumIconsView = ViewOptions.MEDIUM_ICON_VIEW;
@@ -209,7 +209,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   navPathIcon = `${Constants.IMAGE_BASE_PATH}this_pc.png`;
   isMaximizable = false;
   name = 'fileexplorer';
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.System;
   directory =Constants.ROOT;
   displayName = 'fileexplorer';

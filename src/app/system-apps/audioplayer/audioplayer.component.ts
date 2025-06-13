@@ -76,7 +76,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   hasWindow = true;
   isMaximizable=false;
   icon = `${Constants.IMAGE_BASE_PATH}audioplayer.png`;
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.User;
   displayName = 'Howlerjs';
   showTopMenu = false;
@@ -131,7 +131,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
             frequency: 2
           });
   
-          if(this.playList.length == Constants.ZERO){
+          if(this.playList.length == Constants.NUM_ZERO){
             this.loadHowlSingleTrackObjectAsync()
                 .then(howl => { this.audioPlayer = howl; 
                   this._audioService.addExternalAudioSrc(this.name, howl);
@@ -443,7 +443,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
         autoSuspend: false,
         onend:()=>{
           //console.log('Finished!');
-          this.siriWave.canvas.style.opacity = Constants.ZERO;
+          this.siriWave.canvas.style.opacity = Constants.NUM_ZERO;
           this.bar.nativeElement.style.display = 'block';
           this.pauseBtn.nativeElement.style.display = 'none';
           this.playBtn.nativeElement.style.display = 'block';

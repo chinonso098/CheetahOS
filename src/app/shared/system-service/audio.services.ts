@@ -33,7 +33,7 @@ export class AudioService implements BaseService {
   
   name = 'audio_svc';
   icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ProcessType.Cheetah;
   status  = Constants.SERVICES_STATE_RUNNING;
   hasWindow = false;
@@ -151,7 +151,7 @@ export class AudioService implements BaseService {
     if(check)
       this._externalAudioSrc.delete(srcName);
     
-    if(this._externalAudioSrc.size === Constants.ZERO)
+    if(this._externalAudioSrc.size === Constants.NUM_ZERO)
       this.isExternalAudioSrcPresent = false;
   }
 

@@ -35,7 +35,7 @@ export class AppComponent implements AfterViewInit {
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'system';
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
 

@@ -11,7 +11,7 @@ export class TaskBarEntryComponent implements OnInit, OnChanges {
 
   @Input() taskBarIconImgUrl = Constants.EMPTY_STRING;
   @Input() taskBarIconName = Constants.EMPTY_STRING;
-  @Input() taskBarPid = Constants.ZERO;
+  @Input() taskBarPid = Constants.NUM_ZERO;
   @Input() taskBarEntryType = Constants.EMPTY_STRING;
   @Output() restoreOrMinizeWindowEvent = new EventEmitter<number>();
 
@@ -24,7 +24,7 @@ export class TaskBarEntryComponent implements OnInit, OnChanges {
   hover = false;
   icon = Constants.EMPTY_STRING;
   name = Constants.EMPTY_STRING;
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   defaultIcon = Constants.EMPTY_STRING;

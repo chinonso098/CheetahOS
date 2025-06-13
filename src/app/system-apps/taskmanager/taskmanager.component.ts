@@ -56,11 +56,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     order: 'asc',
   }  
 
-  private sleepNumber = Constants.ZERO;
-  private sleepCounter = Constants.ZERO;
-  private processNumberToSuspend = Constants.ZERO;
-  private refreshRateInterval = Constants.ZERO;
-  private processIdToClose = Constants.ZERO;
+  private sleepNumber = Constants.NUM_ZERO;
+  private sleepCounter = Constants.NUM_ZERO;
+  private processNumberToSuspend = Constants.NUM_ZERO;
+  private refreshRateInterval = Constants.NUM_ZERO;
+  private processIdToClose = Constants.NUM_ZERO;
 
   statusColumnVisible = true;
   cpuColumnVisible = true;
@@ -96,20 +96,20 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     "cmpnt_ref_svc", "file_mgr_svc", "file_svc", "menu_svc", "notification_svc", "pid_gen_svc", "rning_proc_svc", "scripts_svc",
     "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc", "window_mgmt_svc", "audio_svc"];
   groupedData: any = {};
-  selectedRefreshRate = Constants.ZERO;
+  selectedRefreshRate = Constants.NUM_ZERO;
 
-  cpuUtil = Constants.ZERO;
-  memUtil = Constants.ZERO;
-  diskUtil = Constants.ZERO;
-  networkUtil = Constants.ZERO;
-  gpuUtil = Constants.ZERO;
+  cpuUtil = Constants.NUM_ZERO;
+  memUtil = Constants.NUM_ZERO;
+  diskUtil = Constants.NUM_ZERO;
+  networkUtil = Constants.NUM_ZERO;
+  gpuUtil = Constants.NUM_ZERO;
   powerUtil = 'Very low';
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}taskmanager.png`;
   isMaximizable=false;
   name = 'taskmanager';
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.System;
   displayName = 'Task Manager';
 
@@ -313,11 +313,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.ONE;
+          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.NUM_ONE;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.ONE
+          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.NUM_ONE
         }).reverse();
       }
     }else if(column == TableColumns.PROCESS_NAME){
@@ -326,11 +326,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.ONE;
+          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.NUM_ONE;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.ONE
+          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.NUM_ONE
         }).reverse();
       }
     }else if(column == TableColumns.POWER_USAGE){
@@ -339,11 +339,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getPowerUsage < objB.getPowerUsage ? Constants.MINUS_ONE : Constants.ONE;
+          return objA.getPowerUsage < objB.getPowerUsage ? Constants.MINUS_ONE : Constants.NUM_ONE;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getPowerUsage < objB.getPowerUsage ? Constants.MINUS_ONE : Constants.ONE
+          return objA.getPowerUsage < objB.getPowerUsage ? Constants.MINUS_ONE : Constants.NUM_ONE
         }).reverse();
       }
     }else if(column == TableColumns.TYPE){
@@ -352,11 +352,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getType < objB.getType ? Constants.MINUS_ONE : Constants.ONE;
+          return objA.getType < objB.getType ? Constants.MINUS_ONE : Constants.NUM_ONE;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getType < objB.getType ? Constants.MINUS_ONE : Constants.ONE
+          return objA.getType < objB.getType ? Constants.MINUS_ONE : Constants.NUM_ONE
         }).reverse();
       }
     }
@@ -374,8 +374,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       'display': 'block', 
       'width': '180px', 
       'transform':`translate(${x}px, ${y - 65}px)`,
-      'z-index': Constants.TWO,
-      'opacity': Constants.ONE
+      'z-index': Constants.NUM_TWO,
+      'opacity': Constants.NUM_ONE
     }
 
     evt.preventDefault();
@@ -501,13 +501,13 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     const powerLevels:string[] = ['Very low','Low','Moderate','High','Very high'];
 
     const maxAppUtilNum = 30; // should be 100
-    const minAppUtilNum = Constants.ZERO;
+    const minAppUtilNum = Constants.NUM_ZERO;
 
-    const maxBkgrndProcUtilNum = Constants.THREE;
-    const minBkgrndProcUtilNum = Constants.ZERO;
+    const maxBkgrndProcUtilNum = Constants.NUM_THREE;
+    const minBkgrndProcUtilNum = Constants.NUM_ZERO;
 
-    const maxCheetahProcUtilNum = Constants.TWO;
-    const minCheetahProcUtilNum = Constants.ZERO;
+    const maxCheetahProcUtilNum = Constants.NUM_TWO;
+    const minCheetahProcUtilNum = Constants.NUM_ZERO;
     const suspended = 'Suspended';
 
     const maxNum = 10;

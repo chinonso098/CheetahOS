@@ -40,12 +40,17 @@ export namespace Constants{
 
     export const RESERVED_ID_RUNNING_PROCESS_SERVICE = 4;
     
-    export const ZERO = 0;
-    export const ONE = 1;
-    export const TWO = 2;
-    export const THREE = 3;
-    export const FOUR = 4;
-    export const FIVE = 5;
+    export const NUM_ZERO = 0;
+    export const NUM_ONE = 1;
+    export const NUM_TWO = 2;
+    export const NUM_THREE = 3;
+    export const NUM_FOUR = 4;
+    export const NUM_FIVE = 5;
+    export const NUM_SIX = 6;
+    export const NUM_SEVEN = 7;
+    export const NUM_EIGHT = 8;
+    export const NUM_NINE = 9;
+    export const NUM_TEN = 510;
     export const MINUS_ONE = -1;
 
     export const SERVICES_STATE_RUNNING = 'Running';

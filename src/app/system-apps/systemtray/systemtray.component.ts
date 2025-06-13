@@ -18,7 +18,7 @@ export class SystemtrayComponent implements OnInit {
   private _runningProcessService;
   private _systemNotificationServices:SystemNotificationService;
   private _audioService!:AudioService;
-  private currentVolume = Constants.ZERO;
+  private currentVolume = Constants.NUM_ZERO;
 
   taskBarArrowIcon = `${Constants.IMAGE_BASE_PATH}taskbar_arrow_up.png`;
   audioIcon = `${Constants.IMAGE_BASE_PATH}no_volume.png`;
@@ -31,7 +31,7 @@ export class SystemtrayComponent implements OnInit {
   hover = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'system tray';
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.System
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService,audioService:AudioService, systemNotificationServices:SystemNotificationService) { 

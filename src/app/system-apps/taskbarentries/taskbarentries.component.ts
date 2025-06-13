@@ -50,14 +50,14 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   taskBarEntriesIconState = this.unMergedIcons;
   hideShowLabelState = this.showLabel;
 
-  windowInFocusPid = Constants.ZERO;
-  prevWindowInFocusPid = Constants.ZERO;
+  windowInFocusPid = Constants.NUM_ZERO;
+  prevWindowInFocusPid = Constants.NUM_ZERO;
   isAnyWindowInFocus = false;
   
   hasWindow = false;
   icon =  `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'taskbarentry';
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   tmpInfo!:string[];
@@ -283,7 +283,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   }
 
   handleMergedTaskbarIcons():void{
-    const delay = Constants.FIVE; // 5 millisecs
+    const delay = Constants.NUM_FIVE; // 5 millisecs
     const uniqueProccesses = this.getUniqueProccessWithWindows();
     this.storeHistory(uniqueProccesses);
 
@@ -293,16 +293,16 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
         const newIcon = this.getTaskBarIconInfo(undefined, process);
         newIcon.isPinned = isPinned;
         newIcon.isOtherPinned = isPinned;
-        newIcon.instanceCount = Constants.ONE;
+        newIcon.instanceCount = Constants.NUM_ONE;
         this.mergedTaskBarIconList.push(newIcon);
       }else{
         // increment instance counter
         //check to ensure that the pid and processname, aren't already in the list
         const tskBarIcon = this.mergedTaskBarIconList.find(i => i.opensWith === process.getProcessName);
         if(tskBarIcon){
-          if(tskBarIcon.pid === Constants.ZERO){
+          if(tskBarIcon.pid === Constants.NUM_ZERO){
             tskBarIcon.pid = process.getProcessId;
-            tskBarIcon.instanceCount = tskBarIcon.instanceCount + Constants.ONE;
+            tskBarIcon.instanceCount = tskBarIcon.instanceCount + Constants.NUM_ONE;
           }else{
             const instanceCount = this._runningProcessService.getProcessCount(process.getProcessName);
             tskBarIcon.instanceCount = instanceCount;
@@ -362,7 +362,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   }
 
   checkIfIconWasPinned(procName:string):boolean{
-    const deleteCount = Constants.ONE;
+    const deleteCount = Constants.NUM_ONE;
     const pinnedIconIdx = this.pinnedTaskBarIconList.findIndex(x => x.opensWith === procName);
 
     if (pinnedIconIdx === Constants.MINUS_ONE) return false;
@@ -373,7 +373,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   checkForPriorIcon(pid:number, iconPath:string):string{
     const tmpInfo = this._systemNotificationService.getAppIconNotication(pid);
-    if(tmpInfo.length > Constants.ZERO){
+    if(tmpInfo.length > Constants.NUM_ZERO){
       const priorIcon = tmpInfo[1];
       return priorIcon;
     }
@@ -526,7 +526,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   updateMergedTaskbarIconListOnClose(process:Process):void{
     const idx = this.mergedTaskBarIconList.findIndex(x => x.opensWith === process.getProcessName);
-    const delay = Constants.FIVE; //5ms
+    const delay = Constants.NUM_FIVE; //5ms
 
     if(idx === Constants.MINUS_ONE) return;
 
@@ -540,7 +540,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
       .some(p=> p.getProcessName === process.getProcessName);
 
     if(!isAppRunning && !tskBarIcon.isPinned){
-      this.removeIconFromTaskBarIconList(Constants.ZERO, process.getProcessName, true);
+      this.removeIconFromTaskBarIconList(Constants.NUM_ZERO, process.getProcessName, true);
 
     }else if((isAppRunning && tskBarIcon.isPinned) || (isAppRunning && !tskBarIcon.isPinned)){
       const instanceCount = this._runningProcessService.getProcessCount(process.getProcessName);
@@ -572,7 +572,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
         isRunning:currentState.isRunning,
         isPinned:true,
         isOtherPinned:true,
-        instanceCount: Constants.ZERO,
+        instanceCount: Constants.NUM_ZERO,
       }
     }else if(process){
       const currentState = this.getAppCurrentState(undefined,process);
@@ -588,7 +588,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
         isRunning:currentState.isRunning,
         isPinned:false,
         isOtherPinned:false,
-        instanceCount: Constants.ZERO,
+        instanceCount: Constants.NUM_ZERO,
       }
     }
 
@@ -597,10 +597,10 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   removeIconFromTaskBarIconList(pid:number, opensWith:string, isDefault:boolean):void{
     const isMerged = (this.taskBarEntriesIconState === this.mergedIcons)
-    const deleteCount = Constants.ONE;
+    const deleteCount = Constants.NUM_ONE;
     const tskBarIcons = (isMerged)? this.mergedTaskBarIconList : this.unMergedTaskBarIconList;
 
-    let procIndex  = Constants.ZERO;
+    let procIndex  = Constants.NUM_ZERO;
     if(isDefault){
       procIndex = (isMerged)? tskBarIcons.findIndex(x => x.opensWith === opensWith) : tskBarIcons.findIndex(x => x.pid === pid);
     }else{
@@ -624,14 +624,14 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
     if(this.taskBarEntriesIconState === this.mergedIcons){
       const instanceCount = this._runningProcessService.getProcessCount(file.opensWith);
-      if(instanceCount === Constants.ONE){
+      if(instanceCount === Constants.NUM_ONE){
         const process = this._runningProcessService.getProcesses().find(x => x.getProcessName === file.opensWith);
         if(process){
           this.handleWindowState(process.getProcessId, pidWithHighestZIndex); 
         }
       }
     }else if(this.taskBarEntriesIconState === this.unMergedIcons){
-      if(file.pid === Constants.ZERO) return;
+      if(file.pid === Constants.NUM_ZERO) return;
 
       this.handleWindowState(file.pid, pidWithHighestZIndex);   
     }
@@ -663,7 +663,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     }
 
     // this removes other window state data
-    const falsePid = Constants.ZERO;
+    const falsePid = Constants.NUM_ZERO;
     const falseUid = `${process.getProcessName}-${falsePid}`;
     this._windowServices.cleanUp(falseUid);
   }
@@ -697,7 +697,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     if(rect){
       if(this.checkForMultipleActiveInstance(opensWith)) {
         rect.x = this.getAverageOfRectX(opensWith);
-        const cnstnt = Constants.ZERO;
+        const cnstnt = Constants.NUM_ZERO;
         const tmpX= (rect.x * 0.5); 
         const offSet = this.calculateOffset(opensWith);
         rect.x = tmpX - offSet + cnstnt;
@@ -922,14 +922,14 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
     if(!this.sessionPinnedTaskbarIcons.some(x => x.opensWith === app_data.opensWith) && (action === this.pinAction)){
       app_data.uid = `${app_data.opensWith}-0`;
-      app_data.pid = Constants.ZERO;
+      app_data.pid = Constants.NUM_ZERO;
       app_data.iconPath = app_data.defaultIconPath;
       app_data.isRunning = false;
       app_data.showLabel = this.hideLabel;
     
       this.sessionPinnedTaskbarIcons.push(app_data);
     }else if(this.sessionPinnedTaskbarIcons.some(x => x.opensWith === app_data.opensWith) && (action === this.unPinAction)){
-      const deleteCount = Constants.ONE;
+      const deleteCount = Constants.NUM_ONE;
       const tskBarIconIndex = this.sessionPinnedTaskbarIcons.findIndex(x => x.opensWith === app_data.opensWith);
       if (tskBarIconIndex !== Constants.MINUS_ONE) {
         this.sessionPinnedTaskbarIcons.splice(tskBarIconIndex, deleteCount);
@@ -941,7 +941,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   retrievePastSessionData():void{
     const tskBarData = this._sessionManagmentService.getSession(this.cheetahTskBarKey) as TaskBarIconInfo[];
-    
+
     if(tskBarData !== undefined)
       this.sessionPinnedTaskbarIcons.push(...tskBarData);
   }

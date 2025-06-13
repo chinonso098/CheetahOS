@@ -42,8 +42,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private _appState!:AppState;
 
 
-  private msgPosCounter = Constants.ZERO;
-  private prevPtrIndex = Constants.ZERO;
+  private msgPosCounter = Constants.NUM_ZERO;
+  private prevPtrIndex = Constants.NUM_ZERO;
   private versionNum = '1.0.4.4';
   private SECONDS_DELAY:number[] = [120,250];
   private doesDirExist = true;
@@ -57,10 +57,10 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   stateOne = 'S1';
   stateTwo = 'S2';
 
-  Success = Constants.ONE;
-  Fail = Constants.TWO;
-  Warning = Constants.THREE;
-  Options = Constants.FOUR;
+  Success = Constants.NUM_ONE;
+  Fail = Constants.NUM_TWO;
+  Warning = Constants.NUM_THREE;
+  Options = Constants.NUM_FOUR;
 
   isBannerVisible = true;
   isWelcomeVisible = true;
@@ -78,12 +78,12 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   haveISeenThisAutoCmplt = Constants.EMPTY_STRING;
 
   terminalForm!: FormGroup;
-  dirEntryTraverseCntr = Constants.ZERO;
-  directoryTraversalDepth = Constants.ZERO;
+  dirEntryTraverseCntr = Constants.NUM_ZERO;
+  directoryTraversalDepth = Constants.NUM_ZERO;
   readonly SCROLL_DELAY = 300;
   firstSection = true;
   secondSection = false;
-  sectionTabPressCntnr = Constants.ZERO;
+  sectionTabPressCntnr = Constants.NUM_ZERO;
 
   firstSectionCntr = Constants.MINUS_ONE;
   secondSectionCntr = Constants.MINUS_ONE;
@@ -94,7 +94,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   isMaximizable = false;
   icon = `${Constants.IMAGE_BASE_PATH}terminal.png`;
   name = 'terminal';
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.System;
   displayName = 'Terminal';
 
@@ -1086,7 +1086,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     if(appSessionData !== null && appSessionData.app_data != Constants.EMPTY_STRING){
         const terminalCmds =  appSessionData.app_data as string[];
         for(let i = 0; i < terminalCmds.length; i++){
-          const cmd = new TerminalCommand(terminalCmds[i], Constants.ZERO, Constants.EMPTY_STRING);
+          const cmd = new TerminalCommand(terminalCmds[i], Constants.NUM_ZERO, Constants.EMPTY_STRING);
           this.commandHistory.push(cmd);
         }
     }

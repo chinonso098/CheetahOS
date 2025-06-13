@@ -40,7 +40,7 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
   private camera!: any
   private scene!: any
  
-  private animationId = Constants.ZERO;
+  private animationId = Constants.NUM_ZERO;
   private PARTICLE_SIZE = 500;
   private SPREAD_RADIUS = 450;
 
@@ -52,7 +52,7 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
   icon = `${Constants.IMAGE_BASE_PATH}star_field.png`;
   isMaximizable = false;
   name = 'starfield';
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.User;
   displayName = 'StarField';
 

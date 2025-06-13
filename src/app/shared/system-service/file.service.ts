@@ -44,7 +44,7 @@ export class FileService implements BaseService{
 
     name = 'file_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = Constants.ZERO;
+    processId = Constants.NUM_ZERO;
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
@@ -69,7 +69,7 @@ export class FileService implements BaseService{
         // Using setTimeout ensures it runs after the constructor has returned
         setTimeout(() => {
             this.initBrowserFsAsync();
-        }, Constants.ZERO);
+        }, Constants.NUM_ZERO);
     }
 
     private async initBrowserFsAsync():Promise<void>{
@@ -163,7 +163,7 @@ export class FileService implements BaseService{
                             });
                         }else{
                             //console.log('copyFileAsync Error:',err);
-                            this._fileExistsMap.set(`${destPath}/${fileName}`, Constants.ZERO);
+                            this._fileExistsMap.set(`${destPath}/${fileName}`, Constants.NUM_ZERO);
                             resolve(true);
                         }
                     });
@@ -227,7 +227,7 @@ export class FileService implements BaseService{
                     });
                 }else{
                     console.log(`err:${err}`);
-                    this._fileExistsMap.set(`${directory}/${fileName}`,Constants.ZERO);
+                    this._fileExistsMap.set(`${directory}/${fileName}`,Constants.NUM_ZERO);
                     resolve(true);
                 }
             });
@@ -518,7 +518,7 @@ export class FileService implements BaseService{
 
     public async movehandler(destinationArg:string, folderQueue:string[]):Promise<boolean>{
 
-        if(folderQueue.length === Constants.ZERO)
+        if(folderQueue.length === Constants.NUM_ZERO)
             return true;
 
         const sourcePath = folderQueue.shift() || Constants.EMPTY_STRING;
@@ -582,7 +582,7 @@ export class FileService implements BaseService{
                                 resolve(true);
                             });
                         }else{
-                            this._fileExistsMap.set(`${directory}/${file.name}`, Constants.ZERO);
+                            this._fileExistsMap.set(`${directory}/${file.name}`, Constants.NUM_ZERO);
                             resolve(true);
                         }
                     });
@@ -610,7 +610,7 @@ export class FileService implements BaseService{
                         resolve(true);
                     });
                 }else{
-                    this._fileExistsMap.set(`${destPath}/${file.getFileName}`,Constants.ZERO);
+                    this._fileExistsMap.set(`${destPath}/${file.getFileName}`,Constants.NUM_ZERO);
                     resolve(true);
                 }
             });
@@ -723,8 +723,8 @@ export class FileService implements BaseService{
         const extension = extname(path);
         const filename = basename(path, extension);
 
-        let count = this._fileExistsMap.get(path) || Constants.ZERO;
-        count = count + Constants.ONE;
+        let count = this._fileExistsMap.get(path) || Constants.NUM_ZERO;
+        count = count + Constants.NUM_ONE;
         this._fileExistsMap.set(path, count);
 
         return `${dirname(path)}/${filename} (${count})${extension}`;
@@ -772,7 +772,7 @@ export class FileService implements BaseService{
 
     pathCorrection(path:string):string{
         if(path.slice(Constants.MINUS_ONE) === Constants.ROOT)
-            return path.slice(Constants.ZERO, Constants.MINUS_ONE);
+            return path.slice(Constants.NUM_ZERO, Constants.MINUS_ONE);
         else
             return path;
     }

@@ -21,7 +21,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
    @ViewChild('bdivWindow') bdivWindow!: ElementRef;
    @ViewChild('bglassPaneContainer') bglassPaneContainer!: ElementRef;
 
-   @Input() runningProcessID = Constants.ZERO;  
+   @Input() runningProcessID = Constants.NUM_ZERO;  
    @Input() processAppIcon = Constants.EMPTY_STRING;  
    @Input() processAppName = Constants.EMPTY_STRING;  
 
@@ -46,10 +46,10 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
    private _showOpenWindowsSub!:Subscription;
    private _closeCurrentProcessSub!:Subscription;
 
-  readonly HIDDEN_Z_INDEX = Constants.ZERO;
-  readonly MIN_Z_INDEX = Constants.ONE;
-  readonly MAX_Z_INDEX = Constants.TWO;
-  readonly TMP_MAX_Z_INDEX = Constants.THREE;
+  readonly HIDDEN_Z_INDEX = Constants.NUM_ZERO;
+  readonly MIN_Z_INDEX = Constants.NUM_ONE;
+  readonly MAX_Z_INDEX = Constants.NUM_TWO;
+  readonly TMP_MAX_Z_INDEX = Constants.NUM_THREE;
 
   windowHide = false;
   windowMaximize = false;
@@ -58,8 +58,8 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
   windowHeight = '0px';
   windowZIndex = '0';
 
-  xAxisTmp = Constants.ZERO;
-  yAxisTmp = Constants.ZERO;
+  xAxisTmp = Constants.NUM_ZERO;
+  yAxisTmp = Constants.NUM_ZERO;
 
   // windowTop = Constants.ZERO;
   // windowLeft = Constants.ZERO;
@@ -74,7 +74,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
   hasWindow = false;
   icon = Constants.EMPTY_STRING;
   name = 'Window';
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   uniqueId = Constants.EMPTY_STRING;
   uniqueGPId = Constants.EMPTY_STRING;
   type = ComponentType.System;
@@ -145,8 +145,8 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
         pid : this.processId,
         height:this.defaultHeightOnOpen,
         width: this.defaultWidthOnOpen,
-        x_axis: Constants.ZERO,
-        y_axis: Constants.ZERO,
+        x_axis: Constants.NUM_ZERO,
+        y_axis: Constants.NUM_ZERO,
         z_index:this.MAX_Z_INDEX,
         is_visible:true
       }
@@ -257,7 +257,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
           // 'top': `${this.windowTop}%`,
           // 'left': `${this.windowLeft}%`,
           'z-index':zIndex,
-          'opacity': (zIndex > Constants.ZERO)? Constants.ONE : Constants.ZERO,
+          'opacity': (zIndex > Constants.NUM_ZERO)? Constants.NUM_ONE : Constants.NUM_ZERO,
           'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
         };
         window.z_index = zIndex;
@@ -271,7 +271,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
           // 'top': `${this.windowTop}%`,
           // 'left': `${this.windowLeft}%`,
           'z-index':zIndex,
-          'opacity': (zIndex > Constants.ZERO)?  Constants.ONE : Constants.ZERO,
+          'opacity': (zIndex > Constants.NUM_ZERO)?  Constants.NUM_ONE : Constants.NUM_ZERO,
           'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
         };
       }
@@ -284,7 +284,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
       const y_axis = matrix1.m42;
 
       //ignore false drag
-      if( x_axis!== Constants.ZERO  && y_axis !== Constants.ZERO){
+      if( x_axis!== Constants.NUM_ZERO  && y_axis !== Constants.NUM_ZERO){
         const windowState = this._windowService.getWindowState(this.processId);
         const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
 
@@ -598,7 +598,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
           // 'left': `${this.windowLeft}%`,
           'z-index':this.HIDDEN_Z_INDEX,
           'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-          'opacity': Constants.ZERO,
+          'opacity': Constants.NUM_ZERO,
         };
         this._windowService.addWindowState(windowState);   
       }
@@ -613,7 +613,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
             // 'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-            'opacity': Constants.ONE
+            'opacity': Constants.NUM_ONE
           };
         }else{
           this.currentWinStyles = {
@@ -621,7 +621,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
             // 'left': `${this.windowLeft}%`,
             'z-index':this.MIN_Z_INDEX,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-            'opacity': Constants.ONE
+            'opacity': Constants.NUM_ONE
           };
         }
         this._windowService.addWindowState(windowState);   

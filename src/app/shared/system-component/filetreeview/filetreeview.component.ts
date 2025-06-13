@@ -11,8 +11,8 @@ import { Constants } from 'src/app/system-files/constants';
   styleUrl: './filetreeview.component.css'
 })
 export class FileTreeViewComponent implements OnInit, OnChanges {
-  @Input() pid = Constants.ZERO;
-  @Input() level = Constants.ZERO;
+  @Input() pid = Constants.NUM_ZERO;
+  @Input() level = Constants.NUM_ZERO;
   @Input() showRoot = true;
   @Input() isHoverActive = false;
   @Input() levelSrcId = '';
@@ -26,8 +26,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   expandedViews:string[]= [];
   selectedElementId = '';
   isClicked = false;
-  processId = Constants.ZERO;
-  nextLevel = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
+  nextLevel = Constants.NUM_ZERO;
   nextLevelSrcId = Constants.EMPTY_STRING;
   negTen = -10;
   name = 'filetreeview';
@@ -77,7 +77,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   showChildren(name:string):void{
-    let ulId = Constants.EMPTY_STRING;   let imgId = Constants.EMPTY_STRING; const lvl = Constants.ZERO;
+    let ulId = Constants.EMPTY_STRING;   let imgId = Constants.EMPTY_STRING; const lvl = Constants.NUM_ZERO;
 
     if(name === 'tp-fileExplrTreeView'){
       ulId = `ul-${this.pid}-${lvl}`;

@@ -62,7 +62,7 @@ export class ProcessHandlerService implements BaseService{
 
     name = 'trgr_proc_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = Constants.ZERO;
+    processId = Constants.NUM_ZERO;
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
@@ -219,7 +219,7 @@ export class ProcessHandlerService implements BaseService{
     }
 
     private deleteEntryFromUserOpenedAppsAndSession(proccess:Process):void{
-      const deleteCount = Constants.ONE;
+      const deleteCount = Constants.NUM_ONE;
       const uid = `${proccess.getProcessName}-${proccess.getProcessId}`;
 
       let pidIndex = this.userOpenedAppsList.indexOf(proccess.getProcessName);

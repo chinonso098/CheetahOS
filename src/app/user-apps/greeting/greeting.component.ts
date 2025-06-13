@@ -14,7 +14,7 @@ export class GreetingComponent implements OnInit, BaseComponent {
   hasWindow = true;
   icon = 'favicon.ico';
   name = 'greeting';
-  processId = Constants.ZERO;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.User;
   displayName = Constants.EMPTY_STRING;
 
