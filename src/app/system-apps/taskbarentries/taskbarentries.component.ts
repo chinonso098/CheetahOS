@@ -28,12 +28,13 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   private _sessionManagmentService:SessionManagmentService
 
   private prevOpenedProccesses:string[]= [];
-  SECONDS_DELAY = 50; //50 millisecs
   mergedTaskBarIconList:TaskBarIconInfo[] = [];
   unMergedTaskBarIconList:TaskBarIconInfo[] = [];
   pinnedTaskBarIconList:TaskBarIconInfo[] = [];
+  sessionPinnedTaskbarIcons:TaskBarIconInfo[] = [];
 
   selectedFile!:FileInfo
+  SECONDS_DELAY = 50; //50 millisecs
 
   readonly mergedIcons = Constants.MERGED_TASKBAR_ENTRIES;
   readonly unMergedIcons = Constants.DISTINCT_TASKBAR_ENTRIES;
@@ -41,7 +42,10 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   readonly hideLabel = 'hideLabel';
   readonly showLabel = 'showLabel';
   readonly tskbar = 'tskbar';
+
   readonly cheetahTskBarKey = 'cheetahTskBarKey';
+  readonly pinAction = 'pin';
+  readonly unPinAction = 'unPin';
 
   taskBarEntriesIconState = this.unMergedIcons;
   hideShowLabelState = this.showLabel;
@@ -113,6 +117,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.retrievePastSessionData();
+    this.fetchPriorData();
   }
 
   ngAfterViewInit(): void {
@@ -121,6 +126,14 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       this.setIconsBasedOnTaskbarMode();
     }, delay);
+  }
+
+  fetchPriorData():void{
+    if(this.taskBarEntriesIconState === this.unMergedIcons){
+      this.unMergedTaskBarIconList.push(...this.sessionPinnedTaskbarIcons);
+    }else{
+      this.mergedTaskBarIconList.push(...this.sessionPinnedTaskbarIcons);
+    }
   }
 
   updateRunningProcess():void{
@@ -143,12 +156,15 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     if(!tskBarIcons.some(x => x.opensWith === file.getOpensWith)){
       tskbarFileInfo = this.getTaskBarIconInfo(file,undefined);
       tskBarIcons.push(tskbarFileInfo);
+      this.storeTskBarState(tskbarFileInfo, this.pinAction);
     }else{
       if(!tskBarIcons.some(x => x.opensWith === file.getOpensWith && x.isPinned)){
         const unPinnedIcon = tskBarIcons.find(x => x.opensWith === file.getOpensWith);
         if(unPinnedIcon){
           unPinnedIcon.isPinned = true;
           unPinnedIcon.isOtherPinned = true;
+
+          this.storeTskBarState(unPinnedIcon, this.pinAction);
 
           if(!isMerged){
             tskBarIcons.forEach(item => {
@@ -172,11 +188,13 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
     const pinnedIconIdx = tskBarIcons.findIndex( x => x.opensWith === file.getOpensWith && x.isPinned);
 
-    if(pinnedIconIdx === -1) return;
+    if(pinnedIconIdx === Constants.MINUS_ONE) return;
     
     const pinnedIcon = tskBarIcons[pinnedIconIdx];
     pinnedIcon.isPinned = false;
     pinnedIcon.isOtherPinned = false;
+
+    this.storeTskBarState(pinnedIcon, this.unPinAction);
 
     //update other instances of app, set isOtherPinned = false;
     if(!isMerged){
@@ -900,12 +918,32 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     this._windowServices.restoreOrMinimizeProcessWindowNotify.next(processId);
   }
 
-  storeAppState(app_data:TaskBarIconInfo[]):void{
-    this._sessionManagmentService.addSession(this.cheetahTskBarKey, app_data);
+  storeTskBarState(app_data:TaskBarIconInfo, action:string):void{
+
+    if(!this.sessionPinnedTaskbarIcons.some(x => x.opensWith === app_data.opensWith) && (action === this.pinAction)){
+      app_data.uid = `${app_data.opensWith}-0`;
+      app_data.pid = Constants.ZERO;
+      app_data.iconPath = app_data.defaultIconPath;
+      app_data.isRunning = false;
+      app_data.showLabel = this.hideLabel;
+    
+      this.sessionPinnedTaskbarIcons.push(app_data);
+    }else if(this.sessionPinnedTaskbarIcons.some(x => x.opensWith === app_data.opensWith) && (action === this.unPinAction)){
+      const deleteCount = Constants.ONE;
+      const tskBarIconIndex = this.sessionPinnedTaskbarIcons.findIndex(x => x.opensWith === app_data.opensWith);
+      if (tskBarIconIndex !== Constants.MINUS_ONE) {
+        this.sessionPinnedTaskbarIcons.splice(tskBarIconIndex, deleteCount);
+      }
+    }
+
+    this._sessionManagmentService.addSession(this.cheetahTskBarKey, this.sessionPinnedTaskbarIcons);
   }
 
   retrievePastSessionData():void{
     const tskBarData = this._sessionManagmentService.getSession(this.cheetahTskBarKey) as TaskBarIconInfo[];
+    
+    if(tskBarData !== undefined)
+      this.sessionPinnedTaskbarIcons.push(...tskBarData);
   }
 
   private getComponentDetail():Process{
