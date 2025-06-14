@@ -694,6 +694,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   onMouseEnter(opensWith:string, pid:number, iconPath:string):void{
     const rect = this.highlightTaskbarIconOnMouseHover(opensWith, pid);
+    console.log('WAAAAAAA!!!');
     if(rect){
       if(this.checkForMultipleActiveInstance(opensWith)) {
         rect.x = this.getAverageOfRectX(opensWith);
