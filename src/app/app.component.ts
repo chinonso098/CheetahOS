@@ -1,4 +1,4 @@
-import {Component,ViewChild, ViewContainerRef, AfterViewInit} from '@angular/core';
+import {Component,ViewChild, ViewContainerRef, OnInit, AfterViewInit} from '@angular/core';
 
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from './shared/system-service/running.process.service';
@@ -61,8 +61,10 @@ export class AppComponent implements AfterViewInit {
     const cheetahLogonKey = this._sessionManagmentService.getSession(Constants.CHEETAH_LOGON_KEY) as string;
     const cheetahPwrKey = this._sessionManagmentService.getSession(Constants.CHEETAH_PWR_KEY) as string;
 
-    if(cheetahPwrKey === Constants.SYSTEM_ON && cheetahLogonKey === Constants.SIGNED_IN )
+    if(cheetahPwrKey === Constants.SYSTEM_ON && cheetahLogonKey === Constants.SIGNED_IN){
       this._audioService.play(this.noAudio);
+    }
+
 
     if(this.itemViewContainer)
       this._componentReferenceService.setViewContainerRef(this.itemViewContainer);

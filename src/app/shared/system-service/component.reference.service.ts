@@ -22,7 +22,7 @@ export class ComponentReferenceService implements BaseService{
 
     name = 'cmpnt_ref_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = 0;
+    processId = Constants.NUM_ZERO;
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;

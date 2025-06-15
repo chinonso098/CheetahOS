@@ -693,8 +693,15 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   }
 
   onMouseEnter(opensWith:string, pid:number, iconPath:string):void{
+
     const rect = this.highlightTaskbarIconOnMouseHover(opensWith, pid);
-    console.log('WAAAAAAA!!!');
+    const isAppRunning = this._runningProcessService.getProcesses().some(x => x.getProcessName === opensWith);
+    if(!isAppRunning){
+      const data = [[rect?.left, rect?.top], [opensWith]]; 
+      this._systemNotificationService.showTaskBarToolTipNotify.next(data);
+
+      return;
+    }
     if(rect){
       if(this.checkForMultipleActiveInstance(opensWith)) {
         rect.x = this.getAverageOfRectX(opensWith);
@@ -823,7 +830,8 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   onMouseLeave(processName?:string, pid?:number):void{
     this._windowServices.hideProcessPreviewWindowNotify.next();
-
+    this._systemNotificationService.hideTaskBarToolTipNotify.next();
+    
     if(processName && pid)
       this._systemNotificationService.taskBarPreviewUnHighlightNotify.next(`${processName}-${pid}`);
     

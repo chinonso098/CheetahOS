@@ -182,3 +182,20 @@
     margin: 0;
     padding: 0;
 }
+
+.tskbar-tooltip-container{
+    width: fit-content;
+    height: 16px;
+    background-color: #F5F5DC;
+    /* bottom: 46px; */
+}
+
+.tskbar-tooltip-txt{
+    position: relative;
+    color: #000;
+    font-size: 12px;
+    padding: 1px 2px;
+    font-weight: 200;
+    background-color: #F5F5DC;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}

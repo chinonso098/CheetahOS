@@ -103,6 +103,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   autoArrangeIcons = true;
   showDesktopIcons = true;
   showDesktopScreenShotPreview = false;
+  showTaskBarIconToolTip = false;
   showStartMenu = false;
   showVolumeControl = false;
   showDesktopIconCntxtMenu = false;
@@ -114,12 +115,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   tskBarAppIconMenuStyle:Record<string, unknown> = {};
   tskBarCntxtMenuStyle:Record<string, unknown> = {};
   tskBarPrevWindowStyle:Record<string, unknown> = {};
+  tskBarToolTipStyle:Record<string, unknown> = {};
+
   deskTopMenuOption =  Constants.NESTED_MENU_OPTION;
   showDesktopCntxtMenu = false;
   showTskBarAppIconMenu = false;
   showTskBarCntxtMenu = false;
   showTskBarPreviewWindow = false;
   tskBarPreviewWindowState = 'in';
+  tskBarToolTipText = Constants.EMPTY_STRING;
   tskBarAppIconMenuOption =  Constants.TASK_BAR_APP_ICON_MENU_OPTION;
   tskBarContextMenuOption = Constants.TASK_BAR_CONTEXT_MENU_OPTION
   menuOrder = Constants.DEFAULT_MENU_ORDER;
@@ -239,9 +243,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService, 
-              scriptService: ScriptService, audioService: AudioService, menuService: MenuService, 
+              scriptService:ScriptService, audioService:AudioService, menuService:MenuService, 
               fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
-              formBuilder: FormBuilder, elRef: ElementRef ) { 
+              formBuilder:FormBuilder, elRef:ElementRef) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -281,6 +285,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     });
 
     this._menuService.updateTaskBarContextMenu.subscribe(()=>{this.resetMenuOption()});
+    this._systemNotificationServices.showTaskBarToolTipNotify.subscribe((p)=>{this.showTaskBarToolTip(p)});
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -542,7 +547,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   hideDesktopContextMenuAndOthers(caller?:string):void{
-
     /**
      * There is a doubling of responses to certain events that exist on the 
      * desktop compoonent and any other component running at the time the event was triggered.
@@ -1176,7 +1180,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.tskBarPrevWindowStyle = {
       'position':'absolute',
-      'transform':`translate(${String((rect.x))}px, ${String(rect.y - 131)}px)`,
+      'transform':`translate(${String(rect.x)}px, ${String(rect.y - 131)}px)`,
       'z-index': Constants.NUM_FIVE,
     }
   }
@@ -1192,8 +1196,25 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }, 300)
   }
 
+
   keepTaskBarPreviewWindow():void{
     this.clearTimeout();
+  }
+
+  showTaskBarToolTip(data:unknown[]):void{
+    console.log('did the tt show:', data);
+
+    const rect = data[0] as number[];
+    const appName = data[1] as string;
+
+    this.tskBarToolTipText = appName;
+    this.showTaskBarIconToolTip = true
+
+    this.tskBarToolTipStyle = {
+      'position':'absolute',
+      'z-index': Constants.NUM_FIVE,
+      'transform': `translate(${rect[0] - 6}px, ${rect[1] - 20}px)`
+    }
   }
 
   removeOldTaskBarPreviewWindowNow():void{

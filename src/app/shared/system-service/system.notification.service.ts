@@ -30,6 +30,8 @@ export class SystemNotificationService implements BaseService{
 
     hideTaskBarNotify: Subject<void> = new Subject<void>();
     showTaskBarNotify: Subject<void> = new Subject<void>();
+    showTaskBarToolTipNotify: Subject<unknown[]> = new Subject<unknown[]>();
+    hideTaskBarToolTipNotify: Subject<void> = new Subject<void>();
     taskBarIconInfoChangeNotify: Subject<Map<number, string[]>> = new Subject<Map<number, string[]>>();
     taskBarPreviewHighlightNotify: Subject<string> = new Subject<string>();
     taskBarPreviewUnHighlightNotify: Subject<string> = new Subject<string>();

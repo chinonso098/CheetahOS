@@ -64,6 +64,12 @@
                 <img [src]="dsktpPrevImg"/>
             </div>
         }
+
+        @if(showTaskBarIconToolTip){
+            <div class="tskbar-tooltip-container" [style]="tskBarToolTipStyle" >
+                <p class="tskbar-tooltip-txt"> {{tskBarToolTipText}}</p>
+            </div>
+        }
     
         <div #selectPaneContainer id="dskTopMultiSelectPane"></div>
 
