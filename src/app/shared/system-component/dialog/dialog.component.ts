@@ -50,7 +50,7 @@ export class DialogComponent implements BaseComponent, OnChanges {
 
   selectedOption = 'Shut down';
   pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
-  notificationId = Constants.NUM_ZERO;
+  //notificationId = Constants.NUM_ZERO;
   type = ComponentType.System;
   displayMgs = Constants.EMPTY_STRING;
 

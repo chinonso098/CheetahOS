@@ -404,7 +404,8 @@ import { Constants } from 'src/app/system-files/constants';
         }
       }else{ 
         this._notificationServices.closeDialogMsgBox(this.processId);
-        this._windowService.cleanUp(this.uniqueId);}
+        this._windowService.cleanUp(this.uniqueId);
+      }
 
       const nextProc = this.getNextProcess();
       if(nextProc){

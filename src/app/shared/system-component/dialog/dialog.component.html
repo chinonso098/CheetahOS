@@ -4,8 +4,8 @@
 </ng-container>
 
 <ng-template #errorNotice>
-    <cos-basicwindow [runningProcessID]="notificationId" [processAppName]="this.displayMgs" [showPocessAppIcon]="false">
-        <div ngDraggable class="error-dialog-main-container" id="error-dialog-{{notificationId}}">
+    <cos-basicwindow [runningProcessID]="processId" [processAppName]="this.displayMgs" [showPocessAppIcon]="false">
+        <div ngDraggable class="error-dialog-main-container" id="error-dialog-{{processId}}">
             <div class="error-dialog-mid-container">
                 <div class="error-dialog-mid-section1">
                     <div class="error-dialog-mid-img1">
@@ -33,7 +33,7 @@
 </ng-template>
 
 <ng-template #infoNotice>
-    <div ngDraggable [handle]="leftHS2" class="info-dialog-main-container" id="info-dialog-{{notificationId}}">    
+    <div ngDraggable [handle]="leftHS2" class="info-dialog-main-container" id="info-dialog-{{processId}}">    
         <div #leftHS2 class="info-dialog-mid-container" tabindex="0">
             <div class="info-dialog-mid-section1">
                 <div class="info-dialog-mid-img1">
@@ -59,7 +59,7 @@
 
 
 <ng-template #warningNotice>
-    <div ngDraggable [handle]="leftHS3" class="warning-dialog-main-container" id="warning-dialog-{{notificationId}}">   
+    <div ngDraggable [handle]="leftHS3" class="warning-dialog-main-container" id="warning-dialog-{{processId}}">   
         <div class="warning-dialog-heading-text"><p>Shortcut</p></div> 
         <div #leftHS3 class="warning-dialog-mid-container" tabindex="0">
             <div class="warning-dialog-mid-section1">
@@ -91,7 +91,7 @@
 
 
 <ng-template #shutDownRestartNotice >
-    <div ngDraggable [handle]="leftHS4"  class="shutdown-restart-dialog-main-container" id="shutdown-restart-dialog-{{notificationId}}">
+    <div ngDraggable [handle]="leftHS4"  class="shutdown-restart-dialog-main-container" id="shutdown-restart-dialog-{{processId}}">
         <div class="shutdown-restart-dialog-header-container" tabindex="0">
             <div #leftHS4 class="shutdown-restart-dialog-left-header-section">
                 <h1 class="shutdown-restart-dialog-h1">
