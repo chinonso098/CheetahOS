@@ -1,16 +1,19 @@
 import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChanges, ViewChild, ChangeDetectorRef, SimpleChanges, Renderer2 } from '@angular/core';
 
 import { ComponentType } from 'src/app/system-files/system.types';
-import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+
+import { MenuService } from '../../system-service/menu.services';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { ProcessHandlerService } from '../../system-service/process.handler.service';
+import { UserNotificationService } from '../../system-service/user.notification.service';
+import { SystemNotificationService } from '../../system-service/system.notification.service';
+import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+
 import {Subscription } from 'rxjs';
 import { WindowState  } from '../window/windows.types';
-
 import { Process } from 'src/app/system-files/process';
-import { SystemNotificationService } from '../../system-service/system.notification.service';
-import { MenuService } from '../../system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
-import { ProcessHandlerService } from '../../system-service/process.handler.service';
+
 
 @Component({
   selector: 'cos-basicwindow',
@@ -24,6 +27,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
    @Input() runningProcessID = Constants.NUM_ZERO;  
    @Input() processAppIcon = Constants.EMPTY_STRING;  
    @Input() processAppName = Constants.EMPTY_STRING;  
+   @Input() showPocessAppIcon = true;  
 
    private _runningProcessService:RunningProcessService;
    private _systemNotificationServices:SystemNotificationService;
@@ -31,6 +35,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
    private _originalWindowsState!:WindowState;
    private _menuService!:MenuService;
    private _processHandlerService!:ProcessHandlerService;
+   private _notificationServices:UserNotificationService;
 
    private _focusOnNextProcessSub!:Subscription;
    private _focusOnCurrentProcessSub!:Subscription;
@@ -64,7 +69,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
   // windowTop = Constants.ZERO;
   // windowLeft = Constants.ZERO;
 
-  isWindowMaximizable = true;
+  isProcessAppIconVisible = true;
   currentWinStyles: Record<string, unknown> = {};
   headerActiveStyles: Record<string, unknown> = {}; 
   closeBtnStyles: Record<string, unknown> = {};
@@ -83,12 +88,13 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
 
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, private renderer: Renderer2,
                 windowService:WindowService, systemNotificationServices:SystemNotificationService, menuService: MenuService, 
-                controlProcessService:ProcessHandlerService){
+                controlProcessService:ProcessHandlerService, notificationServices:UserNotificationService){
       this._runningProcessService = runningProcessService;
       this._windowService = windowService;
       this._systemNotificationServices = systemNotificationServices;
       this._menuService = menuService;
       this._processHandlerService = controlProcessService;
+      this._notificationServices = notificationServices;
  
       this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusAndResetWindowBoundsByPid(p)});
       this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p)});
@@ -119,6 +125,8 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
       this.processId = this.runningProcessID;
       this.icon = this.processAppIcon;
       this.name = this.processAppName;
+      this.isProcessAppIconVisible = this.showPocessAppIcon;
+
     
       this.uniqueId = `${this.name}-${this.processId}`;
       this._runningProcessService.newProcessNotify.next(this.uniqueId);
@@ -128,7 +136,6 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
 
       this._windowService.addProcessWindowToWindows(this.uniqueId); 
       this.resetHideShowWindowsList();
-  
     }
 
     ngAfterViewInit():void{
@@ -389,11 +396,15 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
       this._windowService.removeWindowState(this.processId);
       this.removeSilhouette(this.processId);
 
-      const processToClose = this._runningProcessService.getProcess(this.processId);
-      if(processToClose){
-        this._processHandlerService.closeApplicationProcess(processToClose);
-        this._windowService.cleanUp(this.uniqueId);
-      }
+      if(this.isProcessAppIconVisible){ // if it is visible, then the window is not a dialog box
+        const processToClose = this._runningProcessService.getProcess(this.processId);
+        if(processToClose){
+          this._processHandlerService.closeApplicationProcess(processToClose);
+          this._windowService.cleanUp(this.uniqueId);
+        }
+      }else{ 
+        this._notificationServices.closeDialogMsgBox(this.processId);
+        this._windowService.cleanUp(this.uniqueId);}
 
       const nextProc = this.getNextProcess();
       if(nextProc){

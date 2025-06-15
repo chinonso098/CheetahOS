@@ -73,6 +73,10 @@ img{
   margin: 0 6px 0 8px; 
 }
 
+.img-padding{
+  padding-right: 10px;
+}
+
 figure{
   display: flex;
   align-items: center;

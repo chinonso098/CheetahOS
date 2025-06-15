@@ -20,11 +20,11 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
   private _runningProcessService:RunningProcessService;
   private _changeDetectorRef: ChangeDetectorRef
 
-  toolTipText = '';
-  gifPath = '';
-  randomSelection = -1;
-  selectedDuration = -1;
-  selectedAnimation = '';
+  toolTipText = Constants.EMPTY_STRING;
+  gifPath = Constants.EMPTY_STRING;
+  randomSelection = Constants.MINUS_ONE;
+  selectedDuration = Constants.MINUS_ONE;
+  selectedAnimation = Constants.EMPTY_STRING;
 
   isToolTipVisible = false;
 

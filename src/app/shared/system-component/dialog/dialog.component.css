@@ -1,6 +1,13 @@
 /*Head Section*/
 
-.error-dialog-main-container, .info-dialog-main-container, .warning-dialog-main-container{
+.error-dialog-main-container{
+    font-size: 1rem;
+    text-align: center;
+    background-color: #fff;
+    width: 350px;
+}
+
+.info-dialog-main-container, .warning-dialog-main-container{
     font-size: 1rem;
     text-align: center;
     background-color: #fff;
@@ -8,7 +15,7 @@
     position: absolute;
     top: 25%;
     left: 25%;
-    transform: translate(-50%, -50%); /* Move the element back by 50% of its own width and height */
+    transform: translate(-50%, -50%); 
     outline: 1px hsl(0deg 0% 20%/70%);
     z-index: 2;
 }
@@ -16,7 +23,7 @@
 
 .error-dialog-main-container{
     width: 350px;
-    height: 170px;
+    height: 140px;
 }
 
 .error-dialog-header-container{

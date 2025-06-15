@@ -1,13 +1,14 @@
-import {Component, Input, OnChanges, OnDestroy, SimpleChanges} from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { UserNotificationType } from 'src/app/system-files/notification.type';
 
 import { MenuService } from '../../system-service/menu.services';
 import { UserNotificationService } from '../../system-service/user.notification.service';
 import { SessionManagmentService } from '../../system-service/session.management.service';
+import { ProcessIDService } from '../../system-service/process.id.service';
+import { WindowService } from '../../system-service/window.service';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
 
-import { Subscription } from 'rxjs';
 import { Constants } from 'src/app/system-files/constants';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 
@@ -18,18 +19,18 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
   styleUrls: ['./dialog.component.css']
 })
 
-export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
+export class DialogComponent implements BaseComponent, OnChanges {
 
   @Input() inputMsg = Constants.EMPTY_STRING;
   @Input() notificationType = Constants.EMPTY_STRING;
 
   private _notificationServices:UserNotificationService;
-  private _systemNotificationServices:SystemNotificationService;
+  private _windowService:WindowService;
   private _sessionManagementService: SessionManagmentService;
   private _menuService:MenuService;
+  private _processIdService:ProcessIDService;
+  private _systemNotificationServices:SystemNotificationService;
 
-  private _deskTopIsActiveSub!:Subscription;
-  private _lockScreenIsActiveSub!:Subscription;
 
   notificationOption = Constants.EMPTY_STRING;
   errorNotification = UserNotificationType.Error;
@@ -61,16 +62,16 @@ export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
   processId = Constants.NUM_ZERO;
   displayName = Constants.EMPTY_STRING;
 
-  constructor(notificationServices:UserNotificationService, systemNotificationServices:SystemNotificationService, menuService:MenuService,
-              sessionManagementService:SessionManagmentService){
+  constructor(notificationServices:UserNotificationService, menuService:MenuService, windowService:WindowService,
+              systemNotificationServices:SystemNotificationService, sessionManagementService:SessionManagmentService, processIdService:ProcessIDService){
     this._notificationServices = notificationServices;
     this._menuService = menuService;
-    this._systemNotificationServices = systemNotificationServices;
     this._sessionManagementService = sessionManagementService;
+    this._processIdService = processIdService;
+    this._windowService = windowService;
+    this._systemNotificationServices = systemNotificationServices;
 
-    this.processId = this.generateNotificationId();
-    this._lockScreenIsActiveSub = this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._deskTopIsActiveSub = this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    this.processId = this._processIdService.getNewProcessId();
   }
 
   ngOnChanges(changes: SimpleChanges):void{
@@ -103,6 +104,20 @@ export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
 
   onCloseDialogBox():void{
     this._notificationServices.closeDialogMsgBox(this.processId);
+    this._windowService.removeWindowState(this.processId);
+    //this.removeSilhouette(this.processId);
+  }
+
+  removeSilhouette(pid:number):void{
+    const uniqueId = `${this.name}-${this.processId}`;
+    const uniqueGPId = `bgp-${uniqueId}`;
+
+    if(this.processId === pid){
+      const glassPane= document.getElementById(uniqueGPId) as HTMLDivElement;
+      if (glassPane) {
+        glassPane.remove();
+      } 
+    }
   }
 
   onPwrOptionSelect(event: any):void{
@@ -111,10 +126,6 @@ export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
     this.pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
   }
 
-  ngOnDestroy(): void {
-    this._deskTopIsActiveSub?.unsubscribe();
-    this._lockScreenIsActiveSub?.unsubscribe();
-  }
 
   private generateNotificationId(): number{
     //Yes! it is notification id, not process id. so why the range below 1000, 
@@ -123,49 +134,4 @@ export class DialogComponent implements BaseComponent, OnChanges, OnDestroy {
     const max = 999;
     return Math.floor(Math.random() * (max - min + 1)) + min; 
   }
-
-  lockScreenIsActive():void{
-    const errDiagElmnt = document.getElementById(`error-dialog-${this.processId}`) as HTMLDivElement;
-    if(errDiagElmnt) {
-      errDiagElmnt.style.zIndex = '0';
-    }
-
-    const infoDiagElmnt = document.getElementById(`info-dialog-${this.processId}`) as HTMLDivElement;
-    if(infoDiagElmnt) {
-      infoDiagElmnt.style.zIndex = '0';
-    }
-
-    const warnDiagElmnt = document.getElementById(`warning-dialog-${this.processId}`) as HTMLDivElement;
-    if(warnDiagElmnt) {
-      warnDiagElmnt.style.zIndex = '0';
-    }
-
-    const pwrDiagElmnt = document.getElementById(`shutdown-restart-dialog-${this.processId}`) as HTMLDivElement;
-    if(pwrDiagElmnt) {
-      pwrDiagElmnt.style.zIndex = '0';
-    }
-  }
-
-  desktopIsActive():void{
-    const errDiagElmnt = document.getElementById(`error-dialog-${this.processId}`) as HTMLDivElement;
-    if(errDiagElmnt) {
-      errDiagElmnt.style.zIndex = '2';
-    }
-
-    const infoDiagElmnt = document.getElementById(`info-dialog-${this.processId}`) as HTMLDivElement;
-    if(infoDiagElmnt) {
-      infoDiagElmnt.style.zIndex = '2';
-    }
-
-    const warnDiagElmnt = document.getElementById(`warning-dialog-${this.processId}`) as HTMLDivElement;
-    if(warnDiagElmnt) {
-      warnDiagElmnt.style.zIndex = '2';
-    }
-
-    const pwrDiagElmnt = document.getElementById(`shutdown-restart-dialog-${this.processId}`) as HTMLDivElement;
-    if(pwrDiagElmnt) {
-      pwrDiagElmnt.style.zIndex = '2';
-    }
-  }
-
 }

@@ -182,8 +182,11 @@ export class ProcessHandlerService implements BaseService{
         if(componentToLoad !== undefined){   
             const cmpntRef =  this._componentReferenceService.createComponent(componentToLoad.type);
 
-            if(priorUID && (priorUID !== Constants.EMPTY_STRING))
+            if(priorUID && (priorUID !== Constants.EMPTY_STRING)){
+                console.log('CLIPPY IS GETTING ON MY NERVES:', priorUID);
                 cmpntRef.setInput('priorUId',priorUID);
+            }
+
 
             this.addEntryFromUserOpenedAppssAndSession(cmpntRef);
             //alert subscribers

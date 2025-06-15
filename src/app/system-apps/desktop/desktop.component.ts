@@ -133,6 +133,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   previousDisplayedTaskbarPreview = Constants.EMPTY_STRING;
   removeTskBarPrevWindowFromDOMTimeoutId!: NodeJS.Timeout;
   hideTskBarPrevWindowTimeoutId!: NodeJS.Timeout;
+  showTskBarToolTipTimeoutId!: NodeJS.Timeout;
   clippyIntervalId!: NodeJS.Timeout;
   colorChgIntervalId!: NodeJS.Timeout;
 
@@ -286,6 +287,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this._menuService.updateTaskBarContextMenu.subscribe(()=>{this.resetMenuOption()});
     this._systemNotificationServices.showTaskBarToolTipNotify.subscribe((p)=>{this.showTaskBarToolTip(p)});
+    this._systemNotificationServices.hideTaskBarToolTipNotify.subscribe(() => {this.hideTaskBarToolTip()});
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -376,14 +378,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   stopClippy():void{
-    this.showClippy = false;
     const appName = 'clippy';
-    clearInterval(this.clippyIntervalId);
-
     //check if clippy is running, and end it
     const clippy = this._runningProcessService.getProcessByName(appName);
     if(clippy)
-      this._runningProcessService.closeProcessNotify.next(clippy)
+      this._runningProcessService.closeProcessNotify.next(clippy);
+
+    clearInterval(this.clippyIntervalId);
+    this.showClippy = false;
   }
 
   startClippy():void{
@@ -1175,7 +1177,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }else{
       this.showTskBarPreviewWindow = true;
       this.tskBarPreviewWindowState = 'in';
-      this.clearTimeout();
+      this.clearTskBarRelatedTimeout();
     }
 
     this.tskBarPrevWindowStyle = {
@@ -1198,30 +1200,40 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
 
   keepTaskBarPreviewWindow():void{
-    this.clearTimeout();
+    this.clearTskBarRelatedTimeout();
   }
 
   showTaskBarToolTip(data:unknown[]):void{
-    console.log('did the tt show:', data);
-
+    const delay = 1500; //1.5secs
     const rect = data[0] as number[];
     const appName = data[1] as string;
 
     this.tskBarToolTipText = appName;
-    this.showTaskBarIconToolTip = true
 
-    this.tskBarToolTipStyle = {
-      'position':'absolute',
-      'z-index': Constants.NUM_FIVE,
-      'transform': `translate(${rect[0] - 6}px, ${rect[1] - 20}px)`
-    }
+   this.showTskBarToolTipTimeoutId = setTimeout(() => {
+      this.showTaskBarIconToolTip = true
+      this.tskBarToolTipStyle = {
+        'position':'absolute',
+        'z-index': Constants.NUM_FIVE,
+        'transform': `translate(${rect[0] - 6}px, ${rect[1] - 20}px)`
+      }
+    }, delay);
+  }
+
+  hideTaskBarToolTip():void{
+    const delay = 200; //200msecs
+
+    clearTimeout(this.showTskBarToolTipTimeoutId);
+    setTimeout(() => {
+      this.showTaskBarIconToolTip = false;
+    }, delay);
   }
 
   removeOldTaskBarPreviewWindowNow():void{
     this.showTskBarPreviewWindow = false;
   }
 
-  clearTimeout():void{
+  clearTskBarRelatedTimeout():void{
     clearTimeout(this.hideTskBarPrevWindowTimeoutId);
     clearTimeout(this.removeTskBarPrevWindowFromDOMTimeoutId);
   }
@@ -2126,8 +2138,8 @@ OpensWith=${selectedFile.getOpensWith}
   }
 
   lockScreenIsActive():void{
-    this.hideDesktopIcon();
-    this.stopClippy(); 
+    this.stopClippy();
+    this.hideDesktopIcon(); 
     this.hideVolumeControl();
   }
 
