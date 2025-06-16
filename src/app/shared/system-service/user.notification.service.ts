@@ -23,7 +23,7 @@ export class UserNotificationService implements BaseService{
 
     name = 'usr_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = 0;
+    processId = Constants.NUM_ZERO;
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;

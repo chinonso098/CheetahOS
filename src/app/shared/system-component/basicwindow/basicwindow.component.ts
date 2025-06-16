@@ -26,8 +26,9 @@ import { Constants } from 'src/app/system-files/constants';
 
    @Input() runningProcessID = Constants.NUM_ZERO;  
    @Input() processAppIcon = Constants.EMPTY_STRING;  
+   @Input() displayMessage = Constants.EMPTY_STRING;  
    @Input() processAppName = Constants.EMPTY_STRING;  
-   @Input() showPocessAppIcon = true;  
+   @Input() isDialog = false;  
 
    private _runningProcessService:RunningProcessService;
    private _systemNotificationServices:SystemNotificationService;
@@ -35,7 +36,7 @@ import { Constants } from 'src/app/system-files/constants';
    private _originalWindowsState!:WindowState;
    private _menuService!:MenuService;
    private _processHandlerService!:ProcessHandlerService;
-   private _notificationServices:UserNotificationService;
+   private _userNotificationServices:UserNotificationService;
 
    private _focusOnNextProcessSub!:Subscription;
    private _focusOnCurrentProcessSub!:Subscription;
@@ -69,12 +70,12 @@ import { Constants } from 'src/app/system-files/constants';
   // windowTop = Constants.ZERO;
   // windowLeft = Constants.ZERO;
 
-  isProcessAppIconVisible = true;
+  isDialogContent = false;
   currentWinStyles: Record<string, unknown> = {};
   headerActiveStyles: Record<string, unknown> = {}; 
   closeBtnStyles: Record<string, unknown> = {};
-  defaultWidthOnOpen = 0;
-  defaultHeightOnOpen = 0;
+  defaultWidthOnOpen = Constants.NUM_ZERO;
+  defaultHeightOnOpen = Constants.NUM_ZERO;
 
   hasWindow = false;
   icon = Constants.EMPTY_STRING;
@@ -94,7 +95,7 @@ import { Constants } from 'src/app/system-files/constants';
       this._systemNotificationServices = systemNotificationServices;
       this._menuService = menuService;
       this._processHandlerService = controlProcessService;
-      this._notificationServices = notificationServices;
+      this._userNotificationServices = notificationServices;
  
       this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusAndResetWindowBoundsByPid(p)});
       this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p)});
@@ -121,18 +122,30 @@ import { Constants } from 'src/app/system-files/constants';
       return this.bdivWindow.nativeElement;
     }
 
+    ngOnChanges(changes: SimpleChanges):void{
+      //console.log('WINDOW onCHANGES:',changes);
+
+      if(this.name === "Window")
+          this.name = this.processAppName;
+
+      this.icon = this.processAppIcon;
+      if(this.isDialog)
+      { this.displayName = this.displayMessage; }
+      else
+      { this.displayName = this.processAppName;}
+    }
+
     ngOnInit():void{
       this.processId = this.runningProcessID;
       this.icon = this.processAppIcon;
       this.name = this.processAppName;
-      this.isProcessAppIconVisible = this.showPocessAppIcon;
-
+      this.isDialogContent = this.isDialog;
     
       this.uniqueId = `${this.name}-${this.processId}`;
       this._runningProcessService.newProcessNotify.next(this.uniqueId);
       setTimeout(() => {
         this.setFocusOnWindowInit(this.processId)
-      }, 0);
+      }, Constants.NUM_ZERO);
 
       this._windowService.addProcessWindowToWindows(this.uniqueId); 
       this.resetHideShowWindowsList();
@@ -180,16 +193,6 @@ import { Constants } from 'src/app/system-files/constants';
       this._desktopActiveSub?.unsubscribe();
       this._showTheDesktopSub?.unsubscribe();
       this._showOpenWindowsSub?.unsubscribe();
-    }
-
-    ngOnChanges(changes: SimpleChanges):void{
-      //console.log('WINDOW onCHANGES:',changes);
-
-      if(this.name == "Window")
-          this.name = this.processAppName;
-
-      this.displayName = this.processAppName;
-      this.icon = this.processAppIcon;
     }
 
     setBtnFocus(pid:number):void{
@@ -396,17 +399,15 @@ import { Constants } from 'src/app/system-files/constants';
       this._windowService.removeWindowState(this.processId);
       this.removeSilhouette(this.processId);
 
-      if(this.isProcessAppIconVisible){ // if it is visible, then the window is not a dialog box
+      if(!this.isDialogContent){ // if it is visible, then the window is not a dialog box
         const processToClose = this._runningProcessService.getProcess(this.processId);
         if(processToClose){
           this._processHandlerService.closeApplicationProcess(processToClose);
-          this._windowService.cleanUp(this.uniqueId);
         }
       }else{ 
-        this._notificationServices.closeDialogMsgBox(this.processId);
-        this._windowService.cleanUp(this.uniqueId);
+        this._userNotificationServices.closeDialogMsgBox(this.processId);
       }
-
+      this._windowService.cleanUp(this.uniqueId);
       const nextProc = this.getNextProcess();
       if(nextProc){
         this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
@@ -424,7 +425,6 @@ import { Constants } from 'src/app/system-files/constants';
         this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pid);
 
         this.setWindowToFocusById(pid);
-
       }
     }
 

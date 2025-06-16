@@ -4,8 +4,8 @@
 </ng-container>
 
 <ng-template #errorNotice>
-    <cos-basicwindow [runningProcessID]="processId" [processAppName]="this.displayMgs" [showPocessAppIcon]="false">
-        <div ngDraggable class="error-dialog-main-container" id="error-dialog-{{processId}}">
+    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="this.displayMgs" [processAppName]="ERROR_DIALOG" [isDialog]="true">
+        <div ngDraggable class="error-dialog-main-container">
             <div class="error-dialog-mid-container">
                 <div class="error-dialog-mid-section1">
                     <div class="error-dialog-mid-img1">
@@ -33,59 +33,62 @@
 </ng-template>
 
 <ng-template #infoNotice>
-    <div ngDraggable [handle]="leftHS2" class="info-dialog-main-container" id="info-dialog-{{processId}}">    
-        <div #leftHS2 class="info-dialog-mid-container" tabindex="0">
-            <div class="info-dialog-mid-section1">
-                <div class="info-dialog-mid-img1">
-                    <figure class="info-dialog-figure1">
-                        <img class="info-dialog-img1" [src]="'osdrive/Cheetah/System/Imageres/info.png'"/>
-                    </figure>
-                </div>
-                <div class="info-dialog-mid-txt1">
-                    <span class="info-dialog-mid-section1-msg">{{this.displayMgs}}</span>
+    <cos-basicwindow [runningProcessID]="processId" [processAppName]="INFO_DIALOG" [isDialog]="true">
+        <div  class="info-dialog-main-container">    
+            <div class="info-dialog-mid-container" tabindex="0">
+                <div class="info-dialog-mid-section1">
+                    <div class="info-dialog-mid-img1">
+                        <figure class="info-dialog-figure1">
+                            <img class="info-dialog-img1" [src]="'osdrive/Cheetah/System/Imageres/info.png'"/>
+                        </figure>
+                    </div>
+                    <div class="info-dialog-mid-txt1">
+                        <span class="info-dialog-mid-section1-msg">{{this.displayMgs}}</span>
+                    </div>
                 </div>
             </div>
+        
+            <div class="info-dialog-tail-container">
+                <span style="position: fixed; margin-top:10px; right:4%;">
+                    <button class="btn btn-primary" (click)="onCloseDialogBox()" >
+                    OK
+                    </button>
+                </span>
+            </div>
         </div>
-    
-        <div class="info-dialog-tail-container">
-            <span style="position: fixed; margin-top:10px; right:4%;">
-                <button class="btn btn-primary" (click)="onCloseDialogBox()" >
-                  OK
-                </button>
-            </span>
-        </div>
-    </div>
+    </cos-basicwindow>
 </ng-template>
 
 
 <ng-template #warningNotice>
-    <div ngDraggable [handle]="leftHS3" class="warning-dialog-main-container" id="warning-dialog-{{processId}}">   
-        <div class="warning-dialog-heading-text"><p>Shortcut</p></div> 
-        <div #leftHS3 class="warning-dialog-mid-container" tabindex="0">
-            <div class="warning-dialog-mid-section1">
-                <div class="warning-dialog-mid-img1">
-                    <figure class="warning-dialog-figure1">
-                        <img class="warning-dialog-img1" [src]="'osdrive/Cheetah/System/Imageres/warning.png'"/>
-                    </figure>
-                </div>
-                <div class="warning-dialog-mid-txt1">
-                    <p class="warning-dialog-mid-section1-msg">{{this.displayMgs}}</p>
+    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="'Shortcut'" [processAppName]="WARNING_DIALOG" [isDialog]="true">
+        <div  class="warning-dialog-main-container"> 
+            <div class="warning-dialog-mid-container" tabindex="0">
+                <div class="warning-dialog-mid-section1">
+                    <div class="warning-dialog-mid-img1">
+                        <figure class="warning-dialog-figure1">
+                            <img class="warning-dialog-img1" [src]="'osdrive/Cheetah/System/Imageres/warning.png'"/>
+                        </figure>
+                    </div>
+                    <div class="warning-dialog-mid-txt1">
+                        <p class="warning-dialog-mid-section1-msg">{{this.displayMgs}}</p>
+                    </div>
                 </div>
             </div>
+        
+            <div class="warning-dialog-tail-container">
+                <span style="position: fixed; margin-top:10px; right:4%;">
+                    <button class="btn btn-primary" (click)="onYesDialogBox()" >
+                    Yes
+                    </button>
+                    <div style="padding-left: 5px; display: inline;"></div>
+                    <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
+                    No
+                    </button>
+                </span>
+            </div>
         </div>
-    
-        <div class="warning-dialog-tail-container">
-            <span style="position: fixed; margin-top:10px; right:4%;">
-                <button class="btn btn-primary" (click)="onYesDialogBox()" >
-                  Yes
-                </button>
-                <div style="padding-left: 5px; display: inline;"></div>
-                <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
-                  No
-                </button>
-            </span>
-        </div>
-    </div>
+    </cos-basicwindow>
 </ng-template>
 
 

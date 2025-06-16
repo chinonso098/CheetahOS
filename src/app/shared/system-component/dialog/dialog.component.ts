@@ -24,7 +24,7 @@ export class DialogComponent implements BaseComponent, OnChanges {
   @Input() inputMsg = Constants.EMPTY_STRING;
   @Input() notificationType = Constants.EMPTY_STRING;
 
-  private _notificationServices:UserNotificationService;
+  private _userNotificationServices:UserNotificationService;
   private _windowService:WindowService;
   private _sessionManagementService: SessionManagmentService;
   private _menuService:MenuService;
@@ -47,14 +47,16 @@ export class DialogComponent implements BaseComponent, OnChanges {
   ];
 
   isReopenWindowsChecked = false;
-
   selectedOption = 'Shut down';
   pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
-  //notificationId = Constants.NUM_ZERO;
+
+  readonly ERROR_DIALOG = 'error-dialog';
+  readonly WARNING_DIALOG = 'warning-dialog';
+  readonly INFO_DIALOG = 'info-dialog';
+
+
   type = ComponentType.System;
   displayMgs = Constants.EMPTY_STRING;
-
-
   name = Constants.EMPTY_STRING;
   hasWindow = false;
   isMaximizable = false;
@@ -64,7 +66,7 @@ export class DialogComponent implements BaseComponent, OnChanges {
 
   constructor(notificationServices:UserNotificationService, menuService:MenuService, windowService:WindowService,
               systemNotificationServices:SystemNotificationService, sessionManagementService:SessionManagmentService, processIdService:ProcessIDService){
-    this._notificationServices = notificationServices;
+    this._userNotificationServices = notificationServices;
     this._menuService = menuService;
     this._sessionManagementService = sessionManagementService;
     this._processIdService = processIdService;
@@ -103,21 +105,8 @@ export class DialogComponent implements BaseComponent, OnChanges {
   }
 
   onCloseDialogBox():void{
-    this._notificationServices.closeDialogMsgBox(this.processId);
+    this._userNotificationServices.closeDialogMsgBox(this.processId);
     this._windowService.removeWindowState(this.processId);
-    //this.removeSilhouette(this.processId);
-  }
-
-  removeSilhouette(pid:number):void{
-    const uniqueId = `${this.name}-${this.processId}`;
-    const uniqueGPId = `bgp-${uniqueId}`;
-
-    if(this.processId === pid){
-      const glassPane= document.getElementById(uniqueGPId) as HTMLDivElement;
-      if (glassPane) {
-        glassPane.remove();
-      } 
-    }
   }
 
   onPwrOptionSelect(event: any):void{
@@ -126,10 +115,7 @@ export class DialogComponent implements BaseComponent, OnChanges {
     this.pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
   }
 
-
   private generateNotificationId(): number{
-    //Yes! it is notification id, not process id. so why the range below 1000, 
-    // becuase PropertiesId range from 500 - 999. And it is still a component, compoenets are retrieved by id. 
     const min = 10;
     const max = 999;
     return Math.floor(Math.random() * (max - min + 1)) + min; 

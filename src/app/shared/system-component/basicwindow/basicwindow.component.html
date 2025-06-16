@@ -10,8 +10,8 @@
         <div #leftHS class="left-header-section">
             <h1>
                 <figure>
-                    @if(isProcessAppIconVisible){<img [src]="this.icon" [alt]="this.name"/>}
-                    @if(!isProcessAppIconVisible){<p class="img-padding">  </p>}
+                    @if(!isDialogContent){<img [src]="this.icon" [alt]="this.name"/>}
+                    @if(isDialogContent){<p class="img-padding"> </p>}
                     <figcaption> {{this.displayName}} </figcaption>
                 </figure>
             </h1>
