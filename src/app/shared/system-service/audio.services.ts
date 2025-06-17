@@ -28,7 +28,8 @@ export class AudioService implements BaseService {
   hideShowVolumeControlNotify: Subject<void> = new Subject<void>();
 
   isExternalAudioSrcPresent = false;
-  isAudioServiceReady = false;
+  isAudioScriptLoaded = false;
+  isAudioFileReady = false;
 
   audioSrc = Constants.EMPTY_STRING;
   
@@ -53,58 +54,63 @@ export class AudioService implements BaseService {
     this._runningProcessService.addService(this.getServiceDetail());
   }
 
-  private loadAudioScript(): void {
-      // Using setTimeout ensures it runs after the constructor has returned
-      setTimeout(() => {
-          this.loadAudioScriptAsync();
-      }, 0);
+  private async loadAudioScript(): Promise<void> {
+    if (this.isAudioScriptLoaded) return;
+
+    try {
+      await this._scriptService.loadScript('howler', 'osdrive/Program-Files/Howler/howler.min.js');
+      this.isAudioScriptLoaded = true;
+    } catch (err) {
+      console.error('Failed to load Howler script:', err);
+    }
   }
 
-  private async loadAudioScriptAsync():Promise<void>{
-    this._scriptService.loadScript("howler","osdrive/Program-Files/Howler/howler.min.js").then(()=>{
-        this.isAudioServiceReady = true;
+  private async loadHowlTrack(): Promise<void> {
+    const ext = this.getExt(Constants.EMPTY_STRING, this.audioSrc).replace(Constants.DOT, Constants.EMPTY_STRING);
+
+    return new Promise((resolve, reject) => {
+      this._audioPlayer = new Howl({
+        src: [this.audioSrc],
+        format: [ext],
+        autoplay: false,
+        loop: false,
+        volume: 0.5,
+        preload: true,
+        onload: () => {
+          this.isAudioFileReady = true;
+          resolve();
+        },
+        onloaderror: (err: any) => {
+          this.isAudioFileReady = false;
+          console.error('Error loading track:', err);
+          reject(err);
+        }
+      });
     });
   }
 
-
-  loadHowlSingleTrackObject(): void {
-    const ext = this.getExt(Constants.EMPTY_STRING, this.audioSrc);
-    this._audioPlayer = new Howl({
-      src:[this.audioSrc],
-      format: [ext.replace(Constants.DOT, Constants.EMPTY_STRING)],
-      autoplay: false,
-      loop: false,
-      volume: 0.5,
-      preload: true,
-      onload:()=>{
-        this.isAudioServiceReady = true;
-      },
-      onloaderror:(err:any)=>{
-        this.isAudioServiceReady = false;
-        console.error('Error loading track:', err);
-      }
-    });
-  }
-
-  play(path:string):void{
-    const delay = 5; //5ms
-    this.audioSrc = Constants.EMPTY_STRING;
+  async play(path: string): Promise<void> {
+    //console.log('play:', path);
     this.audioSrc = path;
 
-    // purge the old how object
-    if (this._audioPlayer){
+    // Unload previous audio
+    if (this._audioPlayer) {
       this._audioPlayer.stop();
       this._audioPlayer.unload();
-      this.isAudioServiceReady = false;
+      this.isAudioFileReady = false;
     }
 
-    const intervalId = setInterval(() => {
-      if(this.isAudioServiceReady){
-        this.loadHowlSingleTrackObject();
-        this.playSound();
-        clearInterval(intervalId);
-      }
-    }, delay);
+    await this.handlePlay();
+  }
+
+  private async handlePlay(): Promise<void> {
+    try {
+      await this.loadAudioScript();
+      await this.loadHowlTrack();
+      this.playSound();
+    } catch (err) {
+      console.error('handlePlay err:', err);
+    }
   }
 
 
@@ -121,7 +127,7 @@ export class AudioService implements BaseService {
   }
 
   getVolume():number{
-    if(!this.isAudioServiceReady || !this._audioPlayer)
+    if(!this.isAudioFileReady || !this._audioPlayer)
       return 0;
 
     return this._audioPlayer.volume();
