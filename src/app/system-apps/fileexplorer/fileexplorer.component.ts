@@ -47,7 +47,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _directoryFilesEntires!:FileEntry[];
   private _processHandlerService:ProcessHandlerService;
   private _sessionManagmentService: SessionManagmentService;
-  private _notificationService:UserNotificationService;
+  private _userNotificationService:UserNotificationService;
   private _windowService:WindowService;
   private _menuService:MenuService;
   private _audioService:AudioService;
@@ -227,7 +227,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._processHandlerService = triggerProcessService;
     this._sessionManagmentService = sessionManagmentService;
     this._menuService = menuService;
-    this._notificationService = notificationService;
+    this._userNotificationService = notificationService;
     this._windowService = windowService;
     this._audioService = audioService;
     this._systemNotificationService = systemNotificationService;
@@ -1804,9 +1804,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
     }else if(this.renameForm.dirty == false){
       this.renameFileTriggerCnt ++;
-      if(this.renameFileTriggerCnt > 1){
+      if(this.renameFileTriggerCnt > Constants.NUM_ONE){
         this.onRenameFileTxtBoxHide();
-        this.renameFileTriggerCnt = 0;
+        this.renameFileTriggerCnt = Constants.NUM_ZERO;
       }
     }
   }
@@ -2134,7 +2134,7 @@ Do you want the shortcut to be placed on the desktop instead?`;
 
       this._audioService.play(this.cheetahGenericNotifyAudio);
       this._menuService.setStageData(fileContent);
-      this._notificationService.showWarningNotification(msg);
+      this._userNotificationService.showWarningNotification(msg);
       return;
     }
 

@@ -58,12 +58,12 @@ export class AppComponent implements AfterViewInit {
 
   ngAfterViewInit():void{
     // This quiets the - audioservice error
-    const cheetahLogonKey = this._sessionManagmentService.getSession(Constants.CHEETAH_LOGON_KEY) as string;
-    const cheetahPwrKey = this._sessionManagmentService.getSession(Constants.CHEETAH_PWR_KEY) as string;
+    // const cheetahLogonKey = this._sessionManagmentService.getSession(Constants.CHEETAH_LOGON_KEY) as string;
+    // const cheetahPwrKey = this._sessionManagmentService.getSession(Constants.CHEETAH_PWR_KEY) as string;
 
-    if(cheetahPwrKey === Constants.SYSTEM_ON && cheetahLogonKey === Constants.SIGNED_IN){
-      this._audioService.play(this.noAudio);
-    }
+    // if(cheetahPwrKey === Constants.SYSTEM_ON && cheetahLogonKey === Constants.SIGNED_IN){
+    //   this._audioService.play(this.noAudio);
+    // }
 
 
     if(this.itemViewContainer)

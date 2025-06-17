@@ -1239,21 +1239,26 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async onDrop(event:DragEvent):Promise<void>{
-    //Some about z-index is causing the drop to desktop to act funny.
-    event.preventDefault();
-    let droppedFiles:File[] = [];
-
-    if(event?.dataTransfer?.files){
-        // eslint-disable-next-line no-unsafe-optional-chaining
-        droppedFiles  = [...event?.dataTransfer?.files];
-    }
+    const evtOriginator = this._runningProcessService.getEventOrginator();
+    console.log('Dsktp onDrop evtOriginator:', evtOriginator);
     
-    if(droppedFiles.length >= Constants.NUM_ONE){
-      const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
-      if(result){
-        this._fileService.addEventOriginator('desktop');
-        this._fileService.dirFilesUpdateNotify.next();
-        this.refresh();
+    if(evtOriginator === Constants.EMPTY_STRING){
+      //Some about z-index is causing the drop to desktop to act funny.
+      event.preventDefault();
+      let droppedFiles:File[] = [];
+
+      if(event?.dataTransfer?.files){
+          // eslint-disable-next-line no-unsafe-optional-chaining
+          droppedFiles  = [...event?.dataTransfer?.files];
+      }
+      
+      if(droppedFiles.length >= Constants.NUM_ONE){
+        const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
+        if(result){
+          this._fileService.addEventOriginator('desktop');
+          this._fileService.dirFilesUpdateNotify.next();
+          this.refresh();
+        }
       }
     }
         

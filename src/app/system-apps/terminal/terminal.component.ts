@@ -196,7 +196,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   onKeyDownOnWindow(evt:KeyboardEvent):void{
-    this.focusOnInput();
+    this.focusOnInput(evt);
     if (evt.key === "Tab") {
       // Prevent tab from moving focus
       evt.preventDefault();
@@ -208,11 +208,13 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
 
-  focusOnInput():void{
+  focusOnInput(evt:any):void{
     const cmdTxtBoxElm= document.getElementById(`cmdTxtBox-${this.processId}`) as HTMLInputElement;
     if(cmdTxtBoxElm){
       cmdTxtBoxElm?.focus();
     }
+
+    evt.stopPropagation();
   }
 
   getCursorPosition():number{
@@ -1079,6 +1081,22 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
 
     this._sessionManagmentService.addAppSession(uid, this._appState);
+  }
+
+  async onDrop(event:DragEvent):Promise<void>{
+    this._runningProcessService.addEventOriginator(this.name);
+    //Some about z-index is causing the drop to desktop to act funny.
+    event.preventDefault();
+    let droppedFiles:File[] = [];
+
+    if(event?.dataTransfer?.files){
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        droppedFiles  = [...event?.dataTransfer?.files];
+    }
+    
+    if(droppedFiles.length >= Constants.NUM_ONE){
+      console.log('Terminal onDrop:', droppedFiles);
+    }   
   }
 
   retrievePastSessionData():void{

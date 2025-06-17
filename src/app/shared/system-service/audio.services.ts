@@ -28,6 +28,7 @@ export class AudioService implements BaseService {
   hideShowVolumeControlNotify: Subject<void> = new Subject<void>();
 
   isExternalAudioSrcPresent = false;
+  isAudioServiceReady = false;
 
   audioSrc = Constants.EMPTY_STRING;
   
@@ -60,60 +61,52 @@ export class AudioService implements BaseService {
   }
 
   private async loadAudioScriptAsync():Promise<void>{
-    this._scriptService.loadScript("howler","osdrive/Program-Files/Howler/howler.min.js");
+    this._scriptService.loadScript("howler","osdrive/Program-Files/Howler/howler.min.js").then(()=>{
+        this.isAudioServiceReady = true;
+    });
   }
 
-  async loadHowlSingleTrackObjectAsync(): Promise<any> {
-    // Your asynchronous code here
-    return new Promise<any>((resolve, reject) => {
-      const ext = this.getExt(Constants.EMPTY_STRING, this.audioSrc);
-      const audioPlayer = new Howl({
-        src:[this.audioSrc],
-        format: [ext.replace(Constants.DOT, Constants.EMPTY_STRING)],
-        autoplay: false,
-        loop: false,
-        volume: 0.5,
-        preload: true,
-        onload:()=>{
-          resolve(audioPlayer);
-        },
-        onloaderror:(err:any)=>{
-          reject(err);
-        }
-      });
+
+  loadHowlSingleTrackObject(): void {
+    const ext = this.getExt(Constants.EMPTY_STRING, this.audioSrc);
+    this._audioPlayer = new Howl({
+      src:[this.audioSrc],
+      format: [ext.replace(Constants.DOT, Constants.EMPTY_STRING)],
+      autoplay: false,
+      loop: false,
+      volume: 0.5,
+      preload: true,
+      onload:()=>{
+        this.isAudioServiceReady = true;
+      },
+      onloaderror:(err:any)=>{
+        this.isAudioServiceReady = false;
+        console.error('Error loading track:', err);
+      }
     });
   }
 
   play(path:string):void{
-    const delay = this.determineDelay();
+    const delay = 5; //5ms
     this.audioSrc = Constants.EMPTY_STRING;
     this.audioSrc = path;
 
     // purge the old how object
-    if (this._audioPlayer) {
+    if (this._audioPlayer){
       this._audioPlayer.stop();
       this._audioPlayer.unload();
+      this.isAudioServiceReady = false;
     }
 
-
-    setTimeout(async()=> {
-      this.loadHowlSingleTrackObjectAsync()
-        .then(howl => { 
-          this._audioPlayer = howl; 
-          this.playSound();
-        })
-        .catch(error => { console.error('Error loading track:', error); });
+    const intervalId = setInterval(() => {
+      if(this.isAudioServiceReady){
+        this.loadHowlSingleTrackObject();
+        this.playSound();
+        clearInterval(intervalId);
+      }
     }, delay);
   }
 
-  determineDelay():number{
-
-    //if cheetahLogonState is sOut && cheetahPwrState is On
-    //50
-    //else 0
-    
-    return 50;
-  }
 
   private playSound():void{
     this._audioPlayer.play();
@@ -128,7 +121,10 @@ export class AudioService implements BaseService {
   }
 
   getVolume():number{
-    return  this._audioPlayer.volume();
+    if(!this.isAudioServiceReady || !this._audioPlayer)
+      return 0;
+
+    return this._audioPlayer.volume();
   }
 
   changeVolume(volume:number):void{
