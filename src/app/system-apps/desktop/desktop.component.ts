@@ -1241,7 +1241,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   async onDrop(event:DragEvent):Promise<void>{
     const evtOriginator = this._runningProcessService.getEventOrginator();
     console.log('Dsktp onDrop evtOriginator:', evtOriginator);
-    
+
     if(evtOriginator === Constants.EMPTY_STRING){
       //Some about z-index is causing the drop to desktop to act funny.
       event.preventDefault();
@@ -1292,19 +1292,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   poitionShortCutIconProperly():void{
 
   // when i move an icon from it's original position, exclude the icon id 
-    for(let i = 0;  i < this.files.length; i++){
+    // for(let i = 0;  i < this.files.length; i++){
 
-      if(!this.movedBtnIds.includes(String(i))){
-        const figElmnt = document.getElementById(`dsktpmngr_fig${i}`) as HTMLElement;
-        const shortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
+    //   if(!this.movedBtnIds.includes(String(i))){
+    //     const figElmnt = document.getElementById(`dsktpmngr_fig${i}`) as HTMLElement;
+    //     const shortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
   
-        if(figElmnt && shortCutElmnt){
-          const figElmntRect = figElmnt.getBoundingClientRect();
-          shortCutElmnt.style.top = `${figElmntRect.top + 18}px`;
-          shortCutElmnt.style.left = `${figElmntRect.left + 20}px`;
-        }
-      }
-    }
+    //     if(figElmnt && shortCutElmnt){
+    //       const figElmntRect = figElmnt.getBoundingClientRect();
+    //       shortCutElmnt.style.top = `${figElmntRect.top + 18}px`;
+    //       shortCutElmnt.style.left = `${figElmntRect.left + 20}px`;
+    //     }
+    //   }
+    // }
   }
 
 
@@ -1734,19 +1734,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         const srcIconElmnt = document.getElementById(`iconBtn${i}`) as HTMLElement;
         const srcShortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
 
-        const tmpTop = srcShortCutElmnt.style.top;
-        const tmpLeft = srcShortCutElmnt.style.left;
+        // const tmpTop = srcShortCutElmnt.style.top;
+        // const tmpLeft = srcShortCutElmnt.style.left;
 
-        srcShortCutElmnt.style.top = '22px'; 
-        srcShortCutElmnt.style.left = '24px';
+        // srcShortCutElmnt.style.top = '22px'; 
+        // srcShortCutElmnt.style.left = '24px';
         const clonedShortcut = srcShortCutElmnt.cloneNode(true);
         
         cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
         cloneIcon.appendChild(clonedShortcut);
 
         //restore old positions
-        srcShortCutElmnt.style.top = tmpTop;
-        srcShortCutElmnt.style.left = tmpLeft;
+        // srcShortCutElmnt.style.top = tmpTop;
+        // srcShortCutElmnt.style.left = tmpLeft;
         
           // Move it out of view initially
         cloneIcon.style.left = '-9999px';  
@@ -1761,16 +1761,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           const srcIconElmnt = document.getElementById(`iconBtn${id}`) as HTMLElement;
           const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
 
-          const tmpTop = srcShortCutElmnt.style.top;
-          const tmpLeft = srcShortCutElmnt.style.left;
+          // const tmpTop = srcShortCutElmnt.style.top;
+          // const tmpLeft = srcShortCutElmnt.style.left;
   
           if(counter === Constants.NUM_ZERO)
-            srcShortCutElmnt.style.top = '22px'; 
+            //srcShortCutElmnt.style.top = '22px'; 
+          1
           else{
             const product = (this.GRID_SIZE * counter);
-            srcShortCutElmnt.style.top = `${22 + product}px`; 
+            //srcShortCutElmnt.style.top = `${22 + product}px`; 
           }
-          srcShortCutElmnt.style.left = '24px';
+          //srcShortCutElmnt.style.left = '24px';
           const clonedShortcut = srcShortCutElmnt.cloneNode(true);
 
           const spaceDiv = document.createElement('div');
@@ -1786,8 +1787,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
             cloneIcon.appendChild(spaceDiv);
 
           //restore old positions
-          srcShortCutElmnt.style.top = tmpTop;
-          srcShortCutElmnt.style.left = tmpLeft;
+          // srcShortCutElmnt.style.top = tmpTop;
+          // srcShortCutElmnt.style.left = tmpLeft;
           counter++;
         });
 
@@ -1830,9 +1831,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           newY = btnIconRect.top - yDiff + product;
         }
 
-        srcShortCutElmnt.style.position = 'absolute';
-        srcShortCutElmnt.style.top = `${22}px`; 
-        srcShortCutElmnt.style.left = `${24}px`;
+        // srcShortCutElmnt.style.position = 'absolute';
+        // srcShortCutElmnt.style.top = `${22}px`; 
+        // srcShortCutElmnt.style.left = `${24}px`;
 
         btnIconElmnt.style.position = 'absolute';
         btnIconElmnt.style.transform = `translate(${Math.abs(newX)}px, ${Math.abs(newY)}px)`;
@@ -1881,9 +1882,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           newY =(Math.round(mPos.y / maxIconHeight) * maxIconHeight) + product + offset;
         }
   
-        srcShortCutElmnt.style.position = 'absolute';
-        srcShortCutElmnt.style.top = `${22}px`; 
-        srcShortCutElmnt.style.left = `${24}px`;
+        // srcShortCutElmnt.style.position = 'absolute';
+        // srcShortCutElmnt.style.top = `${22}px`; 
+        // srcShortCutElmnt.style.left = `${24}px`;
 
         btnIconElmnt.style.position = 'absolute';
         btnIconElmnt.style.transform = `translate(${Math.abs(newX)}px, ${Math.abs(newY)}px)`;
@@ -1941,15 +1942,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   changeIconsSize(iconSize:string):void{
     if(iconSize === 'Large Icons'){
       this.iconSizeStyle = {
-        'width': '45px', 
-        'height': '45px'
+        'width': '60px', 
+        'height': '60px'
       }
     }
 
     if(iconSize === 'Medium Icons'){
       this.iconSizeStyle = {
-        'width': '35px', 
-        'height': '35px'
+        'width': '45px', 
+        'height': '45px'
       }
     }
 

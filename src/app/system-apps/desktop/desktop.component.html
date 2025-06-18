@@ -8,7 +8,7 @@
         (mouseup)="deActivateMultiSelect()"
         (mousemove)="updateDivWithAndSize($event)" id="dsktpmngr_ol"> 
         <li class="dsktp-li" *ngFor="let file of files; let i = index" id="dsktpmngr_li{{i}}">
-            <button class="dsktpmngr_btn" 
+            <button class="dsktp-btn-icon-cntnr" 
             (dblclick)="runProcess(file)" 
             (mouseenter)="onMouseEnter(i)" 
             (mouseleave)="onMouseLeave(i)"  
@@ -18,20 +18,24 @@
             (dragstart)="onDragStart($event, i)"
             (dragend)="onDragEnd($event)"
             id="iconBtn{{i}}"  [style]="btnStyle">
-                <figure class="dsktp-figure"  id="dsktpmngr_fig{{i}}">
-                    <img class="dsktp-img" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconSizeStyle"/>
-                    <ng-container *ngIf="file.getIsShortCut">
+                <div class="dsktp-icon-cntnr"  id="dsktpmngr_fig{{i}}">
+                    <div class="dsktp-main-icon-section">
+                        <img class="dsktp-img" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconSizeStyle"/>
+                    </div>
+                    <div class="dsktp-scut-icon-section" *ngIf="file.getIsShortCut">
                         <img class="shortcut-img" [src]="shortCutImg"  id="shortCut{{i}}"/>
-                    </ng-container>
-                    <figcaption class="dsktp-figcaption"  id="figCap{{i}}">
+                    </div>
+                </div>
+                <div class="dsktp-label">
+                    <p class="dsktp-figcaption"  id="figCap{{i}}">
                             {{file.getFileName}}
-                    </figcaption>
+                    </p>
                     <div class="dsktp-rename-textbox"  id="renameContainer{{i}}">
                         <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
                             <input class="dsktp-input" type="text" formControlName="renameInput"  (keydown)="onInputChange($event)" autofocus spellcheck="false" id="renameTxtBox{{i}}"/>
                         </form>
                     </div>
-                </figure>
+                </div>                
             </button>
         </li>
 
