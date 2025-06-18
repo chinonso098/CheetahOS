@@ -82,8 +82,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   readonly mediumIcons = IconsSizes.MEDIUM_ICONS;
   readonly smallIcons = IconsSizes.SMALL_ICONS
 
-  isLargeIcon = true;
-  isMediumIcon = false;
+  isLargeIcon = false;
+  isMediumIcon = true;
   isSmallIcon = false;
 
   readonly sortByName = SortBys.NAME;
@@ -200,7 +200,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   iconSizeStyle:Record<string, unknown> = {};
   btnStyle:Record<string, unknown> = {};
 
-  readonly GRID_SIZE = 90; //column size of grid = 90px
+  readonly MIN_GRID_SIZE = 90;
+  readonly MAX_GRID_SIZE = 120;
+
+  GRID_SIZE = this.MIN_GRID_SIZE; //column size of grid = 90px
   SECONDS_DELAY:number[] = [6000, 250, 4000];
   renameForm!: FormGroup;
 
@@ -665,6 +668,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
 
     this.changeIconsSize(viewBy);
+    this.changeGridRowColSize();
     this.getDesktopMenuData();
   }
 
@@ -1941,13 +1945,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   changeIconsSize(iconSize:string):void{
     if(iconSize === 'Large Icons'){
+      this.GRID_SIZE = this.MAX_GRID_SIZE;
       this.iconSizeStyle = {
-        'width': '60px', 
-        'height': '60px'
+        'width': '80px', 
+        'height': '80px'
       }
     }
 
     if(iconSize === 'Medium Icons'){
+      this.GRID_SIZE = this.MIN_GRID_SIZE;
       this.iconSizeStyle = {
         'width': '45px', 
         'height': '45px'
@@ -1955,10 +1961,26 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
 
     if(iconSize === 'Small Icons'){
+        this.GRID_SIZE = this.MIN_GRID_SIZE;
       this.iconSizeStyle = {
         'width': '30px', 
         'height': '30px'
       }
+    }
+  }
+
+  changeGridRowColSize():void{
+    const adjustment  = 20; 
+    const colSize = (this.GRID_SIZE === this.MAX_GRID_SIZE)? 
+      this.MAX_GRID_SIZE : this.MIN_GRID_SIZE;
+
+    const rowSize = (this.GRID_SIZE === this.MAX_GRID_SIZE)? 
+      (this.MAX_GRID_SIZE - adjustment) : (this.MIN_GRID_SIZE - adjustment);
+
+    const dsktpmngrOlElmnt = document.getElementById('dsktpmngr_ol') as HTMLElement;
+    if(dsktpmngrOlElmnt){
+      dsktpmngrOlElmnt.style.gridTemplateColumns = `repeat(auto-fill, ${colSize}px)`;
+      dsktpmngrOlElmnt.style.gridTemplateRows = `repeat(auto-fill,${rowSize}px)`;
     }
   }
 
