@@ -107,7 +107,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showStartMenu = false;
   showVolumeControl = false;
   showDesktopIconCntxtMenu = false;
-  showClippy = true;
+  showClippy = false;
   dsktpPrevImg = Constants.EMPTY_STRING;
   slideState = 'slideOut'
 
@@ -1682,7 +1682,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         bottom: initY + height
     };
 
-    const btnIcons = document.querySelectorAll('.dsktpmngr_btn');
+    const btnIcons = document.querySelectorAll('.dsktp-btn-icon-cntnr');
     btnIcons.forEach((btnIcon) => {
         const btnIconRect = btnIcon.getBoundingClientRect();
 
@@ -2027,6 +2027,7 @@ OpensWith=${selectedFile.getOpensWith}
     const res = new RegExp(regexStr).test(evt.key)
     if(res){
       this.hideInvalidCharsToolTip();
+      this.autoResize();
       return res
     }else{
       this.showInvalidCharsToolTip();
@@ -2037,6 +2038,16 @@ OpensWith=${selectedFile.getOpensWith}
 
       return res;
     }
+  }
+
+  autoResize() {
+    const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.selectedElementId}`) as HTMLTextAreaElement;
+    if(renameTxtBoxElmt){
+      console.log('autoResize:', this.selectedElementId);
+      renameTxtBoxElmt.style.height = 'auto'; // Reset the height
+      renameTxtBoxElmt.style.height = renameTxtBoxElmt.scrollHeight + 'px'; // Set new height
+    }
+
   }
 
   showInvalidCharsToolTip():void{
@@ -2174,7 +2185,7 @@ OpensWith=${selectedFile.getOpensWith}
   desktopIsActive():void{
     this.showDesktopIcon();
     this.restorPriorOpenApps();
-    this.startClippy();
+    //this.startClippy();
   }
   
   private getComponentDetail():Process{

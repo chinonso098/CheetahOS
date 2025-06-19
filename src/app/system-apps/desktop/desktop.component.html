@@ -30,9 +30,9 @@
                     <p class="dsktp-figcaption"  id="figCap{{i}}">
                             {{file.getFileName}}
                     </p>
-                    <div class="dsktp-rename-textbox"  id="renameContainer{{i}}">
+                    <div class="dsktp-icon-rename-cntnr"  id="renameContainer{{i}}">
                         <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                            <input class="dsktp-input" type="text" formControlName="renameInput"  (keydown)="onInputChange($event)" autofocus spellcheck="false" id="renameTxtBox{{i}}"/>
+                            <textarea class="dsktp-input"  formControlName="renameInput"  (keydown)="onInputChange($event)" autofocus spellcheck="false" id="renameTxtBox{{i}}"></textarea>
                         </form>
                     </div>
                 </div>                

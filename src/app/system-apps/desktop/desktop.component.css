@@ -133,25 +133,35 @@
     line-height: 15px;
     overflow: hidden;
     word-break: break-all;
+    white-space: nowrap; /* Prevent text from wrapping */
+    text-overflow: ellipsis; /* Add "..." when text overflows */
+    width: 90px;
 }
 
-.dsktp-rename-textbox{
+.dsktp-icon-rename-cntnr{
     position: relative;
     display: none;
-    top: 2px;
+    /* top: 2px; */
     margin-bottom: 2px;
-    max-width: 75px;
-    max-height: 20px;
+    max-width: 90px;
+    min-height: 20px;
     border: 1px solid #ccc;
     overflow:hidden;
     z-index: 2;
  }
 
 .dsktp-input{
-    text-align:calc(75px / 2 px);
-    font-size: 11.5px;
+    text-align:calc(90px / 2 px);
+    font-size: 12px;
     /* text-overflow:ellipsis; */
-    padding-left: 4px;
+    /* resize: none; */
+    
+    overflow: hidden;
+    box-sizing: border-box;
+    min-height: 20px;
+    border: 1px solid #ccc;
+    padding: 4px;
+    line-height: 1.4;
 }
 
 .dsktp-input::selection{
