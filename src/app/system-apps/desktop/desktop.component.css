@@ -149,6 +149,11 @@
     overflow:hidden;
     z-index: 2;
  }
+ .dsktp-icon-form-section{
+    width: fit-content;
+    height: fit-content;
+    margin-bottom: -6px;
+ }
 
 .dsktp-input{
     text-align:calc(90px / 2 px);
@@ -158,8 +163,9 @@
     
     overflow: hidden;
     box-sizing: border-box;
-    min-height: 20px;
-    border: 1px solid #ccc;
+    height: 20px;
+    width: 90px;
+    border: 0.5px dotted #ccc;
     padding: 4px;
     line-height: 1.4;
 }

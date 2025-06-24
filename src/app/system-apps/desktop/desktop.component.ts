@@ -14,6 +14,7 @@ import { GeneralMenu, MenuPositiom, NestedMenu, NestedMenuItem } from 'src/app/s
 import * as htmlToImage from 'html-to-image';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+import { dirname} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
@@ -2024,30 +2025,35 @@ OpensWith=${selectedFile.getOpensWith}
   
   onInputChange(evt:KeyboardEvent):boolean{
     const regexStr = '^[a-zA-Z0-9_.]+$';
-    const res = new RegExp(regexStr).test(evt.key)
-    if(res){
-      this.hideInvalidCharsToolTip();
-      this.autoResize();
-      return res
+    if(evt.key === 'Enter'){
+      evt.preventDefault(); // prevent newline in textarea
+      this.isFormDirty(); // trigger form submit logic
+
+      return true;
     }else{
-      this.showInvalidCharsToolTip();
-
-      setTimeout(()=>{ // hide after 6 secs
+      const res = new RegExp(regexStr).test(evt.key)
+      if(res){
         this.hideInvalidCharsToolTip();
-      },this.SECONDS_DELAY[0]) 
+        this.autoResize();
+        return res
+      }else{
+        this.showInvalidCharsToolTip();
 
-      return res;
+        setTimeout(()=>{ // hide after 6 secs
+          this.hideInvalidCharsToolTip();
+        },this.SECONDS_DELAY[0]) 
+
+        return res;
+      }
     }
   }
 
   autoResize() {
     const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.selectedElementId}`) as HTMLTextAreaElement;
     if(renameTxtBoxElmt){
-      console.log('autoResize:', this.selectedElementId);
       renameTxtBoxElmt.style.height = 'auto'; // Reset the height
       renameTxtBoxElmt.style.height = renameTxtBoxElmt.scrollHeight + 'px'; // Set new height
     }
-
   }
 
   showInvalidCharsToolTip():void{
@@ -2116,22 +2122,39 @@ OpensWith=${selectedFile.getOpensWith}
   async onRenameFileTxtBoxDataSave():Promise<void>{
     this.isRenameActive = !this.isRenameActive;
 
-    const figCapElement= document.getElementById(`figCap${this.selectedElementId}`) as HTMLElement;
-    const renameContainerElement= document.getElementById(`renameContainer${this.selectedElementId}`) as HTMLElement;
+    const figCapElement = document.getElementById(`figCap${this.selectedElementId}`) as HTMLElement;
+    const renameContainerElement = document.getElementById(`renameContainer${this.selectedElementId}`) as HTMLElement;
     const renameText = this.renameForm.value.renameInput as string;
+    console.log('renameText:',renameText);
 
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== Constants.NUM_ZERO && renameText !== this.currentIconName ){
       const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
 
+
+      console.log('files:', this.files);
+
+      console.log('this.selectedFile.getCurrentPath:',this.selectedFile.getCurrentPath);
+      console.log('this.selectedFile.getCurrentPath-----:', dirname(this.selectedFile.getCurrentPath));
+      console.log('this.selectedFile.getIsFile:',this.selectedFile.getIsFile);
+
+      console.log('this.selectedFile.getContentPath:',this.selectedFile.getContentPath);
+      console.log('this.selectedFile.getFileName:',this.selectedFile.getFileName);
+
+      console.log('result:',result);
+
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
-        const fileIdx = this.files.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));
+        const fileIdx = this.files.findIndex(f => (dirname(f.getCurrentPath) === dirname(this.selectedFile.getCurrentPath)) && (f.getFileName === this.selectedFile.getFileName));
         this.selectedFile.setFileName = renameText;
+        //console.log('files:', this.files);
         this.selectedFile.setDateModified = Date.now();
         this.files[fileIdx] = this.selectedFile;
 
+
+        console.log('this.selectedFile:',this.selectedFile);
+
         this.renameForm.reset();
-        await this.loadFilesInfoAsync();
+        //await this.loadFilesInfoAsync();
       }
     }else{
       this.renameForm.reset();

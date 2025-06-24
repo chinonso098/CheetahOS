@@ -31,7 +31,7 @@
                             {{file.getFileName}}
                     </p>
                     <div class="dsktp-icon-rename-cntnr"  id="renameContainer{{i}}">
-                        <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
+                        <form [formGroup]="renameForm"  class="dsktp-icon-form-section" (ngSubmit)="isFormDirty()">
                             <textarea class="dsktp-input"  formControlName="renameInput"  (keydown)="onInputChange($event)" autofocus spellcheck="false" id="renameTxtBox{{i}}"></textarea>
                         </form>
                     </div>

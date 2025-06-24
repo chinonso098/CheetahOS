@@ -655,19 +655,21 @@ export class FileService implements BaseService{
         }
     }
 
-    public async renameAsync(path:string, newFileName:string, isFile:boolean): Promise<boolean> {
+    public async renameAsyncTBD(path:string, newFileName:string, isFile:boolean): Promise<boolean> {
  
         return new Promise<boolean>((resolve, reject) =>{
             let rename = Constants.EMPTY_STRING; let type = Constants.EMPTY_STRING
             if(isFile){  rename = `${dirname(path)}/${newFileName}${extname(path)}`; type = 'file';
             }else{ rename = `${dirname(path)}/${newFileName}`;  type = 'folder'; }
 
-            this._fileSystem.exists(`${rename}`, (err) =>{
+            this._fileSystem.exists(rename, (err) =>{
                  if(err){
                     console.log(`renameAsync Error: ${type} already exists`,err);
                     reject(false);
                  }else{
-                    this._fileSystem.rename(`${path}`,rename,(err) =>{  
+                    console.log('renameAsync path:',path);
+                    console.log('renameAsync rename:',rename);
+                    this._fileSystem.rename(path, rename, (err) =>{  
                         if(err){
                             console.log(`renameAsync Error: ${type} rename`,err);
                             reject(false);
@@ -676,6 +678,119 @@ export class FileService implements BaseService{
                     });
                  }
               });
+        });
+    }
+
+    public async renameDirectoryAsync(oldPath: string, newPath: string): Promise<boolean> {
+
+    return new Promise<boolean>((resolve) => {
+        this._fileSystem.rename(oldPath, newPath, (err) => {
+            if (err) {
+                console.error('Failed to rename directory:', err);
+                return resolve(false);
+            }
+
+            console.log(`Directory renamed from ${oldPath} to ${newPath}`);
+            resolve(true);
+        });
+    });
+}
+
+
+    public async renameAsync(path:string, newFileName:string, isFile:boolean): Promise<boolean> {
+ 
+        let rename = Constants.EMPTY_STRING; 
+        let type = Constants.EMPTY_STRING
+        if(isFile){  
+            return await this.renameFileAsync(path, newFileName);
+        }
+        else{ 
+            rename = `${dirname(path)}/${newFileName}`;  type = 'folder'; 
+            const count = await this.countFolderItemsAsync(path);
+            //if(count === Constants.NUM_ZERO)
+            
+            return await this.renameDirectoryAsync(path, rename);
+        }
+    }
+
+    public async renameFileAsync_TBD(path:string, newFileName:string): Promise<boolean> {
+        await this.initBrowserFsAsync();
+
+       return new Promise<boolean>((resolve, reject) =>{
+            this._fileSystem.readFile(path,(err, contents = Buffer.from('')) =>{
+                if(err){
+                    console.log('getFile in renameFileAsync error:',err)
+                    reject(false)
+                }else{
+                    this._fileSystem.writeFile(`${dirname(path)}/${newFileName}${extname(path)}`,contents,(err)=>{  
+                        if(err){
+                            console.log('writeFile in renameFileAsync error:',err);
+                            reject(false);
+                        }else{
+                            this._fileSystem.unlink(path,(err) =>{
+                                if(err){
+                                    console.log('unlink file error:',err)
+                                    reject(err)
+                                }
+                                console.log('successfully unlinked')
+                                resolve(true);
+                            });
+                            console.log('successfully renamed')
+                            resolve(true);
+                        }
+                    });
+                    console.log('successfully fetched')
+                    resolve(true);
+                }
+            });
+        });
+    }
+
+    public async renameFileAsync(path: string, newFileName: string): Promise<boolean> {
+
+        await this.initBrowserFsAsync();
+
+        const fs = this._fileSystem;
+        const newPath = `${dirname(path)}/${newFileName}${extname(path)}`;
+
+        return new Promise<boolean>((resolve) => {
+            fs.readFile(path, (readErr, contents = Buffer.from('')) => {
+                if (readErr) {
+                    console.error('readFile error in renameFileAsync:', readErr);
+                    return resolve(false);
+                }
+
+                fs.writeFile(newPath, contents, (writeErr) => {
+                    if (writeErr) {
+                        console.error('writeFile error in renameFileAsync:', writeErr);
+                        return resolve(false);
+                    }
+
+                    fs.unlink(path, (unlinkErr) => {
+                        if (unlinkErr) {
+                            console.error('unlink error in renameFileAsync:', unlinkErr);
+                            return resolve(false);
+                        }
+
+                        console.log('File renamed successfully');
+                        resolve(true);
+                    });
+                });
+            });
+        });
+    }
+
+    
+    public  async countFolderItemsAsync(path:string): Promise<number> {
+
+        return new Promise<number>((resolve, reject) =>{
+            this._fileSystem.readdir(path, (readDirErr, files) =>{
+                if(readDirErr){
+                    console.error('Error reading dir for count:', readDirErr);
+                    reject(0);
+                }
+                resolve(files?.length || 0)
+            });
         });
     }
 
