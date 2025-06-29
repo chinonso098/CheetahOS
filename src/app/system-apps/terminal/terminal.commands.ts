@@ -860,7 +860,7 @@ usage: mkdir direcotry_name [-v]
             return 'destination path required';
 
         folderQueue.push(sourceArg);
-        const result =  await this._fileService.movehandler(destinationArg, folderQueue);
+        const result =  await this._fileService.movehandlerA(destinationArg, folderQueue);
         if(result){
             const result = await this.rm('-rf', sourceArg);
             if(result === Constants.EMPTY_STRING){
@@ -922,7 +922,7 @@ Mandatory argument to long options are mandotory for short options too.
         if(destinationArg === undefined || destinationArg.length === 0)
             return 'destination path required';
 
-        const isDirectory = await this._fileService.checkIfDirectory(sourceArg);
+        const isDirectory = await this._fileService.checkIfDirectorAsync(sourceArg);
         if(isDirectory){
             if(option === Constants.EMPTY_STRING || option === '-f' || option === '--force' || option === '--verbose')
                 return `cp: omitting directory ${sourceArg}`;
@@ -982,7 +982,7 @@ Mandatory argument to long options are mandotory for short options too.
         if(sourceArg === undefined || sourceArg.length === 0)
             return 'source path required';
 
-        const isDirectory = await this._fileService.checkIfDirectory(sourceArg);
+        const isDirectory = await this._fileService.checkIfDirectorAsync(sourceArg);
         if(isDirectory){
             if(option === Constants.EMPTY_STRING )
                 return `rm: omitting directory ${sourceArg}`;

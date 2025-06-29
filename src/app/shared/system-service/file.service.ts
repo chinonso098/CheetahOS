@@ -9,7 +9,7 @@ import { FileMetaData } from "src/app/system-files/file.metadata";
 
 import { Subject } from "rxjs";
 import * as BrowserFS from 'src/osdrive/Cheetah/System/BrowserFS/browserfs'
-import { Buffer } from 'buffer';
+import { Buffer} from 'buffer';
 import osDriveFileSystemIndex from '../../../osdrive.json';
 import ini  from 'ini';
 import { FileContent } from "src/app/system-files/file.content";
@@ -19,6 +19,7 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
+import { UserNotificationService } from "./user.notification.service";
 
 @Injectable({
     providedIn: 'root'
@@ -35,6 +36,7 @@ export class FileService implements BaseService{
 
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
+    private _userNotificationService:UserNotificationService
 
     dirFilesUpdateNotify: Subject<void> = new Subject<void>();
     fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
@@ -51,13 +53,14 @@ export class FileService implements BaseService{
     description = 'Mediates btwn ui & filesystem ';
 
     
-    constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){ 
+    constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService){ 
 
         this.initBrowserFS();
         this._fileExistsMap =  new Map<string, number>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
+        this._userNotificationService = userNotificationService;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
@@ -111,12 +114,12 @@ export class FileService implements BaseService{
 		return this._fileSystem.existsSync(iconMaybe) ? `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png` : iconPath;
     }
 
-    public async checkIfDirectory(path: string):Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) =>{
+    public async checkIfDirectorAsync(path: string):Promise<boolean> {
+        return new Promise<boolean>((resolve) =>{
             this._fileSystem.stat(path,(err, stats) =>{
                 if(err){
-                    console.log('checkIfDirectory error:',err)
-                    reject(err)
+                    console.error('checkIfDirectory error:',err)
+                    resolve(false);
                 }
                
                 const isDirectory = (stats)? stats.isDirectory(): false;
@@ -125,18 +128,13 @@ export class FileService implements BaseService{
         });
     }
 
-    public async checkIfExistsAsync(dirPath:string):Promise<boolean>{
-        return new Promise<boolean>((resolve) =>{
-            this._fileSystem.exists(`${dirPath}`,(exits) =>{
-                 if(exits){
-                     console.log('checkIfExistsAsync :Already exists',exits);
-                     resolve(true)
-                 }else{
-                    console.log('checkIfExistsAsync :Does not exists',exits);
-                    resolve(false);
-                 }
+    public async checkIfExistsAsync(dirPath: string): Promise<boolean> {
+        return new Promise<boolean>((resolve) => {
+            this._fileSystem.exists(dirPath, (exists) => {
+                console.log(`checkIfExistsAsync: ${exists ? 'Already exists' : 'Does not exist'}`, exists);
+                resolve(exists);
             });
-        })
+        });
     }
 
     public async copyFileAsync(sourcePath:string, destinationPath:string):Promise<boolean>{
@@ -153,7 +151,7 @@ export class FileService implements BaseService{
                         if(err?.code === 'EEXIST' ){
                             console.log('copyFileAsync Error: file already exists',err);
                             // if file exists, increment it simple.txt, simple(1).txt ...
-                            const itrName = this.iterateFileName(`${destPath}/${fileName}`);
+                            const itrName = this.iterateName(`${destPath}/${fileName}`);
                             this._fileSystem.writeFile(itrName,contents,(err) =>{  
                                 if(err){
                                     console.log('copyFileAsync Iterate Error:',err);
@@ -174,14 +172,14 @@ export class FileService implements BaseService{
 
     public async copyHandler(arg0:string, sourcePathArg:string, destinationArg:string):Promise<boolean>{
 
-        const checkIfDirResult = await this.checkIfDirectory(`${sourcePathArg}`);
+        const checkIfDirResult = await this.checkIfDirectorAsync(`${sourcePathArg}`);
         if(checkIfDirResult){
             const folderName = this.getFileName(sourcePathArg);
             const  createFolderResult = await this.createFolderAsync(destinationArg, folderName);
             if(createFolderResult){
                 const loadedDirectoryEntries = await this.getEntriesFromDirectoryAsync(sourcePathArg);
                 for(const directoryEntry of loadedDirectoryEntries){
-                    const checkIfDirResult = await this.checkIfDirectory(`${sourcePathArg}/${directoryEntry}`);
+                    const checkIfDirResult = await this.checkIfDirectorAsync(`${sourcePathArg}/${directoryEntry}`);
                     if(checkIfDirResult){
                         const result = await this.copyHandler(arg0,`${sourcePathArg}/${directoryEntry}`,`${destinationArg}/${folderName}`);
                         if(!result){
@@ -212,52 +210,68 @@ export class FileService implements BaseService{
         return true
     }
 
-    public async createFolderAsync(directory:string, fileName:string):Promise<boolean>{
-        return new Promise<boolean>((resolve, reject) =>{
-            this._fileSystem.mkdir(`${directory}/${fileName}`,0o777,(err) =>{  
-                if(err?.code === 'EEXIST' ){
-                    console.log('createFolderAsync Error:folder  already exists',err);
-                    const itrName = this.iterateFileName(`${directory}/${fileName}`);
-                    this._fileSystem.mkdir(itrName,0o777,(err) =>{  
-                        if(err){
-                            console.log('createFolderAsync  Error:',err);
-                            reject(false);
+    public async createFolderAsync(directory: string, folderName: string): Promise<boolean> {
+        const folderPath = `${directory}/${folderName}`;
+        return new Promise<boolean>((resolve) => {
+            this._fileSystem.mkdir(folderPath, 0o777, (err)=>{
+                if(!err){
+                    // Folder created successfully
+                    this._fileExistsMap.set(folderPath, Constants.NUM_ZERO);
+                    console.log(`Folder created: ${folderPath}`);
+                    return resolve(true);
+                }
+
+                if(err.code === 'EEXIST'){
+                    console.warn(`Folder already exists: ${folderPath}`);
+                    const uniqueFolderPath = this.iterateName(folderPath);
+
+                    this._fileSystem.mkdir(uniqueFolderPath, 0o777, (retryErr)=>{
+                        if(retryErr){
+                            console.error(`Failed to create folder after name iteration: ${retryErr}`);
+                            return resolve(false);
                         }
+
+                        console.log(`Folder created with new name: ${uniqueFolderPath}`);
+                        this._fileExistsMap.set(uniqueFolderPath, Constants.NUM_ZERO);
                         resolve(true);
                     });
                 }else{
-                    console.log(`err:${err}`);
-                    this._fileExistsMap.set(`${directory}/${fileName}`,Constants.NUM_ZERO);
-                    resolve(true);
+                    console.error(`Error creating folder: ${err}`);
+                    resolve(false);
                 }
             });
         });
     }
 
-    public async deleteFolderAsync(directory:string):Promise<boolean>{
-       return new Promise<boolean>((resolve, reject) =>{
-           this._fileSystem.exists(`${directory}/`, (err) =>{
-                if(err){
-                    this._fileSystem.rmdir(`${directory}/`,(err) =>{  
-                        if(err){
-                            console.log('deleteFolderAsync Error: folder delete failed',err);
-                            reject(false);
-                        }
-                        resolve(true);
-                    });
-                }else{
-                    console.log('deleteFolderAsync Error: folder doesn\'t exists',err);
+    public async deleteFolderAsync(directory: string): Promise<boolean> {
+        await this.initBrowserFsAsync();
+
+        return new Promise<boolean>((resolve) => {
+            this._fileSystem.exists(directory, (exists: boolean)=> {
+                if (!exists) {
+                    console.warn(`deleteFolderAsync: Folder doesn't exist: ${directory}`);
+                    return resolve(false);
                 }
+
+                this._fileSystem.rmdir(directory, (err)=>{
+                    if(err){
+                        console.error('deleteFolderAsync: Folder delete failed:', err);
+                        return resolve(false);
+                    }
+
+                    console.log(`deleteFolderAsync: Folder deleted successfully: ${directory}`);
+                    resolve(true);
+                });
             });
-        })
+        });
     }
 
     public async deleteFileAsync(path:string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) =>{
-           this._fileSystem.unlink(path,(err) =>{
+        return new Promise<boolean>((resolve)=>{
+           this._fileSystem.unlink(path,(err)=>{
                 if(err){
                     console.log('deleteFileAsync error:',err)
-                    reject(false)
+                    resolve(false)
                 }
                 resolve(true);
             });
@@ -368,8 +382,27 @@ export class FileService implements BaseService{
         return this._directoryFileEntires;
     }
 
+    /**
+     * path could be /Users/Documents/Test.png return Test.png
+     * path could be /Users/Documents/Images   return Images
+     * 
+     * @param path 
+     * @returns 
+     */
     private getFileName(path:string):string{
-        return `${basename(path, extname(path))}${ extname(path)}`;
+        return `${basename(path, extname(path))}${extname(path)}`;
+    }
+
+    /**
+     * Extracts the file or folder name from a full path.
+     * - If the path is a file, returns the file name with extension (e.g. "Test.png").
+     * - If the path is a folder, returns the last folder name (e.g. "Images").
+     *
+     * @param path Full file or directory path
+     * @returns File or folder name
+     */
+    private extractNameFromPath(path: string): string {
+        return basename(path);
     }
 
     public async getFileInfoAsync(path:string):Promise<FileInfo>{
@@ -516,7 +549,52 @@ export class FileService implements BaseService{
         });
     }
 
-    public async movehandler(destinationArg:string, folderQueue:string[]):Promise<boolean>{
+    private async moveDirectoryAsync(sourcePath:string, destinationPath:string):Promise<boolean>{
+
+        console.log(`moveDir ----- sourcePath:${sourcePath}`);
+        console.log(`moveDir -----  destinationPath:${destinationPath}`);
+
+        const folderToProcessingQueue:string[] =  [];
+        const folderToDeleteStack:string[] =  [];
+
+
+        //dir path can be gotten from either src or dest path;
+        const  directoryPath = dirname(sourcePath);
+        const newName = this.extractNameFromPath(destinationPath);
+
+        const directoryExists = await this.checkIfExistsAsync(destinationPath);
+        if(directoryExists){
+            const msg = `Folder: ${newName}, already exists`;
+            this._userNotificationService.showErrorNotification(msg);
+            return false;
+        }
+
+        const result = await this.createFolderAsync(directoryPath, newName);
+        if(!result){ return result }
+
+        folderToProcessingQueue.push(sourcePath);
+        const isRenameSuccessful =  await this.movehandlerB(destinationPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
+        if(isRenameSuccessful){
+            console.log('Folder Rename Successful')
+            for(let i=0; i<folderToDeleteStack.length; i++){
+                const path = folderToDeleteStack.pop();
+                if(path){
+                    this.deleteFolderAsync(path);
+                }
+            }
+        }
+
+        return isRenameSuccessful;
+    }
+
+    /**
+     * This move methods, assumes that the destination folder already exists, and that source folder and it's contents
+     * are being moved into a new folder (destination folder)
+     * @param destinationArg 
+     * @param folderQueue 
+     * @returns 
+     */
+    public async movehandlerA(destinationArg:string, folderQueue:string[]):Promise<boolean>{
 
         if(folderQueue.length === Constants.NUM_ZERO)
             return true;
@@ -524,13 +602,13 @@ export class FileService implements BaseService{
         const sourcePath = folderQueue.shift() || Constants.EMPTY_STRING;
         const folderName = this.getFileName(sourcePath);
 
-        const checkIfDirResult = await this.checkIfDirectory(`${sourcePath}`);
+        const checkIfDirResult = await this.checkIfDirectorAsync(`${sourcePath}`);
         if(checkIfDirResult){
             const loadedDirectoryEntries = await this.getEntriesFromDirectoryAsync(sourcePath);
             const  moveFolderResult = await this.createFolderAsync(destinationArg,folderName);
             if(moveFolderResult){
                 for(const directoryEntry of loadedDirectoryEntries){
-                    const checkIfDirResult = await this.checkIfDirectory(`${sourcePath}/${directoryEntry}`);
+                    const checkIfDirResult = await this.checkIfDirectorAsync(`${sourcePath}/${directoryEntry}`);
                     if(checkIfDirResult){
                         folderQueue.push(`${sourcePath}/${directoryEntry}`);
                     }else{
@@ -555,8 +633,104 @@ export class FileService implements BaseService{
             }
         }
 
-        return this.movehandler(`${destinationArg}/${folderName}`, folderQueue);
+        return this.movehandlerA(`${destinationArg}/${folderName}`, folderQueue);
     }
+
+    /**
+     * This move methods, assumes that the destination folder doesn't exist, and that contents of the  source folder and not the source
+     * folder itself, is being moved
+     * @param destinationArg 
+     * @param folderToProcessingQueue 
+     * @param folderToDeleteStack 
+     * @param skipCounter 
+     * @returns 
+     */
+    public async movehandlerB(destinationArg:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
+
+        if(folderToProcessingQueue.length === Constants.NUM_ZERO)
+            return true;
+
+        const sourcePath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
+        folderToDeleteStack.push(sourcePath);
+        let folderName = this.getFileName(sourcePath);
+        if(skipCounter === Constants.NUM_ZERO){ folderName = Constants.EMPTY_STRING; }
+
+        const checkIfDirResult = await this.checkIfDirectorAsync(`${sourcePath}`);
+        if(checkIfDirResult){
+            let  moveFolderResult = false;
+            const loadedDirectoryEntries = await this.getEntriesFromDirectoryAsync(sourcePath);
+
+            //skip creating the 
+            if(skipCounter > Constants.NUM_ZERO){
+                moveFolderResult = await this.createFolderAsync(destinationArg,folderName);  
+            }
+            skipCounter = skipCounter + Constants.NUM_ONE;
+      
+            if(moveFolderResult || (skipCounter >= Constants.NUM_ZERO)){
+                for(const directoryEntry of loadedDirectoryEntries){
+                    const checkIfDirResult = await this.checkIfDirectorAsync(`${sourcePath}/${directoryEntry}`);
+                    if(checkIfDirResult){
+                        folderToProcessingQueue.push(`${sourcePath}/${directoryEntry}`);
+                    }else{
+                        const result = await this.moveFileAsync(`${sourcePath}/${directoryEntry}`, `${destinationArg}/${folderName}`);
+                        if(result){
+                            console.log(`file:${sourcePath}/${directoryEntry} successfully moved to destination:${destinationArg}/${folderName}`);
+                        }else{
+                            console.log(`file:${sourcePath}/${directoryEntry} failed to move to destination:${destinationArg}/${folderName}`)
+                        }
+                    }
+                }
+            }else{
+                console.log(`folder:${destinationArg}/${folderName}  creation failed`);
+                return false;
+            }
+        }else{
+            const result = await this.moveFileAsync(`${sourcePath}`,`${destinationArg}`);
+            if(result){
+                console.log(`file:${sourcePath} successfully moved to destination:${destinationArg}`);
+            }else{
+                console.log(`file:${sourcePath} failed to move to destination:${destinationArg}`)
+            }
+        }
+
+        return this.movehandlerB(`${destinationArg}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, skipCounter);
+    }
+
+    //virtual filesystem, use copy and then delete
+    public async moveFileAsync(currentPath: string, newDirectoryPath: string): Promise<boolean> {
+        return new Promise<boolean>((resolve) => {
+            const fileName = this.getFileName(currentPath);
+            const destinationPath = `${newDirectoryPath}/${fileName}`;
+
+            console.log(`moveFileAsync ----- currentPath:${currentPath}`);
+            console.log(`moveFileAsync -----  newDirectoryPath:${newDirectoryPath}`);
+
+            this._fileSystem.readFile(currentPath, (readErr, contents = Buffer.from('')) => {
+                if (readErr) {
+                    console.error('Error reading file during move:', readErr);
+                    return resolve(false);
+                }
+
+                this._fileSystem.writeFile(destinationPath, contents, (writeErr) => {
+                    if (writeErr) {
+                        console.error('Error writing file during move:', writeErr);
+                        return resolve(false);
+                    }
+
+                    this._fileSystem.unlink(currentPath, (unlinkErr) => {
+                        if (unlinkErr) {
+                            console.error('Error deleting original file during move:', unlinkErr);
+                            return resolve(false);
+                        }
+
+                        console.log(`File moved successfully to: ${destinationPath}`);
+                        resolve(true);
+                    });
+                });
+            });
+        });
+    }
+
 
     public async writeFilesAsync(directory:string, files:File[]):Promise<boolean>{
 
@@ -573,7 +747,7 @@ export class FileService implements BaseService{
                         if(err?.code === 'EEXIST' ){
                             console.log('writeFileAsync Error: file already exists',err);
     
-                            const itrName = this.iterateFileName(`${directory}/${file.name}`);
+                            const itrName = this.iterateName(`${directory}/${file.name}`);
                             this._fileSystem.writeFile(itrName,evt.target?.result,(err) =>{  
                                 if(err){
                                     console.log('writeFileAsync Iterate Error:',err);
@@ -601,7 +775,7 @@ export class FileService implements BaseService{
                 if(err?.code === 'EEXIST'){
                     console.log('writeFileAsync Error: file already exists',err);
 
-                    const itrName = this.iterateFileName(`${destPath}/${file.getFileName}`);
+                    const itrName = this.iterateName(`${destPath}/${file.getFileName}`);
                     this._fileSystem.writeFile(itrName, cntnt,(err) =>{  
                         if(err){
                             console.log('writeFileAsync Iterate Error:',err);
@@ -622,7 +796,7 @@ export class FileService implements BaseService{
     
         for (const directoryEntry of loadedDirectoryEntries) {
             const entryPath = `${sourceArg}/${directoryEntry}`;
-            const checkIfDirectory = await this.checkIfDirectory(entryPath);
+            const checkIfDirectory = await this.checkIfDirectorAsync(entryPath);
     
             if (checkIfDirectory) {
                 // Recursively call the rm_dir_handler for the subdirectory
@@ -655,95 +829,45 @@ export class FileService implements BaseService{
         }
     }
 
-    public async renameAsyncTBD(path:string, newFileName:string, isFile:boolean): Promise<boolean> {
- 
-        return new Promise<boolean>((resolve, reject) =>{
-            let rename = Constants.EMPTY_STRING; let type = Constants.EMPTY_STRING
-            if(isFile){  rename = `${dirname(path)}/${newFileName}${extname(path)}`; type = 'file';
-            }else{ rename = `${dirname(path)}/${newFileName}`;  type = 'folder'; }
-
-            this._fileSystem.exists(rename, (err) =>{
-                 if(err){
-                    console.log(`renameAsync Error: ${type} already exists`,err);
-                    reject(false);
-                 }else{
-                    console.log('renameAsync path:',path);
-                    console.log('renameAsync rename:',rename);
-                    this._fileSystem.rename(path, rename, (err) =>{  
-                        if(err){
-                            console.log(`renameAsync Error: ${type} rename`,err);
-                            reject(false);
-                        }
-                        resolve(true);
-                    });
-                 }
-              });
-        });
-    }
-
     public async renameDirectoryAsync(oldPath: string, newPath: string): Promise<boolean> {
 
-    return new Promise<boolean>((resolve) => {
-        this._fileSystem.rename(oldPath, newPath, (err) => {
-            if (err) {
-                console.error('Failed to rename directory:', err);
-                return resolve(false);
-            }
+        return new Promise<boolean>((resolve, reject) => {
 
-            console.log(`Directory renamed from ${oldPath} to ${newPath}`);
-            resolve(true);
+            this._fileSystem.exists(newPath, (exsitsErr)=>{
+                if(exsitsErr){
+                    console.error(`renameDirectoryAsync Error: Directory already exists:`,exsitsErr);
+                    reject(false);
+                }else{
+                    console.log('renameDirectoryAsync oldPath:',oldPath);
+                    console.log('renameDirectoryAsync newPath:',newPath);
+                    this._fileSystem.rename(oldPath, newPath, (renameErr) =>{  
+                        if(renameErr){
+                            console.error('Failed to rename directory:', renameErr);
+                            return resolve(false);
+                        }
+                        console.log(`Directory renamed from ${oldPath} to ${newPath}`);
+                        resolve(true);
+                    });
+                }
+            });
         });
-    });
-}
-
+    }
 
     public async renameAsync(path:string, newFileName:string, isFile:boolean): Promise<boolean> {
  
         let rename = Constants.EMPTY_STRING; 
-        let type = Constants.EMPTY_STRING
         if(isFile){  
             return await this.renameFileAsync(path, newFileName);
         }
         else{ 
-            rename = `${dirname(path)}/${newFileName}`;  type = 'folder'; 
+            rename = `${dirname(path)}/${newFileName}`;
             const count = await this.countFolderItemsAsync(path);
-            //if(count === Constants.NUM_ZERO)
-            
-            return await this.renameDirectoryAsync(path, rename);
+            console.log('renameAsync count:',count);
+            if(count === Constants.NUM_ZERO)
+                return await this.renameDirectoryAsync(path, rename);
+            else 
+                return await this.moveDirectoryAsync(path, rename);
         }
-    }
-
-    public async renameFileAsync_TBD(path:string, newFileName:string): Promise<boolean> {
-        await this.initBrowserFsAsync();
-
-       return new Promise<boolean>((resolve, reject) =>{
-            this._fileSystem.readFile(path,(err, contents = Buffer.from('')) =>{
-                if(err){
-                    console.log('getFile in renameFileAsync error:',err)
-                    reject(false)
-                }else{
-                    this._fileSystem.writeFile(`${dirname(path)}/${newFileName}${extname(path)}`,contents,(err)=>{  
-                        if(err){
-                            console.log('writeFile in renameFileAsync error:',err);
-                            reject(false);
-                        }else{
-                            this._fileSystem.unlink(path,(err) =>{
-                                if(err){
-                                    console.log('unlink file error:',err)
-                                    reject(err)
-                                }
-                                console.log('successfully unlinked')
-                                resolve(true);
-                            });
-                            console.log('successfully renamed')
-                            resolve(true);
-                        }
-                    });
-                    console.log('successfully fetched')
-                    resolve(true);
-                }
-            });
-        });
     }
 
     public async renameFileAsync(path: string, newFileName: string): Promise<boolean> {
@@ -782,7 +906,6 @@ export class FileService implements BaseService{
 
     
     public  async countFolderItemsAsync(path:string): Promise<number> {
-
         return new Promise<number>((resolve, reject) =>{
             this._fileSystem.readdir(path, (readDirErr, files) =>{
                 if(readDirErr){
@@ -798,43 +921,8 @@ export class FileService implements BaseService{
         this._directoryFileEntires=[]
     }
 
-    //virtual filesystem, use copy and then delete
-    public async moveFileAsync(currentPath:string, newPath:string): Promise<boolean> {
- 
-        return new Promise<boolean>((resolve, reject) =>{
-            const fileName = this.getFileName(currentPath);
-            const newlocation = `${newPath}/${fileName}`;
 
-            this._fileSystem.readFile(currentPath, (err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
-                if(err){
-                    console.log('getFile in moveAsync error:',err)
-                    reject(false)
-                }else{
-                    this._fileSystem.writeFile(`${newlocation}`, contents,(err)=>{  
-                        if(err){
-                            console.log('writeFile in moveAsync error:',err);
-                            reject(false);
-                        }else{
-                            this._fileSystem.unlink(currentPath,(err) =>{
-                                if(err){
-                                    console.log('unlink file error:',err)
-                                    reject(err)
-                                }
-                                console.log('successfully unlinked')
-                                resolve(true);
-                            });
-                            console.log('successfully renamed')
-                            resolve(true);
-                        }
-                    });
-                    console.log('successfully fetched')
-                    resolve(true);
-                }
-            });
-        });
-    }
-
-    public iterateFileName(path:string):string{
+    public iterateName(path:string):string{
         const extension = extname(path);
         const filename = basename(path, extension);
 

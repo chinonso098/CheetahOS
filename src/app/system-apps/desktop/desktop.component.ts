@@ -841,7 +841,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
     }
     else if(action === 'cut'){
-      const result = await this._fileService.movehandler(this.DESKTOP_DIRECTORY, [cntntPath]);
+      const result = await this._fileService.movehandlerA(this.DESKTOP_DIRECTORY, [cntntPath]);
       if(result){
         this.refresh();
       }
