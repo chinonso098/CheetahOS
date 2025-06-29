@@ -1576,12 +1576,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async onDeleteFile():Promise<void>{
     let result = false;
-    if(this.selectedFile.getIsFile){
-      result = await this._fileService.deleteFileAsync(this.selectedFile.getCurrentPath);
-    }else{
-      result = await this._fileService.deleteFolderAsync(this.selectedFile.getCurrentPath)
-    }
 
+    result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath);
     if(result){
       await this.loadFilesInfoAsync();
     }

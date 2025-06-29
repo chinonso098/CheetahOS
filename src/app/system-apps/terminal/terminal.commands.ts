@@ -979,7 +979,7 @@ Mandatory argument to long options are mandotory for short options too.
             }
         }
 
-        if(sourceArg === undefined || sourceArg.length === 0)
+        if(sourceArg === undefined || sourceArg.length === Constants.NUM_ZERO)
             return 'source path required';
 
         const isDirectory = await this._fileService.checkIfDirectorAsync(sourceArg);
@@ -989,7 +989,7 @@ Mandatory argument to long options are mandotory for short options too.
 
             if(option === '-rf'){
                 folderQueue.push(sourceArg);
-                const result = await this._fileService.removeHandler(optionArg,sourceArg);
+                const result = await this._fileService.removeHandler(optionArg, sourceArg);
                 if(result){
                     this.sendDirectoryUpdateNotification(sourceArg);
                     return Constants.EMPTY_STRING;
@@ -997,7 +997,7 @@ Mandatory argument to long options are mandotory for short options too.
             }
         }else{
             // just copy regular file
-            const result = await this._fileService.removeHandler(sourceArg,sourceArg);
+            const result = await this._fileService.removeHandler(sourceArg, sourceArg);
             if(result){
                 this.sendDirectoryUpdateNotification(sourceArg);
                 return Constants.EMPTY_STRING;
