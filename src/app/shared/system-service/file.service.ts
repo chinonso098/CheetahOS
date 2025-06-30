@@ -527,7 +527,7 @@ export class FileService implements BaseService{
             for(let i = 0; i <= folderToDeleteStack.length; i++){
                 const path = folderToDeleteStack.pop();
                 if(path){
-                    this.deleteAsync(path);
+                    await this.deleteFolderAsync(path);                    
                 }
             }
         }
@@ -739,9 +739,24 @@ export class FileService implements BaseService{
         });
     }
 
+    public async renameAsync(path:string, newFileName:string, isFile:boolean): Promise<boolean> {
+ 
+        let rename = Constants.EMPTY_STRING; 
+        if(isFile){  
+            return await this.renameFileAsync(path, newFileName);
+        }
+        else{ 
+            rename = `${dirname(path)}/${newFileName}`;
+            const count = await this.countFolderItemsAsync(path);
+            console.log('renameAsync count:',count);
+            if(count === Constants.NUM_ZERO)
+                return await this.renameDirectoryAsync(path, rename);
+            else 
+                return await this.moveDirectoryAsync(path, rename);
+        }
+    }
 
-
-    public async renameDirectoryAsync(oldPath: string, newPath: string): Promise<boolean> {
+    private async renameDirectoryAsync(oldPath: string, newPath: string): Promise<boolean> {
 
         return new Promise<boolean>((resolve, reject) => {
 
@@ -765,24 +780,8 @@ export class FileService implements BaseService{
         });
     }
 
-    public async renameAsync(path:string, newFileName:string, isFile:boolean): Promise<boolean> {
- 
-        let rename = Constants.EMPTY_STRING; 
-        if(isFile){  
-            return await this.renameFileAsync(path, newFileName);
-        }
-        else{ 
-            rename = `${dirname(path)}/${newFileName}`;
-            const count = await this.countFolderItemsAsync(path);
-            console.log('renameAsync count:',count);
-            if(count === Constants.NUM_ZERO)
-                return await this.renameDirectoryAsync(path, rename);
-            else 
-                return await this.moveDirectoryAsync(path, rename);
-        }
-    }
 
-    public async renameFileAsync(path: string, newFileName: string): Promise<boolean> {
+    private async renameFileAsync(path: string, newFileName: string): Promise<boolean> {
 
         await this.initBrowserFsAsync();
 
