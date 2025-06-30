@@ -953,7 +953,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
    // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
-      const isFile =  await this._fileService.checkIfDirectorAsync(usersDir + dirEntry);
+      const isFile =  await this._fileService.checkIfDirectoryAsync(usersDir + dirEntry);
       const ftn:FileTreeNode = {
         name : dirEntry,
         path : `${usersDir}${dirEntry}`,
@@ -980,7 +980,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       // this.directory, will not be correct for all cases. Make sure to check
       for(const dirEntry of directoryEntries){
   
-        const isFile =  await this._fileService.checkIfDirectorAsync(`${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT));
+        const isFile =  await this._fileService.checkIfDirectoryAsync(`${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT));
         const ftn:FileTreeNode = {
           name : dirEntry,
           path: `${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT),

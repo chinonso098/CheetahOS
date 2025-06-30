@@ -922,7 +922,7 @@ Mandatory argument to long options are mandotory for short options too.
         if(destinationArg === undefined || destinationArg.length === 0)
             return 'destination path required';
 
-        const isDirectory = await this._fileService.checkIfDirectorAsync(sourceArg);
+        const isDirectory = await this._fileService.checkIfDirectoryAsync(sourceArg);
         if(isDirectory){
             if(option === Constants.EMPTY_STRING || option === '-f' || option === '--force' || option === '--verbose')
                 return `cp: omitting directory ${sourceArg}`;
@@ -982,22 +982,22 @@ Mandatory argument to long options are mandotory for short options too.
         if(sourceArg === undefined || sourceArg.length === Constants.NUM_ZERO)
             return 'source path required';
 
-        const isDirectory = await this._fileService.checkIfDirectorAsync(sourceArg);
+        const isDirectory = await this._fileService.checkIfDirectoryAsync(sourceArg);
         if(isDirectory){
-            if(option === Constants.EMPTY_STRING )
+            if(option === Constants.EMPTY_STRING)
                 return `rm: omitting directory ${sourceArg}`;
 
             if(option === '-rf'){
                 folderQueue.push(sourceArg);
-                const result = await this._fileService.removeHandler(optionArg, sourceArg);
+                const result = await this._fileService.deleteAsync(sourceArg);
                 if(result){
                     this.sendDirectoryUpdateNotification(sourceArg);
                     return Constants.EMPTY_STRING;
                 }
             }
         }else{
-            // just copy regular file
-            const result = await this._fileService.removeHandler(sourceArg, sourceArg);
+            // just delete regular file
+            const result = await this._fileService.deleteAsync(sourceArg);
             if(result){
                 this.sendDirectoryUpdateNotification(sourceArg);
                 return Constants.EMPTY_STRING;
