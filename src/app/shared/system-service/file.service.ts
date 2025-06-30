@@ -503,7 +503,7 @@ export class FileService implements BaseService{
         });
     }
 
-    private async moveDirectoryAsync(sourcePath:string, destinationPath:string):Promise<boolean>{
+    private async renameDirectoryAsync(sourcePath:string, destinationPath:string):Promise<boolean>{
         const folderToProcessingQueue:string[] =  [];
         const folderToDeleteStack:string[] =  [];
 
@@ -522,7 +522,7 @@ export class FileService implements BaseService{
         if(!result){ return result }
 
         folderToProcessingQueue.push(sourcePath);
-        const isRenameSuccessful =  await this.movehandlerB(destinationPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
+        const isRenameSuccessful =  await this.moveHandlerAsyncB(destinationPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
         if(isRenameSuccessful){
             for(let i = 0; i <= folderToDeleteStack.length; i++){
                 const path = folderToDeleteStack.pop();
@@ -542,7 +542,7 @@ export class FileService implements BaseService{
      * @param folderQueue 
      * @returns 
      */
-    public async movehandlerA(destinationArg:string, folderQueue:string[]):Promise<boolean>{
+    public async moveHandlerAsyncA(destinationArg:string, folderQueue:string[]):Promise<boolean>{
 
         if(folderQueue.length === Constants.NUM_ZERO)
             return true;
@@ -581,7 +581,7 @@ export class FileService implements BaseService{
             }
         }
 
-        return this.movehandlerA(`${destinationArg}/${folderName}`, folderQueue);
+        return this.moveHandlerAsyncA(`${destinationArg}/${folderName}`, folderQueue);
     }
 
     /**
@@ -593,7 +593,7 @@ export class FileService implements BaseService{
      * @param skipCounter 
      * @returns 
      */
-    public async movehandlerB(destinationArg:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
+    public async moveHandlerAsyncB(destinationArg:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
 
         if(folderToProcessingQueue.length === Constants.NUM_ZERO)
             return true;
@@ -641,11 +641,11 @@ export class FileService implements BaseService{
             }
         }
 
-        return this.movehandlerB(`${destinationArg}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, skipCounter);
+        return this.moveHandlerAsyncB(`${destinationArg}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, skipCounter);
     }
 
     //virtual filesystem, use copy and then delete
-    public async moveFileAsync(currentPath: string, newDirectoryPath: string): Promise<boolean> {
+    private async moveFileAsync(currentPath: string, newDirectoryPath: string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
             const fileName = this.getNameFromPath(currentPath);
             const destinationPath = `${newDirectoryPath}/${fileName}`;
@@ -678,7 +678,6 @@ export class FileService implements BaseService{
             });
         });
     }
-
 
     public async writeFilesAsync(directory:string, files:File[]):Promise<boolean>{
 
@@ -739,49 +738,23 @@ export class FileService implements BaseService{
         });
     }
 
-    public async renameAsync(path:string, newFileName:string, isFile:boolean): Promise<boolean> {
+    public async renameAsync(path:string, newFileName:string): Promise<boolean> {
  
         let rename = Constants.EMPTY_STRING; 
-        if(isFile){  
+        const isDirectory = await this.checkIfDirectoryAsync(path);
+        if(!isDirectory){  
             return await this.renameFileAsync(path, newFileName);
         }
         else{ 
             rename = `${dirname(path)}/${newFileName}`;
-            const count = await this.countFolderItemsAsync(path);
-            console.log('renameAsync count:',count);
-            if(count === Constants.NUM_ZERO)
-                return await this.renameDirectoryAsync(path, rename);
-            else 
-                return await this.moveDirectoryAsync(path, rename);
+            return await this.renameDirectoryAsync(path, rename);
         }
-    }
-
-    private async renameDirectoryAsync(oldPath: string, newPath: string): Promise<boolean> {
-
-        return new Promise<boolean>((resolve, reject) => {
-
-            this._fileSystem.exists(newPath, (exsitsErr)=>{
-                if(exsitsErr){
-                    console.error(`renameDirectoryAsync Error: Directory already exists:`,exsitsErr);
-                    reject(false);
-                }else{
-                    console.log('renameDirectoryAsync oldPath:',oldPath);
-                    console.log('renameDirectoryAsync newPath:',newPath);
-                    this._fileSystem.rename(oldPath, newPath, (renameErr) =>{  
-                        if(renameErr){
-                            console.error('Failed to rename directory:', renameErr);
-                            return resolve(false);
-                        }
-                        console.log(`Directory renamed from ${oldPath} to ${newPath}`);
-                        resolve(true);
-                    });
-                }
-            });
-        });
     }
 
 
     private async renameFileAsync(path: string, newFileName: string): Promise<boolean> {
+
+        //moveFileAsync and renameFileAsync are 95% the same, have renameFileAsync call moveFileAsync behind the scene
 
         await this.initBrowserFsAsync();
 
@@ -819,7 +792,7 @@ export class FileService implements BaseService{
         const isDirectory = await this.checkIfDirectoryAsync(path);
 
         if(isDirectory){
-            return await this.removeHandler(Constants.EMPTY_STRING, path);
+            return await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path);
         }else{
             return await this.deleteFileAsync(path);
         }
@@ -868,7 +841,7 @@ export class FileService implements BaseService{
         });
     }
 
-    private async removeHandler(arg0: string, sourceArg: string): Promise<boolean> {
+    private async deleteFolderHandlerAsync(arg0: string, sourceArg: string): Promise<boolean> {
         const loadedDirectoryEntries = await this.getEntriesFromDirectoryAsync(sourceArg);
     
         for (const directoryEntry of loadedDirectoryEntries) {
@@ -877,7 +850,7 @@ export class FileService implements BaseService{
     
             if (checkIfDirectory) {
                 // Recursively call the rm_dir_handler for the subdirectory
-                const success = await this.removeHandler(arg0, entryPath);
+                const success = await this.deleteFolderHandlerAsync(arg0, entryPath);
                 if (!success) {
                     console.log(`Failed to delete directory: ${entryPath}`);
                     return false;

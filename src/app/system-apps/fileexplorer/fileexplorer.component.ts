@@ -1841,7 +1841,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const renameText = this.renameForm.value.renameInput as string;
 
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName){
-      const result = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
+      const result = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText);
 
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below

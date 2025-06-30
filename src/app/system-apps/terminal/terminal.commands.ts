@@ -860,7 +860,7 @@ usage: mkdir direcotry_name [-v]
             return 'destination path required';
 
         folderQueue.push(sourceArg);
-        const result =  await this._fileService.movehandlerA(destinationArg, folderQueue);
+        const result =  await this._fileService.moveHandlerAsyncA(destinationArg, folderQueue);
         if(result){
             const result = await this.rm('-rf', sourceArg);
             if(result === Constants.EMPTY_STRING){

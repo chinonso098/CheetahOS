@@ -841,7 +841,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
     }
     else if(action === 'cut'){
-      const result = await this._fileService.movehandlerA(this.DESKTOP_DIRECTORY, [cntntPath]);
+      const result = await this._fileService.moveHandlerAsyncA(this.DESKTOP_DIRECTORY, [cntntPath]);
       if(result){
         this.refresh();
       }
@@ -2124,7 +2124,7 @@ OpensWith=${selectedFile.getOpensWith}
     console.log('renameText:',renameText);
 
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== Constants.NUM_ZERO && renameText !== this.currentIconName ){
-      const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
+      const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText);
 
 
       console.log('files:', this.files);
