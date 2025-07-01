@@ -128,7 +128,7 @@ export class FileService implements BaseService{
         });
     }
 
-    public async checkIfExistsAsync(dirPath: string): Promise<boolean> {
+    public async checkIfExistsAsync(dirPath: string):Promise<boolean> {
         return new Promise<boolean>((resolve) => {
             this._fileSystem.exists(dirPath, (exists) => {
                 console.log(`checkIfExistsAsync: ${exists ? 'Already exists' : 'Does not exist'}`, exists);
@@ -170,9 +170,9 @@ export class FileService implements BaseService{
         });
     }
 
-    public async copyHandler(arg0:string, sourcePathArg:string, destinationArg:string):Promise<boolean>{
+    public async copyHandlerAsync(arg0:string, sourcePathArg:string, destinationArg:string):Promise<boolean>{
 
-        const checkIfDirResult = await this.checkIfDirectoryAsync(`${sourcePathArg}`);
+        const checkIfDirResult = await this.checkIfDirectoryAsync(sourcePathArg);
         if(checkIfDirResult){
             const folderName = this.getNameFromPath(sourcePathArg);
             const  createFolderResult = await this.createFolderAsync(destinationArg, folderName);
@@ -181,7 +181,7 @@ export class FileService implements BaseService{
                 for(const directoryEntry of loadedDirectoryEntries){
                     const checkIfDirResult = await this.checkIfDirectoryAsync(`${sourcePathArg}/${directoryEntry}`);
                     if(checkIfDirResult){
-                        const result = await this.copyHandler(arg0,`${sourcePathArg}/${directoryEntry}`,`${destinationArg}/${folderName}`);
+                        const result = await this.copyHandlerAsync(arg0,`${sourcePathArg}/${directoryEntry}`,`${destinationArg}/${folderName}`);
                         if(!result){
                             console.log(`Failed to copy directory: ${sourcePathArg}/${directoryEntry}`);
                             return false;
@@ -198,7 +198,7 @@ export class FileService implements BaseService{
                 }
             }
         }else{
-            const result = await this.copyFileAsync(`${sourcePathArg}`, `${destinationArg}`);
+            const result = await this.copyFileAsync(sourcePathArg, destinationArg);
             if(result){
                 console.log(`file:${sourcePathArg} successfully copied to destination:${destinationArg}`);
             }else{
@@ -752,40 +752,10 @@ export class FileService implements BaseService{
     }
 
 
-    private async renameFileAsync(path: string, newFileName: string): Promise<boolean> {
-
+    private async renameFileAsync(path:string, newFileName:string): Promise<boolean> {
         //moveFileAsync and renameFileAsync are 95% the same, have renameFileAsync call moveFileAsync behind the scene
-
-        await this.initBrowserFsAsync();
-
-        const fs = this._fileSystem;
         const newPath = `${dirname(path)}/${newFileName}${extname(path)}`;
-
-        return new Promise<boolean>((resolve) => {
-            fs.readFile(path, (readErr, contents = Buffer.from('')) => {
-                if (readErr) {
-                    console.error('readFile error in renameFileAsync:', readErr);
-                    return resolve(false);
-                }
-
-                fs.writeFile(newPath, contents, (writeErr) => {
-                    if (writeErr) {
-                        console.error('writeFile error in renameFileAsync:', writeErr);
-                        return resolve(false);
-                    }
-
-                    fs.unlink(path, (unlinkErr) => {
-                        if (unlinkErr) {
-                            console.error('unlink error in renameFileAsync:', unlinkErr);
-                            return resolve(false);
-                        }
-
-                        console.log('File renamed successfully');
-                        resolve(true);
-                    });
-                });
-            });
-        });
+        return await this.moveFileAsync(path, newPath);
     }
 
     public async deleteAsync(path:string):Promise<boolean> {
@@ -798,7 +768,7 @@ export class FileService implements BaseService{
         }
     }
 
-    private async deleteFolderAsync(path: string): Promise<boolean> {
+    private async deleteFolderAsync(path:string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
             this._fileSystem.exists(path, (exists: boolean)=> {
                 if (!exists) {

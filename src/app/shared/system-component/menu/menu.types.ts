@@ -23,7 +23,7 @@ export interface NestedMenuItem {
     styleOption:string;
 }
 
-export interface MenuPositiom{ 
+export interface MenuPosition{ 
     xAxis: number; 
     yAxis: number; 
 }

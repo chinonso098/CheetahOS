@@ -930,7 +930,7 @@ Mandatory argument to long options are mandotory for short options too.
             if(option === '-r' || (option === '-R' || option === '--recursive')){
                 folderQueue.push(sourceArg);
                 //const result = await this.cp_dir_handler(optionArg,destinationArg, folderQueue);
-                const result = await this._fileService.copyHandler(optionArg,sourceArg, destinationArg);
+                const result = await this._fileService.copyHandlerAsync(optionArg,sourceArg, destinationArg);
                 if(result){
                     this.sendDirectoryUpdateNotification(destinationArg);
                 }
@@ -938,7 +938,7 @@ Mandatory argument to long options are mandotory for short options too.
         }else{
             // just copy regular file
             //const result = await this.cp_file_handler(sourceArg,destinationArg);
-            const result = await this._fileService.copyHandler(optionArg,sourceArg, destinationArg);
+            const result = await this._fileService.copyHandlerAsync(optionArg,sourceArg, destinationArg);
             if(result){
                 this.sendDirectoryUpdateNotification(destinationArg);
             }

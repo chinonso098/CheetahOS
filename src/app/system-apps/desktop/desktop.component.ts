@@ -10,7 +10,7 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
-import { GeneralMenu, MenuPositiom, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
+import { GeneralMenu, MenuPosition, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import * as htmlToImage from 'html-to-image';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -419,7 +419,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
       this._menuService.hideContextMenus.next();
       this.showDesktopCntxtMenu = true;
-      const axis = this.checkAndHandleMenuBounds(evt, menuHeight, menuWidth);
+      const axis = this.checkAndHandleDesktopCntxtMenuBounds(evt, menuHeight, menuWidth);
 
       this.dskTopCntxtMenuStyle = {
         'position':'absolute',
@@ -455,7 +455,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  checkAndHandleMenuBounds(evt:MouseEvent, menuHeightInput:number, menuWidthInput:number):MenuPositiom{
+  checkAndHandleDesktopCntxtMenuBounds(evt:MouseEvent, menuHeightInput:number, menuWidthInput:number):MenuPosition{
 
     let xAxis = Constants.NUM_ZERO;
     let yAxis = Constants.NUM_ZERO;
@@ -835,7 +835,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     console.log(`action: ${action}`);
 
     if(action === 'copy'){
-      const result = await this._fileService.copyHandler('',cntntPath,this.DESKTOP_DIRECTORY);
+      const result = await this._fileService.copyHandlerAsync('',cntntPath,this.DESKTOP_DIRECTORY);
       if(result){
         this.refresh();
       }
@@ -1064,7 +1064,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const taskBarHeight = 40;
     this.showTskBarCntxtMenu = true;
 
-    const axis = this.checkAndHandleMenuBounds(evt, menuHeight, menuWidth);    
+    const axis = this.checkAndHandleDesktopCntxtMenuBounds(evt, menuHeight, menuWidth);    
     this.tskBarCntxtMenuStyle = {
       'position':'absolute',
       'transform':`translate(${axis.xAxis + 2}px, ${evt.y - menuHeight - taskBarHeight}px)`,
@@ -1345,7 +1345,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
   
   onShowDesktopIconCntxtMenu(evt:MouseEvent, file:FileInfo, id:number):void{
-    const menuHeight = 213; //this is not ideal.. menu height should be gotten dynmically
+    const menuHeight = 253; //this is not ideal.. menu height should be gotten dynmically
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
     this._menuService.hideContextMenus.next();
@@ -1358,7 +1358,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     // show IconContexMenu is still a btn click, just a different type
     this.doBtnClickThings(id);
 
-    const axis = this.checkAndHandleMenuBounds_filemnger(evt, menuHeight);
+    const axis = this.checkAndHandleDesktopIconCntxtMenuBounds(evt, menuHeight);
   
     this.iconCntxtMenuStyle = {
       'position':'absolute',
@@ -1392,30 +1392,26 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
   }
   
-  checkAndHandleMenuBounds_filemnger(evt:MouseEvent, menuHeight:number):MenuPositiom{
+  checkAndHandleDesktopIconCntxtMenuBounds(evt:MouseEvent, menuHeight:number):MenuPosition{
+
     let yAxis = Constants.NUM_ZERO;
+    let verticalShift = false;
+
     const xAxis = Constants.NUM_ZERO;
     const taskBarHeight = 40;
-
     const mainWindow = document.getElementById('vanta');
     const windowHeight =  mainWindow?.offsetHeight || Constants.NUM_ZERO;
-    const verticalDiff = windowHeight - evt.clientY;
+    const verticalSum = evt.clientY + menuHeight;
 
-    let verticalShift = false;
-    if((verticalDiff) >= taskBarHeight && (verticalDiff) <= menuHeight){
-      const shifMenuUpBy = menuHeight - verticalDiff;
+
+    if(verticalSum >= windowHeight){
       verticalShift = true;
-      yAxis = evt.clientY - shifMenuUpBy - taskBarHeight;
+      const shifMenuUpBy = verticalSum - windowHeight;
+      yAxis = evt.clientY - (shifMenuUpBy + taskBarHeight);
     }
-    
+
     if(!verticalShift){
-      if(verticalDiff >= 215 && verticalDiff <= 230){
-        yAxis = evt.clientY - 35;
-      }else  if(verticalDiff >= 231 && verticalDiff <= 246){
-        yAxis = evt.clientY - 17.5;
-      }else{
-        yAxis = evt.clientY;
-      }
+      yAxis = evt.clientY;
     }
 
     return {xAxis, yAxis};

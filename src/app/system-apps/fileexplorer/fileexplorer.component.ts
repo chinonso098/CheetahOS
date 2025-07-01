@@ -14,7 +14,7 @@ import { ViewOptions } from './fileexplorer.enums';
 import {basename} from 'path';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
-import { GeneralMenu, MenuPositiom, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
+import { GeneralMenu, MenuPosition, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
@@ -1399,7 +1399,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._menuService.storeData.next([path, action]);
   }
   
-  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPositiom{
+  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
 
     let xAxis = 0;
     let yAxis = 0;
