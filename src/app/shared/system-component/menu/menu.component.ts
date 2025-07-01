@@ -4,6 +4,7 @@ import { MenuService } from '../../system-service/menu.services';
 import { Subscription } from 'rxjs';
 import { Constants } from 'src/app/system-files/constants';
 import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
+import { MenuAction } from './menu.enums';
 
 @Component({
   selector: 'cos-menu',
@@ -15,14 +16,14 @@ export class MenuComponent implements OnDestroy{
   @Input() generalMenu: GeneralMenu[] = [];
   @Input() nestedMenu: NestedMenu[] = [];
   @Input() fileExplorerMenu: NestedMenu[] = [];
-  @Input() menuType = '';
-  @Input() menuOrder = '';  
+  @Input() menuType = Constants.EMPTY_STRING;
+  @Input() menuOrder = Constants.EMPTY_STRING;  
 
   private _menuService:MenuService;
   private _storeDataSub!:Subscription;
 
 
-  readonly paste = 'Paste';
+  readonly paste = MenuAction.PASTE;
   readonly fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
   readonly tskBarAppIconMenuOption = Constants.TASK_BAR_APP_ICON_MENU_OPTION;
   readonly tskBarContextMenuOption = Constants.TASK_BAR_CONTEXT_MENU_OPTION;
@@ -39,15 +40,7 @@ export class MenuComponent implements OnDestroy{
   constructor(menuService:MenuService) { 
     this._menuService = menuService;
     this.isPasteActive = this._menuService.getPasteState();
-    this._storeDataSub = this._menuService.storeData.subscribe(p => {
 
-      const path = p[0];
-      const actions = p[1];
-
-      this._menuService.setPath(path);
-      this._menuService.setActions(actions);
-      this._menuService.setPasteState(true);
-    })
   }
 
 

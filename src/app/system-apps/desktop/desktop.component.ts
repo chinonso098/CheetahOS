@@ -23,6 +23,7 @@ import { TaskBarIconInfo } from '../taskbarentries/taskbar.entries.type';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { FileEntry } from 'src/app/system-files/file.entry';
 import { mousePosition } from './desktop.types';
+import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
@@ -201,6 +202,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   iconSizeStyle:Record<string, unknown> = {};
   btnStyle:Record<string, unknown> = {};
 
+  readonly MIN_GRID_SIZE1 = 60;
   readonly MIN_GRID_SIZE = 90;
   readonly MAX_GRID_SIZE = 120;
 
@@ -1422,15 +1424,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   onCopy():void{
-    const action = 'copy';
+    const action = MenuAction.COPY;
     const path = this.selectedFile.getCurrentPath;
-    this._menuService.storeData.next([path, action]);
+    this._menuService.setStoreData([path, action]);
   }
 
   onCut():void{
-    const action = 'cut';
+    const action = MenuAction.CUT;
     const path = this.selectedFile.getCurrentPath;
-    this._menuService.storeData.next([path, action]);
+    this._menuService.setStoreData([path, action]);
   }
 
   pinIconToTaskBar():void{

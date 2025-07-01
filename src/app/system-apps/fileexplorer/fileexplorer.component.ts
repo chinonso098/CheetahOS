@@ -25,6 +25,7 @@ import { UserNotificationService } from 'src/app/shared/system-service/user.noti
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -1380,23 +1381,23 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   removeBtnStyle(id:number):void{
     const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
     if(btnElement){
-      btnElement.style.backgroundColor = '';
-      btnElement.style.border = 'none'
+      btnElement.style.backgroundColor = Constants.EMPTY_STRING;
+      btnElement.style.border = 'none';
     }
   }
 
   doNothing():void{/** */}
 
   onCopy():void{
-    const action = 'copy';
+    const action = MenuAction.COPY;
     const path = this.selectedFile.getCurrentPath;
-    this._menuService.storeData.next([path, action]);
+    this._menuService.setStoreData([path, action]);
   }
 
   onCut():void{
-    const action = 'cut';
+    const action = MenuAction.CUT;
     const path = this.selectedFile.getCurrentPath;
-    this._menuService.storeData.next([path, action]);
+    this._menuService.setStoreData([path, action]);
   }
   
   checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{

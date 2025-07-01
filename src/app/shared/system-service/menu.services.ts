@@ -31,7 +31,6 @@ export class MenuService implements BaseService{
     hideStartMenu: Subject<void> = new Subject<void>();
     showStartMenu: Subject<void> = new Subject<void>();
     hideContextMenus: Subject<void> = new Subject<void>();
-    storeData: Subject<string[]> = new Subject<string[]>();
     addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();
     showPropertiesView: Subject<FileInfo> = new Subject<FileInfo>();
     
@@ -45,8 +44,9 @@ export class MenuService implements BaseService{
     showOpenWindows: Subject<void> = new Subject<void>();
     updateTaskBarContextMenu:Subject<void> = new Subject<void>();
 
+    private storeData:string[] = []
     private _isPasteActive = false;
-    private _path = 'NOPATH';
+    private _path = Constants.EMPTY_STRING;
     private _actions = Constants.EMPTY_STRING;
     private _stageData = Constants.EMPTY_STRING;
 
@@ -68,17 +68,10 @@ export class MenuService implements BaseService{
         this._runningProcessService.addService(this.getServiceDetail());
     }
     
-    setPasteState(isActive:boolean):void{
-        this._isPasteActive = isActive;
-    }
-
     getPasteState():boolean{
         return this._isPasteActive;
     }
 
-    setPath(path:string):void{
-        this._path = path;
-    }
 
     getPath():string{
         return this._path;
@@ -100,6 +93,16 @@ export class MenuService implements BaseService{
         return this._stageData;
     }
 
+    setStoreData(stageData:string[]):void{
+        this.storeData = stageData;
+        this._path = stageData[0];
+        this._actions = stageData[1];
+        this._isPasteActive = true;
+    }
+
+    getStoreData():string[]{
+        return this.storeData;
+    }
 
     private getProcessDetail():Process{
         return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
