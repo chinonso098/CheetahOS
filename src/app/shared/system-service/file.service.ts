@@ -513,15 +513,15 @@ export class FileService implements BaseService{
         });
     }
 
-    private async renameDirectoryAsync(sourcePath:string, destinationPath:string):Promise<boolean>{
+    private async renameDirectoryAsync(srcPath:string, destPath:string):Promise<boolean>{
         const folderToProcessingQueue:string[] =  [];
         const folderToDeleteStack:string[] =  [];
 
         //dir path can be gotten from either src or dest path;
-        const  directoryPath = dirname(sourcePath);
-        const newName = this.getNameFromPath(destinationPath);
+        const  directoryPath = dirname(srcPath);
+        const newName = this.getNameFromPath(destPath);
 
-        const directoryExists = await this.checkIfExistsAsync(destinationPath);
+        const directoryExists = await this.checkIfExistsAsync(destPath);
         if(directoryExists){
             const msg = `Folder: ${newName}, already exists`;
             this._userNotificationService.showErrorNotification(msg);
@@ -531,8 +531,8 @@ export class FileService implements BaseService{
         const result = await this.createFolderAsync(directoryPath, newName);
         if(!result){ return result }
 
-        folderToProcessingQueue.push(sourcePath);
-        const isRenameSuccessful =  await this.moveHandlerAsyncB(destinationPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
+        folderToProcessingQueue.push(srcPath);
+        const isRenameSuccessful =  await this.moveHandlerBAsync(destPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
         if(isRenameSuccessful){
             for(let i = 0; i <= folderToDeleteStack.length; i++){
                 const path = folderToDeleteStack.pop();
@@ -548,27 +548,46 @@ export class FileService implements BaseService{
     //virtual filesystem, use copy and then delete
     public async moveAsync(srcPath: string, destPath: string, isFile?: boolean): Promise<boolean> {
         const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(srcPath) : !isFile;
+        
+        if(isDirectory){
+            const folderToProcessingQueue:string[] =  [];
+            const folderToDeleteStack:string[] =  [];
+            let result = false;
 
-        return isDirectory
-            ? await this.moveHandlerAsyncA(destPath, [srcPath])
-            : await this.moveFileAsync(srcPath, destPath);
+            folderToProcessingQueue.push(srcPath);
+
+            //check if destPath Exists
+            const exists = await this.checkIfExistsAsync(destPath);
+            if(exists){
+                result = await this.moveHandlerAAsync(destPath, folderToProcessingQueue, folderToDeleteStack);
+            }else{
+                result =  await this.moveHandlerBAsync(destPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
+            }
+
+            if(result){
+                await this.deleteEmptyFolders(folderToDeleteStack);
+            }
+            return result;
+        }else{
+            return await this.moveFileAsync(srcPath, destPath);
+        }
     }
-
 
     /**
      * This move method assumes that the destination folder already exists, and that source folder and it's contents
      * are being moved into a new folder (destination folder)
      * @param destinationArg 
-     * @param folderQueue 
+     * @param folderToProcessingQueue 
      * @returns 
      */
-    private async moveHandlerAsyncA(destinationArg:string, folderQueue:string[]):Promise<boolean>{
+    private async moveHandlerAAsync(destinationArg:string, folderToProcessingQueue:string[], folderToDeleteStack:string[],):Promise<boolean>{
 
-        if(folderQueue.length === Constants.NUM_ZERO)
+        if(folderToProcessingQueue.length === Constants.NUM_ZERO)
             return true;
 
-        const sourcePath = folderQueue.shift() || Constants.EMPTY_STRING;
+        const sourcePath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
         const folderName = this.getNameFromPath(sourcePath);
+        folderToDeleteStack.push(sourcePath);
 
         const checkIfDirResult = await this.checkIfDirectoryAsync(`${sourcePath}`);
         if(checkIfDirResult){
@@ -578,7 +597,7 @@ export class FileService implements BaseService{
                 for(const directoryEntry of loadedDirectoryEntries){
                     const checkIfDirResult = await this.checkIfDirectoryAsync(`${sourcePath}/${directoryEntry}`);
                     if(checkIfDirResult){
-                        folderQueue.push(`${sourcePath}/${directoryEntry}`);
+                        folderToProcessingQueue.push(`${sourcePath}/${directoryEntry}`);
                     }else{
                         const result = await this.moveFileAsync(`${sourcePath}/${directoryEntry}`, `${destinationArg}/${folderName}`);
                         if(result){
@@ -601,11 +620,11 @@ export class FileService implements BaseService{
             }
         }
 
-        return this.moveHandlerAsyncA(`${destinationArg}/${folderName}`, folderQueue);
+        return this.moveHandlerAAsync(`${destinationArg}/${folderName}`, folderToProcessingQueue, folderToDeleteStack);
     }
 
     /**
-     * This move method assumes that the destination folder doesn't exist, and that contents of the  source folder and not the source
+     * This move method assumes that the destination folder doesn't exist, and that only the contents of the source folder and not the source
      * folder itself, is being moved
      * @param destinationArg 
      * @param folderToProcessingQueue 
@@ -613,7 +632,7 @@ export class FileService implements BaseService{
      * @param skipCounter 
      * @returns 
      */
-    private async moveHandlerAsyncB(destinationArg:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
+    private async moveHandlerBAsync(destinationArg:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
 
         if(folderToProcessingQueue.length === Constants.NUM_ZERO)
             return true;
@@ -661,7 +680,16 @@ export class FileService implements BaseService{
             }
         }
 
-        return this.moveHandlerAsyncB(`${destinationArg}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, skipCounter);
+        return this.moveHandlerBAsync(`${destinationArg}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, skipCounter);
+    }
+
+    private async deleteEmptyFolders(folders:string[]):Promise<void>{
+        for(let i = 0; i <= folders.length; i++){
+            const path = folders.pop();
+            if(path){
+                await this.deleteFolderAsync(path);                    
+            }
+        }
     }
 
     //virtual filesystem, use copy and then delete

@@ -851,15 +851,12 @@ usage: mkdir direcotry_name [-v]
         console.log(`sourceArg:${sourceArg}`);
         console.log(`destinationArg:${destinationArg}`);
 
-        //const folderQueue:string[] =  [];
-
-        if(sourceArg === undefined || sourceArg.length === 0)
+        if(sourceArg === undefined || sourceArg.length === Constants.NUM_ZERO)
             return 'source path required';
 
-        if(destinationArg === undefined || destinationArg.length === 0)
+        if(destinationArg === undefined || destinationArg.length === Constants.NUM_ZERO)
             return 'destination path required';
 
-        //folderQueue.push(sourceArg);
         const result =  await this._fileService.moveAsync(sourceArg, destinationArg);
         if(result){
             const result = await this.rm('-rf', sourceArg);
