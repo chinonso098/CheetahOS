@@ -283,9 +283,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destroyed
     this._systemNotificationServices.showDesktopNotify.subscribe(() => {
       this.desktopIsActive();
-      setTimeout(() => {
-        this.poitionShortCutIconProperly();
-      }, 10);
     })
     this._systemNotificationServices.showLockScreenNotify.subscribe(() => {
       this.lockScreenIsActive();
@@ -331,7 +328,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     await this.loadFilesInfoAsync();
     this.removeVantaJSSideEffect();
-    setTimeout(() => this.poitionShortCutIconProperly(), 10);
   }
 
   onDragOver(event:DragEvent):void{
@@ -744,7 +740,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   async refresh():Promise<void>{
     this.isIconInFocusDueToPriorAction = false;
     await this.loadFilesInfoAsync();
-    setTimeout(() => this.poitionShortCutIconProperly(), 10);
   }
 
   hideDesktopIcon():void{
@@ -827,27 +822,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   openTaskManager():void{
     this.openApplication(this.TASK_MANAGER_APP);
-  }
-
-  async onPaste():Promise<void>{
-    const cntntPath = this._menuService.getPath();
-    const action = this._menuService.getActions();
-
-    console.log(`path: ${cntntPath}`);
-    console.log(`action: ${action}`);
-
-    if(action === 'copy'){
-      const result = await this._fileService.copyHandlerAsync('',cntntPath,this.DESKTOP_DIRECTORY);
-      if(result){
-        this.refresh();
-      }
-    }
-    else if(action === 'cut'){
-      const result = await this._fileService.moveHandlerAsyncA(this.DESKTOP_DIRECTORY, [cntntPath]);
-      if(result){
-        this.refresh();
-      }
-    }
   }
 
   openApplication(arg0:string):void{
@@ -1294,25 +1268,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
     }, this.SECONDS_DELAY[1]);
   }
-  
-  
-  poitionShortCutIconProperly():void{
-
-  // when i move an icon from it's original position, exclude the icon id 
-    // for(let i = 0;  i < this.files.length; i++){
-
-    //   if(!this.movedBtnIds.includes(String(i))){
-    //     const figElmnt = document.getElementById(`dsktpmngr_fig${i}`) as HTMLElement;
-    //     const shortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
-  
-    //     if(figElmnt && shortCutElmnt){
-    //       const figElmntRect = figElmnt.getBoundingClientRect();
-    //       shortCutElmnt.style.top = `${figElmntRect.top + 18}px`;
-    //       shortCutElmnt.style.left = `${figElmntRect.left + 20}px`;
-    //     }
-    //   }
-    // }
-  }
 
 
   runProcess(file:FileInfo):void{
@@ -1433,6 +1388,29 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const action = MenuAction.CUT;
     const path = this.selectedFile.getCurrentPath;
     this._menuService.setStoreData([path, action]);
+  }
+
+  async onPaste():Promise<void>{
+    const cntntPath = this._menuService.getPath();
+    const action = this._menuService.getActions();
+
+    console.log(`path: ${cntntPath}`);
+    console.log(`action: ${action}`);
+
+    //onPaste will be modified to handle cases such as multiselect, file or folder or both
+
+    if(action === MenuAction.COPY){
+      const result = await this._fileService.copyAsync(cntntPath, this.DESKTOP_DIRECTORY);
+      if(result){
+        this.refresh();
+      }
+    }
+    else if(action === MenuAction.CUT){
+      const result = await this._fileService.moveAsync(cntntPath, this.DESKTOP_DIRECTORY);
+      if(result){
+        this.refresh();
+      }
+    }
   }
 
   pinIconToTaskBar():void{
@@ -1712,8 +1690,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }else if (!this.autoAlignIcons && this.markedBtnIds.length >= Constants.NUM_ZERO){
       this.moveBtnIconsToNewPositionAlignOff(mPos);
     }
-    
-    this.poitionShortCutIconProperly();
 
     const cloneIcon = document.getElementById(elementId);
     if(cloneIcon) 
@@ -1735,23 +1711,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(countOfMarkedBtns <= 1){
         this.draggedElementId = i;
         const srcIconElmnt = document.getElementById(`iconBtn${i}`) as HTMLElement;
-        const srcShortCutElmnt = document.getElementById(`shortCut${i}`) as HTMLImageElement;
 
-        // const tmpTop = srcShortCutElmnt.style.top;
-        // const tmpLeft = srcShortCutElmnt.style.left;
-
-        // srcShortCutElmnt.style.top = '22px'; 
-        // srcShortCutElmnt.style.left = '24px';
-        const clonedShortcut = srcShortCutElmnt.cloneNode(true);
-        
         cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
-        cloneIcon.appendChild(clonedShortcut);
 
-        //restore old positions
-        // srcShortCutElmnt.style.top = tmpTop;
-        // srcShortCutElmnt.style.left = tmpLeft;
-        
-          // Move it out of view initially
+       // Move it out of view initially
         cloneIcon.style.left = '-9999px';  
         cloneIcon.style.opacity = '0.2';
     
@@ -1762,22 +1725,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }else{
         this.markedBtnIds.forEach(id =>{
           const srcIconElmnt = document.getElementById(`iconBtn${id}`) as HTMLElement;
-          const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
-
-          // const tmpTop = srcShortCutElmnt.style.top;
-          // const tmpLeft = srcShortCutElmnt.style.left;
-  
-          if(counter === Constants.NUM_ZERO)
-            //srcShortCutElmnt.style.top = '22px'; 
-          1
-          else{
-            const product = (this.GRID_SIZE * counter);
-            //srcShortCutElmnt.style.top = `${22 + product}px`; 
-          }
-          //srcShortCutElmnt.style.left = '24px';
-          const clonedShortcut = srcShortCutElmnt.cloneNode(true);
-
           const spaceDiv = document.createElement('div');
+
           // Add create an empty div that will be used for spacing between each cloned icon
           spaceDiv.setAttribute('id', `spacediv${id}`);
           spaceDiv.style.transform =  'translate(0, 0)';
@@ -1785,13 +1734,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           spaceDiv.style.height =  '20px';
 
           cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
-          cloneIcon.appendChild(clonedShortcut);
           if(counter !== countOfMarkedBtns - Constants.NUM_ONE)
             cloneIcon.appendChild(spaceDiv);
 
-          //restore old positions
-          // srcShortCutElmnt.style.top = tmpTop;
-          // srcShortCutElmnt.style.left = tmpLeft;
           counter++;
         });
 
@@ -1818,7 +1763,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.markedBtnIds.forEach(id =>{
       const btnIcon = document.getElementById(`dsktpmngr_li${id}`);
       const btnIconElmnt = document.getElementById(`dsktpmngr_li${id}`) as HTMLElement;
-      const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
+
       this.movedBtnIds.push(id);
       if(btnIcon){
         const btnIconRect = btnIcon.getBoundingClientRect();
@@ -1833,10 +1778,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           const product = (this.GRID_SIZE * counter);
           newY = btnIconRect.top - yDiff + product;
         }
-
-        // srcShortCutElmnt.style.position = 'absolute';
-        // srcShortCutElmnt.style.top = `${22}px`; 
-        // srcShortCutElmnt.style.left = `${24}px`;
 
         btnIconElmnt.style.position = 'absolute';
         btnIconElmnt.style.transform = `translate(${Math.abs(newX)}px, ${Math.abs(newY)}px)`;
@@ -1872,7 +1813,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.markedBtnIds.forEach(id =>{
       const btnIconElmnt = document.getElementById(`dsktpmngr_li${id}`) as HTMLElement;
-      const srcShortCutElmnt = document.getElementById(`shortCut${id}`) as HTMLImageElement;
       this.movedBtnIds.push(id);
 
       if(btnIconElmnt){
@@ -1884,10 +1824,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           const product = (this.GRID_SIZE * counter);
           newY =(Math.round(mPos.y / maxIconHeight) * maxIconHeight) + product + offset;
         }
-  
-        // srcShortCutElmnt.style.position = 'absolute';
-        // srcShortCutElmnt.style.top = `${22}px`; 
-        // srcShortCutElmnt.style.left = `${24}px`;
 
         btnIconElmnt.style.position = 'absolute';
         btnIconElmnt.style.transform = `translate(${Math.abs(newX)}px, ${Math.abs(newY)}px)`;
@@ -1988,6 +1924,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath);
     if(result){
+      this._menuService.resetStoreData();
       await this.loadFilesInfoAsync();
     }
   }
@@ -2122,7 +2059,7 @@ OpensWith=${selectedFile.getOpensWith}
     console.log('renameText:',renameText);
 
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== Constants.NUM_ZERO && renameText !== this.currentIconName ){
-      const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText);
+      const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
 
 
       console.log('files:', this.files);

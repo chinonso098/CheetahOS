@@ -137,40 +137,50 @@ export class FileService implements BaseService{
         });
     }
 
-    public async copyFileAsync(sourcePath:string, destinationPath:string):Promise<boolean>{
-        const fileName = this.getNameFromPath(sourcePath);
+    public async copyAsync(srcPath:string, destPath:string, isFile?:boolean):Promise<boolean>{
+        const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(srcPath) : !isFile;
+
+        return isDirectory
+            ? await this.copyFolderHandlerAsync(Constants.EMPTY_STRING, srcPath, destPath)
+            : await this.copyFileAsync(srcPath, destPath);
+    }
+
+    private async copyFileAsync(sourcePath:string, destinationPath:string):Promise<boolean>{
+        const name = this.getNameFromPath(sourcePath);
         const destPath = this.pathCorrection(destinationPath);
-        console.log(`Destination: ${destPath}/${fileName}`);
-        return new Promise<boolean>((resolve, reject) =>{
-             this._fileSystem.readFile(sourcePath,(err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
-                if(err){
-                    console.log('copyFileAsync error:',err)
-                    reject(false)
-                }else{
-                    this._fileSystem.writeFile(`${destPath}/${fileName}`, contents, {flag: 'wx'}, (err) =>{  
-                        if(err?.code === 'EEXIST' ){
-                            console.log('copyFileAsync Error: file already exists',err);
-                            // if file exists, increment it simple.txt, simple(1).txt ...
-                            const itrName = this.iterateName(`${destPath}/${fileName}`);
-                            this._fileSystem.writeFile(itrName,contents,(err) =>{  
-                                if(err){
-                                    console.log('copyFileAsync Iterate Error:',err);
-                                    reject(false);
-                                }
-                                resolve(true);
-                            });
-                        }else{
-                            //console.log('copyFileAsync Error:',err);
-                            this._fileExistsMap.set(`${destPath}/${fileName}`, Constants.NUM_ZERO);
-                            resolve(true);
-                        }
-                    });
+        const fileName = `${destPath}/${name}`;
+        console.log(`Destination: ${fileName}`);
+
+        return new Promise<boolean>((resolve) =>{
+             this._fileSystem.readFile(sourcePath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
+                if(readErr){
+                    console.error('copyFileAsync error:',readErr)
+                    resolve(false);
                 }
+
+                this._fileSystem.writeFile(fileName, contents, {flag: 'wx'}, (writeErr) =>{  
+                    if(writeErr?.code === 'EEXIST' ){
+                        console.warn('copyFileAsync Error: file already exists',writeErr);
+                        const iteratedName = this.iterateName(fileName);
+                        this._fileSystem.writeFile(iteratedName, contents, (retryErr) =>{  
+                            if(retryErr){
+                                console.log('copyFileAsync Iterate Error:',retryErr);
+                                resolve(false);
+                            }
+
+                            this._fileExistsMap.set(iteratedName, Constants.NUM_ZERO);
+                            resolve(true);
+                        });
+                    }else{
+                        console.error('copyFileAsync Error:',writeErr);
+                        resolve(false);
+                    }
+                });
             });
         });
     }
 
-    public async copyHandlerAsync(arg0:string, sourcePathArg:string, destinationArg:string):Promise<boolean>{
+    private async copyFolderHandlerAsync(arg0:string, sourcePathArg:string, destinationArg:string):Promise<boolean>{
 
         const checkIfDirResult = await this.checkIfDirectoryAsync(sourcePathArg);
         if(checkIfDirResult){
@@ -181,7 +191,7 @@ export class FileService implements BaseService{
                 for(const directoryEntry of loadedDirectoryEntries){
                     const checkIfDirResult = await this.checkIfDirectoryAsync(`${sourcePathArg}/${directoryEntry}`);
                     if(checkIfDirResult){
-                        const result = await this.copyHandlerAsync(arg0,`${sourcePathArg}/${directoryEntry}`,`${destinationArg}/${folderName}`);
+                        const result = await this.copyFolderHandlerAsync(arg0,`${sourcePathArg}/${directoryEntry}`,`${destinationArg}/${folderName}`);
                         if(!result){
                             console.log(`Failed to copy directory: ${sourcePathArg}/${directoryEntry}`);
                             return false;
@@ -535,6 +545,16 @@ export class FileService implements BaseService{
         return isRenameSuccessful;
     }
 
+    //virtual filesystem, use copy and then delete
+    public async moveAsync(srcPath: string, destPath: string, isFile?: boolean): Promise<boolean> {
+        const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(srcPath) : !isFile;
+
+        return isDirectory
+            ? await this.moveHandlerAsyncA(destPath, [srcPath])
+            : await this.moveFileAsync(srcPath, destPath);
+    }
+
+
     /**
      * This move method assumes that the destination folder already exists, and that source folder and it's contents
      * are being moved into a new folder (destination folder)
@@ -542,7 +562,7 @@ export class FileService implements BaseService{
      * @param folderQueue 
      * @returns 
      */
-    public async moveHandlerAsyncA(destinationArg:string, folderQueue:string[]):Promise<boolean>{
+    private async moveHandlerAsyncA(destinationArg:string, folderQueue:string[]):Promise<boolean>{
 
         if(folderQueue.length === Constants.NUM_ZERO)
             return true;
@@ -593,7 +613,7 @@ export class FileService implements BaseService{
      * @param skipCounter 
      * @returns 
      */
-    public async moveHandlerAsyncB(destinationArg:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
+    private async moveHandlerAsyncB(destinationArg:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
 
         if(folderToProcessingQueue.length === Constants.NUM_ZERO)
             return true;
@@ -645,15 +665,15 @@ export class FileService implements BaseService{
     }
 
     //virtual filesystem, use copy and then delete
-    private async moveFileAsync(currentPath: string, newDirectoryPath: string): Promise<boolean> {
+    private async moveFileAsync(srcPath:string, destPath:string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
-            const fileName = this.getNameFromPath(currentPath);
-            const destinationPath = `${newDirectoryPath}/${fileName}`;
+            const fileName = this.getNameFromPath(srcPath);
+            const destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
 
-            console.log(`moveFileAsync ----- currentPath:${currentPath}`);
-            console.log(`moveFileAsync -----  newDirectoryPath:${newDirectoryPath.replace(Constants.DOUBLE_SLASH, Constants.ROOT)}`);
+            console.log(`moveFileAsync ----- currentPath:${srcPath}`);
+            console.log(`moveFileAsync -----  destinationPath:${destinationPath}`);
 
-            this._fileSystem.readFile(currentPath, (readErr, contents = Buffer.from('')) => {
+            this._fileSystem.readFile(srcPath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING)) => {
                 if (readErr) {
                     console.error('Error reading file during move:', readErr);
                     return resolve(false);
@@ -665,7 +685,7 @@ export class FileService implements BaseService{
                         return resolve(false);
                     }
 
-                    this._fileSystem.unlink(currentPath, (unlinkErr) => {
+                    this._fileSystem.unlink(srcPath, (unlinkErr) => {
                         if (unlinkErr) {
                             console.error('Error deleting original file during move:', unlinkErr);
                             return resolve(false);
@@ -738,34 +758,28 @@ export class FileService implements BaseService{
         });
     }
 
-    public async renameAsync(path:string, newFileName:string): Promise<boolean> {
- 
-        let rename = Constants.EMPTY_STRING; 
-        const isDirectory = await this.checkIfDirectoryAsync(path);
-        if(!isDirectory){  
-            return await this.renameFileAsync(path, newFileName);
-        }
-        else{ 
-            rename = `${dirname(path)}/${newFileName}`;
-            return await this.renameDirectoryAsync(path, rename);
-        }
+    public async renameAsync(path:string, newFileName:string, isFile?:boolean): Promise<boolean> {
+        const rename = `${dirname(path)}/${newFileName}`;
+        const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(path) : !isFile;
+
+        return isDirectory
+            ? await this.renameDirectoryAsync(path, rename)
+            : await this.renameFileAsync(path, newFileName);
     }
 
 
     private async renameFileAsync(path:string, newFileName:string): Promise<boolean> {
         //moveFileAsync and renameFileAsync are 95% the same, have renameFileAsync call moveFileAsync behind the scene
-        const newPath = `${dirname(path)}/${newFileName}${extname(path)}`;
+        const newPath = `${dirname(path)}/${newFileName}${extname(path)}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
         return await this.moveFileAsync(path, newPath);
     }
 
-    public async deleteAsync(path:string):Promise<boolean> {
-        const isDirectory = await this.checkIfDirectoryAsync(path);
+    public async deleteAsync(path:string, isFile?:boolean):Promise<boolean> {
+        const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(path) : !isFile;
 
-        if(isDirectory){
-            return await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path);
-        }else{
-            return await this.deleteFileAsync(path);
-        }
+        return isDirectory
+            ? await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path)
+            : await this.deleteFileAsync(path);
     }
 
     private async deleteFolderAsync(path:string): Promise<boolean> {
@@ -865,7 +879,11 @@ export class FileService implements BaseService{
         this._directoryFileEntires=[]
     }
 
-
+    /**
+     *if file exists, increment it simple.txt, simple(1).txt ... 
+     * @param path 
+     * @returns 
+     */
     public iterateName(path:string):string{
         const extension = extname(path);
         const filename = basename(path, extension);

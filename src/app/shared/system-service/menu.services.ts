@@ -100,6 +100,13 @@ export class MenuService implements BaseService{
         this._isPasteActive = true;
     }
 
+    resetStoreData():void{
+        this.storeData = [];
+        this._path = Constants.EMPTY_STRING
+        this._actions = Constants.EMPTY_STRING;
+        this._isPasteActive = false;
+    }
+
     getStoreData():string[]{
         return this.storeData;
     }

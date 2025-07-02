@@ -851,7 +851,7 @@ usage: mkdir direcotry_name [-v]
         console.log(`sourceArg:${sourceArg}`);
         console.log(`destinationArg:${destinationArg}`);
 
-        const folderQueue:string[] =  [];
+        //const folderQueue:string[] =  [];
 
         if(sourceArg === undefined || sourceArg.length === 0)
             return 'source path required';
@@ -859,8 +859,8 @@ usage: mkdir direcotry_name [-v]
         if(destinationArg === undefined || destinationArg.length === 0)
             return 'destination path required';
 
-        folderQueue.push(sourceArg);
-        const result =  await this._fileService.moveHandlerAsyncA(destinationArg, folderQueue);
+        //folderQueue.push(sourceArg);
+        const result =  await this._fileService.moveAsync(sourceArg, destinationArg);
         if(result){
             const result = await this.rm('-rf', sourceArg);
             if(result === Constants.EMPTY_STRING){
@@ -882,7 +882,6 @@ usage: mkdir direcotry_name [-v]
         console.log(`copy-destination ${sourceArg}`);
         //console.log(`destination ${destinationArg}`);
 
-        const folderQueue:string[] = []
         if(destinationArg === undefined){
             destinationArg = sourceArg;
             if(destinationArg === '.'){
@@ -916,10 +915,10 @@ Mandatory argument to long options are mandotory for short options too.
             }
         }
 
-        if(sourceArg === undefined || sourceArg.length === 0)
+        if(sourceArg === undefined || sourceArg.length === Constants.NUM_ZERO)
             return 'source path required';
 
-        if(destinationArg === undefined || destinationArg.length === 0)
+        if(destinationArg === undefined || destinationArg.length === Constants.NUM_ZERO)
             return 'destination path required';
 
         const isDirectory = await this._fileService.checkIfDirectoryAsync(sourceArg);
@@ -928,9 +927,8 @@ Mandatory argument to long options are mandotory for short options too.
                 return `cp: omitting directory ${sourceArg}`;
 
             if(option === '-r' || (option === '-R' || option === '--recursive')){
-                folderQueue.push(sourceArg);
-                //const result = await this.cp_dir_handler(optionArg,destinationArg, folderQueue);
-                const result = await this._fileService.copyHandlerAsync(optionArg,sourceArg, destinationArg);
+
+                const result = await this._fileService.copyAsync(sourceArg, destinationArg, !isDirectory);
                 if(result){
                     this.sendDirectoryUpdateNotification(destinationArg);
                 }
@@ -938,7 +936,7 @@ Mandatory argument to long options are mandotory for short options too.
         }else{
             // just copy regular file
             //const result = await this.cp_file_handler(sourceArg,destinationArg);
-            const result = await this._fileService.copyHandlerAsync(optionArg,sourceArg, destinationArg);
+            const result = await this._fileService.copyAsync(sourceArg, destinationArg, isDirectory);
             if(result){
                 this.sendDirectoryUpdateNotification(destinationArg);
             }
@@ -989,7 +987,7 @@ Mandatory argument to long options are mandotory for short options too.
 
             if(option === '-rf'){
                 folderQueue.push(sourceArg);
-                const result = await this._fileService.deleteAsync(sourceArg);
+                const result = await this._fileService.deleteAsync(sourceArg, !isDirectory);
                 if(result){
                     this.sendDirectoryUpdateNotification(sourceArg);
                     return Constants.EMPTY_STRING;
@@ -997,7 +995,7 @@ Mandatory argument to long options are mandotory for short options too.
             }
         }else{
             // just delete regular file
-            const result = await this._fileService.deleteAsync(sourceArg);
+            const result = await this._fileService.deleteAsync(sourceArg, isDirectory);
             if(result){
                 this.sendDirectoryUpdateNotification(sourceArg);
                 return Constants.EMPTY_STRING;

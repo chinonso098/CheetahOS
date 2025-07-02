@@ -212,7 +212,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   name = 'fileexplorer';
   processId = Constants.NUM_ZERO;
   type = ComponentType.System;
-  directory =Constants.ROOT;
+  directory = Constants.ROOT;
   displayName = 'fileexplorer';
   hasWindow = true;
 
@@ -569,7 +569,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async goUpAlevel():Promise<void>{
-    if(this.upPathEntries.length > 0){
+    if(this.upPathEntries.length > Constants.NUM_ZERO){
       const currentDirPath =  this.directory;
 
       if(!this.isNavigatedBefore){
@@ -593,7 +593,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       const folderName = basename(this.directory);
 
-      if(this.upPathEntries.length == 0){
+      if(this.upPathEntries.length === Constants.NUM_ZERO){
         this.isUpBtnActive = false;
         this.upNavBtnStyle ={
           'fill': '#ccc'
@@ -642,7 +642,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     }else{
       if(btnElmnt){
-        btnElmnt.style.backgroundColor = '';
+        btnElmnt.style.backgroundColor = Constants.EMPTY_STRING;
       }
     }
   }
@@ -666,16 +666,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async goBackAlevel():Promise<void>{
-    if(this.prevPathEntries.length > 0){
+    if(this.prevPathEntries.length > Constants.NUM_ZERO){
       const currentDirPath =  this.directory;
 
-      if(this.recentPathEntries.indexOf(currentDirPath) == -1){
+      if(this.recentPathEntries.indexOf(currentDirPath) === Constants.MINUS_ONE){
         this.recentPathEntries.push(currentDirPath);
       }
 
       const idx = this.upPathEntries.indexOf(currentDirPath);
-      if(idx != -1){
-        this.upPathEntries.splice(idx,1);
+      if(idx != Constants.MINUS_ONE){
+        this.upPathEntries.splice(idx, Constants.NUM_ONE);
       }else{
         this.upPathEntries.push(currentDirPath);
       }
@@ -700,7 +700,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       const folderName = basename(this.directory);
 
-      if(this.prevPathEntries.length == 0){
+      if(this.prevPathEntries.length === Constants.NUM_ZERO){
         this.isPrevBtnActive = false;
         this.prevNavBtnStyle ={
           'fill': '#ccc'
@@ -733,7 +733,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async goForwardAlevel():Promise<void>{
-    if(this.nextPathEntries.length > 0){
+    if(this.nextPathEntries.length > Constants.NUM_ZERO){
 
       const currentDirPath =  this.directory;
       this.prevPathEntries.push(currentDirPath);
@@ -745,8 +745,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const nextDirPath = this.directory = this.nextPathEntries.pop() ?? Constants.EMPTY_STRING;
       const idx = this.upPathEntries.indexOf(nextDirPath)
 
-      if (idx !== -1) {
-           this.upPathEntries.splice(idx, 1);
+      if (idx !== Constants.MINUS_ONE) {
+           this.upPathEntries.splice(idx, Constants.NUM_ONE);
       }else{
         this.upPathEntries.push(nextDirPath);
       }
@@ -759,7 +759,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       const folderName = basename(this.directory);
-      if(this.nextPathEntries.length == 0){
+      if(this.nextPathEntries.length === Constants.NUM_ZERO){
         this.isNextBtnActive = false;
         this.nextNavBtnStyle ={
           'fill': '#ccc'
@@ -768,7 +768,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       this._audioService.play(this.cheetahNavAudio);
       this.populateTraversalList();
-      this.setNavPathIcon(folderName,this.directory);
+      this.setNavPathIcon(folderName, this.directory);
       await this.loadFilesInfoAsync();
     }
   }
@@ -788,8 +788,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onNavPaneBtnLeave():void{
     const btnElement = document.getElementById(`navPaneIconCntnr-${this.processId}`) as HTMLDivElement;
     if(btnElement){
-      btnElement.style.backgroundColor = '';
-      btnElement.style.borderColor = '';
+      btnElement.style.backgroundColor = Constants.EMPTY_STRING;
+      btnElement.style.borderColor = Constants.EMPTY_STRING;
     }
   }
 
@@ -818,8 +818,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const btnElement = document.getElementById(`prevPaneIconCntnr-${this.processId}`) as HTMLDivElement;
     if(btnElement){
       if(!this.showPreviewPane){
-        btnElement.style.backgroundColor = '';
-        btnElement.style.borderColor = '';
+        btnElement.style.backgroundColor = Constants.EMPTY_STRING;
+        btnElement.style.borderColor = Constants.EMPTY_STRING;
       }else{
         btnElement.style.borderColor = '#ccc';
         btnElement.style.backgroundColor = '#605c5c';
@@ -852,8 +852,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const btnElement = document.getElementById(`detailsPaneIconCntnr-${this.processId}`) as HTMLDivElement;
     if(btnElement){
       if(!this.showDetailsPane){
-        btnElement.style.backgroundColor = '';
-        btnElement.style.borderColor = '';
+        btnElement.style.backgroundColor = Constants.EMPTY_STRING;
+        btnElement.style.borderColor = Constants.EMPTY_STRING;
       }else{
         btnElement.style.borderColor = '#ccc';
         btnElement.style.backgroundColor = '#605c5c';
@@ -864,8 +864,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   removePaneBtnStyle(id:string):void{
     const btnElement = document.getElementById(id) as HTMLDivElement;
     if(btnElement){
-      btnElement.style.backgroundColor = '';
-      btnElement.style.borderColor = '';
+      btnElement.style.backgroundColor = Constants.EMPTY_STRING;
+      btnElement.style.borderColor = Constants.EMPTY_STRING;
     }
   }
 
@@ -902,7 +902,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         droppedFiles  = [...event?.dataTransfer?.files];
     }
     
-    if(droppedFiles.length >= 1){
+    if(droppedFiles.length >= Constants.NUM_ONE){
       const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
       if(result){
         await this.loadFilesInfoAsync();
@@ -1399,11 +1399,36 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const path = this.selectedFile.getCurrentPath;
     this._menuService.setStoreData([path, action]);
   }
+
+  async onPaste():Promise<void>{
+    const cntntPath = this._menuService.getPath();
+    const action = this._menuService.getActions();
+
+    console.log(`path: ${cntntPath}`);
+    console.log(`action: ${action}`);
+
+    //onPaste will be modified to handle cases such as multiselect, file or folder or both
+
+    if(action === MenuAction.COPY){
+      const result = await this._fileService.copyAsync(cntntPath, this.directory);
+      if(result){
+        this.refresh();
+      }
+    }
+    else if(action === MenuAction.CUT){
+      const result = await this._fileService.moveAsync(cntntPath, this.directory);
+      if(result){
+        this.refresh();
+      }
+    }
+  }
+
+
   
   checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
 
-    let xAxis = 0;
-    let yAxis = 0;
+    let xAxis = Constants.NUM_ZERO;
+    let yAxis = Constants.NUM_ZERO;
     let horizontalShift = false;
     let verticalShift = false;
 
@@ -1434,11 +1459,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     return {xAxis, yAxis};
   }
 
-  shiftViewSubMenu():void{ this.shiftNestedMenuPosition(0); }
+  shiftViewSubMenu():void{ this.shiftNestedMenuPosition(Constants.NUM_ZERO); }
 
-  shiftSortBySubMenu():void{this.shiftNestedMenuPosition(1);  }
+  shiftSortBySubMenu():void{this.shiftNestedMenuPosition(Constants.NUM_ONE);  }
 
-  shiftNewSubMenu():void { this.shiftNestedMenuPosition(6); }
+  shiftNewSubMenu():void { this.shiftNestedMenuPosition(Constants.NUM_SIX); }
 
   shiftNestedMenuPosition(i:number):void{
     const nestedMenu =  document.getElementById(`dmNestedMenu-${i}`) as HTMLDivElement;
@@ -1570,7 +1595,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  async refreshIcons():Promise<void>{
+  async refresh():Promise<void>{
     this.isIconInFocusDueToPriorAction = false;
     await this.loadFilesInfoAsync();
   }
@@ -1580,6 +1605,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath);
     if(result){
+      this._menuService.resetStoreData();
       await this.loadFilesInfoAsync();
     }
   }
@@ -1841,8 +1867,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const renameContainerElement= document.getElementById(`renameContainer-${this.processId}-${this.selectedElementId}`) as HTMLElement;
     const renameText = this.renameForm.value.renameInput as string;
 
-    if(renameText !== Constants.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName){
-      const result = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText);
+    if(renameText !== Constants.EMPTY_STRING && renameText.length !== Constants.NUM_ZERO && renameText !== this.currentIconName){
+      const result = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText,  this.selectedFile.getIsFile);
 
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
@@ -1859,7 +1885,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
 
     this.setBtnStyle(this.selectedElementId, false);
-    this.renameFileTriggerCnt = 0;
+    this.renameFileTriggerCnt = Constants.NUM_ZERO;
 
     if(figCapElement){
       figCapElement.style.display = 'block';
@@ -1890,7 +1916,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showSearchHistory():void{
     const searchHistoryElement = document.getElementById(`searchHistory-${this.processId}`) as HTMLElement;
     if(searchHistoryElement){
-      if(this.searchHistory.length > 0){
+      if(this.searchHistory.length > Constants.NUM_ZERO){
         searchHistoryElement.style.display = 'block';
       }
     }
@@ -1911,7 +1937,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(this.showPathHistory){
       if(pathHistoryElement){
-        if(this.pathHistory.length > 0){
+        if(this.pathHistory.length > Constants.NUM_ZERO){
           pathHistoryElement.style.display = 'block';
           pathHistoryElement.style.width = `${minus24}px`;
         }
@@ -2095,8 +2121,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.fileExplrMenu = [
           {icon1:Constants.EMPTY_STRING,  icon2: `${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'View', nest:this.buildViewMenu(), action: ()=> Constants.EMPTY_STRING, action1: this.shiftViewSubMenu.bind(this), emptyline:false},
           {icon1:Constants.EMPTY_STRING,  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=> Constants.EMPTY_STRING, action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
-          {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label: 'Refresh', nest:[], action:() => this.refreshIcons(), action1: ()=> Constants.EMPTY_STRING, emptyline:true},
-          {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label: 'Paste', nest:[], action: () => console.log('Paste!! Paste!!'), action1: ()=> Constants.EMPTY_STRING, emptyline:false},
+          {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label: 'Refresh', nest:[], action:() => this.refresh(), action1: ()=> Constants.EMPTY_STRING, emptyline:true},
+          {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label: 'Paste', nest:[], action: this.onPaste.bind(this), action1: ()=> Constants.EMPTY_STRING, emptyline:false},
           {icon1:`${Constants.IMAGE_BASE_PATH}terminal.png`, icon2:Constants.EMPTY_STRING, label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), action1: ()=> Constants.EMPTY_STRING, emptyline:false},
           {icon1:`${Constants.IMAGE_BASE_PATH}vs_code.png`, icon2:Constants.EMPTY_STRING, label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> Constants.EMPTY_STRING, emptyline:true},
           {icon1:Constants.EMPTY_STRING,  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> Constants.EMPTY_STRING, action1: this.shiftNewSubMenu.bind(this), emptyline:true},
