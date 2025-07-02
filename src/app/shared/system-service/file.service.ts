@@ -154,12 +154,18 @@ export class FileService implements BaseService{
         return new Promise<boolean>((resolve) =>{
              this._fileSystem.readFile(sourcePath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
                 if(readErr){
-                    console.error('copyFileAsync error:',readErr)
+                    console.error('copyFileAsync readFile error:',readErr)
                     resolve(false);
                 }
 
                 this._fileSystem.writeFile(fileName, contents, {flag: 'wx'}, (writeErr) =>{  
-                    if(writeErr?.code === 'EEXIST' ){
+                    if(!writeErr){
+                        console.log('copyFileAsync Success:');
+                        this._fileExistsMap.set(fileName, Constants.NUM_ZERO);
+                        return resolve(true);
+                    }
+
+                    if(writeErr?.code === 'EEXIST'){
                         console.warn('copyFileAsync Error: file already exists',writeErr);
                         const iteratedName = this.iterateName(fileName);
                         this._fileSystem.writeFile(iteratedName, contents, (retryErr) =>{  
@@ -172,7 +178,7 @@ export class FileService implements BaseService{
                             resolve(true);
                         });
                     }else{
-                        console.error('copyFileAsync Error:',writeErr);
+                        console.error('copyFileAsync Error:', writeErr);
                         resolve(false);
                     }
                 });
