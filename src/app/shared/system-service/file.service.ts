@@ -540,12 +540,7 @@ export class FileService implements BaseService{
         folderToProcessingQueue.push(srcPath);
         const isRenameSuccessful =  await this.moveHandlerBAsync(destPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
         if(isRenameSuccessful){
-            for(let i = 0; i <= folderToDeleteStack.length; i++){
-                const path = folderToDeleteStack.pop();
-                if(path){
-                    await this.deleteFolderAsync(path);                    
-                }
-            }
+          await this.deleteEmptyFolders(folderToDeleteStack);
         }
 
         return isRenameSuccessful;
