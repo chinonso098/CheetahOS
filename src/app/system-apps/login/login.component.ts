@@ -91,7 +91,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._systemNotificationServices.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
 
-    this._systemNotificationServices.shutDownSystemNotify.subscribe(() => { this.shutDownOS()});
+    this._systemNotificationServices.shutDownSystemNotify.subscribe(() => { this.shutDownOSFromDesktop()});
     this._systemNotificationServices.restartSystemNotify.subscribe(() => { this.restartOS()});
   }
 
@@ -243,8 +243,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  showLockScreen():void{
-    this.viewOptions = this.currentDateTime;
+  showLockScreen(isShutDwn?:boolean):void{
+    this.viewOptions = (isShutDwn === undefined)? this.currentDateTime : this.authForm;
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
       lockScreenElmnt.style.zIndex = '6';
@@ -284,7 +284,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   getPowerMenuData():void{
     this.menuData = [
-      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`, label: 'Shut down', action: this.shutDownOS.bind(this) },
+      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`, label: 'Shut down', action: this.shutDownOSFromLockScreen.bind(this) },
       {icon:`${Constants.IMAGE_BASE_PATH}cheetah_restart.png`, label: 'Restart', action:this.restartOS.bind(this)}
     ];
   }
@@ -364,7 +364,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.showFailedEntry = false;
   }
 
-  shutDownOS():void{
+  shutDownOSFromLockScreen():void{
     const delay = 6000; // 6 secs
     this.resetFields();
     this.changeLockScreenLogonPosition(40);
@@ -379,6 +379,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       this.showPowerOnOffScreen();
     }, delay);
+  }
+
+  shutDownOSFromDesktop():void{
+    this.showLockScreen(true);
+    this.shutDownOSFromLockScreen();
   }
 
   restartOS():void{

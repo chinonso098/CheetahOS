@@ -91,6 +91,7 @@ export class DialogComponent implements BaseComponent, OnChanges {
   }
 
   onYesPowerDialogBox():void{
+    this.onCloseDialogBox();
     if(this.selectedOption === Constants.SYSTEM_RESTART){
       if(!this.isReopenWindowsChecked)
         this._sessionManagementService.clearAppSession();

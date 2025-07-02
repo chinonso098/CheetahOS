@@ -2134,6 +2134,9 @@ OpensWith=${selectedFile.getOpensWith}
     this.stopClippy();
     this.hideDesktopIcon(); 
     this.hideVolumeControl();
+    this.hideDesktopContextMenuAndOthers();
+    this.hideTaskBarPreviewWindow();
+    this.hideTaskBarToolTip()
   }
 
   desktopIsActive():void{
@@ -2141,6 +2144,7 @@ OpensWith=${selectedFile.getOpensWith}
     this.restorPriorOpenApps();
     //this.startClippy();
   }
+
   
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
