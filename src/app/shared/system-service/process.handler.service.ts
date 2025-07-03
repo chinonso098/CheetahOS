@@ -1,17 +1,22 @@
 import { ComponentRef, Injectable, Type} from "@angular/core";
-import { RunningProcessService } from "./running.process.service";
+
 import { AppDirectory } from "src/app/system-files/app.directory";
 import { FileInfo } from "src/app/system-files/file.info";
 import { Constants } from "src/app/system-files/constants";
 import { ProcessType } from "src/app/system-files/system.types";
-import { ProcessIDService } from "./process.id.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
+
+import { MenuService } from "./menu.services";
 import { WindowService } from "./window.service";
 import { BaseService } from "./base.service.interface";
+import { ProcessIDService } from "./process.id.service";
+import { RunningProcessService } from "./running.process.service";
+import { UserNotificationService } from "./user.notification.service";
+import { SessionManagmentService } from "./session.management.service";
+
 import { ComponentReferenceService } from "./component.reference.service";
 import { PropertiesComponent } from "../system-component/properties/properties.component";
-import { MenuService } from "./menu.services";
 import { AudioPlayerComponent } from "src/app/system-apps/audioplayer/audioplayer.component";
 import { ChatterComponent } from "src/app/system-apps/chatter/chatter.component";
 import { CheetahComponent } from "src/app/system-apps/cheetah/cheetah.component";
@@ -32,8 +37,7 @@ import { MarkDownViewerComponent } from "src/app/user-apps/markdownviewer/markdo
 import { RuffleComponent } from "src/app/user-apps/ruffle/ruffle.component";
 import { TitleComponent } from "src/app/user-apps/title/title.component";
 import { WarpingstarfieldComponent } from "src/app/user-apps/warpingstarfield/warpingstarfield.component";
-import { SessionManagmentService } from "./session.management.service";
-import { UserNotificationService } from "./user.notification.service";
+
 
 @Injectable({
     providedIn: 'root'
@@ -121,7 +125,6 @@ export class ProcessHandlerService implements BaseService{
         this._menuService.showPropertiesView.subscribe((p) => this.showPropertiesWindow(p));
         this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.closeApplicationProcess(p)})
     }
-
 
     startApplicationProcess(file:FileInfo):void{
         let msg = Constants.EMPTY_STRING;

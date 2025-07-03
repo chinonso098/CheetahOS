@@ -92,7 +92,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this._systemNotificationServices.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
 
     this._systemNotificationServices.shutDownSystemNotify.subscribe(() => { this.shutDownOSFromDesktop()});
-    this._systemNotificationServices.restartSystemNotify.subscribe(() => { this.restartOS()});
+    this._systemNotificationServices.restartSystemNotify.subscribe(() => { this.restartOSFromDesktop()});
   }
 
   ngOnInit():void {
@@ -285,7 +285,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   getPowerMenuData():void{
     this.menuData = [
       {icon:`${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`, label: 'Shut down', action: this.shutDownOSFromLockScreen.bind(this) },
-      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_restart.png`, label: 'Restart', action:this.restartOS.bind(this)}
+      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_restart.png`, label: 'Restart', action:this.restartOSFromLockScreen.bind(this)}
     ];
   }
 
@@ -386,7 +386,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.shutDownOSFromLockScreen();
   }
 
-  restartOS():void{
+  restartOSFromLockScreen():void{
     const delay = 5500; // 5.5secs
     this.resetFields();
     this.changeLockScreenLogonPosition(40);
@@ -402,6 +402,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.showPowerOnOffScreen();
       this._systemNotificationServices.restartSystemNotify.next();
     }, delay);
+  }
+
+  restartOSFromDesktop():void{
+    this.showLockScreen(true);
+    this.restartOSFromLockScreen();
   }
 
   showPowerOnOffScreen():void{

@@ -48,7 +48,7 @@ export class DialogComponent implements BaseComponent, OnChanges {
     { value: 'Restart', label: 'Closes all apps and turns off the PC, and turns it on again.' }
   ];
 
-  isReopenWindowsChecked = false;
+  reOpenWindows = false;
   selectedOption = 'Shut down';
   pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
 
@@ -91,28 +91,30 @@ export class DialogComponent implements BaseComponent, OnChanges {
   }
 
   onCheckboxChange() {
-    console.log('Checkbox is checked:', this.isReopenWindowsChecked);
+    console.log('Checkbox is checked:', this.reOpenWindows);
   }
 
   onYesPowerDialogBox():void{
     const delay = 100; //100ms
+    const clearSessionData = !this.reOpenWindows;
+    
     this.onCloseDialogBox();
-    this._processHandlerService.closeActiveProcessWithWindows(!this.isReopenWindowsChecked);
+    this._processHandlerService.closeActiveProcessWithWindows(clearSessionData);
 
     setTimeout(() => {
       if(this.selectedOption === Constants.SYSTEM_RESTART){
-        if(!this.isReopenWindowsChecked)
+        if(!this.reOpenWindows)
           this._sessionManagementService.clearAppSession();
 
         this._systemNotificationService.restartSystemNotify.next();
       }else{
-        if(!this.isReopenWindowsChecked)
+        if(!this.reOpenWindows)
           this._sessionManagementService.clearAppSession();
 
         this._systemNotificationService.shutDownSystemNotify.next();
       }
 
-      this._sessionManagementService.clearPwrAndLogonState();
+      //this._sessionManagementService.clearPwrAndLogonState();
     }, delay);
   }
 
