@@ -250,10 +250,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
   showLockScreen(isShtDwnOrRstrt?:boolean):void{
     this.viewOptions = (isShtDwnOrRstrt === undefined)? this.currentDateTime : this.authForm;
 
-    // if(isShtDwnOrRstrt === undefined){
-    //   this.viewOptions = this.currentDateTime
-    // }
-
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
       lockScreenElmnt.style.zIndex = '6';
@@ -369,7 +365,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.showPasswordEntry = false;
     this.showLoading = false
     this.showFailedEntry = false;
-    this.viewOptions = this.currentDateTime;
   }
 
   shutDownOSFromLockScreen():void{
@@ -427,7 +422,17 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.changeLockScreenLogonPosition(25);
       this.showPowerBtn();
       this.storeState(Constants.SIGNED_OUT);
+
+      this.viewOptions = this.currentDateTime;
+      this.removeLockScreenBackDrop();
       // raise events to close opened apps
+    }
+  }
+
+  removeLockScreenBackDrop():void{
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    if(lockScreenElmnt){
+      lockScreenElmnt.style.backdropFilter = 'none';
     }
   }
 
