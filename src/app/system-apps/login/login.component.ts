@@ -228,6 +228,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.startAuthFormTimeOut();
   }
 
+  resetAuthFormTimeOutOnly():void{
+    clearTimeout(this.authFormTimeoutId);
+  }
+
   showDesktop():void{ 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
@@ -425,6 +429,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
       this.viewOptions = this.currentDateTime;
       this.removeLockScreenBackDrop();
+      this.resetAuthFormTimeOutOnly();
       // raise events to close opened apps
     }
   }
