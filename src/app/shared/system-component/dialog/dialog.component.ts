@@ -11,6 +11,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 
 import { Constants } from 'src/app/system-files/constants';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
+import { ProcessHandlerService } from '../../system-service/process.handler.service';
 
 
 @Component({
@@ -29,7 +30,8 @@ export class DialogComponent implements BaseComponent, OnChanges {
   private _sessionManagementService: SessionManagmentService;
   private _menuService:MenuService;
   private _processIdService:ProcessIDService;
-  private _systemNotificationServices:SystemNotificationService;
+  private _systemNotificationService:SystemNotificationService;
+  private _processHandlerService:ProcessHandlerService;
 
 
   notificationOption = Constants.EMPTY_STRING;
@@ -65,13 +67,15 @@ export class DialogComponent implements BaseComponent, OnChanges {
   displayName = Constants.EMPTY_STRING;
 
   constructor(notificationServices:UserNotificationService, menuService:MenuService, windowService:WindowService,
-              systemNotificationServices:SystemNotificationService, sessionManagementService:SessionManagmentService, processIdService:ProcessIDService){
+              systemNotificationServices:SystemNotificationService, sessionManagementService:SessionManagmentService, processIdService:ProcessIDService,
+              processHandlerService:ProcessHandlerService){
     this._userNotificationServices = notificationServices;
     this._menuService = menuService;
     this._sessionManagementService = sessionManagementService;
     this._processIdService = processIdService;
     this._windowService = windowService;
-    this._systemNotificationServices = systemNotificationServices;
+    this._systemNotificationService = systemNotificationServices;
+    this._processHandlerService = processHandlerService;
 
     this.processId = this._processIdService.getNewProcessId();
   }
@@ -91,18 +95,25 @@ export class DialogComponent implements BaseComponent, OnChanges {
   }
 
   onYesPowerDialogBox():void{
+    const delay = 100; //100ms
     this.onCloseDialogBox();
-    if(this.selectedOption === Constants.SYSTEM_RESTART){
-      if(!this.isReopenWindowsChecked)
-        this._sessionManagementService.clearAppSession();
+    this._processHandlerService.closeActiveProcessWithWindows(!this.isReopenWindowsChecked);
 
-      this._systemNotificationServices.restartSystemNotify.next();
-    }else{
-      if(!this.isReopenWindowsChecked)
-        this._sessionManagementService.clearAppSession();
+    setTimeout(() => {
+      if(this.selectedOption === Constants.SYSTEM_RESTART){
+        if(!this.isReopenWindowsChecked)
+          this._sessionManagementService.clearAppSession();
 
-      this._systemNotificationServices.shutDownSystemNotify.next();
-    }
+        this._systemNotificationService.restartSystemNotify.next();
+      }else{
+        if(!this.isReopenWindowsChecked)
+          this._sessionManagementService.clearAppSession();
+
+        this._systemNotificationService.shutDownSystemNotify.next();
+      }
+
+      this._sessionManagementService.clearPwrAndLogonState();
+    }, delay);
   }
 
   onCloseDialogBox():void{

@@ -317,17 +317,21 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.getTaskBarContextData();
   }
 
-  ngOnDestroy(): void {
-    this._vantaEffect?.destroy();
-  }
-
   async ngAfterViewInit():Promise<void>{
+    const delay = 300; //100ms
     this.startVantaWaveColorChange();
     this.hideDesktopContextMenuAndOthers();
     this.initClippy();
 
-    await this.loadFilesInfoAsync();
     this.removeVantaJSSideEffect();
+
+    setTimeout(async () => {
+          await this.loadFilesInfoAsync();
+    }, delay);
+  }
+
+  ngOnDestroy(): void {
+    this._vantaEffect?.destroy();
   }
 
   onDragOver(event:DragEvent):void{

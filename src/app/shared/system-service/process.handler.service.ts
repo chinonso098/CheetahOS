@@ -207,7 +207,7 @@ export class ProcessHandlerService implements BaseService{
         }
     }
 
-    closeApplicationProcess(eventData:Process):void{
+    closeApplicationProcess(eventData:Process, clearSessionData?:boolean):void{
         // remove component ref
         this._componentReferenceService.removeComponent(eventData.getProcessId)
 
@@ -215,10 +215,18 @@ export class ProcessHandlerService implements BaseService{
 
         this._windowService.removeProcessPreviewImage(eventData.getProcessName, eventData.getProcessId);
  
-        this.deleteEntryFromUserOpenedAppsAndSession(eventData);
+        if((clearSessionData === undefined) || clearSessionData)
+            this.deleteEntryFromUserOpenedAppsAndSession(eventData);
 
         this._runningProcessService.removeProcess(eventData);
         this._runningProcessService.processListChangeNotify.next();
+    }
+
+    closeActiveProcessWithWindows(clearSessionData:boolean):void{
+        const proccesses = this._runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
+        for(const proccess of proccesses){
+            this.closeApplicationProcess(proccess, clearSessionData);
+        }
     }
 
     private deleteEntryFromUserOpenedAppsAndSession(proccess:Process):void{

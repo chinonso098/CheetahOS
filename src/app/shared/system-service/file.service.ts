@@ -42,7 +42,7 @@ export class FileService implements BaseService{
     fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
     goToDirectoryNotify: Subject<string[]> = new Subject<string[]>();
 
-    SECONDS_DELAY = 200;
+    // SECONDS_DELAY = 200;
 
     name = 'file_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -75,34 +75,54 @@ export class FileService implements BaseService{
         }, Constants.NUM_ZERO);
     }
 
-    private async initBrowserFsAsync():Promise<void>{
+    private async initBrowserFsAsync():Promise<boolean>{
+        if(this._fileSystem)
+            return true;
+ 
+        const currentURL = window.location.href;
+        console.log('currentURL:',currentURL);
         
-        if(!this._fileSystem){
-            const currentURL = window.location.href;
-            console.log('currentURL:',currentURL);
-            
-            return new Promise<void>((resolve, reject) => {
-                BrowserFS.configure({
+        return new Promise<boolean>((resolve) => {
+            BrowserFS.configure(
+                {
                     fs: "MountableFileSystem",
                     options:{
                         '/':{
                             fs: 'OverlayFS',
                             options:{
-                                readable:{fs: 'XmlHttpRequest', options:{index: osDriveFileSystemIndex, baseUrl:`${currentURL}osdrive`}},
-                                writable:{fs:"IndexedDB", options: {storeName: "browser-fs-cache"}}
+                                readable:{
+                                    fs: 'XmlHttpRequest', 
+                                    options:{
+                                        index: osDriveFileSystemIndex, 
+                                        baseUrl:`${currentURL}osdrive`
+                                    }
+                                },
+                                writable:{
+                                    fs:"IndexedDB", 
+                                    options: {
+                                        storeName: "browser-fs-cache"
+                                    }
+                                }
                             },
                         },  
-                    }},
+                    }
+                },
                 (err) =>{
                     if(err){  
                         console.log('initBrowserFs Error:', err)
-                        reject(); 
+                        resolve(false); 
                     }
-                });
-                this._fileSystem = BrowserFS.BFSRequire('fs');
-                resolve();
-            });
-        }
+                    try {
+                        this._fileSystem = BrowserFS.BFSRequire('fs');
+                        console.log('initBrowserFsAsync: File system initialized successfully.');
+                        resolve(true);
+                    } catch (initErr) {
+                        console.error('initBrowserFsAsync: BFSRequire failed', initErr);
+                        resolve(false);
+                    }
+                }
+            );
+        });
     }
 
     private changeFolderIcon(fileName:string, iconPath:string, path:string):string{
@@ -334,20 +354,15 @@ export class FileService implements BaseService{
             return Promise.reject(new Error('Path must not be empty'));
         }
 
-        await this.initBrowserFsAsync();
+        return new Promise<string[]>((resolve) => {
+             this._fileSystem.readdir(path, function(err, files) {
+                if(err){
+                    console.log("Dang! The filesystem is acting up:", err);
+                    resolve([]);
+                }
 
-        return new Promise<string[]>((resolve, reject) => {
-            const fs = this._fileSystem;
-            setTimeout(() => {
-                fs.readdir(path, function(err, files) {
-                  if(err){
-                      console.log("Oops! a boo boo happened, filesystem wasn't ready:", err);
-                      reject([]);
-                  }else{
-                    resolve(files || []);
-                  }
-                });
-            }, this.SECONDS_DELAY);
+                resolve(files || []);
+            });
         });
     }
 
