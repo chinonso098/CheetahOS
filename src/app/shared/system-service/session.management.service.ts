@@ -95,11 +95,6 @@ export class SessionManagmentService implements BaseService{
             this.removeAppSession(uid);
         }
     }
-    
-    clearPwrAndLogonState():void{
-        this.removeSession(Constants.CHEETAH_LOGON_KEY);
-        this.removeSession(Constants.CHEETAH_PWR_KEY)
-    }
 
     private saveSession(sessionData:Map<string, unknown>){
         const data =  JSON.stringify(Array.from(sessionData.entries()));

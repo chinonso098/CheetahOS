@@ -74,6 +74,9 @@ export namespace Constants{
 
     export const CHEETAH_TASKBAR_ENTRY_OPTION_KEY = 'cheetahTskBarEntryOptKey';
 
+    export const RSTRT_ORDER_LOCK_SCREEN = NUM_ZERO;
+    export const RSTRT_ORDER_PWR_ON_OFF_SCREEN = NUM_ONE;
+
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
         '.png',

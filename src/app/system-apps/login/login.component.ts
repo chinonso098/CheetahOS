@@ -92,7 +92,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this._systemNotificationServices.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
 
     this._systemNotificationServices.shutDownSystemNotify.subscribe(() => { this.shutDownOSFromDesktop()});
-    this._systemNotificationServices.restartSystemNotify.subscribe(() => { this.restartOSFromDesktop()});
+    this._systemNotificationServices.restartSystemNotify.subscribe((p) => { 
+      if(p === Constants.RSTRT_ORDER_LOCK_SCREEN){
+        this.restartOSFromDesktop()
+      }
+    });
   }
 
   ngOnInit():void {
@@ -243,8 +247,13 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  showLockScreen(isShutDwn?:boolean):void{
-    this.viewOptions = (isShutDwn === undefined)? this.currentDateTime : this.authForm;
+  showLockScreen(isShtDwnOrRstrt?:boolean):void{
+    this.viewOptions = (isShtDwnOrRstrt === undefined)? this.currentDateTime : this.authForm;
+
+    // if(isShtDwnOrRstrt === undefined){
+    //   this.viewOptions = this.currentDateTime
+    // }
+
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
       lockScreenElmnt.style.zIndex = '6';
@@ -290,8 +299,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   onPowerBtnClick(evt:MouseEvent):void{
-    const delay = 10;
-
     //The onLockScreenViewClick also listens for a click event. hence, i have to delay the response of onPowerBtnClick
     setTimeout(() => {
       if(!this.showPowerMenu && !this.isPowerMenuVisible){
@@ -300,12 +307,12 @@ export class LoginComponent implements OnInit, AfterViewInit {
         const powerBtnElmt = document.getElementById('powerBtnCntnr'); 
         if(powerBtnElmt){
           const pbRect = powerBtnElmt.getBoundingClientRect();
-          powerBtnElmt.style.backgroundColor = '';
+          powerBtnElmt.style.backgroundColor = Constants.EMPTY_STRING;
   
           this.powerMenuStyle = {
             'position':'absolute',
             'transform':`translate(${String(pbRect.x - 50)}px, ${String(pbRect.y - 352)}px)`,
-            'z-index': 6,
+            'z-index': Constants.NUM_SIX,
           }
           this.isPowerMenuVisible = true;
           this.onPwdFieldRemoveFocus();
@@ -317,7 +324,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
       evt.preventDefault();
       
-    }, delay);
+    }, Constants.NUM_TEN);
   }
 
   onPowerBtnMouseEnter():void{
@@ -362,6 +369,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.showPasswordEntry = false;
     this.showLoading = false
     this.showFailedEntry = false;
+    this.viewOptions = this.currentDateTime;
   }
 
   shutDownOSFromLockScreen():void{
@@ -400,7 +408,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
  
     setTimeout(() => {
       this.showPowerOnOffScreen();
-      this._systemNotificationServices.restartSystemNotify.next();
+      this._systemNotificationServices.restartSystemNotify.next(Constants.RSTRT_ORDER_PWR_ON_OFF_SCREEN);
     }, delay);
   }
 

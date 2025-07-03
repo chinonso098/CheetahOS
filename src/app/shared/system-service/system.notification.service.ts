@@ -24,7 +24,7 @@ export class SystemNotificationService implements BaseService{
     showLockScreenNotify: Subject<void> = new Subject<void>();
     showDesktopNotify: Subject<void> = new Subject<void>();
     resetLockScreenTimeOutNotify: Subject<void> = new Subject<void>();
-    restartSystemNotify: Subject<void> = new Subject<void>();
+    restartSystemNotify: Subject<number> = new Subject<number>();
     shutDownSystemNotify: Subject<void> = new Subject<void>();
 
 

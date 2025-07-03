@@ -61,7 +61,11 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    this._systemNotificationService.restartSystemNotify.subscribe(()=>{this.simulateRestart()});
+    this._systemNotificationService.restartSystemNotify.subscribe((p) => { 
+      if(p === Constants.RSTRT_ORDER_PWR_ON_OFF_SCREEN){
+        this.simulateRestart()
+      }
+    });
   }
 
   ngOnInit(): void {

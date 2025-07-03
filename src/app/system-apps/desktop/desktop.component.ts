@@ -207,7 +207,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   readonly MAX_GRID_SIZE = 120;
 
   GRID_SIZE = this.MIN_GRID_SIZE; //column size of grid = 90px
-  SECONDS_DELAY:number[] = [6000, 250, 4000];
+  SECONDS_DELAY:number[] = [6000, 250, 4000, 300];
   renameForm!: FormGroup;
 
   deskTopClickCounter = Constants.NUM_ZERO;
@@ -318,7 +318,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async ngAfterViewInit():Promise<void>{
-    const delay = 300; //100ms
     this.startVantaWaveColorChange();
     this.hideDesktopContextMenuAndOthers();
     this.initClippy();
@@ -327,7 +326,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     setTimeout(async () => {
           await this.loadFilesInfoAsync();
-    }, delay);
+    }, this.SECONDS_DELAY[3]);
   }
 
   ngOnDestroy(): void {

@@ -3,15 +3,15 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { UserNotificationType } from 'src/app/system-files/notification.type';
 
 import { MenuService } from '../../system-service/menu.services';
+import { WindowService } from '../../system-service/window.service';
+import { ProcessIDService } from '../../system-service/process.id.service';
+import { ProcessHandlerService } from '../../system-service/process.handler.service';
 import { UserNotificationService } from '../../system-service/user.notification.service';
 import { SessionManagmentService } from '../../system-service/session.management.service';
-import { ProcessIDService } from '../../system-service/process.id.service';
-import { WindowService } from '../../system-service/window.service';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
 
 import { Constants } from 'src/app/system-files/constants';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
-import { ProcessHandlerService } from '../../system-service/process.handler.service';
 
 
 @Component({
@@ -106,15 +106,13 @@ export class DialogComponent implements BaseComponent, OnChanges {
         if(!this.reOpenWindows)
           this._sessionManagementService.clearAppSession();
 
-        this._systemNotificationService.restartSystemNotify.next();
+        this._systemNotificationService.restartSystemNotify.next(Constants.RSTRT_ORDER_LOCK_SCREEN);
       }else{
         if(!this.reOpenWindows)
           this._sessionManagementService.clearAppSession();
 
         this._systemNotificationService.shutDownSystemNotify.next();
       }
-
-      //this._sessionManagementService.clearPwrAndLogonState();
     }, delay);
   }
 
