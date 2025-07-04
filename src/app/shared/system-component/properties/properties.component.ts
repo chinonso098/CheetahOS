@@ -25,10 +25,10 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   private _processIdService:ProcessIDService
   private _windowService:WindowService;
 
-
+  readonly fileFolder = 'File folder';
   URL = Constants.URL;
-
-  processId = 0;
+  isFile = true;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.System;
   hasWindow = false;
   displayMgs = Constants.EMPTY_STRING;
@@ -39,8 +39,8 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   icon = Constants.EMPTY_STRING;
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
 
-  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
-      windowService:WindowService,fileInfoService:FileService) { 
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, windowService:WindowService,
+              fileInfoService:FileService){ 
     this._processIdService = processIdService;
     this._fileService = fileInfoService;
     this._windowService = windowService;
@@ -58,6 +58,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     this.icon = this._fileService.getAppAssociaton(this.fileInput.getOpensWith);
     this.hiddenName = `${Constants.WIN_EXPLR + this.fileInput.getFileName}`;
     this._runningProcessService.addProcess(this.getComponentDetail());
+    this.isFile = this.fileInput.getIsFile;
   }
 
   onClosePropertyView():void{

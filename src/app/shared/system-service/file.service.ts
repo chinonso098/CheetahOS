@@ -139,6 +139,7 @@ export class FileService implements BaseService{
             this._fileSystem.stat(path,(err, stats) =>{
                 if(err){
                     console.error('checkIfDirectory error:',err)
+                    console.error('checkIfDirectoryAsync: Failed to get stats →', err);
                     resolve(false);
                 }
                
@@ -148,9 +149,9 @@ export class FileService implements BaseService{
         });
     }
 
-    public async checkIfExistsAsync(dirPath: string):Promise<boolean> {
+    public async checkIfExistsAsync(path: string):Promise<boolean> {
         return new Promise<boolean>((resolve) => {
-            this._fileSystem.exists(dirPath, (exists) => {
+            this._fileSystem.exists(path, (exists) => {
                 console.log(`checkIfExistsAsync: ${exists ? 'Already exists' : 'Does not exist'}`, exists);
                 resolve(exists);
             });
@@ -396,7 +397,7 @@ export class FileService implements BaseService{
         const fileMetaData = await this.getExtraFileMetaDataAsync(path) as FileMetaData;
      
         if(!extension){
-            const fc = await this.setFolderValuesAsync(path) as FileContent;
+            const fc = await this.setFolderPropertiesAsync(path) as FileContent;
             this._fileInfo = this.populateFileInfo(path, fileMetaData, false, Constants.EMPTY_STRING, Constants.EMPTY_STRING, false, undefined, fc);
             this._fileInfo.setIconPath = this.changeFolderIcon(fc.geFileName,fc.getIconPath, path);
         }
@@ -939,30 +940,31 @@ export class FileService implements BaseService{
         return `${dirname(path)}/${filename} (${count})${extension}`;
     }
 
-    public async setFolderValuesAsync(path: string):Promise<FileContent>{
-        return new Promise<FileContent>((resolve, reject) =>{
+    public async setFolderPropertiesAsync(path:string):Promise<FileContent>{
+        const fileName = basename(path, extname(path));
+        let iconFile = Constants.EMPTY_STRING;
+        const fileType = 'folder';
+        const opensWith = 'fileexplorer';
 
-            this._fileSystem.exists(`${path}`,(exits) =>{
-                if(exits){
-                    this._fileSystem.stat(path,(err, stats) =>{
-                        if(err){
-                            console.log('setFolderValuesAsync error:',err)
-                            reject(new FileContent(Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING));
-                        }
-        
-                        const isDirectory = (stats)? stats.isDirectory(): false;
-                        const iconFile = `${Constants.IMAGE_BASE_PATH}${isDirectory ? 'folder.png' : 'unknown.png'}`
-                        const fileType = 'folder';
-                        const opensWith ='fileexplorer'
-                        resolve(new FileContent(iconFile, basename(path, extname(path)),fileType,basename(path, extname(path)) ,opensWith ));
-                    });
-                }else{
-                   console.log('setFolderValuesAsync :Does not exists',exits);
-                   resolve(new FileContent(Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING ));
-                }
-           });
-            
-        });
+        const exist = await this.checkIfExistsAsync(path);
+        if(!exist){
+            return this.createEmptyFileContent();
+        }
+
+        const isDirectory = await this.checkIfDirectoryAsync(path);
+        if(!isDirectory){
+            iconFile= `${Constants.IMAGE_BASE_PATH}unknown.png`;
+            return new FileContent(iconFile, fileName, fileType, fileName, opensWith);
+        }
+
+        const count = await this.countFolderItemsAsync(path);
+        if(count === Constants.NUM_ZERO){
+            iconFile = `${Constants.IMAGE_BASE_PATH}empty_folder.png`;
+            return new FileContent(iconFile, fileName, fileType, fileName, opensWith);
+        }
+
+        iconFile = `${Constants.IMAGE_BASE_PATH}folder_w_c.png`;
+        return new FileContent(iconFile, fileName, fileType, fileName, opensWith);
     }
 
     private addAppAssociaton(appname:string, img:string):void{
@@ -974,6 +976,12 @@ export class FileService implements BaseService{
             }
         }
     }
+
+    private createEmptyFileContent(): FileContent {
+        const empty = Constants.EMPTY_STRING;
+        return new FileContent(empty, empty, empty, empty, empty);
+    }
+
 
     getAppAssociaton(appname:string):string{
         return this._fileAndAppIconAssociation.get(appname) || Constants.EMPTY_STRING;

@@ -1498,7 +1498,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
       if(!isMouseHover && this.isIconInFocusDueToPriorAction){
         btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-        btnElement.style.border = '2px solid white'
+        btnElement.style.border = '1px solid white'
       }
     }
   }
