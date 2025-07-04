@@ -19,7 +19,7 @@
 
                                 <div class="general-tab-section">
                                     <div class="general-tab-content">
-                                        <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="fileInput.getIconPath"/></figure></div>
+                                        <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="iconPath"/></figure></div>
                                         <div class="general-tab-mid"></div>
                                         <div class="general-tab-tail"><p class="general-tab-p">{{this.name}}</p></div>
                                     </div>
@@ -44,7 +44,7 @@
                                                         <figure class="openswith-tab-figure"><img class="openswith-tab-img" [src]="icon"/></figure>
                                                     </div>
                                                     <div class="openswith-mid"></div>
-                                                    <div class="openswith-tail"><p class="general-tab-p1"> {{fileInput.getOpensWith}}</p></div>
+                                                    <div class="openswith-tail"><p class="general-tab-p1"> {{opensWith}}</p></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -52,9 +52,9 @@
                                     
                                     <ng-container *ngIf="fileInput.getFileExtension !== URL">
                                         <div class="general-tab-content" style="height: 13px;">
-                                            <div class="general-tab-head"><p class="general-tab-p1"> Opens with::</p></div>
+                                            <div class="general-tab-head"><p class="general-tab-p1"> Opens with:</p></div>
                                             <div class="general-tab-mid"></div>
-                                            <div class="general-tab-tail"><p class="general-tab-p1">  {{fileInput.getOpensWith}} </p></div>
+                                            <div class="general-tab-tail"><p class="general-tab-p1"> {{opensWith}} </p></div>
                                         </div>
                                     </ng-container>
                                 </div>
@@ -72,13 +72,13 @@
                                     <div class="general-tab-content">
                                         <div class="general-tab-head"><p class="general-tab-p1"> Size:</p></div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSize}} {{fileSizeUnit}} ({{fileSizeInBytes | number}} bytes)</p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSize}} {{fileSizeUnit}} ({{fileSize | number}} bytes)</p></div>
                                     </div>
 
                                     <div class="general-tab-content">
                                         <div class="general-tab-head"><p class="general-tab-p1"> Size on disk:</p></div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSize}} {{fileSizeUnit}} ({{fileSizeInBytes | number}} bytes) </p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSizeOnDisk}} {{fileSizeUnit}} ({{fileSizeOnDisk | number}} bytes) </p></div>
                                     </div>
                                 </div>
                                 <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
@@ -140,7 +140,7 @@
 
                                 <div class="general-tab-section">
                                     <div class="general-tab-content">
-                                        <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="fileInput.getIconPath"/></figure></div>
+                                        <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="iconPath"/></figure></div>
                                         <div class="general-tab-mid"></div>
                                         <div class="general-tab-tail"><p class="general-tab-p">{{this.name}}</p></div>
                                     </div>

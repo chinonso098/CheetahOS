@@ -36,15 +36,17 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
   name = Constants.EMPTY_STRING;
   icon = Constants.EMPTY_STRING;
+  iconPath = Constants.EMPTY_STRING;
   contains = Constants.EMPTY_STRING;
   location = Constants.EMPTY_STRING;
+  opensWith = Constants.EMPTY_STRING;
   displayMgs = Constants.EMPTY_STRING;
   displayName = Constants.EMPTY_STRING;
   fileSizeUnit = Constants.EMPTY_STRING;
-  
-  fileSize = Constants.NUM_ZERO;
+
   processId = Constants.NUM_ZERO;
-  fileSizeInBytes = Constants.NUM_ZERO;
+  fileSize = Constants.NUM_ZERO;
+  fileSizeOnDisk = Constants.NUM_ZERO;
 
   private hiddenName = Constants.EMPTY_STRING
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
@@ -69,6 +71,8 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     this.name = this.fileInput.getFileName;
     this.location = dirname(this.fileInput.getCurrentPath);
     this.icon = this._fileService.getAppAssociaton(this.fileInput.getOpensWith);
+    this.iconPath = this.fileInput.getIconPath;
+    this.opensWith = this.fileInput.getOpensWith;
     this.hiddenName = `${Constants.WIN_EXPLR + this.fileInput.getFileName}`;
     this._runningProcessService.addProcess(this.getComponentDetail());
     this.isFile = this.fileInput.getIsFile;
@@ -92,13 +96,22 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
   getFileSize():void{
     this.fileSize = this.fileInput.getSize1;
+    this.fileSizeOnDisk = this.getRandomNumber(this.fileSize);
     this.fileSizeUnit = this.fileInput.getFileSizeUnit;
-    this.fileSizeInBytes = this.fileInput.getSize;
     this.fileDate = this.fileInput.getDateModified;
   }
 
   onClosePropertyView():void{
     this._windowService.closeWindowProcessNotify.next(this.processId);
+  }
+
+  private getRandomNumber(x:number): number{
+    const fivePercent = x * 0.05;
+    const randomAddition = Math.random() * fivePercent; // random number from 0 to 5% of x
+    const result = x + randomAddition;
+
+    // Limit to 2 decimal places
+    return parseFloat(result.toFixed(2));
   }
 
   setPropertyWindowToFocus(pid:number):void{
