@@ -24,11 +24,11 @@ export class CheetahComponent implements BaseComponent, OnInit{
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   cheetahIcon = `${Constants.IMAGE_BASE_PATH}cheetah-midsprint-dash.jpg`;
-  processId = 0;
+  processId = Constants.NUM_ZERO;
   type = ComponentType.System;
   displayName = 'CheetahOS';
   name = 'cheetah';
-  version = 'Version: 3.06.08';
+  version = 'Version: 3.07.04';
   year = `\u00A9 ${new Date().getFullYear()}`;
 
   readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}about_cheetah.mp3`;
