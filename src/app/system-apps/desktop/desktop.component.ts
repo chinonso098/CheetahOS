@@ -202,6 +202,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   iconCntxtMenuStyle:Record<string, unknown> = {};
   iconSizeStyle:Record<string, unknown> = {};
   shortCutIconSizeStyle:Record<string, unknown> = {};
+  figCapIconSizeStyle:Record<string, unknown> = {};
   btnStyle:Record<string, unknown> = {};
 
   readonly MIN_GRID_SIZE = 70;
@@ -1813,13 +1814,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const dsktpmngrOlElmnt = document.getElementById('dsktpmngr_ol') as HTMLElement;
     const maxIconWidth = this.GRID_SIZE;
     const maxIconHeight = this.GRID_SIZE;
-    const offset = 7;
+    const offset = Constants.NUM_SEVEN;
     
     if (!dsktpmngrOlElmnt) return;
   
     const gridWidth = dsktpmngrOlElmnt.clientWidth; // Get total width of the container
     const columnCount = Math.floor(gridWidth / maxIconWidth); // Assuming each icon is 100px wide
-    const columnWidth = Math.floor(gridWidth / columnCount) - 1; // Compute exact column width
+    const columnWidth = Math.floor(gridWidth / columnCount) - Constants.NUM_ONE; // Compute exact column width
 
     let counter = Constants.NUM_ZERO;
     let justAdded = false;
@@ -1837,7 +1838,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(btnIconElmnt){
         // Calculate snap position
         const newX = (Math.round(mPos.x / columnWidth) * columnWidth);
-        if(counter === 0)
+        if(counter === Constants.NUM_ZERO)
             newY = (Math.round(mPos.y / maxIconHeight) * maxIconHeight) + offset;
         else{
           const product = (this.GRID_SIZE * counter);
@@ -1858,23 +1859,20 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   correctMisalignedIcons(): void {
     const columnWidth = this.GRID_SIZE;
     const rowHeight = this.GRID_SIZE;
-    const offset = 7;
+    const offset = Constants.NUM_SEVEN;
 
     this.movedBtnIds.forEach((id) => {
       const btnIcon = document.getElementById(`dsktpmngr_li${id}`);
 
       if(btnIcon){
         const rect = btnIcon.getBoundingClientRect();
-        //console.log('correctMisalignedIcons:',rect);
 
         const correctedX = Math.round(rect.left / columnWidth) * columnWidth;
         const correctedY = (Math.round(rect.top / rowHeight) * rowHeight) + offset;
-        //console.log(`New Position ->: X:${correctedX}, Y:${correctedY}`);
 
         // Apply the transformation
         const btnIconElmnt = btnIcon as HTMLElement
         if(btnIconElmnt){
-          //btnIconElmnt.style.position = 'absolute';
           btnIconElmnt.style.transform = `translate(${correctedX}px, ${correctedY}px)`;
         }
       }
@@ -1908,8 +1906,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
                      (iconSize === IconsSizes.MEDIUM_ICONS) ? this.MID_GRID_SIZE :
                      this.MAX_GRID_SIZE;
 
-    console.log('changeIconsSize-size:',size);
-
     this.iconSizeStyle = {
       'width': `${size[0]}px`, 
       'height': `${size[0]}px`,
@@ -1918,6 +1914,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       'width': `${size[1]}px`, 
       'height': `${size[1]}px`,
       'bottom': `${size[2]}px`
+    }
+    this.figCapIconSizeStyle ={
+      'width': `${this.GRID_SIZE}px`, 
     }
   }
 
@@ -1936,6 +1935,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(dsktpmngrOlElmnt){
       dsktpmngrOlElmnt.style.gridTemplateColumns = `repeat(auto-fill, ${colSize}px)`;
       dsktpmngrOlElmnt.style.gridTemplateRows = `repeat(auto-fill,${rowSize}px)`;
+    }
+
+    this.btnStyle = {
+      'width': `${colSize}px`, 
+      'height': `${rowSize}px`,
     }
   }
 
@@ -2060,11 +2064,18 @@ OpensWith=${selectedFile.getOpensWith}
     }
 
     if(renameContainerElement){
+
+      renameTxtBoxElement.style.textAlign = `calc(${this.GRID_SIZE}px / ${Constants.NUM_TWO}px)`;
+      renameTxtBoxElement.style.width = `${this.GRID_SIZE}px`;
+
       renameContainerElement.style.display = 'block';
       this.currentIconName = this.selectedFile.getFileName;
       this.renameForm.setValue({
         renameInput:this.currentIconName
       })
+
+
+
       renameTxtBoxElement?.focus();
       renameTxtBoxElement?.select();
     }

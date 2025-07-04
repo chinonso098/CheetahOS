@@ -114,6 +114,7 @@
     -webkit-line-clamp:2;
     position: relative;
     text-overflow: ellipsis;
+    text-align:center;
     padding: 2px 0;
     text-shadow:0 0 1px rgba(0, 0, 0, 75%),
                 0 0 2px rgba(0, 0, 0, 50%),
@@ -154,7 +155,6 @@
  }
 
 .dsktp-input{
-    text-align:calc(90px / 2 px);
     font-size: 12px;
     /* text-overflow:ellipsis; */
     /* resize: none; */
