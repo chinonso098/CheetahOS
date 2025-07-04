@@ -52,9 +52,9 @@
                                     
                                     <ng-container *ngIf="fileInput.getFileExtension !== URL">
                                         <div class="general-tab-content" style="height: 13px;">
-                                            <div class="general-tab-head"><p class="general-tab-p1"> Description:</p></div>
+                                            <div class="general-tab-head"><p class="general-tab-p1"> Opens with::</p></div>
                                             <div class="general-tab-mid"></div>
-                                            <div class="general-tab-tail"><p class="general-tab-p1"> camera </p></div>
+                                            <div class="general-tab-tail"><p class="general-tab-p1">  {{fileInput.getOpensWith}} </p></div>
                                         </div>
                                     </ng-container>
                                 </div>
@@ -72,13 +72,13 @@
                                     <div class="general-tab-content">
                                         <div class="general-tab-head"><p class="general-tab-p1"> Size:</p></div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> 1.44 KB(1,482 bytes)</p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSize}} {{fileSizeUnit}} ({{fileSizeInBytes | number}} bytes)</p></div>
                                     </div>
 
                                     <div class="general-tab-content">
                                         <div class="general-tab-head"><p class="general-tab-p1"> Size on disk:</p></div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> 4.00 KB (4,096 bytes) </p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSize}} {{fileSizeUnit}} ({{fileSizeInBytes | number}} bytes) </p></div>
                                     </div>
                                 </div>
                                 <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
@@ -87,19 +87,19 @@
                                     <div class="general-tab-content">
                                         <div class="general-tab-head"><p class="general-tab-p1">Created:</p></div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1">Thur, Sep 19,2024, 9:22.26 PM</p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1">{{ fileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }}</p></div>
                                     </div>
 
                                     <div class="general-tab-content">
                                         <div class="general-tab-head"><p class="general-tab-p1">Modified:</p></div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1">Thur, Sep 19,2024, 9:22.26 PM</p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1">{{ fileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }}</p></div>
                                     </div>
 
                                     <div class="general-tab-content">
                                         <div class="general-tab-head"><p class="general-tab-p1"> Accessed:</p></div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> Thur, Sep 19,2024, 9:22.26 PM </p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{ fileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }} </p></div>
                                     </div>
                                 </div>
                                 <div class="general-tab-line-container"><div class="general-tab-line"></div></div>

@@ -26,18 +26,27 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   private _windowService:WindowService;
 
   readonly fileFolder = 'File folder';
-  contains = Constants.EMPTY_STRING;
-  URL = Constants.URL;
+ 
+  fileDate:Date= new Date();
   isFile = true;
-  processId = Constants.NUM_ZERO;
+  URL = Constants.URL;
+ 
   type = ComponentType.System;
   hasWindow = false;
+
+  name = Constants.EMPTY_STRING;
+  icon = Constants.EMPTY_STRING;
+  contains = Constants.EMPTY_STRING;
+  location = Constants.EMPTY_STRING;
   displayMgs = Constants.EMPTY_STRING;
   displayName = Constants.EMPTY_STRING;
-  name = Constants.EMPTY_STRING;
+  fileSizeUnit = Constants.EMPTY_STRING;
+  
+  fileSize = Constants.NUM_ZERO;
+  processId = Constants.NUM_ZERO;
+  fileSizeInBytes = Constants.NUM_ZERO;
+
   private hiddenName = Constants.EMPTY_STRING
-  location = Constants.EMPTY_STRING;
-  icon = Constants.EMPTY_STRING;
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, windowService:WindowService,
@@ -53,6 +62,9 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
   async ngOnChanges(changes: SimpleChanges):Promise<void>{
     //console.log('DIALOG onCHANGES:',changes);
+
+    console.log('fileInput', this.fileInput);
+
     this.displayMgs = `${this.fileInput.getFileName} Properties`;
     this.name = this.fileInput.getFileName;
     this.location = dirname(this.fileInput.getCurrentPath);
@@ -61,20 +73,28 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     this._runningProcessService.addProcess(this.getComponentDetail());
     this.isFile = this.fileInput.getIsFile;
 
+    if(this.fileInput.getIsFile)
+      this.getFileSize();
+
     if(!this.fileInput.getIsFile)
       await this.getFolderContentDetails();
   }
 
   async getFolderContentDetails():Promise<void>{
     const count =  await this._fileService.getCountOfFolderItemsAsync(this.fileInput.getCurrentPath);
-    console.log('this.fileInput.getCurrentPath:',this.fileInput.getCurrentPath);
-    
+
     if(count === Constants.NUM_ZERO){
-      this.contains = '0 Files, 0 Folders'
+      this.contains = '0 Files, 0 Folders';
     }else{
       this.contains = await this._fileService.getDetailedCountOfFolderItemsAsync(this.fileInput.getCurrentPath);
     }
+  }
 
+  getFileSize():void{
+    this.fileSize = this.fileInput.getSize1;
+    this.fileSizeUnit = this.fileInput.getFileSizeUnit;
+    this.fileSizeInBytes = this.fileInput.getSize;
+    this.fileDate = this.fileInput.getDateModified;
   }
 
   onClosePropertyView():void{
