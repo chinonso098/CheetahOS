@@ -260,6 +260,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       lockScreenElmnt.style.backdropFilter = 'none';
 
       this.isScreenLocked = true;
+      this.isFirstLogIn = true;
       this.loginForm.controls[this.formCntrlName].setValue(null);
       this._systemNotificationServices.showLockScreenNotify.next();
       this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked);

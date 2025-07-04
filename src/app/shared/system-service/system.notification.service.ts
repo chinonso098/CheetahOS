@@ -20,6 +20,7 @@ export class SystemNotificationService implements BaseService{
     private _systemMessage = Constants.EMPTY_STRING;
     private _appIconNotificationStore:Map<number, string[]>; 
     private _isScreenLocked = true;
+    private _pwrDialogPID = Constants.NUM_ZERO;
 
     showLockScreenNotify: Subject<void> = new Subject<void>();
     showDesktopNotify: Subject<void> = new Subject<void>();
@@ -62,6 +63,10 @@ export class SystemNotificationService implements BaseService{
         this._isScreenLocked = isLocked;
     }
 
+    setPwrDialogPid(pid:number):void{
+        this._pwrDialogPID = pid;
+    }
+
     setAppIconNotication(msgKey:number, msgValue:string[]):void{
         this._appIconNotificationStore.set(msgKey, msgValue);
     }
@@ -85,6 +90,12 @@ export class SystemNotificationService implements BaseService{
 
     getIsScreenLocked():boolean{
         return this._isScreenLocked;
+    }
+
+    getPwrDialogPid():number{
+        const tmp = this._pwrDialogPID;
+        this._pwrDialogPID = Constants.NUM_ZERO;
+        return tmp;
     }
 
     removeAppIconNotication(msgKey:number):void{

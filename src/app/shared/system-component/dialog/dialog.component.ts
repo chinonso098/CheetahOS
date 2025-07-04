@@ -48,13 +48,16 @@ export class DialogComponent implements BaseComponent, OnChanges {
     { value: 'Restart', label: 'Closes all apps and turns off the PC, and turns it on again.' }
   ];
 
-  reOpenWindows = false;
+  reOpenWindows = true;
   selectedOption = 'Shut down';
   pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
 
   readonly ERROR_DIALOG = 'error-dialog';
   readonly WARNING_DIALOG = 'warning-dialog';
   readonly INFO_DIALOG = 'info-dialog';
+
+  readonly UPDATE = 'Update';
+  readonly UPDATE_0 = 'Update0';
 
 
   type = ComponentType.System;
@@ -84,18 +87,29 @@ export class DialogComponent implements BaseComponent, OnChanges {
     console.log('DIALOG onCHANGES:',changes);
     this.displayMgs = this.inputMsg;
     this.notificationOption =this.notificationType;
+    this.setPwrDialogPid(this.UPDATE);
   }
 
   onYesDialogBox():void{
     this._menuService.createDesktopShortcut.next();
   }
 
-  onCheckboxChange() {
+  onCheckboxChange():void{
     console.log('Checkbox is checked:', this.reOpenWindows);
   }
 
+  setPwrDialogPid(action:string):void{ 
+    if(this.notificationOption === UserNotificationType.PowerOnOff){
+      if(action === this.UPDATE){
+        this._systemNotificationService.setPwrDialogPid(this.processId);
+      }else{
+        this._systemNotificationService.setPwrDialogPid(Constants.NUM_ZERO);
+      }
+    }
+  }
+
   onYesPowerDialogBox():void{
-    const delay = 100; //100ms
+    const delay = 250; //250ms
     const clearSessionData = !this.reOpenWindows;
     
     this.onCloseDialogBox();
@@ -118,7 +132,14 @@ export class DialogComponent implements BaseComponent, OnChanges {
 
   onCloseDialogBox():void{
     this._userNotificationServices.closeDialogMsgBox(this.processId);
-    this._windowService.removeWindowState(this.processId);
+
+    if(this.notificationOption !== UserNotificationType.PowerOnOff){
+      this._windowService.removeWindowState(this.processId);
+    }
+
+    if(this.notificationOption === UserNotificationType.PowerOnOff){
+       this.setPwrDialogPid(this.UPDATE_0);
+    }
   }
 
   onPwrOptionSelect(event: any):void{

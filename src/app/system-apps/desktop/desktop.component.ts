@@ -24,6 +24,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { FileEntry } from 'src/app/system-files/file.entry';
 import { mousePosition } from './desktop.types';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
+import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
@@ -60,20 +61,20 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   @ViewChild('desktopContainer', {static: true}) desktopContainer!: ElementRef; 
   
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
   private _fileService:FileService;
+  private _menuService:MenuService;
+  private _audioService:AudioService;
+  private _windowService:WindowService;
+  private _scriptService: ScriptService;
+  private _processIdService:ProcessIDService;
+  private _processHandlerService:ProcessHandlerService;
+  private _runningProcessService:RunningProcessService;
+  private _systemNotificationServices:SystemNotificationService;
+  private _userNotificationService:UserNotificationService;
+
   private _elRef:ElementRef;
   private _directoryFilesEntries!:FileEntry[];
-  private _processHandlerService:ProcessHandlerService;
-
-  private _audioService:AudioService;
-  private _menuService:MenuService;
-  private _systemNotificationServices:SystemNotificationService;
   private _formBuilder:FormBuilder;
-  private _scriptService: ScriptService;
-  private _windowService:WindowService;
-
 
   private _vantaEffect: any;
   private _numSequence = Constants.NUM_ZERO;
@@ -252,7 +253,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService, 
               scriptService:ScriptService, audioService:AudioService, menuService:MenuService, 
               fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
-              formBuilder:FormBuilder, elRef:ElementRef) { 
+              userNotificationService:UserNotificationService, formBuilder:FormBuilder, elRef:ElementRef) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -264,6 +265,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._windowService = windowService;
     this._audioService = audioService;
     this._systemNotificationServices = systemNotificationServices;
+    this._userNotificationService = userNotificationService;
     this._formBuilder = formBuilder;
     this._elRef = elRef;
 
@@ -583,6 +585,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
 
     this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
+
+    setTimeout(() => {
+      this.closePwrDialogBox();
+    }, Constants.NUM_TEN);
+
   }
 
   performTasks(evt:MouseEvent):void{
@@ -595,6 +602,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   resetLockScreenTimeOut():void{
     this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
+  }
+
+  closePwrDialogBox():void{
+    const pid = this._systemNotificationServices.getPwrDialogPid();
+
+    if(pid !== Constants.NUM_ZERO){
+      this._userNotificationService.closeDialogMsgBox(pid);
+    }
   }
 
   showTaskBarTemporarily(evt:MouseEvent):void{
@@ -2139,7 +2154,8 @@ OpensWith=${selectedFile.getOpensWith}
     this.hideVolumeControl();
     this.hideDesktopContextMenuAndOthers();
     this.hideTaskBarPreviewWindow();
-    this.hideTaskBarToolTip()
+    this.hideTaskBarToolTip();
+    this.closePwrDialogBox();
   }
 
   desktopIsActive():void{

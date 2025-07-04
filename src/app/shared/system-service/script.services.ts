@@ -28,7 +28,7 @@ export class ScriptService implements BaseService {
 
   name = 'scripts_svc';
   icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-  processId = 0;
+  processId = Constants.NUM_ZERO;
   type = ProcessType.Cheetah;
   status  = Constants.SERVICES_STATE_RUNNING;
   hasWindow = false;
@@ -52,17 +52,17 @@ export class ScriptService implements BaseService {
   }
 
   async loadScripts(names:string[], srcs: string[]): Promise<void> {
-      const promises: any[] = [];
+    const promises: any[] = [];
 
-      for(let i = 0; i <= names.length -1 ; i++){
-          if (!this.scripts[names[i]]) {
-              this.scripts[names[i]] = { name:names[i], src:srcs[i] };
-              const res =  await this.loadExternalScript(this.scripts[names[i]]);
-              promises.push(res) 
-          }
-      }
-      
-      return Promise.resolve();
+    for(let i = 0; i <= names.length - 1 ; i++){
+        if (!this.scripts[names[i]]) {
+            this.scripts[names[i]] = { name:names[i], src:srcs[i] };
+            const res =  await this.loadExternalScript(this.scripts[names[i]]);
+            promises.push(res) 
+        }
+    }
+    
+    return Promise.resolve();
   }
 
   private async loadExternalScript(script: Script): Promise<void> {

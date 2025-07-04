@@ -19,11 +19,11 @@ export class SocketService implements BaseService {
 
   name = 'socket_svc';
   icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-  processId = 0;
+  processId = Constants.NUM_ZERO;
   type = ProcessType.Cheetah;
   status  = Constants.SERVICES_STATE_RUNNING;
   hasWindow = false;
-  description = '';
+  description = Constants.EMPTY_STRING;
   
   constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService) {
     //this.socket = io('http://chinonsosnas.local:3000');

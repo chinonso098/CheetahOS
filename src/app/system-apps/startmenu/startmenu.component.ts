@@ -216,10 +216,12 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   this.runProcess(file);
   }
 
-  power():void{
+  power(evt:MouseEvent):void{
     const msg = 'Shut Down Cheetah'
     this._userNotificationService.showPowerOnOffNotification(msg);
     //location.reload();
+
+    evt.stopPropagation();
   }
 
 
