@@ -812,7 +812,6 @@ export class FileService implements BaseService{
             : await this.renameFileAsync(path, newFileName);
     }
 
-
     private async renameFileAsync(path:string, newFileName:string): Promise<boolean> {
         //moveFileAsync and renameFileAsync are 95% the same, have renameFileAsync call moveFileAsync behind the scene
         const newPath = `${dirname(path)}/${newFileName}${extname(path)}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
@@ -908,17 +907,51 @@ export class FileService implements BaseService{
         }
     }
     
-    public  async countFolderItemsAsync(path:string): Promise<number> {
-        return new Promise<number>((resolve, reject) =>{
+    public  async getCountOfFolderItemsAsync(path:string): Promise<number> {
+        return new Promise<number>((resolve) =>{
             this._fileSystem.readdir(path, (readDirErr, files) =>{
                 if(readDirErr){
                     console.error('Error reading dir for count:', readDirErr);
-                    reject(0);
+                    resolve(0);
                 }
-                resolve(files?.length || 0)
+                resolve(files?.length || 0);
             });
         });
     }
+
+    public  async getDetailedCountOfFolderItemsAsync(path:string): Promise<string> {
+        const counts = { files: Constants.NUM_ZERO, folders: Constants.NUM_ZERO };
+        const queue:string[] = [];
+        
+        queue.push(path);
+        await this.getDetailedCountOfFolderItemsHelperAsync(queue, counts);
+        return `${counts.files} Files, ${counts.folders} Folders`;
+    }
+
+    private  async getDetailedCountOfFolderItemsHelperAsync(queue:string[], counts:{ files: number, folders: number}): Promise<void> {
+        if(queue.length === Constants.NUM_ZERO)
+            return;
+
+        const srcPath = queue.shift() || Constants.EMPTY_STRING;
+        const isDirectory = await this.checkIfDirectoryAsync(srcPath);
+
+        if(isDirectory){
+            const directoryEntries = await this.getEntriesFromDirectoryAsync(srcPath);      
+            for(const directoryEntry of directoryEntries){
+                const isDirectory = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+                if(isDirectory){
+                    queue.push(`${srcPath}/${directoryEntry}`);
+                    counts.folders++;
+                }else{
+                    counts.files++;
+                }
+            }
+        }else{
+            counts.files++;
+        }
+        return this.getDetailedCountOfFolderItemsHelperAsync(queue, counts);
+    }
+
 
     public resetDirectoryFiles(){
         this._directoryFileEntires=[]
@@ -957,7 +990,7 @@ export class FileService implements BaseService{
             return new FileContent(iconFile, fileName, fileType, fileName, opensWith);
         }
 
-        const count = await this.countFolderItemsAsync(path);
+        const count = await this.getCountOfFolderItemsAsync(path);
         if(count === Constants.NUM_ZERO){
             iconFile = `${Constants.IMAGE_BASE_PATH}empty_folder.png`;
             return new FileContent(iconFile, fileName, fileType, fileName, opensWith);

@@ -26,6 +26,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   private _windowService:WindowService;
 
   readonly fileFolder = 'File folder';
+  contains = Constants.EMPTY_STRING;
   URL = Constants.URL;
   isFile = true;
   processId = Constants.NUM_ZERO;
@@ -50,7 +51,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     //this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
-  ngOnChanges(changes: SimpleChanges):void{
+  async ngOnChanges(changes: SimpleChanges):Promise<void>{
     //console.log('DIALOG onCHANGES:',changes);
     this.displayMgs = `${this.fileInput.getFileName} Properties`;
     this.name = this.fileInput.getFileName;
@@ -59,6 +60,21 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     this.hiddenName = `${Constants.WIN_EXPLR + this.fileInput.getFileName}`;
     this._runningProcessService.addProcess(this.getComponentDetail());
     this.isFile = this.fileInput.getIsFile;
+
+    if(!this.fileInput.getIsFile)
+      await this.getFolderContentDetails();
+  }
+
+  async getFolderContentDetails():Promise<void>{
+    const count =  await this._fileService.getCountOfFolderItemsAsync(this.fileInput.getCurrentPath);
+    console.log('this.fileInput.getCurrentPath:',this.fileInput.getCurrentPath);
+    
+    if(count === Constants.NUM_ZERO){
+      this.contains = '0 Files, 0 Folders'
+    }else{
+      this.contains = await this._fileService.getDetailedCountOfFolderItemsAsync(this.fileInput.getCurrentPath);
+    }
+
   }
 
   onClosePropertyView():void{
