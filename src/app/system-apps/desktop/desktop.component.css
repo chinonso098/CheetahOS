@@ -52,8 +52,6 @@
     border: 2px solid transparent;
     width: 90px;
     height: 70px;
-    max-width: 120px;
-    max-height: 100px;
     transition: transform 0.1s ease-in-out; 
     display: inline-flex;
     flex-direction: column;
@@ -90,15 +88,15 @@
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 25px; /* Adjust size as needed */
-    height: 25px;
-    max-width: 30px;
-    max-height: 30px;
+    width: 22px; /* Adjust size as needed */
+    height: 22px;
 }
 
 .shortcut-img{
-    height: 25px; 
-    width: 25px;
+    position: relative;
+    height: 12px; 
+    width: 12px;
+    bottom: -8px;
 }
 
 .dsktp-label{
@@ -112,7 +110,7 @@
     display: -webkit-box;
     font-size: 12px;
     letter-spacing: 0.1px;
-    line-clamp:2;
+    line-clamp: 2;
     -webkit-line-clamp:2;
     position: relative;
     text-overflow: ellipsis;

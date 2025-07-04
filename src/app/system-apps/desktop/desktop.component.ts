@@ -201,13 +201,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   iconCntxtMenuStyle:Record<string, unknown> = {};
   iconSizeStyle:Record<string, unknown> = {};
+  shortCutIconSizeStyle:Record<string, unknown> = {};
   btnStyle:Record<string, unknown> = {};
 
-  readonly MIN_GRID_SIZE1 = 60;
-  readonly MIN_GRID_SIZE = 90;
+  readonly MIN_GRID_SIZE = 70;
+  readonly MID_GRID_SIZE = 90;
   readonly MAX_GRID_SIZE = 120;
 
-  GRID_SIZE = this.MIN_GRID_SIZE; //column size of grid = 90px
+  GRID_SIZE = this.MID_GRID_SIZE; //column size of grid = 90px
   SECONDS_DELAY:number[] = [6000, 250, 4000, 300];
   renameForm!: FormGroup;
 
@@ -1897,38 +1898,39 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   changeIconsSize(iconSize:string):void{
-    if(iconSize === 'Large Icons'){
-      this.GRID_SIZE = this.MAX_GRID_SIZE;
-      this.iconSizeStyle = {
-        'width': '80px', 
-        'height': '80px'
-      }
-    }
+    const iconsSizes:number[][] = [[30, 8, -12], [45, 12, -8], [80, 21, 1]];
 
-    if(iconSize === 'Medium Icons'){
-      this.GRID_SIZE = this.MIN_GRID_SIZE;
-      this.iconSizeStyle = {
-        'width': '45px', 
-        'height': '45px'
-      }
-    }
+    const size = (iconSize === IconsSizes.SMALL_ICONS) ? iconsSizes[Constants.NUM_ZERO] :
+                 (iconSize === IconsSizes.MEDIUM_ICONS) ? iconsSizes[Constants.NUM_ONE] :
+                 iconsSizes[Constants.NUM_TWO];
 
-    if(iconSize === 'Small Icons'){
-        this.GRID_SIZE = this.MIN_GRID_SIZE;
-      this.iconSizeStyle = {
-        'width': '30px', 
-        'height': '30px'
-      }
+    this.GRID_SIZE = (iconSize === IconsSizes.SMALL_ICONS) ? this.MIN_GRID_SIZE :
+                     (iconSize === IconsSizes.MEDIUM_ICONS) ? this.MID_GRID_SIZE :
+                     this.MAX_GRID_SIZE;
+
+    console.log('changeIconsSize-size:',size);
+
+    this.iconSizeStyle = {
+      'width': `${size[0]}px`, 
+      'height': `${size[0]}px`,
+    }
+    this.shortCutIconSizeStyle = {
+      'width': `${size[1]}px`, 
+      'height': `${size[1]}px`,
+      'bottom': `${size[2]}px`
     }
   }
 
   changeGridRowColSize():void{
-    const adjustment  = 20; 
-    const colSize = (this.GRID_SIZE === this.MAX_GRID_SIZE)? 
-      this.MAX_GRID_SIZE : this.MIN_GRID_SIZE;
+    const rowSpace  = 20; //row space of 20px between each icons
 
-    const rowSize = (this.GRID_SIZE === this.MAX_GRID_SIZE)? 
-      (this.MAX_GRID_SIZE - adjustment) : (this.MIN_GRID_SIZE - adjustment);
+    const colSize = (this.GRID_SIZE === this.MAX_GRID_SIZE) ? this.MAX_GRID_SIZE :
+                    (this.GRID_SIZE === this.MID_GRID_SIZE) ? this.MID_GRID_SIZE :
+                    this.MIN_GRID_SIZE;
+
+    const rowSize = (this.GRID_SIZE === this.MAX_GRID_SIZE)? (this.MAX_GRID_SIZE - rowSpace) :
+                    (this.GRID_SIZE === this.MID_GRID_SIZE)? (this.MID_GRID_SIZE - rowSpace) :
+                    (this.MIN_GRID_SIZE - rowSpace);
 
     const dsktpmngrOlElmnt = document.getElementById('dsktpmngr_ol') as HTMLElement;
     if(dsktpmngrOlElmnt){

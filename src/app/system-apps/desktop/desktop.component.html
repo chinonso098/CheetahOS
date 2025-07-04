@@ -23,7 +23,7 @@
                         <img class="dsktp-img" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconSizeStyle"/>
                     </div>
                     <div class="dsktp-scut-icon-section" *ngIf="file.getIsShortCut">
-                        <img class="shortcut-img" [src]="shortCutImg"  id="shortCut{{i}}"/>
+                        <img class="shortcut-img" [src]="shortCutImg"  id="shortCut{{i}}" [style]="shortCutIconSizeStyle"/>
                     </div>
                 </div>
                 <div class="dsktp-label">
