@@ -46,7 +46,9 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
   processId = Constants.NUM_ZERO;
   fileSize = Constants.NUM_ZERO;
+  fileSize2 = Constants.NUM_ZERO;
   fileSizeOnDisk = Constants.NUM_ZERO;
+  fileSizeOnDisk2 = Constants.NUM_ZERO;
 
   private hiddenName = Constants.EMPTY_STRING
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
@@ -98,7 +100,12 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
   getFileSize():void{
     this.fileSize = this.fileInput.getSize1;
-    this.fileSizeOnDisk = this.getRandomNumber(this.fileSize);
+    this.fileSize2 = this.fileInput.getSize;
+
+    const tmpFilesOnDisk = this.getRandomNumber(this.fileInput.getSize);
+    this.fileSizeOnDisk = this.getSize(tmpFilesOnDisk);
+    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(0));
+
     this.fileSizeUnit = this.fileInput.getFileSizeUnit;
     this.fileDate = this.fileInput.getDateModified;
   }
@@ -106,7 +113,12 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   async getFolderSizeData():Promise<void>{
     const folderSize =  await this._fileService.getFolderSizeASync(this.fileInput.getCurrentPath);
     this.fileSize = this.getSize(folderSize);
-    this.fileSizeOnDisk = this.getRandomNumber(this.getSize(folderSize));
+    this.fileSize2 = folderSize;
+
+    const tmpFilesOnDisk = this.getRandomNumber(folderSize);
+    this.fileSizeOnDisk = this.getSize(tmpFilesOnDisk);
+    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(0));
+
     this.getFolderSizeUnit(folderSize);
     this.fileDate = this.fileInput.getDateModified;
   }
