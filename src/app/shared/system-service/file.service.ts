@@ -113,12 +113,12 @@ export class FileService implements BaseService{
                 },
                 (err) =>{
                     if(err){  
-                        console.log('initBrowserFs Error:', err)
+                        console.error('initBrowserFs Error:', err)
                         resolve(false); 
                     }
                     try {
                         this._fileSystem = BrowserFS.BFSRequire('fs');
-                        console.log('initBrowserFsAsync: File system initialized successfully.');
+                        // console.log('initBrowserFsAsync: File system initialized successfully.');
                         resolve(true);
                     } catch (initErr) {
                         console.error('initBrowserFsAsync: BFSRequire failed', initErr);
@@ -139,7 +139,7 @@ export class FileService implements BaseService{
                 :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
         }
 
-        console.log('iconMaybe:',iconMaybe);
+        // console.log('iconMaybe:',iconMaybe);
 
         if(path !== `/Users/${fileName}`)
             return iconPath;
@@ -169,7 +169,7 @@ export class FileService implements BaseService{
     public async checkIfExistsAsync(path: string):Promise<boolean> {
         return new Promise<boolean>((resolve) => {
             this._fileSystem.exists(path, (exists) => {
-                console.log(`checkIfExistsAsync: ${exists ? 'Already exists' : 'Does not exist'}`, exists);
+                // console.log(`checkIfExistsAsync: ${exists ? 'Already exists' : 'Does not exist'}`, exists);
                 resolve(exists);
             });
         });
@@ -187,7 +187,7 @@ export class FileService implements BaseService{
         const name = this.getNameFromPath(sourcePath);
         const destPath = this.pathCorrection(destinationPath);
         const fileName = `${destPath}/${name}`;
-        console.log(`Destination: ${fileName}`);
+        // console.log(`Destination: ${fileName}`);
 
         return new Promise<boolean>((resolve) =>{
              this._fileSystem.readFile(sourcePath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
@@ -198,17 +198,18 @@ export class FileService implements BaseService{
 
                 this._fileSystem.writeFile(fileName, contents, {flag: 'wx'}, (writeErr) =>{  
                     if(!writeErr){
-                        console.log('copyFileAsync Success:');
+                        // console.log('copyFileAsync Success:');
                         this._fileExistsMap.set(fileName, Constants.NUM_ZERO);
                         return resolve(true);
                     }
 
                     if(writeErr?.code === 'EEXIST'){
                         console.warn('copyFileAsync Error: file already exists',writeErr);
+
                         const newFileName = this.iterateName(fileName);
                         this._fileSystem.writeFile(newFileName, contents, (retryErr) =>{  
                             if(retryErr){
-                                console.log('copyFileAsync Iterate Error:',retryErr);
+                                console.error('copyFileAsync Iterate Error:', retryErr);
                                 resolve(false);
                             }
 
@@ -235,7 +236,7 @@ export class FileService implements BaseService{
                 if(checkIfDirResult){
                     const result = await this.copyFolderHandlerAsync(arg0,`${srcPath}/${directoryEntry}`,`${destPath}/${folderName}`);
                     if(!result){
-                        console.log(`Failed to copy directory: ${srcPath}/${directoryEntry}`);
+                        console.error(`Failed to copy directory: ${srcPath}/${directoryEntry}`);
                         return false;
                     }
                 }else{
@@ -243,7 +244,7 @@ export class FileService implements BaseService{
                     if(result){
                         console.log(`file:${srcPath}/${directoryEntry} successfully copied to destination:${destPath}/${folderName}`);
                     }else{
-                        console.log(`file:${srcPath}/${directoryEntry} failed to copy to destination:${destPath}/${folderName}`)
+                        console.error(`file:${srcPath}/${directoryEntry} failed to copy to destination:${destPath}/${folderName}`)
                         return false
                     }
                 }
@@ -260,7 +261,7 @@ export class FileService implements BaseService{
                 if(!err){
                     // Folder created successfully
                     this._fileExistsMap.set(folderPath, Constants.NUM_ZERO);
-                    console.log(`Folder created: ${folderPath}`);
+                    // console.log(`Folder created: ${folderPath}`);
                     return resolve(true);
                 }
 
@@ -274,7 +275,7 @@ export class FileService implements BaseService{
                             return resolve(false);
                         }
 
-                        console.log(`Folder created with new name: ${uniqueFolderPath}`);
+                        // console.log(`Folder created with new name: ${uniqueFolderPath}`);
                         this._fileExistsMap.set(uniqueFolderPath, Constants.NUM_ZERO);
                         resolve(true);
                     });
@@ -314,7 +315,7 @@ export class FileService implements BaseService{
        return new Promise((resolve, reject) =>{
             this._fileSystem.readFile(path,(err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
                 if(err){
-                    console.log('getFileAsync error:',err)
+                    console.error('getFileAsync error:',err)
                     reject(err)
                 }else{
                     resolve(contents.toString());
@@ -343,7 +344,7 @@ export class FileService implements BaseService{
         return new Promise((resolve, reject) =>{
             this._fileSystem.readFile(path,(err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
                 if(err){
-                    console.log('getFileBlobAsync error:',err)
+                    console.error('getFileBlobAsync error:',err)
                     reject(err);
                 }
 
@@ -363,7 +364,7 @@ export class FileService implements BaseService{
         return new Promise<string[]>((resolve) => {
              this._fileSystem.readdir(path, function(err, files) {
                 if(err){
-                    console.log("Dang! The filesystem is acting up:", err);
+                    console.error("Dang! The filesystem is acting up:", err);
                     resolve([]);
                 }
 
@@ -483,7 +484,7 @@ export class FileService implements BaseService{
         return new Promise((resolve, reject) =>{
             this._fileSystem.readFile(path, (err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
                 if(err){
-                    console.log('getFileConetentFromB64DataUrlAsync error:',err)
+                    console.error('getFileConetentFromB64DataUrlAsync error:',err)
                     reject(err)
                 }
 
@@ -522,7 +523,7 @@ export class FileService implements BaseService{
         return new Promise<ShortCut>((resolve, reject) =>{
             this._fileSystem.readFile(path, function(err, contents = Buffer.from(Constants.EMPTY_STRING)){
                 if(err){
-                    console.log('getShortCutAsync error:',err)
+                    console.error('getShortCutAsync error:',err)
                     reject(new ShortCut(Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING,Constants.EMPTY_STRING));
                 }
                 const stage = contents? contents.toString(): Buffer.from(Constants.EMPTY_STRING).toString();
@@ -623,12 +624,12 @@ export class FileService implements BaseService{
                     if(result){
                         console.log(`file:${srcPath}/${directoryEntry} successfully moved to destination:${destPath}/${folderName}`);
                     }else{
-                        console.log(`file:${srcPath}/${directoryEntry} failed to move to destination:${destPath}/${folderName}`)
+                        console.error(`file:${srcPath}/${directoryEntry} failed to move to destination:${destPath}/${folderName}`)
                     }
                 }
             }
         }else{
-            console.log(`folder:${destPath}/${folderName}  creation failed`);
+            console.error(`folder:${destPath}/${folderName}  creation failed`);
             return false;
         }
 
@@ -670,7 +671,7 @@ export class FileService implements BaseService{
                 }else{
                     const result = await this.moveFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
                     if(result){
-                        console.log(`file:${srcPath}/${directoryEntry} successfully moved to destination:${destPath}/${folderName}`);
+                        // console.log(`file:${srcPath}/${directoryEntry} successfully moved to destination:${destPath}/${folderName}`);
                     }else{
                         console.error(`file:${srcPath}/${directoryEntry} failed to move to destination:${destPath}/${folderName}`)
                     }
@@ -722,7 +723,7 @@ export class FileService implements BaseService{
                             return resolve(false);
                         }
 
-                        console.log(`File moved successfully to: ${destinationPath}`);
+                        // console.log(`File moved successfully to: ${destinationPath}`);
                         resolve(true);
                     });
                 });
@@ -753,15 +754,13 @@ export class FileService implements BaseService{
     }
 
     public async writeFileAsync(directory:string, file:FileInfo):Promise<boolean>{
-        console.log('sdsd');
-
         return new Promise<boolean>((resolve) =>{
             const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
             const destPath = this.pathCorrection(directory);
             const fileName = `${destPath}/${file.getFileName}`;
 
             this._fileSystem.writeFile(fileName, cntnt, {flag: 'wx'}, (writeErr) =>{  
-                if(writeErr === undefined){
+                if(!writeErr){
                     console.log('writeFileAsync: file successfully written');
                     this._fileExistsMap.set(fileName, Constants.NUM_ZERO);
                     return resolve(true);
@@ -866,7 +865,7 @@ OpensWith=${shortCutData.getOpensWith}
                         return resolve(false);
                     }
 
-                    console.log(`deleteFolderAsync: Folder deleted successfully: ${path}`);
+                    // console.log(`deleteFolderAsync: Folder deleted successfully: ${path}`);
                     resolve(true);
                 });
 
@@ -888,7 +887,7 @@ OpensWith=${shortCutData.getOpensWith}
                         return resolve(false);
                     }
 
-                    console.log(`deleteFileAsync: File deleted successfully: ${path}`);
+                    // console.log(`deleteFileAsync: File deleted successfully: ${path}`);
                     resolve(true);
                 });
             });
@@ -906,13 +905,13 @@ OpensWith=${shortCutData.getOpensWith}
                 // Recursively call the rm_dir_handler for the subdirectory
                 const success = await this.deleteFolderHandlerAsync(arg0, entryPath);
                 if(!success){
-                    console.log(`Failed to delete directory: ${entryPath}`);
+                    console.error(`Failed to delete directory: ${entryPath}`);
                     return false;
                 }
             } else {
                 const result = await this.deleteFileAsync(entryPath);
                 if(result){
-                    console.log(`File: ${directoryEntry} in ${entryPath} deleted successfully`);
+                    // console.log(`File: ${directoryEntry} in ${entryPath} deleted successfully`);
                 }else{
                     console.error(`File: ${directoryEntry} in ${entryPath} failed deletion`);
                     return false;
@@ -921,11 +920,11 @@ OpensWith=${shortCutData.getOpensWith}
         }
     
         // Delete the current directory after all its contents have been  deleted
-        console.log(`folder to delete: ${sourceArg}`);
+        // console.log(`folder to delete: ${sourceArg}`);
         const result = await this.deleteFolderAsync(sourceArg);
     
         if (result) {
-            console.log(`Directory: ${sourceArg} deleted successfully`);
+            // console.log(`Directory: ${sourceArg} deleted successfully`);
             return true;
         } else {
             console.error(`Failed to delete directory: ${sourceArg}`);
