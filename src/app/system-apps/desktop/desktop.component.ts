@@ -1374,7 +1374,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           }
         }else{
           this.menuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
-          this.menuData = this.sourceData;
+          this.menuData = this.sourceData.filter(x => x.label !== 'Empty Recycle Bin');
         }
       }
   }
