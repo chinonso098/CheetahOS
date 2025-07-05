@@ -80,8 +80,10 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     if(this.fileInput.getIsFile)
       this.getFileSize();
 
-    if(!this.fileInput.getIsFile)
+    if(!this.fileInput.getIsFile){
       await this.getFolderContentDetails();
+      await this.getFolderSizeData()
+    }
   }
 
   async getFolderContentDetails():Promise<void>{
@@ -99,6 +101,46 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     this.fileSizeOnDisk = this.getRandomNumber(this.fileSize);
     this.fileSizeUnit = this.fileInput.getFileSizeUnit;
     this.fileDate = this.fileInput.getDateModified;
+  }
+
+  async getFolderSizeData():Promise<void>{
+    const folderSize =  await this._fileService.getFolderSizeASync(this.fileInput.getCurrentPath);
+    this.fileSize = this.getSize(folderSize);
+    this.fileSizeOnDisk = this.getRandomNumber(this.getSize(folderSize));
+    this.getFolderSizeUnit(folderSize);
+    this.fileDate = this.fileInput.getDateModified;
+  }
+
+  getFolderSizeUnit(size:number):void{
+    if(size >= 0 && size <= 999){
+        this.fileSizeUnit = 'B';
+    }
+
+    if(size >= 1000 && size <= 999999){
+      this.fileSizeUnit = 'KB';
+    }
+
+    if(size >= 1000000 && size <= 999999999){
+      this.fileSizeUnit = 'MB';
+    }
+  }
+
+  getSize(size:number):number{
+      let  tmpSize = 0
+
+      if(size>= 0 && size<= 999){
+          tmpSize = size;
+      }
+
+      if(size>= 1000 && size<= 999999){
+          tmpSize= Math.round((size/1000) * 100) /100;
+      }
+
+      if(size>= 1000000 && size<= 999999999){
+          tmpSize = Math.round((size/1000000) * 100) / 100;
+      }
+
+      return tmpSize;
   }
 
   onClosePropertyView():void{

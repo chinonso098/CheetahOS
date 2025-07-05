@@ -952,6 +952,44 @@ export class FileService implements BaseService{
         return this.getDetailedCountOfFolderItemsHelperAsync(queue, counts);
     }
 
+    public  async getFolderSizeASync(path:string):Promise<number>{
+        const sizes = {files: Constants.NUM_ZERO, folders: Constants.NUM_ZERO};
+        const queue:string[] = [];
+        
+        queue.push(path);
+        await this.getFolderSizeHelperASync(queue, sizes);
+        return sizes.files + sizes.folders;
+    }
+
+    private  async getFolderSizeHelperASync(queue:string[], sizes:{ files: number, folders: number}): Promise<void> {
+        if(queue.length === Constants.NUM_ZERO)
+            return;
+
+        const srcPath = queue.shift() || Constants.EMPTY_STRING;
+
+        const extraInfo = await this.getExtraFileMetaDataAsync(srcPath);
+        sizes.folders += extraInfo.getSize;
+
+        // const isDirectory = await this.checkIfDirectoryAsync(srcPath);
+        // if(isDirectory){
+            const directoryEntries = await this.getEntriesFromDirectoryAsync(srcPath);      
+            for(const directoryEntry of directoryEntries){
+                const isDirectory = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+                if(isDirectory){
+                    queue.push(`${srcPath}/${directoryEntry}`);
+                }else{
+                    const extraInfo = await this.getExtraFileMetaDataAsync(srcPath);
+                    sizes.files += extraInfo.getSize;
+                }
+            }
+        // }else{
+        //     const extraInfo = await this.getExtraFileMetaDataAsync(srcPath);
+        //     sizes.files += extraInfo.getSize;
+        // }
+        return this.getFolderSizeHelperASync(queue, sizes);
+    }
+
+
 
     public resetDirectoryFiles(){
         this._directoryFileEntires=[]
