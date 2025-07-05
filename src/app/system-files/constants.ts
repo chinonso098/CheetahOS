@@ -14,6 +14,7 @@ export namespace Constants{
     export const DOUBLE_SLASH = '//';
     export const OSDISK = 'OSDisk (C:)';
     export const THISPC = 'This PC';
+    export const RECYCLE_BIN = 'Recycle Bin';
     export const URL = '.url';
     export const SHORTCUT = 'Shortcut';
     export const BASE = 'osdrive';

@@ -202,9 +202,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileDimesions = Constants.EMPTY_STRING;
   fileDateModified = Constants.EMPTY_STRING;
 
-
-  cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
-  cheetahGenericNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
+  readonly RECYCLE_BIN = '/Users/Desktop/Recycle Bin';
+  readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
+  readonly cheetahGenericNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
 
   icon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
   navPathIcon = `${Constants.IMAGE_BASE_PATH}this_pc.png`;
@@ -277,6 +277,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         const fileName = (this._fileInfo.getFileName === Constants.EMPTY_STRING)? Constants.NEW_FOLDER : this._fileInfo.getFileName;
 
         this.populateTraversalList();
+        this.getProperRecycleBinIcon();
         this.setNavPathIcon(fileName, this._fileInfo.getCurrentPath);
       }
     }
@@ -314,6 +315,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       },this.SECONDS_DELAY[4]) 
     });
 
+  }
+
+  getProperRecycleBinIcon():void{
+    if(this.directory === this.RECYCLE_BIN){
+      // const count = await this._fileService.getCountOfFolderItemsAsync(this.RECYCLE_BIN);
+      // this.icon  = (count === Constants.NUM_ZERO) 
+      //   ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
+      //   :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
+
+      this.icon  =  `${Constants.IMAGE_BASE_PATH}empty_bin.png`;
+        
+    }
   }
 
   ngOnDestroy(): void {
@@ -1119,7 +1132,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   setNavPathIcon(fileName:string, directory:string):void{
     console.log(`fileexplorer - setNavPathIcon: fileName:${fileName} -----  directory:${directory}`)
 
-    if(directory === `/Users/${fileName}`){
+    if(directory === `/Users/${fileName}` || directory === this.RECYCLE_BIN){
       this.navPathIcon = `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder_small.png`;
     }
     else if((fileName === 'OSDisk (C:)' && directory === Constants.ROOT)){
@@ -1603,7 +1616,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   async onDeleteFile():Promise<void>{
     let result = false;
 
-    result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath);
+    result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
     if(result){
       this._menuService.resetStoreData();
       await this.loadFilesInfoAsync();
@@ -1778,13 +1791,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   populateTraversalList():void{
     const tmpArray = this.directory.split(Constants.ROOT).filter(x => x !== Constants.EMPTY_STRING);
-    if(tmpArray.length === 0){ tmpArray[0]= Constants.THISPC; }
+    if(tmpArray.length === Constants.NUM_ZERO){ 
+      tmpArray[Constants.NUM_ZERO]= Constants.THISPC; 
+    }
     else{ tmpArray.unshift(Constants.THISPC); }
 
-    if(this.directory.includes('/Users')){
+    if(this.directory === this.RECYCLE_BIN){
+      this._directoryTraversalList = [];
+      this._directoryTraversalList.push(Constants.RECYCLE_BIN);
+    }else  if(this.directory.includes('/Users')){
       this._directoryTraversalList = tmpArray;
     }else{
-      tmpArray[1] = Constants.OSDISK;
+      tmpArray[Constants.NUM_ONE] = Constants.OSDISK;
       this._directoryTraversalList = tmpArray;
     }
 

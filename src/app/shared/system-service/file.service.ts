@@ -32,6 +32,7 @@ export class FileService implements BaseService{
     private _directoryFileEntires:FileEntry[]=[];
     private _fileExistsMap!:Map<string,number>; 
     private _fileAndAppIconAssociation!:Map<string,string>; 
+    private _restorePoint!:Map<string,string>; 
     private _eventOriginator = Constants.EMPTY_STRING;
 
     private _runningProcessService:RunningProcessService;
@@ -41,6 +42,8 @@ export class FileService implements BaseService{
     dirFilesUpdateNotify: Subject<void> = new Subject<void>();
     fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
     goToDirectoryNotify: Subject<string[]> = new Subject<string[]>();
+
+    readonly RECYCLE_BIN = '/Users/Desktop/Recycle Bin';
 
     // SECONDS_DELAY = 200;
 
@@ -58,6 +61,7 @@ export class FileService implements BaseService{
         this.initBrowserFS();
         this._fileExistsMap =  new Map<string, number>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
+        this._restorePoint =  new Map<string, string>();
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
         this._userNotificationService = userNotificationService;
@@ -125,13 +129,27 @@ export class FileService implements BaseService{
         });
     }
 
-    private changeFolderIcon(fileName:string, iconPath:string, path:string):string{
+    private async changeFolderIcon(fileName:string, iconPath:string, path:string):Promise<string>{
+        
 		const iconMaybe = `/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder.png`;
+
+        if(path === this.RECYCLE_BIN){
+            const count = await this.getCountOfFolderItemsAsync(this.RECYCLE_BIN);
+            return (count === Constants.NUM_ZERO) 
+                ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
+                :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
+        }
+
+        console.log('iconMaybe:',iconMaybe);
 
         if(path !== `/Users/${fileName}`)
             return iconPath;
 
-		return this._fileSystem.existsSync(iconMaybe) ? `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png` : iconPath;
+        const result = await this.checkIfExistsAsync(iconMaybe);
+        if(result){ 
+            return `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png`;
+        }
+		return iconPath;
     }
 
     public async checkIfDirectoryAsync(path:string):Promise<boolean> {
@@ -281,21 +299,20 @@ export class FileService implements BaseService{
     }
 
     public async getExtraFileMetaDataAsync(path: string): Promise<FileMetaData> {
-        return new Promise((resolve, reject) =>{
-
-            this._fileSystem.exists(`${path}`,(exits) =>{
-                if(exits){
-                    this._fileSystem.stat(path,(err, stats) =>{
-                        if(err){
-                            console.log('getExtraFileMetaDataAsync error:',err)
-                            reject(err)
-                        }
-                        resolve(new FileMetaData(stats?.ctime, stats?.mtime, stats?.size, stats?.mode));
-                    });
-                }else{
-                   console.log('getExtraFileMetaDataAsync :Does not exists',exits);
+        return new Promise((resolve) =>{
+            this._fileSystem.exists(path, (exits)=>{
+                if(!exits){
+                    console.log('getExtraFileMetaDataAsync :Does not exists',exits);
                    resolve(new FileMetaData());
                 }
+
+                this._fileSystem.stat(path, (err, stats) =>{
+                    if(err){
+                        console.log('getExtraFileMetaDataAsync error:',err)
+                        resolve(new FileMetaData());
+                    }
+                    resolve(new FileMetaData(stats?.ctime, stats?.mtime, stats?.size, stats?.mode));
+                });
            });
         });
     }
@@ -399,7 +416,7 @@ export class FileService implements BaseService{
         if(!extension){
             const fc = await this.setFolderPropertiesAsync(path) as FileContent;
             this._fileInfo = this.populateFileInfo(path, fileMetaData, false, Constants.EMPTY_STRING, Constants.EMPTY_STRING, false, undefined, fc);
-            this._fileInfo.setIconPath = this.changeFolderIcon(fc.geFileName,fc.getIconPath, path);
+            this._fileInfo.setIconPath = await this.changeFolderIcon(fc.geFileName, fc.getIconPath, path);
         }
         else if(extension === Constants.URL){
             const sc = await this.getShortCutFromURLAsync(path) as ShortCut;
@@ -819,11 +836,23 @@ export class FileService implements BaseService{
     }
 
     public async deleteAsync(path:string, isFile?:boolean):Promise<boolean> {
-        const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(path) : !isFile;
+        console.log(`deleteAsync: ${path}`);
 
-        return isDirectory
-            ? await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path)
-            : await this.deleteFileAsync(path);
+        // is file or folder is not currently in the bin, move it to the bing
+        if(!path.includes(this.RECYCLE_BIN)){
+            console.log(`deleteAsync1: ${path}`);
+
+            const name = this.getNameFromPath(path);
+            this._restorePoint.set(path, `${this.RECYCLE_BIN}/${name}`);
+
+            //move to rbin
+            return await this.moveAsync(path, this.RECYCLE_BIN, isFile);
+        }else{
+            const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(path) : !isFile;
+            return isDirectory
+                ? await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path)
+                : await this.deleteFileAsync(path);
+        }
     }
 
     private async deleteFolderAsync(path:string): Promise<boolean> {

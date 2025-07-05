@@ -1946,7 +1946,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   async onDeleteFile():Promise<void>{
     let result = false;
 
-    result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath);
+    result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
     if(result){
       this._menuService.resetStoreData();
       await this.loadFilesInfoAsync();
