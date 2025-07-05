@@ -33,6 +33,7 @@ export class MenuComponent implements OnDestroy{
   readonly fileExplrFolderMenuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;
   readonly fileExplrFileMenuOrder = Constants.FILE_EXPLORER_FILE_MENU_ORDER;
   readonly fileExplrUniqueMenuOrder = Constants.FILE_EXPLORER_UNIQUE_MENU_ORDER;
+  readonly recycleBinMenuOrder = Constants.RECYCLE_BIN_MENU_ORDER;
 
   isPasteActive!:boolean;
   keys: string[] = [];

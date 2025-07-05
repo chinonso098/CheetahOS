@@ -45,6 +45,12 @@
           <div class="dm-empty-line-container" *ngIf="i === 4 || i === 6 || i === 8"></div>
         </ng-container>
 
+        <ng-container *ngIf="menuOrder === recycleBinMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 0 || i === 1"></div>
+          <div class="dm-line-container" *ngIf="i === 1"><div class="dm-line"></div></div>
+          <div class="dm-empty-line-container" *ngIf="i ===  0 || i === 1"></div>
+        </ng-container>
+
     </div>
     <div class="dm-empty-line-container"></div>
 </div>

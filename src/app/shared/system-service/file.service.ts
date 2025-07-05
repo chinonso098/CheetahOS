@@ -43,7 +43,7 @@ export class FileService implements BaseService{
     fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
     goToDirectoryNotify: Subject<string[]> = new Subject<string[]>();
 
-    readonly RECYCLE_BIN = '/Users/Desktop/Recycle Bin';
+   
 
     // SECONDS_DELAY = 200;
 
@@ -133,8 +133,8 @@ export class FileService implements BaseService{
         
 		const iconMaybe = `/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder.png`;
 
-        if(path === this.RECYCLE_BIN){
-            const count = await this.getCountOfFolderItemsAsync(this.RECYCLE_BIN);
+        if(path === Constants.RECYCLE_BIN_PATH){
+            const count = await this.getCountOfFolderItemsAsync(Constants.RECYCLE_BIN_PATH);
             return (count === Constants.NUM_ZERO) 
                 ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
                 :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
@@ -836,17 +836,13 @@ export class FileService implements BaseService{
     }
 
     public async deleteAsync(path:string, isFile?:boolean):Promise<boolean> {
-        console.log(`deleteAsync: ${path}`);
-
         // is file or folder is not currently in the bin, move it to the bing
-        if(!path.includes(this.RECYCLE_BIN)){
-            console.log(`deleteAsync1: ${path}`);
-
+        if(!path.includes(Constants.RECYCLE_BIN_PATH)){
             const name = this.getNameFromPath(path);
-            this._restorePoint.set(path, `${this.RECYCLE_BIN}/${name}`);
+            this._restorePoint.set(path, `${Constants.RECYCLE_BIN_PATH}/${name}`);
 
             //move to rbin
-            return await this.moveAsync(path, this.RECYCLE_BIN, isFile);
+            return await this.moveAsync(path, Constants.RECYCLE_BIN_PATH, isFile);
         }else{
             const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(path) : !isFile;
             return isDirectory

@@ -202,7 +202,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileDimesions = Constants.EMPTY_STRING;
   fileDateModified = Constants.EMPTY_STRING;
 
-  readonly RECYCLE_BIN = '/Users/Desktop/Recycle Bin';
   readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
   readonly cheetahGenericNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
 
@@ -318,8 +317,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   getProperRecycleBinIcon():void{
-    if(this.directory === this.RECYCLE_BIN){
-      // const count = await this._fileService.getCountOfFolderItemsAsync(this.RECYCLE_BIN);
+    if(this.directory === Constants.RECYCLE_BIN_PATH){
+      // const count = await this._fileService.getCountOfFolderItemsAsync(Constants.RECYCLE_BIN_PATH);
       // this.icon  = (count === Constants.NUM_ZERO) 
       //   ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
       //   :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
@@ -1132,7 +1131,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   setNavPathIcon(fileName:string, directory:string):void{
     console.log(`fileexplorer - setNavPathIcon: fileName:${fileName} -----  directory:${directory}`)
 
-    if(directory === `/Users/${fileName}` || directory === this.RECYCLE_BIN){
+    if(directory === `/Users/${fileName}` || directory === Constants.RECYCLE_BIN_PATH){
       this.navPathIcon = `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder_small.png`;
     }
     else if((fileName === 'OSDisk (C:)' && directory === Constants.ROOT)){
@@ -1796,7 +1795,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
     else{ tmpArray.unshift(Constants.THISPC); }
 
-    if(this.directory === this.RECYCLE_BIN){
+    if(this.directory === Constants.RECYCLE_BIN_PATH){
       this._directoryTraversalList = [];
       this._directoryTraversalList.push(Constants.RECYCLE_BIN);
     }else  if(this.directory.includes('/Users')){

@@ -22,6 +22,7 @@ export namespace Constants{
     export const ACCT_IMAGE_BASE_PATH = 'osdrive/Cheetah/System/Acct/';
     export const GIF_BASE_PATH = 'osdrive/Cheetah/System/Gifres/';
     export const AUDIO_BASE_PATH = 'osdrive/Cheetah/System/Media/';
+    export const RECYCLE_BIN_PATH = '/Users/Desktop/Recycle Bin';
     export const NEW_FOLDER = 'New Folder';
     export const CHEETAH = 'cheetah';
     export const WIN_EXPLR = 'win_explr_';
@@ -32,6 +33,7 @@ export namespace Constants{
     export const FILE_EXPLORER_FILE_MENU_ORDER = 'FileExplorerFolderMenuOrder';
     export const FILE_EXPLORER_FOLDER_MENU_ORDER = 'FileExplorerfolderMenuOrder';
     export const FILE_EXPLORER_UNIQUE_MENU_ORDER = 'FileExploreruniqueMenuOrder';
+    export const RECYCLE_BIN_MENU_ORDER = 'RecycleBinMenuOrder';
 
     export const TASK_BAR_APP_ICON_MENU_OPTION =  'taskbar-app-icon-menu';
     export const TASK_BAR_CONTEXT_MENU_OPTION =  'taskbar-context-menu';

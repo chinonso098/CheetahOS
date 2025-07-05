@@ -227,6 +227,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   sourceData:GeneralMenu[] = [
     {icon:'', label: 'Open', action: this.onTriggerRunProcess.bind(this) },
+    {icon:`${Constants.IMAGE_BASE_PATH}recycle bin_folder_small.png`, label: 'Empty Recycle Bin', action: this.onTriggerRunProcess.bind(this) },
     {icon:'', label: 'Pin to Quick access', action: this.doNothing.bind(this) },
     {icon:'', label: 'Open in Terminal', action: this.doNothing.bind(this) },
     {icon:'', label: 'Pin to Start', action: this.doNothing.bind(this) },
@@ -1327,7 +1328,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._runningProcessService.addEventOriginator(uid);
     this._menuService.hideContextMenus.next();
 
-    this.adjustContextMenuData(file);
+    this.adjustIconContextMenuData(file);
     this.selectedFile = file;
     this.propertiesViewFile = file;
     this.showDesktopIconCntxtMenu = true;
@@ -1350,7 +1351,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.showPropertiesView.next(this.propertiesViewFile);
   }
 
-  adjustContextMenuData(file:FileInfo):void{
+  adjustIconContextMenuData(file:FileInfo):void{
     this.menuData = [];
   
     console.log('adjustContextMenuData - filename:',file.getCurrentPath);
@@ -1364,8 +1365,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
             }
           }
       }else{
-        this.menuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
-        this.menuData = this.sourceData;
+        if(file.getCurrentPath === Constants.RECYCLE_BIN_PATH){ 
+          this.menuOrder = Constants.RECYCLE_BIN_MENU_ORDER;
+          for(const x of this.sourceData){
+            if(x.label === 'Open' || x.label === 'Empty Recycle Bin' || x.label === 'Create shortcut'){ 
+             this.menuData.push(x);
+            }
+          }
+        }else{
+          this.menuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
+          this.menuData = this.sourceData;
+        }
       }
   }
   
