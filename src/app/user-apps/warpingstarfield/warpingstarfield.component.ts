@@ -215,7 +215,7 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   };
 
-  setTitleWindowToFocus(pid:number):void{
+  setWarpWindowToFocus(pid:number):void{
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 

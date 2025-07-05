@@ -1,12 +1,12 @@
 .boid-main-cntnr{
-  width: 1280px;
-  height: 720px;
+  width: 900px;
+  height: 480px;
 }
 
 .boid-cntnr {
   position: relative;
-  width: 1280px;
-  height: 720px;
+  width: 900px;
+  height: 480px;
   z-index: 1;
 }
 

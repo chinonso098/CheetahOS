@@ -14,14 +14,14 @@
   */
  
  .terminal-container {
-    width: 880px;
-    height: 382px;
+    width: 900px;
+    height: 480px;
     background-color: #171717;
   }
 
   .terminal-output-section{
     width: 100%;
-    height: 357px;
+    height: 450px;
     overflow: auto;
     background-color: #171717;
     /* padding: 5px 10px 10px 5px; */
@@ -37,7 +37,7 @@
   .terminal-input-section{
     position: fixed;
     width: 100%;
-    height: 25px;
+    height: 30px;
     background-color: #252424;
     bottom: 0;
   }
@@ -91,7 +91,7 @@
   
   .terminal-command-output {
     padding: 8px 4px 8px 8px;
-    width: 800px;
+    width: 820px;
     color: #ccc;
     line-height: normal;
     font-weight: normal;

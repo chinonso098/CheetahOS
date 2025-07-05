@@ -576,7 +576,7 @@ span.head-nav-path-cntnr2:hover{
 
 .path-input{
     position: relative;
-    width: 400px; /*this was min-width before*/
+    width: 440px; /*this was min-width before*/
     width: 100%;
     height: 24px;
     border: 0.5px solid #9d9d9d;
@@ -763,7 +763,7 @@ span.mid-search-entry{
     min-width: 180px;
     background-color: #191919;
     overflow-y: auto;
-    height: 400px;
+    height: 440px;
 }
 
 
@@ -771,10 +771,10 @@ span.mid-search-entry{
 
 .file-content-container{
     border-left: 0.5px solid #5a5a5a;
-    min-width: 640px; /*This was 100px before, change it when you've got window resize working properly*/
+    min-width: 720px; /*This was 100px before, change it when you've got window resize working properly*/
     width: 100%; /* Set a maximum width for the responsive container */
     overflow-y: auto;
-    height: 400px;
+    height: 440px;
 }
 
 .previewOrdetails-content-container{

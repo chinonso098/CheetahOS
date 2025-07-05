@@ -209,11 +209,11 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
 
   focusOnInput(evt:any):void{
+    this.setTerminalWindowToFocus(this.processId);
     const cmdTxtBoxElm= document.getElementById(`cmdTxtBox-${this.processId}`) as HTMLInputElement;
     if(cmdTxtBoxElm){
       cmdTxtBoxElm?.focus();
     }
-
     evt.stopPropagation();
   }
 
