@@ -38,7 +38,7 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
       state('slideIn', style({ right: '0px' })),
 
       transition('* => slideIn', [
-        animate('150ms ease-in')
+        animate('250ms ease-in')
       ]),
       transition('slideIn => slideOut', [
         animate('2s ease-out')
@@ -227,7 +227,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   sourceData:GeneralMenu[] = [
     {icon:'', label: 'Open', action: this.onTriggerRunProcess.bind(this) },
-    {icon:`${Constants.IMAGE_BASE_PATH}recycle bin_folder_small.png`, label: 'Empty Recycle Bin', action: this.onTriggerRunProcess.bind(this) },
+    {icon:`${Constants.IMAGE_BASE_PATH}recycle bin_folder_small.png`, label: 'Empty Recycle Bin', action:this.onEmptyRecyleBin.bind(this) },
     {icon:'', label: 'Pin to Quick access', action: this.doNothing.bind(this) },
     {icon:'', label: 'Open in Terminal', action: this.doNothing.bind(this) },
     {icon:'', label: 'Pin to Start', action: this.doNothing.bind(this) },
@@ -235,7 +235,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     {icon:'', label: 'Cut', action: this.onCut.bind(this) },
     {icon:'', label: 'Copy', action: this.onCopy.bind(this)},
     {icon:'', label: 'Create shortcut', action: this.createShortCut.bind(this)},
-    {icon:'', label: 'Delete', action: this.onDeleteFile.bind(this) },
+    {icon:'', label: 'Delete', action: this.onDelete.bind(this) },
     {icon:'', label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
     {icon:'', label: 'Properties', action: this.showPropertiesWindow.bind(this) }
   ];
@@ -1315,7 +1315,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   onBtnClick(evt:MouseEvent, id:number):void{
     this.doBtnClickThings(id);
     this.setBtnStyle(id, true);
-
   }
 
   onTriggerRunProcess():void{
@@ -1359,7 +1358,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           //files can not be opened in terminal, pinned to start, opened in new window, pin to Quick access
           this.menuOrder = Constants.DEFAULT_FILE_MENU_ORDER;
           for(const x of this.sourceData) {
-            if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Pin to Start'){ /*nothing*/}
+            if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Pin to Start' || x.label === 'Empty Recycle Bin'){ /*nothing*/}
             else{
               this.menuData.push(x);
             }
@@ -1890,15 +1889,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   sortIcons(sortBy:string):void {
-    if(sortBy === "Size"){
+    if(sortBy === SortBys.SIZE){
       this.files = this.files.sort((objA, objB) => objB.getSize - objA.getSize);
-    }else if(sortBy === "Date Modified"){
+    }else if(sortBy ===SortBys.DATE_MODIFIED){
       this.files = this.files.sort((objA, objB) => objB.getDateModified.getTime() - objA.getDateModified.getTime());
-    }else if(sortBy === "Name"){
+    }else if(sortBy === SortBys.NAME){
       this.files = this.files.sort((objA, objB) => {
         return objA.getFileName < objB.getFileName ? Constants.MINUS_ONE : Constants.NUM_ONE;
       });
-    }else if(sortBy === "Item Type"){
+    }else if(sortBy === SortBys.ITEM_TYPE){
       this.files = this.files.sort((objA, objB) => {
         return objA.getFileType < objB.getFileType ? Constants.MINUS_ONE : Constants.NUM_ONE;
       });
@@ -1953,10 +1952,18 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  async onDeleteFile():Promise<void>{
+  async onDelete():Promise<void>{
     let result = false;
-
     result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
+    if(result){
+      this._menuService.resetStoreData();
+      await this.loadFilesInfoAsync();
+    }
+  }
+
+  async onEmptyRecyleBin():Promise<void>{
+    let result = false;
+    result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, false);
     if(result){
       this._menuService.resetStoreData();
       await this.loadFilesInfoAsync();
@@ -2097,22 +2104,22 @@ OpensWith=${selectedFile.getOpensWith}
     const figCapElement = document.getElementById(`figCap${this.selectedElementId}`) as HTMLElement;
     const renameContainerElement = document.getElementById(`renameContainer${this.selectedElementId}`) as HTMLElement;
     const renameText = this.renameForm.value.renameInput as string;
-    console.log('renameText:',renameText);
+    // console.log('renameText:',renameText);
 
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== Constants.NUM_ZERO && renameText !== this.currentIconName ){
       const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
 
 
-      console.log('files:', this.files);
+      // console.log('files:', this.files);
 
-      console.log('this.selectedFile.getCurrentPath:',this.selectedFile.getCurrentPath);
-      console.log('this.selectedFile.getCurrentPath-----:', dirname(this.selectedFile.getCurrentPath));
-      console.log('this.selectedFile.getIsFile:',this.selectedFile.getIsFile);
+      // console.log('this.selectedFile.getCurrentPath:',this.selectedFile.getCurrentPath);
+      // console.log('this.selectedFile.getCurrentPath-----:', dirname(this.selectedFile.getCurrentPath));
+      // console.log('this.selectedFile.getIsFile:',this.selectedFile.getIsFile);
 
-      console.log('this.selectedFile.getContentPath:',this.selectedFile.getContentPath);
-      console.log('this.selectedFile.getFileName:',this.selectedFile.getFileName);
+      // console.log('this.selectedFile.getContentPath:',this.selectedFile.getContentPath);
+      // console.log('this.selectedFile.getFileName:',this.selectedFile.getFileName);
 
-      console.log('result:',result);
+      // console.log('result:',result);
 
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
@@ -2126,7 +2133,7 @@ OpensWith=${selectedFile.getOpensWith}
         console.log('this.selectedFile:',this.selectedFile);
 
         this.renameForm.reset();
-        //await this.loadFilesInfoAsync();
+        await this.loadFilesInfoAsync();
       }
     }else{
       this.renameForm.reset();

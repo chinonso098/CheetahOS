@@ -2150,7 +2150,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   async createShortCut(): Promise<void>{
     const selectedFile = this.selectedFile;
     const shortCut:FileInfo = new FileInfo();
-    let fileContent = '';
+    let fileContent = Constants.EMPTY_STRING;
     //const directory = '/';//(inputDir)? inputDir : this.directory;
     const directory = this.directory;
 

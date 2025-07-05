@@ -205,14 +205,14 @@ export class FileService implements BaseService{
 
                     if(writeErr?.code === 'EEXIST'){
                         console.warn('copyFileAsync Error: file already exists',writeErr);
-                        const iteratedName = this.iterateName(fileName);
-                        this._fileSystem.writeFile(iteratedName, contents, (retryErr) =>{  
+                        const newFileName = this.iterateName(fileName);
+                        this._fileSystem.writeFile(newFileName, contents, (retryErr) =>{  
                             if(retryErr){
                                 console.log('copyFileAsync Iterate Error:',retryErr);
                                 resolve(false);
                             }
 
-                            this._fileExistsMap.set(iteratedName, Constants.NUM_ZERO);
+                            this._fileExistsMap.set(newFileName, Constants.NUM_ZERO);
                             resolve(true);
                         });
                     }else{
@@ -290,13 +290,13 @@ export class FileService implements BaseService{
         return new Promise((resolve) =>{
             this._fileSystem.exists(path, (exits)=>{
                 if(!exits){
-                    console.log('getExtraFileMetaDataAsync :Does not exists',exits);
+                    console.error('getExtraFileMetaDataAsync: does not exists',exits);
                    resolve(new FileMetaData());
                 }
 
                 this._fileSystem.stat(path, (err, stats) =>{
                     if(err){
-                        console.log('getExtraFileMetaDataAsync error:',err)
+                        console.error('getExtraFileMetaDataAsync error:',err)
                         resolve(new FileMetaData());
                     }
                     resolve(new FileMetaData(stats?.ctime, stats?.mtime, stats?.size, stats?.mode));
@@ -439,7 +439,7 @@ export class FileService implements BaseService{
         else if(extension === '.swf'){
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'ruffle', 'swf_file.png');
         }else{
-            this._fileInfo.setIconPath=`${Constants.IMAGE_BASE_PATH}/unknown.png`;
+            this._fileInfo.setIconPath=`${Constants.IMAGE_BASE_PATH}unknown.png`;
             this._fileInfo.setCurrentPath = path;
             this._fileInfo.setFileName = basename(path, extname(path));
             this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
@@ -645,7 +645,6 @@ export class FileService implements BaseService{
      * @returns 
      */
     private async moveHandlerBAsync(destPath:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
-
         if(folderToProcessingQueue.length === Constants.NUM_ZERO)
             return true;
 
@@ -673,12 +672,12 @@ export class FileService implements BaseService{
                     if(result){
                         console.log(`file:${srcPath}/${directoryEntry} successfully moved to destination:${destPath}/${folderName}`);
                     }else{
-                        console.log(`file:${srcPath}/${directoryEntry} failed to move to destination:${destPath}/${folderName}`)
+                        console.error(`file:${srcPath}/${directoryEntry} failed to move to destination:${destPath}/${folderName}`)
                     }
                 }
             }
         }else{
-            console.log(`folder:${destPath}/${folderName}  creation failed`);
+            console.error(`folder:${destPath}/${folderName} creation failed`);
             return false;
         }
 
@@ -695,27 +694,29 @@ export class FileService implements BaseService{
     }
 
     //virtual filesystem, use copy and then delete
-    private async moveFileAsync(srcPath:string, destPath:string): Promise<boolean> {
+    private async moveFileAsync(srcPath:string, destPath:string, generatePath?:boolean): Promise<boolean>{
         return new Promise<boolean>((resolve) => {
-            const fileName = this.getNameFromPath(srcPath);
-            const destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+            let destinationPath = Constants.EMPTY_STRING;
+            if(generatePath === undefined || generatePath){
+                const fileName = this.getNameFromPath(srcPath);
+                destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+            }else{
+                destinationPath = destPath;
+            }
 
-            console.log(`moveFileAsync ----- currentPath:${srcPath}`);
-            console.log(`moveFileAsync -----  destinationPath:${destinationPath}`);
-
-            this._fileSystem.readFile(srcPath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING)) => {
-                if (readErr) {
+            this._fileSystem.readFile(srcPath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING))=>{
+                if(readErr){
                     console.error('Error reading file during move:', readErr);
                     return resolve(false);
                 }
 
-                this._fileSystem.writeFile(destinationPath, contents, (writeErr) => {
-                    if (writeErr) {
+                this._fileSystem.writeFile(destinationPath, contents, (writeErr)=>{
+                    if (writeErr){
                         console.error('Error writing file during move:', writeErr);
                         return resolve(false);
                     }
 
-                    this._fileSystem.unlink(srcPath, (unlinkErr) => {
+                    this._fileSystem.unlink(srcPath, (unlinkErr)=>{
                         if (unlinkErr) {
                             console.error('Error deleting original file during move:', unlinkErr);
                             return resolve(false);
@@ -730,59 +731,58 @@ export class FileService implements BaseService{
     }
 
     public async writeFilesAsync(directory:string, files:File[]):Promise<boolean>{
-
-        return new Promise<boolean>((resolve, reject) =>{
+        return new Promise<boolean>(() =>{
             files.forEach((file)=>{
                 const fileReader = new FileReader()
                 fileReader.readAsDataURL(file);
+                fileReader.onload = async(evt) =>{
+                    const newFile:FileInfo = new FileInfo();
+                    newFile.setFileName = file.name;
 
-                fileReader.onload = (evt) =>{
-                    
-                    this._fileSystem.writeFile(`${directory}/${file.name}`,evt.target?.result, {flag: 'wx'}, (err) =>{  
-
-                        console.log(`fileName:${directory}/${file.name}`);
-                        if(err?.code === 'EEXIST' ){
-                            console.log('writeFileAsync Error: file already exists',err);
-    
-                            const itrName = this.iterateName(`${directory}/${file.name}`);
-                            this._fileSystem.writeFile(itrName,evt.target?.result,(err) =>{  
-                                if(err){
-                                    console.log('writeFileAsync Iterate Error:',err);
-                                    reject(err);
-                                }
-                                resolve(true);
-                            });
-                        }else{
-                            this._fileExistsMap.set(`${directory}/${file.name}`, Constants.NUM_ZERO);
-                            resolve(true);
-                        }
-                    });
+                    const result = evt.target?.result;
+                    if(result instanceof ArrayBuffer) {
+                        newFile.setContentBuffer = result;
+                    } else{
+                        newFile.setContentPath = result || Constants.EMPTY_STRING;
+                    }
+                    newFile.setCurrentPath = `${this.pathCorrection(directory)}/${file.name}`;
+                    return await this.writeFileAsync(directory, newFile);
                 }
             })
         });
     }
 
     public async writeFileAsync(directory:string, file:FileInfo):Promise<boolean>{
-        return new Promise<boolean>((resolve, reject) =>{
+        console.log('sdsd');
+
+        return new Promise<boolean>((resolve) =>{
             const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
             const destPath = this.pathCorrection(directory);
-            this._fileSystem.writeFile(`${destPath}/${file.getFileName}`, cntnt, {flag: 'wx'}, (err) =>{  
-                console.log(`FileName:${destPath}/${file.getFileName}`);
+            const fileName = `${destPath}/${file.getFileName}`;
 
-                if(err?.code === 'EEXIST'){
-                    console.log('writeFileAsync Error: file already exists',err);
+            this._fileSystem.writeFile(fileName, cntnt, {flag: 'wx'}, (writeErr) =>{  
+                if(writeErr === undefined){
+                    console.log('writeFileAsync: file successfully written');
+                    this._fileExistsMap.set(fileName, Constants.NUM_ZERO);
+                    return resolve(true);
+                }
 
-                    const itrName = this.iterateName(`${destPath}/${file.getFileName}`);
-                    this._fileSystem.writeFile(itrName, cntnt,(err) =>{  
+                if(writeErr?.code === 'EEXIST'){
+                    console.warn('writeFileAsync: file already exists',writeErr);
+
+                    const newFileName = this.iterateName(fileName);
+                    this._fileSystem.writeFile(newFileName, cntnt,(err) =>{  
                         if(err){
-                            console.log('writeFileAsync Iterate Error:',err);
-                            reject(false);
+                            console.error('writeFileAsync Iterate Error:',err);
+                            return resolve(false);
                         }
+
+                        this._fileExistsMap.set(newFileName, Constants.NUM_ZERO);
                         resolve(true);
                     });
                 }else{
-                    this._fileExistsMap.set(`${destPath}/${file.getFileName}`,Constants.NUM_ZERO);
-                    resolve(true);
+                    console.error('writeFileAsync Error:', writeErr);
+                    return resolve(false);
                 }
             });
         });
@@ -798,9 +798,42 @@ export class FileService implements BaseService{
     }
 
     private async renameFileAsync(path:string, newFileName:string): Promise<boolean> {
-        //moveFileAsync and renameFileAsync are 95% the same, have renameFileAsync call moveFileAsync behind the scene
-        const newPath = `${dirname(path)}/${newFileName}${extname(path)}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
-        return await this.moveFileAsync(path, newPath);
+        const fileExt = extname(path);
+        if(fileExt === Constants.URL){
+            // special case
+            return await  this.renameURLFiles(path, newFileName);
+        }else{
+            const newPath = `${dirname(path)}/${newFileName}${extname(path)}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+            return await this.moveFileAsync(path, newPath, false);
+        }
+    }
+
+    private async renameURLFiles(srcPath:string, fileName:string): Promise<boolean> {
+
+        const destPath = dirname(srcPath);
+        const shortCutData = await this.getShortCutFromURLAsync(srcPath) as ShortCut;
+        if(!shortCutData){
+            console.warn('renameURLFiles: No shortcut data found for', srcPath);
+            return false;
+        }
+      const shortCutContent = `[InternetShortcut]
+FileName=${fileName} 
+IconPath=${shortCutData.getIconPath}
+FileType=${shortCutData.getFileType}
+ContentPath=${shortCutData.getContentPath}
+OpensWith=${shortCutData.getOpensWith}
+`;
+        const shortCut:FileInfo = new FileInfo();
+        shortCut.setContentPath = shortCutContent;
+        shortCut.setFileName= `${fileName}${Constants.URL}`;
+
+        const writeResult = await this.writeFileAsync(destPath, shortCut);
+        if(!writeResult){
+            console.error('renameURLFiles: Failed to write shortcut to', destPath);
+            return false;
+        }
+
+        return await this.deleteFileAsync(srcPath);
     }
 
     public async deleteAsync(path:string, isFile?:boolean):Promise<boolean> {
@@ -844,7 +877,7 @@ export class FileService implements BaseService{
     private async deleteFileAsync(path: string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
             this._fileSystem.exists(path, (exists: boolean)=> {
-                if (!exists) {
+                if(!exists){
                     console.warn(`deleteFileAsync: Entry doesn't exist: ${path}`);
                     return resolve(false);
                 }
@@ -869,19 +902,19 @@ export class FileService implements BaseService{
             const entryPath = `${sourceArg}/${directoryEntry}`;
             const checkIfDirectory = await this.checkIfDirectoryAsync(entryPath);
     
-            if (checkIfDirectory) {
+            if(checkIfDirectory){
                 // Recursively call the rm_dir_handler for the subdirectory
                 const success = await this.deleteFolderHandlerAsync(arg0, entryPath);
-                if (!success) {
+                if(!success){
                     console.log(`Failed to delete directory: ${entryPath}`);
                     return false;
                 }
             } else {
                 const result = await this.deleteFileAsync(entryPath);
-                if (result) {
+                if(result){
                     console.log(`File: ${directoryEntry} in ${entryPath} deleted successfully`);
-                } else {
-                    console.log(`File: ${directoryEntry} in ${entryPath} failed deletion`);
+                }else{
+                    console.error(`File: ${directoryEntry} in ${entryPath} failed deletion`);
                     return false;
                 }
             }
@@ -895,7 +928,7 @@ export class FileService implements BaseService{
             console.log(`Directory: ${sourceArg} deleted successfully`);
             return true;
         } else {
-            console.log(`Failed to delete directory: ${sourceArg}`);
+            console.error(`Failed to delete directory: ${sourceArg}`);
             return false;
         }
     }
@@ -905,9 +938,9 @@ export class FileService implements BaseService{
             this._fileSystem.readdir(path, (readDirErr, files) =>{
                 if(readDirErr){
                     console.error('Error reading dir for count:', readDirErr);
-                    resolve(0);
+                    resolve(Constants.NUM_ZERO);
                 }
-                resolve(files?.length || 0);
+                resolve(files?.length || Constants.NUM_ZERO);
             });
         });
     }
@@ -921,7 +954,7 @@ export class FileService implements BaseService{
         return `${counts.files} Files, ${counts.folders} Folders`;
     }
 
-    private  async getDetailedCountOfFolderItemsHelperAsync(queue:string[], counts:{ files: number, folders: number}): Promise<void> {
+    private  async getDetailedCountOfFolderItemsHelperAsync(queue:string[], counts:{files: number, folders: number}): Promise<void> {
         if(queue.length === Constants.NUM_ZERO)
             return;
 
@@ -950,7 +983,7 @@ export class FileService implements BaseService{
         return sizes.files + sizes.folders;
     }
 
-    private  async getFolderSizeHelperASync(queue:string[], sizes:{ files: number, folders: number}): Promise<void> {
+    private  async getFolderSizeHelperASync(queue:string[], sizes:{files: number, folders: number}): Promise<void> {
         if(queue.length === Constants.NUM_ZERO)
             return;
 
@@ -972,8 +1005,6 @@ export class FileService implements BaseService{
 
         return this.getFolderSizeHelperASync(queue, sizes);
     }
-
-
 
     public resetDirectoryFiles(){
         this._directoryFileEntires=[]
@@ -1027,7 +1058,7 @@ export class FileService implements BaseService{
             if(appname === 'photoviewer' || appname === 'videoplayer' || appname === 'audioplayer' || appname === 'ruffle'){
                 this._fileAndAppIconAssociation.set(appname,`${Constants.IMAGE_BASE_PATH}${appname}.png`);
             }else{
-                this._fileAndAppIconAssociation.set(appname,img);
+                this._fileAndAppIconAssociation.set(appname, img);
             }
         }
     }
