@@ -1963,7 +1963,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async onEmptyRecyleBin():Promise<void>{
     let result = false;
-    result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, false);
+    result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, false, true);
     if(result){
       this._menuService.resetStoreData();
       await this.loadFilesInfoAsync();

@@ -81,6 +81,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isBtnClickEvt= false;
   private isHideCntxtMenuEvt= false;
   private isShiftSubMenuLeft = false;
+  private isRecycleBinFolder = false;
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
@@ -318,6 +319,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   getProperRecycleBinIcon():void{
     if(this.directory === Constants.RECYCLE_BIN_PATH){
+      this.isRecycleBinFolder = true;
+
       // const count = await this._fileService.getCountOfFolderItemsAsync(Constants.RECYCLE_BIN_PATH);
       // this.icon  = (count === Constants.NUM_ZERO) 
       //   ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
@@ -948,13 +951,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const fileEntry = this._directoryFilesEntires[i];
       const fileInfo = await this._fileService.getFileInfoAsync(fileEntry.getPath);
 
-      this.fileExplrFiles.push(fileInfo)
+      if(fileInfo.getCurrentPath !== Constants.RECYCLE_BIN_PATH)
+        this.fileExplrFiles.push(fileInfo)
     }
   }
 
   private async loadFileTreeAsync():Promise<void>{
+    if(this.isRecycleBinFolder) return;
 
-    console.log('loadFileTreeAsync called');
     const usersDir = '/Users/';
     this.fileTreeNode = [];
     this._fileService.resetDirectoryFiles();
@@ -964,7 +968,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       name:Constants.OSDISK, path: Constants.ROOT, isFolder: true, children:[]
     }
 
-   // this.directory, will not be correct for all cases. Make sure to check
+    // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
       const isFile =  await this._fileService.checkIfDirectoryAsync(usersDir + dirEntry);
       const ftn:FileTreeNode = {
@@ -974,7 +978,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         children: []
       }
 
-      //console.log('ftn:', ftn); //TBD
       this.fileTreeNode.push(ftn);
     }
 

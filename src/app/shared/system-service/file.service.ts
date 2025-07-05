@@ -57,7 +57,6 @@ export class FileService implements BaseService{
 
     
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService){ 
-
         this.initBrowserFS();
         this._fileExistsMap =  new Map<string, number>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
@@ -835,8 +834,12 @@ OpensWith=${shortCutData.getOpensWith}
         return await this.deleteFileAsync(srcPath);
     }
 
-    public async deleteAsync(path:string, isFile?:boolean):Promise<boolean> {
+    public async deleteAsync(path:string, isFile?:boolean, isRecycleBin?:boolean):Promise<boolean> {
         // is file or folder is not currently in the bin, move it to the bing
+        if(isRecycleBin){
+            return await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path, isRecycleBin);
+        }
+
         if(!path.includes(Constants.RECYCLE_BIN_PATH)){
             const name = this.getNameFromPath(path);
             this._restorePoint.set(path, `${Constants.RECYCLE_BIN_PATH}/${name}`);
@@ -846,7 +849,7 @@ OpensWith=${shortCutData.getOpensWith}
         }else{
             const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(path) : !isFile;
             return isDirectory
-                ? await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path)
+                ? await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path, isRecycleBin)
                 : await this.deleteFileAsync(path);
         }
     }
@@ -894,11 +897,11 @@ OpensWith=${shortCutData.getOpensWith}
         });
     }
 
-    private async deleteFolderHandlerAsync(arg0: string, sourceArg: string): Promise<boolean> {
-        const loadedDirectoryEntries = await this.getDirectoryEntriesAsync(sourceArg);
+    private async deleteFolderHandlerAsync(arg0: string, srcPath: string, isRecycleBin?:boolean): Promise<boolean> {
+        const loadedDirectoryEntries = await this.getDirectoryEntriesAsync(srcPath);
     
         for (const directoryEntry of loadedDirectoryEntries) {
-            const entryPath = `${sourceArg}/${directoryEntry}`;
+            const entryPath = `${srcPath}/${directoryEntry}`;
             const checkIfDirectory = await this.checkIfDirectoryAsync(entryPath);
     
             if(checkIfDirectory){
@@ -919,15 +922,17 @@ OpensWith=${shortCutData.getOpensWith}
             }
         }
     
-        // Delete the current directory after all its contents have been  deleted
+
+        if(srcPath === Constants.RECYCLE_BIN_PATH && isRecycleBin)
+            return true;
+        // Delete the current directory after all its contents have been deleted
         // console.log(`folder to delete: ${sourceArg}`);
-        const result = await this.deleteFolderAsync(sourceArg);
-    
-        if (result) {
+        const result = await this.deleteFolderAsync(srcPath);
+        if(result){
             // console.log(`Directory: ${sourceArg} deleted successfully`);
             return true;
-        } else {
-            console.error(`Failed to delete directory: ${sourceArg}`);
+        }else{
+            console.error(`Failed to delete directory: ${srcPath}`);
             return false;
         }
     }
