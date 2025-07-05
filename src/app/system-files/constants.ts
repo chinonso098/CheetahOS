@@ -54,7 +54,39 @@ export namespace Constants{
     export const NUM_EIGHT = 8;
     export const NUM_NINE = 9;
     export const NUM_TEN = 10;
+    export const NUM_ELEVEN = 11;
+    export const NUM_TWELVE = 12;
+    export const NUM_THIRTEEN = 13;
+    export const NUM_FOURTEEN = 14;
+    export const NUM_FIFTEEN = 15;
+    export const NUM_SIXTEEN = 16;
+    export const NUM_SEVENTEEN = 17;
+    export const NUM_EIGHTEEN = 18;
+    export const NUM_NINETEEN = 19;
+    export const NUM_TWENTY = 20;
+
     export const MINUS_ONE = -1;
+    export const MINUS_TWO = -2;
+    export const MINUS_THREE = -3;
+    export const MINUS_FOUR = -4;
+    export const MINUS_FIVE = -5;
+    export const MINUS_SIX = -6;
+    export const MINUS_SEVEN = -7;
+    export const MINUS_EIGHT = -8;
+    export const MINUS_NINE = -9;
+    export const MINUS_TEN = -10;
+    export const MINUS_ELEVEN = -11;
+    export const MINUS_TWELVE = -12;
+    export const MINUS_THIRTEEN = -13;
+    export const MINUS_FOURTEEN = -14;
+    export const MINUS_FIFTEEN = -15;
+    export const MINUS_SIXTEEN = -16;
+    export const MINUS_SEVENTEEN = -17;
+    export const MINUS_EIGHTEEN = -18;
+    export const MINUS_NINETEEN = -19;
+    export const MINUS_TWENTY = -20;
+
+
 
     export const SERVICES_STATE_RUNNING = 'Running';
     export const SERVICES_STATE_STOPPED = 'Stopped';

@@ -130,7 +130,6 @@ export class FileService implements BaseService{
     }
 
     private async changeFolderIcon(fileName:string, iconPath:string, path:string):Promise<string>{
-        
 		const iconMaybe = `/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder.png`;
 
         if(path === Constants.RECYCLE_BIN_PATH){
@@ -225,40 +224,29 @@ export class FileService implements BaseService{
         });
     }
 
-    private async copyFolderHandlerAsync(arg0:string, sourcePathArg:string, destinationArg:string):Promise<boolean>{
+    private async copyFolderHandlerAsync(arg0:string, srcPath:string, destPath:string):Promise<boolean>{
 
-        const checkIfDirResult = await this.checkIfDirectoryAsync(sourcePathArg);
-        if(checkIfDirResult){
-            const folderName = this.getNameFromPath(sourcePathArg);
-            const  createFolderResult = await this.createFolderAsync(destinationArg, folderName);
-            if(createFolderResult){
-                const loadedDirectoryEntries = await this.getEntriesFromDirectoryAsync(sourcePathArg);
-                for(const directoryEntry of loadedDirectoryEntries){
-                    const checkIfDirResult = await this.checkIfDirectoryAsync(`${sourcePathArg}/${directoryEntry}`);
-                    if(checkIfDirResult){
-                        const result = await this.copyFolderHandlerAsync(arg0,`${sourcePathArg}/${directoryEntry}`,`${destinationArg}/${folderName}`);
-                        if(!result){
-                            console.log(`Failed to copy directory: ${sourcePathArg}/${directoryEntry}`);
-                            return false;
-                        }
+        const folderName = this.getNameFromPath(srcPath);
+        const  createFolderResult = await this.createFolderAsync(destPath, folderName);
+        if(createFolderResult){
+            const loadedDirectoryEntries = await this.getDirectoryEntriesAsync(srcPath);
+            for(const directoryEntry of loadedDirectoryEntries){
+                const checkIfDirResult = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+                if(checkIfDirResult){
+                    const result = await this.copyFolderHandlerAsync(arg0,`${srcPath}/${directoryEntry}`,`${destPath}/${folderName}`);
+                    if(!result){
+                        console.log(`Failed to copy directory: ${srcPath}/${directoryEntry}`);
+                        return false;
+                    }
+                }else{
+                    const result = await this.copyFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
+                    if(result){
+                        console.log(`file:${srcPath}/${directoryEntry} successfully copied to destination:${destPath}/${folderName}`);
                     }else{
-                        const result = await this.copyFileAsync(`${sourcePathArg}/${directoryEntry}`, `${destinationArg}/${folderName}`);
-                        if(result){
-                            console.log(`file:${sourcePathArg}/${directoryEntry} successfully copied to destination:${destinationArg}/${folderName}`);
-                        }else{
-                            console.log(`file:${sourcePathArg}/${directoryEntry} failed to copy to destination:${destinationArg}/${folderName}`)
-                            return false
-                        }
+                        console.log(`file:${srcPath}/${directoryEntry} failed to copy to destination:${destPath}/${folderName}`)
+                        return false
                     }
                 }
-            }
-        }else{
-            const result = await this.copyFileAsync(sourcePathArg, destinationArg);
-            if(result){
-                console.log(`file:${sourcePathArg} successfully copied to destination:${destinationArg}`);
-            }else{
-                console.log(`file:${sourcePathArg} failed to copy to destination:${destinationArg}`)
-                return false
             }
         }
 
@@ -366,7 +354,7 @@ export class FileService implements BaseService{
         });
     }
 
-    public async getEntriesFromDirectoryAsync(path:string):Promise<string[]>{
+    public async getDirectoryEntriesAsync(path:string):Promise<string[]>{
         if (!path) {
             console.error('getEntriesFromDirectoryAsync error: Path must not be empty');
             return Promise.reject(new Error('Path must not be empty'));
@@ -610,111 +598,91 @@ export class FileService implements BaseService{
     /**
      * This move method assumes that the destination folder already exists, and that source folder and it's contents
      * are being moved into a new folder (destination folder)
-     * @param destinationArg 
+     * @param destPath 
      * @param folderToProcessingQueue 
      * @returns 
      */
-    private async moveHandlerAAsync(destinationArg:string, folderToProcessingQueue:string[], folderToDeleteStack:string[],):Promise<boolean>{
+    private async moveHandlerAAsync(destPath:string, folderToProcessingQueue:string[], folderToDeleteStack:string[],):Promise<boolean>{
 
         if(folderToProcessingQueue.length === Constants.NUM_ZERO)
             return true;
 
-        const sourcePath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
-        const folderName = this.getNameFromPath(sourcePath);
-        folderToDeleteStack.push(sourcePath);
+        const srcPath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
+        const folderName = this.getNameFromPath(srcPath);
+        folderToDeleteStack.push(srcPath);
 
-        const checkIfDirResult = await this.checkIfDirectoryAsync(`${sourcePath}`);
-        if(checkIfDirResult){
-            const loadedDirectoryEntries = await this.getEntriesFromDirectoryAsync(sourcePath);
-            const  moveFolderResult = await this.createFolderAsync(destinationArg,folderName);
-            if(moveFolderResult){
-                for(const directoryEntry of loadedDirectoryEntries){
-                    const checkIfDirResult = await this.checkIfDirectoryAsync(`${sourcePath}/${directoryEntry}`);
-                    if(checkIfDirResult){
-                        folderToProcessingQueue.push(`${sourcePath}/${directoryEntry}`);
+        const loadedDirectoryEntries = await this.getDirectoryEntriesAsync(srcPath);
+        const  moveFolderResult = await this.createFolderAsync(destPath,folderName);
+        if(moveFolderResult){
+            for(const directoryEntry of loadedDirectoryEntries){
+                const checkIfDirResult = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+                if(checkIfDirResult){
+                    folderToProcessingQueue.push(`${srcPath}/${directoryEntry}`);
+                }else{
+                    const result = await this.moveFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
+                    if(result){
+                        console.log(`file:${srcPath}/${directoryEntry} successfully moved to destination:${destPath}/${folderName}`);
                     }else{
-                        const result = await this.moveFileAsync(`${sourcePath}/${directoryEntry}`, `${destinationArg}/${folderName}`);
-                        if(result){
-                            console.log(`file:${sourcePath}/${directoryEntry} successfully moved to destination:${destinationArg}/${folderName}`);
-                        }else{
-                            console.log(`file:${sourcePath}/${directoryEntry} failed to move to destination:${destinationArg}/${folderName}`)
-                        }
+                        console.log(`file:${srcPath}/${directoryEntry} failed to move to destination:${destPath}/${folderName}`)
                     }
                 }
-            }else{
-                console.log(`folder:${destinationArg}/${folderName}  creation failed`);
-                return false;
             }
         }else{
-            const result = await this.moveFileAsync(`${sourcePath}`,`${destinationArg}`);
-            if(result){
-                console.log(`file:${sourcePath} successfully moved to destination:${destinationArg}`);
-            }else{
-                console.log(`file:${sourcePath} failed to move to destination:${destinationArg}`)
-            }
+            console.log(`folder:${destPath}/${folderName}  creation failed`);
+            return false;
         }
 
-        return this.moveHandlerAAsync(`${destinationArg}/${folderName}`, folderToProcessingQueue, folderToDeleteStack);
+        return this.moveHandlerAAsync(`${destPath}/${folderName}`, folderToProcessingQueue, folderToDeleteStack);
     }
 
     /**
      * This move method assumes that the destination folder doesn't exist, and that only the contents of the source folder and not the source
      * folder itself, is being moved
-     * @param destinationArg 
+     * @param destPath 
      * @param folderToProcessingQueue 
      * @param folderToDeleteStack 
      * @param skipCounter 
      * @returns 
      */
-    private async moveHandlerBAsync(destinationArg:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
+    private async moveHandlerBAsync(destPath:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
 
         if(folderToProcessingQueue.length === Constants.NUM_ZERO)
             return true;
 
-        const sourcePath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
-        folderToDeleteStack.push(sourcePath);
-        let folderName = this.getNameFromPath(sourcePath);
+        const srcPath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
+        folderToDeleteStack.push(srcPath);
+        let folderName = this.getNameFromPath(srcPath);
         if(skipCounter === Constants.NUM_ZERO){ folderName = Constants.EMPTY_STRING; }
 
-        const checkIfDirResult = await this.checkIfDirectoryAsync(`${sourcePath}`);
-        if(checkIfDirResult){
-            let  moveFolderResult = false;
-            const loadedDirectoryEntries = await this.getEntriesFromDirectoryAsync(sourcePath);
+        let  moveFolderResult = false;
+        const loadedDirectoryEntries = await this.getDirectoryEntriesAsync(srcPath);
 
-            //skip creating the 
-            if(skipCounter > Constants.NUM_ZERO){
-                moveFolderResult = await this.createFolderAsync(destinationArg,folderName);  
-            }
-            skipCounter = skipCounter + Constants.NUM_ONE;
-      
-            if(moveFolderResult || (skipCounter >= Constants.NUM_ZERO)){
-                for(const directoryEntry of loadedDirectoryEntries){
-                    const checkIfDirResult = await this.checkIfDirectoryAsync(`${sourcePath}/${directoryEntry}`);
-                    if(checkIfDirResult){
-                        folderToProcessingQueue.push(`${sourcePath}/${directoryEntry}`);
+        //skip creating the 
+        if(skipCounter > Constants.NUM_ZERO){
+            moveFolderResult = await this.createFolderAsync(destPath,folderName);  
+        }
+        skipCounter = skipCounter + Constants.NUM_ONE;
+    
+        if(moveFolderResult || (skipCounter >= Constants.NUM_ZERO)){
+            for(const directoryEntry of loadedDirectoryEntries){
+                const checkIfDirResult = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+                if(checkIfDirResult){
+                    folderToProcessingQueue.push(`${srcPath}/${directoryEntry}`);
+                }else{
+                    const result = await this.moveFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
+                    if(result){
+                        console.log(`file:${srcPath}/${directoryEntry} successfully moved to destination:${destPath}/${folderName}`);
                     }else{
-                        const result = await this.moveFileAsync(`${sourcePath}/${directoryEntry}`, `${destinationArg}/${folderName}`);
-                        if(result){
-                            console.log(`file:${sourcePath}/${directoryEntry} successfully moved to destination:${destinationArg}/${folderName}`);
-                        }else{
-                            console.log(`file:${sourcePath}/${directoryEntry} failed to move to destination:${destinationArg}/${folderName}`)
-                        }
+                        console.log(`file:${srcPath}/${directoryEntry} failed to move to destination:${destPath}/${folderName}`)
                     }
                 }
-            }else{
-                console.log(`folder:${destinationArg}/${folderName}  creation failed`);
-                return false;
             }
         }else{
-            const result = await this.moveFileAsync(`${sourcePath}`,`${destinationArg}`);
-            if(result){
-                console.log(`file:${sourcePath} successfully moved to destination:${destinationArg}`);
-            }else{
-                console.log(`file:${sourcePath} failed to move to destination:${destinationArg}`)
-            }
+            console.log(`folder:${destPath}/${folderName}  creation failed`);
+            return false;
         }
 
-        return this.moveHandlerBAsync(`${destinationArg}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, skipCounter);
+        return this.moveHandlerBAsync(`${destPath}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, skipCounter);
     }
 
     private async deleteEmptyFolders(folders:string[]):Promise<void>{
@@ -895,7 +863,7 @@ export class FileService implements BaseService{
     }
 
     private async deleteFolderHandlerAsync(arg0: string, sourceArg: string): Promise<boolean> {
-        const loadedDirectoryEntries = await this.getEntriesFromDirectoryAsync(sourceArg);
+        const loadedDirectoryEntries = await this.getDirectoryEntriesAsync(sourceArg);
     
         for (const directoryEntry of loadedDirectoryEntries) {
             const entryPath = `${sourceArg}/${directoryEntry}`;
@@ -958,22 +926,18 @@ export class FileService implements BaseService{
             return;
 
         const srcPath = queue.shift() || Constants.EMPTY_STRING;
-        const isDirectory = await this.checkIfDirectoryAsync(srcPath);
-
-        if(isDirectory){
-            const directoryEntries = await this.getEntriesFromDirectoryAsync(srcPath);      
-            for(const directoryEntry of directoryEntries){
-                const isDirectory = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
-                if(isDirectory){
-                    queue.push(`${srcPath}/${directoryEntry}`);
-                    counts.folders++;
-                }else{
-                    counts.files++;
-                }
+ 
+        const directoryEntries = await this.getDirectoryEntriesAsync(srcPath);      
+        for(const directoryEntry of directoryEntries){
+            const isDirectory = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+            if(isDirectory){
+                queue.push(`${srcPath}/${directoryEntry}`);
+                counts.folders++;
+            }else{
+                counts.files++;
             }
-        }else{
-            counts.files++;
         }
+
         return this.getDetailedCountOfFolderItemsHelperAsync(queue, counts);
     }
 
@@ -995,22 +959,17 @@ export class FileService implements BaseService{
         const extraInfo = await this.getExtraFileMetaDataAsync(srcPath);
         sizes.folders += extraInfo.getSize;
 
-        // const isDirectory = await this.checkIfDirectoryAsync(srcPath);
-        // if(isDirectory){
-            const directoryEntries = await this.getEntriesFromDirectoryAsync(srcPath);      
-            for(const directoryEntry of directoryEntries){
-                const isDirectory = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
-                if(isDirectory){
-                    queue.push(`${srcPath}/${directoryEntry}`);
-                }else{
-                    const extraInfo = await this.getExtraFileMetaDataAsync(srcPath);
-                    sizes.files += extraInfo.getSize;
-                }
+        const directoryEntries = await this.getDirectoryEntriesAsync(srcPath);      
+        for(const directoryEntry of directoryEntries){
+            const isDirectory = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+            if(isDirectory){
+                queue.push(`${srcPath}/${directoryEntry}`);
+            }else{
+                const extraInfo = await this.getExtraFileMetaDataAsync(srcPath);
+                sizes.files += extraInfo.getSize;
             }
-        // }else{
-        //     const extraInfo = await this.getExtraFileMetaDataAsync(srcPath);
-        //     sizes.files += extraInfo.getSize;
-        // }
+        }
+
         return this.getFolderSizeHelperASync(queue, sizes);
     }
 

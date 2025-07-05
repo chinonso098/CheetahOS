@@ -11,7 +11,7 @@
     <div lass="dm-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
         <div class="dm-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action)">
             <span class="span dm-head"> <figure class="dm-fig-cntxt-menu"><img *ngIf="menuItem.icon.length > 0" class="dm-tskbar-img-alt" [src]="menuItem.icon"/></figure></span>
-            <span class="span dm-mid">{{menuItem.label}}</span>
+            <span class="span dm-mid"><p class="dm-p">{{menuItem.label}}</p></span>
             <span class="span dm-tail"> <figure class="dm-fig-cntxt-menu"> </figure> </span>
         </div>
 

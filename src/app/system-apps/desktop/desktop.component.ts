@@ -1269,7 +1269,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private async loadFilesInfoAsync():Promise<void>{
       this.files = [];
       this._fileService.resetDirectoryFiles();
-      const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
+      const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(this.directory);
       this._directoryFilesEntries = this._fileService.getFileEntriesFromDirectory(directoryEntries,this.directory);
   
       for(let i = 0; i < directoryEntries.length; i++){

@@ -188,7 +188,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   private async loadFilesInfoAsync():Promise<void>{
     this.startMenuFiles = [];
     this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.START_MENU_DIRECTORY);
+    const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(this.START_MENU_DIRECTORY);
     this._startMenuDirectoryFilesEntries = this._fileService.getFileEntriesFromDirectory(directoryEntries,this.START_MENU_DIRECTORY);
 
     for(let i = 0; i < directoryEntries.length; i++){

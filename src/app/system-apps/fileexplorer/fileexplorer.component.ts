@@ -925,7 +925,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private async loadFilesInfoAsync(showUrlFiles=true):Promise<void>{
     this.fileExplrFiles = [];
     this._fileService.resetDirectoryFiles();
-    let directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(this.directory);
+    let directoryEntries  = await this._fileService.getDirectoryEntriesAsync(this.directory);
 
     //console.log('directoryEntries:',directoryEntries); //TBD
 
@@ -958,7 +958,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const usersDir = '/Users/';
     this.fileTreeNode = [];
     this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(usersDir);
+    const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(usersDir);
 
     const osDrive:FileTreeNode = {
       name:Constants.OSDISK, path: Constants.ROOT, isFolder: true, children:[]
@@ -988,7 +988,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(!this.fileTreeHistory.includes(path)){
       const tmpFileTreeNode:FileTreeNode[] = [];
       this._fileService.resetDirectoryFiles();
-      const directoryEntries  = await this._fileService.getEntriesFromDirectoryAsync(path);
+      const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(path);
   
       // this.directory, will not be correct for all cases. Make sure to check
       for(const dirEntry of directoryEntries){
