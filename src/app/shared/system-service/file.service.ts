@@ -1005,12 +1005,14 @@ OpensWith=${shortCutData.getOpensWith}
         sizes.folders += extraInfo.getSize;
 
         const directoryEntries = await this.getDirectoryEntriesAsync(srcPath);      
-        for(const directoryEntry of directoryEntries){
-            const isDirectory = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+        for(const entry of directoryEntries){
+            const entryPath = `${srcPath}/${entry}`;
+            const isDirectory = await this.checkIfDirectoryAsync(entryPath);
+
             if(isDirectory){
-                queue.push(`${srcPath}/${directoryEntry}`);
+                queue.push(entryPath);
             }else{
-                const extraInfo = await this.getExtraFileMetaDataAsync(srcPath);
+                const extraInfo = await this.getExtraFileMetaDataAsync(entryPath);
                 sizes.files += extraInfo.getSize;
             }
         }
