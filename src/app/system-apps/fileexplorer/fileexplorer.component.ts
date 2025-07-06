@@ -256,8 +256,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const name = 'filetreeview-1';
       const uid = `${name}-${this.processId}`;
       if(this._fileService.getEventOriginator() === uid){
-        this.navigateToFolder(p);
-        this._fileService.removeEventOriginator();
+        if(!this.isRecycleBinFolder){
+          this.navigateToFolder(p);
+          this._fileService.removeEventOriginator();
+        }
       }
     })
 
