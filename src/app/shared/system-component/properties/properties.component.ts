@@ -73,7 +73,6 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
     this.displayMgs = `${this.fileInput.getFileName} Properties`;
     this.name = this.fileInput.getFileName;
-    this.origin = 'TBD';
     const currPath = dirname(this.fileInput.getCurrentPath);
     this.location = `C: ${currPath}`;
     this.icon = this._fileService.getAppAssociaton(this.fileInput.getOpensWith);
@@ -89,6 +88,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
       if(this.isInRecycleBin){
         this.fileFolder = this.fileInput.getFileType;
+        this.getOrigin();
       }
     }
     
@@ -96,6 +96,10 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     if(!this.fileInput.getIsFile){
       await this.getFolderContentDetails();
       await this.getFolderSizeData()
+
+      if(this.isInRecycleBin){
+        this.getOrigin();
+      }
     }
   }
 
@@ -135,7 +139,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   }
 
   getFolderSizeUnit(size:number):void{
-    if(size >= 0 && size <= 999){
+    if(size >= Constants.NUM_ZERO && size <= 999){
         this.fileSizeUnit = 'B';
     }
 
@@ -149,9 +153,9 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   }
 
   getSize(size:number):number{
-      let  tmpSize = 0
+      let  tmpSize = Constants.NUM_ZERO;
 
-      if(size>= 0 && size<= 999){
+      if(size>= Constants.NUM_ZERO && size<= 999){
           tmpSize = size;
       }
 
@@ -164,6 +168,14 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
       }
 
       return tmpSize;
+  }
+
+  getOrigin():void{
+    const cntntOrigin = this._fileService.getFolderOrigin(this.fileInput.getCurrentPath);
+    if(cntntOrigin !== Constants.EMPTY_STRING)
+        this.origin = basename(dirname(cntntOrigin));
+    else
+       this.origin = 'Unkown';
   }
 
   onClosePropertyView():void{

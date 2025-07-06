@@ -13,13 +13,15 @@ import { Buffer} from 'buffer';
 import osDriveFileSystemIndex from '../../../osdrive.json';
 import ini  from 'ini';
 import { FileContent } from "src/app/system-files/file.content";
-import { BaseService } from "./base.service.interface";
 import { ProcessType } from "src/app/system-files/system.types";
-import { ProcessIDService } from "./process.id.service";
-import { RunningProcessService } from "./running.process.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
+
+import { BaseService } from "./base.service.interface";
 import { UserNotificationService } from "./user.notification.service";
+import { ProcessIDService } from "./process.id.service";
+import { RunningProcessService } from "./running.process.service";
+import { SessionManagmentService } from "./session.management.service";
 
 @Injectable({
     providedIn: 'root'
@@ -38,12 +40,13 @@ export class FileService implements BaseService{
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
     private _userNotificationService:UserNotificationService
+    private _sessionManagmentService:SessionManagmentService;
 
     dirFilesUpdateNotify: Subject<void> = new Subject<void>();
     fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
     goToDirectoryNotify: Subject<string[]> = new Subject<string[]>();
 
-   
+   readonly fileServiceDeleteKey = Constants.FILE_SVC_DELETE_KEY;
 
     // SECONDS_DELAY = 200;
 
@@ -56,7 +59,9 @@ export class FileService implements BaseService{
     description = 'Mediates btwn ui & filesystem ';
 
     
-    constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService){ 
+    constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService,
+                sessionManagmentService:SessionManagmentService
+    ){ 
         this.initBrowserFS();
         this._fileExistsMap =  new Map<string, number>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
@@ -64,10 +69,12 @@ export class FileService implements BaseService{
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
         this._userNotificationService = userNotificationService;
+        this._sessionManagmentService = sessionManagmentService;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
+        this.retrievePastSessionData();
     }
 
 
@@ -842,11 +849,11 @@ OpensWith=${shortCutData.getOpensWith}
 
         if(!path.includes(Constants.RECYCLE_BIN_PATH)){
             const name = this.getNameFromPath(path);
-            this._restorePoint.set(path, `${Constants.RECYCLE_BIN_PATH}/${name}`);
-
+            this.addAndUpdateSessionData(`${Constants.RECYCLE_BIN_PATH}/${name}`, path);
             //move to rbin
             return await this.moveAsync(path, Constants.RECYCLE_BIN_PATH, isFile);
         }else{
+            this.removeAndUpdateSessionData(path);
             const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(path) : !isFile;
             return isDirectory
                 ? await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path, isRecycleBin)
@@ -902,8 +909,9 @@ OpensWith=${shortCutData.getOpensWith}
     
         for (const directoryEntry of loadedDirectoryEntries) {
             const entryPath = `${srcPath}/${directoryEntry}`;
+            this.removeAndUpdateSessionData(entryPath);
+
             const checkIfDirectory = await this.checkIfDirectoryAsync(entryPath);
-    
             if(checkIfDirectory){
                 // Recursively call the rm_dir_handler for the subdirectory
                 const success = await this.deleteFolderHandlerAsync(arg0, entryPath);
@@ -1030,6 +1038,13 @@ OpensWith=${shortCutData.getOpensWith}
         return `${dirname(path)}/${filename} (${count})${extension}`;
     }
 
+    getFolderOrigin(path:string):string{
+        if(this._restorePoint.has(path)){
+            return this._restorePoint.get(path) || Constants.EMPTY_STRING
+        }
+        return Constants.EMPTY_STRING;
+    }
+
     public async setFolderPropertiesAsync(path:string):Promise<FileContent>{
         const fileName = basename(path, extname(path));
         let iconFile = Constants.EMPTY_STRING;
@@ -1120,6 +1135,23 @@ OpensWith=${shortCutData.getOpensWith}
         this._eventOriginator = Constants.EMPTY_STRING;
     }
 
+    private addAndUpdateSessionData(currPath:string, srcPath:string):void{
+        this._restorePoint.set(currPath, srcPath);
+        this._sessionManagmentService.addFileServiceSession(this.fileServiceDeleteKey, this._restorePoint);
+    }
+
+    private removeAndUpdateSessionData(path:string):void{
+        if(this._restorePoint.has(path)){
+            this._restorePoint.delete(path);
+            this._sessionManagmentService.addFileServiceSession(this.fileServiceDeleteKey, this._restorePoint);
+        }
+    }
+    private retrievePastSessionData():void{
+        const sessionData = this._sessionManagmentService.getFileServiceSession(this.fileServiceDeleteKey) as Map<string, string>;
+        if(sessionData){
+            this._restorePoint = sessionData
+        }
+    }
 
     private getProcessDetail():Process{
         return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
