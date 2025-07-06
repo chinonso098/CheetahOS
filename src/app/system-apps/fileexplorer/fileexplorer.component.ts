@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ViewOptions } from './fileexplorer.enums';
-import {basename} from 'path';
+import {basename, dirname} from 'path';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { GeneralMenu, MenuPosition, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
@@ -185,7 +185,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     {icon:Constants.EMPTY_STRING, label: 'Create shortcut', action: this.createShortCut.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Delete', action: this.onDeleteFile.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
-    {icon:Constants.EMPTY_STRING, label: 'Restore', action: this.onRenameFileTxtBoxShow.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Restore', action: this.onRestore.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Properties', action: this.showPropertiesWindow.bind(this) }
   ];
 
@@ -1054,13 +1054,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this._audioService.play(this.cheetahNavAudio);
     this.showInformationTip = false;
+
+    if(this.isRecycleBinFolder){
+      this._menuService.showPropertiesView.next(file);
+      return;
+    }
+
     // console.log('what was clicked:',file.getFileName +'-----' + file.getOpensWith +'---'+ file.getCurrentPath +'----'+ file.getIcon) TBD
     if((file.getOpensWith === Constants.FILE_EXPLORER && file.getFileName !== Constants.FILE_EXPLORER) && file.getFileType === Constants.FOLDER){
-      if(this.isRecycleBinFolder){
-        this._menuService.showPropertiesView.next(file);
-        return;
-      }
-
       if(!this.isNavigatedBefore){
         this.prevPathEntries.push(this.directory);
         this.upPathEntries.push(this.directory);
@@ -1451,10 +1452,22 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+  async onRestore():Promise<void>{
+    const srcPath = this.selectedFile.getCurrentPath;
+    const originPath = this._fileService.getFolderOrigin(srcPath);
+    const destPath = dirname(originPath);
+    const result = await this._fileService.moveAsync(srcPath, destPath, this.selectedFile.getIsFile, true);
+    if(result){
+      if(destPath.includes(Constants.DESKTOP_PATH)){
+            this._fileService.addEventOriginator(Constants.DESKTOP);
+        }else{
+            this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
+        }
+        this._fileService.dirFilesUpdateNotify.next();
+    }
+  }
 
-  
   checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
-
     let xAxis = Constants.NUM_ZERO;
     let yAxis = Constants.NUM_ZERO;
     let horizontalShift = false;
@@ -1596,7 +1609,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const height = img?.naturalHeight;
       const imgDimesions = `${width} x ${height}`;
 
-      this.fileInfoTipData.push({label:infoTipFields[1], data:`${file.getFileType.replace('.',Constants.EMPTY_STRING).toLocaleUpperCase()} File`});
+      this.fileInfoTipData.push({label:infoTipFields[1], data:`${file.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`});
       this.fileInfoTipData.push({label:infoTipFields[4], data:imgDimesions })
       this.fileInfoTipData.push({label:infoTipFields[6], data:fileSize })
     }
@@ -1608,7 +1621,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
 
     if(fileType === Constants.FOLDER){
-      if(fileName === 'Desktop' || fileName === 'Documents' || fileName === 'Downloads'){
+      if(fileName === Constants.DESKTOP.charAt(Constants.NUM_ZERO).toUpperCase() || fileName === 'Documents' || fileName === 'Downloads'){
         this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified })
       }else if(fileName === 'Music'){
         this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:'Contains music and other audio files' })
@@ -2206,13 +2219,13 @@ Do you want the shortcut to be placed on the desktop instead?`;
   async createShortCutOnDesktop(): Promise<void>{
     const shortCut:FileInfo = new FileInfo();
     const fileContent = this._menuService.getStageData();
-    const dsktpPath = '/Users/Desktop';
+    const dsktpPath = Constants.DESKTOP_PATH;
 
     shortCut.setContentPath = fileContent
     shortCut.setFileName= `${this.selectedFile.getFileName} - ${Constants.SHORTCUT}${Constants.URL}`;
     const result = await this._fileService.writeFileAsync(dsktpPath, shortCut);
     if(result){
-      this._fileService.addEventOriginator('desktop');
+      this._fileService.addEventOriginator(Constants.DESKTOP);
       this._fileService.dirFilesUpdateNotify.next();
     }
   }

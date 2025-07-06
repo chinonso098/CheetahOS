@@ -575,7 +575,7 @@ export class FileService implements BaseService{
     }
 
     //virtual filesystem, use copy and then delete
-    public async moveAsync(srcPath: string, destPath: string, isFile?: boolean): Promise<boolean> {
+    public async moveAsync(srcPath: string, destPath: string, isFile?: boolean, isRecycleBin?: boolean): Promise<boolean> {
         const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(srcPath) : !isFile;
         
         if(isDirectory){
@@ -594,10 +594,16 @@ export class FileService implements BaseService{
             }
 
             if(result){
+                if(isRecycleBin)
+                    this.removeAndUpdateSessionData(srcPath);
+                
                 await this.deleteEmptyFolders(folderToDeleteStack);
             }
             return result;
         }else{
+            if(isRecycleBin)
+                this.removeAndUpdateSessionData(srcPath);
+
             return await this.moveFileAsync(srcPath, destPath);
         }
     }
@@ -700,7 +706,7 @@ export class FileService implements BaseService{
         }
     }
 
-    //virtual filesystem, use copy and then delete
+    //virtual filesystem, use copy and then delete. There is a BrowserFS bug causing an error to be thrown
     private async moveFileAsync(srcPath:string, destPath:string, generatePath?:boolean): Promise<boolean>{
         return new Promise<boolean>((resolve) => {
             let destinationPath = Constants.EMPTY_STRING;
@@ -711,13 +717,29 @@ export class FileService implements BaseService{
                 destinationPath = destPath;
             }
 
-            this._fileSystem.rename(srcPath, destinationPath, (renameErr) =>{
-                if(renameErr){
-                    console.error('Error reading file during move:', renameErr);
+            this._fileSystem.readFile(srcPath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING))=>{
+                if(readErr){
+                    console.error('Error reading file during move:', readErr);
                     return resolve(false);
                 }
 
-                resolve(true);
+                this._fileSystem.writeFile(destinationPath, contents, { flag: 'wx' }, (writeErr)=>{
+                    // If file already exists, treat as successful move (or handle it differently if needed)
+                    if(writeErr && writeErr?.code === 'EEXIST') {
+                        console.warn('Suppressing moveFileAsync: Destination already exists:', destinationPath);
+                        return resolve(false);
+                    }
+                    
+                    this._fileSystem.unlink(srcPath, (unlinkErr)=>{
+                        if (unlinkErr) {
+                            console.error('Error deleting original file during move:', unlinkErr);
+                            return resolve(false);
+                        }
+
+                        // console.log(`File moved successfully to: ${destinationPath}`);
+                        resolve(true);
+                    });
+                });
             });
         });
     }

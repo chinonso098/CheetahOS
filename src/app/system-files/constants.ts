@@ -24,8 +24,10 @@ export namespace Constants{
     export const GIF_BASE_PATH = 'osdrive/Cheetah/System/Gifres/';
     export const AUDIO_BASE_PATH = 'osdrive/Cheetah/System/Media/';
     export const RECYCLE_BIN_PATH = '/Users/Desktop/Recycle Bin';
+    export const DESKTOP_PATH = '/Users/Desktop';
 
     export const FILE_EXPLORER = 'fileexplorer';
+    export const DESKTOP = 'desktop';
     export const FOLDER = 'folder';
     export const NEW_FOLDER = 'New Folder';
     export const CHEETAH = 'cheetah';

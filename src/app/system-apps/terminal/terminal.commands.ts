@@ -861,7 +861,7 @@ usage: mkdir direcotry_name [-v]
         if(result){
             const result = await this.rm('-rf', sourceArg);
             if(result === Constants.EMPTY_STRING){
-                if(destinationArg.includes('Users/Desktop')){
+                if(destinationArg.includes(Constants.DESKTOP_PATH.substring(Constants.NUM_ONE))){
                     this.sendDirectoryUpdateNotification(sourceArg);
                     this.sendDirectoryUpdateNotification(destinationArg);
                 }
@@ -1002,8 +1002,8 @@ Mandatory argument to long options are mandotory for short options too.
     }
 
     private sendDirectoryUpdateNotification(arg0:string):void{
-        if(arg0.includes('Users/Desktop')){
-            this._fileService.addEventOriginator('desktop');
+        if(arg0.includes(Constants.DESKTOP_PATH.substring(Constants.NUM_ONE))){
+            this._fileService.addEventOriginator(Constants.DESKTOP);
         }else{
             this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
         }

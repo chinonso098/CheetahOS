@@ -140,7 +140,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   clippyIntervalId!: NodeJS.Timeout;
   colorChgIntervalId!: NodeJS.Timeout;
 
-  private readonly DESKTOP_DIRECTORY ='/Users/Desktop';
   private readonly DESKTOP_SCREEN_SHOT_DIRECTORY ='/Users/Documents/Screen-Shots';
   private readonly TERMINAL_APP ="terminal";
   private readonly TEXT_EDITOR_APP ="texteditor";
@@ -250,7 +249,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   processId = Constants.NUM_ZERO;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
-  directory ='/Users/Desktop';
+  directory = Constants.DESKTOP_PATH;
 
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService, 
@@ -550,10 +549,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async createFolder():Promise<void>{
     const folderName = Constants.NEW_FOLDER;
-    const result =  await this._fileService.createFolderAsync(this.DESKTOP_DIRECTORY, folderName);
+    const result =  await this._fileService.createFolderAsync(Constants.DESKTOP_PATH, folderName);
     if(result){
-      // this._fileService.addEventOriginator('desktop');
-      // this._fileService.dirFilesUpdateNotify.next();
       this.refresh();
     }
   }
@@ -851,7 +848,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     file.setOpensWith = arg0;
 
     if(arg0 ==  this.MARKDOWN_VIEWER_APP){
-      file.setCurrentPath = '/Users/Desktop';
+      file.setCurrentPath = Constants.DESKTOP_PATH;
       file.setContentPath = '/Users/Documents/Credits.md';
     }
 
@@ -1414,15 +1411,25 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     //onPaste will be modified to handle cases such as multiselect, file or folder or both
 
     if(action === MenuAction.COPY){
-      const result = await this._fileService.copyAsync(cntntPath, this.DESKTOP_DIRECTORY);
+      const result = await this._fileService.copyAsync(cntntPath,  Constants.DESKTOP_PATH);
       if(result){
         this.refresh();
       }
     }
     else if(action === MenuAction.CUT){
-      const result = await this._fileService.moveAsync(cntntPath, this.DESKTOP_DIRECTORY);
+      const result = await this._fileService.moveAsync(cntntPath, Constants.DESKTOP_PATH);
       if(result){
-        this.refresh();
+        if(!cntntPath.includes(Constants.DESKTOP_PATH)){
+          console.log('refresh explor')
+          this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
+          this._fileService.dirFilesUpdateNotify.next();
+
+          setTimeout(() => {
+               this.refresh();
+          }, Constants.NUM_TWENTY);
+        }else{
+            this.refresh();
+        }
       }
     }
   }

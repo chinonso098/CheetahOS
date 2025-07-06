@@ -173,9 +173,9 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   getOrigin():void{
     const cntntOrigin = this._fileService.getFolderOrigin(this.fileInput.getCurrentPath);
     if(cntntOrigin !== Constants.EMPTY_STRING)
-        this.origin = basename(dirname(cntntOrigin));
+      this.origin = basename(dirname(cntntOrigin));
     else
-       this.origin = 'Unkown';
+      this.origin = 'Unkown';
   }
 
   onClosePropertyView():void{
