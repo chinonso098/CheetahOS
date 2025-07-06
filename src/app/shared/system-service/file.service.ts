@@ -700,43 +700,6 @@ export class FileService implements BaseService{
         }
     }
 
-
-    private async moveFileAsync_TBD(srcPath:string, destPath:string, generatePath?:boolean): Promise<boolean>{
-        return new Promise<boolean>((resolve) => {
-            let destinationPath = Constants.EMPTY_STRING;
-            if(generatePath === undefined || generatePath){
-                const fileName = this.getNameFromPath(srcPath);
-                destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
-            }else{
-                destinationPath = destPath;
-            }
-
-            this._fileSystem.readFile(srcPath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING))=>{
-                if(readErr){
-                    console.error('Error reading file during move:', readErr);
-                    return resolve(false);
-                }
-
-                this._fileSystem.writeFile(destinationPath, contents, (writeErr)=>{
-                    if (writeErr){
-                        console.error('Error writing file during move:', writeErr);
-                        return resolve(false);
-                    }
-
-                    this._fileSystem.unlink(srcPath, (unlinkErr)=>{
-                        if (unlinkErr) {
-                            console.error('Error deleting original file during move:', unlinkErr);
-                            return resolve(false);
-                        }
-
-                        // console.log(`File moved successfully to: ${destinationPath}`);
-                        resolve(true);
-                    });
-                });
-            });
-        });
-    }
-
     //virtual filesystem, use copy and then delete
     private async moveFileAsync(srcPath:string, destPath:string, generatePath?:boolean): Promise<boolean>{
         return new Promise<boolean>((resolve) => {
