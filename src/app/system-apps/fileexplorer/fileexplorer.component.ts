@@ -185,6 +185,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     {icon:Constants.EMPTY_STRING, label: 'Create shortcut', action: this.createShortCut.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Delete', action: this.onDeleteFile.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Restore', action: this.onRenameFileTxtBoxShow.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Properties', action: this.showPropertiesWindow.bind(this) }
   ];
 
@@ -465,15 +466,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const cssLayoutOptions:string[] = ['icon-view','list-view', 'details-view', 'tiles-view','content-view']
     const layoutIdx = layoutOptions.indexOf(iconSize)
 
-    if(layoutIdx <= 3){
+    if(layoutIdx <= Constants.NUM_THREE){
       this.olClassName = 'ol-icon-size-view';
     }
-    else if (layoutIdx >= 4){
+    else if (layoutIdx >= Constants.NUM_FOUR){
       /*
          the icon-views has various sizes, but it is still treated as one distinct layout. 
          So, options 0 - 3 in the layoutOptions = option 0 in the cssLayoutOptions
        */
-      const idx = layoutIdx - 3;
+      const idx = layoutIdx - Constants.NUM_THREE;
       this.olClassName = `ol-${cssLayoutOptions[idx]}`;
     }
   }
@@ -485,7 +486,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const btn_width_height_sizes = [['90px', '70px'], ['110px', '90px']];
 
     const iconIdx = icon_sizes.indexOf(iconSize);
-    const btnIdx = (iconIdx <= 2) ? 0 : 1;
+    const btnIdx = (iconIdx <= Constants.NUM_TWO) ? Constants.NUM_ZERO : Constants.NUM_ONE;
 
     for(let i = 0; i < this.fileExplrFiles.length; i++){
       const btnElmnt = document.getElementById(`btnElmnt-${this.processId}-${i}`) as HTMLElement;
@@ -507,7 +508,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const icon_sizes:string[] = [this.smallIconsView,this.mediumIconsView,this.largeIconsView,this.extraLargeIconsView];
     const btn_width_height_sizes = [['90px', '70px'], ['110px', '90px']];
     const iconIdx = icon_sizes.indexOf(iconView);
-    const btnIdx = (iconIdx <= 2) ? 0 : 1;
+    const btnIdx = (iconIdx <= Constants.NUM_TWO) ? Constants.NUM_ZERO : Constants.NUM_ONE;
     
     const olElmnt = document.getElementById(`olElmnt-${this.processId}`) as HTMLElement;
 
@@ -995,7 +996,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
       // this.directory, will not be correct for all cases. Make sure to check
       for(const dirEntry of directoryEntries){
-  
         const isFile =  await this._fileService.checkIfDirectoryAsync(`${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT));
         const ftn:FileTreeNode = {
           name : dirEntry,
@@ -1076,7 +1076,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.prevPathEntries.push(this.directory);
       this.upPathEntries.push(this.directory);
 
-      if(this.recentPathEntries.indexOf(this.directory) == -1){
+      if(this.recentPathEntries.indexOf(this.directory) === Constants.MINUS_ONE){
         this.recentPathEntries.push(this.directory);
       }
 
@@ -1176,7 +1176,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
 
-    this.adjustContextMenuData(file);
+    this.adjustIconContextMenuData(file);
     this.selectedFile = file;
     this.propertiesViewFile = file
     this.isIconInFocusDueToPriorAction = false;
@@ -1192,23 +1192,29 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.fileExplrCntxtMenuStyle = {
       'position': 'absolute', 
       'transform':`translate(${String(axis.xAxis)}px, ${String(axis.yAxis)}px)`,
-      'z-index': 2,
+      'z-index': Constants.NUM_TWO,
     }
 
     evt.preventDefault();
   }
 
-  adjustContextMenuData(file:FileInfo):void{
+  adjustIconContextMenuData(file:FileInfo):void{
     this.menuData = [];
     const editNotAllowed:string[] = ['3D-Objects.url','Desktop.url','Documents.url','Downloads.url','Games.url','Music.url','Pictures.url','Videos.url'];
 
-    //console.log('adjustContextMenuData - filename:',file.getCurrentPath); //TBD
    if(file.getIsFile){
       if(editNotAllowed.includes(file.getCurrentPath.replace(Constants.ROOT, Constants.EMPTY_STRING))){
-        this.menuOrder = Constants.FILE_EXPLORER_UNIQUE_MENU_ORDER ;
+        this.menuOrder = Constants.FILE_EXPLORER_UNIQUE_MENU_ORDER;
         for(const x of this.sourceData) {
           if(x.label === 'Cut' || x.label === 'Delete' || x.label === 'Rename'){ /*nothing*/}
           else{
+            this.menuData.push(x);
+          }
+        }
+      }else if(this.isRecycleBinFolder){
+        this.menuOrder = Constants.FILE_EXPLORER_RECYCLE_BIN_MENU_ORDER;
+        for(const x of this.sourceData) {
+          if(x.label === 'Restore' || x.label === 'Cut' || x.label === 'Delete' || x.label === 'Properties'){
             this.menuData.push(x);
           }
         }
@@ -1223,8 +1229,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }
     }else{
-      this.menuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;
-      this.menuData = this.sourceData;
+      if(this.isRecycleBinFolder){
+        this.menuOrder = Constants.FILE_EXPLORER_RECYCLE_BIN_MENU_ORDER;
+        for(const x of this.sourceData) {
+          if(x.label === 'Restore' || x.label === 'Cut' || x.label === 'Delete' || x.label === 'Properties'){
+            this.menuData.push(x);
+          }
+        }
+      }else{
+        this.menuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;
+        this.menuData = this.sourceData;
+      }
     }
   }
 
@@ -1250,7 +1265,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.fileExplrCntxtMenuStyle = {
       'position': 'absolute', 
       'transform':`translate(${String(axis.xAxis)}px, ${String(axis.yAxis)}px)`,
-      'z-index': 2,
+      'z-index': Constants.NUM_TWO,
     }
     evt.preventDefault();
   }
@@ -1264,8 +1279,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.showIconCntxtMenu = false;
     this.showFileExplrCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
-    this.iconCntxtCntr = 0;
-    this.fileExplrCntxtCntr = 0;
+    this.iconCntxtCntr = Constants.NUM_ZERO;
+    this.fileExplrCntxtCntr = Constants.NUM_ZERO;
     this.showExpandTreeIcon = false;
 
     // to prevent an endless loop of calls,
@@ -1277,35 +1292,27 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   handleIconHighLightState():void{
 
     //First case - I'm clicking only on the desktop icons
-    if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt == 0)){  
+    if((this.isBtnClickEvt && this.btnClickCnt >= Constants.NUM_ONE) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === Constants.NUM_ZERO)){  
       
       if(this.isRenameActive){
         this.isFormDirty();
       }
       if(this.isIconInFocusDueToPriorAction){
-        if(this.hideCntxtMenuEvtCnt >= 0)
+        if(this.hideCntxtMenuEvtCnt >= Constants.NUM_ZERO)
           this.setBtnStyle(this.selectedElementId,false);
       }
       if(!this.isRenameActive){
         this.isBtnClickEvt = false;
-        this.btnClickCnt = 0;
+        this.btnClickCnt = Constants.NUM_ZERO;
       }
     }else{
       this.hideCntxtMenuEvtCnt++;
       this.isHideCntxtMenuEvt = true;
       //Second case - I was only clicking on the desktop
-      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= 1) && (!this.isBtnClickEvt && this.btnClickCnt == 0)){
+      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= Constants.NUM_ONE) && (!this.isBtnClickEvt && this.btnClickCnt === Constants.NUM_ZERO)){
         this.isIconInFocusDueToCurrentAction = false;
         this.btnStyleAndValuesChange();
       }
-      
-      // //Third case - I was clicking on the desktop icons, then i click on the desktop.
-      // //clicking on the desktop triggers a hideContextMenuEvt
-      // if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt > 1)){
-      //   this.isIconInFocusDueToCurrentAction = false;
-      //   console.log('3rd----this.isIconInFocusDueToCurrentAction:', this.isIconInFocusDueToCurrentAction );
-      //   this.btnStyleAndValuesReset();
-      // }
     }
   }
 
@@ -1319,7 +1326,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isBtnClickEvt = true;
     this.btnClickCnt++;
     this.isHideCntxtMenuEvt = false;
-    this.hideCntxtMenuEvtCnt = 0;
+    this.hideCntxtMenuEvtCnt = Constants.NUM_ZERO;
    
     if(this.prevSelectedElementId != id){
       this.removeBtnStyle(this.prevSelectedElementId);
@@ -1374,18 +1381,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   btnStyleAndValuesReset():void{
     this.isBtnClickEvt = false;
-    this.btnClickCnt = 0;
+    this.btnClickCnt = Constants.NUM_ZERO;
     this.removeBtnStyle(this.selectedElementId);
     this.removeBtnStyle(this.prevSelectedElementId);
-    this.selectedElementId = -1;
-    this.prevSelectedElementId = -1;
-    this.btnClickCnt = 0;
+    this.selectedElementId = Constants.MINUS_ONE;
+    this.prevSelectedElementId = Constants.MINUS_ONE;
+    this.btnClickCnt = Constants.NUM_ZERO;
     this.isIconInFocusDueToPriorAction = false;
   }
 
   btnStyleAndValuesChange():void{
     this.isBtnClickEvt = false;
-    this.btnClickCnt = 0;
+    this.btnClickCnt = Constants.NUM_ZERO;
     this.prevSelectedElementId = this.selectedElementId;
     this.isIconInFocusDueToPriorAction = true;
     this.isIconInFocusDueToCurrentAction = false;

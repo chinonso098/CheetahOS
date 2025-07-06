@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy } from '@angular/core';
-import {NestedMenu, GeneralMenu } from './menu.types';
+import { NestedMenu, GeneralMenu } from './menu.types';
 import { MenuService } from '../../system-service/menu.services';
 import { Subscription } from 'rxjs';
 import { Constants } from 'src/app/system-files/constants';
@@ -22,7 +22,6 @@ export class MenuComponent implements OnDestroy{
   private _menuService:MenuService;
   private _storeDataSub!:Subscription;
 
-
   readonly paste = MenuAction.PASTE;
   readonly fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
   readonly tskBarAppIconMenuOption = Constants.TASK_BAR_APP_ICON_MENU_OPTION;
@@ -33,6 +32,7 @@ export class MenuComponent implements OnDestroy{
   readonly fileExplrFolderMenuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;
   readonly fileExplrFileMenuOrder = Constants.FILE_EXPLORER_FILE_MENU_ORDER;
   readonly fileExplrUniqueMenuOrder = Constants.FILE_EXPLORER_UNIQUE_MENU_ORDER;
+  readonly fileExplrRecycleBinMenuOrder = Constants.FILE_EXPLORER_RECYCLE_BIN_MENU_ORDER;
   readonly recycleBinMenuOrder = Constants.RECYCLE_BIN_MENU_ORDER;
 
   isPasteActive!:boolean;
@@ -41,7 +41,6 @@ export class MenuComponent implements OnDestroy{
   constructor(menuService:MenuService) { 
     this._menuService = menuService;
     this.isPasteActive = this._menuService.getPasteState();
-
   }
 
 
