@@ -39,3 +39,11 @@ export class FileMetaData{
     }
 
 }
+
+
+export interface FolderSizeMeta {
+    totalSize: number;
+    fileCount: number;
+    folderCount: number;
+    errors: string[];
+}

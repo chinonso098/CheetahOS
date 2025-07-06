@@ -5,7 +5,7 @@ import {extname, basename, resolve, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FSModule } from "src/osdrive/Cheetah/System/BrowserFS/node/core/FS";
 import { FileEntry } from 'src/app/system-files/file.entry';
-import { FileMetaData } from "src/app/system-files/file.metadata";
+import { FileMetaData, FolderSizeMeta } from "src/app/system-files/file.metadata";
 
 import { Subject } from "rxjs";
 import * as BrowserFS from 'src/osdrive/Cheetah/System/BrowserFS/browserfs'
@@ -628,7 +628,7 @@ export class FileService implements BaseService{
                 }else{
                     const result = await this.moveFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
                     if(result){
-                        console.log(`file:${srcPath}/${directoryEntry} successfully moved to destination:${destPath}/${folderName}`);
+                        //console.log(`file:${srcPath}/${directoryEntry} successfully moved to destination:${destPath}/${folderName}`);
                     }else{
                         console.error(`file:${srcPath}/${directoryEntry} failed to move to destination:${destPath}/${folderName}`)
                     }
@@ -700,8 +700,8 @@ export class FileService implements BaseService{
         }
     }
 
-    //virtual filesystem, use copy and then delete
-    private async moveFileAsync(srcPath:string, destPath:string, generatePath?:boolean): Promise<boolean>{
+
+    private async moveFileAsync_TBD(srcPath:string, destPath:string, generatePath?:boolean): Promise<boolean>{
         return new Promise<boolean>((resolve) => {
             let destinationPath = Constants.EMPTY_STRING;
             if(generatePath === undefined || generatePath){
@@ -733,6 +733,28 @@ export class FileService implements BaseService{
                         resolve(true);
                     });
                 });
+            });
+        });
+    }
+
+    //virtual filesystem, use copy and then delete
+    private async moveFileAsync(srcPath:string, destPath:string, generatePath?:boolean): Promise<boolean>{
+        return new Promise<boolean>((resolve) => {
+            let destinationPath = Constants.EMPTY_STRING;
+            if(generatePath === undefined || generatePath){
+                const fileName = this.getNameFromPath(srcPath);
+                destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+            }else{
+                destinationPath = destPath;
+            }
+
+            this._fileSystem.rename(srcPath, destinationPath, (renameErr) =>{
+                if(renameErr){
+                    console.error('Error reading file during move:', renameErr);
+                    return resolve(false);
+                }
+
+                resolve(true);
             });
         });
     }
@@ -986,16 +1008,16 @@ OpensWith=${shortCutData.getOpensWith}
         return this.getDetailedCountOfFolderItemsHelperAsync(queue, counts);
     }
 
-    public  async getFolderSizeASync(path:string):Promise<number>{
+    public  async getFolderSizeAsync(path:string):Promise<number>{
         const sizes = {files: Constants.NUM_ZERO, folders: Constants.NUM_ZERO};
         const queue:string[] = [];
         
         queue.push(path);
-        await this.getFolderSizeHelperASync(queue, sizes);
+        await this.getFolderSizeHelperAsync(queue, sizes);
         return sizes.files + sizes.folders;
     }
 
-    private  async getFolderSizeHelperASync(queue:string[], sizes:{files: number, folders: number}): Promise<void> {
+    private  async getFolderSizeHelperAsync(queue:string[], sizes:{files: number, folders: number}): Promise<void> {
         if(queue.length === Constants.NUM_ZERO)
             return;
 
@@ -1017,8 +1039,75 @@ OpensWith=${shortCutData.getOpensWith}
             }
         }
 
-        return this.getFolderSizeHelperASync(queue, sizes);
+        return this.getFolderSizeHelperAsync(queue, sizes);
     }
+
+
+    //AI Optimized code, merging two different calls into, with added safty of preventing endless recursion
+    // I'll refactor using this later
+    private async _getFolderSizeAsync(path: string): Promise<FolderSizeMeta> {
+        const visited = new Set<string>();
+        const result: FolderSizeMeta = {
+            totalSize: 0,
+            fileCount: 0,
+            folderCount: 0,
+            errors: []
+        };
+
+        await this._collectFolderSize(path, result, visited);
+        return result;
+    }
+
+    private async _collectFolderSize(path: string, result: FolderSizeMeta, visited: Set<string>): Promise<void> {
+        if (visited.has(path)) return;
+        visited.add(path);
+
+        let entries: string[];
+
+        try {
+            const stats = await this._statAsync(path);
+            if (!stats.isDirectory()) {
+                result.totalSize += stats.size;
+                result.fileCount += 1;
+                return;
+            }
+
+            result.totalSize += stats.size;
+            result.folderCount += 1;
+
+            entries = await this.getDirectoryEntriesAsync(path);
+        } catch (err) {
+            result.errors.push(`Failed to stat/read ${path}: ${err}`);
+            return;
+        }
+
+        const tasks = entries.map(async (entry) => {
+            const fullPath = `${path}/${entry}`;
+            try {
+                const stat = await this._statAsync(fullPath);
+                if (stat.isDirectory()) {
+                    await this._collectFolderSize(fullPath, result, visited);
+                } else {
+                    result.totalSize += stat.size;
+                    result.fileCount += 1;
+                }
+            } catch (err) {
+                result.errors.push(`Failed to stat ${fullPath}: ${err}`);
+            }
+        });
+
+        await Promise.all(tasks);
+    }
+
+    private _statAsync(path: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this._fileSystem.stat(path, (err, stats) => {
+                if (err) reject(err);
+                else resolve(stats);
+            });
+        });
+    }
+
 
     public resetDirectoryFiles(){
         this._directoryFileEntires=[]
