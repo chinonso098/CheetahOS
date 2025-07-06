@@ -538,7 +538,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       setTimeout(()=>{
         this.slideState = 'slideOut';
         this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
-        this._fileService.addEventOriginator('fileexplorer');
+        this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
         this._fileService.dirFilesUpdateNotify.next();
       },slideOutDelay);
 
@@ -1290,26 +1290,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }, this.SECONDS_DELAY[1]);
   }
 
-
   runProcess(file:FileInfo):void{
-
     console.log('desktopmanager-runProcess:',file)
     this._audioService.play(this.cheetahNavAudio);
     this._processHandlerService.startApplicationProcess(file);
     this.btnStyleAndValuesReset();
-    
-    // console.log('what was clicked:',file.getFileName +'-----' + file.getOpensWith +'---'+ file.getCurrentPath +'----'+ file.getIcon) TBD
-    // if((file.getOpensWith === 'fileexplorer' && file.getFileName !== 'fileexplorer') && file.getFileType ==='folder'){
-    //     //this.directory = file.getCurrentPath;
-    //    // await this.loadFilesInfoAsync();
-
-    //    this._processHandlerService.startApplication(file);
-    //    this.btnStyleAndValuesReset();
-
-    // }else{
-    //     this._processHandlerService.startApplication(file);
-    //     this.btnStyleAndValuesReset();
-    // }
   }
 
   onBtnClick(evt:MouseEvent, id:number):void{
@@ -2104,33 +2089,16 @@ OpensWith=${selectedFile.getOpensWith}
     const figCapElement = document.getElementById(`figCap${this.selectedElementId}`) as HTMLElement;
     const renameContainerElement = document.getElementById(`renameContainer${this.selectedElementId}`) as HTMLElement;
     const renameText = this.renameForm.value.renameInput as string;
-    // console.log('renameText:',renameText);
-
+ 
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== Constants.NUM_ZERO && renameText !== this.currentIconName ){
       const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
-
-
-      // console.log('files:', this.files);
-
-      // console.log('this.selectedFile.getCurrentPath:',this.selectedFile.getCurrentPath);
-      // console.log('this.selectedFile.getCurrentPath-----:', dirname(this.selectedFile.getCurrentPath));
-      // console.log('this.selectedFile.getIsFile:',this.selectedFile.getIsFile);
-
-      // console.log('this.selectedFile.getContentPath:',this.selectedFile.getContentPath);
-      // console.log('this.selectedFile.getFileName:',this.selectedFile.getFileName);
-
-      // console.log('result:',result);
 
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         const fileIdx = this.files.findIndex(f => (dirname(f.getCurrentPath) === dirname(this.selectedFile.getCurrentPath)) && (f.getFileName === this.selectedFile.getFileName));
         this.selectedFile.setFileName = renameText;
-        //console.log('files:', this.files);
         this.selectedFile.setDateModified = Date.now();
         this.files[fileIdx] = this.selectedFile;
-
-
-        console.log('this.selectedFile:',this.selectedFile);
 
         this.renameForm.reset();
         await this.loadFilesInfoAsync();

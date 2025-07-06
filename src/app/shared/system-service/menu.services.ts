@@ -72,7 +72,6 @@ export class MenuService implements BaseService{
         return this._isPasteActive;
     }
 
-
     getPath():string{
         return this._path;
     }

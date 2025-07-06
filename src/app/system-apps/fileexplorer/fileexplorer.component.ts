@@ -194,7 +194,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
   fileExplrMenuOption = Constants.NESTED_MENU_OPTION;
-  menuOrder = '';
+  menuOrder = Constants.EMPTY_STRING;
 
   fileInfoTipData = [{label:Constants.EMPTY_STRING, data:Constants.EMPTY_STRING}];
 
@@ -275,7 +275,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     
     if(this._fileInfo){
       // is this a URL or and Actual Folder
-      if(this._fileInfo.getOpensWith === 'fileexplorer' && !this._fileInfo.getIsFile){ //Actual Folder
+      if(this._fileInfo.getOpensWith === Constants.FILE_EXPLORER && !this._fileInfo.getIsFile){ //Actual Folder
         this.directory = this._fileInfo.getCurrentPath;
         const fileName = (this._fileInfo.getFileName === Constants.EMPTY_STRING)? Constants.NEW_FOLDER : this._fileInfo.getFileName;
 
@@ -1050,12 +1050,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async runProcess(file:FileInfo):Promise<void>{
+    console.log('fileexplorer-runProcess:',file)
 
     this._audioService.play(this.cheetahNavAudio);
-    console.log('fileexplorer-runProcess:',file)
     this.showInformationTip = false;
     // console.log('what was clicked:',file.getFileName +'-----' + file.getOpensWith +'---'+ file.getCurrentPath +'----'+ file.getIcon) TBD
-    if((file.getOpensWith === 'fileexplorer' && file.getFileName !== 'fileexplorer') && file.getFileType ==='folder'){
+    if((file.getOpensWith === Constants.FILE_EXPLORER && file.getFileName !== Constants.FILE_EXPLORER) && file.getFileType === Constants.FOLDER){
+      if(this.isRecycleBinFolder){
+        this._menuService.showPropertiesView.next(file);
+        return;
+      }
 
       if(!this.isNavigatedBefore){
         this.prevPathEntries.push(this.directory);
@@ -1142,7 +1146,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     else if((fileName === 'OSDisk (C:)' && directory === Constants.ROOT)){
       this.navPathIcon = `${Constants.IMAGE_BASE_PATH}os_disk.png`;
     }
-    else if((fileName === 'fileexplorer' && directory === Constants.ROOT) || (fileName === Constants.EMPTY_STRING && directory === Constants.ROOT)){
+    else if((fileName === Constants.FILE_EXPLORER && directory === Constants.ROOT) || (fileName === Constants.EMPTY_STRING && directory === Constants.ROOT)){
       this.navPathIcon = `${Constants.IMAGE_BASE_PATH}this_pc.png`;
     }else{
       this.navPathIcon = `${Constants.IMAGE_BASE_PATH}folder_folder_small.png`;
@@ -1603,7 +1607,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.fileInfoTipData.push({label:infoTipFields[6], data:fileSize });
     }
 
-    if(fileType === 'folder'){
+    if(fileType === Constants.FOLDER){
       if(fileName === 'Desktop' || fileName === 'Documents' || fileName === 'Downloads'){
         this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified })
       }else if(fileName === 'Music'){
@@ -1901,7 +1905,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
-        const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));
+        //const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));
+                const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getCurrentPath) && (f.getFileName == this.selectedFile.getFileName));
         this.selectedFile.setFileName = renameText;
         this.selectedFile.setDateModified = Date.now();
         this.fileExplrFiles[fileIdx] = this.selectedFile;

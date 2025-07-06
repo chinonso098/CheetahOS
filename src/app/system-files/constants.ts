@@ -7,6 +7,7 @@ export namespace Constants{
     export const COLON = ':';
     export const COMMA = ',';
     export const DOT = '.';
+    export const DOUBLE_DOT = '..';
     export const BACK_TICK= '`';
     export const TILDE= '~';
     export const DASH= '-';
@@ -23,6 +24,9 @@ export namespace Constants{
     export const GIF_BASE_PATH = 'osdrive/Cheetah/System/Gifres/';
     export const AUDIO_BASE_PATH = 'osdrive/Cheetah/System/Media/';
     export const RECYCLE_BIN_PATH = '/Users/Desktop/Recycle Bin';
+
+    export const FILE_EXPLORER = 'fileexplorer';
+    export const FOLDER = 'folder';
     export const NEW_FOLDER = 'New Folder';
     export const CHEETAH = 'cheetah';
     export const WIN_EXPLR = 'win_explr_';
@@ -88,8 +92,6 @@ export namespace Constants{
     export const MINUS_NINETEEN = -19;
     export const MINUS_TWENTY = -20;
 
-
-
     export const SERVICES_STATE_RUNNING = 'Running';
     export const SERVICES_STATE_STOPPED = 'Stopped';
 
@@ -102,7 +104,7 @@ export namespace Constants{
 
     export const CHEETAH_PWR_KEY = 'cheetahPwrKey';
     export const CHEETAH_LOGON_KEY = 'cheetahLogonKey';
-     export const FILE_SVC_DELETE_KEY = 'fileServiceDeleteKey';
+    export const FILE_SVC_DELETE_KEY = 'fileServiceDeleteKey';
 
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';

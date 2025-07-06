@@ -10,8 +10,8 @@
   height: fit-content;
   outline: 1px hsl(0deg 0% 20%/70%);
   overflow: hidden;
-  top: 25%;
-  left: 25%;
+  top: 22%;
+  left: 24%;
   z-index: 2;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .left-header-section{
-  width:calc(100% - 135px);
+  width:calc(100% - 45px);
   height: 30px;
   left: 0;
 }

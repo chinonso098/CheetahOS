@@ -538,14 +538,14 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
     async traverseDirectory(pathInput:string):Promise<ITraverseResult>{
         console.log('ARG0:', pathInput);
         const users = '/Users/';
-        const folder = 'folder';
+        const folder = Constants.FOLDER;
         const goOneLevelUp = '..';
         const goOneLevelUpWithSlash = '../';
         const filePathRegex = /^(\.\.\/)+([a-zA-Z0-9_-]+\/?)*$|^(\.\/|\/)([a-zA-Z0-9_-]+\/?)+$|^\.\.$|^\.\.\/$/;
         const path = pathInput.replace(Constants.BACK_TICK, Constants.BLANK_SPACE);
 
         let directory = Constants.EMPTY_STRING;
-        let depth = 0;
+        let depth = Constants.NUM_ZERO;
         let result:ITraverseResult;
 
         if(path === undefined){
@@ -557,7 +557,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
            const cmdArg = path.split(Constants.ROOT);
       
            console.log('CMDARG:', cmdArg);
-           const moveUps = (cmdArg.length > 1)? cmdArg.filter(x => x === goOneLevelUp) : [goOneLevelUp];
+           const moveUps = (cmdArg.length > Constants.NUM_ONE)? cmdArg.filter(x => x === goOneLevelUp) : [goOneLevelUp];
            const impliedPath = this.getImpliedPath(moveUps);
            this.fallBackDirPath = impliedPath;
            const explicitPath = (path !== goOneLevelUp)? path.split(goOneLevelUpWithSlash).splice(-1)[0] : Constants.EMPTY_STRING;
@@ -1005,7 +1005,7 @@ Mandatory argument to long options are mandotory for short options too.
         if(arg0.includes('Users/Desktop')){
             this._fileService.addEventOriginator('desktop');
         }else{
-            this._fileService.addEventOriginator('fileexplorer');
+            this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
         }
         this._fileService.dirFilesUpdateNotify.next();
     }

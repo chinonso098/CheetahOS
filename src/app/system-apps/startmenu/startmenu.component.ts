@@ -209,7 +209,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
    const file = new FileInfo();
    file.setFileName = folderName;
-   file.setOpensWith = 'fileexplorer';
+   file.setOpensWith = Constants.FILE_EXPLORER;
    file.setIsFile = false;
    file.setCurrentPath = path;
 

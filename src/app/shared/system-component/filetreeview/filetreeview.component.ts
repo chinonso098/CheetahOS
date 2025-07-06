@@ -2,8 +2,11 @@
 
 import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
-import { FileService } from '../../system-service/file.service';
+
 import { Constants } from 'src/app/system-files/constants';
+
+import { AudioService } from '../../system-service/audio.services';
+import { FileService } from '../../system-service/file.service';
 
 @Component({
   selector: 'cos-filetreeview',
@@ -15,34 +18,36 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   @Input() level = Constants.NUM_ZERO;
   @Input() showRoot = true;
   @Input() isHoverActive = false;
-  @Input() levelSrcId = '';
+  @Input() levelSrcId = Constants.EMPTY_STRING;
   @Input() treeData: FileTreeNode[] = [];
  
   quickAccessData: FileTreeNode[] = [];
   private _fileService:FileService;
+  private _audioService:AudioService;
 
+  readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
 
   chevronBtnStyle:Record<string, unknown> = {};
   expandedViews:string[]= [];
-  selectedElementId = '';
+  selectedElementId = Constants.EMPTY_STRING;
   isClicked = false;
   processId = Constants.NUM_ZERO;
   nextLevel = Constants.NUM_ZERO;
   nextLevelSrcId = Constants.EMPTY_STRING;
-  negTen = -10;
+  negTen = Constants.MINUS_TEN;
   name = 'filetreeview';
 
   readonly Quick_ACCESS = 'Quick access';
-  readonly THIS_PC = 'This PC';
+  readonly THIS_PC = Constants.THISPC;
   SECONDS_DELAY = 350;
 
-  constructor(fileService:FileService){
+  constructor(fileService:FileService, audioService:AudioService){
     this._fileService = fileService;
+    this._audioService = audioService;
   }
 
   ngOnInit():void{
     this.setcolorChevron(this.isHoverActive);
-
     this.quickAccessData = this.genStaticData();
   }
 
@@ -61,7 +66,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     // console.log('fileTreeViewLvl:', this.level); //TBD
 
     this.processId = this.pid;
-    this.nextLevel = this.level + 1;
+    this.nextLevel = this.level + Constants.NUM_ONE;
     this.nextLevelSrcId = this.levelSrcId;
 
     // if(!this.isClicked)
@@ -210,7 +215,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
       }
     }
 
-    if(toggler  && imgDiv){
+    if(toggler && imgDiv){
       //console.log('SGGC--toggler:', toggler);
 
       const hasNestedClass = this.hasClass(toggler,'nested');
@@ -281,6 +286,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
     const uid = `filetreeview-1-${this.pid}`;
     this._fileService.addEventOriginator(uid);
+
+    this._audioService.play(this.cheetahNavAudio);
     this._fileService.goToDirectoryNotify.next(data);
   }
 
@@ -322,7 +329,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   unColorChevron(id?:number, id1?:number):void{
-    let imgId = ''
+    let imgId = Constants.EMPTY_STRING;
 
     if(id === this.negTen && id1 === this.negTen ){
       imgId = `qa-fileExplrTreeView-img-${this.pid}`;
@@ -388,7 +395,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   removeBtnStyle(elmntId:string):void{
     const btnElement = document.getElementById(elmntId) as HTMLElement;
     if(btnElement){
-      btnElement.style.backgroundColor = 'transparent';
+      btnElement.style.backgroundColor = Constants.EMPTY_STRING;
       btnElement.style.border = 'none'
     }
   }

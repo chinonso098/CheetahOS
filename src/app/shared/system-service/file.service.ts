@@ -1048,8 +1048,8 @@ OpensWith=${shortCutData.getOpensWith}
     public async setFolderPropertiesAsync(path:string):Promise<FileContent>{
         const fileName = basename(path, extname(path));
         let iconFile = Constants.EMPTY_STRING;
-        const fileType = 'folder';
-        const opensWith = 'fileexplorer';
+        const fileType = Constants.FOLDER;
+        const opensWith = Constants.FILE_EXPLORER;
 
         const exist = await this.checkIfExistsAsync(path);
         if(!exist){
