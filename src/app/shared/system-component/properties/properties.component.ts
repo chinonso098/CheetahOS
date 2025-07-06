@@ -1,7 +1,7 @@
 import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { dirname} from 'path';
+import { basename, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FileService } from 'src/app/shared/system-service/file.service';
 
@@ -25,10 +25,11 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   private _processIdService:ProcessIDService
   private _windowService:WindowService;
 
-  readonly fileFolder = 'File folder';
+  fileFolder = 'File folder';
  
   fileDate:Date= new Date();
   isFile = true;
+  isInRecycleBin = false;
   URL = Constants.URL;
  
   type = ComponentType.System;
@@ -36,6 +37,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
   name = Constants.EMPTY_STRING;
   icon = Constants.EMPTY_STRING;
+  origin = Constants.EMPTY_STRING;
   iconPath = Constants.EMPTY_STRING;
   contains = Constants.EMPTY_STRING;
   location = Constants.EMPTY_STRING;
@@ -71,16 +73,25 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
     this.displayMgs = `${this.fileInput.getFileName} Properties`;
     this.name = this.fileInput.getFileName;
-    this.location = dirname(this.fileInput.getCurrentPath);
+    this.origin = 'TBD';
+    const currPath = dirname(this.fileInput.getCurrentPath);
+    this.location = `C: ${currPath}`;
     this.icon = this._fileService.getAppAssociaton(this.fileInput.getOpensWith);
     this.iconPath = this.fileInput.getIconPath;
     this.opensWith = this.fileInput.getOpensWith;
     this.hiddenName = `${Constants.WIN_EXPLR + this.fileInput.getFileName}`;
     this._runningProcessService.addProcess(this.getComponentDetail());
     this.isFile = this.fileInput.getIsFile;
+    this.isInRecycleBin = (currPath.includes(Constants.RECYCLE_BIN_PATH));
 
-    if(this.fileInput.getIsFile)
+    if(this.fileInput.getIsFile){
       this.getFileSize();
+
+      if(this.isInRecycleBin){
+        this.fileFolder = this.fileInput.getFileType;
+      }
+    }
+    
 
     if(!this.fileInput.getIsFile){
       await this.getFolderContentDetails();

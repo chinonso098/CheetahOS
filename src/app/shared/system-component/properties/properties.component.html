@@ -1,8 +1,9 @@
 
-<ng-container [ngTemplateOutlet]=" isFile? FileView : folderView">
+<ng-container [ngTemplateOutlet]=" (isFile && !isInRecycleBin)? fileView : 
+                                   (!isFile && !isInRecycleBin)? folderView : deletedView">
 </ng-container>
 
-<ng-template #FileView>
+<ng-template #fileView>
     <cos-basicwindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
         <div class="properties-main-container" id="propDisplay-{{processId}}">
             <div class="properties-body-container">
@@ -209,4 +210,82 @@
     </cos-basicwindow>
 </ng-template>
 
+<ng-template #deletedView>
+    <cos-basicwindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
+        <div class="properties-main-container" id="propDisplay-{{processId}}">
+            <div class="properties-body-container">
+                <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
+                <div class="properties-header-tab-container">
+                    <div class="properties-header-tabs">
+                    <div class="properties-tab active">General</div>
+                    </div>
+            
+                    <div class="properties-header-tab-content-container">
+                        <div class="properties-tab-pane active">
+                            <div class="general-tab-containter">
+                                <div style="width: 100%; height: 5px;"> </div>
+
+                                <div class="general-tab-section">
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="iconPath"/></figure></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p0">{{this.name}}</p></div>
+                                    </div>
+
+                                </div>
+                                <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+
+                                <div class="general-tab-section2">
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><p class="general-tab-p1"> Type:</p></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileFolder}}</p></div>
+                                    </div>
+
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><p class="general-tab-p1"> Origin:</p></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{origin}}</div>
+                                    </div>
+
+
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><p class="general-tab-p1"> Size:</p></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSize}} {{fileSizeUnit}}</p></div>
+                                    </div>
+                                </div>
+                                <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+                                <div class="general-tab-section2">
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><p class="general-tab-p1">Deleted:</p></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1">{{ fileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }}</p></div>
+                                    </div>
+
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><p class="general-tab-p1">Created:</p></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1">{{ fileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }}</p></div>
+                                    </div>
+                                </div>
+                                <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+                                <div class="general-tab-section2">
+                                    <div style="width: 100%; height: 60px;"> </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+            <div class="properties-footer-container">
+                <span style="position: fixed; margin-top:6px; right:2%;">
+                    <button class="btn btn-primary" (click)="onClosePropertyView()" >
+                    OK
+                    </button>
+                </span>
+            </div>
+        </div>
+    </cos-basicwindow>
+</ng-template>
 

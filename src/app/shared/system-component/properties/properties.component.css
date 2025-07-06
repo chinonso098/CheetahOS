@@ -145,7 +145,7 @@
     padding-right: 4px;
 }
 
-.general-tab-p{
+.general-tab-p, .general-tab-p0 {
     position: relative;
     top: 30%;
     font-size:11px;
@@ -153,6 +153,10 @@
     text-align: left;
     padding: 3px 0;
     border: 0.5px solid #000;
+}
+
+.general-tab-p0{
+    border: none;
 }
 
 .general-tab-p1{

@@ -1072,7 +1072,6 @@ OpensWith=${shortCutData.getOpensWith}
         return new FileContent(empty, empty, empty, empty, empty);
     }
 
-
     getAppAssociaton(appname:string):string{
         return this._fileAndAppIconAssociation.get(appname) || Constants.EMPTY_STRING;
     }

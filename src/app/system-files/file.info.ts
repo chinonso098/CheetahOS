@@ -1,3 +1,5 @@
+import { Constants } from "./constants";
+
 export class FileInfo{
     private _IconPath:string;
     private _currentPath:string;
@@ -16,19 +18,19 @@ export class FileInfo{
 
 
     constructor(){
-        this._IconPath = '';
-        this._currentPath = '';
-        this._contentPath = '';
-        this._fileExtension = '';
-        this._fileType = '';
-        this._fileName = '';
-        this._opensWith = '';
+        this._IconPath = Constants.EMPTY_STRING;
+        this._currentPath = Constants.EMPTY_STRING;
+        this._contentPath = Constants.EMPTY_STRING;
+        this._fileExtension = Constants.EMPTY_STRING;
+        this._fileType = Constants.EMPTY_STRING;
+        this._fileName = Constants.EMPTY_STRING;
+        this._opensWith = Constants.EMPTY_STRING;
         this._dateModified = new Date('1990-01-01');
-        this._size = 0;
+        this._size = Constants.NUM_ZERO;
         this._isFile = true;
         this._isShortCut = false;
         this._fileSizeUnit = 'B';
-        this._mode = 0;
+        this._mode = Constants.NUM_ZERO;
         this._contentBuffer = null;
     }
 
@@ -99,7 +101,7 @@ export class FileInfo{
             hour12: true
           };
 
-        return this._dateModified.toLocaleString("en-US", options).replace(',', '');
+        return this._dateModified.toLocaleString("en-US", options).replace(Constants.COMMA, Constants.EMPTY_STRING);
     }
     
     set setDateModified(dateModified:any){
@@ -116,9 +118,9 @@ export class FileInfo{
     }
 
     get getSize1(){
-        let  tmpSize = 0
+        let  tmpSize = Constants.NUM_ZERO
 
-        if(this._size >= 0 && this._size <= 999){
+        if(this._size >= Constants.NUM_ZERO && this._size <= 999){
             tmpSize = this._size;
         }
 
@@ -152,7 +154,7 @@ export class FileInfo{
 
     get getFileSizeUnit(){
 
-        if( this._size >= 0 && this._size <= 999){
+        if( this._size >= Constants.NUM_ZERO && this._size <= 999){
             this._fileSizeUnit = 'B';
         }
 
@@ -168,7 +170,7 @@ export class FileInfo{
     }
 
     get getMode(){
-        return '0' + (this._mode & parseInt('777', 8)).toString(8);
+        return '0' + (this._mode & parseInt('777', Constants.NUM_EIGHT)).toString(Constants.NUM_EIGHT);
     }
     set setMode(mode:number){
         this._mode = mode;
