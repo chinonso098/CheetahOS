@@ -303,18 +303,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   ngOnInit():void{
     this.renameForm = this._formBuilder.nonNullable.group({
-      renameInput: '',
+      renameInput: Constants.EMPTY_STRING,
     });
 
     this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
-      this._vantaEffect = VANTA.WAVES({
-        el: '#vanta',
-        color:this.DEFAULT_COLOR, 
-        waveHeight:20,
-        shininess:45,
-        waveSpeed:0.20,
-        zoom:0.9,     
-      });
+      this._vantaEffect = VANTA.WAVES(this.getDefaultConfig());
     })
     
     this.getDesktopMenuData();
@@ -349,7 +342,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this._numSequence++;
     } else {
       this._numSequence = this.MIN_NUM_COLOR_RANGE;
-      this._charSequenceCount = (this._charSequenceCount + 1) % charSet.length;
+      this._charSequenceCount = (this._charSequenceCount + Constants.NUM_ONE) % charSet.length;
       this._charSequence = charSet[this._charSequenceCount];
     }
 
@@ -363,9 +356,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const startTime = performance.now();
 
     //Vanta wave
-    if(this.currentDesktopNum === 0){
+    if(this.currentDesktopNum === Constants.NUM_ZERO){
       const animateColorTransition = (time: number) => {
-        const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
+        const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, Constants.NUM_ONE);
         const interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
         this._vantaEffect.setOptions({ color: interpolatedColor });
   
@@ -375,6 +368,18 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       };
       requestAnimationFrame(animateColorTransition);
     }
+  }
+
+  getDefaultConfig():any{
+    const defaultConfig = {
+      el: '#vanta',
+      color: this.DEFAULT_COLOR,
+      waveHeight: 30,
+      shininess: 45,
+      waveSpeed: 0.20,
+      zoom: 0.95,
+    }
+    return defaultConfig;
   }
 
   initClippy():void{
@@ -619,7 +624,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       const clientY = evt.clientY;
       const diff = (maxHeight - clientY);
       if(!this.isTaskBarTemporarilyVisible){
-        if(diff <= 5){
+        if(diff <= Constants.NUM_FIVE){
           this.isTaskBarTemporarilyVisible = true;
           this._systemNotificationServices.showTaskBarNotify.next();
           this.showTaskBarTemporarilyHelper();
@@ -637,12 +642,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   // if mouse remains withing 40px of the bottom, keep showing the taksbar
   showTaskBarTemporarilyHelper():void{
-    const delay = 10; //10ms
     const intervalId = setInterval(() => {
       if (!this.isTaskBarTemporarilyVisible) {
         clearInterval(intervalId);
       }
-    }, delay);
+    }, Constants.NUM_TEN); //10ms
   }
 
   hideShowVolumeControl():void{
@@ -748,7 +752,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   autoAlignIcon():void{
     this.autoAlignIcons = !this.autoAlignIcons
-    console.log('toggleAutoAlignIconsToGrid:',this.autoAlignIcons);
     if(this.autoAlignIcons){
       this.correctMisalignedIcons();
     }
@@ -778,7 +781,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   previousBackground():void{
     if(this.currentDesktopNum > this.MIN_NUMS_OF_DESKTOPS){
-      this.currentDesktopNum --;
+      this.currentDesktopNum--;
       const curNum = this.currentDesktopNum;
       this.loadOtherBackgrounds(curNum);
     }
@@ -787,7 +790,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   nextBackground():void{
     if(this.currentDesktopNum < this.MAX_NUMS_OF_DESKTOPS){
-      this.currentDesktopNum ++;
+      this.currentDesktopNum++;
       const curNum = this.currentDesktopNum;
       this.loadOtherBackgrounds(curNum);
     }
@@ -989,7 +992,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     try {
       const vanta = this.VANTAS[n];
       if(n === Constants.NUM_ZERO){
-        this._vantaEffect = VANTA.WAVES(vanta)
+        this._vantaEffect = VANTA.WAVES(this.getDefaultConfig())
       }
       if(n === Constants.NUM_ONE){
         this._vantaEffect = VANTA.RINGS(vanta)
@@ -1334,30 +1337,28 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   adjustIconContextMenuData(file:FileInfo):void{
     this.menuData = [];
-  
-    console.log('adjustContextMenuData - filename:',file.getCurrentPath);
     if(file.getIsFile){
-          //files can not be opened in terminal, pinned to start, opened in new window, pin to Quick access
-          this.menuOrder = Constants.DEFAULT_FILE_MENU_ORDER;
-          for(const x of this.sourceData) {
-            if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Pin to Start' || x.label === 'Empty Recycle Bin'){ /*nothing*/}
-            else{
-              this.menuData.push(x);
-            }
+        //files can not be opened in terminal, pinned to start, opened in new window, or pin to Quick access
+        this.menuOrder = Constants.DEFAULT_FILE_MENU_ORDER;
+        for(const x of this.sourceData) {
+          if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Pin to Start' || x.label === 'Empty Recycle Bin'){ /*nothing*/}
+          else{
+            this.menuData.push(x);
           }
-      }else{
-        if(file.getCurrentPath === Constants.RECYCLE_BIN_PATH){ 
-          this.menuOrder = Constants.RECYCLE_BIN_MENU_ORDER;
-          for(const x of this.sourceData){
-            if(x.label === 'Open' || x.label === 'Empty Recycle Bin' || x.label === 'Create shortcut'){ 
-             this.menuData.push(x);
-            }
-          }
-        }else{
-          this.menuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
-          this.menuData = this.sourceData.filter(x => x.label !== 'Empty Recycle Bin');
         }
+    }else{
+      if(file.getCurrentPath === Constants.RECYCLE_BIN_PATH){ 
+        this.menuOrder = Constants.RECYCLE_BIN_MENU_ORDER;
+        for(const x of this.sourceData){
+          if(x.label === 'Open' || x.label === 'Empty Recycle Bin' || x.label === 'Create shortcut'){ 
+            this.menuData.push(x);
+          }
+        }
+      }else{
+        this.menuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
+        this.menuData = this.sourceData.filter(x => x.label !== 'Empty Recycle Bin');
       }
+    }
   }
   
   checkAndHandleDesktopIconCntxtMenuBounds(evt:MouseEvent, menuHeight:number):MenuPosition{
@@ -1461,7 +1462,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           this.removeBtnStyle(id);
         }
       }
-      else if((id == this.selectedElementId) && !this.isIconInFocusDueToPriorAction){
+      else if((id === this.selectedElementId) && !this.isIconInFocusDueToPriorAction){
         this.setBtnStyle(id,false);
       }
     }
@@ -1662,6 +1663,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     divElmnt.style.width =  `${width}px`;
 
     divElmnt.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+    divElmnt.style.border = '1px solid #047cd4';
     divElmnt.style.backdropFilter = 'blur(5px)';
     if(isShow){
       divElmnt.style.zIndex = '2';

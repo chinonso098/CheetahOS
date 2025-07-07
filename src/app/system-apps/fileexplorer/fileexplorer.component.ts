@@ -1596,7 +1596,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     divElmnt.style.height =  `${height}px`;
     divElmnt.style.width =  `${width}px`;
 
-    divElmnt.style.backgroundColor = 'rgba(0, 0, 0, 0.15)';
+    divElmnt.style.backgroundColor = 'rgba(4, 124, 212, 0.2)';
+    divElmnt.style.border = '1px solid #047cd4';
     divElmnt.style.backdropFilter = 'blur(5px)';
     if(isShow){
       divElmnt.style.zIndex = '2';
@@ -1631,7 +1632,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   setMultiSelectStyleOnBtn(id:number, isMouseHover:boolean):void{
-    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
+    const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
     if(btnElement){
       if(!isMouseHover){
         btnElement.style.backgroundColor = 'rgba(0, 150, 255, 0.3)';
