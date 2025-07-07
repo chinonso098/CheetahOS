@@ -82,6 +82,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isHideCntxtMenuEvt= false;
   private isShiftSubMenuLeft = false;
   private isRecycleBinFolder = false;
+   isMultiSelectEnabled = true;
+  isMultiSelectActive = false;
+  areMultipleIconsHighlighted = false;
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
@@ -213,6 +216,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
   readonly cheetahGenericNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
+
+  fileExplorerBoundedRect!:DOMRect;
+  multiSelectElmnt!:HTMLDivElement | null;
+  multiSelectStartingPosition!:MouseEvent | null;
+
+  markedBtnIds:string[] = [];
+  movedBtnIds:string[] = [];
 
   icon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
   navPathIcon = `${Constants.IMAGE_BASE_PATH}this_pc.png`;
@@ -403,9 +413,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.changeTabLayoutIconCntnrCSS(id,true);
 
-    for(let i = 1; i<=8; i++){
-      if(i != id){
-        this.changeTabLayoutIconCntnrCSS(i,false);
+    for(let i = Constants.NUM_ONE; i <= Constants.NUM_EIGHT; i++){
+      if(i !== id){
+        this.changeTabLayoutIconCntnrCSS(i, false);
       }
     }
   }
@@ -504,8 +514,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const figCapElmnt = document.getElementById(`figCapElmnt-${this.processId}-${i}`) as HTMLElement;
 
       if(btnElmnt){
-        btnElmnt.style.width = btn_width_height_sizes[iconIdx][0];
-        btnElmnt.style.height = btn_width_height_sizes[iconIdx][1];
+        btnElmnt.style.width = btn_width_height_sizes[iconIdx][Constants.NUM_ZERO];
+        btnElmnt.style.height = btn_width_height_sizes[iconIdx][Constants.NUM_ONE];
       }
 
       if(imgElmnt){
@@ -514,7 +524,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       if(figCapElmnt){
-        btnElmnt.style.width = btn_width_height_sizes[iconIdx][0];
+        btnElmnt.style.width = btn_width_height_sizes[iconIdx][Constants.NUM_ZERO];
       }
     }
   }
@@ -529,8 +539,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(iconView == this.smallIconsView || iconView == this.mediumIconsView ||iconView == this.largeIconsView || iconView == this.extraLargeIconsView){
       if(olElmnt){
-        olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][0]})`;
-        olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][1]})`;
+        olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ZERO]})`;
+        olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ONE]})`;
         olElmnt.style.rowGap = '20px';
         olElmnt.style.columnGap = '0px';
         olElmnt.style.padding = '5px 0';
@@ -1525,6 +1535,137 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(this.isShiftSubMenuLeft)
           nestedMenu.style.left = '-98%';
     }
+  }
+
+  activateMultiSelect(evt:MouseEvent):void{
+    this.fileExplorerBoundedRect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    if(this.isMultiSelectEnabled){    
+      this.isMultiSelectActive = true;
+      this.multiSelectElmnt = document.getElementById('fileExplrMultiSelectPane') as HTMLDivElement;
+      this.multiSelectStartingPosition = evt;
+    }
+    evt.stopPropagation();
+  }
+  
+  deActivateMultiSelect():void{ 
+    if(this.multiSelectElmnt){
+      this.setDivWithAndSize(this.multiSelectElmnt, Constants.NUM_ZERO, Constants.NUM_ZERO, Constants.NUM_ZERO, Constants.NUM_ZERO, false);
+    }
+
+    this.multiSelectElmnt = null;
+    this.multiSelectStartingPosition = null;
+    this.isMultiSelectActive = false;
+
+    const markedBtnCount = this.getCountOfAllTheMarkedButtons();
+    if(markedBtnCount === Constants.NUM_ZERO)
+      this.areMultipleIconsHighlighted = false;
+    else{
+      this.areMultipleIconsHighlighted = true;
+      this.getIDsOfAllTheMarkedButtons();
+    }
+  }
+
+  updateDivWithAndSize(evt:MouseEvent):void{
+    const rect = this.fileExplorerBoundedRect;
+    
+    if(this.multiSelectStartingPosition && this.multiSelectElmnt){
+      const startingXPoint = this.multiSelectStartingPosition.clientX - rect.left;
+      const startingYPoint = this.multiSelectStartingPosition.clientY - rect.top;
+
+      const currentXPoint = evt.clientX - rect.left;
+      const currentYPoint = evt.clientY - rect.top;
+
+      const startX = Math.min(startingXPoint, currentXPoint);
+      const startY = Math.min(startingYPoint, currentYPoint);
+      const divWidth = Math.abs(startingXPoint - currentXPoint);
+      const divHeight = Math.abs(startingYPoint - currentYPoint);
+
+      this.setDivWithAndSize(this.multiSelectElmnt, startX, startY, divWidth, divHeight, true);
+
+      // Call function to check and highlight selected items
+      this.highlightSelectedItems(startX, startY, divWidth, divHeight);
+    }
+
+     evt.stopPropagation();
+  }
+
+  setDivWithAndSize(divElmnt:HTMLDivElement, initX:number, initY:number, width:number, height:number, isShow:boolean):void{
+
+    divElmnt.style.position = 'absolute';
+    divElmnt.style.transform =  `translate(${initX}px , ${initY}px)`;
+    divElmnt.style.height =  `${height}px`;
+    divElmnt.style.width =  `${width}px`;
+
+    divElmnt.style.backgroundColor = 'rgba(0, 0, 0, 0.15)';
+    divElmnt.style.backdropFilter = 'blur(5px)';
+    if(isShow){
+      divElmnt.style.zIndex = '2';
+      divElmnt.style.display =  'block';
+    }else{
+      divElmnt.style.zIndex = '0';
+      divElmnt.style.display =  'none';
+    }
+  }
+  
+  highlightSelectedItems(initX: number, initY: number, width: number, height: number): void {
+    const rect = this.fileExplorerBoundedRect;
+    const selectionRect = {
+        left: initX + rect.left,
+        top: initY + rect.top,
+        right: initX + rect.left + width,
+        bottom: initY + rect.top + height
+    };
+
+    const btnIcons = document.querySelectorAll('.iconview-button');
+    btnIcons.forEach((btnIcon) => {
+        const btnIconRect = btnIcon.getBoundingClientRect();
+
+        // Check if the item is inside the selection area
+        if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
+            btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
+            btnIcon.classList.add('fileexplr-multi-select-highlight'); 
+        } else {
+            btnIcon.classList.remove('fileexplr-multi-select-highlight');
+        }
+    });
+  }
+
+  setMultiSelectStyleOnBtn(id:number, isMouseHover:boolean):void{
+    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
+    if(btnElement){
+      if(!isMouseHover){
+        btnElement.style.backgroundColor = 'rgba(0, 150, 255, 0.3)';
+        btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
+      }else{
+        btnElement.style.backgroundColor = '#607c9c';
+        btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
+      }
+    }
+  }
+
+  getCountOfAllTheMarkedButtons():number{
+    const btnIcons = document.querySelectorAll('.fileexplr-multi-select-highlight');
+    return btnIcons.length;
+  }
+  
+  getIDsOfAllTheMarkedButtons():void{
+    const btnIcons = document.querySelectorAll('.fileexplr-multi-select-highlight');
+    btnIcons.forEach(btnIcon => {
+      const btnId = btnIcon.id.replace(`btnElmnt-${this.processId}-`, Constants.EMPTY_STRING);
+      if(!this.markedBtnIds.includes(btnId))
+        this.markedBtnIds.push(btnId);
+    });
+    console.log('file explr this.markedBtnIds:', this.markedBtnIds);
+  }
+  
+  removeClassAndStyleFromBtn():void{
+    this.markedBtnIds.forEach(id =>{
+      const btnIcon = document.getElementById(`btnElmnt-${this.processId}-${id}`);
+      if(btnIcon){
+        btnIcon.classList.remove('fileexplr-multi-select-highlight');
+      }
+      this.removeBtnStyle(Number(id));
+    })
   }
 
   onDragStart(evt:any):void{

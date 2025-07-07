@@ -894,9 +894,22 @@ span.mid-search-entry{
     overflow:hidden;
     z-index: 2;
  }
-
-
 /*-------------------------Icon Size View End -------------------------------*/
+
+
+.fileexplr-clone-container{
+    width: fit-content;
+    height: fit-content;
+    z-index:  3;
+    position: absolute;
+}
+
+.fileexplr-multi-select-highlight {
+    background-color: rgba(0, 150, 255, 0.3);
+    border: 1px solid hsla(0,0%,50%,25%);
+}
+
+
 
 /*-------------------------List View Start-------------------------------*/
 
