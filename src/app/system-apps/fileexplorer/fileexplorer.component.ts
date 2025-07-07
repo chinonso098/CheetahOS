@@ -114,9 +114,19 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   tabLayoutCntnrStyle:Record<string, unknown> = {};
   ribbonMenuBtnStyle:Record<string, unknown> = {};
   ribbonMenuCntnrStyle:Record<string, unknown> = {};
-  olClassName = 'ol-icon-size-view';
+  iconSizeStyle:Record<string, unknown> = {};
+  btnStyle:Record<string, unknown> = {};
+  figCapIconSizeStyle:Record<string, unknown> = {};
+
+  olClassName = 'ol-iconview-grid-size';
   btnTypeRibbon = 'Ribbon';
   btnTypeFooter = 'Footer';
+
+  readonly MIN_GRID_SIZE = 70;
+  readonly MID_GRID_SIZE = 90;
+  readonly MAX_GRID_SIZE = 120;
+
+  GRID_SIZE = this.MID_GRID_SIZE; //column size of grid = 90px
 
   fileExplrFiles:FileInfo[] = [];
   fileTreeNode:FileTreeNode[] = [];
@@ -461,6 +471,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+
+  //HERE
   changeLayoutCss(iconSize:string):void{
 
     const layoutOptions:string[] = [this.smallIconsView,this.mediumIconsView,this.largeIconsView,this.extraLargeIconsView,
@@ -469,7 +481,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const layoutIdx = layoutOptions.indexOf(iconSize)
 
     if(layoutIdx <= Constants.NUM_THREE){
-      this.olClassName = 'ol-icon-size-view';
+      this.olClassName = 'ol-iconview-grid-size';
     }
     else if (layoutIdx >= Constants.NUM_FOUR){
       /*
@@ -483,9 +495,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   changeButtonAndImageSize(iconSize:string):void{
 
-    const icon_sizes:string[] = [this.smallIconsView,this.mediumIconsView,this.largeIconsView,this.extraLargeIconsView];
-    const fig_img_sizes:string[] = ['30px', '45px', '75px', '90px']; //small, med, large,ext large
-    const btn_width_height_sizes = [['90px', '70px'], ['110px', '90px']];
+    const icon_sizes:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView];
+    const fig_img_sizes:string[] = ['30px', '45px', '65px', '80px']; //small, med, large, ext large
+    const btn_width_height_sizes = [['90px', '70px'], ['120px', '100px']];
 
     const iconIdx = icon_sizes.indexOf(iconSize);
     const btnIdx = (iconIdx <= Constants.NUM_TWO) ? Constants.NUM_ZERO : Constants.NUM_ONE;
@@ -508,7 +520,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   changeOrderedlistStyle(iconView:string):void{
     const icon_sizes:string[] = [this.smallIconsView,this.mediumIconsView,this.largeIconsView,this.extraLargeIconsView];
-    const btn_width_height_sizes = [['90px', '70px'], ['110px', '90px']];
+    const btn_width_height_sizes = [['90px', '70px'], ['120px', '100px']];
     const iconIdx = icon_sizes.indexOf(iconView);
     const btnIdx = (iconIdx <= Constants.NUM_TWO) ? Constants.NUM_ZERO : Constants.NUM_ONE;
     
@@ -532,6 +544,33 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     }
   }
+
+  changeGridRowColSize():void{
+    const rowSpace  = 20; //row space of 20px between each icons
+
+    const colSize = (this.GRID_SIZE === this.MAX_GRID_SIZE) ? this.MAX_GRID_SIZE :
+                    (this.GRID_SIZE === this.MID_GRID_SIZE) ? this.MID_GRID_SIZE :
+                    this.MIN_GRID_SIZE;
+
+    const rowSize = (this.GRID_SIZE === this.MAX_GRID_SIZE)? (this.MAX_GRID_SIZE - rowSpace) :
+                    (this.GRID_SIZE === this.MID_GRID_SIZE)? (this.MID_GRID_SIZE - rowSpace) :
+                    (this.MIN_GRID_SIZE - rowSpace);
+
+    const dsktpmngrOlElmnt = document.getElementById('dsktpmngr_ol') as HTMLElement;
+    if(dsktpmngrOlElmnt){
+      dsktpmngrOlElmnt.style.gridTemplateColumns = `repeat(auto-fill, ${colSize}px)`;
+      dsktpmngrOlElmnt.style.gridTemplateRows = `repeat(auto-fill,${rowSize}px)`;
+    }
+
+    this.btnStyle = {
+      'width': `${colSize}px`, 
+      'height': `${rowSize}px`,
+    }
+  }
+
+
+
+
 
   setNavButtonsColor():void{
     this.prevNavBtnStyle ={
@@ -1362,7 +1401,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = '#4c4c4c';
-      btnElement.style.border = '1px solid #3c3c3c';
+      btnElement.style.border = '0.5px solid #3c3c3c';
 
       if(this.selectedElementId == id){
 
@@ -1379,7 +1418,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
 
         if(!isMouseHover && this.isIconInFocusDueToPriorAction){
-          btnElement.style.backgroundColor = '';
+          btnElement.style.backgroundColor = Constants.EMPTY_STRING;
           btnElement.style.border = '0.5px solid white'
         }
       }
@@ -1411,7 +1450,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-      btnElement.style.border = 'none';
+      btnElement.style.border = '0.5px solid transparent'
     }
   }
 

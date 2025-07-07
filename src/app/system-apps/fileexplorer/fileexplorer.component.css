@@ -788,20 +788,19 @@ span.mid-search-entry{
 /*****************************icon view and layout Started*****************************/
 
 /*-------------------------Icon Size View Start -------------------------------*/
-.ol-icon-size-view{
+.ol-iconview-grid-size{
     /* column-gap: 1px; */
     display: grid;
     grid-auto-flow: row;
     grid-template-columns:  repeat(auto-fill,90px);
     grid-template-rows: repeat(auto-fill,70px);
-    height: calc(100% - 40px);
+    height: calc(100% - 10px);
     width: 100%;
     padding: 5px 0 ;
     row-gap: 20px;
 }
 
-
-.li-icon-size-view{
+.li-iconview-size{
     display: flex;
     justify-content: center;
     padding: 2px;
@@ -809,43 +808,95 @@ span.mid-search-entry{
     z-index: 1;
 }
 
-
-.figure-icon-size-view{
-    display: flex;
-    flex-direction: column;
-    margin-bottom: -2px;
-    place-items:center;
-}
-
-
-.figcaption-icon-size-view{
-    -webkit-box-orient: vertical;
+.iconview-caption {
     color: white;
     display: -webkit-box;
     font-size: 12px;
     letter-spacing: 0.1px;
-    
-    -webkit-line-clamp:2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     position: relative;
     padding: 2px 0;
-    top: -1px;
-    line-height: 13px;
+    top: 2px;
+    line-height: 15px;
     overflow: hidden;
-    word-break: break-all;
-}
-
-.img-icon-size-view{
-    height: 45px; 
-    width: 45px;
-}
-
-.button-icon-size-view{
-    background-color: transparent;
+    word-break: break-word;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     width: 90px;
-    height: 70px; 
+    height: 20px;
 }
 
-/*-------------------------Icon Size View Start -------------------------------*/
+.iconview-image {
+    position: relative;
+    height: 45px;
+    width: 45px;
+    bottom: 0;
+}
+
+.iconview-img-wrapper {
+    width: fit-content;
+    display: block;
+    max-width: 80px;
+    max-height: 80px;
+}
+
+.iconview-button {
+    background-color: transparent;
+    border: 0.5px solid transparent;
+    width: 90px;
+    height: 70px;
+    transition: transform 0.1s ease-in-out;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: sans-serif;
+}
+
+.iconview-img-container {
+    margin-bottom: -2px;
+    place-items: center;
+    display: inline-block;
+    position: relative;
+}
+
+.iconview-rename-form-wrapper {
+    width: fit-content;
+    height: fit-content;
+    margin-bottom: -6px;
+}
+
+.iconview-rename-input {
+    font-size: 12px;
+    overflow: hidden;
+    box-sizing: border-box;
+    height: 20px;
+    width: 90px;
+    border: 0.5px dotted #ccc;
+    padding: 4px;
+    line-height: 1.4;
+}
+
+.iconview-caption-label-container {
+    position: relative;
+    height: 20px;
+    bottom: -4px;
+}
+
+.iconview-rename-textbox{
+    position: relative;
+    display: none;
+    top: 2px;
+    margin-bottom: 2px;
+    max-width: 75px;
+    max-height: 16px;
+    border: 1px solid #ccc;
+    overflow:hidden;
+    z-index: 2;
+ }
+
+
+/*-------------------------Icon Size View End -------------------------------*/
 
 /*-------------------------List View Start-------------------------------*/
 
@@ -899,7 +950,6 @@ span.mid-search-entry{
     margin: 0 1px;
     top: -1px;
     line-height: 13px;
-    
 }
 
 .button-list-view{
@@ -1136,6 +1186,7 @@ span.mid-search-entry{
     width: 15px;
 }
 /*-----################################---Footer View Ended-----################################---*/
+
 
 
 .rename-textbox{

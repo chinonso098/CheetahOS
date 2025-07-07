@@ -273,7 +273,9 @@
                 <!-- ngDraggable  [inBounds]="true" zIndex="1" [preventDefaultEvent]="true"
                     (stopped)="onDragEnd($event)" (started)="onDragStart($event)" -->
                 
-                    <ol [ngClass]="olClassName" (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)" (click)="handleIconHighLightState()" (contextmenu)="onShowFileExplorerContextMenu($event)" id="olElmnt-{{this.processId}}"> 
+                    <ol [ngClass]="olClassName" (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)" (click)="handleIconHighLightState()" (contextmenu)="onShowFileExplorerContextMenu($event)" 
+                       id="olElmnt-{{this.processId}}"> 
+
                         <ng-container [ngTemplateOutlet]="currentViewOption === smallIconsView ? iconsView :
                                                           currentViewOption === mediumIconsView ? iconsView :
                                                           currentViewOption === largeIconsView ? iconsView : 
@@ -285,24 +287,31 @@
         
                         <ng-template #iconsView>
                             <li class="li-icon-size-view" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}" >
-    
-                                <button class="button-icon-size-view" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
-                                    (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick(i)" id="btnElmnt-{{this.processId}}-{{i}}">
-    
-                                    <figure class="figure-icon-size-view" id="figElmnt-{{this.processId}}-{{i}}">
-    
-                                        <img class="img-icon-size-view" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
-    
-                                        <figcaption class="figcaption-icon-size-view" id="figCapElmnt-{{this.processId}}-{{i}}">
-                                                {{file.getFileName  | truncateString}} 
-                                        </figcaption>
-    
-                                        <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
-                                            <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                                                <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
+                                <button class="iconview-button" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" 
+                                    (mouseleave)="onMouseLeave(i)"
+                                    (contextmenu)="onShowIconContextMenu($event, file, i)" 
+                                     (click)="onBtnClick(i)" 
+                                     id="btnElmnt-{{this.processId}}-{{i}}" 
+                                     [style]="btnStyle">
+
+                                    <div class="iconview-img-container"  id="figElmnt-{{this.processId}}-{{i}}">
+                                        <div class="iconview-img-wrapper">
+                                            <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}" [style]="iconSizeStyle"/>
+                                        </div>
+                                        <!-- <div class="dsktp-scut-icon-section" *ngIf="file.getIsShortCut">
+                                            <img class="shortcut-img" [src]="shortCutImg"  id="shortCut{{i}}" [style]="shortCutIconSizeStyle"/>
+                                        </div> -->
+                                    </div>
+                                    <div class="iconview-caption-label-container">
+                                        <p class="iconview-caption"  id="figCapElmnt-{{this.processId}}-{{i}}" [style]="figCapIconSizeStyle">
+                                            {{file.getFileName  | truncateString}} 
+                                        </p>
+                                        <div class="iconview-rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
+                                            <form [formGroup]="renameForm"  class="iconview-rename-form-wrapper" (ngSubmit)="isFormDirty()">
+                                                <textarea class="iconview-rename-input" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"></textarea>
                                             </form>
                                         </div>
-                                    </figure>
+                                    </div> 
                                 </button>
                             </li>
                         </ng-template>
