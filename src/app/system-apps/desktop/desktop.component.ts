@@ -25,6 +25,7 @@ import { FileEntry } from 'src/app/system-files/file.entry';
 import { mousePosition } from './desktop.types';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
+import { VantaDefaults } from './vanta-object/vanta.defaults';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
@@ -307,7 +308,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     });
 
     this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
-      this._vantaEffect = VANTA.WAVES(this.getDefaultConfig());
+      this._vantaEffect = VANTA.WAVES(VantaDefaults.getDefaultWave(this.DEFAULT_COLOR));
     })
     
     this.getDesktopMenuData();
@@ -370,17 +371,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  getDefaultConfig():any{
-    const defaultConfig = {
-      el: '#vanta',
-      color: this.DEFAULT_COLOR,
-      waveHeight: 30,
-      shininess: 45,
-      waveSpeed: 0.20,
-      zoom: 0.95,
-    }
-    return defaultConfig;
-  }
+
 
   initClippy():void{
     if(this.showClippy){
@@ -992,7 +983,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     try {
       const vanta = this.VANTAS[n];
       if(n === Constants.NUM_ZERO){
-        this._vantaEffect = VANTA.WAVES(this.getDefaultConfig())
+        this._vantaEffect = VANTA.WAVES(VantaDefaults.getDefaultWave(this.DEFAULT_COLOR))
       }
       if(n === Constants.NUM_ONE){
         this._vantaEffect = VANTA.RINGS(vanta)
