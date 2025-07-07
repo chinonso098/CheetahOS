@@ -447,14 +447,19 @@ curl(['curl', 'example.com', '-X', 'POST', '-H', 'Content-Type: application/json
         return result;
     }
 
-    async ls(arg0:string):Promise<LSResult>{
+    async ls(path:string):Promise<LSResult>{
         let resultSet:LSResult;
 
         const TIME = 't', LIST = 'l', REVERSE = 'r';
 
         const result = await this.loadFilesInfoAsync(this.currentDirectoryPath).then(()=>{
 
-            if(arg0 == undefined || arg0 == Constants.EMPTY_STRING){
+            //hide the recylce bin
+            if(this.currentDirectoryPath.includes(Constants.DESKTOP_PATH)){
+                this.files = this.files.filter(x => x.getFileName !== Constants.RECYCLE_BIN);
+            }
+
+            if(path == undefined || path == Constants.EMPTY_STRING){
                 const onlyFileNames:string[] = [];
                 this.files.forEach(file => {
                     onlyFileNames.push(file.getFileName);
@@ -465,9 +470,9 @@ curl(['curl', 'example.com', '-X', 'POST', '-H', 'Content-Type: application/json
             }
 
             const lsOptions:string[] = ['-l', '-r', '-t', '-lr', '-rl', '-lt', '-tl', '-lrt', '-ltr', '-rtl', '-rlt', '-tlr', '-trl'];
-            if(lsOptions.includes(arg0)) {
+            if(lsOptions.includes(path)) {
                 
-                const splitOptions = arg0.replace(Constants.DASH, Constants.EMPTY_STRING)
+                const splitOptions = path.replace(Constants.DASH, Constants.EMPTY_STRING)
                     .split(Constants.EMPTY_STRING).sort().reverse();
 
                 console.log('splitOptions:', splitOptions);
