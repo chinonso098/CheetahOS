@@ -397,8 +397,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onClickTabLayoutBtn(iconView:any, id:number):void{
 
-    if(id === Constants.NUM_ONE)  return;
-
     this.currentViewOptionId = id;
     this.currentViewOption = iconView;
     this.defaultviewOption = iconView;
@@ -472,7 +470,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
 
-  //HERE
   changeLayoutCss(iconSize:string):void{
 
     const layoutOptions:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView,
@@ -495,19 +492,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   changeButtonAndImageSize(iconSize:string):void{
 
-    if(iconSize === this.extraLargeIconsView) return;
-
     const icon_sizes:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView];
-    const fig_img_sizes:string[] = ['30px', '45px', '80px']; //small, med, large, ext large
-    const btn_width_height_sizes = [['70px', '50px'], ['90px', '70px'], ['120px', '100px']];
+    const fig_img_sizes:string[] = ['30px', '45px', '80px', '96px']; //small, med, large, ext large
+    const btn_width_height_sizes = [['70px', '50px'], ['90px', '70px'], ['120px', '100px'], ['140px', '120px']];
 
     const iconIdx = icon_sizes.indexOf(iconSize);
-    //const btnIdx = (iconIdx <= Constants.NUM_TWO) ? Constants.NUM_ZERO : Constants.NUM_ONE;
 
     for(let i = 0; i < this.fileExplrFiles.length; i++){
       const btnElmnt = document.getElementById(`btnElmnt-${this.processId}-${i}`) as HTMLElement;
       const imgElmnt = document.getElementById(`imgElmnt-${this.processId}-${i}`) as HTMLElement;
-      const figCapElmnt = document.getElementById(`figCapElmnt-{{this.processId}}-{{i}}`) as HTMLElement;
+      const figCapElmnt = document.getElementById(`figCapElmnt-${this.processId}-${i}`) as HTMLElement;
 
       if(btnElmnt){
         btnElmnt.style.width = btn_width_height_sizes[iconIdx][0];
@@ -527,12 +521,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   changeOrderedlistStyle(iconView:string):void{
 
-    if(iconView === this.extraLargeIconsView) return;
-    
     const icon_sizes:string[] = [this.smallIconsView,this.mediumIconsView,this.largeIconsView,this.extraLargeIconsView];
-    const btn_width_height_sizes = [['70px', '50px'], ['90px', '70px'], ['120px', '100px']];
+    const btn_width_height_sizes = [['70px', '50px'], ['90px', '70px'], ['120px', '100px'],  ['140px', '120px']];
     const iconIdx = icon_sizes.indexOf(iconView);
-    //const btnIdx = (iconIdx <= Constants.NUM_TWO) ? Constants.NUM_ZERO : Constants.NUM_ONE;
     
     const olElmnt = document.getElementById(`olElmnt-${this.processId}`) as HTMLElement;
 

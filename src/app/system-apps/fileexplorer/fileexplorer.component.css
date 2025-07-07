@@ -837,8 +837,8 @@ span.mid-search-entry{
 .iconview-img-wrapper {
     width: fit-content;
     display: block;
-    max-width: 80px;
-    max-height: 80px;
+    max-width: 96px;
+    max-height: 96px;
 }
 
 .iconview-button {
