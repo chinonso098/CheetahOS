@@ -114,9 +114,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   tabLayoutCntnrStyle:Record<string, unknown> = {};
   ribbonMenuBtnStyle:Record<string, unknown> = {};
   ribbonMenuCntnrStyle:Record<string, unknown> = {};
-  iconSizeStyle:Record<string, unknown> = {};
-  btnStyle:Record<string, unknown> = {};
-  figCapIconSizeStyle:Record<string, unknown> = {};
 
   olClassName = 'ol-iconview-grid-size';
   btnTypeRibbon = 'Ribbon';
@@ -399,6 +396,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   onClickTabLayoutBtn(iconView:any, id:number):void{
+
+    if(id === Constants.NUM_ONE)  return;
+
     this.currentViewOptionId = id;
     this.currentViewOption = iconView;
     this.defaultviewOption = iconView;
@@ -475,9 +475,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   //HERE
   changeLayoutCss(iconSize:string):void{
 
-    const layoutOptions:string[] = [this.smallIconsView,this.mediumIconsView,this.largeIconsView,this.extraLargeIconsView,
+    const layoutOptions:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView,
                               this.listView,this.detailsView,this.tilesView,this.contentView];
-    const cssLayoutOptions:string[] = ['icon-view','list-view', 'details-view', 'tiles-view','content-view']
+    const cssLayoutOptions:string[] = ['icon-view', 'list-view', 'details-view', 'tiles-view', 'content-view']
     const layoutIdx = layoutOptions.indexOf(iconSize)
 
     if(layoutIdx <= Constants.NUM_THREE){
@@ -495,41 +495,51 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   changeButtonAndImageSize(iconSize:string):void{
 
+    if(iconSize === this.extraLargeIconsView) return;
+
     const icon_sizes:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView];
-    const fig_img_sizes:string[] = ['30px', '45px', '65px', '80px']; //small, med, large, ext large
-    const btn_width_height_sizes = [['90px', '70px'], ['120px', '100px']];
+    const fig_img_sizes:string[] = ['30px', '45px', '80px']; //small, med, large, ext large
+    const btn_width_height_sizes = [['70px', '50px'], ['90px', '70px'], ['120px', '100px']];
 
     const iconIdx = icon_sizes.indexOf(iconSize);
-    const btnIdx = (iconIdx <= Constants.NUM_TWO) ? Constants.NUM_ZERO : Constants.NUM_ONE;
+    //const btnIdx = (iconIdx <= Constants.NUM_TWO) ? Constants.NUM_ZERO : Constants.NUM_ONE;
 
     for(let i = 0; i < this.fileExplrFiles.length; i++){
       const btnElmnt = document.getElementById(`btnElmnt-${this.processId}-${i}`) as HTMLElement;
       const imgElmnt = document.getElementById(`imgElmnt-${this.processId}-${i}`) as HTMLElement;
+      const figCapElmnt = document.getElementById(`figCapElmnt-{{this.processId}}-{{i}}`) as HTMLElement;
 
       if(btnElmnt){
-        btnElmnt.style.width = btn_width_height_sizes[btnIdx][0];
-        btnElmnt.style.height = btn_width_height_sizes[btnIdx][1];
+        btnElmnt.style.width = btn_width_height_sizes[iconIdx][0];
+        btnElmnt.style.height = btn_width_height_sizes[iconIdx][1];
       }
 
       if(imgElmnt){
         imgElmnt.style.width = fig_img_sizes[iconIdx];
         imgElmnt.style.height = fig_img_sizes[iconIdx];
       }
+
+      if(figCapElmnt){
+        btnElmnt.style.width = btn_width_height_sizes[iconIdx][0];
+      }
     }
   }
 
   changeOrderedlistStyle(iconView:string):void{
+
+    if(iconView === this.extraLargeIconsView) return;
+    
     const icon_sizes:string[] = [this.smallIconsView,this.mediumIconsView,this.largeIconsView,this.extraLargeIconsView];
-    const btn_width_height_sizes = [['90px', '70px'], ['120px', '100px']];
+    const btn_width_height_sizes = [['70px', '50px'], ['90px', '70px'], ['120px', '100px']];
     const iconIdx = icon_sizes.indexOf(iconView);
-    const btnIdx = (iconIdx <= Constants.NUM_TWO) ? Constants.NUM_ZERO : Constants.NUM_ONE;
+    //const btnIdx = (iconIdx <= Constants.NUM_TWO) ? Constants.NUM_ZERO : Constants.NUM_ONE;
     
     const olElmnt = document.getElementById(`olElmnt-${this.processId}`) as HTMLElement;
 
     if(iconView == this.smallIconsView || iconView == this.mediumIconsView ||iconView == this.largeIconsView || iconView == this.extraLargeIconsView){
       if(olElmnt){
-        olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[btnIdx][0]})`;
-        olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[btnIdx][1]})`;
+        olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][0]})`;
+        olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][1]})`;
         olElmnt.style.rowGap = '20px';
         olElmnt.style.columnGap = '0px';
         olElmnt.style.padding = '5px 0';
@@ -544,33 +554,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     }
   }
-
-  changeGridRowColSize():void{
-    const rowSpace  = 20; //row space of 20px between each icons
-
-    const colSize = (this.GRID_SIZE === this.MAX_GRID_SIZE) ? this.MAX_GRID_SIZE :
-                    (this.GRID_SIZE === this.MID_GRID_SIZE) ? this.MID_GRID_SIZE :
-                    this.MIN_GRID_SIZE;
-
-    const rowSize = (this.GRID_SIZE === this.MAX_GRID_SIZE)? (this.MAX_GRID_SIZE - rowSpace) :
-                    (this.GRID_SIZE === this.MID_GRID_SIZE)? (this.MID_GRID_SIZE - rowSpace) :
-                    (this.MIN_GRID_SIZE - rowSpace);
-
-    const dsktpmngrOlElmnt = document.getElementById('dsktpmngr_ol') as HTMLElement;
-    if(dsktpmngrOlElmnt){
-      dsktpmngrOlElmnt.style.gridTemplateColumns = `repeat(auto-fill, ${colSize}px)`;
-      dsktpmngrOlElmnt.style.gridTemplateRows = `repeat(auto-fill,${rowSize}px)`;
-    }
-
-    this.btnStyle = {
-      'width': `${colSize}px`, 
-      'height': `${rowSize}px`,
-    }
-  }
-
-
-
-
 
   setNavButtonsColor():void{
     this.prevNavBtnStyle ={
@@ -1268,7 +1251,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         //files can not be opened in terminal, pinned to start, opened in new window, pin to Quick access
         this.menuOrder = Constants.FILE_EXPLORER_FILE_MENU_ORDER;
         for(const x of this.sourceData) {
-          if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Open in new window' || x.label === 'Pin to Start'){ /*nothing*/}
+          if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Open in new window' || x.label === 'Pin to Start' || x.label === 'Restore'){ /*nothing*/}
           else{
             this.menuData.push(x);
           }
@@ -1518,7 +1501,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const verticalDiff = verticalMax - evt.clientY;
     const menuWidth = 210;
     //const subMenuWidth = 205;
-    const taskBarHeight = 40;
+    const taskBarHeight = 5;
 
     if((horizontalDiff) < menuWidth){
       horizontalShift = true;

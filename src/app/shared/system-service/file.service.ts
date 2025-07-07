@@ -445,7 +445,10 @@ export class FileService implements BaseService{
         }
         else if(extension === '.swf'){
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'ruffle', 'swf_file.png');
-        }else{
+        }else if(extension === '.pdf'){
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'pdfviewer', 'pdf.png');
+        }
+        else{
             this._fileInfo.setIconPath=`${Constants.IMAGE_BASE_PATH}unknown.png`;
             this._fileInfo.setCurrentPath = path;
             this._fileInfo.setFileName = basename(path, extname(path));

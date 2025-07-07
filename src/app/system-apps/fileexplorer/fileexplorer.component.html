@@ -291,19 +291,18 @@
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
                                      (click)="onBtnClick(i)" 
-                                     id="btnElmnt-{{this.processId}}-{{i}}" 
-                                     [style]="btnStyle">
+                                     id="btnElmnt-{{this.processId}}-{{i}}">
 
                                     <div class="iconview-img-container"  id="figElmnt-{{this.processId}}-{{i}}">
                                         <div class="iconview-img-wrapper">
-                                            <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}" [style]="iconSizeStyle"/>
+                                            <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
                                         </div>
                                         <!-- <div class="dsktp-scut-icon-section" *ngIf="file.getIsShortCut">
                                             <img class="shortcut-img" [src]="shortCutImg"  id="shortCut{{i}}" [style]="shortCutIconSizeStyle"/>
                                         </div> -->
                                     </div>
                                     <div class="iconview-caption-label-container">
-                                        <p class="iconview-caption"  id="figCapElmnt-{{this.processId}}-{{i}}" [style]="figCapIconSizeStyle">
+                                        <p class="iconview-caption"  id="figCapElmnt-{{this.processId}}-{{i}}">
                                             {{file.getFileName  | truncateString}} 
                                         </p>
                                         <div class="iconview-rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
