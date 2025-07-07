@@ -1,3 +1,4 @@
+import { CommonFunctions } from "./common.functions";
 import { Constants } from "./constants";
 
 export class FileInfo{
@@ -113,28 +114,14 @@ export class FileInfo{
         }
     }
 
-    get getSize(){
+    get getSizeInBytes(){
         return this._size;
     }
 
-    get getSize1(){
-        let  tmpSize = Constants.NUM_ZERO
-
-        if(this._size >= Constants.NUM_ZERO && this._size <= 999){
-            tmpSize = this._size;
-        }
-
-        if(this._size >= 1000 && this._size <= 999999){
-            tmpSize= Math.round((this._size/1000) * 100) /100;
-        }
-
-        if(this._size >= 1000000 && this._size <= 999999999){
-            tmpSize = Math.round((this._size/1000000) * 100) / 100;
-        }
-
-        return tmpSize;
+    get getSize(){
+        return  CommonFunctions.getReadableFileSizeValue(this._size);
     }
-    set setSize(size:number){
+    set setSizeInBytes(size:number){
         this._size = size;
     }
 
@@ -153,20 +140,7 @@ export class FileInfo{
     }
 
     get getFileSizeUnit(){
-
-        if( this._size >= Constants.NUM_ZERO && this._size <= 999){
-            this._fileSizeUnit = 'B';
-        }
-
-        if( this._size >= 1000 && this._size <= 999999){
-            this._fileSizeUnit = 'KB';
-        }
-
-        if( this._size >= 1000000 && this._size <= 999999999){
-            this._fileSizeUnit = 'MB';
-        }
-
-        return this._fileSizeUnit;
+        return  CommonFunctions.getFileSizeUnit(this._size);
     }
 
     get getMode(){

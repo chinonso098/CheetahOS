@@ -26,6 +26,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -78,11 +79,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isRenameActive = false;
   private isIconInFocusDueToCurrentAction = false;
   private isIconInFocusDueToPriorAction = false;
-  private isBtnClickEvt= false;
   private isHideCntxtMenuEvt= false;
   private isShiftSubMenuLeft = false;
   private isRecycleBinFolder = false;
-   isMultiSelectEnabled = true;
+
+  isBtnClickEvt= false;
+  isMultiSelectEnabled = true;
   isMultiSelectActive = false;
   areMultipleIconsHighlighted = false;
 
@@ -94,6 +96,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private btnClickCnt = Constants.NUM_ZERO;
   private renameFileTriggerCnt = Constants.NUM_ZERO; 
   private currentIconName = Constants.EMPTY_STRING;
+  private fileExplrClickCounter = Constants.NUM_ZERO; 
 
   isSearchBoxNotEmpty = false;
   showPathHistory = false;
@@ -104,6 +107,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showInformationTip = false;
   iconCntxtCntr = Constants.NUM_ZERO;
   fileExplrCntxtCntr = Constants.NUM_ZERO;
+  selectFilesSizeSum = Constants.NUM_ZERO;
+  selectFilesSizeUnit = 'B';
   //hideInformationTip = false;
 
   fileExplrCntxtMenuStyle:Record<string, unknown> = {};
@@ -122,11 +127,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   btnTypeRibbon = 'Ribbon';
   btnTypeFooter = 'Footer';
 
-  readonly MIN_GRID_SIZE = 70;
-  readonly MID_GRID_SIZE = 90;
-  readonly MAX_GRID_SIZE = 120;
-
-  GRID_SIZE = this.MID_GRID_SIZE; //column size of grid = 90px
 
   fileExplrFiles:FileInfo[] = [];
   fileTreeNode:FileTreeNode[] = [];
@@ -1191,6 +1191,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onBtnClick(id:number):void{
     this.doBtnClickThings(id);
     this.setBtnStyle(id, true);
+    this.getSelectFileSizeSumAndUnit();
   }
 
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
@@ -1321,7 +1322,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   handleIconHighLightState():void{
 
-    //First case - I'm clicking only on the desktop icons
+    //First case - I'm clicking only on the folder icons
     if((this.isBtnClickEvt && this.btnClickCnt >= Constants.NUM_ONE) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === Constants.NUM_ZERO)){  
       
       if(this.isRenameActive){
@@ -1338,10 +1339,22 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }else{
       this.hideCntxtMenuEvtCnt++;
       this.isHideCntxtMenuEvt = true;
-      //Second case - I was only clicking on the desktop
+      //Second case - I was only clicking on an empty space in the folder
       if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= Constants.NUM_ONE) && (!this.isBtnClickEvt && this.btnClickCnt === Constants.NUM_ZERO)){
         this.isIconInFocusDueToCurrentAction = false;
+        this.fileExplrClickCounter++;
         this.btnStyleAndValuesChange();
+
+        //reset after clicking on the folder 2wice
+        if(this.fileExplrClickCounter >= Constants.NUM_ONE && this.markedBtnIds.length === Constants.NUM_ZERO){
+          this.fileExplrClickCounter = Constants.NUM_ZERO;
+        }else if(this.fileExplrClickCounter >= Constants.NUM_TWO && this.markedBtnIds.length > Constants.NUM_ZERO){
+          console.log('turn off - fileExplr areMultipleIconsHighlighted-1')
+          this.areMultipleIconsHighlighted = false;
+          this.removeClassAndStyleFromBtn();
+          this.fileExplrClickCounter = Constants.NUM_ZERO;
+          this.markedBtnIds = [];
+        }
       }
     }
   }
@@ -1358,7 +1371,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isHideCntxtMenuEvt = false;
     this.hideCntxtMenuEvtCnt = Constants.NUM_ZERO;
    
-    if(this.prevSelectedElementId != id){
+    if(this.prevSelectedElementId !== id){
       this.removeBtnStyle(this.prevSelectedElementId);
     }
   }
@@ -1563,6 +1576,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.areMultipleIconsHighlighted = true;
       this.getIDsOfAllTheMarkedButtons();
     }
+    this.getSelectFileSizeSumAndUnit();
   }
 
   updateDivWithAndSize(evt:MouseEvent):void{
@@ -1659,6 +1673,31 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     console.log('file explr this.markedBtnIds:', this.markedBtnIds);
   }
   
+  getSelectFileSizeSumAndUnit():void{
+    let sum = Constants.NUM_ZERO;
+
+    if(this.markedBtnIds.length > Constants.NUM_ZERO){
+      for(const id of this.markedBtnIds){
+        const file = this.fileExplrFiles[Number(id)];
+        if(file.getIsFile){
+          sum += sum + file.getSizeInBytes;
+        }
+      }
+
+      this.selectFilesSizeSum = CommonFunctions.getReadableFileSizeValue(sum);
+      this.selectFilesSizeUnit = CommonFunctions.getFileSizeUnit(sum);
+    }
+
+    if(this.isBtnClickEvt){
+      console.log('isBtnClickEvt:', this.isBtnClickEvt);
+      const file = this.fileExplrFiles[this.selectedElementId];
+      if(file.getIsFile){
+        this.selectFilesSizeSum = file.getSize;
+        this.selectFilesSizeUnit = file.getFileSizeUnit
+      }
+    }
+  }
+
   removeClassAndStyleFromBtn():void{
     this.markedBtnIds.forEach(id =>{
       const btnIcon = document.getElementById(`btnElmnt-${this.processId}-${id}`);
@@ -1699,17 +1738,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   sortIcons(sortBy:string): void {
-    if(sortBy === "Size"){
-      this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => objB.getSize - objA.getSize);
-    }else if(sortBy === "Date Modified"){
+    if(sortBy === SortBys.SIZE){
+      this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => objB.getSizeInBytes - objA.getSizeInBytes);
+    }else if(sortBy === SortBys.DATE_MODIFIED){
       this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => objB.getDateModified.getTime() - objA.getDateModified.getTime());
-    }else if(sortBy === "Name"){
+    }else if(sortBy === SortBys.NAME){
       this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => {
-        return objA.getFileName < objB.getFileName ? -1 : 1;
+        return objA.getFileName < objB.getFileName ? Constants.MINUS_ONE : Constants.NUM_ONE;
       });
-    }else if(sortBy === "Item Type"){
+    }else if(sortBy === SortBys.ITEM_TYPE){
       this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => {
-        return objA.getFileType < objB.getFileType ? -1 : 1;
+        return objA.getFileType < objB.getFileType ? Constants.MINUS_ONE : Constants.NUM_ONE;
       });
     }
   }
@@ -1751,7 +1790,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const fileAuthor = 'Relampago Del Catatumbo';
     const fileType = file.getFileType;
     const fileDateModified = file.getDateModifiedUS;
-    const fileSize = `${String(file.getSize1)}  ${file.getFileSizeUnit}`;
+    const fileSize = `${String(file.getSize)}  ${file.getFileSizeUnit}`;
     const fileName = file.getFileName;
 
     //reset

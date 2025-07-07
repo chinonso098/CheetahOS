@@ -453,7 +453,7 @@ export class FileService implements BaseService{
             this._fileInfo.setCurrentPath = path;
             this._fileInfo.setFileName = basename(path, extname(path));
             this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
-            this._fileInfo.setSize = fileMetaData.getSize;
+            this._fileInfo.setSizeInBytes = fileMetaData.getSize;
             this._fileInfo.setMode = fileMetaData.getMode;
             this._fileInfo.setFileExtension = extension;
         }
@@ -481,7 +481,7 @@ export class FileService implements BaseService{
         }
         fileInfo.setIsFile = isFile;
         fileInfo.setDateModified = fileMetaData.getModifiedDate;
-        fileInfo.setSize = fileMetaData.getSize;
+        fileInfo.setSizeInBytes = fileMetaData.getSize;
         fileInfo.setMode = fileMetaData.getMode;
         fileInfo.setFileExtension = extname(path);
 

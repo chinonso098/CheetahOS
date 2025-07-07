@@ -905,8 +905,8 @@ span.mid-search-entry{
 }
 
 .fileexplr-multi-select-highlight {
-    background-color: rgba(0, 150, 255, 0.3);
-    border: 1px solid hsla(0,0%,50%,25%);
+    background-color: #4c4c4c;
+    border: 0.5px solid #3c3c3c;
 }
 
 

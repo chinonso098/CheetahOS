@@ -3,7 +3,7 @@
     (click)="hideDesktopContextMenuAndOthers(name)"
     (mousemove)="performTasks($event)"  #desktopContainer> 
 
-    <ol class="dsktp-ol" (dragover)="onDragOver($event)" (drop)="onDrop($event)" (click)="hideIconContextMenu(name)"  (click)="handleIconHighLightState()"
+    <ol class="dsktp-ol" (dragover)="onDragOver($event)" (drop)="onDrop($event)"   (click)="handleIconHighLightState()"
         (mousedown)="activateMultiSelect($event)"
         (mouseup)="deActivateMultiSelect()"
         (mousemove)="updateDivWithAndSize($event)" id="dsktpmngr_ol"> 

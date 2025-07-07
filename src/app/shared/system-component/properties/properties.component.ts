@@ -10,6 +10,7 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
 import { ProcessIDService } from '../../system-service/process.id.service';
 import { RunningProcessService } from '../../system-service/running.process.service';
 import { WindowService } from '../../system-service/window.service';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 @Component({
   selector: 'cos-properties',
@@ -114,12 +115,12 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   }
 
   getFileSize():void{
-    this.fileSize = this.fileInput.getSize1;
-    this.fileSize2 = this.fileInput.getSize;
+    this.fileSize = this.fileInput.getSize;
+    this.fileSize2 = this.fileInput.getSizeInBytes;
 
-    const tmpFilesOnDisk = this.getRandomNumber(this.fileInput.getSize);
-    this.fileSizeOnDisk = this.getSize(tmpFilesOnDisk);
-    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(0));
+    const tmpFilesOnDisk = this.getRandomNumber(this.fileInput.getSizeInBytes);
+    this.fileSizeOnDisk = CommonFunctions.getReadableFileSizeValue(tmpFilesOnDisk);
+    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed( Constants.NUM_ZERO));
 
     this.fileSizeUnit = this.fileInput.getFileSizeUnit;
     this.fileDate = this.fileInput.getDateModified;
@@ -127,47 +128,15 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
   async getFolderSizeData():Promise<void>{
     const folderSize =  await this._fileService.getFolderSizeAsync(this.fileInput.getCurrentPath);
-    this.fileSize = this.getSize(folderSize);
+    this.fileSize = CommonFunctions.getReadableFileSizeValue(folderSize);
     this.fileSize2 = folderSize;
 
     const tmpFilesOnDisk = this.getRandomNumber(folderSize);
-    this.fileSizeOnDisk = this.getSize(tmpFilesOnDisk);
-    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(0));
+    this.fileSizeOnDisk = CommonFunctions.getReadableFileSizeValue(tmpFilesOnDisk);
+    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(Constants.NUM_ZERO));
 
-    this.getFolderSizeUnit(folderSize);
+    this.fileSizeUnit  = CommonFunctions.getFileSizeUnit(folderSize);
     this.fileDate = this.fileInput.getDateModified;
-  }
-
-  getFolderSizeUnit(size:number):void{
-    if(size >= Constants.NUM_ZERO && size <= 999){
-        this.fileSizeUnit = 'B';
-    }
-
-    if(size >= 1000 && size <= 999999){
-      this.fileSizeUnit = 'KB';
-    }
-
-    if(size >= 1000000 && size <= 999999999){
-      this.fileSizeUnit = 'MB';
-    }
-  }
-
-  getSize(size:number):number{
-      let  tmpSize = Constants.NUM_ZERO;
-
-      if(size>= Constants.NUM_ZERO && size<= 999){
-          tmpSize = size;
-      }
-
-      if(size>= 1000 && size<= 999999){
-          tmpSize= Math.round((size/1000) * 100) /100;
-      }
-
-      if(size>= 1000000 && size<= 999999999){
-          tmpSize = Math.round((size/1000000) * 100) / 100;
-      }
-
-      return tmpSize;
   }
 
   getOrigin():void{
@@ -188,7 +157,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     const result = x + randomAddition;
 
     // Limit to 2 decimal places
-    return parseFloat(result.toFixed(2));
+    return parseFloat(result.toFixed(Constants.NUM_TWO));
   }
 
   setPropertyWindowToFocus(pid:number):void{

@@ -1557,13 +1557,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
   
-  hideIconContextMenu(caller?:string):void{
-    this.showDesktopIconCntxtMenu = false;
-    // to prevent an endless loop of calls,
-    if(caller !== undefined && caller === this.name){
-      this._menuService.hideContextMenus.next();
-    }
-  }
+  // hideIconContextMenu(caller?:string):void{
+  //   this.showDesktopIconCntxtMenu = false;
+  //   // to prevent an endless loop of calls,
+  //   if(caller !== undefined && caller === this.name){
+  //     this._menuService.hideContextMenus.next();
+  //   }
+  // }
 
   handleIconHighLightState():void{
     //First case - I'm clicking only on the desktop icons
@@ -1592,7 +1592,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         this.btnStyleAndValuesReset();
 
         //reset after clicking on the desktop 2wice
-        if(this.deskTopClickCounter >= Constants.NUM_TWO){
+        if(this.deskTopClickCounter >= Constants.NUM_ONE && this.markedBtnIds.length === Constants.NUM_ZERO){
+          this.deskTopClickCounter = Constants.NUM_ZERO;
+        }else if(this.deskTopClickCounter >= Constants.NUM_TWO){
           console.log('turn off - areMultipleIconsHighlighted-1')
           this.areMultipleIconsHighlighted = false;
           this.removeClassAndStyleFromBtn();
@@ -1884,7 +1886,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   sortIcons(sortBy:string):void {
     if(sortBy === SortBys.SIZE){
-      this.files = this.files.sort((objA, objB) => objB.getSize - objA.getSize);
+      this.files = this.files.sort((objA, objB) => objB.getSizeInBytes - objA.getSizeInBytes);
     }else if(sortBy ===SortBys.DATE_MODIFIED){
       this.files = this.files.sort((objA, objB) => objB.getDateModified.getTime() - objA.getDateModified.getTime());
     }else if(sortBy === SortBys.NAME){

@@ -484,7 +484,7 @@ curl(['curl', 'example.com', '-X', 'POST', '-H', 'Content-Type: application/json
                             const strPermission =this.getPermission(file.getMode);
                             const fileNameWithExt = `${this.addBackTickToFileName(file.getFileName)}${file.getFileExtension}`;
                             const fileInfo = `
-${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces('Terminal',8)} ${this.addspaces('staff', 6)} ${this.addspaces(String(file.getSize),6)}  ${this.addspaces(file.getDateTimeModifiedUS,12)} ${this.addspaces(fileNameWithExt,11)}
+${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces('Terminal',8)} ${this.addspaces('staff', 6)} ${this.addspaces(String(file.getSizeInBytes),6)}  ${this.addspaces(file.getDateTimeModifiedUS,12)} ${this.addspaces(fileNameWithExt,11)}
                         `
                             result.push(fileInfo);
                         });
