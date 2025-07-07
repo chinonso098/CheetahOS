@@ -83,7 +83,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isShiftSubMenuLeft = false;
   private isRecycleBinFolder = false;
 
-  isBtnClickEvt= false;
+  _isBtnClickEvt= false;
   isMultiSelectEnabled = true;
   isMultiSelectActive = false;
   areMultipleIconsHighlighted = false;
@@ -105,6 +105,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showIconCntxtMenu = false;
   showFileExplrCntxtMenu = false;
   showInformationTip = false;
+  showFileSizeAndUnit = false;
   iconCntxtCntr = Constants.NUM_ZERO;
   fileExplrCntxtCntr = Constants.NUM_ZERO;
   selectFilesSizeSum = Constants.NUM_ZERO;
@@ -336,6 +337,21 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     });
 
   }
+
+  setIsBtnClickEvt(val: boolean, who:string) {
+    this._isBtnClickEvt = val;
+    if(val === true) {
+      console.log('isBtnClickEvt set to true!');
+    }else{
+      console.log('isBtnClickEvt set to false!');
+      console.log('who set it to false!:', who);
+    }
+  }
+
+  getIsBtnClickEvt() {
+    return this._isBtnClickEvt;
+  }
+
 
   getProperRecycleBinIcon():void{
     if(this.directory === Constants.RECYCLE_BIN_PATH){
@@ -1188,10 +1204,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.runProcess(this.selectedFile);
   }
 
-  onBtnClick(id:number):void{
+  onBtnClick(evt:MouseEvent, id:number):void{
     this.doBtnClickThings(id);
     this.setBtnStyle(id, true);
     this.getSelectFileSizeSumAndUnit();
+
+    evt.stopPropagation();
   }
 
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
@@ -1321,9 +1339,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   handleIconHighLightState():void{
+    this.hideShowFileSizeAndUnit();
 
     //First case - I'm clicking only on the folder icons
-    if((this.isBtnClickEvt && this.btnClickCnt >= Constants.NUM_ONE) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === Constants.NUM_ZERO)){  
+    if((this.getIsBtnClickEvt() && this.btnClickCnt >= Constants.NUM_ONE) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === Constants.NUM_ZERO)){  
       
       if(this.isRenameActive){
         this.isFormDirty();
@@ -1333,14 +1352,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           this.setBtnStyle(this.selectedElementId,false);
       }
       if(!this.isRenameActive){
-        this.isBtnClickEvt = false;
+        this.setIsBtnClickEvt(false, 'handleIconHighLightState');
         this.btnClickCnt = Constants.NUM_ZERO;
+        this.btnStyleAndValuesChange();
       }
     }else{
       this.hideCntxtMenuEvtCnt++;
       this.isHideCntxtMenuEvt = true;
       //Second case - I was only clicking on an empty space in the folder
-      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= Constants.NUM_ONE) && (!this.isBtnClickEvt && this.btnClickCnt === Constants.NUM_ZERO)){
+      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= Constants.NUM_ONE) && (!this.getIsBtnClickEvt() && this.btnClickCnt === Constants.NUM_ZERO)){
         this.isIconInFocusDueToCurrentAction = false;
         this.fileExplrClickCounter++;
         this.btnStyleAndValuesChange();
@@ -1366,7 +1386,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.prevSelectedElementId = this.selectedElementId 
     this.selectedElementId = id;
 
-    this.isBtnClickEvt = true;
+    this.setIsBtnClickEvt(true, 'doBtnClickThings');
     this.btnClickCnt++;
     this.isHideCntxtMenuEvt = false;
     this.hideCntxtMenuEvtCnt = Constants.NUM_ZERO;
@@ -1377,20 +1397,28 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   onMouseEnter(evt:MouseEvent, file:FileInfo, id:number):void{
-    this.showInformationTip = true;
-    this.setBtnStyle(id, true);
-    this.displayInformationTip(evt, file);
+
+    if(!this.isMultiSelectActive){
+      this.isMultiSelectEnabled = false;
+
+      this.showInformationTip = true;
+      this.setBtnStyle(id, true);
+      this.displayInformationTip(evt, file);
+    }
   }
 
   onMouseLeave(id:number):void{
     this.showInformationTip = false;
+    this.isMultiSelectEnabled = true;
     //this.hideInformationTip = false;
 
-    if(id != this.selectedElementId){
-      this.removeBtnStyle(id);
-    }
-    else if((id == this.selectedElementId) && this.isIconInFocusDueToPriorAction){
-      this.setBtnStyle(id,false);
+    if(!this.isMultiSelectActive){
+      if(id != this.selectedElementId){
+        this.removeBtnStyle(id);
+      }
+      else if((id == this.selectedElementId) && this.isIconInFocusDueToPriorAction){
+        this.setBtnStyle(id,false);
+      }
     }
   }
 
@@ -1423,7 +1451,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   btnStyleAndValuesReset():void{
-    this.isBtnClickEvt = false;
+    this.setIsBtnClickEvt(false, 'btnStyleAndValuesReset');
     this.btnClickCnt = Constants.NUM_ZERO;
     this.removeBtnStyle(this.selectedElementId);
     this.removeBtnStyle(this.prevSelectedElementId);
@@ -1434,7 +1462,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   btnStyleAndValuesChange():void{
-    this.isBtnClickEvt = false;
+    this.setIsBtnClickEvt(false, 'btnStyleAndValuesChange');
     this.btnClickCnt = Constants.NUM_ZERO;
     this.prevSelectedElementId = this.selectedElementId;
     this.isIconInFocusDueToPriorAction = true;
@@ -1688,14 +1716,24 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.selectFilesSizeUnit = CommonFunctions.getFileSizeUnit(sum);
     }
 
-    if(this.isBtnClickEvt){
-      console.log('isBtnClickEvt:', this.isBtnClickEvt);
+    if(this.getIsBtnClickEvt()){
+      console.log('isBtnClickEvt:', this.getIsBtnClickEvt());
       const file = this.fileExplrFiles[this.selectedElementId];
       if(file.getIsFile){
+        this.showFileSizeAndUnit = true;
         this.selectFilesSizeSum = file.getSize;
         this.selectFilesSizeUnit = file.getFileSizeUnit
+      }else{
+        this.hideShowFileSizeAndUnit();
       }
+      
     }
+  }
+
+  private hideShowFileSizeAndUnit():void{
+    this.showFileSizeAndUnit = false;
+    this.selectFilesSizeSum = Constants.NUM_ZERO;
+    this.selectFilesSizeUnit = Constants.EMPTY_STRING;
   }
 
   removeClassAndStyleFromBtn():void{
@@ -2208,11 +2246,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   retrievePastSessionData():void{
-      const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
 
-        if(appSessionData !== null  && appSessionData.app_data != Constants.EMPTY_STRING){
-          this.directory = appSessionData.app_data as string;
-        }
+    if(appSessionData !== null  && appSessionData.app_data != Constants.EMPTY_STRING){
+      this.directory = appSessionData.app_data as string;
+    }
   }
 
   maximizeWindow():void{

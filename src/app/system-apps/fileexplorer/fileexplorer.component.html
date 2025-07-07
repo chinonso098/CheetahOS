@@ -295,7 +295,7 @@
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
-                                    (click)="onBtnClick(i)" 
+                                    (click)="onBtnClick($event, i)" 
                                     id="btnElmnt-{{this.processId}}-{{i}}">
 
                                     <div class="iconview-img-container"  id="figElmnt-{{this.processId}}-{{i}}">
@@ -323,7 +323,7 @@
                         <ng-template #listView0>
                             <li class="li-list-view" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}">
                                 <button class="button-list-view" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
-                                    (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick(i)"  id="btnElmnt-{{this.processId}}-{{i}}">
+                                    (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)"  id="btnElmnt-{{this.processId}}-{{i}}">
     
                                     <span class="span-list-view">
                                         <figure class="figure-list-view">
@@ -349,7 +349,7 @@
                             <!-- adding (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)" id="btnElmnt-{{this.processId}}-{{i}}" to the li elements covers it completley on highlight-->
                             <li class="li-content-view" *ngFor="let file of fileExplrFiles; let i = index">
                                 <button class="button-content-view" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
-                                    (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick(i)" id="btnElmnt-{{this.processId}}-{{i}}">
+                                    (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
                                     <span class="span-content-view">
                                         <figure class="figure-content-view" id="figElmnt-{{this.processId}}-{{i}}">
                                             <img class="img-content-view" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
@@ -384,7 +384,7 @@
                         <ng-template #tilesView0>
                             <li class="li-tiles-view" *ngFor="let file of fileExplrFiles; let i = index">
                                 <button class="button-tiles-view" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
-                                    (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick(i)" id="btnElmnt-{{this.processId}}-{{i}}">
+                                    (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
                                     <span class="span-tiles-view">
                                         <figure class="figure-tiles-view">
                                             <img class="img-tiles-view" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
@@ -459,14 +459,14 @@
             <span class="span-footer">{{fileExplrFiles.length}} items</span>
             <span class="span-footer">|</span>
 
-            <ng-container *ngIf="markedBtnIds.length > 0 || isBtnClickEvt">
+            <ng-container *ngIf="markedBtnIds.length > 0 || showFileSizeAndUnit">
                 <ng-container *ngIf="markedBtnIds.length > 0">
                     <span class="span-footer">{{markedBtnIds.length}} items selected</span>
                     <span class="span-footer"> {{selectFilesSizeSum}} {{selectFilesSizeUnit}}</span>
                     <span class="span-footer">|</span>
                 </ng-container>
 
-                <ng-container *ngIf="isBtnClickEvt">
+                <ng-container *ngIf="showFileSizeAndUnit">
                     <span class="span-footer">1 items selected</span>
                     <span class="span-footer"> {{selectFilesSizeSum}} {{selectFilesSizeUnit}}</span>
                     <span class="span-footer">|</span>
