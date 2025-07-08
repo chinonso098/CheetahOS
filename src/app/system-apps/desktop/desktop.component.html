@@ -3,7 +3,8 @@
     (click)="hideDesktopContextMenuAndOthers(name)"
     (mousemove)="performTasks($event)"  #desktopContainer> 
 
-    <ol class="ol-desktopIcon-grid" (dragover)="onDragOver($event)" (drop)="onDrop($event)"   (click)="handleIconHighLightState()"
+    <ol class="ol-desktopIcon-grid" (dragover)="onDragOver($event)" (drop)="onDrop($event)" 
+        (click)="handleIconHighLightState()"
         (mousedown)="activateMultiSelect($event)"
         (mouseup)="deActivateMultiSelect()"
         (mousemove)="updateDivWithAndSize($event)" id="desktopIcon_ol"> 

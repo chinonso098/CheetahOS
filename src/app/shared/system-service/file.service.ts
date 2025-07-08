@@ -318,16 +318,11 @@ export class FileService implements BaseService{
             return Promise.reject(new Error('Path must not be empty'));
         }
 
-       return new Promise((resolve, reject) =>{
-            this._fileSystem.readFile(path,(err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
-                if(err){
-                    console.error('getFileAsync error:',err)
-                    reject(err)
-                }else{
-                    resolve(contents.toString());
-                }
-            });
-        });
+        const readResult = await this.readRawAsync(path);
+        if(readResult)
+            return readResult.toString();
+        else
+            return Constants.EMPTY_STRING;
     }
 
     /**
@@ -347,16 +342,23 @@ export class FileService implements BaseService{
             return Promise.reject(new Error('Path must not be empty'));
         }
 
-        return new Promise((resolve, reject) =>{
-            this._fileSystem.readFile(path,(err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
-                if(err){
-                    console.error('getFileBlobAsync error:',err)
-                    reject(err);
+        const readResult = await this.readRawAsync(path);
+        if(readResult)
+            return  this.bufferToUrl(readResult);
+        else
+            return Constants.EMPTY_STRING;
+    }
+
+    private async readRawAsync(srcPath: string): Promise<Buffer | undefined>{
+        return new Promise((resolve) => {
+            this._fileSystem.readFile(srcPath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING)) => {
+                if (!readErr) {
+                    console.log('Succes reading file');
+                    return resolve(contents);
                 }
 
-                contents = contents || new Uint8Array();
-                const fileUrl =  this.bufferToUrl(contents);
-                resolve(fileUrl);
+                console.error('Error reading file:', readErr);
+                return resolve(undefined);
             });
         });
     }
@@ -366,7 +368,7 @@ export class FileService implements BaseService{
             console.error('getEntriesFromDirectoryAsync error: Path must not be empty');
             return Promise.reject(new Error('Path must not be empty'));
         }
-
+        
         return new Promise<string[]>((resolve) => {
              this._fileSystem.readdir(path, function(err, files) {
                 if(err){
@@ -434,7 +436,7 @@ export class FileService implements BaseService{
             const img_file = (extension === '.wasm')? 'wasm_file.png' : 'code_file.png';
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'codeeditor', img_file);
         }
-        else if(extension === '.txt' || extension === '.properties'){
+        else if(extension === '.txt' || extension === '.properties' || extension === '.log'){
             this._fileInfo = this.populateFileInfo(path, fileMetaData, true, 'texteditor', 'file.png');
         }
         else if(extension === '.md'){
@@ -591,7 +593,7 @@ export class FileService implements BaseService{
             //check if destPath Exists
             const exists = await this.checkIfExistsAsync(destPath);
             if(exists){
-                result = await this.moveHandlerAAsync(destPath, folderToProcessingQueue, folderToDeleteStack);
+                result = await this.moveHandlerAAsync(destPath, folderToProcessingQueue, folderToDeleteStack, isRecycleBin);
             }else{
                 result =  await this.moveHandlerBAsync(destPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
             }
@@ -607,7 +609,7 @@ export class FileService implements BaseService{
             if(isRecycleBin)
                 this.removeAndUpdateSessionData(srcPath);
 
-            return await this.moveFileAsync(srcPath, destPath);
+            return await this.moveFileAsync(srcPath, destPath, undefined, isRecycleBin);
         }
     }
 
@@ -618,7 +620,7 @@ export class FileService implements BaseService{
      * @param folderToProcessingQueue 
      * @returns 
      */
-    private async moveHandlerAAsync(destPath:string, folderToProcessingQueue:string[], folderToDeleteStack:string[],):Promise<boolean>{
+    private async moveHandlerAAsync(destPath:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], isRecycleBin?: boolean):Promise<boolean>{
 
         if(folderToProcessingQueue.length === Constants.NUM_ZERO)
             return true;
@@ -635,7 +637,7 @@ export class FileService implements BaseService{
                 if(checkIfDirResult){
                     folderToProcessingQueue.push(`${srcPath}/${directoryEntry}`);
                 }else{
-                    const result = await this.moveFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
+                    const result = await this.moveFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`, undefined, isRecycleBin);
                     if(result){
                         //console.log(`file:${srcPath}/${directoryEntry} successfully moved to destination:${destPath}/${folderName}`);
                     }else{
@@ -648,7 +650,7 @@ export class FileService implements BaseService{
             return false;
         }
 
-        return this.moveHandlerAAsync(`${destPath}/${folderName}`, folderToProcessingQueue, folderToDeleteStack);
+        return this.moveHandlerAAsync(`${destPath}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, isRecycleBin);
     }
 
     /**
@@ -700,51 +702,68 @@ export class FileService implements BaseService{
         return this.moveHandlerBAsync(`${destPath}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, skipCounter);
     }
 
-    private async deleteEmptyFolders(folders:string[]):Promise<void>{
-        for(let i = 0; i <= folders.length; i++){
-            const path = folders.pop();
-            if(path){
-                await this.deleteFolderAsync(path);                    
-            }
+    //virtual filesystem, use copy and then delete. There is a BrowserFS bug causing an error to be thrown
+    private async moveFileAsync(srcPath: string, destPath: string, generatePath?: boolean, isRecycleBin?: boolean): Promise<boolean> {
+        let destinationPath = Constants.EMPTY_STRING;
+        if (generatePath === undefined || generatePath){
+            const fileName = (isRecycleBin)
+                ?  this.appendToFileName(this.getNameFromPath(srcPath), "_rst") 
+                : this.getNameFromPath(srcPath);
+
+            destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+        } else {
+            destinationPath = destPath;
         }
+
+        const readResult = await this.readRawAsync(srcPath);
+        if(!readResult) return false;
+
+        const checkResult = await this.checkIfExistsAsync(destinationPath);
+        if(checkResult)
+            return false
+
+        //overwrite the file
+        const writeResult = await this.writeRawAsync(destinationPath, readResult, 'wx');
+        if(writeResult !== Constants.NUM_ZERO)
+            return false
+        
+        return await this.deleteFileAsync(srcPath);
     }
 
-    //virtual filesystem, use copy and then delete. There is a BrowserFS bug causing an error to be thrown
-    private async moveFileAsync(srcPath:string, destPath:string, generatePath?:boolean): Promise<boolean>{
-        return new Promise<boolean>((resolve) => {
-            let destinationPath = Constants.EMPTY_STRING;
-            if(generatePath === undefined || generatePath){
-                const fileName = this.getNameFromPath(srcPath);
-                destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
-            }else{
-                destinationPath = destPath;
-            }
 
-            this._fileSystem.readFile(srcPath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING))=>{
-                if(readErr){
-                    console.error('Error reading file during move:', readErr);
-                    return resolve(false);
+    //O for success, 1 for file already present, 2 other error
+    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+    private async writeRawAsync(destPath: string, content:any, flag:string = 'wx'): Promise<number>{
+        return new Promise((resolve) => {
+            this._fileSystem.writeFile(destPath, content, { flag: flag }, (writeErr) => {
+                if(!writeErr){
+                    //console.log('Succes writing content');
+                    return resolve(Constants.NUM_ZERO);
                 }
 
-                this._fileSystem.writeFile(destinationPath, contents, { flag: 'wx' }, (writeErr)=>{
-                    // If file already exists, treat as successful move (or handle it differently if needed)
-                    if(writeErr && writeErr?.code === 'EEXIST') {
-                        console.warn('Suppressing moveFileAsync: Destination already exists:', destinationPath);
-                        return resolve(false);
-                    }
-                    
-                    this._fileSystem.unlink(srcPath, (unlinkErr)=>{
-                        if (unlinkErr) {
-                            console.error('Error deleting original file during move:', unlinkErr);
-                            return resolve(false);
-                        }
+                if(writeErr && writeErr?.code === 'EEXIST'){
+                    console.error('file already present:', writeErr)
+                    return resolve(Constants.NUM_ONE);
+                }
 
-                        // console.log(`File moved successfully to: ${destinationPath}`);
-                        resolve(true);
-                    });
-                });
+                console.error('Error writing file:', writeErr);
+                return resolve(Constants.NUM_TWO);
             });
         });
+    }
+
+    private appendToFileName(filename: string, appStr:string): string {
+        const lastDotIndex = filename.lastIndexOf(Constants.DOT);
+
+        // If no dot is found (no extension),
+        // append "_rs" to the end
+        if (lastDotIndex === Constants.MINUS_ONE) 
+            return filename + appStr;
+    
+        const name = filename.substring(Constants.NUM_ZERO, lastDotIndex);
+        const extension = filename.substring(lastDotIndex); // Includes the dot
+
+        return name + appStr + extension;
     }
 
     public async writeFilesAsync(directory:string, files:File[]):Promise<boolean>{
@@ -769,38 +788,34 @@ export class FileService implements BaseService{
         });
     }
 
+
+    //O for success, 1 for file already present, 2 other error
     public async writeFileAsync(directory:string, file:FileInfo):Promise<boolean>{
-        return new Promise<boolean>((resolve) =>{
-            const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
-            const destPath = this.pathCorrection(directory);
-            const fileName = `${destPath}/${file.getFileName}`;
+        const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
+        const destPath = this.pathCorrection(directory);
+        const fileName = `${destPath}/${file.getFileName}`;
 
-            this._fileSystem.writeFile(fileName, cntnt, {flag: 'wx'}, (writeErr) =>{  
-                if(!writeErr){
-                    console.log('writeFileAsync: file successfully written');
-                    this._fileExistsMap.set(fileName, Constants.NUM_ZERO);
-                    return resolve(true);
-                }
+        const writeResult = await this.writeRawAsync(fileName, cntnt, 'wx');
+        if(writeResult === Constants.NUM_ZERO){
+            // console.log('writeFileAsync: file successfully written');
+            this._fileExistsMap.set(fileName, Constants.NUM_ZERO);
+            return true;
+        }else if(writeResult === Constants.NUM_TWO){
+            console.warn('writeFileAsync: file already exists');
+            const newFileName = this.iterateName(fileName);
+            const writeResult2 = await this.writeRawAsync(newFileName, cntnt, 'wx');
 
-                if(writeErr?.code === 'EEXIST'){
-                    console.warn('writeFileAsync: file already exists',writeErr);
-
-                    const newFileName = this.iterateName(fileName);
-                    this._fileSystem.writeFile(newFileName, cntnt,(err) =>{  
-                        if(err){
-                            console.error('writeFileAsync Iterate Error:',err);
-                            return resolve(false);
-                        }
-
-                        this._fileExistsMap.set(newFileName, Constants.NUM_ZERO);
-                        resolve(true);
-                    });
-                }else{
-                    console.error('writeFileAsync Error:', writeErr);
-                    return resolve(false);
-                }
-            });
-        });
+            if(writeResult2 === Constants.NUM_ZERO){
+                // console.log('writeFileAsync: file successfully written');
+                this._fileExistsMap.set(newFileName, Constants.NUM_ZERO);
+                return true;
+            }else{
+                console.error('writeFileAsync Iterate Error:',);
+                return false;
+            }
+        }
+        else
+            return false;
     }
 
     public async renameAsync(path:string, newFileName:string, isFile?:boolean): Promise<boolean> {
@@ -816,7 +831,7 @@ export class FileService implements BaseService{
         const fileExt = extname(path);
         if(fileExt === Constants.URL){
             // special case
-            return await  this.renameURLFiles(path, newFileName);
+            return await this.renameURLFiles(path, newFileName);
         }else{
             const newPath = `${dirname(path)}/${newFileName}${extname(path)}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
             return await this.moveFileAsync(path, newPath, false);
@@ -893,26 +908,20 @@ OpensWith=${shortCutData.getOpensWith}
         });
     }
 
-    private async deleteFileAsync(path: string): Promise<boolean> {
+    private async deleteFileAsync(srcPath: string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
-            this._fileSystem.exists(path, (exists: boolean)=> {
-                if(!exists){
-                    console.warn(`deleteFileAsync: Entry doesn't exist: ${path}`);
+            this._fileSystem.unlink(srcPath, (unlinkErr) => {
+                if (unlinkErr) {
+                    console.error('[unlink] Error deleting file:', unlinkErr);
                     return resolve(false);
                 }
-                
-                this._fileSystem.unlink(path, (err)=>{
-                    if(err){
-                        console.error('deleteFileAsync: File delete failed:', err);
-                        return resolve(false);
-                    }
 
-                    // console.log(`deleteFileAsync: File deleted successfully: ${path}`);
-                    resolve(true);
-                });
+                //console.log('[unlink] Success, applying short delay...');
+                resolve(true);
             });
         });
     }
+
 
     private async deleteFolderHandlerAsync(arg0: string, srcPath: string, isRecycleBin?:boolean): Promise<boolean> {
         const loadedDirectoryEntries = await this.getDirectoryEntriesAsync(srcPath);
@@ -954,6 +963,16 @@ OpensWith=${shortCutData.getOpensWith}
             return false;
         }
     }
+
+    private async deleteEmptyFolders(folders:string[]):Promise<void>{
+        for(let i = 0; i <= folders.length; i++){
+            const path = folders.pop();
+            if(path){
+                await this.deleteFolderAsync(path);                    
+            }
+        }
+    }
+
     
     public  async getCountOfFolderItemsAsync(path:string): Promise<number> {
         return new Promise<number>((resolve) =>{
@@ -1028,72 +1047,6 @@ OpensWith=${shortCutData.getOpensWith}
         }
 
         return this.getFolderSizeHelperAsync(queue, sizes);
-    }
-
-
-    //AI Optimized code, merging two different calls into, with added safty of preventing endless recursion
-    // I'll refactor using this later
-    private async _getFolderSizeAsync(path: string): Promise<FolderSizeMeta> {
-        const visited = new Set<string>();
-        const result: FolderSizeMeta = {
-            totalSize: 0,
-            fileCount: 0,
-            folderCount: 0,
-            errors: []
-        };
-
-        await this._collectFolderSize(path, result, visited);
-        return result;
-    }
-
-    private async _collectFolderSize(path: string, result: FolderSizeMeta, visited: Set<string>): Promise<void> {
-        if (visited.has(path)) return;
-        visited.add(path);
-
-        let entries: string[];
-
-        try {
-            const stats = await this._statAsync(path);
-            if (!stats.isDirectory()) {
-                result.totalSize += stats.size;
-                result.fileCount += 1;
-                return;
-            }
-
-            result.totalSize += stats.size;
-            result.folderCount += 1;
-
-            entries = await this.getDirectoryEntriesAsync(path);
-        } catch (err) {
-            result.errors.push(`Failed to stat/read ${path}: ${err}`);
-            return;
-        }
-
-        const tasks = entries.map(async (entry) => {
-            const fullPath = `${path}/${entry}`;
-            try {
-                const stat = await this._statAsync(fullPath);
-                if (stat.isDirectory()) {
-                    await this._collectFolderSize(fullPath, result, visited);
-                } else {
-                    result.totalSize += stat.size;
-                    result.fileCount += 1;
-                }
-            } catch (err) {
-                result.errors.push(`Failed to stat ${fullPath}: ${err}`);
-            }
-        });
-
-        await Promise.all(tasks);
-    }
-
-    private _statAsync(path: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this._fileSystem.stat(path, (err, stats) => {
-                if (err) reject(err);
-                else resolve(stats);
-            });
-        });
     }
 
 

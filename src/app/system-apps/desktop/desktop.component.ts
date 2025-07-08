@@ -218,6 +218,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   deskTopClickCounter = Constants.NUM_ZERO;
 
   cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
+  emptyTrashAudio = `${Constants.AUDIO_BASE_PATH}cheetah_recycle.wav`;
   shortCutImg = `${Constants.IMAGE_BASE_PATH}shortcut.png`;
 
   multiSelectElmnt!:HTMLDivElement | null;
@@ -286,6 +287,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
     this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
     this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
+
+
+    this._fileService.dirFilesUpdateNotify.subscribe(() =>{
+      if(this._fileService.getEventOriginator() === this.name){
+        this.loadFilesInfoAsync();
+        this._fileService.removeEventOriginator();
+      }
+    });
 
     // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destroyed
     this._systemNotificationServices.showDesktopNotify.subscribe(() => {
@@ -1250,8 +1259,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(droppedFiles.length >= Constants.NUM_ONE){
         const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
         if(result){
-          this._fileService.addEventOriginator('desktop');
-          this._fileService.dirFilesUpdateNotify.next();
+          // this._fileService.addEventOriginator('desktop');
+          // this._fileService.dirFilesUpdateNotify.next();
           this.refresh();
         }
       }
@@ -1418,9 +1427,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
           this._fileService.dirFilesUpdateNotify.next();
 
-          setTimeout(() => {
-               this.refresh();
-          }, Constants.NUM_TWENTY);
+
+          await CommonFunctions.sleep((Constants.NUM_TWENTY))
+          this.refresh();
         }else{
             this.refresh();
         }
@@ -1585,7 +1594,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         this.btnStyleAndValuesReset();
 
         //reset after clicking on the desktop 2wice
-        if(this.deskTopClickCounter >= Constants.NUM_ONE && this.markedBtnIds.length === Constants.NUM_ZERO){
+        if(this.deskTopClickCounter >= Constants.NUM_ONE && !this.areMultipleIconsHighlighted){
           this.deskTopClickCounter = Constants.NUM_ZERO;
         }else if(this.deskTopClickCounter >= Constants.NUM_TWO){
           console.log('turn off - areMultipleIconsHighlighted-1')
@@ -1939,6 +1948,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async onEmptyRecyleBin():Promise<void>{
     let result = false;
+    this._audioService.play(this.emptyTrashAudio);
     result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, false, true);
     if(result){
       this._menuService.resetStoreData();
@@ -2092,6 +2102,7 @@ OpensWith=${selectedFile.getOpensWith}
         this.files[fileIdx] = this.selectedFile;
 
         this.renameForm.reset();
+        this._menuService.resetStoreData();
         await this.loadFilesInfoAsync();
       }
     }else{

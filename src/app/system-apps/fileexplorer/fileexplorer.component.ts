@@ -7,7 +7,7 @@ import { Process } from 'src/app/system-files/process';
 import { FileEntry } from 'src/app/system-files/file.entry';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
-import { Subscription } from 'rxjs';
+import { delay, Subscription } from 'rxjs';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ViewOptions } from './fileexplorer.enums';
@@ -263,6 +263,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this._fileService.removeEventOriginator();
       }
     });
+
     this._fetchDirectoryDataSub = this._fileService.fetchDirectoryDataNotify.subscribe((p) => {
       const name = 'filetreeview';
       const uid = `${name}-${this.processId}`;
@@ -1537,9 +1538,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     }
     else if(action === MenuAction.CUT){
-      const result = await this._fileService.moveAsync(cntntPath, this.directory);
+      const result = await this._fileService.moveAsync(cntntPath, Constants.DESKTOP_PATH);
       if(result){
-        this.refresh();
+        if(cntntPath.includes(Constants.DESKTOP_PATH)){
+          this._fileService.addEventOriginator(Constants.DESKTOP);
+          this._fileService.dirFilesUpdateNotify.next();
+
+          await CommonFunctions.sleep((Constants.NUM_TWENTY));
+          this.refresh();
+        }else{
+          this.refresh();
+        }
       }
     }
   }
@@ -1550,12 +1559,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const destPath = dirname(originPath);
     const result = await this._fileService.moveAsync(srcPath, destPath, this.selectedFile.getIsFile, true);
     if(result){
-      if(destPath.includes(Constants.DESKTOP_PATH)){
-            this._fileService.addEventOriginator(Constants.DESKTOP);
-        }else{
-            this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
-        }
-        this._fileService.dirFilesUpdateNotify.next();
+      this._fileService.addEventOriginator(Constants.DESKTOP);
+      this._fileService.dirFilesUpdateNotify.next();
+
+      await CommonFunctions.sleep((Constants.NUM_FIFTEEN * Constants.NUM_TWO));
+      this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
+      this._fileService.dirFilesUpdateNotify.next();
     }
   }
 
@@ -1572,9 +1581,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const menuWidth = 210;
     const subMenuWidth = 205;
     const taskBarHeight = Constants.NUM_FIVE;
-
-    console.log('horizontalDiff:', horizontalDiff);
-    console.log('menuWidth:', menuWidth);
 
     if(horizontalDiff < menuWidth){
       horizontalShift = true;
@@ -1713,19 +1719,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
     });
   }
-
-  // setMultiSelectStyleOnBtn(id:number, isMouseHover:boolean):void{
-  //   const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
-  //   if(btnElement){
-  //     if(!isMouseHover){
-  //       btnElement.style.backgroundColor = 'rgba(0, 150, 255, 0.3)';
-  //       btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
-  //     }else{
-  //       btnElement.style.backgroundColor = '#607c9c';
-  //       btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
-  //     }
-  //   }
-  // }
   
 
   getCountOfAllTheMarkedButtons():number{
@@ -1740,7 +1733,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(!this.markedBtnIds.includes(btnId))
         this.markedBtnIds.push(btnId);
     });
-    console.log('file explr this.markedBtnIds:', this.markedBtnIds);
   }
   
   getSelectFileSizeSumAndUnit():void{
@@ -1771,7 +1763,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }else{
         this.hideShowFileSizeAndUnit();
       }
-      
     }
   }
 
@@ -2196,12 +2187,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         //const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));
-                const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getCurrentPath) && (f.getFileName == this.selectedFile.getFileName));
+        const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getCurrentPath) && (f.getFileName == this.selectedFile.getFileName));
         this.selectedFile.setFileName = renameText;
         this.selectedFile.setDateModified = Date.now();
         this.fileExplrFiles[fileIdx] = this.selectedFile;
 
         this.renameForm.reset();
+        this._menuService.resetStoreData();
         await this.loadFilesInfoAsync();
       }
     }else{
@@ -2313,7 +2305,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.fileExplrMainCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
       this.fileExplrCntntCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
       this.navExplorerCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
-      
     }
   }
 
