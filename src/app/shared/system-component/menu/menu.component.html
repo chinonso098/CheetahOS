@@ -9,7 +9,7 @@
     <div class="dm-empty-line-container"></div>
 
     <div lass="dm-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
-        <div class="dm-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action)">
+        <div class="dm-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
             <span class="span dm-head"> <figure class="dm-fig-cntxt-menu"><img *ngIf="menuItem.icon.length > 0" class="dm-tskbar-img-alt" [src]="menuItem.icon"/></figure></span>
             <span class="span dm-mid"><p class="dm-p">{{menuItem.label}}</p></span>
             <span class="span dm-tail"> <figure class="dm-fig-cntxt-menu"> </figure> </span>
@@ -67,7 +67,7 @@
     <div class="dm-tskbar-empty-line-container"></div>
   
     <div lass="dm-tskbar-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
-        <div class="dm-tskbar-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action)">
+        <div class="dm-tskbar-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
             <div class="dm-tskbar-head"> <figure class="dm-tskbar-fig-cntxt-menu"><img *ngIf="menuItem.icon.length > 0" class="dm-tskbar-img-alt" [src]="menuItem.icon"/></figure></div>
             <div class="dm-tskbar-mid"><p class="dm-p">{{menuItem.label}}</p></div>
             <div class="dm-tskbar-tail"> <figure class="dm-tskbar-fig-cntxt-menu"> </figure> </div>
@@ -84,7 +84,7 @@
     <div class="dm-tskbar-cntxt-empty-line-container"></div>
   
     <div lass="dm-tskbar-cntxt-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
-        <div class="dm-tskbar-cntxt-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action)">
+        <div class="dm-tskbar-cntxt-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
             <div class="dm-tskbar-cntxt-head"> <figure class="dm-tskbar-cntxt-fig-cntxt-menu"><img *ngIf="menuItem.icon.length > 0" class="dm-tskbar-cntxt-img-alt" [src]="menuItem.icon"/></figure></div>
             <div class="dm-tskbar-cntxt-mid"><p class="dm-p">{{menuItem.label}}</p></div>
             <div class="dm-tskbar-cntxt-tail"> <figure class="dm-tskbar-cntxt-fig-cntxt-menu"> </figure> </div>
@@ -107,13 +107,13 @@
 
     <div class="dm-nested-vertical-sub-menu" *ngFor="let menuItem of nestedMenu; let i = index" >
 
-      <div  *ngIf="menuItem.label !== paste" class="dm-nested-vertical-menu-item" (click)="onMenuItemClick(menuItem.action)" (mouseenter)="onMenuItemHover(menuItem.action1)">
+      <div  *ngIf="menuItem.label !== paste" class="dm-nested-vertical-menu-item" (click)="onMenuItemClick(menuItem.action, $event)" (mouseenter)="onMenuItemHover(menuItem.action1)">
         <div class="dm-nested-head"><figure class="dm-nested-figure"><img *ngIf="menuItem.icon1" class="dm-nested-img" [src]="menuItem.icon1"/></figure></div>
         <div class="dm-nested-mid"><p class="dm-nested-p"> {{menuItem.label}}</p></div>
         <div class="dm-nested-tail"><figure class="dm-nested-figure"> <img *ngIf="menuItem.icon2" class="dm-nested-img" [src]="menuItem.icon2"/></figure></div>
       </div>
 
-      <div  *ngIf="menuItem.label === paste  && isPasteActive" class="dm-nested-vertical-menu-item" (click)="onMenuItemClick(menuItem.action)">
+      <div  *ngIf="menuItem.label === paste  && isPasteActive" class="dm-nested-vertical-menu-item" (click)="onMenuItemClick(menuItem.action, $event)">
         <div class="dm-nested-head"><figure class="dm-nested-figure"><img *ngIf="menuItem.icon1" class="dm-nested-img" [src]="menuItem.icon1"/></figure></div>
         <div class="dm-nested-mid"><p class="dm-nested-p"> {{menuItem.label}}</p></div>
         <div class="dm-nested-tail"><figure class="dm-nested-figure"> <img *ngIf="menuItem.icon2" class="dm-nested-img" [src]="menuItem.icon2"/></figure></div>
@@ -129,7 +129,7 @@
 
       <div  *ngIf="menuItem.nest.length" class="dm-nested-vertical-sub-menu-content" id="dmNestedMenu-{{i}}">
         <div class="dm-nested-empty-line-container"></div>
-          <div *ngFor="let item of menuItem.nest" (click)="onMenuItemClick(item.action)">
+          <div *ngFor="let item of menuItem.nest" (click)="onMenuItemClick(item.action, $event)">
             <div class="dm-nested-vertical-menu-item">
               <div class="dm-nested-head"><figure [ngClass]=" item.styleOption === 'A' ?'dm-nested-figure-alt' : 'dm-nested-figure-alt2'">
                                           <img *ngIf="item.variables" [ngClass]=" item.styleOption === 'A' ?'dm-nested-img-alt' : 'dm-nested-img-alt2'" [src]="item.icon"/>
@@ -161,7 +161,7 @@
     <div class="dm-power-empty-line-container" ></div>
 
     <div lass="dm-power-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
-      <div class="dm-power-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action)">
+      <div class="dm-power-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
           <div class="dm-power-head"> 
             <figure class="dm-power-fig-menu">
               <img class="dm-power-img-alt" [src]="menuItem.icon"/>

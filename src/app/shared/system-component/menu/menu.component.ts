@@ -65,8 +65,8 @@ export class MenuComponent implements OnDestroy{
     this._storeDataSub?.unsubscribe();
   }
 
-  onMenuItemClick(action: () => void): void {
-    action();
+  onMenuItemClick(action:(evt:MouseEvent) => void, evt:MouseEvent): void {
+    action(evt);
   }
 
   onMenuItemHover(action1: () => void): void {

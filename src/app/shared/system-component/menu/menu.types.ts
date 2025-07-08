@@ -1,5 +1,5 @@
 export interface GeneralMenu {
-    icon:string;
+    icon: string;
     label: string;
     action: () => void;
 }
@@ -15,12 +15,12 @@ export interface NestedMenu{
 }
 
 export interface NestedMenuItem {
-    icon:string;
+    icon: string;
     label: string;
-    action: () => void;
+    action: (event: MouseEvent) => void;
     variables?: boolean;
-    emptyline:boolean;
-    styleOption:string;
+    emptyline: boolean;
+    styleOption: string;
 }
 
 export interface MenuPosition{ 
