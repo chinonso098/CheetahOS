@@ -3,12 +3,12 @@
     (click)="hideDesktopContextMenuAndOthers(name)"
     (mousemove)="performTasks($event)"  #desktopContainer> 
 
-    <ol class="dsktp-ol" (dragover)="onDragOver($event)" (drop)="onDrop($event)"   (click)="handleIconHighLightState()"
+    <ol class="ol-desktopIcon-grid" (dragover)="onDragOver($event)" (drop)="onDrop($event)"   (click)="handleIconHighLightState()"
         (mousedown)="activateMultiSelect($event)"
         (mouseup)="deActivateMultiSelect()"
         (mousemove)="updateDivWithAndSize($event)" id="dsktpmngr_ol"> 
-        <li class="dsktp-li" *ngFor="let file of files; let i = index" id="dsktpmngr_li{{i}}">
-            <button class="dsktp-btn-icon-cntnr" 
+        <li class="li-desktopIcon-container" *ngFor="let file of files; let i = index" id="dsktpmngr_li{{i}}">
+            <button class="desktopIcon-btn" 
             (dblclick)="runProcess(file)" 
             (mouseenter)="onMouseEnter(i)" 
             (mouseleave)="onMouseLeave(i)"  
@@ -18,21 +18,21 @@
             (dragstart)="onDragStart($event, i)"
             (dragend)="onDragEnd($event)"
             id="iconBtn{{i}}"  [style]="btnStyle">
-                <div class="dsktp-icon-cntnr"  id="dsktpmngr_fig{{i}}">
-                    <div class="dsktp-main-icon-section">
-                        <img class="dsktp-img" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconSizeStyle"/>
+                <div class="desktopIcon-img-section"  id="dsktpmngr_fig{{i}}">
+                    <div class="desktopIcon-img-container">
+                        <img class="desktopIcon-img-content" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconSizeStyle"/>
                     </div>
-                    <div class="dsktp-scut-icon-section" *ngIf="file.getIsShortCut">
-                        <img class="shortcut-img" [src]="shortCutImg"  id="shortCut{{i}}" [style]="shortCutIconSizeStyle"/>
+                    <div class="desktopIcon-shortcut-img-container" *ngIf="file.getIsShortCut">
+                        <img class="desktopIcon-shortcut-img-content" [src]="shortCutImg"  id="shortCut{{i}}" [style]="shortCutIconSizeStyle"/>
                     </div>
                 </div>
-                <div class="dsktp-label">
-                    <p class="dsktp-figcaption"  id="figCap{{i}}" [style]="figCapIconSizeStyle">
-                            {{file.getFileName}}
+                <div class="desktopIcon-label-section">
+                    <p class="desktopIcon-caption"  id="figCap{{i}}" [style]="figCapIconSizeStyle">
+                        {{file.getFileName}}
                     </p>
-                    <div class="dsktp-icon-rename-cntnr"  id="renameContainer{{i}}">
-                        <form [formGroup]="renameForm"  class="dsktp-icon-form-section" (ngSubmit)="isFormDirty()">
-                            <textarea class="dsktp-input"  formControlName="renameInput"  (keydown)="onInputChange($event)" autofocus spellcheck="false" id="renameTxtBox{{i}}"></textarea>
+                    <div class="desktopIcon-rename-container"  id="renameContainer{{i}}">
+                        <form [formGroup]="renameForm"  class="desktopIcon-form" (ngSubmit)="isFormDirty()">
+                            <textarea class="desktopIcon-input"  formControlName="renameInput"  (keydown)="onInputChange($event)" autofocus spellcheck="false" id="renameTxtBox{{i}}"></textarea>
                         </form>
                     </div>
                 </div>                
@@ -84,7 +84,7 @@
             </div>
         </div>
 
-        <div  class="dsktp-clone-container"  id="dsktpmngr_clone_cntnr"> </div>
+        <div  class="desktopIcon-clone-container"  id="desktopIcon_clone_cntnr"> </div>
 
         <ng-content> </ng-content>
 

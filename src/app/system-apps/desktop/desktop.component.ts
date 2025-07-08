@@ -1510,12 +1510,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   getCountOfAllTheMarkedButtons():number{
-    const btnIcons = document.querySelectorAll('.dsktpmngr-multi-select-highlight');
+    const btnIcons = document.querySelectorAll('.desktopIcon-multi-select-highlight');
     return btnIcons.length;
   }
   
   getIDsOfAllTheMarkedButtons():void{
-    const btnIcons = document.querySelectorAll('.dsktpmngr-multi-select-highlight');
+    const btnIcons = document.querySelectorAll('.desktopIcon-multi-select-highlight');
     btnIcons.forEach(btnIcon => {
       const btnId = btnIcon.id.replace('iconBtn', Constants.EMPTY_STRING);
       if(!this.markedBtnIds.includes(btnId))
@@ -1528,7 +1528,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.markedBtnIds.forEach(id =>{
       const btnIcon = document.getElementById(`iconBtn${id}`);
       if(btnIcon){
-        btnIcon.classList.remove('dsktpmngr-multi-select-highlight');
+        btnIcon.classList.remove('desktopIcon-multi-select-highlight');
       }
       this.removeBtnStyle(Number(id));
     })
@@ -1675,23 +1675,23 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         bottom: initY + height
     };
 
-    const btnIcons = document.querySelectorAll('.dsktp-btn-icon-cntnr');
+    const btnIcons = document.querySelectorAll('.desktopIcon-btn');
     btnIcons.forEach((btnIcon) => {
         const btnIconRect = btnIcon.getBoundingClientRect();
 
         // Check if the item is inside the selection area
         if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
             btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
-            btnIcon.classList.add('dsktpmngr-multi-select-highlight'); 
+            btnIcon.classList.add('desktopIcon-multi-select-highlight'); 
         } else {
-            btnIcon.classList.remove('dsktpmngr-multi-select-highlight');
+            btnIcon.classList.remove('desktopIcon-multi-select-highlight');
         }
     });
   }
 
   onDragEnd(evt:DragEvent):void{
     // Get the cloneIcon container
-    const elementId = 'dsktpmngr_clone_cntnr';
+    const elementId = 'desktopIcon_clone_cntnr';
     const mPos:mousePosition = {
       clientX: evt.clientX,
       clientY: evt.clientY,
@@ -1716,7 +1716,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   onDragStart(evt:DragEvent, i: number): void {
   
     // Get the cloneIcon container
-    const elementId = 'dsktpmngr_clone_cntnr';
+    const elementId = 'desktopIcon_clone_cntnr';
     const cloneIcon = document.getElementById(elementId);
     const countOfMarkedBtns = this.getCountOfAllTheMarkedButtons();
     let counter = Constants.NUM_ZERO;
