@@ -108,8 +108,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showFileSizeAndUnit = false;
   iconCntxtCntr = Constants.NUM_ZERO;
   fileExplrCntxtCntr = Constants.NUM_ZERO;
-  selectFilesSizeSum = Constants.NUM_ZERO;
-  selectFilesSizeUnit = 'B';
+  selectFilesSizeSum = Constants.EMPTY_STRING;
+  selectFilesSizeUnit = Constants.EMPTY_STRING;
   //hideInformationTip = false;
 
   fileExplrCntxtMenuStyle:Record<string, unknown> = {};
@@ -1732,10 +1732,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         const file = this.fileExplrFiles[Number(id)];
         if(file.getIsFile){
           sum += sum + file.getSizeInBytes;
+        }else{
+          this.hideShowFileSizeAndUnit();
+          return;
         }
       }
 
-      this.selectFilesSizeSum = CommonFunctions.getReadableFileSizeValue(sum);
+      this.selectFilesSizeSum = String(CommonFunctions.getReadableFileSizeValue(sum));
       this.selectFilesSizeUnit = CommonFunctions.getFileSizeUnit(sum);
     }
 
@@ -1744,7 +1747,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const file = this.fileExplrFiles[this.selectedElementId];
       if(file.getIsFile){
         this.showFileSizeAndUnit = true;
-        this.selectFilesSizeSum = file.getSize;
+        this.selectFilesSizeSum = String(file.getSize);
         this.selectFilesSizeUnit = file.getFileSizeUnit
       }else{
         this.hideShowFileSizeAndUnit();
@@ -1755,7 +1758,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   private hideShowFileSizeAndUnit():void{
     this.showFileSizeAndUnit = false;
-    this.selectFilesSizeSum = Constants.NUM_ZERO;
+    this.selectFilesSizeSum = Constants.EMPTY_STRING;
     this.selectFilesSizeUnit = Constants.EMPTY_STRING;
   }
 
