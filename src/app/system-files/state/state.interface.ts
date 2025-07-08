@@ -1,6 +1,6 @@
 import { WindowState } from "src/app/shared/system-component/window/windows.types";
 
-export interface BaseState{
+interface BaseState{
     pid: number,
     app_name:string
 }

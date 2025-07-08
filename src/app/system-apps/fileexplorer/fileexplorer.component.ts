@@ -96,7 +96,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private btnClickCnt = Constants.NUM_ZERO;
   private renameFileTriggerCnt = Constants.NUM_ZERO; 
   private currentIconName = Constants.EMPTY_STRING;
-  private fileExplrClickCounter = Constants.NUM_ZERO; 
+  private blankSpaceClickCntr = Constants.NUM_ZERO; 
 
   isSearchBoxNotEmpty = false;
   showPathHistory = false;
@@ -342,10 +342,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   setIsBtnClickEvt(val: boolean, who:string) {
     this._isBtnClickEvt = val;
     if(val === true) {
-      console.log('isBtnClickEvt set to true!');
+      // console.log('isBtnClickEvt set to true!');
     }else{
-      console.log('isBtnClickEvt set to false!');
-      console.log('who set it to false!:', who);
+      // console.log('isBtnClickEvt set to false!');
+      // console.log('who set it to false!:', who);
     }
   }
 
@@ -1372,12 +1372,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this.btnClickCnt = Constants.NUM_ZERO;
         this.setIsBtnClickEvt(false, 'handleIconHighLightState');
 
-        // if multiple buttons are not highlighed
-        if(this.markedBtnIds.length === Constants.NUM_ZERO){
-          console.log('areMultipleIconsHighlighted-0:', this.areMultipleIconsHighlighted);
+        if(!this.areMultipleIconsHighlighted){
+          console.log('First Case Triggered:', this.areMultipleIconsHighlighted);
           this.btnStyleAndValuesChange();
         }
-
       }
     }else{
       this.hideCntxtMenuEvtCnt++;
@@ -1385,22 +1383,25 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       //Second case - I was only clicking on an empty space in the folder
       if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= Constants.NUM_ONE) && (!this.getIsBtnClickEvt() && this.btnClickCnt === Constants.NUM_ZERO)){
         this.isIconInFocusDueToCurrentAction = false;
-        this.fileExplrClickCounter++;
+        this.blankSpaceClickCntr++;
 
-        if(this.markedBtnIds.length === Constants.NUM_ZERO){
-          console.log('areMultipleIconsHighlighted-snicky:', this.areMultipleIconsHighlighted);
+        if(!this.areMultipleIconsHighlighted){
+          console.log('Second Case Triggered:', this.areMultipleIconsHighlighted);
           this.btnStyleAndValuesChange();
         }
 
         //reset after clicking on the folder 2wice
-        if(this.fileExplrClickCounter >= Constants.NUM_ONE && this.markedBtnIds.length === Constants.NUM_ZERO){
-          this.fileExplrClickCounter = Constants.NUM_ZERO;
-        }else if(this.fileExplrClickCounter >= Constants.NUM_TWO && this.markedBtnIds.length > Constants.NUM_ZERO){
+        if(this.blankSpaceClickCntr >= Constants.NUM_ONE && !this.areMultipleIconsHighlighted){
+          this.blankSpaceClickCntr = Constants.NUM_ZERO;
+        }else if(this.blankSpaceClickCntr >= Constants.NUM_TWO && this.areMultipleIconsHighlighted){
           console.log('turn off - fileExplr areMultipleIconsHighlighted-1')
-          this.areMultipleIconsHighlighted = false;
+  
           this.removeClassAndStyleFromBtn();
-          this.fileExplrClickCounter = Constants.NUM_ZERO;
+          this.btnStyleAndValuesChange();
+
           this.markedBtnIds = [];
+          this.areMultipleIconsHighlighted = false;
+          this.blankSpaceClickCntr = Constants.NUM_ZERO;
         }
       }
     }

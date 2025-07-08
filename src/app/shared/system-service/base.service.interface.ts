@@ -6,5 +6,4 @@ export interface BaseService {
   type: string;
   status: string;
   description: string;
-
 }

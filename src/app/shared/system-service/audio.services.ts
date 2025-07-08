@@ -113,7 +113,6 @@ export class AudioService implements BaseService {
     }
   }
 
-
   private playSound():void{
     this._audioPlayer.play();
   }
@@ -128,7 +127,7 @@ export class AudioService implements BaseService {
 
   getVolume():number{
     if(!this.isAudioFileReady || !this._audioPlayer)
-      return 0;
+      return Constants.NUM_ZERO;
 
     return this._audioPlayer.volume();
   }
@@ -157,7 +156,6 @@ export class AudioService implements BaseService {
       this.isExternalAudioSrcPresent = false;
   }
 
-
   checkForExt(contentPath:string, currentPath:string):boolean{
     const contentExt = extname(contentPath);
     const currentPathExt = extname(currentPath);
@@ -184,7 +182,6 @@ export class AudioService implements BaseService {
 
     return res;
   }
-
 
   private getProcessDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
