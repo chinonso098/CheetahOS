@@ -6,8 +6,8 @@
     <ol class="ol-desktopIcon-grid" (dragover)="onDragOver($event)" (drop)="onDrop($event)"   (click)="handleIconHighLightState()"
         (mousedown)="activateMultiSelect($event)"
         (mouseup)="deActivateMultiSelect()"
-        (mousemove)="updateDivWithAndSize($event)" id="dsktpmngr_ol"> 
-        <li class="li-desktopIcon-container" *ngFor="let file of files; let i = index" id="dsktpmngr_li{{i}}">
+        (mousemove)="updateDivWithAndSize($event)" id="desktopIcon_ol"> 
+        <li class="li-desktopIcon-container" *ngFor="let file of files; let i = index" id="desktopIcon_li{{i}}">
             <button class="desktopIcon-btn" 
             (dblclick)="runProcess(file)" 
             (mouseenter)="onMouseEnter(i)" 
@@ -18,7 +18,7 @@
             (dragstart)="onDragStart($event, i)"
             (dragend)="onDragEnd($event)"
             id="iconBtn{{i}}"  [style]="btnStyle">
-                <div class="desktopIcon-img-section"  id="dsktpmngr_fig{{i}}">
+                <div class="desktopIcon-img-section"  id="desktopIcon_fig{{i}}">
                     <div class="desktopIcon-img-container">
                         <img class="desktopIcon-img-content" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconSizeStyle"/>
                     </div>

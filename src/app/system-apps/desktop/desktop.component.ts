@@ -1777,12 +1777,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
 
     this.markedBtnIds.forEach(id =>{
-      const btnIcon = document.getElementById(`dsktpmngr_li${id}`);
-      const btnIconElmnt = document.getElementById(`dsktpmngr_li${id}`) as HTMLElement;
+      const btnIconElmnt = document.getElementById(`desktopIcon_li${id}`) as HTMLElement;
 
       this.movedBtnIds.push(id);
-      if(btnIcon){
-        const btnIconRect = btnIcon.getBoundingClientRect();
+      if(btnIconElmnt){
+        const btnIconRect = btnIconElmnt.getBoundingClientRect();
         const xDiff = mPos.x - btnIconRect.left;
         const newX = btnIconRect.left + xDiff;
 
@@ -1807,7 +1806,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
   
   moveBtnIconsToNewPositionAlignOn(mPos: mousePosition): void {
-    const dsktpmngrOlElmnt = document.getElementById('dsktpmngr_ol') as HTMLElement;
+    const dsktpmngrOlElmnt = document.getElementById('desktopIcon_ol') as HTMLElement;
     const maxIconWidth = this.GRID_SIZE;
     const maxIconHeight = this.GRID_SIZE;
     const offset = Constants.NUM_SEVEN;
@@ -1828,7 +1827,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
 
     this.markedBtnIds.forEach(id =>{
-      const btnIconElmnt = document.getElementById(`dsktpmngr_li${id}`) as HTMLElement;
+      const btnIconElmnt = document.getElementById(`desktopIcon_li${id}`) as HTMLElement;
       this.movedBtnIds.push(id);
 
       if(btnIconElmnt){
@@ -1858,7 +1857,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const offset = Constants.NUM_SEVEN;
 
     this.movedBtnIds.forEach((id) => {
-      const btnIcon = document.getElementById(`dsktpmngr_li${id}`);
+      const btnIcon = document.getElementById(`desktopIcon_li${id}`);
 
       if(btnIcon){
         const rect = btnIcon.getBoundingClientRect();
@@ -1927,7 +1926,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
                     (this.GRID_SIZE === this.MID_GRID_SIZE)? (this.MID_GRID_SIZE - rowSpace) :
                     (this.MIN_GRID_SIZE - rowSpace);
 
-    const dsktpmngrOlElmnt = document.getElementById('dsktpmngr_ol') as HTMLElement;
+    const dsktpmngrOlElmnt = document.getElementById('desktopIcon_ol') as HTMLElement;
     if(dsktpmngrOlElmnt){
       dsktpmngrOlElmnt.style.gridTemplateColumns = `repeat(auto-fill, ${colSize}px)`;
       dsktpmngrOlElmnt.style.gridTemplateRows = `repeat(auto-fill,${rowSize}px)`;
