@@ -788,7 +788,7 @@ span.mid-search-entry{
 /*****************************icon view and layout Started*****************************/
 
 /*-------------------------Icon Size View Start -------------------------------*/
-.ol-iconview-grid-size{
+.ol-iconview-grid{
     /* column-gap: 1px; */
     display: grid;
     grid-auto-flow: row;
@@ -798,9 +798,10 @@ span.mid-search-entry{
     width: 100%;
     padding: 5px 0 ;
     row-gap: 20px;
+    column-gap: 5px;
 }
 
-.li-iconview-size{
+.li-iconview-container{
     display: flex;
     justify-content: center;
     padding: 2px;
@@ -841,6 +842,15 @@ span.mid-search-entry{
     max-height: 96px;
 }
 
+.iconview-shortcut-wrapper{
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 22px; /* Adjust size as needed */
+    height: 22px;
+}
+
 .iconview-button {
     background-color: transparent;
     border: 0.5px solid transparent;
@@ -851,6 +861,13 @@ span.mid-search-entry{
     flex-direction: column;
     align-items: center;
     font-family: sans-serif;
+}
+
+.iconview-shortcut-img{
+    position: relative;
+    height: 12px; 
+    width: 12px;
+    bottom: -8px;
 }
 
 .iconview-img-container {
@@ -888,8 +905,8 @@ span.mid-search-entry{
     display: none;
     top: 2px;
     margin-bottom: 2px;
-    max-width: 75px;
-    max-height: 16px;
+    width: 90px;
+    height: 20px;
     border: 1px solid #ccc;
     overflow:hidden;
     z-index: 2;

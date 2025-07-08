@@ -4,7 +4,8 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { BIRDS, GLOBE, HALO, RINGS, WAVE } from './vanta-object/vanta.interfaces';
-import { IconsSizes, SortBys } from './desktop.enums';
+import { IconsSizes } from './desktop.enums';
+import { SortBys } from 'src/app/system-files/common.enums';
 import { Colors } from './colorutil/colors';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
@@ -26,6 +27,7 @@ import { mousePosition } from './desktop.types';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { VantaDefaults } from './vanta-object/vanta.defaults';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
@@ -1875,19 +1877,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   sortIcons(sortBy:string):void {
-    if(sortBy === SortBys.SIZE){
-      this.files = this.files.sort((objA, objB) => objB.getSizeInBytes - objA.getSizeInBytes);
-    }else if(sortBy ===SortBys.DATE_MODIFIED){
-      this.files = this.files.sort((objA, objB) => objB.getDateModified.getTime() - objA.getDateModified.getTime());
-    }else if(sortBy === SortBys.NAME){
-      this.files = this.files.sort((objA, objB) => {
-        return objA.getFileName < objB.getFileName ? Constants.MINUS_ONE : Constants.NUM_ONE;
-      });
-    }else if(sortBy === SortBys.ITEM_TYPE){
-      this.files = this.files.sort((objA, objB) => {
-        return objA.getFileType < objB.getFileType ? Constants.MINUS_ONE : Constants.NUM_ONE;
-      });
-    }
+    this.files = CommonFunctions.sortIconsBy(this.files, sortBy);
   }
 
   changeIconsSize(iconSize:string):void{

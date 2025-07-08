@@ -19,7 +19,7 @@ import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
-import { SortBys } from '../desktop/desktop.enums';
+import { SortBys } from 'src/app/system-files/common.enums';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
@@ -124,7 +124,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   ribbonMenuBtnStyle:Record<string, unknown> = {};
   ribbonMenuCntnrStyle:Record<string, unknown> = {};
 
-  olClassName = 'ol-iconview-grid-size';
+  olClassName = 'ol-iconview-grid';
   btnTypeRibbon = 'Ribbon';
   btnTypeFooter = 'Footer';
 
@@ -215,6 +215,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileDimesions = Constants.EMPTY_STRING;
   fileDateModified = Constants.EMPTY_STRING;
 
+  readonly shortCutImg = `${Constants.IMAGE_BASE_PATH}shortcut.png`;
   readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
   readonly cheetahGenericNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
 
@@ -423,6 +424,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onClickTabLayoutBtn(iconView:any, id:number):void{
 
+    console.log('i was called');
+
     this.currentViewOptionId = id;
     this.currentViewOption = iconView;
     this.defaultviewOption = iconView;
@@ -440,14 +443,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.currentViewOption = this.largeIconsView;
     this.changeLayoutCss( this.currentViewOption );
     this.changeOrderedlistStyle( this.currentViewOption );
-    this.changeButtonAndImageSize( this.currentViewOption );
+    this.changeIconViewBtnSize( this.currentViewOption );
   }
 
   toggleDetailsView():void{
     this.currentViewOption = this.detailsView;
     this.changeLayoutCss( this.currentViewOption );
     this.changeOrderedlistStyle( this.currentViewOption );
-    this.changeButtonAndImageSize( this.currentViewOption );
+    this.changeIconViewBtnSize( this.currentViewOption );
   }
 
   changeFileExplorerLayoutCSS(inputViewOption:any):void{
@@ -455,7 +458,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.currentViewOption = inputViewOption;
       this.changeLayoutCss(inputViewOption);
       this.changeOrderedlistStyle(inputViewOption);
-      this.changeButtonAndImageSize(inputViewOption);
+      this.changeIconViewBtnSize(inputViewOption);
     }
 
     if(inputViewOption === this.listView || inputViewOption === this.detailsView || inputViewOption === this.tilesView || inputViewOption === this.contentView){
@@ -500,11 +503,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     const layoutOptions:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView,
                               this.listView,this.detailsView,this.tilesView,this.contentView];
-    const cssLayoutOptions:string[] = ['icon-view', 'list-view', 'details-view', 'tiles-view', 'content-view']
+    const cssLayoutOptions:string[] = ['iconview', 'listview', 'detailsview', 'tilesview', 'contentview']
     const layoutIdx = layoutOptions.indexOf(iconSize)
 
     if(layoutIdx <= Constants.NUM_THREE){
-      this.olClassName = 'ol-iconview-grid-size';
+      this.olClassName = 'ol-iconview-grid';
     }
     else if (layoutIdx >= Constants.NUM_FOUR){
       /*
@@ -512,15 +515,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
          So, options 0 - 3 in the layoutOptions = option 0 in the cssLayoutOptions
        */
       const idx = layoutIdx - Constants.NUM_THREE;
-      this.olClassName = `ol-${cssLayoutOptions[idx]}`;
+      this.olClassName = `ol-${cssLayoutOptions[idx]}-grid`;
     }
   }
 
-  changeButtonAndImageSize(iconSize:string):void{
+  changeIconViewBtnSize(iconSize:string):void{
 
     const icon_sizes:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView];
     const fig_img_sizes:string[] = ['30px', '45px', '80px', '96px']; //small, med, large, ext large
-    const btn_width_height_sizes = [['70px', '50px'], ['90px', '70px'], ['120px', '100px'], ['140px', '120px']];
+    const btn_width_height_sizes:string[][] = [['70px', '50px'], ['90px', '70px'], ['120px', '100px'], ['140px', '120px']];
+    const shortCutIconSizes:string[][] = [['8', '-12'], ['12', '-8'], ['21', '1'],  ['25', '5']];
 
     const iconIdx = icon_sizes.indexOf(iconSize);
 
@@ -528,6 +532,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const btnElmnt = document.getElementById(`btnElmnt-${this.processId}-${i}`) as HTMLElement;
       const imgElmnt = document.getElementById(`imgElmnt-${this.processId}-${i}`) as HTMLElement;
       const figCapElmnt = document.getElementById(`figCapElmnt-${this.processId}-${i}`) as HTMLElement;
+      const shortCutElmt = document.getElementById(`shortCut-${this.processId}-${i}`) as HTMLElement;
 
       if(btnElmnt){
         btnElmnt.style.width = btn_width_height_sizes[iconIdx][Constants.NUM_ZERO];
@@ -540,13 +545,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       if(figCapElmnt){
-        btnElmnt.style.width = btn_width_height_sizes[iconIdx][Constants.NUM_ZERO];
+        figCapElmnt.style.width = btn_width_height_sizes[iconIdx][Constants.NUM_ZERO];
+      }
+
+      if(shortCutElmt){
+        shortCutElmt.style.width = shortCutIconSizes[iconIdx][Constants.NUM_ZERO];
+        shortCutElmt.style.height = shortCutIconSizes[iconIdx][Constants.NUM_ZERO];
+        shortCutElmt.style.bottom = shortCutIconSizes[iconIdx][Constants.NUM_ONE];
       }
     }
   }
 
   changeOrderedlistStyle(iconView:string):void{
-
     const icon_sizes:string[] = [this.smallIconsView,this.mediumIconsView,this.largeIconsView,this.extraLargeIconsView];
     const btn_width_height_sizes = [['70px', '50px'], ['90px', '70px'], ['120px', '100px'],  ['140px', '120px']];
     const iconIdx = icon_sizes.indexOf(iconView);
@@ -558,12 +568,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ZERO]})`;
         olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ONE]})`;
         olElmnt.style.rowGap = '20px';
-        olElmnt.style.columnGap = '0px';
+        olElmnt.style.columnGap = '5px';
         olElmnt.style.padding = '5px 0';
         olElmnt.style.gridAutoFlow = 'row';
       }
     }else if(iconView == this.contentView){
-
       const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
       if(olElmnt){
         olElmnt.style.gridTemplateColumns = `repeat(auto-fill, minmax(50px, ${rect.width}px)`;
@@ -665,7 +674,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   toggleRibbonMenu():void{
-    this.showRibbonMenu = !this.showRibbonMenu
+    //this.showRibbonMenu = !this.showRibbonMenu
   }
 
   questionBtn():void{
@@ -1287,7 +1296,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }else{
         this.menuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;
-        this.menuData = this.sourceData;
+        this.menuData = this.sourceData.filter(x => x.label !== 'Restore');
       }
     }
   }
@@ -1316,7 +1325,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       'transform':`translate(${String(axis.xAxis)}px, ${String(axis.yAxis)}px)`,
       'z-index': Constants.NUM_TWO,
     }
+
     evt.preventDefault();
+    evt.stopPropagation();
   }
 
 
@@ -1324,7 +1335,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._menuService.showPropertiesView.next(this.propertiesViewFile);
   }
 
-  hideIconContextMenu(caller?:string):void{
+  hideIconContextMenu(evt?:MouseEvent, caller?:string):void{
     this.showIconCntxtMenu = false;
     this.showFileExplrCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
@@ -1336,6 +1347,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(caller !== undefined && caller === this.name){
       this._menuService.hideContextMenus.next();
     }
+
+    if(evt){
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
+
   }
 
   handleIconHighLightState():void{
@@ -1542,14 +1559,20 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const horizontalDiff =  horizontalMax - evt.clientX;
     const verticalDiff = verticalMax - evt.clientY;
     const menuWidth = 210;
-    //const subMenuWidth = 205;
+    const subMenuWidth = 205;
     const taskBarHeight = 5;
 
-    if((horizontalDiff) < menuWidth){
+    console.log('horizontalDiff:', horizontalDiff);
+    console.log('menuWidth:', menuWidth);
+
+    if(horizontalDiff < menuWidth){
       horizontalShift = true;
-      this.isShiftSubMenuLeft = true;
       const diff = menuWidth - horizontalDiff;
       xAxis = evt.clientX - rect.left - diff;
+    }
+
+    if((horizontalDiff <= menuWidth) || (horizontalDiff <= (menuWidth + (subMenuWidth * 0.85)))){
+      this.isShiftSubMenuLeft = true;
     }
 
     if((verticalDiff) >= taskBarHeight && (verticalDiff) <= menuHeight){
@@ -1775,22 +1798,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
-  sortIcons(sortBy:string): void {
-    if(sortBy === SortBys.SIZE){
-      this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => objB.getSizeInBytes - objA.getSizeInBytes);
-    }else if(sortBy === SortBys.DATE_MODIFIED){
-      this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => objB.getDateModified.getTime() - objA.getDateModified.getTime());
-    }else if(sortBy === SortBys.NAME){
-      this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => {
-        return objA.getFileName < objB.getFileName ? Constants.MINUS_ONE : Constants.NUM_ONE;
-      });
-    }else if(sortBy === SortBys.ITEM_TYPE){
-      this.fileExplrFiles = this.fileExplrFiles.sort((objA, objB) => {
-        return objA.getFileType < objB.getFileType ? Constants.MINUS_ONE : Constants.NUM_ONE;
-      });
-    }
-  }
-
   // this method is gross
   displayInformationTip(evt:MouseEvent, file:FileInfo):void{
 
@@ -1883,30 +1890,46 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+
   onKeyPress(evt:KeyboardEvent):boolean{
-    const regexStr = '^[a-zA-Z0-9_]+$';
-    const res = new RegExp(regexStr).test(evt.key)
+    const regexStr = '^[a-zA-Z0-9_.]+$';
+    if(evt.key === 'Enter'){
+      evt.preventDefault(); // prevent newline in textarea
+      this.isFormDirty(); // trigger form submit logic
 
-    if(res){
-      this.hideInvalidCharsToolTip();
-      return res
+      return true;
     }else{
-      this.showInvalidCharsToolTip();
-
-      setTimeout(()=>{ // hide after 6 secs
+      const res = new RegExp(regexStr).test(evt.key)
+      if(res){
         this.hideInvalidCharsToolTip();
-      },this.SECONDS_DELAY[2]) 
+        this.autoResize();
+        return res
+      }else{
+        this.showInvalidCharsToolTip();
 
-      return res;
+        setTimeout(()=>{ // hide after 6 secs
+          this.hideInvalidCharsToolTip();
+        },this.SECONDS_DELAY[2]) 
+
+        return res;
+      }
+    }
+  }
+
+  autoResize() {
+    const renameTxtBoxElmt = document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLTextAreaElement;
+    if(renameTxtBoxElmt){
+      renameTxtBoxElmt.style.height = 'auto'; // Reset the height
+      renameTxtBoxElmt.style.height = `${renameTxtBoxElmt.scrollHeight}px`; // Set new height
     }
   }
 
   onInputChange():void{
     const SearchTxtBox = document.getElementById(`searchTxtBox-${this.processId}`) as HTMLInputElement;
     const charLength = SearchTxtBox.value.length
-    if( charLength > 0){
+    if( charLength > Constants.NUM_ZERO){
       this.isSearchBoxNotEmpty = true;
-    }else if( charLength <= 0){
+    }else if( charLength <= Constants.NUM_ZERO){
       this.isSearchBoxNotEmpty = false;
     }
 
@@ -2334,33 +2357,81 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.isSortBySize = false;
     }
 
+    this.sortIcons(sortBy);
     this.getFileExplorerMenuData();
   }
 
+  sortIcons(sortBy:string):void {
+    this.fileExplrFiles = CommonFunctions.sortIconsBy(this.fileExplrFiles, sortBy);
+  }
+
+  //Methods defined as class fields, you learn somthing new every day.
+  private showExtraLargeIconsM = ():void=>{
+    this.onMouseEnterTabLayoutBtn(this.extraLargeIconsView, Constants.NUM_ONE);
+  };
+
+  private showLargeIconsM = ():void=>{
+    this.onMouseEnterTabLayoutBtn(this.largeIconsView, Constants.NUM_TWO);
+   
+  }
+
+  private showMediumIconsM = ():void=>{
+    this.onMouseEnterTabLayoutBtn(this.mediumIconsView, Constants.NUM_THREE);
+   
+  }
+
+  private showSmallIconsM = ():void=>{
+    this.onMouseEnterTabLayoutBtn(this.smallIconsView, Constants.NUM_FOUR);
+   
+  }
+
+  private showListIconsM = ():void=>{
+    this.onMouseEnterTabLayoutBtn(this.listView, Constants.NUM_FIVE);
+   
+  }
+
+  private showDetailsIconsM = ():void=>{
+    this.onMouseEnterTabLayoutBtn(this.detailsView, Constants.NUM_SIX);
+    
+  }
+
+  private showTilesIconsM = ():void=>{
+    this.onMouseEnterTabLayoutBtn(this.tilesView, Constants.NUM_SEVEN);
+    
+  }
+
+  private showContentIconsM = (evt:MouseEvent):void=>{
+    this.onMouseEnterTabLayoutBtn(this.contentView, Constants.NUM_EIGHT);
+  }
+
+
   buildViewMenu():NestedMenuItem[]{
 
-    const extraLargeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Extra Large icons', action: () => this.isExtraLargeIcon = !this.isExtraLargeIcon,  variables:this.isExtraLargeIcon, 
-      emptyline:false, styleOption:'A' }
+    const extraLargeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Extra Large icons', action: this.showExtraLargeIconsM,
+      variables:this.isExtraLargeIcon,  emptyline:false, styleOption:'A' }
 
-    const largeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Large icons', action: () => this.isLargeIcon = !this.isLargeIcon,  variables:this.isMediumIcon, 
-      emptyline:false, styleOption:'A' }
+    const largeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Large icons', action: this.showLargeIconsM,
+      variables:this.isLargeIcon, emptyline:false, styleOption:'A' }
 
-    const mediumIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Medium icons', action: () => this.isMediumIcon = !this.isMediumIcon, variables:this.isLargeIcon,
-      emptyline:false, styleOption:'A' }
+    const mediumIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Medium icons', action: this.showMediumIconsM, 
+      variables:this.isMediumIcon, emptyline:false, styleOption:'A' }
 
-    const smallIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Small icons', action: () => this.isSmallIcon = !this.isSmallIcon, variables:this.isLargeIcon,
-    emptyline:false, styleOption:'A' }
+    const smallIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Small icons', action: this.showSmallIconsM, 
+      variables:this.isSmallIcon, emptyline:false, styleOption:'A' }
 
-    const listIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'List icons', action: () => this.isListIcon = !this.isListIcon, variables:this.isListIcon,
-    emptyline:false, styleOption:'A' }
+    const listIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'List icons', action: this.showListIconsM,
+     variables:this.isListIcon,  emptyline:false, styleOption:'A' }
 
-    const detailsIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Details icons', action: () => this.isDetailsIcon = !this.isDetailsIcon, variables:this.isDetailsIcon,
-      emptyline:false, styleOption:'A' }
+    const detailsIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Details icons', action:this.showDetailsIconsM,
+     variables:this.isDetailsIcon, emptyline:false, styleOption:'A' }
 
-    const titlesIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Titles icons', action: () => this.isTitleIcon = !this.isTitleIcon, variables:this.isTitleIcon,
-        emptyline:false, styleOption:'A' }
+    const titlesIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Titles icons', action: this.showTilesIconsM, 
+      variables:this.isTitleIcon,  emptyline:false, styleOption:'A' }
 
-    const viewByMenu = [extraLargeIcon, largeIcon, mediumIcon, smallIcon, listIcon, detailsIcon, titlesIcon];
+    const contentIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Content icons', action: (evt:MouseEvent) =>  this.showContentIconsM(evt), 
+      variables:this.isTitleIcon,  emptyline:false, styleOption:'A' }
+
+    const viewByMenu = [extraLargeIcon, largeIcon, mediumIcon, smallIcon, listIcon, detailsIcon, titlesIcon, contentIcon];
 
     return viewByMenu;
   }

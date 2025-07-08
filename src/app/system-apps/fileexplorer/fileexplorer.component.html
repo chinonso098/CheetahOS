@@ -273,7 +273,8 @@
                 <!-- ngDraggable  [inBounds]="true" zIndex="1" [preventDefaultEvent]="true"
                     (stopped)="onDragEnd($event)" (started)="onDragStart($event)" -->
                 
-                    <ol [ngClass]="olClassName" (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu(name)" (click)="handleIconHighLightState()" 
+                    <ol [ngClass]="olClassName" (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu($event, name)" 
+                        (click)="handleIconHighLightState()" 
                         (contextmenu)="onShowFileExplorerContextMenu($event)" 
                         (mousedown)="activateMultiSelect($event)"
                         (mouseup)="deActivateMultiSelect()"
@@ -290,7 +291,7 @@
                         </ng-container>
         
                         <ng-template #iconsView>
-                            <li class="li-icon-size-view" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}" >
+                            <li class="li-iconview-container" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}" >
                                 <button class="iconview-button" tabindex="0" (dblclick)="runProcess(file)"
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
@@ -302,9 +303,9 @@
                                         <div class="iconview-img-wrapper">
                                             <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
                                         </div>
-                                        <!-- <div class="dsktp-scut-icon-section" *ngIf="file.getIsShortCut">
-                                            <img class="shortcut-img" [src]="shortCutImg"  id="shortCut{{i}}" [style]="shortCutIconSizeStyle"/>
-                                        </div> -->
+                                        <div class="iconview-shortcut-wrapper" *ngIf="file.getIsShortCut">
+                                            <img class="iconview-shortcut-img" [src]="shortCutImg"  id="shortCut-{{this.processId}}{{i}}"/>
+                                        </div>
                                     </div>
                                     <div class="iconview-caption-label-container">
                                         <p class="iconview-caption"  id="figCapElmnt-{{this.processId}}-{{i}}">
