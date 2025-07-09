@@ -2,7 +2,12 @@
   /* ul, #fileExplrTreeView {
       list-style-type: none;
   } */
-    
+  
+  .file-tree-view-main{
+    height: 100%;
+    width: 100%;
+  }
+
   /* Remove margins and padding from the parent ul */
   .ul-file-tree-view{
     list-style-type: none;

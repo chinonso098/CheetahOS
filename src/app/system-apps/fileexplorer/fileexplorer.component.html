@@ -261,7 +261,7 @@
         <div class="fileexp-main-container" #fileExplorerMainContainer>
             <div class="fileexp-content-container" (click)="onFileExplrCntntClick()">
                 <ng-container *ngIf="showNavigationPane">
-                    <div class="navigation-content-container"  (mouseenter)="showExpandTreeIconBtn()" (mouseleave)="hideExpandTreeIconBtn()" #navExplorerContainer>
+                    <div class="navigation-content-container"  (mouseenter)="showExpandTreeIconBtn()" (mouseleave)="hideExpandTreeIconBtn()" id="navExplorerContainer-{{this.processId}}" #navExplorerContainer>
                         <div style="height: 10px; width: 100%;"></div>
                         <cos-filetreeview [pid] ="this.processId" [isHoverActive]="showExpandTreeIcon" [treeData]="fileTreeNode"></cos-filetreeview>
                     </div>

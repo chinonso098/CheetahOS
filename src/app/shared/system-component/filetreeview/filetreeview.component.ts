@@ -1,6 +1,6 @@
 //Option A
 
-import { Component, Input, OnInit, OnChanges } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, ElementRef, ViewChild } from '@angular/core';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
 
 import { Constants } from 'src/app/system-files/constants';
@@ -33,6 +33,9 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
 
   chevronBtnStyle:Record<string, unknown> = {};
+  fileExplrTreeCntxtMenuStyle:Record<string, unknown> = {};
+  rect!:DOMRect;
+
   expandedViews:string[]= [];
   selectedElementId = Constants.EMPTY_STRING;
   isClicked = false;
@@ -46,6 +49,10 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   readonly THIS_PC = Constants.THISPC;
   SECONDS_DELAY = 350;
 
+  showIconCntxtMenu = false;
+  fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
+  fileExplrMenuOption = Constants.NESTED_MENU_OPTION;
+  menuOrder = Constants.EMPTY_STRING;
 
   sourceData:GeneralMenu[] = [
     {icon:Constants.EMPTY_STRING, label: 'Open', action: this.doNothing.bind(this) },
@@ -390,16 +397,36 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   onFileTreeContextMenu(evt:MouseEvent, node:FileTreeNode):void{
-    if( node.name === Constants.OSDISK  && node.path === Constants.ROOT){
-      //
-      this.selectedFileTreeNode = node;
+
+    // looking at what Windows does, at any given time. there is only one context window open
+    this._menuService.hideContextMenus.next(); 
+
+    if(!this.rect){
+      const navCntnrElement = document.getElementById(`qa-FileExplrTreeView-main-${this.processId}`) as HTMLElement;
+
+      if(navCntnrElement){
+        this.rect = navCntnrElement.getBoundingClientRect();
+      }
     }
 
+    this.showIconCntxtMenu = true;
+    this.selectedFileTreeNode = node;
+
+    const x = evt.clientX - this.rect.left;
+    const y  = evt.clientY- this.rect.top;
+    this.fileExplrTreeCntxtMenuStyle = {
+      'position': 'absolute', 
+      'transform':`translate(${x - (Constants.NUM_FIFTEEN * Constants.NUM_SIX )}px, ${y - (Constants.NUM_FIFTEEN * Constants.NUM_SEVEN)}px)`,
+      'z-index': Constants.NUM_TWO,
+    }
+
+    evt.preventDefault();
     evt.stopPropagation();
   }
 
   setBtnStyle(elmntId:string, isMouseHover:boolean):void{
     const btnElement = document.getElementById(elmntId) as HTMLElement;
+    
     if(btnElement){
       btnElement.style.backgroundColor = '#4c4c4c';
       if(this.selectedElementId == elmntId){
@@ -428,8 +455,23 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const file = new FileInfo()
     file.setFileName = this.selectedFileTreeNode.name;
     file.setCurrentPath = this.selectedFileTreeNode.path;
+    file.setIsFile = false;
+    file.setFileType = Constants.FOLDER;
+    file.setIconPath = this.getIconPath(this.selectedFileTreeNode.name, this.selectedFileTreeNode.path);
 
     this._menuService.showPropertiesView.next(file);
   }
 
+  getIconPath(nodeName:string, nodePath:string):string{
+    const imgPath = (nodeName ==='3D-Objects' && nodePath === '/Users/3D-Objects') ? 'osdrive/Cheetah/System/Imageres/3d-objects_folder_small.png' : 
+                    (nodeName === 'Desktop' && nodePath === '/Users/Desktop') ? 'osdrive/Cheetah/System/Imageres/desktop_folder_small.png' :  
+                    (nodeName === 'Documents' && nodePath === '/Users/Documents') ? 'osdrive/Cheetah/System/Imageres/documents_folder_small.png' :
+                    (nodeName === 'Downloads' && nodePath === '/Users/Downloads') ? 'osdrive/Cheetah/System/Imageres/downloads_folder_small.png' :
+                    (nodeName === 'Games' && nodePath === '/Users/Games') ? 'osdrive/Cheetah/System/Imageres/games_folder_small.png' :
+                    (nodeName === 'Music' && nodePath === '/Users/Music') ? 'osdrive/Cheetah/System/Imageres/music_folder_small.png' : 
+                    (nodeName === 'Pictures' && nodePath === '/Users/Pictures') ? 'osdrive/Cheetah/System/Imageres/pictures_folder_small.png':
+                    (nodeName === 'Videos' && nodePath === '/Users/Videos') ? 'osdrive/Cheetah/System/Imageres/videos_folder_small.png': 'osdrive/Cheetah/System/Imageres/folder_folder_small.png'
+
+    return imgPath;                                                                                                                    
+  }
 }
