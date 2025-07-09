@@ -171,4 +171,59 @@ export namespace Constants{
         '.cpp',
         '.html'
     ]
+
+
+    export const FILE_EXTENSION_MAP = [
+        ['.txt','Text Document'],
+        ['.log','Log File'],
+        ['.wasm','WASM File'],
+        ['.properties','Properties File '],
+        ['.md','MarkDown File'],
+        ['.swf','Small Web Format'],
+        ['.jsdos','JSDos File'],
+        ['.pdf','PDF File'],
+
+        ['.jpg',  'JPEG File'],
+        ['.png',  'Portable Network Graphics'],
+        ['.avif', 'AV1 Image File Format'],
+        ['.bmp', 'Bitmap Image File'],
+        ['.ico',  'Icon File'],
+        ['.jpeg', 'JPEG File'],
+        ['.tiff', 'Tagged Image File Format'],
+        ['.tif', 'Tagged Image File Format'],
+        ['.svg',  'Scalable Vector Graphics'],
+        ['.webp', 'WebP Image File'],
+        ['.xlm', 'Microsoft Excel Macro'],
+
+        ['.mp3', 'MP3 Audio File'],
+        ['.flac', 'FLAC File'],
+        ['.aac', 'AAC File'],
+        ['.dolby', 'Dolby Digital File'],
+        ['.mpeg', 'MPEG Video File'],
+        ['.opus', 'Opus Audio File'],
+        ['.m4a', 'MPEG-4 Audio File'],
+        ['.ogg', 'Ogg Vorbis File'],
+        ['.oga', 'Ogg Vorbis Audio File'],
+        ['.wav', 'WAV File'],
+        ['.caf', 'CAF File'],
+        ['.weba', 'WebM Audio File'],
+        ['.webm', 'WebM Video File'],
+
+        ['.mp4', 'MP4 Video File'],
+        ['.webm', 'WebM Video File'],
+        ['.mkv', 'Matroska Video File'],
+
+        ['.js', 'JavaScript File'],
+        ['.js.map', 'JavaScript Source Map'],
+        ['.map', 'Source Map'],
+        ['.mjs', 'JavaScript Module File'],
+        ['.ts', 'TypeScript Source File'],
+        ['.cs', 'C# Source File'],
+        ['.java', 'Java Source File'],
+        ['.py', 'Python Source File'],
+        ['.c', 'C Source File'],
+        ['.cpp', 'C++ Source File'],
+        ['.html', 'HyperText Markup Language File']
+
+    ]
 }

@@ -1816,7 +1816,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.setInformationTipInfo(file);
 
     // Position tooltip slightly to the right and below the cursor
-    infoTip.style.transform = `translate(${x + 10}px, ${y + 10}px)`;
+    infoTip.style.transform = `translate(${x - Constants.NUM_FIFTEEN}px, ${y + Constants.NUM_TEN}px)`;
 
     // Show it using class
     infoTip.classList.add('visible');
@@ -1836,24 +1836,31 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const fileDateModified = file.getDateModifiedUS;
     const fileSize = `${String(file.getSize)}  ${file.getFileSizeUnit}`;
     const fileName = file.getFileName;
+    const isFile = file.getIsFile;
 
     //reset
     this.fileInfoTipData = [];
 
     if(Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileType)){
       const img = new Image();
-      img.src = file.getIconPath;
-      const width = img?.naturalWidth;
-      const height = img?.naturalHeight;
-      const imgDimesions = `${width} x ${height}`;
+      img.src = file.getContentPath;
+      img.onload = () => {
+        const width = img.naturalWidth;
+        const height = img.naturalHeight;
+        const imgDimensions = `${width} x ${height}`;
 
-      this.fileInfoTipData.push({label:infoTipFields[1], data:`${file.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`});
-      this.fileInfoTipData.push({label:infoTipFields[4], data:imgDimesions })
-      this.fileInfoTipData.push({label:infoTipFields[6], data:fileSize })
+        this.fileInfoTipData.push({label:infoTipFields[1], data:`${file.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`});
+        this.fileInfoTipData.push({label:infoTipFields[4], data:imgDimensions })
+        this.fileInfoTipData.push({label:infoTipFields[6], data:fileSize })
+      };
+      img.onerror = (err) => {
+        console.error("Failed to load image", err);
+      };
     }
 
-    if(fileType === '.txt'){
-      this.fileInfoTipData.push({label:infoTipFields[7], data:'Text Document'});
+    if(isFile && fileType !== Constants.FOLDER){
+      const fileTypeName = this.getFileTypeName(fileType);
+      this.fileInfoTipData.push({label:infoTipFields[7], data:fileTypeName});
       this.fileInfoTipData.push({label:infoTipFields[3], data: fileDateModified });
       this.fileInfoTipData.push({label:infoTipFields[6], data:fileSize });
     }
@@ -1872,6 +1879,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified });
       }
     }
+  }
+
+  getFileTypeName(fileExt:string):string{
+    for(const map of Constants.FILE_EXTENSION_MAP){
+      if(map[Constants.NUM_ZERO] === fileExt) {
+         return map[Constants.NUM_ONE];
+      }
+    }
+
+    return 'Unknown';
   }
 
   async refresh():Promise<void>{

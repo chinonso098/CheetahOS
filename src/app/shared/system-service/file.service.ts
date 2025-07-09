@@ -5,7 +5,7 @@ import {extname, basename, resolve, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FSModule } from "src/osdrive/Cheetah/System/BrowserFS/node/core/FS";
 import { FileEntry } from 'src/app/system-files/file.entry';
-import { FileMetaData, FolderSizeMeta } from "src/app/system-files/file.metadata";
+import { FileMetaData } from "src/app/system-files/file.metadata";
 
 import { Subject } from "rxjs";
 import * as BrowserFS from 'src/osdrive/Cheetah/System/BrowserFS/browserfs'
