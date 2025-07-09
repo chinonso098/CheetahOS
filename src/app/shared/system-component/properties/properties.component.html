@@ -1,6 +1,7 @@
 
-<ng-container [ngTemplateOutlet]=" (isFile && !isInRecycleBin)? fileView : 
-                                   (!isFile && !isInRecycleBin)? folderView : deletedView">
+<ng-container [ngTemplateOutlet]=" (isFile && !isInRecycleBin) ? fileView : 
+                                   (!isFile && !isInRecycleBin && !isRootFolder) ? folderView :
+                                   (!isFile && !isInRecycleBin && isRootFolder) ? rootFolderView : deletedView">
 </ng-container>
 
 <ng-template #fileView>
@@ -188,6 +189,115 @@
                                         <div class="general-tab-head"><p class="general-tab-p1">Created:</p></div>
                                         <div class="general-tab-mid"></div>
                                         <div class="general-tab-tail"><p class="general-tab-p1">{{ fileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }}</p></div>
+                                    </div>
+                                </div>
+                                <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+                                <div class="general-tab-section2">
+                                    <div style="width: 100%; height: 60px;"> </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+            <div class="properties-footer-container">
+                <span style="position: fixed; margin-top:6px; right:2%;">
+                    <button class="btn btn-primary" (click)="onClosePropertyView()" >
+                    OK
+                    </button>
+                </span>
+            </div>
+        </div>
+    </cos-basicwindow>
+</ng-template>
+
+<ng-template #rootFolderView>
+    <cos-basicwindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
+        <div class="properties-main-container" id="propDisplay-{{processId}}">
+            <div class="properties-body-container">
+                <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
+                <div class="properties-header-tab-container">
+                    <div class="properties-header-tabs">
+                    <div class="properties-tab active">General</div>
+                    </div>
+            
+                    <div class="properties-header-tab-content-container">
+                        <div class="properties-tab-pane active">
+                            <div class="general-tab-containter">
+                                <div style="width: 100%; height: 5px;"> </div>
+
+                                <div class="general-tab-section">
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="iconPath"/></figure></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p">{{osDisk}}</p></div>
+                                    </div>
+
+                                </div>
+                                <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+                                <div class="general-tab-section2">
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><p class="general-tab-p1"> Type:</p></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileFolder}}</p></div>
+                                    </div>
+
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><p class="general-tab-p1"> File system:</p></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{location}}</div>
+                                    </div>
+                                </div>
+                                <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+                                <div class="general-tab-section2">
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><p class="general-tab-p1"> Used space:</p></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSizeOnDisk2 | number:'1.0-2'}} bytes    {{fileSizeOnDisk}} {{fileSizeUnit}}</p></div>
+                                    </div>
+
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><p class="general-tab-p1"> Free space:</p></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{AvailableSpace | number:'1.0-2'}} bytes    {{fileSizeOnDisk}} {{fileSizeUnit}}</p></div>
+                                    </div>
+                                </div>
+                                <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
+                                <div class="general-tab-section2">
+                                    <div class="general-tab-content">
+                                        <div class="general-tab-head"><p class="general-tab-p1">Capacity:</p></div>
+                                        <div class="general-tab-mid"></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1">{{capacity | number:'1.0-2'}} bytes     {{fileSizeOnDisk}} {{fileSizeUnit}}</p></div>
+                                    </div>
+
+                                    <div class="general-tab-content">
+                                        <div class="svg-container">
+                                            <svg viewBox="0 0 100 100">
+                                                <!-- Background circle (white, acts as the track) -->
+                                                <circle
+                                                    cx="50"
+                                                    cy="50"
+                                                    [attr.r]="45"
+                                                    fill="none"
+                                                    stroke="#eee"
+                                                    stroke-width="5"
+                                                ></circle>
+
+                                                <!-- Foreground circle (blue, shows progress) -->
+                                                <circle
+                                                    cx="50"
+                                                    cy="50"
+                                                    [attr.r]="45"
+                                                    fill="none"
+                                                    stroke="#007bff"
+                                                    [attr.stroke-width]="5"
+                                                    [attr.stroke-dasharray]="circumference"
+                                                    [attr.stroke-dashoffset]="strokeDashoffset"
+                                                    stroke-linecap="round"
+                                                    transform="rotate(-90 50 50)"
+                                                ></circle>
+                                            </svg>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="general-tab-line-container"><div class="general-tab-line"></div></div>

@@ -235,3 +235,13 @@
 }
 
 
+svg {
+  width: 100px;
+  height: 100px;
+  margin: auto;
+}
+
+.svg-container{
+    position: relative;
+    left: 25%;
+}

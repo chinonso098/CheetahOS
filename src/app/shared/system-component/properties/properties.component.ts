@@ -27,11 +27,14 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   private _windowService:WindowService;
 
   fileFolder = 'File folder';
+  osDisk = 'OSDisk';
  
   fileDate:Date= new Date();
   isFile = true;
   isInRecycleBin = false;
+  isRootFolder = false;
   URL = Constants.URL;
+  readonly capacity = 512_000_000;
  
   type = ComponentType.System;
   hasWindow = false;
@@ -47,11 +50,15 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   displayName = Constants.EMPTY_STRING;
   fileSizeUnit = Constants.EMPTY_STRING;
 
+  circumference: number = 2 * Math.PI * 45; // Circumference for a circle with radius 45
+  strokeDashoffset: number = this.circumference; // Initialize to full offset (all white)
+
   processId = Constants.NUM_ZERO;
   fileSize = Constants.NUM_ZERO;
   fileSize2 = Constants.NUM_ZERO;
   fileSizeOnDisk = Constants.NUM_ZERO;
   fileSizeOnDisk2 = Constants.NUM_ZERO;
+  AvailableSpace = Constants.NUM_ZERO;
 
   private hiddenName = Constants.EMPTY_STRING
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
@@ -69,9 +76,11 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
   async ngOnChanges(changes: SimpleChanges):Promise<void>{
     //console.log('DIALOG onCHANGES:',changes);
-
     console.log('fileInput', this.fileInput);
+    await this.doStuff();
+  }
 
+  async doStuff():Promise<void> {
     this.displayMgs = `${this.fileInput.getFileName} Properties`;
     this.name = this.fileInput.getFileName;
     const currPath = dirname(this.fileInput.getCurrentPath);
@@ -83,6 +92,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     this._runningProcessService.addProcess(this.getComponentDetail());
     this.isFile = this.fileInput.getIsFile;
     this.isInRecycleBin = (currPath.includes(Constants.RECYCLE_BIN_PATH));
+    this.isRootFolder = (currPath === Constants.ROOT);
 
     if(this.fileInput.getIsFile){
       this.getFileSize();
@@ -93,13 +103,21 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
       }
     }
     
-
     if(!this.fileInput.getIsFile){
-      await this.getFolderContentDetails();
+      if(!this.isRootFolder)
+        await this.getFolderContentDetails();
+
       await this.getFolderSizeData()
 
       if(this.isInRecycleBin){
         this.getOrigin();
+      }
+
+      if(this.isRootFolder){
+        this.fileFolder = 'Local Disk';
+        this.name = `${this.fileFolder} (C:) Properties`;
+        this.icon = this.fileInput.getIconPath;
+        this.location = 'BrowserFS';
       }
     }
   }
@@ -127,7 +145,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   }
 
   async getFolderSizeData():Promise<void>{
-    const folderSize =  await this._fileService.getFolderSizeAsync(this.fileInput.getCurrentPath);
+    const folderSize = await this._fileService.getFolderSizeAsync(this.fileInput.getCurrentPath);
     this.fileSize = CommonFunctions.getReadableFileSizeValue(folderSize);
     this.fileSize2 = folderSize;
 
@@ -137,6 +155,18 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
     this.fileSizeUnit  = CommonFunctions.getFileSizeUnit(folderSize);
     this.fileDate = this.fileInput.getDateModified;
+
+    if(this.isRootFolder){
+      this.AvailableSpace = this.capacity - folderSize;
+    }
+
+    this.updateCapacityImg(folderSize);
+  }
+
+  updateCapacityImg(used:number): void {
+      // Calculate stroke-dashoffset based on the input value
+      // 100% progress means 0 offset, 0% means full offset
+      this.strokeDashoffset = this.circumference * (1 - used/ this.capacity);
   }
 
   getOrigin():void{

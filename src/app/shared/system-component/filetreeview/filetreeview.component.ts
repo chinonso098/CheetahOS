@@ -416,7 +416,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const y  = evt.clientY- this.rect.top;
     this.fileExplrTreeCntxtMenuStyle = {
       'position': 'absolute', 
-      'transform':`translate(${x - (Constants.NUM_FIFTEEN * Constants.NUM_SIX )}px, ${y - (Constants.NUM_FIFTEEN * Constants.NUM_SEVEN)}px)`,
+      'transform':`translate(${x - (Constants.NUM_FIFTEEN * Constants.NUM_SIX )}px, ${y - (Constants.NUM_FIFTEEN * Constants.NUM_SEVEN) - Constants.NUM_TEN}px)`,
       'z-index': Constants.NUM_TWO,
     }
 
@@ -469,8 +469,9 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
                     (nodeName === 'Downloads' && nodePath === '/Users/Downloads') ? 'osdrive/Cheetah/System/Imageres/downloads_folder_small.png' :
                     (nodeName === 'Games' && nodePath === '/Users/Games') ? 'osdrive/Cheetah/System/Imageres/games_folder_small.png' :
                     (nodeName === 'Music' && nodePath === '/Users/Music') ? 'osdrive/Cheetah/System/Imageres/music_folder_small.png' : 
-                    (nodeName === 'Pictures' && nodePath === '/Users/Pictures') ? 'osdrive/Cheetah/System/Imageres/pictures_folder_small.png':
-                    (nodeName === 'Videos' && nodePath === '/Users/Videos') ? 'osdrive/Cheetah/System/Imageres/videos_folder_small.png': 'osdrive/Cheetah/System/Imageres/folder_folder_small.png'
+                    (nodeName === 'Pictures' && nodePath === '/Users/Pictures') ? 'osdrive/Cheetah/System/Imageres/pictures_folder_small.png' :
+                    (nodeName === 'Videos' && nodePath === '/Users/Videos') ? 'osdrive/Cheetah/System/Imageres/videos_folder_small.png' : 
+                    (nodeName === Constants.OSDISK && nodePath === Constants.ROOT) ? 'osdrive/Cheetah/System/Imageres/os_disk.png' : 'osdrive/Cheetah/System/Imageres/folder_folder_small.png'
 
     return imgPath;                                                                                                                    
   }
