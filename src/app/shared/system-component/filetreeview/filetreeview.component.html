@@ -78,6 +78,7 @@
                 <li class="li-file-tree-view" id="li-{{pid}}-{{level}}-{{i}}"> 
                                                                             <!--here is the id-->
                     <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="tp-fileExplrTreeView-{{pid}}-{{level}}-{{i}}"  
+                        (contextmenu)="onFileTreeContextMenu($event, node)" 
                         (click)="navigateToSelectedPath(node.name, node.path)" 
                         (click)="onBtnClick('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)" (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)" (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)">
                         <div class="span fxtreeview-head"> 
@@ -135,6 +136,8 @@
                         </ul>
                     </ng-container>
                 </li>
+<!-- 
+                <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu> -->
             </ng-container>
         </ul> 
     </li>

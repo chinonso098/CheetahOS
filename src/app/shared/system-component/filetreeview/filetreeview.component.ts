@@ -7,6 +7,9 @@ import { Constants } from 'src/app/system-files/constants';
 
 import { AudioService } from '../../system-service/audio.services';
 import { FileService } from '../../system-service/file.service';
+import { MenuService } from '../../system-service/menu.services';
+import { GeneralMenu } from '../menu/menu.types';
+import { FileInfo } from 'src/app/system-files/file.info';
 
 @Component({
   selector: 'cos-filetreeview',
@@ -22,8 +25,10 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   @Input() treeData: FileTreeNode[] = [];
  
   quickAccessData: FileTreeNode[] = [];
+  selectedFileTreeNode!:FileTreeNode;
   private _fileService:FileService;
   private _audioService:AudioService;
+  private _menuService:MenuService;
 
   readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
 
@@ -41,9 +46,17 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   readonly THIS_PC = Constants.THISPC;
   SECONDS_DELAY = 350;
 
-  constructor(fileService:FileService, audioService:AudioService){
+
+  sourceData:GeneralMenu[] = [
+    {icon:Constants.EMPTY_STRING, label: 'Open', action: this.doNothing.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Open in new window', action: this.doNothing.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Properties', action: this.showPropertiesWindow.bind(this) }
+  ];
+
+  constructor(fileService:FileService, audioService:AudioService, menuService:MenuService){
     this._fileService = fileService;
     this._audioService = audioService;
+    this._menuService = menuService;
   }
 
   ngOnInit():void{
@@ -376,6 +389,15 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     }
   }
 
+  onFileTreeContextMenu(evt:MouseEvent, node:FileTreeNode):void{
+    if( node.name === Constants.OSDISK  && node.path === Constants.ROOT){
+      //
+      this.selectedFileTreeNode = node;
+    }
+
+    evt.stopPropagation();
+  }
+
   setBtnStyle(elmntId:string, isMouseHover:boolean):void{
     const btnElement = document.getElementById(elmntId) as HTMLElement;
     if(btnElement){
@@ -398,6 +420,16 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
       btnElement.style.backgroundColor = Constants.EMPTY_STRING;
       btnElement.style.border = 'none'
     }
+  }
+
+  doNothing():void{/** */}
+
+  showPropertiesWindow():void{
+    const file = new FileInfo()
+    file.setFileName = this.selectedFileTreeNode.name;
+    file.setCurrentPath = this.selectedFileTreeNode.path;
+
+    this._menuService.showPropertiesView.next(file);
   }
 
 }

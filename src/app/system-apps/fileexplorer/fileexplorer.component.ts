@@ -1888,7 +1888,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     }
 
-    return 'Unknown';
+    return 'Unknown File';
   }
 
   async refresh():Promise<void>{
