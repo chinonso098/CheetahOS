@@ -783,7 +783,7 @@ touch <filename>{start_char..end_char}`;
 
             const result = await this._fileService.checkIfExistsAsync(`${this.currentDirectoryPath}/${fileName}`);
             if(result){
-                const textCntnt = await this._fileService.getFileAsync(`${this.currentDirectoryPath}/${fileName}`);
+                const textCntnt = await this._fileService.getFileAsTextAsync(`${this.currentDirectoryPath}/${fileName}`);
 
                 return {response:textCntnt, result:true};
             }

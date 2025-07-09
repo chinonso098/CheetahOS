@@ -7,7 +7,7 @@ import { Process } from 'src/app/system-files/process';
 import { FileEntry } from 'src/app/system-files/file.entry';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
-import { delay, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ViewOptions } from './fileexplorer.enums';
@@ -104,7 +104,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onSearchIconHover = false;
   showIconCntxtMenu = false;
   showFileExplrCntxtMenu = false;
-  showInformationTip = false;
   showFileSizeAndUnit = false;
   iconCntxtCntr = Constants.NUM_ZERO;
   fileExplrCntxtCntr = Constants.NUM_ZERO;
@@ -667,7 +666,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }
 
-      this._audioService.play(this.cheetahNavAudio);
+      await this._audioService.play(this.cheetahNavAudio);
       this.populateTraversalList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFilesInfoAsync();
@@ -774,7 +773,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }
 
-      this._audioService.play(this.cheetahNavAudio);
+      await this._audioService.play(this.cheetahNavAudio);
       this.populateTraversalList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFilesInfoAsync();
@@ -833,7 +832,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }
 
-      this._audioService.play(this.cheetahNavAudio);
+      await this._audioService.play(this.cheetahNavAudio);
       this.populateTraversalList();
       this.setNavPathIcon(folderName, this.directory);
       await this.loadFilesInfoAsync();
@@ -1101,8 +1100,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   async runProcess(file:FileInfo):Promise<void>{
     console.log('fileexplorer-runProcess:',file)
 
-    this._audioService.play(this.cheetahNavAudio);
-    this.showInformationTip = false;
+    await this._audioService.play(this.cheetahNavAudio);
 
     if(this.isRecycleBinFolder){
       this._menuService.showPropertiesView.next(file);
@@ -1209,9 +1207,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._systemNotificationService.taskBarIconInfoChangeNotify.next(taskBarAppIconInfo);
   }
 
-  onTriggerRunProcess():void{
+  async onTriggerRunProcess():Promise<void>{
     this._audioService.play(this.cheetahNavAudio);
-    this.runProcess(this.selectedFile);
+    await this.runProcess(this.selectedFile);
   }
 
   onBtnClick(evt:MouseEvent, id:number):void{
@@ -1239,7 +1237,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.selectedFile = file;
     this.propertiesViewFile = file
     this.isIconInFocusDueToPriorAction = false;
-    this.showInformationTip = false;
 
     if(!this.showIconCntxtMenu)
       this.showIconCntxtMenu = !this.showIconCntxtMenu;
@@ -1259,7 +1256,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   adjustIconContextMenuData(file:FileInfo):void{
     this.menuData = [];
-    const editNotAllowed:string[] = ['3D-Objects.url','Desktop.url','Documents.url','Downloads.url','Games.url','Music.url','Pictures.url','Videos.url'];
+    const editNotAllowed:string[] = ['3D-Objects.url', 'Desktop.url', 'Documents.url', 'Downloads.url', 'Games.url', 'Music.url', 'Pictures.url', 'Videos.url'];
 
    if(file.getIsFile){
       if(editNotAllowed.includes(file.getCurrentPath.replace(Constants.ROOT, Constants.EMPTY_STRING))){
@@ -1430,16 +1427,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(!this.isMultiSelectActive){
       this.isMultiSelectEnabled = false;
 
-      this.showInformationTip = true;
       this.setBtnStyle(id, true);
-      this.displayInformationTip(evt, file);
+      this.showFileExplorerToolTip(evt, file);
     }
   }
 
   onMouseLeave(id:number):void{
-    this.showInformationTip = false;
     this.isMultiSelectEnabled = true;
-    //this.hideInformationTip = false;
+    this.hideFileExplorerToolTip()
 
     if(!this.isMultiSelectActive){
       if(id != this.selectedElementId){
@@ -1720,7 +1715,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     });
   }
   
-
   getCountOfAllTheMarkedButtons():number{
     const btnIcons = document.querySelectorAll('.fileexplr-multi-select-highlight');
     return btnIcons.length;
@@ -1811,36 +1805,28 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
-  // this method is gross
-  displayInformationTip(evt:MouseEvent, file:FileInfo):void{
+  showFileExplorerToolTip(evt: MouseEvent,  file:FileInfo) {
+    const rect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    const x = evt.clientX - rect.left;
+    const y = evt.clientY - rect.top;
 
-    const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-    const x = (evt.clientX - rect.left) - 15;
-    const y = (evt.clientY - rect.top) + 10;
+    const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
+    if (!infoTip) return;
 
-    setTimeout(()=>{
-      const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
-      if(infoTip){
-        setTimeout(()=>{ 
-          infoTip.style.display = 'block';
-          infoTip.style.transform = `translate(${String(x)}px, ${String(y)}px)`;
-          infoTip.style.position = 'absolute';
-          infoTip.style.zIndex = '3';
+    this.setInformationTipInfo(file);
 
+    // Position tooltip slightly to the right and below the cursor
+    infoTip.style.transform = `translate(${x + 10}px, ${y + 10}px)`;
 
-          this.setInformationTipInfo(file);
+    // Show it using class
+    infoTip.classList.add('visible');
+  }
 
-          //this.hideInformationTip = true;
-          // if(this.hideInformationTip){
-          //   setTimeout(()=>{ // hide after 9 secs
-          //     this.hideInformationTip = false;
-          //     this.showInformationTip = false;
-          //   },this.SECONDS_DELAY[3]) 
-          // }
-
-        },this.SECONDS_DELAY[1])  //wait 1.5 seconds
-      }
-    },this.SECONDS_DELAY[0]) // wait 100th of a sec
+  hideFileExplorerToolTip() {
+    const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
+    if (infoTip) {
+      infoTip.classList.remove('visible');
+    }
   }
 
   setInformationTipInfo(file:FileInfo):void{
@@ -1894,12 +1880,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async onDeleteFile():Promise<void>{
+    const desktopRefreshDelay = 1000;
     let result = false;
 
     result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
     if(result){
       this._menuService.resetStoreData();
       await this.loadFilesInfoAsync();
+
+      await CommonFunctions.sleep(desktopRefreshDelay)
+      this._fileService.addEventOriginator(Constants.DESKTOP);
+      this._fileService.dirFilesUpdateNotify.next();
     }
   }
 

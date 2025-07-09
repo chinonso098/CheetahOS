@@ -189,46 +189,17 @@ export class FileService implements BaseService{
             : await this.copyFileAsync(srcPath, destPath);
     }
 
-    private async copyFileAsync(sourcePath:string, destinationPath:string):Promise<boolean>{
-        const name = this.getNameFromPath(sourcePath);
-        const destPath = this.pathCorrection(destinationPath);
-        const fileName = `${destPath}/${name}`;
-        // console.log(`Destination: ${fileName}`);
+    private async copyFileAsync(srcPath:string, destPath:string):Promise<boolean>{
+        const name = this.getNameFromPath(srcPath);
+        const destinationPath = `${this.pathCorrection(destPath)}/${name}`;
+        // console.log(`Destination: ${destinationPath}`);
 
-        return new Promise<boolean>((resolve) =>{
-             this._fileSystem.readFile(sourcePath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
-                if(readErr){
-                    console.error('copyFileAsync readFile error:',readErr)
-                    resolve(false);
-                }
+        const readResult = await this.readRawAsync(srcPath);
+        if(!readResult){
+            return false;
+        }
 
-                this._fileSystem.writeFile(fileName, contents, {flag: 'wx'}, (writeErr) =>{  
-                    if(!writeErr){
-                        // console.log('copyFileAsync Success:');
-                        this._fileExistsMap.set(fileName, Constants.NUM_ZERO);
-                        return resolve(true);
-                    }
-
-                    if(writeErr?.code === 'EEXIST'){
-                        console.warn('copyFileAsync Error: file already exists',writeErr);
-
-                        const newFileName = this.iterateName(fileName);
-                        this._fileSystem.writeFile(newFileName, contents, (retryErr) =>{  
-                            if(retryErr){
-                                console.error('copyFileAsync Iterate Error:', retryErr);
-                                resolve(false);
-                            }
-
-                            this._fileExistsMap.set(newFileName, Constants.NUM_ZERO);
-                            resolve(true);
-                        });
-                    }else{
-                        console.error('copyFileAsync Error:', writeErr);
-                        resolve(false);
-                    }
-                });
-            });
-        });
+        return await this.writeRawHandlerAsync(destinationPath, readResult);
     }
 
     private async copyFolderHandlerAsync(arg0:string, srcPath:string, destPath:string):Promise<boolean>{
@@ -312,7 +283,7 @@ export class FileService implements BaseService{
         });
     }
 
-    public async getFileAsync(path:string): Promise<string> {
+    public async getFileAsTextAsync(path:string): Promise<string> {
         if (!path) {
             console.error('getFileAsync error: Path must not be empty');
             return Promise.reject(new Error('Path must not be empty'));
@@ -336,7 +307,7 @@ export class FileService implements BaseService{
      * If the file is read successfully, it converts the file contents (buffer) into a Blob URL using the bufferToUrl method.
      * It then resolves the promise with the Blob URL.
      */
-    public async getFileBlobAsync(path:string): Promise<string> {
+    public async getFileAsBlobAsync(path:string): Promise<string> {
         if (!path) {
             console.error('getFileBlobAsync error: Path must not be empty');
             return Promise.reject(new Error('Path must not be empty'));
@@ -742,7 +713,7 @@ export class FileService implements BaseService{
                 }
 
                 if(writeErr && writeErr?.code === 'EEXIST'){
-                    console.error('file already present:', writeErr)
+                    console.warn('file already present:', writeErr)
                     return resolve(Constants.NUM_ONE);
                 }
 
@@ -752,18 +723,36 @@ export class FileService implements BaseService{
         });
     }
 
-    private appendToFileName(filename: string, appStr:string): string {
-        const lastDotIndex = filename.lastIndexOf(Constants.DOT);
+        /**
+     * handles instances where a file being written alredy exist in a given location
+     * @param destPath 
+     * @param cntnt 
+     * @returns 
+     */
+    private async writeRawHandlerAsync(destPath:string, cntnt:any):Promise<boolean>{
+        const writeResult = await this.writeRawAsync(destPath, cntnt, 'wx');
+        if(writeResult === Constants.NUM_ZERO){
+            // console.log('writeFileAsync: file successfully written');
+            this._fileExistsMap.set(destPath, Constants.NUM_ZERO);
+            return true;
+        }
 
-        // If no dot is found (no extension),
-        // append "_rs" to the end
-        if (lastDotIndex === Constants.MINUS_ONE) 
-            return filename + appStr;
-    
-        const name = filename.substring(Constants.NUM_ZERO, lastDotIndex);
-        const extension = filename.substring(lastDotIndex); // Includes the dot
+        if(writeResult === Constants.NUM_ONE){
+            console.warn('writeFileAsync: file already exists');
+            const newFileName = this.iterateName(destPath);
+            const writeResult2 = await this.writeRawAsync(newFileName, cntnt, 'wx');
 
-        return name + appStr + extension;
+            if(writeResult2 === Constants.NUM_ZERO){
+                // console.log('writeFileAsync: file successfully written');
+                this._fileExistsMap.set(newFileName, Constants.NUM_ZERO);
+                return true;
+            }else{
+                console.error('writeFileAsync Iterate Error:',);
+                return false;
+            }
+        }
+        else
+            return false;
     }
 
     public async writeFilesAsync(directory:string, files:File[]):Promise<boolean>{
@@ -788,34 +777,11 @@ export class FileService implements BaseService{
         });
     }
 
-
-    //O for success, 1 for file already present, 2 other error
-    public async writeFileAsync(directory:string, file:FileInfo):Promise<boolean>{
+    public async writeFileAsync(path:string, file:FileInfo):Promise<boolean>{
         const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
-        const destPath = this.pathCorrection(directory);
-        const fileName = `${destPath}/${file.getFileName}`;
+        const destPath = `${this.pathCorrection(path)}/${file.getFileName}`;
 
-        const writeResult = await this.writeRawAsync(fileName, cntnt, 'wx');
-        if(writeResult === Constants.NUM_ZERO){
-            // console.log('writeFileAsync: file successfully written');
-            this._fileExistsMap.set(fileName, Constants.NUM_ZERO);
-            return true;
-        }else if(writeResult === Constants.NUM_TWO){
-            console.warn('writeFileAsync: file already exists');
-            const newFileName = this.iterateName(fileName);
-            const writeResult2 = await this.writeRawAsync(newFileName, cntnt, 'wx');
-
-            if(writeResult2 === Constants.NUM_ZERO){
-                // console.log('writeFileAsync: file successfully written');
-                this._fileExistsMap.set(newFileName, Constants.NUM_ZERO);
-                return true;
-            }else{
-                console.error('writeFileAsync Iterate Error:',);
-                return false;
-            }
-        }
-        else
-            return false;
+        return await this.writeRawHandlerAsync(destPath, cntnt);
     }
 
     public async renameAsync(path:string, newFileName:string, isFile?:boolean): Promise<boolean> {
@@ -972,7 +938,6 @@ OpensWith=${shortCutData.getOpensWith}
             }
         }
     }
-
     
     public  async getCountOfFolderItemsAsync(path:string): Promise<number> {
         return new Promise<number>((resolve) =>{
@@ -1054,6 +1019,13 @@ OpensWith=${shortCutData.getOpensWith}
         this._directoryFileEntires=[]
     }
 
+    public getFolderOrigin(path:string):string{
+        if(this._restorePoint.has(path)){
+            return this._restorePoint.get(path) || Constants.EMPTY_STRING
+        }
+        return Constants.EMPTY_STRING;
+    }
+
     /**
      *if file exists, increment it simple.txt, simple(1).txt ... 
      * @param path 
@@ -1070,12 +1042,6 @@ OpensWith=${shortCutData.getOpensWith}
         return `${dirname(path)}/${filename} (${count})${extension}`;
     }
 
-    getFolderOrigin(path:string):string{
-        if(this._restorePoint.has(path)){
-            return this._restorePoint.get(path) || Constants.EMPTY_STRING
-        }
-        return Constants.EMPTY_STRING;
-    }
 
     public async setFolderPropertiesAsync(path:string):Promise<FileContent>{
         const fileName = basename(path, extname(path));
@@ -1119,11 +1085,25 @@ OpensWith=${shortCutData.getOpensWith}
         return new FileContent(empty, empty, empty, empty, empty);
     }
 
-    getAppAssociaton(appname:string):string{
+    private appendToFileName(filename: string, appStr:string): string {
+        const lastDotIndex = filename.lastIndexOf(Constants.DOT);
+
+        // If no dot is found (no extension),
+        // append "_rs" to the end
+        if (lastDotIndex === Constants.MINUS_ONE) 
+            return filename + appStr;
+    
+        const name = filename.substring(Constants.NUM_ZERO, lastDotIndex);
+        const extension = filename.substring(lastDotIndex); // Includes the dot
+
+        return name + appStr + extension;
+    }
+
+    public getAppAssociaton(appname:string):string{
         return this._fileAndAppIconAssociation.get(appname) || Constants.EMPTY_STRING;
     }
 
-    pathCorrection(path:string):string{
+    private pathCorrection(path:string):string{
         if(path.slice(Constants.MINUS_ONE) === Constants.ROOT)
             return path.slice(Constants.NUM_ZERO, Constants.MINUS_ONE);
         else
@@ -1138,10 +1118,10 @@ OpensWith=${shortCutData.getOpensWith}
         return URL.createObjectURL(new Blob([arr]));
      }
 
-    private uint8ToBase64(arr:Uint8Array):string{
-        const base64String = btoa(String.fromCharCode(...new Uint8Array(arr)));
-        return base64String;
-    }
+    // private uint8ToBase64(arr:Uint8Array):string{
+    //     const base64String = btoa(String.fromCharCode(...new Uint8Array(arr)));
+    //     return base64String;
+    // }
 
     private isUtf8Encoded(data: string): boolean {
         try {

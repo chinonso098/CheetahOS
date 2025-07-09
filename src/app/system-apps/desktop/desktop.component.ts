@@ -44,7 +44,7 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
         animate('250ms ease-in')
       ]),
       transition('slideIn => slideOut', [
-        animate('2s ease-out')
+        animate('1750ms ease-out')
       ]),
     ]),
 
@@ -382,8 +382,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-
-
   initClippy():void{
     if(this.showClippy){
       this.clippyIntervalId = setInterval(() =>{
@@ -520,38 +518,34 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.showStartMenu = false;
   }
 
-  captureComponentImg():void{
+  async captureComponentImg(): Promise<void>{
+    const storeImgDelay = 1000;
     const slideOutDelay = 4000;
-    const hideDeskopScreenShotDelay = 6000;
+    const hideDeskopScreenShotDelay = 2000;
 
-    htmlToImage.toPng(this.desktopContainer.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
+    const htmlImg = await htmlToImage.toPng(this.desktopContainer.nativeElement);
+    this.showDesktopScreenShotPreview = true;
+    this.slideState = 'slideIn';
+    this.dsktpPrevImg = htmlImg;
+     
+    const screenShot:FileInfo = new FileInfo();
+    screenShot.setFileName = 'screen_shot.png'
+    screenShot.setCurrentPath = `${this.DESKTOP_SCREEN_SHOT_DIRECTORY}/screen_shot.png`;
+    screenShot.setContentPath = htmlImg;
+    screenShot.setIconPath = htmlImg;
+     
+    await CommonFunctions.sleep(storeImgDelay);
+    this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
+    this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
 
-      const screenShot:FileInfo = new FileInfo();
-      screenShot.setFileName = 'screen_shot.png'
-      screenShot.setCurrentPath = `${this.DESKTOP_SCREEN_SHOT_DIRECTORY}/screen_shot.png`;
-      screenShot.setContentPath = htmlImg;
-      screenShot.setIconPath = htmlImg;
+    await CommonFunctions.sleep(storeImgDelay);
+    this._fileService.dirFilesUpdateNotify.next();
 
-      this.showDesktopScreenShotPreview = true;
-      this.slideState = 'slideIn';
-      this.dsktpPrevImg = htmlImg;
+    await CommonFunctions.sleep(slideOutDelay);
+    this.slideState = 'slideOut';
 
-      // const img = new Image();
-      // img.src = htmlImg;
-      // document.body.appendChild(img);
-
-      setTimeout(()=>{
-        this.slideState = 'slideOut';
-        this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
-        this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
-        this._fileService.dirFilesUpdateNotify.next();
-      },slideOutDelay);
-
-      setTimeout(()=>{
-        this.showDesktopScreenShotPreview = false;
-      },hideDeskopScreenShotDelay);
-    })
+    await CommonFunctions.sleep(hideDeskopScreenShotDelay);
+    this.showDesktopScreenShotPreview = false;
   }
 
   async createFolder():Promise<void>{

@@ -97,7 +97,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     };
     this._scriptService.loadScript("quilljs","osdrive/Program-Files/Quill/quill.js").then( async() =>{
   
-      const textCntnt = await this._fileService.getFileAsync(this.fileSrc);
+      const textCntnt = await this._fileService.getFileAsTextAsync(this.fileSrc);
       const index = Constants.NUM_ZERO;
 
       this.quill = new Quill(this.editorContainer.nativeElement, options)

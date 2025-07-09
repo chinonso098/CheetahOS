@@ -93,7 +93,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
       this.gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
     this._scriptService.loadScript("js-dos", "osdrive/Program-Files/jsdos/js-dos.js").then(async() =>{
-      const data = await this._fileService.getFileBlobAsync(this.gameSrc);
+      const data = await this._fileService.getFileAsBlobAsync(this.gameSrc);
       this.dosInstance = await Dos(this.dosWindow.nativeElement, this.dosOptions).run(data);
 
       this.storeAppState(this.gameSrc);

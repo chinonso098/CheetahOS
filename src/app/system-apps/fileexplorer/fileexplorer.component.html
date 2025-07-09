@@ -430,7 +430,7 @@
                         <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
                         <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
     
-                        <div class="fx-information-tip-container" id="fx-information-tip-{{this.processId}}"  *ngIf="showInformationTip">
+                        <div class="fx-information-tip-container" id="fx-information-tip-{{this.processId}}">
                             <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
                                 <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
                             </div>
