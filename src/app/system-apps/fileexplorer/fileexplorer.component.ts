@@ -473,7 +473,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(this.currentViewOptionId == id){
       if(btnElement){
         btnElement.style.border = '0.5px solid #ccc';
-        // btnElement.style.margin = '-0.5px';
 
         if(isMouseHover){
           btnElement.style.backgroundColor = '#807c7c';
@@ -488,7 +487,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         if(isMouseHover){
           btnElement.style.backgroundColor = '#403c3c';
           btnElement.style.border = '0.5px solid #ccc';
-          // btnElement.style.margin = '-0.5px';
         }else{
           btnElement.style.backgroundColor = Constants.EMPTY_STRING;
           btnElement.style.border = Constants.EMPTY_STRING;
@@ -2183,7 +2181,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     //this.removeBtnStyle(this.selectedElementId);
 
 
-    if((this.olClassName === 'ol-contentview-grid') &&  (figCapElement && renameContainerElement && renameTxtBoxElement)) {
+    if((figCapElement && renameContainerElement && renameTxtBoxElement)) {
       console.log('olClassName;', this.olClassName)
       figCapElement.style.display = 'none';
       renameContainerElement.style.display = 'block';
