@@ -32,7 +32,7 @@ export class FileService implements BaseService{
   
     private _fileSystem!:FSModule;
     private _directoryFileEntires:FileEntry[]=[];
-    private _fileExistsMap!:Map<string,number>; 
+    private _fileExistsMap!:Map<string, string>; 
     private _fileAndAppIconAssociation!:Map<string,string>; 
     private _restorePoint!:Map<string,string>; 
     private _eventOriginator = Constants.EMPTY_STRING;
@@ -46,7 +46,8 @@ export class FileService implements BaseService{
     fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
     goToDirectoryNotify: Subject<string[]> = new Subject<string[]>();
 
-   readonly fileServiceDeleteKey = Constants.FILE_SVC_DELETE_KEY;
+    readonly fileServiceRestoreKey = Constants.FILE_SVC_RESTORE_KEY;
+    readonly fileServiceIterateKey = Constants.FILE_SVC_FILE_ITERATE_KEY;
 
     // SECONDS_DELAY = 200;
 
@@ -63,9 +64,9 @@ export class FileService implements BaseService{
                 sessionManagmentService:SessionManagmentService
     ){ 
         this.initBrowserFS();
-        this._fileExistsMap =  new Map<string, number>();
-        this._fileAndAppIconAssociation =  new Map<string, string>();
+        this._fileExistsMap =  new Map<string, string>();
         this._restorePoint =  new Map<string, string>();
+        this._fileAndAppIconAssociation =  new Map<string, string>();
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
         this._userNotificationService = userNotificationService;
@@ -74,7 +75,9 @@ export class FileService implements BaseService{
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
-        this.retrievePastSessionData();
+
+        this.retrievePastSessionData(this.fileServiceRestoreKey);
+        this.retrievePastSessionData(this.fileServiceIterateKey);
     }
 
 
@@ -237,14 +240,15 @@ export class FileService implements BaseService{
             this._fileSystem.mkdir(folderPath, 0o777, (err)=>{
                 if(!err){
                     // Folder created successfully
-                    this._fileExistsMap.set(folderPath, Constants.NUM_ZERO);
+                    this._fileExistsMap.set(folderPath, String(Constants.NUM_ZERO));
+                    this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
                     // console.log(`Folder created: ${folderPath}`);
                     return resolve(true);
                 }
 
                 if(err.code === 'EEXIST'){
                     console.warn(`Folder already exists: ${folderPath}`);
-                    const uniqueFolderPath = this.iterateName(folderPath);
+                    const uniqueFolderPath = this.IncrementFileName(folderPath);
 
                     this._fileSystem.mkdir(uniqueFolderPath, 0o777, (retryErr)=>{
                         if(retryErr){
@@ -253,7 +257,8 @@ export class FileService implements BaseService{
                         }
 
                         // console.log(`Folder created with new name: ${uniqueFolderPath}`);
-                        this._fileExistsMap.set(uniqueFolderPath, Constants.NUM_ZERO);
+                        this._fileExistsMap.set(uniqueFolderPath, String(Constants.NUM_ZERO));
+                        this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
                         resolve(true);
                     });
                 }else{
@@ -571,14 +576,14 @@ export class FileService implements BaseService{
 
             if(result){
                 if(isRecycleBin)
-                    this.removeAndUpdateSessionData(srcPath);
-                
+                    this.removeAndUpdateSessionData(this.fileServiceRestoreKey, srcPath, this._restorePoint);
+   
                 await this.deleteEmptyFolders(folderToDeleteStack);
             }
             return result;
         }else{
             if(isRecycleBin)
-                this.removeAndUpdateSessionData(srcPath);
+                this.removeAndUpdateSessionData(this.fileServiceRestoreKey, srcPath, this._restorePoint);
 
             return await this.moveFileAsync(srcPath, destPath, undefined, isRecycleBin);
         }
@@ -733,18 +738,20 @@ export class FileService implements BaseService{
         const writeResult = await this.writeRawAsync(destPath, cntnt, 'wx');
         if(writeResult === Constants.NUM_ZERO){
             // console.log('writeFileAsync: file successfully written');
-            this._fileExistsMap.set(destPath, Constants.NUM_ZERO);
+            this._fileExistsMap.set(destPath, String(Constants.NUM_ZERO));
+            this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
             return true;
         }
 
         if(writeResult === Constants.NUM_ONE){
             console.warn('writeFileAsync: file already exists');
-            const newFileName = this.iterateName(destPath);
+            const newFileName = this.IncrementFileName(destPath);
             const writeResult2 = await this.writeRawAsync(newFileName, cntnt, 'wx');
 
             if(writeResult2 === Constants.NUM_ZERO){
                 // console.log('writeFileAsync: file successfully written');
-                this._fileExistsMap.set(newFileName, Constants.NUM_ZERO);
+                this._fileExistsMap.set(newFileName, String(Constants.NUM_ZERO));
+                this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
                 return true;
             }else{
                 console.error('writeFileAsync Iterate Error:',);
@@ -840,11 +847,12 @@ OpensWith=${shortCutData.getOpensWith}
 
         if(!path.includes(Constants.RECYCLE_BIN_PATH)){
             const name = this.getNameFromPath(path);
-            this.addAndUpdateSessionData(`${Constants.RECYCLE_BIN_PATH}/${name}`, path);
+            this._restorePoint.set(`${Constants.RECYCLE_BIN_PATH}/${name}`, path);
+            this.addAndUpdateSessionData(this.fileServiceRestoreKey, this._restorePoint);
             //move to rbin
             return await this.moveAsync(path, Constants.RECYCLE_BIN_PATH, isFile);
         }else{
-            this.removeAndUpdateSessionData(path);
+            this.removeAndUpdateSessionData(this.fileServiceRestoreKey, path, this._restorePoint);
             const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(path) : !isFile;
             return isDirectory
                 ? await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path, isRecycleBin)
@@ -866,8 +874,10 @@ OpensWith=${shortCutData.getOpensWith}
                         return resolve(false);
                     }
 
+                    this.DecrementFileName(path);
+                    this.removeAndUpdateSessionData(this.fileServiceIterateKey, path, this._fileExistsMap);
                     // console.log(`deleteFolderAsync: Folder deleted successfully: ${path}`);
-                    resolve(true);
+                    return resolve(true);
                 });
 
             });
@@ -882,6 +892,8 @@ OpensWith=${shortCutData.getOpensWith}
                     return resolve(false);
                 }
 
+                this.DecrementFileName(srcPath);
+                 this.removeAndUpdateSessionData(this.fileServiceIterateKey, srcPath, this._fileExistsMap);
                 //console.log('[unlink] Success, applying short delay...');
                 resolve(true);
             });
@@ -894,7 +906,7 @@ OpensWith=${shortCutData.getOpensWith}
     
         for (const directoryEntry of loadedDirectoryEntries) {
             const entryPath = `${srcPath}/${directoryEntry}`;
-            this.removeAndUpdateSessionData(entryPath);
+            this.removeAndUpdateSessionData(this.fileServiceRestoreKey, entryPath, this._restorePoint);
 
             const checkIfDirectory = await this.checkIfDirectoryAsync(entryPath);
             if(checkIfDirectory){
@@ -1031,15 +1043,27 @@ OpensWith=${shortCutData.getOpensWith}
      * @param path 
      * @returns 
      */
-    public iterateName(path:string):string{
+    public IncrementFileName(path:string):string{
         const extension = extname(path);
         const filename = basename(path, extension);
 
-        let count = this._fileExistsMap.get(path) || Constants.NUM_ZERO;
+        let count = Number(this._fileExistsMap.get(path)) || Constants.NUM_ZERO;
         count = count + Constants.NUM_ONE;
-        this._fileExistsMap.set(path, count);
+        this._fileExistsMap.set(path, String(count));
 
         return `${dirname(path)}/${filename} (${count})${extension}`;
+    }
+
+    public DecrementFileName(path:string):void{
+
+        let count = Number(this._fileExistsMap.get(path)) || Constants.NUM_ZERO;
+
+        if(count > Constants.NUM_ZERO){
+            count = count - Constants.NUM_ONE;
+            this._fileExistsMap.set(path, String(count));
+        }else{
+            this._fileExistsMap.delete(path);
+        }
     }
 
 
@@ -1147,19 +1171,33 @@ OpensWith=${shortCutData.getOpensWith}
         this._eventOriginator = Constants.EMPTY_STRING;
     }
 
-    private addAndUpdateSessionData(currPath:string, srcPath:string):void{
-        this._restorePoint.set(currPath, srcPath);
-        this._sessionManagmentService.addFileServiceSession(this.fileServiceDeleteKey, this._restorePoint);
+    // private addAndUpdateSessionData(currPath:string, srcPath:string):void{
+    //     this._restorePoint.set(currPath, srcPath);
+    //     this._sessionManagmentService.addFileServiceSession(this.fileServiceRestoreKey, this._restorePoint);
+    // }
+
+    // private removeAndUpdateSessionData(path:string):void{
+    //     if(this._restorePoint.has(path)){
+    //         this._restorePoint.delete(path);
+    //         this._sessionManagmentService.addFileServiceSession(this.fileServiceRestoreKey, this._restorePoint);
+    //     }
+    // }
+
+    private addAndUpdateSessionData(key:string, map:Map<string, string>):void{
+        this._sessionManagmentService.addFileServiceSession(key, map);
     }
 
-    private removeAndUpdateSessionData(path:string):void{
-        if(this._restorePoint.has(path)){
-            this._restorePoint.delete(path);
-            this._sessionManagmentService.addFileServiceSession(this.fileServiceDeleteKey, this._restorePoint);
+    private removeAndUpdateSessionData(key:string, path:string, map:Map<string, string>):void{
+        if(key === this.fileServiceRestoreKey && map.has(path)){
+            map.delete(path);
+            this._sessionManagmentService.addFileServiceSession(key, map);
+        }else{
+            this._sessionManagmentService.addFileServiceSession(key, map);
         }
     }
-    private retrievePastSessionData():void{
-        const sessionData = this._sessionManagmentService.getFileServiceSession(this.fileServiceDeleteKey) as Map<string, string>;
+
+    private retrievePastSessionData(key:string):void{
+        const sessionData = this._sessionManagmentService.getFileServiceSession(key) as Map<string, string>;
         if(sessionData){
             this._restorePoint = sessionData
         }

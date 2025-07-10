@@ -101,12 +101,12 @@ export class SessionManagmentService implements BaseService{
         localStorage.setItem(this._sessionName, data);
     }
 
-    addFileServiceSession(key: string, map: Map<string, string>): void {
+    addFileServiceSession(key: string, map: Map<string, unknown>): void {
         const serialized = JSON.stringify(Array.from(map.entries()));
         localStorage.setItem(key, serialized);
     }
 
-    getFileServiceSession(key: string): Map<string, string> | null {
+    getFileServiceSession(key: string): Map<string, unknown> | null {
         const item = localStorage.getItem(key);
         if (!item) return null;
 
@@ -119,7 +119,7 @@ export class SessionManagmentService implements BaseService{
     }
 
     deleteFileServiceSession(): void {
-        const fileServiceDeleteKey = Constants.FILE_SVC_DELETE_KEY;
+        const fileServiceDeleteKey = Constants.FILE_SVC_RESTORE_KEY;
         localStorage.removeItem(fileServiceDeleteKey);
     }
 

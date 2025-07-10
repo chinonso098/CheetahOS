@@ -8,7 +8,6 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { delay } from 'rxjs';
 
 @Component({
   selector:'cos-cheetah',
@@ -64,8 +63,8 @@ CheetahOS
 Version 3.07.04
 Copyright\u00A9 Chinonso098 2022 - ${new Date().getFullYear()}
 
-Windows 10 icons \u00A9 Microsoft Corporation. Windows (tm) is a 
-registered trademark of Microsoft Corporation.
+Windows 10 icons & audio \u00A9 Microsoft Corporation. 
+Windows (tm) is a registered trademark of Microsoft Corporation.
 Other trademarks and logos are property of their respective owners
     `
   }

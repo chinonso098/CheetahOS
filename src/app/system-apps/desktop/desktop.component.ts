@@ -37,7 +37,7 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
   styleUrls: ['./desktop.component.css'],
   animations: [
     trigger('slideStatusAnimation', [
-      state('slideOut', style({ right: '-400px' })),
+      state('slideOut', style({ right: '-480px' })),
       state('slideIn', style({ right: '0px' })),
 
       transition('* => slideIn', [

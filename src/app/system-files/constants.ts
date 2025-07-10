@@ -108,7 +108,8 @@ export namespace Constants{
 
     export const CHEETAH_PWR_KEY = 'cheetahPwrKey';
     export const CHEETAH_LOGON_KEY = 'cheetahLogonKey';
-    export const FILE_SVC_DELETE_KEY = 'fileServiceDeleteKey';
+    export const FILE_SVC_RESTORE_KEY = 'fileServiceRestoreKey';
+    export const FILE_SVC_FILE_ITERATE_KEY = 'fileServiceFileIterateKey';
 
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';
