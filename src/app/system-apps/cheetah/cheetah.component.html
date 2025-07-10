@@ -5,9 +5,18 @@
                 <div class="os-image">
                     <img [src]="cheetahIcon" />
                 </div>
-                <div class="cheetah-div"> <p class="os-name">{{displayName}}</p> </div>
-                <div class="cheetah-div"> <p class="os-version"> {{version}}</p></div>
-                <div class="cheetah-div"> <p class="os-year">{{year}}</p></div>
+                <div class="cheetah-div">
+                    <div class="os-name">
+                        <span>{{displayName}}</span>
+                        <span (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()" class="info-icon">&#9432;</span>
+                    </div>
+                </div>
+                <div class="cheetah-div"><p class="os-version">{{version}}</p></div>
+                <div class="cheetah-div"><p class="os-year">{{year}}</p></div>
+            </div>
+
+           <div class="tooltip" id="cheetahAboutTooltip" (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()">
+                {{infoMessage}}
             </div>
         </div>
     </div>

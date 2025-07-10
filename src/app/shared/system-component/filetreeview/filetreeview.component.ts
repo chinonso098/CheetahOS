@@ -452,6 +452,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   doNothing():void{/** */}
 
   showPropertiesWindow():void{
+    this.showIconCntxtMenu = false;
     const file = new FileInfo()
     file.setFileName = this.selectedFileTreeNode.name;
     file.setCurrentPath = this.selectedFileTreeNode.path;

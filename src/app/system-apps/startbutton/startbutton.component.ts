@@ -41,26 +41,19 @@ export class StartButtonComponent implements OnDestroy {
     this._hideStartMenuSub?.unsubscribe();
   }
 
-  showStartMenu():void{
+  showStartMenu(evt:MouseEvent):void{
     if(!this.isStartMenuVisible){
       this._menuService.showStartMenu.next();
       this.isStartMenuVisible = true;
-    }
-    else{
-      const uid = `${this.name}-${this.processId}`;
-      this._runningProcessService.addEventOriginator(uid);
-
+    }else{
       this._menuService.hideStartMenu.next();
-      this.isStartMenuVisible = false;
     }
+
+    evt.stopPropagation();
   }
 
   hideStartMenu():void{
-    const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
-    if(evtOriginator !== uid){
-      this.isStartMenuVisible = false;
-    }
+    this.isStartMenuVisible = false;
   }
   
   private getComponentDetail():Process{

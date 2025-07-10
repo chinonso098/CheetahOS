@@ -1,44 +1,80 @@
-.cheetah-main-container{
+.cheetah-main-container {
     font-size: 1rem;
     text-align: center;
     height: fit-content;
     width: fit-content;
 }
 
-.cheetah-body-container{
+.cheetah-body-container {
     height: 100%;
     width: 100%;
     background-color: #f0f0f0;
 }
 
-.cheetah-div{
+.cheetah-div {
     width: 100%;
-}
-.os-info{
-    height: 100%;
-    width: 100%;
-    padding:8px 8px 4px 8px;
 }
 
-.os-image{
+.os-info {
+    height: 100%;
+    width: 100%;
+    padding: 8px 8px 4px 8px;
+}
+
+.os-image {
     width: 626px;
     height: 235px;
     margin-inline: auto;
 }
 
-.os-name{
+.os-name {
     font-size: 30px;
     text-align: center;
     color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    position: relative;
 }
 
-.os-version{
+.info-icon {
+    cursor: pointer;
+    font-size: 20px;
+    color: #007BFF;
+}
+
+.tooltip {
+    z-index: -1;
+    opacity: 0;
+    position: absolute;
+    top: 15%;
+    left: 35%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 150px;
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #ccc;
+    padding: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 0;
+    opacity: 0;
+    font-size: 12px;
+    text-align: left;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    overflow-y: auto;
+}
+
+
+.os-version {
     font-size: 15px;
     text-align: center;
     color: #000;
 }
 
-.os-year{
+.os-year {
     font-size: 12px;
     text-align: center;
     color: #000;

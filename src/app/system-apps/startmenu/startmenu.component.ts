@@ -13,6 +13,8 @@ import { FileEntry } from 'src/app/system-files/file.entry';
 import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { MenuService } from 'src/app/shared/system-service/menu.services';
 
 
 @Component({
@@ -26,6 +28,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   private _runningProcessService:RunningProcessService;
   private _processHandlerService:ProcessHandlerService;
   private _userNotificationService:UserNotificationService;
+  private _menuService:MenuService;
   private _fileService:FileService;
   private _elRef:ElementRef;
 
@@ -50,16 +53,17 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   displayName = '';
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-              elRef: ElementRef, fileService:FileService, userNotificationService:UserNotificationService) { 
+              elRef: ElementRef, fileService:FileService, userNotificationService:UserNotificationService, menuService:MenuService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._elRef = elRef;
     this._fileService = fileService;
     this._processHandlerService = triggerProcessService;
     this._userNotificationService = userNotificationService;
+    this._menuService = menuService;
 
     this.processId = this._processIdService.getNewProcessId()
-    if(this._runningProcessService.getProcesses().findIndex(x => x.getProcessName === this.name) === -1){
+    if(this._runningProcessService.getProcesses().findIndex(x => x.getProcessName === this.name) === Constants.MINUS_ONE){
       this._runningProcessService.addProcess(this.getComponentDetail());
     }
   }
@@ -69,10 +73,9 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   }
   
   async ngAfterViewInit():Promise<void>{
-    setTimeout(async () => {
-      await this.loadFilesInfoAsync();
-    }, this.SECONDS_DELAY);
-    // 
+
+    await CommonFunctions.sleep(this.SECONDS_DELAY * Constants.NUM_TWO)
+    await this.loadFilesInfoAsync();
     this.removeVantaJSSideEffect();
   }
 
@@ -84,8 +87,8 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     setTimeout(()=> {
       const elfRef = this._elRef.nativeElement;
       if(elfRef) {
-        elfRef.style.position = '';
-        elfRef.style.zIndex = '';
+        elfRef.style.position = Constants.EMPTY_STRING;
+        elfRef.style.zIndex = Constants.EMPTY_STRING;
       }
     }, this.SECONDS_DELAY);
   }
@@ -198,13 +201,18 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     }
   }
 
-  runProcess(file:FileInfo):void{
-    console.log('startmanager-runProcess:',file)
+  runProcess(file:FileInfo, evt:MouseEvent):void{
+    console.log('startmanager-runProcess:',file);
+
+    this._menuService.hideStartMenu.next();
+  
     this._processHandlerService.startApplicationProcess(file);
+
+    evt.stopPropagation();
   }
 
 
-  openFolderPath(folderName:string):void{
+  openFolderPath(folderName:string, evt:MouseEvent):void{
    const path = `/Users/${folderName}`;
 
    const file = new FileInfo();
@@ -213,17 +221,16 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
    file.setIsFile = false;
    file.setCurrentPath = path;
 
-  this.runProcess(file);
+    this.runProcess(file, evt);
   }
 
   power(evt:MouseEvent):void{
-    const msg = 'Shut Down Cheetah'
+    const msg = 'Shut Down Cheetah';
+    this._menuService.hideStartMenu.next();
     this._userNotificationService.showPowerOnOffNotification(msg);
-    //location.reload();
 
     evt.stopPropagation();
   }
-
 
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)

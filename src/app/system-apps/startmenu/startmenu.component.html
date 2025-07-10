@@ -15,7 +15,7 @@
 
                 <div style="height: 280px;"> </div>
 
-                <div class="start-menu-main-overlay-icon-text-content" (click)="openFolderPath(Documents)" (mouseenter)="startMenuOverlaySlideOut()" (mouseleave)="startMenuOverlaySlideIn()">
+                <div class="start-menu-main-overlay-icon-text-content" (click)="openFolderPath(Documents, $event)" (mouseenter)="startMenuOverlaySlideOut()" (mouseleave)="startMenuOverlaySlideIn()">
                     <div class="start-menu-overlay-icon">
                         <figure class="start-menu-overlay-figure">
                             <img class="start-menu-overlay-img" [src]="'osdrive/Cheetah/System/Imageres/sm_file.png'"/>
@@ -26,7 +26,7 @@
                     </div>
                 </div>
 
-                <div class="start-menu-main-overlay-icon-text-content" (click)="openFolderPath(Pictures)" (mouseenter)="startMenuOverlaySlideOut()" (mouseleave)="startMenuOverlaySlideIn()">
+                <div class="start-menu-main-overlay-icon-text-content" (click)="openFolderPath(Pictures, $event)" (mouseenter)="startMenuOverlaySlideOut()" (mouseleave)="startMenuOverlaySlideIn()">
                     <div class="start-menu-overlay-icon">
                         <figure class="start-menu-overlay-figure">
                             <img class="start-menu-overlay-img" [src]="'osdrive/Cheetah/System/Imageres/sm_picture.png'"/>
@@ -37,7 +37,7 @@
                     </div>
                 </div>
 
-                <div class="start-menu-main-overlay-icon-text-content" (click)="openFolderPath(Music)" (mouseenter)="startMenuOverlaySlideOut()" (mouseleave)="startMenuOverlaySlideIn()">
+                <div class="start-menu-main-overlay-icon-text-content" (click)="openFolderPath(Music, $event)" (mouseenter)="startMenuOverlaySlideOut()" (mouseleave)="startMenuOverlaySlideIn()">
                     <div class="start-menu-overlay-icon">
                         <figure class="start-menu-overlay-figure">
                             <img class="start-menu-overlay-img" [src]="'osdrive/Cheetah/System/Imageres/sm_music.png'"/>
@@ -68,7 +68,7 @@
             <div class="start-menu-main-content-list-content">
                 <ol class="start-menu-list-ol" (mouseenter)="onBtnHover()"> 
                     <li  class="start-menu-list-li"  *ngFor="let file of startMenuFiles; let i = index"  id="start-menu-list-li-{{i}}">
-                        <button class="start-menu-list-btn"  (click)="runProcess(file)">
+                        <button class="start-menu-list-btn"  (click)="runProcess(file, $event)">
                             <div class="start-menu-list-head"> <figure class="start-menu-list-fig"><img class="start-menu-list-img" [src]="file.getIconPath"/></figure></div>
                             <div class="start-menu-list-mid"><p class="start-menu-list-p">{{file.getFileName}}</p></div>
                             <div class="start-menu-list-tail"> <figure class="start-menu-list-fig"></figure> </div>
