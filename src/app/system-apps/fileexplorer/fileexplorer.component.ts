@@ -1831,6 +1831,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async setInformationTipInfo(file:FileInfo):Promise<void>{
     const infoTipFields = ['Author:', 'Item type:','Date created:','Date modified:', 'Dimesions:', 'General', 'Size:','Type:', 'Original location:'];
+    const specialFolders: Record<string, string> = {
+      'Music': 'Contains music and other audio files',
+      'Videos': 'Contains movies and other video files',
+      'Pictures': 'Contains digital photos, images and graphic files'
+    };
+
+    const standardFolders = ['3D-Objects', 'Documents', 'Downloads', 'Desktop', 'Games'];
+    const capitalizedDesktop = Constants.DESKTOP.charAt(0).toUpperCase();
+
+
     const fileAuthor = 'Relampago Del Catatumbo';
     const fileType = file.getFileType;
     const fileDateModified = file.getDateModifiedUS;
@@ -1838,6 +1848,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const fileName = file.getFileName;
     const isFile = file.getIsFile;
     const currentPath = dirname(file.getCurrentPath);
+    const isFolder = fileType === Constants.FOLDER;
+    const isRoot = currentPath === Constants.ROOT;
     //reset
     this.fileInfoTipData = [];
 
@@ -1855,21 +1867,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       };
       img.onerror = (err) => { console.error("Failed to load image", err); };
     }
-    else if(isFile && fileType !== Constants.FOLDER){
+    else if(isFile && !isFolder){
       const fileTypeName = this.getFileTypeName(fileType);
       this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SEVEN], data:fileTypeName});
       this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_THREE], data: fileDateModified });
       this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:fileSize });
     }
-    else if(fileType === Constants.FOLDER){
-      if((fileName === "3D-Objects" && currentPath === Constants.ROOT) || (fileName === Constants.DESKTOP.charAt(Constants.NUM_ZERO).toUpperCase() && currentPath === Constants.ROOT) || (fileName === 'Documents'  && currentPath === Constants.ROOT) || (fileName === 'Downloads' && currentPath === Constants.ROOT) || (fileName === "Desktop" && currentPath === Constants.ROOT) || (fileName === "Games" && currentPath === Constants.ROOT)){
+    else if(isFolder){
+      if(isRoot && (standardFolders.includes(fileName) || fileName === capitalizedDesktop)){
         this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_TWO], data:fileDateModified });
-      }else if((fileName === 'Music' && currentPath === Constants.ROOT)){
-        this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:'Contains music and other audio files' })
-      }else if((fileName === 'Videos' && currentPath === Constants.ROOT)){
-        this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:'Contains movies and other video files' })
-      }else if((fileName === 'Pictures' && currentPath === Constants.ROOT)){
-        this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:'Contains digital photos, images and graphic files'})
+      }else if((isRoot && specialFolders[fileName])){
+        this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:specialFolders[fileName]})
       }else{
         this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SEVEN], data:fileType });
         this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_TWO], data:fileDateModified });
