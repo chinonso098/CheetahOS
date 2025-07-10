@@ -34,7 +34,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   isInRecycleBin = false;
   isRootFolder = false;
   URL = Constants.URL;
-  readonly capacity = 512_000_000;
+  readonly capacity = 512_050_500;
  
   type = ComponentType.System;
   hasWindow = false;
@@ -109,7 +109,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
       if(!this.isRootFolder)
         await this.getFolderContentDetails();
 
-      await this.getFolderSizeData()
+      await this.getFolderSizeData();
 
       if(this.isInRecycleBin){
         this.getOrigin();

@@ -2,7 +2,7 @@
     font-size: 1rem;
     text-align: center;
     background-color: #fff;
-    width: 325px;
+    width: 360px;
 }
   
 .properties-button{
@@ -48,7 +48,6 @@
     display: flex;
     background-color: #f0f0f0;
 }
-
 
 .properties-tab {
     width: 100px;
@@ -132,6 +131,11 @@
 }
 
 .general-tab-head{
+    width: 26%;
+}
+
+.general-tab-head1{
+    display: inline-flex;
     width: 26%;
 }
 
@@ -243,5 +247,19 @@ svg {
 
 .svg-container{
     position: relative;
-    left: 25%;
+    left: 30%;
+}
+
+.space, .free, .used{
+    width: 15px; 
+    height: 15px;
+    margin-right: 4px;
+}
+
+.free{
+    background-color: #acacac;
+}
+
+.used{
+    background-color: #2da6da;
 }
