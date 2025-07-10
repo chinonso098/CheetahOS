@@ -1100,6 +1100,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   async runProcess(file:FileInfo):Promise<void>{
     console.log('fileexplorer-runProcess:',file)
 
+    this.hideFileExplorerToolTip();
     await this._audioService.play(this.cheetahNavAudio);
 
     if(this.isRecycleBinFolder){
@@ -1223,6 +1224,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
     // looking at what Windows does, at any given time. there is only one context window open
     this._menuService.hideContextMenus.next(); 
+    this.hideFileExplorerToolTip();
 
     const menuHeight = 213; //this is not ideal.. menu height should be gotten dynmically
     this.iconCntxtCntr++;
@@ -1434,7 +1436,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onMouseLeave(id:number):void{
     this.isMultiSelectEnabled = true;
-    this.hideFileExplorerToolTip()
+    this.hideFileExplorerToolTip();
 
     if(!this.isMultiSelectActive){
       if(id != this.selectedElementId){

@@ -253,13 +253,13 @@
                                     <div class="general-tab-content">
                                         <div class="general-tab-head"><p class="general-tab-p1"> Used space:</p></div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSizeOnDisk2 | number:'1.0-2'}} bytes    {{fileSizeOnDisk}} {{fileSizeUnit}}</p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSizeOnDisk2 | number:'1.0-2'}} bytes &nbsp;&nbsp;&nbsp;&nbsp; {{fileSizeOnDisk}} {{fileSizeUnit}}</p></div>
                                     </div>
 
                                     <div class="general-tab-content">
                                         <div class="general-tab-head"><p class="general-tab-p1"> Free space:</p></div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{AvailableSpace | number:'1.0-2'}} bytes    {{fileSizeOnDisk}} {{fileSizeUnit}}</p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{availableSpace | number:'1.0-2'}} bytes &nbsp;&nbsp;&nbsp;&nbsp; {{availableSpace2}} {{fileSizeUnit}}</p></div>
                                     </div>
                                 </div>
                                 <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
@@ -267,9 +267,9 @@
                                     <div class="general-tab-content">
                                         <div class="general-tab-head"><p class="general-tab-p1">Capacity:</p></div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1">{{capacity | number:'1.0-2'}} bytes     {{fileSizeOnDisk}} {{fileSizeUnit}}</p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1">{{capacity | number:'1.0-2'}} bytes &nbsp;&nbsp;&nbsp;&nbsp; {{capacity2}} {{fileSizeUnit}}</p></div>
                                     </div>
-
+                                    <div style="width: 100%; height: 5px;"> </div>
                                     <div class="general-tab-content">
                                         <div class="svg-container">
                                             <svg viewBox="0 0 100 100">
@@ -277,28 +277,29 @@
                                                 <circle
                                                     cx="50"
                                                     cy="50"
-                                                    [attr.r]="45"
+                                                    [attr.r]="35"
                                                     fill="none"
-                                                    stroke="#eee"
-                                                    stroke-width="5"
+                                                    stroke="#acacac"
+                                                    [attr.stroke-width]="15"
                                                 ></circle>
 
                                                 <!-- Foreground circle (blue, shows progress) -->
                                                 <circle
                                                     cx="50"
                                                     cy="50"
-                                                    [attr.r]="45"
+                                                    [attr.r]="35"
                                                     fill="none"
-                                                    stroke="#007bff"
-                                                    [attr.stroke-width]="5"
+                                                    stroke="#2da6da"
+                                                    [attr.stroke-width]="15"
                                                     [attr.stroke-dasharray]="circumference"
                                                     [attr.stroke-dashoffset]="strokeDashoffset"
-                                                    stroke-linecap="round"
+                                                    stroke-linecap="square"
                                                     transform="rotate(-90 50 50)"
                                                 ></circle>
                                             </svg>
                                         </div>
                                     </div>
+                                    <div style="width: 100%; height: 5px;"> </div>
                                 </div>
                                 <div class="general-tab-line-container"><div class="general-tab-line"></div></div>
                                 <div class="general-tab-section2">

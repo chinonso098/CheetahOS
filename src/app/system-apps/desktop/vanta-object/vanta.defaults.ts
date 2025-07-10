@@ -9,8 +9,10 @@ export namespace VantaDefaults {
             color: color,
             waveHeight: 30,
             shininess: 45,
-            waveSpeed: 0.1,
-            zoom: 1.25,
+            waveSpeed: 0.2,
+            zoom: 1.3,
+            scale: 1.20,
+            mouseControls:false,
         }
         return defaultWaveConfig;
     };

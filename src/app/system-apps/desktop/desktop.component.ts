@@ -160,8 +160,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private readonly MIN_NUMS_OF_DESKTOPS = Constants.NUM_ZERO;
   private readonly MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - Constants.NUM_ONE;
   private readonly CLIPPY_INIT_DELAY = 300000; // 5mins
-  private readonly COLOR_CHANGE_DELAY = 60000; // 1min
-  private readonly COLOR_TRANSITION_DURATION = 2000; // 2sec
+  private readonly COLOR_CHANGE_DELAY = 30000; // 30secs
+  private readonly COLOR_TRANSITION_DURATION = 1500; // 1.5sec
   private readonly MIN_NUM_COLOR_RANGE = 200;
   private readonly MAX_NUM_COLOR_RANGE = 99999;
   private readonly DEFAULT_COLOR = 0x274c;

@@ -50,7 +50,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   displayName = Constants.EMPTY_STRING;
   fileSizeUnit = Constants.EMPTY_STRING;
 
-  circumference: number = 2 * Math.PI * 45; // Circumference for a circle with radius 45
+  circumference: number = 2 * Math.PI * 35; // Circumference for a circle with radius 45
   strokeDashoffset: number = this.circumference; // Initialize to full offset (all white)
 
   processId = Constants.NUM_ZERO;
@@ -58,7 +58,9 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   fileSize2 = Constants.NUM_ZERO;
   fileSizeOnDisk = Constants.NUM_ZERO;
   fileSizeOnDisk2 = Constants.NUM_ZERO;
-  AvailableSpace = Constants.NUM_ZERO;
+  availableSpace = Constants.NUM_ZERO;
+  availableSpace2 = Constants.NUM_ZERO;
+  capacity2 = Constants.NUM_ZERO;
 
   private hiddenName = Constants.EMPTY_STRING
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
@@ -157,10 +159,11 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     this.fileDate = this.fileInput.getDateModified;
 
     if(this.isRootFolder){
-      this.AvailableSpace = this.capacity - folderSize;
+      this.availableSpace = this.capacity - folderSize;
+      this.availableSpace2 = CommonFunctions.getReadableFileSizeValue(this.availableSpace);
+      this.capacity2 =  CommonFunctions.getReadableFileSizeValue(this.capacity);
+      this.updateCapacityImg(folderSize);
     }
-
-    this.updateCapacityImg(folderSize);
   }
 
   updateCapacityImg(used:number): void {
