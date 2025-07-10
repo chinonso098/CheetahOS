@@ -987,6 +987,18 @@ span.mid-search-entry{
     height: 20px; 
 }
 
+.list-rename-textbox{
+    position: relative;
+    display: none;
+    top: 2px;
+    margin-bottom: 2px;
+    width: 90px;
+    height: 20px;
+    border: 1px solid #ccc;
+    overflow:hidden;
+    z-index: 2;
+ }
+
 /*-------------------------List View End-------------------------------*/
 
 
@@ -1081,10 +1093,10 @@ span.mid-search-entry{
 
 .ol-contentview-grid{
     display: grid;
-    height: calc(100% - 40px);
+    height: calc(100% - 5px);
     width: 100%;
     padding: 0px !important;
-    row-gap: 0px !important;
+    row-gap: 6px !important;
     column-gap: 0px !important;
     grid-auto-flow: row !important;
 }
@@ -1092,19 +1104,20 @@ span.mid-search-entry{
 .li-contentview-container{
     display: flex;
     justify-content: left;
-    padding: 2px 2px;
+    padding: 0px 2px;
     padding-left:15px;
-    height: min-content;
+    height: fit-content;
     z-index: 1;
 }
 
-.span-contentview{
+.div-contentview{
     position: relative;
     display: flex;
-    padding: 2px 2px;
-    height: 43px;
+    margin: 2px 2px;
+    height: 48px;
 }
-.div-contentview{
+
+.div-contentview-info{
     display: flex;
     width: 100%;
     height: 40px;
@@ -1115,61 +1128,92 @@ span.mid-search-entry{
     position: relative;
     /* min-width: 8px; */
     place-items:center;
-    height: 43px;
+    height: 40px;
+    width: 40px;
+    margin-top: 1px;
 }
 
 .img-contentview{
-    height: 39px; 
-    width: 39px;
+    position: relative;
+    height: 40px; 
+    width: 40px;
     margin: 0 1px;
 }
 
 .figcaption-contentview{
-    display: flex;
-    position: relative;
+    display: block;
     width: 70%;
+}
+
+.figcaption-contentview-p{
+    position: relative;
     align-items: center;
     text-align: left;
     color: white;
     font-size: 12px;
     font-weight:300;
     margin: 0 1px;
-    top: -10px;
-    line-height: 13px;
-    
+    top: 4px;
+    height: 20px;
+    width: 320px;
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add "..." when text overflows */
+    line-height: 13px; 
 }
 
-.div-extra-info-cntnr{
+.div-contentview-metadata{
+    display: block;
     position: relative;
     width: 30%;
     right: 20%;
-    top:4px;
 }
 
-.div-extra-info-content{
+.contentview-metadata-p{
     position: relative;
     width: 220px;
     text-align: left;
     color: white;
     font-size: 11px;
     font-weight:200;
-    text-overflow: clip;
+    text-overflow: ellipsis;
     padding: 1px 0;
+    top:4px;
 }
 
 .button-contentview{
     width: 100%;
-    height: 43px;
+    height: 48px;
 }
 
 .line-container {
+    position: relative;
     height: 0.5px;
     background-color: #202020;
+    top: -4px;
 }
 
 .line {
     border: 0.2px solid white;
 }
+
+.contentview-rename-form, .contentview-rename-textbox{
+    position: relative;
+    display: none;
+    margin: 0;
+}
+
+.contentview-rename-textbox{
+    display: none;
+    width: 100%;
+    max-width: 320px;
+    height: 20px;
+    border: 1px solid #ccc;
+    overflow:hidden;
+    font-size: 12px;
+    background-color: white;
+    color: black;
+ }
 /*-------------------------Content View End-------------------------------*/
 
 /*****************************icon view and layout Started*****************************/

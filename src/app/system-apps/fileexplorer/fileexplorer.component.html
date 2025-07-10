@@ -347,37 +347,46 @@
                             <p>Detail View</p>
                         </ng-template>
                         <ng-template #contentView0>
-                            <!-- adding (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)" id="btnElmnt-{{this.processId}}-{{i}}" to the li elements covers it completley on highlight-->
                             <li class="li-contentview-container" *ngFor="let file of fileExplrFiles; let i = index">
-                                <button class="button-contentview" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
+                                <button class="button-contentview" tabindex="0" (dblclick)="runProcess(file)" 
+                                    (mouseenter)="onMouseEnter($event, file, i)" 
+                                    (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
-                                    <span class="span-contentview">
+                                    <div class="div-contentview">
                                         <figure class="figure-contentview" id="figElmnt-{{this.processId}}-{{i}}">
                                             <img class="img-contentview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
                                         </figure>
     
-                                        <div class="div-contentview">
-                                            <figcaption class="figcaption-contentview"   id="figCapElmnt-{{this.processId}}-{{i}}">
-                                                {{file.getFileName  | truncateString}} 
+                                        <div class="div-contentview-info">
+                                            <figcaption class="figcaption-contentview" >
+                                                <p class="figcaption-contentview-p" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                                    {{file.getFileName}} 
+                                                </p>
+                                                <form [formGroup]="renameForm" class="contentview-rename-form"  
+                                                    (ngSubmit)="isFormDirty()"  id="renameForm-{{this.processId}}-{{i}}">
+                                                    <input type="text" formControlName="renameInput"  
+                                                        class="contentview-rename-textbox"
+                                                        (keydown)="onKeyPress($event)" 
+                                                        autofocus 
+                                                        spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"
+                                                    />
+                                                </form>
+                                                <p class="figcaption-contentview-p" *ngIf="file.getIsFile">
+                                                   Type: {{getFileTypeName(file.getFileType)}} 
+                                                </p>
                                             </figcaption>
     
-                                            <div class="div-extra-info-cntnr" *ngIf="!file.getIsFile, else elseBlock">
-                                                <div class="div-extra-info-content">Date modified: {{file.getDateModifiedUS}} </div>
+                                            <div class="div-contentview-metadata" *ngIf="!file.getIsFile, else elseBlock">
+                                                <p class="contentview-metadata-p">Date modified: {{file.getDateModifiedUS}} </p>
                                             </div>
                                             <ng-template #elseBlock>
-                                                <div class="div-extra-info-cntnr">
-                                                    <div class="div-extra-info-content">Date modified: {{file.getDateModifiedUS}} </div>
-                                                    <div class="div-extra-info-content">{{file.getSize}} {{file.getFileSizeUnit}} </div>
+                                                <div class="div-contentview-metadata">
+                                                    <p class="contentview-metadata-p">Date modified: {{file.getDateModifiedUS}} </p>
+                                                    <p class="contentview-metadata-p">Size: {{file.getSize}} {{file.getFileSizeUnit}} </p>
                                                 </div>
                                             </ng-template>
-    
-                                            <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
-                                                <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                                                    <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
-                                                </form>
-                                            </div>
                                         </div>
-                                    </span>
+                                    </div>
                                     <div class="line-container"><div class="line"></div></div>
                                 </button>
                             </li>

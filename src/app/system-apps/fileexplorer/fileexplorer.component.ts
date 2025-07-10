@@ -76,7 +76,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isNextBtnActive = false;
   private isUpBtnActive = true;
   private isNavigatedBefore = false;
-  private isRenameActive = false;
+  isRenameActive = false;
   private isIconInFocusDueToCurrentAction = false;
   private isIconInFocusDueToPriorAction = false;
   private isHideCntxtMenuEvt= false;
@@ -90,7 +90,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
-  private selectedElementId = Constants.MINUS_ONE;
+  selectedElementId = Constants.MINUS_ONE;
   private prevSelectedElementId = Constants.MINUS_ONE; 
   private hideCntxtMenuEvtCnt = Constants.NUM_ZERO;
   private btnClickCnt = Constants.NUM_ZERO;
@@ -1807,6 +1807,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async showFileExplorerToolTip(evt: MouseEvent,  file:FileInfo):Promise<void>{
+
+    if(this.olClassName === 'ol-contentview-grid')
+      return;
+
     const rect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
@@ -2172,39 +2176,62 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isRenameActive = !this.isRenameActive;
 
     const figCapElement= document.getElementById(`figCapElmnt-${this.processId}-${this.selectedElementId}`) as HTMLElement;
-    const renameContainerElement= document.getElementById(`renameContainer-${this.processId}-${this.selectedElementId}`) as HTMLElement;
+    const renameContainerElement= document.getElementById(`renameForm-${this.processId}-${this.selectedElementId}`) as HTMLElement;
     const renameTxtBoxElement= document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLInputElement;
 
     //TODO: fileexplorer behaves differently from the desktop
     //this.removeBtnStyle(this.selectedElementId);
 
-    if(figCapElement){
-      figCapElement.style.display = 'none';
-    }
 
-    if(renameContainerElement){
+    if((this.olClassName === 'ol-contentview-grid') &&  (figCapElement && renameContainerElement && renameTxtBoxElement)) {
+      console.log('olClassName;', this.olClassName)
+      figCapElement.style.display = 'none';
       renameContainerElement.style.display = 'block';
+      
+      renameTxtBoxElement.style.display = 'block';
+      renameTxtBoxElement.style.zIndex = '5'; // ensure it's on top
+
       this.currentIconName = this.selectedFile.getFileName;
       this.renameForm.setValue({
-        renameInput:this.currentIconName
-      })
+        renameInput: this.currentIconName
+      });
 
-      renameTxtBoxElement?.focus();
-      renameTxtBoxElement?.select();
+      renameTxtBoxElement.focus();
+      renameTxtBoxElement.select();
     }
+    
+
+
+
+
+    // if(figCapElement){
+    //   figCapElement.style.display = 'none';
+    // }
+
+    // if(renameContainerElement){
+    //   renameContainerElement.style.display = 'block';
+    //   this.currentIconName = this.selectedFile.getFileName;
+    //   this.renameForm.setValue({
+    //     renameInput:this.currentIconName
+    //   })
+
+    //   renameTxtBoxElement?.focus();
+    //   renameTxtBoxElement?.select();
+    // }
   }
 
   async onRenameFileTxtBoxDataSave():Promise<void>{
     this.isRenameActive = !this.isRenameActive;
 
-    const figCapElement= document.getElementById(`figCapElmnt-${this.processId}-${this.selectedElementId}`) as HTMLElement;
-    const renameContainerElement= document.getElementById(`renameContainer-${this.processId}-${this.selectedElementId}`) as HTMLElement;
+    const figCapElmnt= document.getElementById(`figCapElmnt-${this.processId}-${this.selectedElementId}`) as HTMLElement;
+    const renameFormElmnt= document.getElementById(`renameForm-${this.processId}-${this.selectedElementId}`) as HTMLElement;
+     const renameTxtBoxElmnt= document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLInputElement;
     const renameText = this.renameForm.value.renameInput as string;
 
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== Constants.NUM_ZERO && renameText !== this.currentIconName){
-      const result = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText,  this.selectedFile.getIsFile);
 
-      if(result){
+      const renameResult = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText,  this.selectedFile.getIsFile);
+      if(renameResult){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         //const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));
         const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getCurrentPath) && (f.getFileName == this.selectedFile.getFileName));
@@ -2223,26 +2250,24 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.setBtnStyle(this.selectedElementId, false);
     this.renameFileTriggerCnt = Constants.NUM_ZERO;
 
-    if(figCapElement){
-      figCapElement.style.display = 'block';
-    }
-
-    if(renameContainerElement){
-      renameContainerElement.style.display = 'none';
+    if(figCapElmnt && renameFormElmnt && renameTxtBoxElmnt){
+      figCapElmnt.style.display = 'block';
+      renameFormElmnt.style.display = 'none';
+      renameTxtBoxElmnt.style.display = 'none';
     }
   }
 
   onRenameFileTxtBoxHide():void{
     this.isRenameActive = !this.isRenameActive;
 
-    const figCapElement= document.getElementById(`figCapElmnt-${this.processId}-${this.selectedElementId}`) as HTMLElement;
-    const renameContainerElement= document.getElementById(`renameContainer-${this.processId}-${this.selectedElementId}`) as HTMLElement;
+    const figCapElmnt= document.getElementById(`figCapElmnt-${this.processId}-${this.selectedElementId}`) as HTMLElement;
+    const renameFormElmnt= document.getElementById(`renameForm-${this.processId}-${this.selectedElementId}`) as HTMLElement;
+    const renameTxtBoxElmnt= document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLInputElement;
 
-    if(figCapElement){
-      figCapElement.style.display = 'block';
-    }
-    if(renameContainerElement){
-      renameContainerElement.style.display = 'none';
+    if(figCapElmnt && renameFormElmnt && renameTxtBoxElmnt){
+      figCapElmnt.style.display = 'block';
+      renameFormElmnt.style.display = 'none';
+      renameTxtBoxElmnt.style.display = 'none';
     }
 
     this.isIconInFocusDueToPriorAction = true;

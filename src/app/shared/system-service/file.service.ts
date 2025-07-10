@@ -849,6 +849,9 @@ OpensWith=${shortCutData.getOpensWith}
             const name = this.getNameFromPath(path);
             this._restorePoint.set(`${Constants.RECYCLE_BIN_PATH}/${name}`, path);
             this.addAndUpdateSessionData(this.fileServiceRestoreKey, this._restorePoint);
+
+            this.DecrementFileName(path);
+            this.removeAndUpdateSessionData(this.fileServiceIterateKey, path, this._fileExistsMap);
             //move to rbin
             return await this.moveAsync(path, Constants.RECYCLE_BIN_PATH, isFile);
         }else{
@@ -1028,12 +1031,12 @@ OpensWith=${shortCutData.getOpensWith}
 
 
     public resetDirectoryFiles(){
-        this._directoryFileEntires=[]
+        this._directoryFileEntires=[];
     }
 
     public getFolderOrigin(path:string):string{
         if(this._restorePoint.has(path)){
-            return this._restorePoint.get(path) || Constants.EMPTY_STRING
+            return this._restorePoint.get(path) || Constants.EMPTY_STRING;
         }
         return Constants.EMPTY_STRING;
     }
@@ -1047,7 +1050,7 @@ OpensWith=${shortCutData.getOpensWith}
         const extension = extname(path);
         const filename = basename(path, extension);
 
-        let count = Number(this._fileExistsMap.get(path)) || Constants.NUM_ZERO;
+        let count = Number(this._fileExistsMap.get(path) ?? Constants.NUM_ZERO);
         count = count + Constants.NUM_ONE;
         this._fileExistsMap.set(path, String(count));
 
@@ -1056,13 +1059,13 @@ OpensWith=${shortCutData.getOpensWith}
 
     public DecrementFileName(path:string):void{
 
-        let count = Number(this._fileExistsMap.get(path)) || Constants.NUM_ZERO;
-
+        let count  = Number(this._fileExistsMap.get(path) ?? Constants.NUM_ZERO);
         if(count > Constants.NUM_ZERO){
             count = count - Constants.NUM_ONE;
             this._fileExistsMap.set(path, String(count));
         }else{
-            this._fileExistsMap.delete(path);
+            if(this._fileExistsMap.get(path))
+                this._fileExistsMap.delete(path);
         }
     }
 
@@ -1171,18 +1174,6 @@ OpensWith=${shortCutData.getOpensWith}
         this._eventOriginator = Constants.EMPTY_STRING;
     }
 
-    // private addAndUpdateSessionData(currPath:string, srcPath:string):void{
-    //     this._restorePoint.set(currPath, srcPath);
-    //     this._sessionManagmentService.addFileServiceSession(this.fileServiceRestoreKey, this._restorePoint);
-    // }
-
-    // private removeAndUpdateSessionData(path:string):void{
-    //     if(this._restorePoint.has(path)){
-    //         this._restorePoint.delete(path);
-    //         this._sessionManagmentService.addFileServiceSession(this.fileServiceRestoreKey, this._restorePoint);
-    //     }
-    // }
-
     private addAndUpdateSessionData(key:string, map:Map<string, string>):void{
         this._sessionManagmentService.addFileServiceSession(key, map);
     }
@@ -1198,8 +1189,12 @@ OpensWith=${shortCutData.getOpensWith}
 
     private retrievePastSessionData(key:string):void{
         const sessionData = this._sessionManagmentService.getFileServiceSession(key) as Map<string, string>;
+        console.log(`${key} sessionData:`, sessionData);
         if(sessionData){
-            this._restorePoint = sessionData
+            if(key === this.fileServiceRestoreKey)
+                this._restorePoint = sessionData;
+            else
+                this._fileExistsMap = sessionData;
         }
     }
 

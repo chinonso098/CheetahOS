@@ -185,14 +185,14 @@ export namespace Constants{
         ['.pdf','PDF File'],
 
         ['.jpg',  'JPEG File'],
-        ['.png',  'Portable Network Graphics'],
+        ['.png',  'PNG File'],
         ['.avif', 'AV1 Image File Format'],
         ['.bmp', 'Bitmap Image File'],
         ['.ico',  'Icon File'],
         ['.jpeg', 'JPEG File'],
         ['.tiff', 'Tagged Image File Format'],
         ['.tif', 'Tagged Image File Format'],
-        ['.svg',  'Scalable Vector Graphics'],
+        ['.svg',  'SVG Files'],
         ['.webp', 'WebP Image File'],
         ['.xlm', 'Microsoft Excel Macro'],
 
@@ -214,17 +214,17 @@ export namespace Constants{
         ['.webm', 'WebM Video File'],
         ['.mkv', 'Matroska Video File'],
 
-        ['.js', 'JavaScript File'],
-        ['.js.map', 'JavaScript Source Map'],
-        ['.map', 'Source Map'],
-        ['.mjs', 'JavaScript Module File'],
-        ['.ts', 'TypeScript Source File'],
-        ['.cs', 'C# Source File'],
-        ['.java', 'Java Source File'],
-        ['.py', 'Python Source File'],
-        ['.c', 'C Source File'],
-        ['.cpp', 'C++ Source File'],
-        ['.html', 'HyperText Markup Language File']
+        ['.js', 'JS File'],
+        ['.js.map', 'JS Map File'],
+        ['.map', ' Map'],
+        ['.mjs', 'JS Module File'],
+        ['.ts', 'TS File'],
+        ['.cs', 'C# File'],
+        ['.java', 'Java File'],
+        ['.py', 'Python File'],
+        ['.c', 'C File'],
+        ['.cpp', 'C++ File'],
+        ['.html', 'HTML File']
 
     ]
 }
