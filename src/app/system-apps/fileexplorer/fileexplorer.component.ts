@@ -500,14 +500,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
 
   changeLayoutCss(iconSize:string):void{
-
     const layoutOptions:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView,
                               this.listView,this.detailsView,this.tilesView,this.contentView];
     const cssLayoutOptions:string[] = ['iconview', 'listview', 'detailsview', 'tilesview', 'contentview']
     const layoutIdx = layoutOptions.indexOf(iconSize)
 
     if(layoutIdx <= Constants.NUM_THREE){
-      this.olClassName = 'ol-iconview-grid';
+      this.olClassName = `ol-${cssLayoutOptions[Constants.NUM_ZERO]}-grid`;
     }
     else if (layoutIdx >= Constants.NUM_FOUR){
       /*
@@ -1752,7 +1751,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(this.getIsBtnClickEvt()){
       console.log('isBtnClickEvt:', this.getIsBtnClickEvt());
       const file = this.fileExplrFiles[this.selectedElementId];
-      if(file.getIsFile){
+      if(file && file.getIsFile){
         this.showFileSizeAndUnit = true;
         this.selectFilesSizeSum = String(file.getSize);
         this.selectFilesSizeUnit = file.getFileSizeUnit
@@ -1839,7 +1838,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     const standardFolders = ['3D-Objects', 'Documents', 'Downloads', 'Desktop', 'Games'];
     const capitalizedDesktop = Constants.DESKTOP.charAt(0).toUpperCase();
-
 
     const fileAuthor = 'Relampago Del Catatumbo';
     const fileType = file.getFileType;
