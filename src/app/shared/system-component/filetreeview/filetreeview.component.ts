@@ -49,6 +49,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
   readonly Quick_ACCESS = 'Quick access';
   readonly THIS_PC = Constants.THISPC;
+  readonly thisPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
   SECONDS_DELAY = 350;
 
   showIconCntxtMenu = false;
@@ -314,12 +315,14 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     this._fileService.goToDirectoryNotify.next(data);
   }
 
-  async navigateToSelectedPath(name:string, path:string):Promise<void>{
+  async navigateToSelectedPath(evt:MouseEvent, name:string, path:string):Promise<void>{
+    console.log(`name:${name}, path:${path}`)
     const data:string[] = [name, path];
 
     const uid = `filetreeview-1-${this.pid}`;
     this._fileService.addEventOriginator(uid);
 
+    evt.stopPropagation();
     await this._audioService.play(this.cheetahNavAudio);
     this._fileService.goToDirectoryNotify.next(data);
   }
@@ -385,13 +388,15 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     }
   }
 
-  onBtnClick(elmntId:string):void{
+  onBtnClick(evt:MouseEvent, elmntId:string):void{
     // remove style on previous btn
     this.removeBtnStyle(this.selectedElementId);
     // update id
     this.selectedElementId = elmntId;
     this.isClicked = true;
     this.setBtnStyle(elmntId, true);
+
+    evt.stopPropagation();
   }
 
   onMouseEnter(elmntId:string):void{

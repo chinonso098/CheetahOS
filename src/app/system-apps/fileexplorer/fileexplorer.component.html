@@ -322,16 +322,16 @@
                         </ng-template>
     
                         <ng-template #listView0>
-                            <li class="li-list-view" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}">
-                                <button class="button-list-view" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
+                            <li class="li-listview" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}">
+                                <button class="button-listview" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)"  id="btnElmnt-{{this.processId}}-{{i}}">
     
-                                    <span class="span-list-view">
-                                        <figure class="figure-list-view">
-                                            <img class="img-list-view" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                    <span class="span-listview">
+                                        <figure class="figure-listview">
+                                            <img class="img-listview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
                                         </figure>
     
-                                        <figcaption class="figcaption-list-view" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                        <figcaption class="figcaption-listview" id="figCapElmnt-{{this.processId}}-{{i}}">
                                             {{file.getFileName  | truncateString}} 
                                         </figcaption>
                                         <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
@@ -348,16 +348,16 @@
                         </ng-template>
                         <ng-template #contentView0>
                             <!-- adding (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)" id="btnElmnt-{{this.processId}}-{{i}}" to the li elements covers it completley on highlight-->
-                            <li class="li-content-view" *ngFor="let file of fileExplrFiles; let i = index">
-                                <button class="button-content-view" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
+                            <li class="li-contentview-container" *ngFor="let file of fileExplrFiles; let i = index">
+                                <button class="button-contentview" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
-                                    <span class="span-content-view">
-                                        <figure class="figure-content-view" id="figElmnt-{{this.processId}}-{{i}}">
-                                            <img class="img-content-view" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                    <span class="span-contentview">
+                                        <figure class="figure-contentview" id="figElmnt-{{this.processId}}-{{i}}">
+                                            <img class="img-contentview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
                                         </figure>
     
-                                        <div class="div-content-view">
-                                            <figcaption class="figcaption-content-view"   id="figCapElmnt-{{this.processId}}-{{i}}">
+                                        <div class="div-contentview">
+                                            <figcaption class="figcaption-contentview"   id="figCapElmnt-{{this.processId}}-{{i}}">
                                                 {{file.getFileName  | truncateString}} 
                                             </figcaption>
     
@@ -383,28 +383,28 @@
                             </li>
                         </ng-template>
                         <ng-template #tilesView0>
-                            <li class="li-tiles-view" *ngFor="let file of fileExplrFiles; let i = index">
-                                <button class="button-tiles-view" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
+                            <li class="li-tilesview" *ngFor="let file of fileExplrFiles; let i = index">
+                                <button class="button-tilesview" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
-                                    <span class="span-tiles-view">
-                                        <figure class="figure-tiles-view">
-                                            <img class="img-tiles-view" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                    <span class="span-tilesview">
+                                        <figure class="figure-tilesview">
+                                            <img class="img-tilesview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
                                         </figure>
     
-                                        <figcaption *ngIf="!file.getIsFile, else elseBlock" class="figcaption-tiles-view" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                        <figcaption *ngIf="!file.getIsFile, else elseBlock" class="figcaption-tilesview" id="figCapElmnt-{{this.processId}}-{{i}}">
                                             {{file.getFileName  | truncateString}} 
                                         </figcaption>
                                         <ng-template #elseBlock>
-                                            <div class="figcaption-title-view-cntnr">
+                                            <div class="figcaption-title-viewcntnr">
                                                 <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
                                                     <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
                                                         <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
                                                     </form>
                                                 </div>
-                                                <div class="div-figcaption-tiles-view-cntnr">
-                                                    <div class="div-figcaption-tiles-view" id="figCapElmnt-{{this.processId}}-{{i}}">{{file.getFileName}}</div>
-                                                    <div class="div-figcaption-tiles-view">{{file.getFileType}}</div>
-                                                    <div class="div-figcaption-tiles-view">{{file.getSize}} {{file.getFileSizeUnit}}</div>
+                                                <div class="div-figcaption-tilesview-cntnr">
+                                                    <div class="div-figcaption-tilesview" id="figCapElmnt-{{this.processId}}-{{i}}">{{file.getFileName}}</div>
+                                                    <div class="div-figcaption-tilesview">{{file.getFileType}}</div>
+                                                    <div class="div-figcaption-tilesview">{{file.getSize}} {{file.getFileSizeUnit}}</div>
                                                 </div>
                                             </div>
                                         </ng-template>

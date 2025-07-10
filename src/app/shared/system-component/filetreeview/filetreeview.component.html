@@ -10,7 +10,9 @@
         <ul class="ul-file-tree-view" id="qa-FileExplrTreeView-main-{{pid}}">
             <li class="li-file-tree-view0" id="qa-li-{{pid}}">
                 <div class="tree-view-cntnr"  id="qa-fileExplrTreeView-{{pid}}" 
-                    (click)="onBtnClick('qa-fileExplrTreeView-'+pid)" (mouseenter)="onMouseEnter('qa-fileExplrTreeView-'+pid)" (mouseleave)="onMouseLeave('qa-fileExplrTreeView-'+pid)">
+                    (click)="onBtnClick($event, 'qa-fileExplrTreeView-'+pid)" 
+                    (mouseenter)="onMouseEnter('qa-fileExplrTreeView-'+pid)" 
+                    (mouseleave)="onMouseLeave('qa-fileExplrTreeView-'+pid)">
                     <div class="fxtreeview-head"> 
                         <figure class="fxtreeview-figure">  
                             <div class="fxtreeview-img" >
@@ -29,11 +31,14 @@
                 <ul class="ul-file-tree-view" id="qa-ul-{{pid}}">
                     <ng-container *ngFor="let node of quickAccessData; let i = index">
                         <li class="li-file-tree-view" id="qa-li-{{pid}}-{{i}}"> 
-                            <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="qa-fileExplrTreeView-{{pid}}-{{i}}" (click)="navigateToSelectedPath(node.name, node.path)" 
-                                (click)="onBtnClick('qa-fileExplrTreeView-'+pid+'-'+i)" (mouseenter)="onMouseEnter('qa-fileExplrTreeView-'+pid+'-'+i)" (mouseleave)="onMouseLeave('qa-fileExplrTreeView-'+pid+'-'+i)">
+                            <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="qa-fileExplrTreeView-{{pid}}-{{i}}" 
+                                (contextmenu)="onFileTreeContextMenu($event, node)" 
+                                (click)="navigateToSelectedPath($event, node.name, node.path)" 
+                                (click)="onBtnClick($event, 'qa-fileExplrTreeView-'+pid+'-'+i)" 
+                                (mouseenter)="onMouseEnter('qa-fileExplrTreeView-'+pid+'-'+i)" 
+                                (mouseleave)="onMouseLeave('qa-fileExplrTreeView-'+pid+'-'+i)">
                                 
                                 <div class="fxtreeview-head"> <figure class="fxtreeview-figure"></figure></div>
-
                                 <div class="fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="getIconPath(node.name, node.path)"/></figure></div>
                                 <div class="fxtreeview-tail"><p class="fxtreeview-nested-p">{{node.name}}</p></div>
                             </div>
@@ -50,8 +55,11 @@
     <ul class="ul-file-tree-view" id="{{nextLevelSrcId}}">
         <li class="li-file-tree-view0" id="li-{{pid}}-{{level}}">
             <ng-container *ngIf="showRoot">
-                <div class="tree-view-cntnr"  id="tp-fileExplrTreeView-{{pid}}-{{level}}" (click)="navigateToSelectedPath('This-PC','This-PC')" 
-                    (click)="onBtnClick('tp-fileExplrTreeView-'+pid+'-'+level)" (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level)" (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level)">
+                <div class="tree-view-cntnr"  id="tp-fileExplrTreeView-{{pid}}-{{level}}" 
+                    (click)="navigateToSelectedPath($event, thisPC, thisPC)" 
+                    (click)="onBtnClick($event,'tp-fileExplrTreeView-'+pid+'-'+level)" 
+                    (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level)" 
+                    (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level)">
                     <div class="span fxtreeview-head"> 
                         <figure class="fxtreeview-figure">  
                             <div class="fxtreeview-img" >
@@ -74,8 +82,10 @@
                                                                                 <!--here is the id-->
                         <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="tp-fileExplrTreeView-{{pid}}-{{level}}-{{i}}"  
                             (contextmenu)="onFileTreeContextMenu($event, node)" 
-                            (click)="navigateToSelectedPath(node.name, node.path)" 
-                            (click)="onBtnClick('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)" (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)" (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)">
+                            (click)="navigateToSelectedPath($event, node.name, node.path)" 
+                            (click)="onBtnClick($event, 'tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)" 
+                            (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)" 
+                            (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)">
                             <div class="span fxtreeview-head"> 
                                 <figure class="fxtreeview-figure">  
                                     <div class="fxtreeview-img" >
@@ -98,8 +108,10 @@
                                     <li class="li-file-tree-view" id="li-{{pid}}-{{level}}-{{i}}-{{j}}"> 
                                                                                                                     <!--here is the id1-->
                                         <div class="tree-view-cntnr" *ngIf="child.isFolder"  id="tp-fileExplrTreeView-{{pid}}-{{level}}-{{i}}-{{j}}" 
-                                            (click)="navigateToSelectedPath(child.name, child.path)"
-                                            (click)="onBtnClick('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)" (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)" (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)">
+                                            (click)="navigateToSelectedPath($event, child.name, child.path)"
+                                            (click)="onBtnClick($event, 'tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)" 
+                                            (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)" 
+                                            (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)">
                                             <div class="span fxtreeview-head"> 
                                                 <figure class="fxtreeview-figure">  
                                                     <div class="fxtreeview-img" >

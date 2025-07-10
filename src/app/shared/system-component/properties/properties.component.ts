@@ -106,19 +106,20 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     }
     
     if(!this.fileInput.getIsFile){
+      this.icon = this.fileInput.getIconPath;
+
       if(!this.isRootFolder)
         await this.getFolderContentDetails();
 
       await this.getFolderSizeData();
-
       if(this.isInRecycleBin){
         this.getOrigin();
       }
 
       if(this.isRootFolder){
         this.fileFolder = 'Local Disk';
+        this.icon = `${Constants.IMAGE_BASE_PATH}os_disk_1.png`;
         this.name = `${this.fileFolder} (C:) Properties`;
-        this.icon = this.fileInput.getIconPath;
         this.location = 'BrowserFS';
       }
     }

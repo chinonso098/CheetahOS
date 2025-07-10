@@ -1807,7 +1807,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
-  showFileExplorerToolTip(evt: MouseEvent,  file:FileInfo) {
+  async showFileExplorerToolTip(evt: MouseEvent,  file:FileInfo):Promise<void>{
     const rect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
@@ -1815,12 +1815,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
     if (!infoTip) return;
 
-    this.setInformationTipInfo(file);
+    await this.setInformationTipInfo(file);
 
     // Position tooltip slightly to the right and below the cursor
     infoTip.style.transform = `translate(${x - Constants.NUM_FIFTEEN}px, ${y + Constants.NUM_TEN}px)`;
-
-    // Show it using class
     infoTip.classList.add('visible');
   }
 
@@ -1831,15 +1829,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  setInformationTipInfo(file:FileInfo):void{
-    const infoTipFields = ['Author:', 'Item type:','Date created:','Date modified:', 'Dimesions:', 'General', 'Size:','Type:'];
+  async setInformationTipInfo(file:FileInfo):Promise<void>{
+    const infoTipFields = ['Author:', 'Item type:','Date created:','Date modified:', 'Dimesions:', 'General', 'Size:','Type:', 'Original location:'];
     const fileAuthor = 'Relampago Del Catatumbo';
     const fileType = file.getFileType;
     const fileDateModified = file.getDateModifiedUS;
     const fileSize = `${String(file.getSize)}  ${file.getFileSizeUnit}`;
     const fileName = file.getFileName;
     const isFile = file.getIsFile;
-
+    const currentPath = dirname(file.getCurrentPath);
     //reset
     this.fileInfoTipData = [];
 
@@ -1851,34 +1849,40 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         const height = img.naturalHeight;
         const imgDimensions = `${width} x ${height}`;
 
-        this.fileInfoTipData.push({label:infoTipFields[1], data:`${file.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`});
-        this.fileInfoTipData.push({label:infoTipFields[4], data:imgDimensions })
-        this.fileInfoTipData.push({label:infoTipFields[6], data:fileSize })
+        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_ONE], data:`${file.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`});
+        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_FOUR], data:imgDimensions });
+        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:fileSize });
       };
-      img.onerror = (err) => {
-        console.error("Failed to load image", err);
-      };
+      img.onerror = (err) => { console.error("Failed to load image", err); };
     }
-
-    if(isFile && fileType !== Constants.FOLDER){
+    else if(isFile && fileType !== Constants.FOLDER){
       const fileTypeName = this.getFileTypeName(fileType);
-      this.fileInfoTipData.push({label:infoTipFields[7], data:fileTypeName});
-      this.fileInfoTipData.push({label:infoTipFields[3], data: fileDateModified });
-      this.fileInfoTipData.push({label:infoTipFields[6], data:fileSize });
+      this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SEVEN], data:fileTypeName});
+      this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_THREE], data: fileDateModified });
+      this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:fileSize });
     }
-
-    if(fileType === Constants.FOLDER){
-      if(fileName === Constants.DESKTOP.charAt(Constants.NUM_ZERO).toUpperCase() || fileName === 'Documents' || fileName === 'Downloads'){
-        this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified })
-      }else if(fileName === 'Music'){
+    else if(fileType === Constants.FOLDER){
+      if((fileName === "3D-Objects" && currentPath === Constants.ROOT) || (fileName === Constants.DESKTOP.charAt(Constants.NUM_ZERO).toUpperCase() && currentPath === Constants.ROOT) || (fileName === 'Documents'  && currentPath === Constants.ROOT) || (fileName === 'Downloads' && currentPath === Constants.ROOT) || (fileName === "Desktop" && currentPath === Constants.ROOT) || (fileName === "Games" && currentPath === Constants.ROOT)){
+        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_TWO], data:fileDateModified });
+      }else if((fileName === 'Music' && currentPath === Constants.ROOT)){
         this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:'Contains music and other audio files' })
-      }else if(fileName === 'Videos'){
+      }else if((fileName === 'Videos' && currentPath === Constants.ROOT)){
         this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:'Contains movies and other video files' })
-      }else if(fileName === 'Pictures' ){
+      }else if((fileName === 'Pictures' && currentPath === Constants.ROOT)){
         this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:'Contains digital photos, images and graphic files'})
       }else{
-        this.fileInfoTipData.push({label:infoTipFields[7], data:fileType });
-        this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified });
+        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SEVEN], data:fileType });
+        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_TWO], data:fileDateModified });
+
+        const folderSizeInBytes = await this._fileService.getFolderSizeAsync(file.getCurrentPath);
+        const folderSize = CommonFunctions.getReadableFileSizeValue(folderSizeInBytes);
+        const folderUnit = CommonFunctions.getFileSizeUnit(folderSizeInBytes);
+        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:`${String(folderSize)} ${folderUnit}`});
+
+        if(this.isRecycleBinFolder){
+          const originalLocation = this._fileService.getFolderOrigin(file.getCurrentPath);
+          this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_EIGHT], data:originalLocation });
+        }
       }
     }
   }
