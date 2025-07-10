@@ -76,7 +76,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isNextBtnActive = false;
   private isUpBtnActive = true;
   private isNavigatedBefore = false;
-  isRenameActive = false;
+  private isRenameActive = false;
   private isIconInFocusDueToCurrentAction = false;
   private isIconInFocusDueToPriorAction = false;
   private isHideCntxtMenuEvt= false;
@@ -90,7 +90,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
-  selectedElementId = Constants.MINUS_ONE;
+  private selectedElementId = Constants.MINUS_ONE;
   private prevSelectedElementId = Constants.MINUS_ONE; 
   private hideCntxtMenuEvtCnt = Constants.NUM_ZERO;
   private btnClickCnt = Constants.NUM_ZERO;

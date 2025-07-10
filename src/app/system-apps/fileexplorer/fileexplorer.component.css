@@ -1009,83 +1009,86 @@ span.mid-search-entry{
     grid-auto-flow: column !important;
     grid-template-columns:  repeat(auto-fill,250px) !important;
     grid-template-rows: repeat(auto-fill,50px) !important;
-    height: calc(100% - 40px);
+    height: calc(100% - 5px);
     width: 100%;
-    padding: 2px 0;
-    row-gap: 0px !important;
-    column-gap: 10px !important;
+    padding: 2px 2px;
+    row-gap: 4px !important;
+    column-gap: 6px !important;
 }
 
 .li-tilesview-container{
     display: flex;
     justify-content: left;
-    padding: 2px;
     padding-left:15px;
-    height: min-content;
+    height: fit-content;
     z-index: 1;
 }
 
-
-.span-tilesview{
+.div-tilesview{
     display: flex;
+    margin: 0px 2px;
+    height: 50px;
 }
 
 .figure-tilesview{
-    display: flex;
-    position: relative;
-    /* width: 45px; */
+    height: 48px; 
+    width: 48px;
     place-items:center;
 }
 
 .img-tilesview{
-    height: 45px; 
-    width: 45px;
+    height: 48px; 
+    width: 48px;
     margin: 0 1px;
 }
 
-.figcaption-tilesview{
-    display: flex;
-    position: relative;
-    width: 100%;
-    align-items: center;
-    text-align: left;
-    color: white;
-    font-size: 12px;
-    font-weight:300;
-    margin: 0 1px;
-    padding-left: 3px;
-    top: -8px;
-    line-height: 13px;
-    
-}
-
-.figcaption-titleview-cntnr{
-    /* margin-top: 0px; */
-    width: 100%;
-    height: 45px;
-    padding-left: 3px;
-    /* border: 1px solid #2d2d2d; */
-}
-
-.div-figcaption-tiles-viewcntnr{
-    position: relative;
-    left: -1%;
+.div-figcaption-tilesview-container{
+    display: block;
+    width: 200px;
+    height: 48px;
 }
 
 .div-figcaption-tilesview{
-    align-items: center;
+   display: block;
+    height: 16px;
+   width: 100%;
+}
+
+.figcaption-tilesview-p{
+    position: relative;
     text-align: left;
     color: white;
     font-size: 12px;
-    font-weight:300;
-    margin: 0 1px;
-    line-height: 13px;
-    padding: 1px 0;
+    font-weight:200;
+    top: 2px;
+    width: 200px;
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add "..." when text overflows */
+    line-height: 13px; 
 }
+
+.tilesview-rename-form, .tilesview-rename-textbox{
+    position: relative;
+    display: none;
+    margin: 0;
+}
+
+.tilesview-rename-textbox{
+    display: none;
+    width: 100%;
+    max-width: 200px;
+    height: 20px;
+    border: 1px solid #ccc;
+    overflow:hidden;
+    font-size: 12px;
+    background-color: white;
+    color: black;
+ }
 
 .button-tilesview{
     width: 250px;
-    height: 45px; 
+    height: 50px; 
 }
 /*-------------------------Tiles View End-------------------------------*/
 

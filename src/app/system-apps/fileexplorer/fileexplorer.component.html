@@ -326,7 +326,7 @@
                                 <button class="button-listview" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)"  id="btnElmnt-{{this.processId}}-{{i}}">
     
-                                    <span class="span-listview">
+                                    <div class="div-listview">
                                         <figure class="figure-listview">
                                             <img class="img-listview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
                                         </figure>
@@ -339,7 +339,7 @@
                                                 <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
                                             </form>
                                         </div>
-                                    </span>
+                                    </div>
                                 </button>
                             </li>
                         </ng-template>
@@ -395,35 +395,37 @@
                             <li class="li-tilesview" *ngFor="let file of fileExplrFiles; let i = index">
                                 <button class="button-tilesview" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
-                                    <span class="span-tilesview">
+                                    <div class="div-tilesview">
                                         <figure class="figure-tilesview">
                                             <img class="img-tilesview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
                                         </figure>
     
-                                        <figcaption *ngIf="!file.getIsFile, else elseBlock" class="figcaption-tilesview" id="figCapElmnt-{{this.processId}}-{{i}}">
-                                            {{file.getFileName  | truncateString}} 
-                                        </figcaption>
-                                        <ng-template #elseBlock>
-                                            <div class="figcaption-title-viewcntnr">
-                                                <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
-                                                    <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                                                        <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
-                                                    </form>
-                                                </div>
-                                                <div class="div-figcaption-tilesview-cntnr">
-                                                    <div class="div-figcaption-tilesview" id="figCapElmnt-{{this.processId}}-{{i}}">{{file.getFileName}}</div>
-                                                    <div class="div-figcaption-tilesview">{{file.getFileType}}</div>
-                                                    <div class="div-figcaption-tilesview">{{file.getSize}} {{file.getFileSizeUnit}}</div>
-                                                </div>
+                                        <div class="div-figcaption-tilesview-container">
+                                            <div class="div-figcaption-tilesview" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                                <p  class="figcaption-tilesview-p"> {{file.getFileName}}</p>
                                             </div>
-                                        </ng-template>
-    
-                                        <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
-                                            <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                                                <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
+
+                                            <form [formGroup]="renameForm"   
+                                                class="tilesview-rename-form"
+                                                (ngSubmit)="isFormDirty()"
+                                                id="renameForm-{{this.processId}}-{{i}}">
+                                                <input type="text" formControlName="renameInput"  
+                                                    class="tilesview-rename-textbox"
+                                                    (keydown)="onKeyPress($event)" 
+                                                    autofocus 
+                                                    spellcheck="false" 
+                                                    id="renameTxtBox-{{this.processId}}-{{i}}"
+                                                />
                                             </form>
+
+                                            <div *ngIf="file.getIsFile" class="div-figcaption-tilesview">
+                                                <p  class="figcaption-tilesview-p"> {{ getFileTypeName(file.getFileType)}}</p>
+                                            </div>
+                                            <div *ngIf="file.getIsFile" class="div-figcaption-tilesview">
+                                                <p  class="figcaption-tilesview-p"> {{file.getSize}} {{file.getFileSizeUnit}}</p>
+                                            </div>
                                         </div>
-                                    </span>
+                                    </div>
                                 </button>
                             </li>
                         </ng-template>
