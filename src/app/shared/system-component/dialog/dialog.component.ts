@@ -142,6 +142,10 @@ export class DialogComponent implements BaseComponent, OnChanges {
     }
   }
 
+  onPwrDialogWindowClick(evt:MouseEvent):void{
+    evt.stopPropagation();
+  }
+
   onPwrOptionSelect(event: any):void{
     const selectedValue = event.target.value;
     this.selectedOption = selectedValue;

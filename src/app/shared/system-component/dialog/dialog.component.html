@@ -94,7 +94,7 @@
 
 
 <ng-template #shutDownRestartNotice >
-    <div ngDraggable [handle]="leftHS4"  [ngDraggable]="false" class="shutdown-restart-dialog-main-container" id="shutdown-restart-dialog-{{processId}}">
+    <div ngDraggable [handle]="leftHS4"  (click)="onPwrDialogWindowClick($event)"  [ngDraggable]="false" class="shutdown-restart-dialog-main-container" id="shutdown-restart-dialog-{{processId}}">
         <div class="shutdown-restart-dialog-header-container" tabindex="0">
             <div #leftHS4 class="shutdown-restart-dialog-left-header-section">
                 <h1 class="shutdown-restart-dialog-h1">

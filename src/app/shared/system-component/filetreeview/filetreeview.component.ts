@@ -10,6 +10,7 @@ import { FileService } from '../../system-service/file.service';
 import { MenuService } from '../../system-service/menu.services';
 import { GeneralMenu } from '../menu/menu.types';
 import { FileInfo } from 'src/app/system-files/file.info';
+import { ProcessHandlerService } from '../../system-service/process.handler.service';
 
 @Component({
   selector: 'cos-filetreeview',
@@ -29,6 +30,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   private _fileService:FileService;
   private _audioService:AudioService;
   private _menuService:MenuService;
+  private _processHandlerService:ProcessHandlerService;
 
   readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
 
@@ -55,15 +57,17 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   menuOrder = Constants.EMPTY_STRING;
 
   sourceData:GeneralMenu[] = [
-    {icon:Constants.EMPTY_STRING, label: 'Open', action: this.doNothing.bind(this) },
-    {icon:Constants.EMPTY_STRING, label: 'Open in new window', action: this.doNothing.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Open', action: this.navigateToSelectedPath2.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Open in new window', action: this.openFolderPath.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Properties', action: this.showPropertiesWindow.bind(this) }
   ];
 
-  constructor(fileService:FileService, audioService:AudioService, menuService:MenuService){
+  constructor(fileService:FileService, audioService:AudioService, menuService:MenuService,
+              processHandlerService:ProcessHandlerService){
     this._fileService = fileService;
     this._audioService = audioService;
     this._menuService = menuService;
+    this._processHandlerService = processHandlerService;
   }
 
   ngOnInit():void{
@@ -301,13 +305,22 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     }
   }
 
-  navigateToSelectedPath(name:string, path:string):void{
+  navigateToSelectedPath2():void{
+    this.showIconCntxtMenu  = false;
+
+    const data:string[] = [this.selectedFileTreeNode.name, this.selectedFileTreeNode.path];
+    const uid = `filetreeview-1-${this.pid}`;
+    this._fileService.addEventOriginator(uid);
+    this._fileService.goToDirectoryNotify.next(data);
+  }
+
+  async navigateToSelectedPath(name:string, path:string):Promise<void>{
     const data:string[] = [name, path];
 
     const uid = `filetreeview-1-${this.pid}`;
     this._fileService.addEventOriginator(uid);
 
-    this._audioService.play(this.cheetahNavAudio);
+    await this._audioService.play(this.cheetahNavAudio);
     this._fileService.goToDirectoryNotify.next(data);
   }
 
@@ -450,6 +463,20 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   doNothing():void{/** */}
+
+
+
+  openFolderPath():void{
+    this.showIconCntxtMenu = false;
+
+    const file = new FileInfo();
+    file.setFileName = this.selectedFileTreeNode.name;
+    file.setOpensWith = Constants.FILE_EXPLORER;
+    file.setIsFile = false;
+    file.setCurrentPath = this.selectedFileTreeNode.path;
+
+    this._processHandlerService.startApplicationProcess(file);
+  }
 
   showPropertiesWindow():void{
     this.showIconCntxtMenu = false;
