@@ -809,25 +809,6 @@ span.mid-search-entry{
     z-index: 1;
 }
 
-.iconview-caption {
-    color: white;
-    display: -webkit-box;
-    font-size: 12px;
-    letter-spacing: 0.1px;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    position: relative;
-    padding: 2px 0;
-    top: 2px;
-    line-height: 15px;
-    overflow: hidden;
-    word-break: break-word;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    width: 90px;
-    height: 20px;
-}
-
 .iconview-image {
     position: relative;
     height: 45px;
@@ -877,40 +858,53 @@ span.mid-search-entry{
     position: relative;
 }
 
-.iconview-rename-form-wrapper {
-    width: fit-content;
-    height: fit-content;
-    margin-bottom: -6px;
-}
-
-.iconview-rename-input {
-    font-size: 12px;
-    overflow: hidden;
-    box-sizing: border-box;
-    height: 20px;
-    width: 90px;
-    border: 0.5px dotted #ccc;
-    padding: 4px;
-    line-height: 1.4;
-}
-
-.iconview-caption-label-container {
+.iconview-caption-container {
     position: relative;
     height: 20px;
     bottom: -4px;
+}
+
+.iconview-caption {
+    color: white;
+    display: -webkit-box;
+    font-size: 12px;
+    letter-spacing: 0.1px;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    position: relative;
+    padding: 2px 0;
+    top: 2px;
+    line-height: 15px;
+    overflow: hidden;
+    word-break: break-word;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 100%;
+    max-width: 90px;
+    height: 20px;
+}
+
+
+.iconview-rename-form, .iconview-rename-textbox{
+    position: relative;
+    display: none;
+    margin: 0;
 }
 
 .iconview-rename-textbox{
     position: relative;
     display: none;
     top: 2px;
-    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight:200;
+    margin-bottom: 1px;
     width: 90px;
     height: 20px;
-    border: 1px solid #ccc;
+    border: 0.5px solid #ccc;
     overflow:hidden;
-    z-index: 2;
+    resize: none;
  }
+
 /*-------------------------Icon Size View End -------------------------------*/
 
 
@@ -1030,6 +1024,7 @@ span.mid-search-entry{
     border: 1px solid #ccc;
     overflow:hidden;
     font-size: 12px;
+    font-weight:200;
     background-color: white;
     color: black;
  }
@@ -1117,6 +1112,7 @@ span.mid-search-entry{
     border: 1px solid #ccc;
     overflow:hidden;
     font-size: 12px;
+    font-weight:200;
     background-color: white;
     color: black;
  }
@@ -1253,6 +1249,7 @@ span.mid-search-entry{
     border: 1px solid #ccc;
     overflow:hidden;
     font-size: 12px;
+    font-weight:200;
     background-color: white;
     color: black;
  }

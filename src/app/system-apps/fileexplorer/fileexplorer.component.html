@@ -307,15 +307,20 @@
                                             <img class="iconview-shortcut-img" [src]="shortCutImg"  id="shortCut-{{this.processId}}{{i}}"/>
                                         </div>
                                     </div>
-                                    <div class="iconview-caption-label-container">
+                                    <div class="iconview-caption-container">
                                         <p class="iconview-caption"  id="figCapElmnt-{{this.processId}}-{{i}}">
-                                            {{file.getFileName  | truncateString}} 
+                                            {{file.getFileName}} 
                                         </p>
-                                        <div class="iconview-rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
-                                            <form [formGroup]="renameForm"  class="iconview-rename-form-wrapper" (ngSubmit)="isFormDirty()">
-                                                <textarea class="iconview-rename-input" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"></textarea>
-                                            </form>
-                                        </div>
+                                        <form [formGroup]="renameForm" 
+                                            id="renameForm-{{this.processId}}-{{i}}" 
+                                            class="iconview-rename-form" (ngSubmit)="isFormDirty()">
+                                            <textarea class="iconview-rename-textbox" 
+                                                formControlName="renameInput"  
+                                                (keydown)="onKeyPress($event)" 
+                                                autofocus spellcheck="false" 
+                                                id="renameTxtBox-{{this.processId}}-{{i}}">
+                                            </textarea>
+                                        </form>
                                     </div> 
                                 </button>
                             </li>
