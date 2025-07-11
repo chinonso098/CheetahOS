@@ -933,37 +933,52 @@ span.mid-search-entry{
 .ol-listview-grid{
     display: grid;
     grid-auto-flow: column !important;
-    grid-template-columns:  repeat(auto-fill,250px) !important;
-    grid-template-rows: repeat(auto-fill,20px) !important;
-    height: calc(100% - 40px);
+    grid-template-columns:  repeat(auto-fill, 250px) !important;
+    grid-template-rows: repeat(auto-fill, 25px) !important;
+    height: calc(100% - 5px);
     width: 100%;
-    padding: 5px 0;
-    row-gap: 20px !important;
-    column-gap: 2px !important;
+    padding-right: 2px;
+    padding-left: 4px !important;
+    row-gap: 1px !important;
+    column-gap: 6px !important;
 }
 
 .li-listview-container{
     display: flex;
     justify-content: left;
-    padding: 2px;
     padding-left:15px;
-    height: min-content;
+    height: fit-content;
     z-index: 1;
 }
 
-.span-listview{
+.div-listview{
     display: flex;
+    margin: 0px 2px;
+    height: 26px;
+    width: 100%;
+}
+
+.div-listview-figure-section{
+    position: relative;
+    width: 7.5%;
+}
+
+.div-listview-caption-section{
+    position: relative;
+    width: 90%;
 }
 
 .figure-listview{
     display: flex;
     position: relative;
+    height: 20px; 
+    width: 20px;
     place-items:center;
 }
 
 .img-listview{
-    height: 18px; 
-    width: 18px;
+    height: 20px; 
+    width: 20px;
     margin: 0 1px;
 }
 
@@ -972,31 +987,51 @@ span.mid-search-entry{
     position: relative;
     width: 100%;
     align-items: center;
+}
+
+.figcaption-listview-p{
+    position: relative;
     text-align: left;
     color: white;
     padding-left:4px;
     font-size: 12px;
-    font-weight:300;
+    font-weight:200;
     margin: 0 1px;
-    top: -1px;
+    top: 4px;
     line-height: 13px;
+    width: 100%;
+    max-width: 228px;
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add "..." when text overflows */
 }
 
 .button-listview{
-    max-width: 250px;
-    height: 20px; 
+    width: 100%;
+    height: 24px; 
+    padding: 0.5px 0px;
+    border: 0.5px solid transparent;
 }
 
-.list-rename-textbox{
+.listview-rename-form, .listview-rename-textbox{
     position: relative;
     display: none;
-    top: 2px;
+    margin: 0;
+}
+
+.listview-rename-textbox{
+    position: relative;
+    display: none;
+    top: 0px;
     margin-bottom: 2px;
-    width: 90px;
-    height: 20px;
+    width: 100%;
+    max-width: 228px;
+    height: 22px;
     border: 1px solid #ccc;
     overflow:hidden;
-    z-index: 2;
+    font-size: 12px;
+    background-color: white;
+    color: black;
  }
 
 /*-------------------------List View End-------------------------------*/
@@ -1089,6 +1124,8 @@ span.mid-search-entry{
 .button-tilesview{
     width: 250px;
     height: 50px; 
+    padding: 0.5px 0px;
+    border: 0.5px solid transparent;
 }
 /*-------------------------Tiles View End-------------------------------*/
 
@@ -1186,14 +1223,16 @@ span.mid-search-entry{
 
 .button-contentview{
     width: 100%;
-    height: 48px;
+    height: 47px;
+    padding: 0.5px 0px;
+    border: 0.5px solid transparent;
 }
 
 .line-container {
     position: relative;
-    height: 0.5px;
+    height: 0.25px;
     background-color: #202020;
-    top: -4px;
+    top: -5px;
 }
 
 .line {

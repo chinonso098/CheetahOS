@@ -499,9 +499,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   changeLayoutCss(iconSize:string):void{
     const layoutOptions:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView,
-                              this.listView,this.detailsView,this.tilesView,this.contentView];
+                              this.listView, this.detailsView, this.tilesView, this.contentView];
     const cssLayoutOptions:string[] = ['iconview', 'listview', 'detailsview', 'tilesview', 'contentview']
-    const layoutIdx = layoutOptions.indexOf(iconSize)
+    const layoutIdx = layoutOptions.indexOf(iconSize);
+
+    console.log('layoutIdx:',layoutIdx);
 
     if(layoutIdx <= Constants.NUM_THREE){
       this.olClassName = `ol-${cssLayoutOptions[Constants.NUM_ZERO]}-grid`;
@@ -512,6 +514,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
          So, options 0 - 3 in the layoutOptions = option 0 in the cssLayoutOptions
        */
       const idx = layoutIdx - Constants.NUM_THREE;
+      console.log('idx:',idx);
       this.olClassName = `ol-${cssLayoutOptions[idx]}-grid`;
     }
   }

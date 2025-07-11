@@ -327,16 +327,25 @@
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)"  id="btnElmnt-{{this.processId}}-{{i}}">
     
                                     <div class="div-listview">
-                                        <figure class="figure-listview">
-                                            <img class="img-listview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
-                                        </figure>
+                                        <div class="div-listview-figure-section">
+                                            <figure class="figure-listview">
+                                                <img class="img-listview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                            </figure>
+                                        </div>
     
-                                        <figcaption class="figcaption-listview" id="figCapElmnt-{{this.processId}}-{{i}}">
-                                            {{file.getFileName  | truncateString}} 
-                                        </figcaption>
-                                        <div class="rename-textbox"  id="renameContainer-{{this.processId}}-{{i}}">
-                                            <form [formGroup]="renameForm"  (ngSubmit)="isFormDirty()">
-                                                <input type="text" formControlName="renameInput"  (keydown)="onKeyPress($event)" autofocus spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"/>
+                                        <div class="div-listview-caption-section">
+                                            <figcaption class="figcaption-listview" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                                <p class="figcaption-listview-p"> {{file.getFileName  | truncateString}} </p>
+                                            </figcaption>
+                                            <form [formGroup]="renameForm" class="listview-rename-form"  id="renameForm-{{this.processId}}-{{i}}"
+                                                (ngSubmit)="isFormDirty()">
+                                                <input type="text" 
+                                                    formControlName="renameInput"  
+                                                    class="listview-rename-textbox"
+                                                    (keydown)="onKeyPress($event)" 
+                                                    autofocus spellcheck="false" 
+                                                    id="renameTxtBox-{{this.processId}}-{{i}}"
+                                                />
                                             </form>
                                         </div>
                                     </div>
