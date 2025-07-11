@@ -1954,13 +1954,31 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  autoResize() {
+  autoResize_old() {
     const renameTxtBoxElmt = document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLTextAreaElement;
     if(renameTxtBoxElmt){
       renameTxtBoxElmt.style.height = 'auto'; // Reset the height
       renameTxtBoxElmt.style.height = `${renameTxtBoxElmt.scrollHeight}px`; // Set new height
     }
   }
+  autoResize() {
+    const renameTxtBoxElmt = document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLTextAreaElement;
+
+    if (renameTxtBoxElmt) {
+      const cursorPosition = renameTxtBoxElmt.selectionStart;
+      const textValue = renameTxtBoxElmt.value;
+      const lines = textValue.substring(0, cursorPosition).split(Constants.NEW_LINE);
+      const currentLineNumber = lines.length;
+
+      if (currentLineNumber > Constants.NUM_ONE) {
+        const currentHeight = renameTxtBoxElmt.clientHeight;
+        renameTxtBoxElmt.style.height = `${currentHeight * 2}px`;
+      } else {
+        renameTxtBoxElmt.style.height = 'auto';
+      }
+    }
+  }
+
 
   onInputChange():void{
     const SearchTxtBox = document.getElementById(`searchTxtBox-${this.processId}`) as HTMLInputElement;
@@ -2488,7 +2506,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       variables:this.isTitleIcon,  emptyline:false, styleOption:'A' }
 
     const contentIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Content icons', action: (evt:MouseEvent) =>  this.showContentIconsM(evt), 
-      variables:this.isTitleIcon,  emptyline:false, styleOption:'A' }
+      variables:this.isContentIcon,  emptyline:false, styleOption:'A' }
 
     const viewByMenu = [extraLargeIcon, largeIcon, mediumIcon, smallIcon, listIcon, detailsIcon, titlesIcon, contentIcon];
 

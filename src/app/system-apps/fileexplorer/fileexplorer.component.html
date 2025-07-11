@@ -358,7 +358,33 @@
                             </li>
                         </ng-template>
                         <ng-template #detailsView0>
-                            <p>Detail View</p>
+                            <table class="detailsview-data-table ">
+                                <thead>
+                                    <tr>
+                                    <th>Name</th>
+                                    <th>Date modified</th>
+                                    <th>Type</th>
+                                    <th>Size</th>
+                                    <th>Opening app</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="li-detailsview-container" *ngFor="let file of fileExplrFiles; let i = index">
+                                    <td>{{ file.getFileName }}</td>
+                                    <td>{{ file.getDateModifiedUS }}</td>
+                                    <td>
+                                        @if (file.getIsFile) {
+                                            <p>{{ getFileTypeName(file.getFileType) }}</p>
+                                        } @else {
+                                            <p>File Folder</p>
+                                        }
+                                    </td>
+                                    <td><p *ngIf="file.getIsFile">{{ file.getSize }} {{file.getFileSizeUnit}}</p></td>
+                                    <td>{{ file.getOpensWith }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
                         </ng-template>
                         <ng-template #contentView0>
                             <li class="li-contentview-container" *ngFor="let file of fileExplrFiles; let i = index">

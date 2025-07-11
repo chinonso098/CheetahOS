@@ -13,6 +13,7 @@ export namespace Constants{
     export const DASH= '-';
     export const BACK_SLASH= '\\';
     export const DOUBLE_SLASH = '//';
+    export const NEW_LINE = '\n';
     export const OSDISK = 'OSDisk (C:)';
     export const THISPC = 'This PC';
     export const RECYCLE_BIN = 'Recycle Bin';
