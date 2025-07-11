@@ -335,7 +335,7 @@
     
                                         <div class="div-listview-caption-section">
                                             <figcaption class="figcaption-listview" id="figCapElmnt-{{this.processId}}-{{i}}">
-                                                <p class="figcaption-listview-p"> {{file.getFileName  | truncateString}} </p>
+                                                <p class="figcaption-listview-p"> {{file.getFileName}} </p>
                                             </figcaption>
                                             <form [formGroup]="renameForm" class="listview-rename-form"  id="renameForm-{{this.processId}}-{{i}}"
                                                 (ngSubmit)="isFormDirty()">
