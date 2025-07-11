@@ -884,7 +884,6 @@ span.mid-search-entry{
     height: 20px;
 }
 
-
 .iconview-rename-form, .iconview-rename-textbox{
     position: relative;
     display: none;
@@ -911,13 +910,13 @@ span.mid-search-entry{
 /*-------------------------Details Icon View Start ----------------------------------*/
 
 .ol-detailsview-grid{
+    display: block;
     width: 100%;
     height: 100%;
-    padding: 4px;
+    padding:0px 4px !important;
 }
 
-.li-detailsview-container
-{
+.li-detailsview-container{
     padding: 2px;
     height: fit-content;
     z-index: 1;
@@ -927,40 +926,111 @@ span.mid-search-entry{
 .detailsview-data-table {
   width: 100%;
   border-collapse: collapse; /* Collapses the borders between cells */
-  margin-top: 20px;
-}
-
-.detailsview-data-table th,
-.detailsview-data-table td {
-  border: 1px solid #ddd; /* Adds a border to each header and data cell */
-  padding: 8px;
-  text-align: left; /* Aligns text to the left */
+  /* margin-top: 20px; */
 }
 
 .detailsview-data-table th {
-  background-color: #f2f2f2; /* Light gray background for headers */
-  font-weight: bold; /* Make header text bold */
+    border: 0.5px solid transparent; ; /* Adds a border to each header and data cell */
+    padding: 8px;
+    width: 156px;
+    text-align: left; /* Aligns text to the left */
+    font-weight: bold; /* Make header text bold */
 }
 
-/* Optional: Zebra striping for better readability */
-.detailsview-data-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9; /* Lighter background for even rows */
+.detailsview-data-table th:first-child{
+     width: 200px;
 }
 
-/* Optional: Hover effect for rows */
-.detailsview-data-table tbody tr:hover {
-  background-color: #e0e0e0;
+.detailsview-data-table td {
+    border: 0.5px solid transparent; 
+    height: 25px;
+    width: 156px;
+    text-align: left; /* Aligns text to the left */
 }
 
-.detailsview-button{
+.detailsview-data-table td:first-child {
+    display: flex;
+    border: 0.5px solid transparent; 
+    height: 25px;
+    width: 200px;
+    text-align: left; /* Aligns text to the left */
+    margin: 0px 1px;
+}
+
+.div-detailsview-figure-section{
+    position: relative;
+    width: 13.5%;
+    height: 25px;
+    /* padding-right: 2px; */
+}
+
+.div-detailsview-caption-section{
+    position: relative;
+    width: 87.5%;
+    height: 25px;
+}
+
+.figure-detailsview{
+    display: flex;
+    position: relative;
+    height: 20px; 
+    width: 20px;
+    place-items:center;
+}
+
+.img-detailsview{
+    height: 20px; 
+    width: 20px;
+    margin: 0 1px;
+}
+
+.figcaption-listview{
+    display: flex;
+    position: relative;
     width: 100%;
-    height: 24px; 
-    padding: 0.5px 0px;
-    border: 0.5px solid transparent;
+    align-items: center;
 }
+
+.figcaption-detailsview-p, .detailsview-ptag{
+    position: relative;
+    text-align: left;
+    color: white;
+    font-size: 12px;
+    font-weight:200;
+    top: 0px;
+    width: 120px;
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add "..." when text overflows */
+    line-height: 13px; 
+}
+
+.figcaption-detailsview-p{
+    top: 4px;
+}
+
+.detailsview-rename-form, .detailsview-rename-textbox{
+    position: relative;
+    display: none;
+    margin: 0;
+}
+
+.detailsview-rename-textbox{
+    position: relative;
+    display: none;
+    top: 0px;
+    margin-bottom: 2px;
+    width: 100%;
+    /* max-width: 228px; */
+    height: 22px;
+    border: 1px solid #ccc;
+    overflow:hidden;
+    font-size: 12px;
+    font-weight:200;
+    background-color: white;
+    color: black;
+ }
 /*-------------------------Details Icon View End ----------------------------------*/
-
-
 
 
 /*-------------------------List View Start-------------------------------*/
