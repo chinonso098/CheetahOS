@@ -17,6 +17,7 @@ import { ChatMessage } from './model/chat.message';
 import { IUser, IUserData, IUserList } from './model/chat.interfaces';
 import { Subscription } from 'rxjs';
 import { AppState } from 'src/app/system-files/state/state.interface';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 @Component({
   selector: 'cos-chatter',
@@ -123,7 +124,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._updateUserNameOrStatusSub =  this._chatService.updateUserNameOrStateNotify.subscribe(()=> this.updateOnlineUserList(this.UPDATE));
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.userNameAcronymStyle = {
       'background-color': this.bkgrndIconColor
     };
@@ -139,7 +140,9 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
     // set as my timestamp for when i came online
     this._chatService.setComeOnlineTS(Date.now());
-    this._audioService.play(this.logonAudio);
+    
+    await CommonFunctions.sleep(Constants.NUM_ONE_HUNDRED * Constants.NUM_TWO);
+    await this._audioService.play(this.logonAudio);
     this.retrieveEarlierMessages();
   }
 

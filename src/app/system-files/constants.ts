@@ -75,6 +75,7 @@ export namespace Constants{
     export const NUM_TWENTY = 20;
     export const NUM_ONE_HUNDRED = 100;
     export const NUM_ONE_THOUSAND = 1000;
+    export const NUM_HALF = 0.5;
 
     export const MINUS_ONE = -1;
     export const MINUS_TWO = -2;

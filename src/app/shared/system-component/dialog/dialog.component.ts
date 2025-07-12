@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges, AfterViewInit} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { UserNotificationType } from 'src/app/system-files/notification.type';
 
@@ -12,6 +12,8 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 
 import { Constants } from 'src/app/system-files/constants';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
+import { AudioService } from '../../system-service/audio.services';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 
 @Component({
@@ -20,7 +22,7 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
   styleUrls: ['./dialog.component.css']
 })
 
-export class DialogComponent implements BaseComponent, OnChanges {
+export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit {
 
   @Input() inputMsg = Constants.EMPTY_STRING;
   @Input() notificationType = Constants.EMPTY_STRING;
@@ -32,6 +34,7 @@ export class DialogComponent implements BaseComponent, OnChanges {
   private _processIdService:ProcessIDService;
   private _systemNotificationService:SystemNotificationService;
   private _processHandlerService:ProcessHandlerService;
+  private _audioService:AudioService;
 
 
   notificationOption = Constants.EMPTY_STRING;
@@ -42,6 +45,7 @@ export class DialogComponent implements BaseComponent, OnChanges {
 
   cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
+  errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_error.wav`;
 
   pwrOnOffOptions = [
     { value: 'Shut down', label: 'Closes all apps and turns off the PC.' },
@@ -59,7 +63,6 @@ export class DialogComponent implements BaseComponent, OnChanges {
   readonly UPDATE = 'Update';
   readonly UPDATE_0 = 'Update0';
 
-
   type = ComponentType.System;
   displayMgs = Constants.EMPTY_STRING;
   name = Constants.EMPTY_STRING;
@@ -71,7 +74,7 @@ export class DialogComponent implements BaseComponent, OnChanges {
 
   constructor(notificationServices:UserNotificationService, menuService:MenuService, windowService:WindowService,
               systemNotificationServices:SystemNotificationService, sessionManagementService:SessionManagmentService, processIdService:ProcessIDService,
-              processHandlerService:ProcessHandlerService){
+              processHandlerService:ProcessHandlerService, audioService:AudioService){
     this._userNotificationServices = notificationServices;
     this._menuService = menuService;
     this._sessionManagementService = sessionManagementService;
@@ -79,6 +82,7 @@ export class DialogComponent implements BaseComponent, OnChanges {
     this._windowService = windowService;
     this._systemNotificationService = systemNotificationServices;
     this._processHandlerService = processHandlerService;
+    this._audioService = audioService;
 
     this.processId = this._processIdService.getNewProcessId();
   }
@@ -88,6 +92,11 @@ export class DialogComponent implements BaseComponent, OnChanges {
     this.displayMgs = this.inputMsg;
     this.notificationOption =this.notificationType;
     this.setPwrDialogPid(this.UPDATE);
+  }
+
+  async ngAfterViewInit(): Promise<void> {
+    await CommonFunctions.sleep(Constants.NUM_ONE_HUNDRED * Constants.NUM_ONE);
+    this.playDialogNotifcationSound();
   }
 
   onYesDialogBox():void{
@@ -109,7 +118,7 @@ export class DialogComponent implements BaseComponent, OnChanges {
   }
 
   onYesPowerDialogBox():void{
-    const delay = 250; //250ms
+    const delay = Constants.NUM_ONE_HUNDRED * Constants.NUM_TWO; //200ms
     const clearSessionData = !this.reOpenWindows;
     
     this.onCloseDialogBox();
@@ -150,6 +159,12 @@ export class DialogComponent implements BaseComponent, OnChanges {
     const selectedValue = event.target.value;
     this.selectedOption = selectedValue;
     this.pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
+  }
+
+  async playDialogNotifcationSound():Promise<void>{
+
+    if(this.notificationOption === this.errorNotification)
+        await this._audioService.play(this.errorNotificationAudio);
   }
 
   private generateNotificationId(): number{
