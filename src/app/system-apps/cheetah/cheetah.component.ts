@@ -22,6 +22,7 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   private _windowService:WindowService;
 
 
+  isVisible = false;
   infoMessageTimeOutId!:NodeJS.Timeout;
 
   hasWindow = false;
@@ -63,15 +64,24 @@ CheetahOS
 Version 3.07.04
 Copyright\u00A9 Chinonso098 2022 - ${new Date().getFullYear()}
 
-Windows 10 icons & audio \u00A9 Microsoft Corporation. 
-Windows (tm) is a registered trademark of Microsoft Corporation.
+Windows 10 icons & audio files Microsoft Corporation\u00A9. 
+Windows \u2122 is a registered trademark of Microsoft Corporation.
 Other trademarks and logos are property of their respective owners
     `
   }
 
-  onMouseEnter():void{
+
+  onMouseEnter1():void{
     //clear timeout just
+
+    if(!this.isVisible)
+        return;
+
     clearTimeout(this.infoMessageTimeOutId);
+    this.onMouseEnter();
+  }
+
+  onMouseEnter():void{
 
     const toolTipID = 'cheetahAboutTooltip';
     const aboutToolTip = document.getElementById(toolTipID) as HTMLElement;
@@ -80,6 +90,7 @@ Other trademarks and logos are property of their respective owners
       aboutToolTip.style.opacity = '1';
       aboutToolTip.style.transition = 'opacity 0.5s ease';
     }
+    this.isVisible = true;
   }
 
    onMouseLeave():void{
@@ -92,6 +103,7 @@ Other trademarks and logos are property of their respective owners
         aboutToolTip.style.opacity = '0';
         aboutToolTip.style.transition = 'opacity 0.75s ease 1';
       }
+      this.isVisible = false;
     }, Constants.NUM_ONE_THOUSAND * Constants.NUM_FOUR); // wait 4 sec
   }
 
