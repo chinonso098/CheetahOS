@@ -5,7 +5,8 @@ import { ComponentType } from 'src/app/system-files/system.types';
 @Component({
   selector: 'cos-taskbarentry',
   templateUrl: './taskbarentry.component.html',
-  styleUrls: ['./taskbarentry.component.css']
+  styleUrls: ['./taskbarentry.component.css'],
+  standalone: false,
 })
 export class TaskBarEntryComponent implements OnInit, OnChanges {
 

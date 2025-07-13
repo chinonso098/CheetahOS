@@ -22,7 +22,8 @@ declare const videojs: (arg0: any, arg1: object, arg2: () => void) => any;
 @Component({
   selector: 'cos-videoplayer',
   templateUrl: './videoplayer.component.html',
-  styleUrls: ['./videoplayer.component.css']
+  styleUrls: ['./videoplayer.component.css'],
+  standalone: false,
 })
 export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit  {
 

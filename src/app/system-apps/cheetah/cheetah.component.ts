@@ -12,7 +12,8 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 @Component({
   selector:'cos-cheetah',
   templateUrl: './cheetah.component.html',
-  styleUrls: ["./cheetah.component.css"]
+  styleUrls: ["./cheetah.component.css"],
+  standalone: false
 })
 
 export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{

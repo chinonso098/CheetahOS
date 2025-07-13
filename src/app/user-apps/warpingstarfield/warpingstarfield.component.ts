@@ -19,7 +19,8 @@ declare const THREE: any;
 @Component({
   selector: 'cos-warpingstarfield',
   templateUrl: './warpingstarfield.component.html',
-  styleUrl: './warpingstarfield.component.css'
+  styleUrl: './warpingstarfield.component.css',
+  standalone: false,
 })
 export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, AfterViewInit {
 

@@ -28,6 +28,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
   selector: 'cos-photoviewer',
   templateUrl: './photoviewer.component.html',
   styleUrls: ['./photoviewer.component.css'],
+  standalone: false,
   animations: [
     trigger('slideToggle', [
       transition( '* => *', [

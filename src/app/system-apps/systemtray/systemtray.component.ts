@@ -10,7 +10,8 @@ import { SystemNotificationService } from 'src/app/shared/system-service/system.
 @Component({
   selector: 'cos-systemtray',
   templateUrl: './systemtray.component.html',
-  styleUrl: './systemtray.component.css'
+  styleUrl: './systemtray.component.css',
+  standalone: false,
 })
 export class SystemtrayComponent implements OnInit {
 

@@ -19,7 +19,8 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 @Component({
   selector: 'cos-dialog',
   templateUrl: './dialog.component.html',
-  styleUrls: ['./dialog.component.css']
+  styleUrls: ['./dialog.component.css'],
+  standalone: false,
 })
 
 export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit {

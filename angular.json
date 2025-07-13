@@ -23,7 +23,8 @@
               "buffer",
               "ini",
               "path",
-              "js-dos"
+              "js-dos",
+              "readable-stream"
             ],
             "outputPath": "dist/cheetah-os",
             "index": "src/index.html",

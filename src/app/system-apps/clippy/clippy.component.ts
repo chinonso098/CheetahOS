@@ -8,7 +8,8 @@ import { Process } from 'src/app/system-files/process';
 @Component({
   selector: 'cos-clippy',
   templateUrl: './clippy.component.html',
-  styleUrl: './clippy.component.css'
+  styleUrl: './clippy.component.css',
+  standalone: false
 })
 
 export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChanges, AfterViewInit {

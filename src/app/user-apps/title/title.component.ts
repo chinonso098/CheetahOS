@@ -15,7 +15,8 @@ import { AppState } from 'src/app/system-files/state/state.interface';
 @Component({
   selector:'cos-title',
   templateUrl: './title.component.html',
-  styleUrls: ["./title.component.css"]
+  styleUrls: ["./title.component.css"],
+  standalone: false,
 })
 
 export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{

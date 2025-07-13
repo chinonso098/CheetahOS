@@ -20,7 +20,8 @@ import { MenuService } from 'src/app/shared/system-service/menu.services';
 @Component({
   selector: 'cos-startmenu',
   templateUrl: './startmenu.component.html',
-  styleUrls: ['./startmenu.component.css']
+  styleUrls: ['./startmenu.component.css'],
+  standalone: false,
 })
 
 export class StartMenuComponent implements OnInit, AfterViewInit {

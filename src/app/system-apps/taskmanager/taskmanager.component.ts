@@ -20,7 +20,8 @@ import { AppState } from 'src/app/system-files/state/state.interface';
 @Component({
   selector: 'cos-taskmanager',
   templateUrl: './taskmanager.component.html',
-  styleUrls: ['./taskmanager.component.css']
+  styleUrls: ['./taskmanager.component.css'],
+  standalone: false,
 })
 export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,AfterViewInit {
 

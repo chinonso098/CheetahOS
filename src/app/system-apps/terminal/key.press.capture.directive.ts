@@ -4,7 +4,8 @@ import { buffer, debounceTime, filter } from 'rxjs/operators';
 
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector
-  selector: '[appKeyPressCapture]'
+  selector: '[appKeyPressCapture]',
+  standalone: false
 })
 export class KeyPressCaptureDirective implements OnInit, OnDestroy {
   @Output() keyDblPressed = new EventEmitter<KeyboardEvent>();

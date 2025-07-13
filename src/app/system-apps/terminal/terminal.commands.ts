@@ -179,7 +179,7 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
                 const dlCntnt:FileInfo = new FileInfo();
                 dlCntnt.setFileName = name,
                 dlCntnt.setCurrentPath = `${dest}/${name}`;
-                dlCntnt.setContentBuffer = Buffer.from(buffer);
+                //dlCntnt.setContentBuffer = Buffer.from(buffer);
 
                 this._fileService.writeFileAsync(dest, dlCntnt);
             }    

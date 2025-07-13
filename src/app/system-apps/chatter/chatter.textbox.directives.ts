@@ -2,7 +2,8 @@ import { Directive, HostListener, ElementRef } from '@angular/core';
 
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector
-  selector: '[appAlphaNumeric]'
+  selector: '[appAlphaNumeric]',
+  standalone: false
 })
 export class AlphaNumericDirective {
 

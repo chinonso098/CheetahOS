@@ -45,7 +45,7 @@ export class SocketService implements BaseService {
   // Observable to receive messages from the server
   onMessageEvent(evt:string): Observable<any> {
     return new Observable((observer) => {
-      this.socket.on(evt, (data) => {
+      this.socket.on(evt, (data: any) => {
         observer.next(data);
       });
       // Handle cleanup

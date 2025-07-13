@@ -2,7 +2,8 @@ import { Directive, ElementRef, HostListener } from '@angular/core';
 
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector
-  selector: '[taskBarEntryHighlight]'
+  selector: '[taskBarEntryHighlight]',
+  standalone: false,
 })
 export class TaskBarEntryHighlightDirective {
 

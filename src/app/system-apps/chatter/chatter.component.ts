@@ -23,7 +23,8 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   selector: 'cos-chatter',
   templateUrl: './chatter.component.html',
   styleUrl: './chatter.component.css',
-  providers: [SocketService] // New instance per component
+  providers: [SocketService], // New instance per component
+  standalone: false
 })
 export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
 

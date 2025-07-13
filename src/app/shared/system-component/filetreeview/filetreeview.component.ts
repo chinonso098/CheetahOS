@@ -15,7 +15,8 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
 @Component({
   selector: 'cos-filetreeview',
   templateUrl: './filetreeview.component.html',
-  styleUrl: './filetreeview.component.css'
+  styleUrl: './filetreeview.component.css',
+  standalone: false,
 })
 export class FileTreeViewComponent implements OnInit, OnChanges {
   @Input() pid = Constants.NUM_ZERO;

@@ -18,7 +18,8 @@ declare const p5:any;
 @Component({
   selector: 'cos-boids',
   templateUrl: './boids.component.html',
-  styleUrls: ['./boids.component.css']
+  styleUrls: ['./boids.component.css'],
+  standalone: false,
 })
 export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
   @ViewChild('boidCanvas', { static: true }) boidCanvas!: ElementRef;

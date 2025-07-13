@@ -3,11 +3,13 @@ import { Subscription } from 'rxjs';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { Constants } from 'src/app/system-files/constants';
 
 @Component({
   selector: 'cos-taskbarpreviews',
   templateUrl: './taskbarpreviews.component.html',
-  styleUrl: './taskbarpreviews.component.css'
+  styleUrl: './taskbarpreviews.component.css',
+  standalone: false
 })
 export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
 
@@ -18,13 +20,13 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
   private _highLightTaskBarPreviewSub!: Subscription;
   private _unHighLightTaskBarPreviewSub!: Subscription;
 
-  @Input() icon = '';
-  @Input() name = '';
-  @Input() imageData = '';
-  @Input() pid = 0;
+  @Input() icon = Constants.EMPTY_STRING;
+  @Input() name = Constants.EMPTY_STRING;
+  @Input() imageData = Constants.EMPTY_STRING;
+  @Input() pid = Constants.NUM_ZERO;
 
-  appInfo = '';
-  SECONDS_DELAY = 20;
+  appInfo = Constants.EMPTY_STRING;
+  SECONDS_DELAY = Constants.NUM_TWENTY;
 
 
   constructor(runningProcessService:RunningProcessService, windowServices:WindowService, systemNotificationService:SystemNotificationService){
@@ -37,6 +39,7 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    
     setTimeout(() => {
       this.shortAppInfo();
     }, this.SECONDS_DELAY);

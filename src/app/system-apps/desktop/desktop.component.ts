@@ -35,6 +35,7 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
   selector: 'cos-desktop',
   templateUrl: './desktop.component.html',
   styleUrls: ['./desktop.component.css'],
+  standalone: false,
   animations: [
     trigger('slideStatusAnimation', [
       state('slideOut', style({ right: '-480px' })),

@@ -14,6 +14,7 @@ import { SessionManagmentService } from './shared/system-service/session.managem
   selector: 'cos-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
+  standalone: false,
 })
 
 /**

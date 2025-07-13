@@ -21,7 +21,8 @@ import { AppState } from 'src/app/system-files/state/state.interface';
 @Component({
   selector: 'cos-codeeditor',
   templateUrl: './codeeditor.component.html',
-  styleUrl: './codeeditor.component.css'
+  styleUrl: './codeeditor.component.css',
+  standalone: false,
 })
 export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterViewInit, OnInit {
 

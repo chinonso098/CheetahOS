@@ -21,7 +21,8 @@ import { FileService } from 'src/app/shared/system-service/file.service';
 @Component({
   selector: 'cos-terminal',
   templateUrl: './terminal.component.html',
-  styleUrls: ['./terminal.component.css']
+  styleUrls: ['./terminal.component.css'],
+  standalone: false,
 })
 export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, OnDestroy{
 

@@ -10,7 +10,8 @@ import { Process } from 'src/app/system-files/process';
 @Component({
   selector: 'cos-runsystem',
   templateUrl: './runsystem.component.html',
-  styleUrl: './runsystem.component.css'
+  styleUrl: './runsystem.component.css',
+	standalone: false,
 })
 export class RunSystemComponent implements BaseComponent {
 

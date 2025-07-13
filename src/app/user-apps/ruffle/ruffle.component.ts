@@ -19,7 +19,8 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 @Component({
   selector: 'cos-ruffle',
   templateUrl: './ruffle.component.html',
-  styleUrls: ['./ruffle.component.css']
+  styleUrls: ['./ruffle.component.css'],
+  standalone: false,
 })
 export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   private rufflePlayer:any;

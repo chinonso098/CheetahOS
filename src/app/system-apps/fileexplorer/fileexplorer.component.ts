@@ -33,6 +33,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   templateUrl: './fileexplorer.component.html',
   styleUrls: ['./fileexplorer.component.css'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false
 })
 
 export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewInit, OnDestroy {

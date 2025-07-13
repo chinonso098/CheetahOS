@@ -25,7 +25,8 @@ declare const marked:any;
 @Component({
   selector: 'cos-markdownviewer',
   templateUrl: './markdownviewer.component.html',
-  styleUrl: './markdownviewer.component.css'
+  styleUrl: './markdownviewer.component.css',
+  standalone: false,
 })
 
 export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, AfterViewInit, OnInit {
