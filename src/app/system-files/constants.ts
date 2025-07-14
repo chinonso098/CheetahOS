@@ -175,6 +175,16 @@ export namespace Constants{
         '.html'
     ]
 
+    export const KNOWN_FILE_EXTENSIONS = [
+        '.wasm',
+        '.txt',
+        '.properties',
+        '.log',
+        '.md',
+        '.jsdos',
+        '.swf',
+        '.pdf',
+    ]
 
     export const FILE_EXTENSION_MAP = [
         ['.txt','Text Document'],
