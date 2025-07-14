@@ -1,5 +1,6 @@
 import { basename, extname, join, resolve } from '@zenfs/core/vfs/path.js';
-import { FileInfo2 } from "src/app/system-files/file.info2";
+//import { FileInfo } from 'src/app/system-files/file.info';
+import { FileInfo } from 'src/app/system-files/file.info2';
 import { ShortCut } from 'src/app/system-files/shortcut';
 
 
@@ -14,6 +15,7 @@ import OSFileSystemIndex from '../../../../index.json';
 import { Constants } from "src/app/system-files/constants";
 import { FileContent2 } from "src/app/system-files/file.content";
 import { err } from "@zenfs/core/internal/log.js";
+import { OpensWith } from 'src/app/system-files/opens.with';
 /// <reference types="node" />
 
 
@@ -23,7 +25,6 @@ const fileAndAppIconAssociation:Map<string,string> =  new Map<string, string>();
 
 
 export const configured = configure({
-
     mounts: {
         '/': {
             backend: CopyOnWrite,
@@ -38,6 +39,11 @@ export const configured = configure({
             },
         },
     },
+    log: {
+		enabled: true,
+		level: 'debug',
+		output: console.log
+	}
 });
 
 function throwWithPath(error: ErrnoError): never {
@@ -76,7 +82,7 @@ export async function readdir(path: string): Promise<string[]> {
     return await fs.promises.readdir(path).catch(throwWithPath);
 }
 
-export async function *loadDirectoryFiles(path: string): AsyncIterableIterator<FileInfo2> {
+export async function *loadDirectoryFiles(path: string): AsyncIterableIterator<FileInfo> {
         console.log('loadDirectoryFiles:', path);
         await configured
 
@@ -90,94 +96,113 @@ export async function *loadDirectoryFiles(path: string): AsyncIterableIterator<F
         }
 }
 
-async function getFileInfo(path:string, entry: Dirent):Promise<FileInfo2>{
+ async function getFileInfo(path:string,  entry: Dirent):Promise<FileInfo>{
     const extension = extname(path);
-    let fileInfo = new FileInfo2();
-    //const fileMetaData = await getExtraFileMetaDataAsync(path) as FileMetaData;
+    let fileInfo = new FileInfo();
+    const isFile = true;
+    let opensWith = Constants.EMPTY_STRING;
     
     if(!extension){
-        const fc = await setOtherFolderProps(path) as FileContent2;
-        fileInfo = populateFileInfo(path,false, Constants.EMPTY_STRING, Constants.EMPTY_STRING, false, undefined, fc);
-        fileInfo.setIconPath = await changeFolderIcon(fc.fileName, fc.iconPath, path);
+        const fc = await setOtherFolderProps(path, entry) as FileContent2;
+        fileInfo = populateFileInfo(path, entry.isDirectory(), opensWith, Constants.EMPTY_STRING, false, undefined, fc);
+        fileInfo.setIconPath = await changeFolderIcon(fc.fileName, fc.iconPath, path, entry);
     }
     else if(extension === Constants.URL){
-        const sc = await getShortCutFromURL(path) as ShortCut;
-        fileInfo = populateFileInfo(path, true, Constants.EMPTY_STRING, Constants.EMPTY_STRING, true, sc);
+        const sc = await getShortCutFromURL(path);
+        fileInfo = populateFileInfo(path, isFile, opensWith, Constants.EMPTY_STRING, true, sc);
         fileInfo.setIsShortCut = true;
     }
-    else if(Constants.IMAGE_FILE_EXTENSIONS.includes(extension)){
-        const fc = await getFileContentFromB64DataUrl(path, 'image') as FileContent2;
-        fileInfo = populateFileInfo(path, true,'photoviewer', 'image_file.png', false,undefined, fc);
-    }
-    else if(Constants.VIDEO_FILE_EXTENSIONS.includes(extension)){
-        const fc = await getFileContentFromB64DataUrl(path, 'video') as FileContent2;
-        fileInfo = populateFileInfo(path,  true, 'videoplayer', 'video_file.png', false,undefined, fc);
-    }
-    else if(Constants.AUDIO_FILE_EXTENSIONS.includes(extension)){
-        const fc = await getFileContentFromB64DataUrl(path, 'audio') as FileContent2;
-        fileInfo = populateFileInfo(path,  true, 'audioplayer', 'music_file.png', false, undefined, fc);
+    else if(Constants.IMAGE_FILE_EXTENSIONS.includes(extension)
+        || Constants.VIDEO_FILE_EXTENSIONS.includes(extension)
+        || Constants.AUDIO_FILE_EXTENSIONS.includes(extension)
+        || Constants.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension)){
 
-    }else if(Constants.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension) || extension === '.wasm'){
-        const img_file = (extension === '.wasm')? 'wasm_file.png' : 'code_file.png';
-        fileInfo = populateFileInfo(path, true, 'codeeditor', img_file);
-    }
-    else if(extension === '.txt' || extension === '.properties' || extension === '.log'){
-        fileInfo = populateFileInfo(path, true, 'texteditor', 'file.png');
-    }
-    else if(extension === '.md'){
-        fileInfo = populateFileInfo(path, true, 'markdownviewer', 'markdown_file.png');
-    }
-    else if(extension === '.jsdos'){
-        fileInfo = populateFileInfo(path, true, 'jsdos', 'js-dos_file.png');
-    }
-    else if(extension === '.swf'){
-        fileInfo = populateFileInfo(path, true, 'ruffle', 'swf_file.png');
-    }else if(extension === '.pdf'){
-        fileInfo = populateFileInfo(path, true, 'pdfviewer', 'pdf.png');
-    }
-    else{
+        let fileContent:FileContent2| undefined = undefined;
+        const opensWith = getOpensWith(extension);
+
+        if(opensWith.fileType === 'image' ||opensWith.fileType === 'video' || opensWith.fileType === 'audio' )
+            fileContent = await getFileContentFromB64DataUrl(path, 'image') as FileContent2;
+
+        fileInfo = populateFileInfo(path, isFile, opensWith.appName, opensWith.appIcon, false, undefined, fileContent);
+
+    }else if(Constants.KNOWN_FILE_EXTENSIONS.includes(extension)){
+        const opensWith = getOpensWith(extension);
+        fileInfo = populateFileInfo(path, isFile, opensWith.appName, opensWith.appIcon);
+    } else{
         fileInfo.setIconPath=`${Constants.IMAGE_BASE_PATH}unknown.png`;
         fileInfo.setCurrentPath = path;
         fileInfo.setFileName = basename(path, extname(path));
-        // fileInfo.setDateModified = fileMetaData.getModifiedDate;
-        // fileInfo.setSizeInBytes = fileMetaData.getSize;
-        // fileInfo.setMode = fileMetaData.getMode;
         fileInfo.setFileExtension = extension;
     }
+
     addAppAssociaton(fileInfo.getOpensWith, fileInfo.getIconPath);
     return fileInfo;
 }
 
+function getOpensWith(extension: string): OpensWith{
+    const empty = Constants.EMPTY_STRING;
+    const isAudioFile = Constants.AUDIO_FILE_EXTENSIONS.includes(extension);
+    if(isAudioFile)
+        return {fileType:'audio', appName:'audioplayer', appIcon: 'music_file.png'};
 
-function populateFileInfo(path:string, isFile =true, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut, fileCntnt?:FileContent2):FileInfo2{
-    const fileInfo2 = new FileInfo2();
-    const img = `${Constants.IMAGE_BASE_PATH}${imageName}`;
+    const isVideoFile = Constants.VIDEO_FILE_EXTENSIONS.includes(extension);
+    if(isVideoFile)
+        return {fileType:'video', appName:'videoplayer', appIcon: 'video_file.png'};
 
-    // fileInfo.setCurrentPath = path;
-    // if(shortCut !== undefined){
-    //     fileInfo.setIconPath = (useImage)? shortCut?.getIconPath || img : img;
-    //     fileInfo.setContentPath = shortCut?.getContentPath || Constants.EMPTY_STRING;
-    //     fileInfo.setFileType = shortCut?.getFileType || extname(path);
-    //     fileInfo.setFileName = shortCut?.geFileName || basename(path, extname(path));
-    //     fileInfo.setOpensWith = shortCut?.getOpensWith || opensWith;
-    // }else{
-    //     fileInfo.setIconPath = (useImage)? fileCntnt?.iconPath || img : img;
-    //     fileInfo.setContentPath = fileCntnt?.contentPath || Constants.EMPTY_STRING;
-    //     fileInfo.setFileType = fileCntnt?.fileType || extname(path);
-    //     fileInfo.setFileName = fileCntnt?.fileName || basename(path, extname(path));
-    //     fileInfo.setOpensWith = fileCntnt?.opensWith || opensWith;
-    // }
-    // fileInfo.setIsFile = isFile;
-    // fileInfo.setDateModified = fileMetaData.getModifiedDate;
-    // fileInfo.setSizeInBytes = fileMetaData.getSize;
-    // fileInfo.setMode = fileMetaData.getMode;
-    // fileInfo.setFileExtension = extname(path);
+    const isImageFile = Constants.IMAGE_FILE_EXTENSIONS.includes(extension);
+    if(isImageFile)
+        return {fileType:'image', appName:'photoviewer', appIcon: 'image_file.png'};
 
-    return fileInfo2;
+    const isSourceFile = Constants.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension);
+    if(isSourceFile)
+        return {fileType:'source', appName:'codeeditor', appIcon: 'code_file.png'};
+
+
+    const cleanedExt = extension.replace(Constants.DOT, empty);
+    const knownFileHandlers: Record<string, OpensWith> = {
+        '.wasm': { fileType: cleanedExt, appName: 'codeeditor', appIcon: 'wasm_file.png' },
+        '.txt': { fileType: cleanedExt, appName: 'texteditor', appIcon: 'file.png' },
+        '.properties': { fileType: cleanedExt, appName: 'texteditor', appIcon: 'file.png' },
+        '.log': { fileType: cleanedExt, appName: 'texteditor', appIcon: 'file.png' },
+        '.md': { fileType: cleanedExt, appName: 'markdownviewer', appIcon: 'markdown_file.png' },
+        '.jsdos': { fileType: cleanedExt, appName: 'jsdos', appIcon: 'js-dos_file.png' },
+        '.swf': { fileType: cleanedExt, appName: 'ruffle', appIcon: 'swf_file.png' },
+        '.pdf': { fileType: cleanedExt, appName: 'pdfviewer', appIcon: 'pdf_file.png' }
+    };
+
+    if (Constants.KNOWN_FILE_EXTENSIONS.includes(extension) && knownFileHandlers[extension]) {
+        return knownFileHandlers[extension];
+    }
+
+    return {fileType:empty, appName:empty, appIcon: empty};
 }
 
+function populateFileInfo(path:string, isFile =true, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut, fileCntnt?:FileContent2):FileInfo2{
+        const fileInfo = new FileInfo();
+        const img = `${Constants.IMAGE_BASE_PATH}${imageName}`;
+
+        fileInfo.setCurrentPath = path;
+        if(shortCut !== undefined){
+            fileInfo.setIconPath = (useImage)? shortCut?.getIconPath || img : img;
+            fileInfo.setContentPath = shortCut?.getContentPath || Constants.EMPTY_STRING;
+            fileInfo.setFileType = shortCut?.getFileType || extname(path);
+            fileInfo.setFileName = shortCut?.geFileName || basename(path, extname(path));
+            fileInfo.setOpensWith = shortCut?.getOpensWith || opensWith;
+        }else{
+            fileInfo.setIconPath = (useImage)? fileCntnt?.iconPath || img : img;
+            fileInfo.setContentPath = fileCntnt?.contentPath || Constants.EMPTY_STRING;
+            fileInfo.setFileType = fileCntnt?.fileType || extname(path);
+            fileInfo.setFileName = fileCntnt?.fileName || basename(path, extname(path));
+            fileInfo.setOpensWith = fileCntnt?.opensWith || opensWith;
+        }
+        fileInfo.setIsFile = isFile;
+        fileInfo.setFileExtension = extname(path);
+
+        return fileInfo;
+    }
+
 async function getFileContentFromB64DataUrl(path: string, contentType: string): Promise<FileContent2> {
-    await configure;
+    await configured;
 
     try {
         const contents = await fs.promises.readFile(path);
@@ -224,7 +249,7 @@ function populateFileContent(iconPath = Constants.EMPTY_STRING, fileName = Const
 }
 
 async function getShortCutFromURL(path:string):Promise<ShortCut>{
-    await configure
+    await configured
     try{
         const contents = await fs.promises.readFile(path);
         const stage = contents? contents.toString(): Buffer.from(Constants.EMPTY_STRING).toString();
@@ -247,7 +272,7 @@ async function getShortCutFromURL(path:string):Promise<ShortCut>{
     }
 }
 
-async function changeFolderIcon(fileName:string, iconPath:string, path:string):Promise<string>{
+async function changeFolderIcon(fileName:string, iconPath:string, path:string,  entry: Dirent):Promise<string>{
     const iconMaybe = `/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder.png`;
 
     if(path === Constants.RECYCLE_BIN_PATH){
@@ -260,39 +285,39 @@ async function changeFolderIcon(fileName:string, iconPath:string, path:string):P
     if(path !== `/Users/${fileName}`)
         return iconPath;
 
-    const result = await fs.promises.exists(iconMaybe);
+    const result = fs.existsSync(iconMaybe); // await fs.promises.exists(iconMaybe);
     if(result){ 
         return `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png`;
     }
     return iconPath;
 }
 
-async function setOtherFolderProps(path:string):Promise<FileContent2>{
-    const fileName = basename(path, extname(path));
-    let iconFile = Constants.EMPTY_STRING;
-    const fileType = Constants.FOLDER;
-    const opensWith = Constants.FILE_EXPLORER;
+async function setOtherFolderProps(path:string,  entry: Dirent):Promise<FileContent2>{
+        const fileName = basename(path, extname(path));
+        let iconFile = Constants.EMPTY_STRING;
+        const fileType = Constants.FOLDER;
+        const opensWith = Constants.FILE_EXPLORER;
 
-    try{
-        const isDir = await isDirectory(path);
-        if(!isDir){
-            iconFile= `${Constants.IMAGE_BASE_PATH}unknown.png`;
-            return populateFileContent(iconFile, fileName, Constants.EMPTY_STRING, fileName, Constants.EMPTY_STRING);
-        }
+		try{
+			const isDirectory = entry.isDirectory(); //await this.isDirectory(path);
+			if(!isDirectory){
+				iconFile = `${Constants.IMAGE_BASE_PATH}unknown.png`;
+				return populateFileContent(iconFile, fileName, Constants.EMPTY_STRING, fileName, Constants.EMPTY_STRING);
+			}
 
-        const count = await countFolderItems(path);
-        if(count === Constants.NUM_ZERO){
-            iconFile = `${Constants.IMAGE_BASE_PATH}empty_folder.png`;
-            return populateFileContent(iconFile, fileName, fileType, fileName, opensWith);
-        }
+			const count = await countFolderItems(path);
+			if(count === Constants.NUM_ZERO){
+				iconFile = `${Constants.IMAGE_BASE_PATH}empty_folder.png`;
+				return populateFileContent(iconFile, fileName, fileType, fileName, opensWith);
+			}
 
-        iconFile = `${Constants.IMAGE_BASE_PATH}folder_w_c.png`;
-        return populateFileContent(iconFile, fileName, fileType, fileName, opensWith);
-    }catch (err){
-        console.error('setOtherFolderProps:', err)
-        return populateFileContent(iconFile, fileName, fileType, Constants.EMPTY_STRING, opensWith);
+			iconFile = `${Constants.IMAGE_BASE_PATH}folder_w_c.png`;
+			return populateFileContent(iconFile, fileName, fileType, fileName, opensWith);
+		}catch (err){
+			console.error('setOtherFolderProps:', err)
+			return populateFileContent(iconFile, fileName, fileType, Constants.EMPTY_STRING, opensWith);
+		}
     }
-}
 
 async function countFolderItems(path:string):Promise<number>{
     try{
