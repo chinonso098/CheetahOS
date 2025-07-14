@@ -81,7 +81,7 @@ export class FileService2 implements BaseService{
 		const fsPrefix = 'osdrive';
 		const currentURL = window.location.href;
 
-		console.log('currentURL-2:',currentURL);
+		console.log('currentURL:',currentURL);
 		await configure({
 			mounts: {
 				'/': {
@@ -98,11 +98,11 @@ export class FileService2 implements BaseService{
 				},
 		
 			},
-			log:{
-				enabled:true,
-				level:'debug',
-				output:console.log
-			}
+			// log:{
+			// 	enabled:true,
+			// 	level:'debug',
+			// 	output:console.log
+			// }
 		});
 	}
 
@@ -147,11 +147,19 @@ export class FileService2 implements BaseService{
 		if (path === '/fileexplorer.url')
 			 debugger;
 
-		for (const entry of await fs.promises
-			.readdir(path, { withFileTypes: true })
-			.catch(this.throwWithPath)) {
-			yield await this.getFileInfo(join(path, entry.path), entry);
+		// for (const entry of await fs.promises
+		// 	.readdir(path, { withFileTypes: true })
+		// 	.catch(this.throwWithPath)) {
+		// 	yield await this.getFileInfo(join(path, entry.path), entry);
+		// }
+
+		try{
+			const readResult = await this.readdir(path)
+			console.log('readResult:', readResult);
+		}catch(err){
+			console.error('loadDirectoryFiles:',err);
 		}
+
 	}
 	
 	public async getFileInfo(path:string, entry: Dirent):Promise<FileInfo2>{

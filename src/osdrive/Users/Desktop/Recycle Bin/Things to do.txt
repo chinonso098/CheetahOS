@@ -1,0 +1,186 @@
+Things To Do
+
+
+****************Quiq Update Commands***********************
+
+---updating node (this typically installs the latest npm)----
+sudo npm cache clean -f
+sudo npm install -g n
+sudo n lts| stable | latest  --(pick one)
+
+
+---------------------------------------THINGS TO FIX-------------------------------------------
+
+--------BUG FIXES--------
+
+1.) fix centering - when opening the window. (Window should open in the center of the screen) 
+    ---- https://css-tricks.com/quick-css-trick-how-to-center-an-object-exactly-in-the-center/ -- in progress
+
+2.) clicking maxize btn should take window to the top of the screen(top: 0%) is a hint -- done
+
+3.) fix all highlighted icons on hover -- done 
+
+4.) Taskmanager mini doesn't re-appear when the page is refreshed
+
+5.) Desktop context menu should not open when context menu is triggered from  another app -- in progress
+
+6.) Taskmanager, FlieExlplorere and some other apps' window doesn't expand to use full window -- in proggress 
+    -- restore button button dones't remeber previous window position and size
+
+7.) Rework the entire desktop contexutal menu  and the taskmanager menus
+
+8.) fix  center poisitioning method in the window component 
+
+9.) vidoejs and vantajs do not play well with each other. -- done
+
+10.) JS-dos / Videojs on page refresh, do not have the file info -- done
+
+11.) Windows Minimize, after Maximizing is broken
+
+12.) Cntxt menu clicking on an empty part of the FileExplorer window trigger the desktop cntxt menu. 
+    -- look into implementing a who raised what event
+
+13.) Fix UI Open/Close Animation
+
+14.) Taskmanager, column resize is not working
+
+15.) fileexplorer current filepath state is not updated when using the <-- --->  ^   navigation icons
+                                                                                 |
+
+16.) current folder iconPath not stored in state
+
+17.) when a picture is opened in photoviewer and there is a list of other pictues, the picture should be the first selected.
+
+18.) Photo selection list should display no more than 5 photos, hide the rest as you progress through the list
+
+19.) center text in the edit-input textbook, when text length is under centainnumber. and left align text in the exit-input when lenght is above a certain number
+
+20.) opening the photoview app from the termial shows a broken image icon, instead of a no_img icon
+
+21.) For the fileexplorer info tip, if a conetext menu is present, do not show the info tip -- done
+
+22.) info tip in the file-explorer is unstable. is spazzes out from time to time (the infotip never shows), and info tip seems to snap to the corners of the icon.
+
+23.) opening more than one instance of an app leads to "Not found error being displayed" -- done
+
+24.)  taskbar context menu vanishes, when the app is active, and the mouse is hovering over it -- done
+
+25.) z-index should be assigned on window open
+
+26.) Session Mgmt Service is not working properly
+
+27.) Rename & Delete have to check if it is a file or a folder
+
+28.) Capture Img on the window component displays the image to the bottom right, when hovering on the taskbar icon for a preview
+
+29.) termial has issues with folder name containing spaces "screen folder" turn into screen
+
+30.) Adding a new folder through the termial, causes the desktop to refresh. Even if the folder added is not to the desktop
+
+31.) Maximizing an Maximizing terminal before / after vertial overflow has been triggered, break vertial overflow
+
+32.) Aligon icond to grid on the desktop  is broken
+
+33.) Windows z-indexing is BROOOOKEN -- done.
+
+34.) Creating a new folder from the termial/fileexplorer has broken back navigation
+
+
+
+--------FEATURES TO ADD--------
+
+1.) session context - what windows were open, on the desktop, desktop icons, UserData Object . These are the things session-contenxt stores -- in progress
+
+2.) State contentext -  window state( position, size) can be saved and re-assumed on restore -- in progress
+
+3.) Minimize & Maximize/ Hide/Restore Window animation -- done
+
+4.) Window Stacking On Open
+
+4.) The URL, is the specifier for what app should be used to open said file  -- in progress
+BaseURL = Hello
+IconFile = .img
+URl = The URL, is the specifier for what app should be used to open said file
+ 
+
+5.) Wallpaper / Desktop
+--Add dark mode
+
+
+6.) clock  ---- in progress
+    Add tooltip
+    Add Date/Time -- done
+
+7.) startbutton --- in progress
+    Add tooltip
+
+
+8.) V86 / ISO ----weak maybe
+
+
+9.) Startup
+
+  1.) Start-up animation
+  2.) Setup process
+
+
+10.) Add a System setting 
+
+  1.) change picture
+
+
+11.) Taskbar
+    Overlapping icons when 2 or more of the same window is open
+    Window preview on hover -- done
+    context menu for app -- done
+
+
+12.)  TaskManager  ---- in progress
+    1.) add column resize
+    2.) add context menu for each process (taskmgr /taskmgr mini) --- done
+    3.) add functionality & view for the other tabs
+    4.) add process grouping
+    5.) fixed column headers, so that when vertical scroll is trigger, the headings stay in place
+
+13.) FileExplorer Tool Tip on Hover   [Type, Author, Size, Date modified, Dimesions]
+
+
+14.) Terminal  -- in progress
+    *************Use this pattern for the terminal********************
+    Terminal <command> <arg> --<options>
+    Add themeing options
+    Add description for commands
+
+
+15.)  FileExlporer -- in progress
+
+    1. Implement the navigation bar functionality
+    2. the search bar functionalty
+    3. The side bar tree list functionality
+    4.) Right clicking on an empty section of the layout window, shows a  ContextMenu menu
+
+
+16.)  Add an abouts page, with the libraries used --done
+
+17.) Shared UI notification componenet: error msg, warming msg, confirmation msg -- done
+
+
+18.)  Text Editor --- in progress
+
+19.)  Code Editor --- in progress
+
+20.) Pin to taskbar  -- in progress
+
+21.) Start Menu
+
+22.) Search from taskbar
+
+23.) Switch to ZenFS from BrowserFS
+
+24.? Implement dra n' drop of content from source to destination and viseversa in fileexplorer
+
+Things to come back to
+TaskBar Foreground Behaviors: https://www.youtube.com/watch?v=Hu1RYVoCbgs&list=PLM88opVjBuU7xSRoHhs3hZBz3JmHHBMMN&index=16&t=4518s
+
+
+
