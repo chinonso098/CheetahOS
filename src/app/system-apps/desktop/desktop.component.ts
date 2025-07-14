@@ -28,6 +28,8 @@ import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { VantaDefaults } from './vanta-object/vanta.defaults';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { FileService2 } from 'src/app/shared/system-service/file.service.two';
+import * as FileService3 from 'src/app/shared/system-service/file.service.three';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
@@ -66,6 +68,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   @ViewChild('desktopContainer', {static: true}) desktopContainer!: ElementRef; 
   
   private _fileService:FileService;
+  private _fileServices2:FileService2
   private _menuService:MenuService;
   private _audioService:AudioService;
   private _windowService:WindowService;
@@ -260,7 +263,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService, 
               scriptService:ScriptService, audioService:AudioService, menuService:MenuService, 
               fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
-              userNotificationService:UserNotificationService, formBuilder:FormBuilder, elRef:ElementRef) { 
+              userNotificationService:UserNotificationService, formBuilder:FormBuilder, elRef:ElementRef,
+              fileServices2:FileService2) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -273,6 +277,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._audioService = audioService;
     this._systemNotificationServices = systemNotificationServices;
     this._userNotificationService = userNotificationService;
+    this._fileServices2 = fileServices2;
     this._formBuilder = formBuilder;
     this._elRef = elRef;
 
@@ -334,9 +339,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.removeVantaJSSideEffect();
 
+    // setTimeout(async () => {
+    //       await this.loadFilesInfoAsync();
+    // }, this.SECONDS_DELAY[3]);
+
+
     setTimeout(async () => {
-          await this.loadFilesInfoAsync();
-    }, this.SECONDS_DELAY[3]);
+          await this.loadFiles();
+          
+    }, 2000);
   }
 
   ngOnDestroy(): void {
@@ -1275,6 +1286,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         this.files.push(fileInfo)
       }
   }
+
+  protected async loadFiles(): Promise<void> {
+		const files = await Array.fromAsync(this._fileServices2.loadDirectoryFiles(this.directory));
+    console.log('ZenFS files:',files);
+	}
   
   removeVantaJSSideEffect(): void {
     // VANTA js wallpaper is adding an unwanted style position:relative and z-index:1

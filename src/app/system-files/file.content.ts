@@ -49,3 +49,11 @@ export class FileContent{
     }
 
 }
+
+export interface FileContent2 {
+    iconPath: string;
+    fileName: string;
+    fileType: string;
+    contentPath: string;
+    opensWith: string;
+}
