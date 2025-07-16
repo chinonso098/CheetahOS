@@ -7,14 +7,13 @@ import { BIRDS, GLOBE, HALO, RINGS, WAVE } from './vanta-object/vanta.interfaces
 import { IconsSizes } from './desktop.enums';
 import { SortBys } from 'src/app/system-files/common.enums';
 import { Colors } from './colorutil/colors';
-//import { FileInfo } from 'src/app/system-files/file.info';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { GeneralMenu, MenuPosition, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import * as htmlToImage from 'html-to-image';
-import { FileService } from 'src/app/shared/system-service/file.service';
+//import { FileService } from 'src/app/shared/system-service/file.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { dirname} from 'path';
 import { Constants } from 'src/app/system-files/constants';
@@ -30,7 +29,6 @@ import { UserNotificationService } from 'src/app/shared/system-service/user.noti
 import { VantaDefaults } from './vanta-object/vanta.defaults';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { FileService2 } from 'src/app/shared/system-service/file.service.two';
-import * as FileService3 from 'src/app/shared/system-service/file.service.three';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
@@ -69,7 +67,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   @ViewChild('desktopContainer', {static: true}) desktopContainer!: ElementRef; 
   
   //private _fileService:FileService;
-  private _fileService2:FileService2
+  private _fileService:FileService2
   private _menuService:MenuService;
   private _audioService:AudioService;
   private _windowService:WindowService;
@@ -263,9 +261,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService, 
               scriptService:ScriptService, audioService:AudioService, menuService:MenuService, 
-              fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
-              userNotificationService:UserNotificationService, formBuilder:FormBuilder, elRef:ElementRef,
-              fileServices2:FileService2) { 
+              fileService:FileService2, windowService:WindowService, systemNotificationServices:SystemNotificationService,
+              userNotificationService:UserNotificationService, formBuilder:FormBuilder, elRef:ElementRef) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -278,7 +275,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._audioService = audioService;
     this._systemNotificationServices = systemNotificationServices;
     this._userNotificationService = userNotificationService;
-    this._fileService2 = fileServices2;
+    this._fileService = fileService;
     this._formBuilder = formBuilder;
     this._elRef = elRef;
 
@@ -296,10 +293,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
 
 
-    this._fileService2.dirFilesUpdateNotify.subscribe(() =>{
-      if(this._fileService2.getEventOriginator() === this.name){
+    this._fileService.dirFilesUpdateNotify.subscribe(() =>{
+      if(this._fileService.getEventOriginator() === this.name){
         this.loadFiles();
-        this._fileService2.removeEventOriginator();
+        this._fileService.removeEventOriginator();
       }
     });
 
@@ -551,11 +548,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     screenShot.setIconPath = htmlImg;
      
     await CommonFunctions.sleep(storeImgDelay);
-    this._fileService2.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
-    this._fileService2.addEventOriginator(Constants.FILE_EXPLORER);
+    this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
+    this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
 
     await CommonFunctions.sleep(storeImgDelay);
-    this._fileService2.dirFilesUpdateNotify.next();
+    this._fileService.dirFilesUpdateNotify.next();
 
     await CommonFunctions.sleep(slideOutDelay);
     this.slideState = 'slideOut';
@@ -566,7 +563,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async createFolder():Promise<void>{
     const folderName = Constants.NEW_FOLDER;
-    const result =  await this._fileService2.createFolderAsync(Constants.DESKTOP_PATH, folderName);
+    const result =  await this._fileService.createFolderAsync(Constants.DESKTOP_PATH, folderName);
     if(result){
       this.refresh();
     }
@@ -1267,10 +1264,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
       
       if(droppedFiles.length >= Constants.NUM_ONE){
-        const result =  await this._fileService2.writeFilesAsync(this.directory, droppedFiles);
+        const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
         if(result){
-          // this._fileService.addEventOriginator('desktop');
-          // this._fileService.dirFilesUpdateNotify.next();
+          this._fileService.addEventOriginator('desktop');
+          this._fileService.dirFilesUpdateNotify.next();
           this.refresh();
         }
       }
@@ -1278,22 +1275,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         
   }
   
-  // private async loadFilesInfoAsync():Promise<void>{
-  //     this.files = [];
-  //     this._fileService.resetDirectoryFiles();
-  //     const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(this.directory);
-  //     this._directoryFilesEntries = this._fileService.getFileEntriesFromDirectory(directoryEntries,this.directory);
-  
-  //     for(let i = 0; i < directoryEntries.length; i++){
-  //       const fileEntry = this._directoryFilesEntries[i];
-  //       const fileInfo = await this._fileService.getFileInfoAsync(fileEntry.getPath);
-  //       this.files.push(fileInfo)
-  //     }
-  // }
+
 
   protected async loadFiles(): Promise<void> {
     this.files = [];
-		this.files = await Array.fromAsync(this._fileService2.loadDirectoryFiles(this.directory));
+		this.files = await Array.fromAsync(this._fileService.loadDirectoryFiles(this.directory));
     console.log('ZenFS files:',this.files);
 	}
   
@@ -1430,18 +1416,18 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     //onPaste will be modified to handle cases such as multiselect, file or folder or both
 
     if(action === MenuAction.COPY){
-      const result = await this._fileService2.copyAsync(cntntPath,  Constants.DESKTOP_PATH);
+      const result = await this._fileService.copyAsync(cntntPath,  Constants.DESKTOP_PATH);
       if(result){
         this.refresh();
       }
     }
     else if(action === MenuAction.CUT){
-      const result = await this._fileService2.moveAsync(cntntPath, Constants.DESKTOP_PATH);
+      const result = await this._fileService.moveAsync(cntntPath, Constants.DESKTOP_PATH);
       if(result){
         if(!cntntPath.includes(Constants.DESKTOP_PATH)){
           console.log('refresh explor')
-          this._fileService2.addEventOriginator(Constants.FILE_EXPLORER);
-          this._fileService2.dirFilesUpdateNotify.next();
+          this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
+          this._fileService.dirFilesUpdateNotify.next();
 
 
           await CommonFunctions.sleep((Constants.NUM_TWENTY))
@@ -1955,7 +1941,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async onDelete():Promise<void>{
     let result = false;
-    result = await this._fileService2.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
+    result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
     if(result){
       this._menuService.resetStoreData();
       await this.loadFiles();
@@ -1965,7 +1951,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   async onEmptyRecyleBin():Promise<void>{
     let result = false;
     this._audioService.play(this.emptyTrashAudio);
-    result = await this._fileService2.deleteAsync(Constants.RECYCLE_BIN_PATH, false, true);
+    result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, false, true);
     if(result){
       this._menuService.resetStoreData();
       await this.loadFiles();
@@ -1991,7 +1977,7 @@ OpensWith=${selectedFile.getOpensWith}
 
     shortCut.setContentPath = fileContent
     shortCut.setFileName= `${selectedFile.getFileName} - ${Constants.SHORTCUT}${Constants.URL}`;
-    const result = await this._fileService2.writeFileAsync(this.directory, shortCut);
+    const result = await this._fileService.writeFileAsync(this.directory, shortCut);
     if(result){
       await this.loadFiles();
     }
@@ -2108,7 +2094,7 @@ OpensWith=${selectedFile.getOpensWith}
     const renameText = this.renameForm.value.renameInput as string;
  
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== Constants.NUM_ZERO && renameText !== this.currentIconName ){
-      const result =   await this._fileService2.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
+      const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
 
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below

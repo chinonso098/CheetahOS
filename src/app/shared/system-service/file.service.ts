@@ -282,7 +282,7 @@ export class FileService implements BaseService{
                         console.error('getExtraFileMetaDataAsync error:',err)
                         resolve(new FileMetaData());
                     }
-                    resolve(new FileMetaData(stats?.ctime, stats?.mtime, stats?.size, stats?.mode));
+                    resolve(new FileMetaData(stats?.atime, stats?.birthtime, stats?.mtime, stats?.size, stats?.blksize, stats?.mode));
                 });
            });
         });

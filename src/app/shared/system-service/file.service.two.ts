@@ -61,9 +61,7 @@ export const configuredFS = configure({
 
 export class FileService2 implements BaseService{
 	private _fileInfo!:FileInfo;
-	//private _configuredFS!:Promise<void>
-	
-	private _directoryFileEntires:FileEntry[]=[];
+
     private _fileExistsMap!:Map<string, string>; 
     private _fileAndAppIconAssociation!:Map<string,string>; 
     private _restorePoint!:Map<string,string>; 
@@ -92,7 +90,7 @@ export class FileService2 implements BaseService{
 
 	constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService,
                 sessionManagmentService:SessionManagmentService ){ 
-		//this.initZenFS();
+		
         this._fileExistsMap =  new Map<string, string>();
         this._restorePoint =  new Map<string, string>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
@@ -109,42 +107,6 @@ export class FileService2 implements BaseService{
         this.retrievePastSessionData(this.fileServiceIterateKey);
     }
 
-	// private initZenFS(): void {
-    //     // Using setTimeout ensures it runs after the constructor has returned
-    //     setTimeout( () => {
-    //          this.initializeZenFS();
-    //     }, Constants.NUM_ZERO);
-    // }
-
-
-
-	// private async initializeZenFS():Promise<void>{
-	// 	const fsPrefix = 'osdrive';
-	// 	const currentURL = window.location.href;
-
-	// 	console.log('currentURL:',currentURL);
-	// 	await configuredFS = configure({
-	// 		mounts: {
-	// 			'/': {
-	// 				backend: CopyOnWrite,
-	// 				readable: {
-	// 					backend: Fetch,
-	// 					index: OSFileSystemIndex as IndexData,
-	// 					baseUrl: `${currentURL}${fsPrefix}`,
-	// 				},
-	// 				writable: {
-	// 					backend: IndexedDB,
-	// 					storeName: 'fs-cache',
-	// 				},
-	// 			},
-	// 		},
-	// 		log:{
-	// 			enabled:true,
-	// 			level:'debug',
-	// 			output:console.log
-	// 		}
-	// 	});
-	// }
 
 	private throwWithPath(error: ErrnoError): never {
 		// We want the path in the message, since Angular won't throw the actual error.
@@ -817,51 +779,16 @@ export class FileService2 implements BaseService{
         return this.moveHandlerBAsync(`${destPath}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, skipCounter);
     }
 
-    //virtual filesystem, use copy and then delete. There is a BrowserFS bug causing an error to be thrown
-    private async moveFileAsync_TBD(srcPath: string, destPath: string, generatePath?: boolean, isRecycleBin?: boolean): Promise<boolean> {
-        let destinationPath = Constants.EMPTY_STRING;
-        if (generatePath === undefined || generatePath){
-            // const fileName = (isRecycleBin)
-            //     ?  this.appendToFileName(this.getNameFromPath(srcPath), "_rst") 
-            //     : this.getNameFromPath(srcPath);
-
-			const fileName =  this.getNameFromPath(srcPath);
-
-            destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
-        } else {
-            destinationPath = destPath;
-        }
-
-        const readResult = await fs.promises.readFile(srcPath);
-        if(!readResult) return false;
-
-        const checkResult = await fs.promises.exists(destinationPath);
-        if(checkResult)
-            return false;
-
-        //overwrite the file
-        const writeResult = await this.writeRawAsync(destinationPath, readResult, 'wx');
-        if(writeResult !== Constants.NUM_ZERO)
-            return false
-        
-        return await this.deleteFileAsync(srcPath);
-    }
-
 	private async moveFileAsync(srcPath: string, destPath: string, generatePath?: boolean, isRecycleBin?: boolean): Promise<boolean> {
 		await configuredFS;
 
         let destinationPath = Constants.EMPTY_STRING;
         if (generatePath === undefined || generatePath){
-            // const fileName = (isRecycleBin)
-            //     ?  this.appendToFileName(this.getNameFromPath(srcPath), "_rst") 
-            //     : this.getNameFromPath(srcPath);
-
 			const fileName =  this.getNameFromPath(srcPath);
             destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
         } else {
             destinationPath = destPath;
         }
-
 
 		try{
 			await fs.promises.rename(srcPath, destinationPath);

@@ -3,7 +3,6 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { basename, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
-import { FileService } from 'src/app/shared/system-service/file.service';
 
 import { Process } from 'src/app/system-files/process';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
