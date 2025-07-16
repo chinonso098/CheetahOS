@@ -5,6 +5,7 @@ export class FileMetaData {
     private _size: number;
     private _blkSize: number;
     private _mode: number;
+    private _isDirectory: boolean;
 
     constructor(
         accessDate: Date = new Date('1990-01-01'),
@@ -12,13 +13,15 @@ export class FileMetaData {
         modifiedDate: Date = new Date('1990-01-01'),
         size: number = 0,
         blkSize: number = 0,
-        mode: number = 0 ) {
+        mode: number = 0,
+        isDir: boolean = false ) {
         this._createdDate = createdDate;
         this._modifiedDate = modifiedDate;
         this._accessDate = accessDate;
         this._size = size;
         this._blkSize = blkSize;
         this._mode = mode;
+        this._isDirectory = isDir;
     }
 
     get getCreatedDate(): Date {
@@ -61,6 +64,13 @@ export class FileMetaData {
     }
     set setMode(mode: number) {
         this._mode = mode;
+    }
+
+    get getIsDirectory(): boolean {
+        return this._isDirectory;
+    }
+    set setIsDirectory(isDir: boolean) {
+        this._isDirectory = isDir;
     }
 }
 

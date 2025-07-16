@@ -1279,7 +1279,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   protected async loadFiles(): Promise<void> {
     this.files = [];
-		this.files = await Array.fromAsync(this._fileService.loadDirectoryFiles(this.directory));
+		this.files = await this._fileService.loadDirectoryFiles(this.directory);
     console.log('ZenFS files:',this.files);
 	}
   

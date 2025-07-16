@@ -982,7 +982,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.fileExplrFiles = [];
     const filteredDirectoryFiles: FileInfo[] = []
     //this._fileService.resetDirectoryFiles();
-    let directoryFiles  = await Array.fromAsync(this._fileService.loadDirectoryFiles(this.directory));
+    let directoryFiles  = await this._fileService.loadDirectoryFiles(this.directory);
 
     //console.log('directoryEntries:',directoryEntries); //TBD
 
@@ -1002,7 +1002,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     const usersDir = '/Users/';
     this.fileTreeNode = [];
-    const directoryEntries  = await this._fileService.readdir(usersDir);
+    const directoryEntries  = await this._fileService.readDirectory(usersDir);
 
     const osDrive:FileTreeNode = {
       name:Constants.OSDISK, path: Constants.ROOT, isFolder: true, children:[]
@@ -1031,7 +1031,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(!this.fileTreeHistory.includes(path)){
       const tmpFileTreeNode:FileTreeNode[] = [];
-      const directoryEntries  = await this._fileService.readdir(path);
+      const directoryEntries  = await this._fileService.readDirectory(path);
   
       // this.directory, will not be correct for all cases. Make sure to check
       for(const dirEntry of directoryEntries){

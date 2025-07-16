@@ -1,10 +1,7 @@
 import { CommonFunctions } from "./common.functions";
 import { Constants } from "./constants";
-import { Dirent, Stats } from '@zenfs/core';
-import { join } from '@zenfs/core/vfs/path.js';
 
-
-export class FileInfo extends Stats{
+export class FileInfo {
     private _IconPath!: string;
     private _currentPath!: string;
     private _contentPath!: string;
@@ -23,27 +20,25 @@ export class FileInfo extends Stats{
     private _fileSizeUnit!: string;
     private _mode!: number;
 
-    constructor(protected entry?: Dirent) {
-		super(entry?.['stats']);
-
+    constructor() {
         this._IconPath = Constants.EMPTY_STRING;
+        this._currentPath = Constants.EMPTY_STRING;
         this._contentPath = Constants.EMPTY_STRING;
-		this._fileName = entry?.name ?? Constants.EMPTY_STRING;
-		this._currentPath = !entry ? Constants.EMPTY_STRING : join(entry.parentPath, entry.path);
         this._fileExtension = Constants.EMPTY_STRING;
         this._fileType = Constants.EMPTY_STRING;
+        this._fileName = Constants.EMPTY_STRING;
         this._opensWith = Constants.EMPTY_STRING;
-        this._dateCreated = this.birthtime;
-        this._dateAccessed = this.atime;
-        this._dateModified = this.mtime;
-        this._size = this.size;
-        this._blkSize = this.blksize
-        this._mode = this.mode;
-        this._isShortCut = false;
+        this._dateModified = new Date('1990-01-01');
+        this._dateCreated = new Date('1990-01-01');
+        this._dateAccessed = new Date('1990-01-01');
+        this._size = Constants.NUM_ZERO;
+        this._blkSize = Constants.NUM_ZERO;
         this._isFile = true;
+        this._isShortCut = false;
         this._fileSizeUnit = 'B';
+        this._mode = Constants.NUM_ZERO;
         this._contentBuffer = null;
-	}
+    }
 
     get getIconPath() {
         return this._IconPath;
@@ -113,21 +108,21 @@ export class FileInfo extends Stats{
         return this._dateModified.toLocaleString("en-US", options).replace(Constants.COMMA, Constants.EMPTY_STRING);
     }
 
-    set setDateModified(dateModified:Date) {
+    set setDateModified(dateModified: string | Date) {
         this._dateModified = new Date(dateModified);
     }
 
     get getDateCreated() {
         return this._dateCreated;
     }
-    set setDateCreated(dateCreated:Date) {
+    set setDateCreated(dateCreated: string | Date) {
         this._dateCreated = new Date(dateCreated);
     }
 
     get getDateAccessed() {
         return this._dateAccessed;
     }
-    set setDateAccessed(dateAccessed:Date) {
+    set setDateAccessed(dateAccessed: string | Date) {
         this._dateAccessed = new Date(dateAccessed);
     }
 
