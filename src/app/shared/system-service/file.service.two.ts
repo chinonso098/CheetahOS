@@ -3,13 +3,14 @@ import { basename, extname, join, } from '@zenfs/core/path';
 import { FileInfo } from "src/app/system-files/file.info";
 import { ShortCut } from 'src/app/system-files/shortcut';
 
-
 import { Buffer } from 'buffer';
 import ini from 'ini';
 import { Subject } from 'rxjs';
 
-import type { ErrnoError, IndexData } from '@zenfs/core';
+import { IndexData } from '@zenfs/core';
+import { ErrnoError } from "@zenfs/core";
 import { configure, CopyOnWrite, Fetch, default as fs } from '@zenfs/core';
+
 import { IndexedDB } from '@zenfs/dom';
 import OSFileSystemIndex from '../../../../index.json';
 import { dirname } from 'path';
@@ -24,7 +25,6 @@ import { UserNotificationService } from "./user.notification.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { FileContent2 } from "src/app/system-files/file.content";
-import { err } from "@zenfs/core/internal/log.js";
 import { OpensWith } from "src/app/system-files/opens.with";
 import { FileMetaData } from "src/app/system-files/file.metadata";
 /// <reference types="node" />
@@ -122,7 +122,7 @@ export class FileService2 implements BaseService{
 		try{
 			const stats = await fs.promises.stat(path)
 			return stats.isDirectory();
-		}catch{
+		}catch(err){
 			console.error('isDirectory:', err);
 			return false;
 		}
@@ -441,6 +441,7 @@ export class FileService2 implements BaseService{
     
     public async getShortCutFromURL(path:string):Promise<ShortCut>{
 		await configuredFS;
+        
 		try{
 			const contents = await fs.promises.readFile(path);
 			const stage = contents? contents.toString(): Buffer.from(Constants.EMPTY_STRING).toString();
@@ -532,7 +533,7 @@ export class FileService2 implements BaseService{
 					const uniqueFolderPath = this.IncrementFileName(folderPath);
 
 					// Folder created successfully
-					await fs.promises.mkdir(uniqueFolderPath, 0o777).catch(e => {throw e.code});
+					await fs.promises.mkdir(uniqueFolderPath, 0o777);//.catch(e => {throw e.code});
 					this._fileExistsMap.set(uniqueFolderPath, String(Constants.NUM_ZERO));
 
 					return true;

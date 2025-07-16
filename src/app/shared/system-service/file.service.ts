@@ -63,7 +63,7 @@ export class FileService implements BaseService{
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService,
                 sessionManagmentService:SessionManagmentService
     ){ 
-        this.initBrowserFS();
+        //this.initBrowserFS();
         this._fileExistsMap =  new Map<string, string>();
         this._restorePoint =  new Map<string, string>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
