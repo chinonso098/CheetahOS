@@ -1,44 +1,69 @@
-export class FileMetaData{
-    private _createdDate:Date;
-    private _modifiedDate:Date;
-    private _size:number;
-    private _mode:number;
+export class FileMetaData {
+    private _accessDate: Date;
+    private _createdDate: Date;
+    private _modifiedDate: Date;
+    private _size: number;
+    private _blkSize: number;
+    private _mode: number;
 
-    constructor(createdDate:Date = new Date('1990-01-01'), modifiedDate:Date = new Date('1990-01-01'), size = 0 , mode = 0){
+    constructor(
+        accessDate: Date = new Date('1990-01-01'),
+        createdDate: Date = new Date('1990-01-01'),
+        modifiedDate: Date = new Date('1990-01-01'),
+        size: number = 0,
+        blkSize: number = 0,
+        mode: number = 0 ) {
         this._createdDate = createdDate;
         this._modifiedDate = modifiedDate;
+        this._accessDate = accessDate;
         this._size = size;
+        this._blkSize = blkSize;
         this._mode = mode;
     }
 
-    get getCreatedDate(){
+    get getCreatedDate(): Date {
         return this._createdDate;
     }
-    set setCreatedDate(date:string){
+    set setCreatedDate(date: string | Date) {
         this._createdDate = new Date(date);
     }
-    get getModifiedDate(){
+
+    get getModifiedDate(): Date {
         return this._modifiedDate;
     }
-    set setModifiedDate(date:string){
+    set setModifiedDate(date: string | Date) {
         this._modifiedDate = new Date(date);
     }
 
-    get getSize(){
+    get getAccessDate(): Date {
+        return this._accessDate;
+    }
+    set setAccessDate(date: string | Date) {
+        this._accessDate = new Date(date);
+    }
+
+    get getSize(): number {
         return this._size;
     }
-    set setSize(size:number){
-         this._size = size;
+    set setSize(size: number) {
+        this._size = size;
     }
 
-    get getMode(){
+    get getBlkSize(): number {
+        return this._blkSize;
+    }
+    set setBlkSize(blkSize: number) {
+        this._blkSize = blkSize;
+    }
+
+    get getMode(): number {
         return this._mode;
     }
-    set setMode(mode:number){
+    set setMode(mode: number) {
         this._mode = mode;
     }
-
 }
+
 
 
 export interface FolderSizeMeta {

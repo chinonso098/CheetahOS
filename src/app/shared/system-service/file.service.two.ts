@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { basename, extname, join, resolve } from '@zenfs/core/vfs/path.js';
+import { basename, extname, join, } from '@zenfs/core/vfs/path.js';
 import { FileInfo } from "src/app/system-files/file.info";
 import { ShortCut } from 'src/app/system-files/shortcut';
 
@@ -24,12 +24,36 @@ import { UserNotificationService } from "./user.notification.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { FileContent2 } from "src/app/system-files/file.content";
-import { FileMetaData } from "src/app/system-files/file.metadata";
 import { err, levels } from "@zenfs/core/internal/log.js";
-import { debug } from "console";
-import { CommonFunctions } from "src/app/system-files/common.functions";
 import { OpensWith } from "src/app/system-files/opens.with";
 /// <reference types="node" />
+
+const fsPrefix = 'osdrive';
+const currentURL = window.location.href;
+
+console.log('currentURL:', currentURL)
+export const configuredFS = configure({
+    mounts: {
+        '/': {
+            backend: CopyOnWrite,
+            readable: {
+                backend: Fetch,
+                index: OSFileSystemIndex as IndexData,
+                baseUrl: `${currentURL}${fsPrefix}`,
+            },
+            writable: {
+                backend: IndexedDB,
+                storeName: 'fs-cache',
+            },
+        },
+    },
+    log: {
+		enabled: true,
+		level: 'debug',
+		output: console.log
+	}
+});
+
 
 @Injectable({
     providedIn: 'root'
@@ -37,7 +61,7 @@ import { OpensWith } from "src/app/system-files/opens.with";
 
 export class FileService2 implements BaseService{
 	private _fileInfo!:FileInfo;
-	private _configuredFS!:Promise<void>
+	//private _configuredFS!:Promise<void>
 	
 	private _directoryFileEntires:FileEntry[]=[];
     private _fileExistsMap!:Map<string, string>; 
@@ -49,6 +73,10 @@ export class FileService2 implements BaseService{
     private _processIdService:ProcessIDService;
     private _userNotificationService:UserNotificationService
     private _sessionManagmentService:SessionManagmentService;
+
+	dirFilesUpdateNotify: Subject<void> = new Subject<void>();
+    fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
+    goToDirectoryNotify: Subject<string[]> = new Subject<string[]>();
 
 	readonly fileServiceRestoreKey = Constants.FILE_SVC_RESTORE_KEY;
     readonly fileServiceIterateKey = Constants.FILE_SVC_FILE_ITERATE_KEY;
@@ -64,7 +92,7 @@ export class FileService2 implements BaseService{
 
 	constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService,
                 sessionManagmentService:SessionManagmentService ){ 
-		this.initZenFS();
+		//this.initZenFS();
         this._fileExistsMap =  new Map<string, string>();
         this._restorePoint =  new Map<string, string>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
@@ -81,55 +109,52 @@ export class FileService2 implements BaseService{
         this.retrievePastSessionData(this.fileServiceIterateKey);
     }
 
-	private initZenFS(): void {
-        // Using setTimeout ensures it runs after the constructor has returned
-        setTimeout( () => {
-             this.initializeZenFS();
-        }, Constants.NUM_ZERO);
-    }
+	// private initZenFS(): void {
+    //     // Using setTimeout ensures it runs after the constructor has returned
+    //     setTimeout( () => {
+    //          this.initializeZenFS();
+    //     }, Constants.NUM_ZERO);
+    // }
 
 
-	private async initializeZenFS():Promise<void>{
-		const fsPrefix = 'osdrive';
-		const currentURL = window.location.href;
 
-		console.log('currentURL:',currentURL);
-		this._configuredFS = configure({
-			mounts: {
-				'/': {
-					backend: CopyOnWrite,
-					readable: {
-						backend: Fetch,
-						index: OSFileSystemIndex as IndexData,
-						baseUrl: `${currentURL}${fsPrefix}`,
-					},
-					writable: {
-						backend: IndexedDB,
-						storeName: 'fs-cache',
-					},
-				},
-			},
-			log:{
-				enabled:true,
-				level:'debug',
-				output:console.log
-			}
-		});
-	}
+	// private async initializeZenFS():Promise<void>{
+	// 	const fsPrefix = 'osdrive';
+	// 	const currentURL = window.location.href;
 
-	async setUp():Promise<void>{
-		await this.initializeZenFS();
-	}
-
+	// 	console.log('currentURL:',currentURL);
+	// 	await configuredFS = configure({
+	// 		mounts: {
+	// 			'/': {
+	// 				backend: CopyOnWrite,
+	// 				readable: {
+	// 					backend: Fetch,
+	// 					index: OSFileSystemIndex as IndexData,
+	// 					baseUrl: `${currentURL}${fsPrefix}`,
+	// 				},
+	// 				writable: {
+	// 					backend: IndexedDB,
+	// 					storeName: 'fs-cache',
+	// 				},
+	// 			},
+	// 		},
+	// 		log:{
+	// 			enabled:true,
+	// 			level:'debug',
+	// 			output:console.log
+	// 		}
+	// 	});
+	// }
 
 	private throwWithPath(error: ErrnoError): never {
 		// We want the path in the message, since Angular won't throw the actual error.
 		error.message = error.toString();
+		error.code = error.code;
 		throw error;
 	}
 
 	async isDirectory(path: string):Promise<boolean>{
-		await this._configuredFS;
+		 await configuredFS;
 
 		try{
 			const stats = await fs.promises.stat(path)
@@ -141,59 +166,82 @@ export class FileService2 implements BaseService{
 	}
 
 	async exists(dirPath: string): Promise<boolean> {
-		await this._configuredFS;
-		return fs.promises.exists(dirPath).catch(this.throwWithPath);
+		await configuredFS;
+		try{
+			return fs.promises.exists(dirPath);
+		}catch (err){
+			console.error('exists:', err);
+			return false;
+		}
 	}
 
-	async copy(source: string, destination: string): Promise<void> {
-		await this._configuredFS;
-		const stats = await fs.promises.stat(destination);
-		if (stats.isDirectory()) destination = join(destination, basename(source));
-		await fs.promises.cp(source, destination).catch(this.throwWithPath);
-	}
+	public async copyAsync(srcPath:string, destPath:string, isFile?:boolean):Promise<boolean>{
+        const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
+
+        return isDirectory
+            ? await this.copyFolderHandlerAsync(Constants.EMPTY_STRING, srcPath, destPath)
+            : await this.copyFileAsync(srcPath, destPath);
+    }
+
+    private async copyFileAsync(srcPath:string, destPath:string):Promise<boolean>{
+		await configuredFS;
+		
+        const name = this.getNameFromPath(srcPath);
+        const destinationPath = `${this.pathCorrection(destPath)}/${name}`;
+        // console.log(`Destination: ${destinationPath}`);
+
+        const readResult = await fs.promises.readFile(srcPath);
+        if(!readResult){
+            return false;
+        }
+
+        return await this.writeRawHandlerAsync(destinationPath, readResult);
+    }
+
+    private async copyFolderHandlerAsync(arg0:string, srcPath:string, destPath:string):Promise<boolean>{
+		await configuredFS;
+
+        const folderName = this.getNameFromPath(srcPath);
+        const  createFolderResult = await this.createFolderAsync(destPath, folderName);
+        if(createFolderResult){
+            const loadedDirectoryEntries = await fs.promises.readdir(srcPath);
+            for(const directoryEntry of loadedDirectoryEntries){
+                const checkIfDirResult = await this.isDirectory(`${srcPath}/${directoryEntry}`);
+                if(checkIfDirResult){
+                    const result = await this.copyFolderHandlerAsync(arg0,`${srcPath}/${directoryEntry}`,`${destPath}/${folderName}`);
+                    if(!result){
+                        console.error(`Failed to copy directory: ${srcPath}/${directoryEntry}`);
+                        return false;
+                    }
+                }else{
+                    const result = await this.copyFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
+                    if(result){
+                        //console.log(`file:${srcPath}/${directoryEntry} successfully copied to destination:${destPath}/${folderName}`);
+                    }else{
+                        console.error(`file:${srcPath}/${directoryEntry} failed to copy to destination:${destPath}/${folderName}`)
+                        return false
+                    }
+                }
+            }
+        }
+
+        return true
+    }
 
 	async readdir(path: string): Promise<string[]> {
-		await this._configuredFS;
-		return await fs.promises.readdir(path).catch(this.throwWithPath);
+		await configuredFS;
+
+		try{
+			return await fs.promises.readdir(path)
+		}catch (err){
+			console.error('readdir:', err);
+			return [];
+		}
+
 	}
 
-	// async *loadDirectoryFiles(path: string): AsyncIterableIterator<FileInfo2> {
-	// 	await this._configuredFS;
-
-	// 	if (path === '/fileexplorer.url')
-	// 		 debugger;
-
-
-	// 	try{
-	// 		const readResult = await this.readdir(path)
-	// 		console.log('readResult:', readResult);
-	// 	}catch(err){
-	// 		console.error('loadDirectoryFiles:',err);
-	// 	}
-
-	// 	// for (const entry of await fs.promises
-	// 	// 	.readdir(path)
-	// 	// 	.catch(this.throwWithPath)) {
-	// 	// 	yield await this.getFileInfo(path);
-	// 	// }
-
-	// 	// for (const entry of await fs.promises
-	// 	// 	.readdir(path, { withFileTypes: true })
-	// 	// 	.catch(this.throwWithPath)) {
-	// 	// 	yield await this.getFileInfo(join(path, entry.path), entry);
-	// 	// }
-
-	// 	// try{
-	// 	// 	const readResult = await this.readdir(path)
-	// 	// 	console.log('readResult:', readResult);
-	// 	// }catch(err){
-	// 	// 	console.error('loadDirectoryFiles:',err);
-	// 	// }
-
-	// }
-
 	async *loadDirectoryFiles(path: string): AsyncIterableIterator<FileInfo>{
-		await this._configuredFS;
+		await configuredFS;
 
 		try{
 			for (const entry of await fs.promises
@@ -215,7 +263,7 @@ export class FileService2 implements BaseService{
         
         if(!extension){
             const fc = await this.setOtherFolderProps(path, entry) as FileContent2;
-            this._fileInfo = this.populateFileInfo(path, entry.isDirectory(), opensWith, Constants.EMPTY_STRING, false, undefined, fc);
+            this._fileInfo = this.populateFileInfo(path, !entry.isDirectory(), opensWith, Constants.EMPTY_STRING, false, undefined, fc);
             this._fileInfo.setIconPath = await this.changeFolderIcon(fc.fileName, fc.iconPath, path, entry);
         }
         else if(extension === Constants.URL){
@@ -287,7 +335,6 @@ export class FileService2 implements BaseService{
 		return {fileType:empty, appName:empty, appIcon: empty};
     }
 
-
 	populateFileInfo(path:string, isFile =true, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut, fileCntnt?:FileContent2):FileInfo{
         const fileInfo = new FileInfo();
         const img = `${Constants.IMAGE_BASE_PATH}${imageName}`;
@@ -312,8 +359,50 @@ export class FileService2 implements BaseService{
         return fileInfo;
     }
 
+	public async getFileAsTextAsync(path:string): Promise<string> {
+		await configuredFS;
+
+        if (!path) {
+            console.error('getFileAsync error: Path must not be empty');
+            return Promise.reject(new Error('Path must not be empty'));
+        }
+
+        const readResult = await fs.promises.readFile(path);
+        if(readResult)
+            return readResult.toString();
+        else
+            return Constants.EMPTY_STRING;
+    }
+
+    /**
+     * 
+     * @param path 
+     * @returns Promise
+     * 
+     * Read File and Convert to Blob URL:
+     * It returns a new promise that attempts to read the file from the given path using the filesystem's readFile method.
+     * If there's an error reading the file, it logs the error and rejects the promise.
+     * If the file is read successfully, it converts the file contents (buffer) into a Blob URL using the bufferToUrl method.
+     * It then resolves the promise with the Blob URL.
+     */
+    public async getFileAsBlobAsync(path:string): Promise<string> {
+		await configuredFS;
+
+        if (!path) {
+            console.error('getFileBlobAsync error: Path must not be empty');
+            return Promise.reject(new Error('Path must not be empty'));
+        }
+
+        const readResult = await fs.promises.readFile(path);
+        if(readResult)
+            return  this.bufferToUrl(readResult);
+        else
+            return Constants.EMPTY_STRING;
+    }
+
+
 	public async getFileContentFromB64DataUrl(path: string, contentType: string): Promise<FileContent2> {
-		await this._configuredFS;
+		await configuredFS;
 
 		try {
 			const contents = await fs.promises.readFile(path);
@@ -327,7 +416,7 @@ export class FileService2 implements BaseService{
 			const isDataUrl = (dataPrefix === 'data:image') || (dataPrefix === 'data:video') || (dataPrefix === 'data:audio');
 
 			if (isDataUrl) {
-				const base64Data = utf8Data.split(',')[1];
+				const base64Data = utf8Data.split(Constants.COMMA)[Constants.NUM_ONE];
 				const binaryData = Buffer.from(base64Data, 'base64');
 				const fileUrl = this.bufferToUrl(binaryData);
 
@@ -360,7 +449,7 @@ export class FileService2 implements BaseService{
 	}
     
     public async getShortCutFromURL(path:string):Promise<ShortCut>{
-		await this._configuredFS;
+		await configuredFS;
 		try{
 			const contents = await fs.promises.readFile(path);
 			const stage = contents? contents.toString(): Buffer.from(Constants.EMPTY_STRING).toString();
@@ -373,9 +462,9 @@ export class FileService2 implements BaseService{
 				const fileType = (iSCut as {FileType:unknown})?.['FileType'] as string;
 				const contentPath = (iSCut as {ContentPath:unknown})?.['ContentPath'] as string;
 				const opensWith = (iSCut as {OpensWith:unknown})?.['OpensWith'] as string;
-				new ShortCut(iconPath,fileName,fileType,contentPath,opensWith);
+				return new ShortCut(iconPath,fileName,fileType,contentPath,opensWith);
 			}
-
+		
 			return this.createEmptyShortCut();
 		}catch(error){
 			console.error('getShortCutFromURLAsync:', error);
@@ -397,7 +486,7 @@ export class FileService2 implements BaseService{
             return iconPath;
 
         //const result = await fs.promises.exists(iconMaybe);
-		 const result = fs.existsSync(iconMaybe);
+		 const result = await fs.promises.exists(iconMaybe);
         if(result){ 
             return `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png`;
         }
@@ -431,21 +520,527 @@ export class FileService2 implements BaseService{
 		}
     }
 
-	// public async getFileMetaData(path: string): Promise<FileMetaData> {
-	// 	try{
-	// 		const stats = await fs.promises.stat(path);
-	// 		if(stats){
-	// 			return new FileMetaData(stats?.atime, stats?.birthtime, stats?.mtime, stats?.size, stats?.blksize, stats?.mode)
-	// 		}
+	public async createFolderAsync(directory: string, folderName: string): Promise<boolean> {
+		await configuredFS;
+        const folderPath = `${directory}/${folderName}`;
 
-	// 		return  new FileMetaData();
-	// 	}catch (err){
-	// 		console.error('getFileMetaData:', err)
-	// 		return new FileMetaData();
-	// 	}
-    // }
+		try{
+			await fs.promises.mkdir(folderPath, 0o777);//.catch(e => {throw e.code});
 
-	private async countFolderItems(path:string):Promise<number>{
+			// Folder created successfully
+			this._fileExistsMap.set(folderPath, String(Constants.NUM_ZERO));
+			return true;
+		}catch (err:unknown){
+			let error = err as ErrnoError;
+			if(error.code === 'EEXIST'){
+
+				console.warn('createFolderAsync:', error.code);
+				console.warn(`Folder already exists: ${folderPath}`);
+
+				try{
+					const uniqueFolderPath = this.IncrementFileName(folderPath);
+
+					// Folder created successfully
+					await fs.promises.mkdir(uniqueFolderPath, 0o777).catch(e => {throw e.code});
+					this._fileExistsMap.set(uniqueFolderPath, String(Constants.NUM_ZERO));
+
+					return true;
+				}catch(err){
+					error = err as ErrnoError;
+					console.error('Error creating folder:', error);	
+					return false;
+				}
+			}else{
+				console.error('Error creating folder:', error);
+				return false;
+			}
+		}
+    }
+
+
+	//O for success, 1 for file already present, 2 other error
+    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+    private async writeRawAsync(destPath: string, content:any, flag:string = 'wx'): Promise<number>{
+		await configuredFS;
+		try{
+			await fs.promises.writeFile(destPath, content, {flag: flag});
+			return Constants.NUM_ZERO
+		}catch(err:unknown){
+			let error = err as ErrnoError;
+
+			if(error.code === 'EEXIST'){
+				console.warn('writeRawAsync:', error.code);
+				return Constants.NUM_ONE;
+			}else{
+				console.error(`Error creating folder: ${err}`);
+				return Constants.NUM_TWO;
+			}
+		}
+    }
+
+        /**
+     * handles instances where a file being written alredy exist in a given location
+     * @param destPath 
+     * @param cntnt 
+     * @returns 
+     */
+    private async writeRawHandlerAsync(destPath:string, cntnt:any):Promise<boolean>{
+        const writeResult = await this.writeRawAsync(destPath, cntnt, 'wx');
+        if(writeResult === Constants.NUM_ZERO){
+            // console.log('writeFileAsync: file successfully written');
+            this._fileExistsMap.set(destPath, String(Constants.NUM_ZERO));
+            //this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap); TODO
+            return true;
+        }
+
+        if(writeResult === Constants.NUM_ONE){
+            console.warn('writeFileAsync: file already exists');
+            const newFileName = this.IncrementFileName(destPath);
+            const writeResult2 = await this.writeRawAsync(newFileName, cntnt, 'wx');
+
+            if(writeResult2 === Constants.NUM_ZERO){
+                // console.log('writeFileAsync: file successfully written');
+                this._fileExistsMap.set(newFileName, String(Constants.NUM_ZERO));
+                //this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap); TODO
+                return true;
+            }else{
+                console.error('writeFileAsync Iterate Error:',);
+                return false;
+            }
+        }
+        else
+            return false;
+    }
+
+    public async writeFilesAsync(directory:string, files:File[]):Promise<boolean>{
+        return new Promise<boolean>(() =>{
+            files.forEach((file)=>{
+                const fileReader = new FileReader()
+                fileReader.readAsDataURL(file);
+                fileReader.onload = async(evt) =>{
+                    const newFile:FileInfo = new FileInfo();
+                    newFile.setFileName = file.name;
+
+                    const result = evt.target?.result;
+                    if(result instanceof ArrayBuffer) {
+                        newFile.setContentBuffer = result;
+                    } else{
+                        newFile.setContentPath = result || Constants.EMPTY_STRING;
+                    }
+                    newFile.setCurrentPath = `${this.pathCorrection(directory)}/${file.name}`;
+                    return await this.writeFileAsync(directory, newFile);
+                }
+            })
+        });
+    }
+
+    public async writeFileAsync(path:string, file:FileInfo):Promise<boolean>{
+        const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
+        const destPath = `${this.pathCorrection(path)}/${file.getFileName}`;
+
+        return await this.writeRawHandlerAsync(destPath, cntnt);
+    }
+
+    public async renameAsync(path:string, newFileName:string, isFile?:boolean): Promise<boolean> {
+        const rename = `${dirname(path)}/${newFileName}`;
+        const isDirectory = (isFile === undefined) ? await this.isDirectory(path) : !isFile;
+
+        return isDirectory
+            ? await this.renameDirectoryAsync(path, rename)
+            : await this.renameFileAsync(path, newFileName);
+    }
+
+    private async renameFileAsync(path:string, newFileName:string): Promise<boolean> {
+        const fileExt = extname(path);
+        if(fileExt === Constants.URL){
+            // special case
+            return await this.renameURLFiles(path, newFileName);
+        }else{
+            const newPath = `${dirname(path)}/${newFileName}${extname(path)}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+            return await this.moveFileAsync(path, newPath, false);
+        }
+    }
+
+	private async renameDirectoryAsync(srcPath:string, destPath:string):Promise<boolean>{
+		await configuredFS;
+
+        const folderToProcessingQueue:string[] =  [];
+        const folderToDeleteStack:string[] =  [];
+
+        //dir path can be gotten from either src or dest path;
+        const  directoryPath = dirname(srcPath);
+        const newName = this.getNameFromPath(destPath);
+
+        const directoryExists = await fs.promises.exists(destPath);
+        if(directoryExists){
+            const msg = `Folder: ${newName}, already exists`;
+            this._userNotificationService.showErrorNotification(msg);
+            return false;
+        }
+
+        const result = await this.createFolderAsync(directoryPath, newName);
+        if(!result){ return result }
+
+        folderToProcessingQueue.push(srcPath);
+        const isRenameSuccessful =  await this.moveHandlerBAsync(destPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
+        if(isRenameSuccessful){
+          await this.deleteEmptyFolders(folderToDeleteStack);
+        }
+
+        return isRenameSuccessful;
+    }
+
+	 //virtual filesystem, use copy and then delete
+    public async moveAsync(srcPath: string, destPath: string, isFile?: boolean, isRecycleBin?: boolean): Promise<boolean> {
+		await configuredFS;
+
+        const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
+        if(isDirectory){
+            const folderToProcessingQueue:string[] =  [];
+            const folderToDeleteStack:string[] =  [];
+            let result = false;
+
+            folderToProcessingQueue.push(srcPath);
+
+            //check if destPath Exists
+            const exists = await fs.promises.exists(destPath);
+            if(exists){
+                result = await this.moveHandlerAAsync(destPath, folderToProcessingQueue, folderToDeleteStack, isRecycleBin);
+            }else{
+                result =  await this.moveHandlerBAsync(destPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
+            }
+
+            if(result){
+                //if(isRecycleBin)
+                    //this.removeAndUpdateSessionData(this.fileServiceRestoreKey, srcPath, this._restorePoint); //TODO
+   
+                await this.deleteEmptyFolders(folderToDeleteStack);
+            }
+            return result;
+        }else{
+           // if(isRecycleBin)
+                //this.removeAndUpdateSessionData(this.fileServiceRestoreKey, srcPath, this._restorePoint); //TODO
+
+            return await this.moveFileAsync(srcPath, destPath, undefined, isRecycleBin);
+        }
+    }
+
+	    /**
+     * This move method assumes that the destination folder already exists, and that source folder and it's contents
+     * are being moved into a new folder (destination folder)
+     * @param destPath 
+     * @param folderToProcessingQueue 
+     * @returns 
+     */
+    private async moveHandlerAAsync(destPath:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], isRecycleBin?: boolean):Promise<boolean>{
+		await configuredFS;
+
+        if(folderToProcessingQueue.length === Constants.NUM_ZERO)
+            return true;
+
+        const srcPath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
+        const folderName = this.getNameFromPath(srcPath);
+        folderToDeleteStack.push(srcPath);
+
+        const loadedDirectoryEntries = await fs.promises.readdir(srcPath);
+        const  moveFolderResult = await this.createFolderAsync(destPath,folderName);
+        if(moveFolderResult){
+            for(const directoryEntry of loadedDirectoryEntries){
+                const checkIfDirResult = await this.isDirectory(`${srcPath}/${directoryEntry}`);
+                if(checkIfDirResult){
+                    folderToProcessingQueue.push(`${srcPath}/${directoryEntry}`);
+                }else{
+                    const result = await this.moveFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`, undefined, isRecycleBin);
+                    if(result){
+                        //console.log(`file:${srcPath}/${directoryEntry} successfully moved to destination:${destPath}/${folderName}`);
+                    }else{
+                        console.error(`file:${srcPath}/${directoryEntry} failed to move to destination:${destPath}/${folderName}`)
+                    }
+                }
+            }
+        }else{
+            console.error(`folder:${destPath}/${folderName}  creation failed`);
+            return false;
+        }
+
+        return this.moveHandlerAAsync(`${destPath}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, isRecycleBin);
+    }
+
+    /**
+     * This move method assumes that the destination folder doesn't exist, and that only the contents of the source folder and not the source
+     * folder itself, is being moved
+     * @param destPath 
+     * @param folderToProcessingQueue 
+     * @param folderToDeleteStack 
+     * @param skipCounter 
+     * @returns 
+     */
+    private async moveHandlerBAsync(destPath:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
+		await configuredFS;
+
+        if(folderToProcessingQueue.length === Constants.NUM_ZERO)
+            return true;
+
+        const srcPath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
+        folderToDeleteStack.push(srcPath);
+        let folderName = this.getNameFromPath(srcPath);
+        if(skipCounter === Constants.NUM_ZERO){ folderName = Constants.EMPTY_STRING; }
+
+        let  moveFolderResult = false;
+        const loadedDirectoryEntries = await fs.promises.readdir(srcPath);
+
+        //skip creating the 
+        if(skipCounter > Constants.NUM_ZERO){
+            moveFolderResult = await this.createFolderAsync(destPath,folderName);  
+        }
+        skipCounter = skipCounter + Constants.NUM_ONE;
+    
+        if(moveFolderResult || (skipCounter >= Constants.NUM_ZERO)){
+            for(const directoryEntry of loadedDirectoryEntries){
+                const checkIfDirResult = await this.isDirectory(`${srcPath}/${directoryEntry}`);
+                if(checkIfDirResult){
+                    folderToProcessingQueue.push(`${srcPath}/${directoryEntry}`);
+                }else{
+                    const result = await this.moveFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
+                    if(result){
+                        // console.log(`file:${srcPath}/${directoryEntry} successfully moved to destination:${destPath}/${folderName}`);
+                    }else{
+                        console.error(`file:${srcPath}/${directoryEntry} failed to move to destination:${destPath}/${folderName}`)
+                    }
+                }
+            }
+        }else{
+            console.error(`folder:${destPath}/${folderName} creation failed`);
+            return false;
+        }
+
+        return this.moveHandlerBAsync(`${destPath}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, skipCounter);
+    }
+
+    //virtual filesystem, use copy and then delete. There is a BrowserFS bug causing an error to be thrown
+    private async moveFileAsync_TBD(srcPath: string, destPath: string, generatePath?: boolean, isRecycleBin?: boolean): Promise<boolean> {
+        let destinationPath = Constants.EMPTY_STRING;
+        if (generatePath === undefined || generatePath){
+            // const fileName = (isRecycleBin)
+            //     ?  this.appendToFileName(this.getNameFromPath(srcPath), "_rst") 
+            //     : this.getNameFromPath(srcPath);
+
+			const fileName =  this.getNameFromPath(srcPath);
+
+            destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+        } else {
+            destinationPath = destPath;
+        }
+
+        const readResult = await fs.promises.readFile(srcPath);
+        if(!readResult) return false;
+
+        const checkResult = await fs.promises.exists(destinationPath);
+        if(checkResult)
+            return false;
+
+        //overwrite the file
+        const writeResult = await this.writeRawAsync(destinationPath, readResult, 'wx');
+        if(writeResult !== Constants.NUM_ZERO)
+            return false
+        
+        return await this.deleteFileAsync(srcPath);
+    }
+
+	private async moveFileAsync(srcPath: string, destPath: string, generatePath?: boolean, isRecycleBin?: boolean): Promise<boolean> {
+		await configuredFS;
+
+        let destinationPath = Constants.EMPTY_STRING;
+        if (generatePath === undefined || generatePath){
+            // const fileName = (isRecycleBin)
+            //     ?  this.appendToFileName(this.getNameFromPath(srcPath), "_rst") 
+            //     : this.getNameFromPath(srcPath);
+
+			const fileName =  this.getNameFromPath(srcPath);
+            destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+        } else {
+            destinationPath = destPath;
+        }
+
+
+		try{
+			await fs.promises.rename(srcPath, destinationPath);
+			return true;
+		}catch(err){
+			console.error('moveFileAsync:', err);
+			return false;
+		}
+    }
+
+
+	private async renameURLFiles(srcPath:string, fileName:string): Promise<boolean> {
+
+        const destPath = dirname(srcPath);
+        const shortCutData = await this.getShortCutFromURL(srcPath);
+        if(!shortCutData){
+            console.warn('renameURLFiles: No shortcut data found for', srcPath);
+            return false;
+        }
+      const shortCutContent = `[InternetShortcut]
+FileName=${fileName} 
+IconPath=${shortCutData.getIconPath}
+FileType=${shortCutData.getFileType}
+ContentPath=${shortCutData.getContentPath}
+OpensWith=${shortCutData.getOpensWith}
+`;
+        const shortCut:FileInfo = new FileInfo();
+        shortCut.setContentPath = shortCutContent;
+        shortCut.setFileName= `${fileName}${Constants.URL}`;
+
+        const writeResult = await this.writeFileAsync(destPath, shortCut);
+        if(!writeResult){
+            console.error('renameURLFiles: Failed to write shortcut to', destPath);
+            return false;
+        }
+
+        return await this.deleteFileAsync(srcPath);
+    }
+
+    public async deleteAsync(path:string, isFile?:boolean, isRecycleBin?:boolean):Promise<boolean> {
+        // is file or folder is not currently in the bin, move it to the bing
+        if(isRecycleBin){
+            return await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path, isRecycleBin);
+        }
+
+        if(!path.includes(Constants.RECYCLE_BIN_PATH)){
+            const name = this.getNameFromPath(path);
+            this._restorePoint.set(`${Constants.RECYCLE_BIN_PATH}/${name}`, path);
+            //this.addAndUpdateSessionData(this.fileServiceRestoreKey, this._restorePoint);
+
+            this.DecrementFileName(path);
+            //this.removeAndUpdateSessionData(this.fileServiceIterateKey, path, this._fileExistsMap);
+            //move to rbin
+            return await this.moveAsync(path, Constants.RECYCLE_BIN_PATH, isFile);
+        }else{
+            //this.removeAndUpdateSessionData(this.fileServiceRestoreKey, path, this._restorePoint);
+            const isDirectory = (isFile === undefined) ? await this.isDirectory(path) : !isFile;
+            return isDirectory
+                ? await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path, isRecycleBin)
+                : await this.deleteFileAsync(path);
+        }
+    }
+
+    private async deleteFolderAsync(path:string): Promise<boolean> {
+		await configuredFS;
+
+		try{
+			await fs.promises.rmdir(path);
+
+			//this.DecrementFileName(path);
+			//this.removeAndUpdateSessionData(this.fileServiceIterateKey, path, this._fileExistsMap); TODO
+			return true;
+		}catch(err){
+			console.error('deleteFolderAsync:', err);
+			return false;
+		}
+    }
+
+    private async deleteFileAsync(srcPath: string): Promise<boolean> {
+		await configuredFS;
+
+		try{
+			await fs.promises.unlink(srcPath);
+
+			//this.DecrementFileName(srcPath);
+			//this.removeAndUpdateSessionData(this.fileServiceIterateKey, srcPath, this._fileExistsMap); TODO
+			return true;
+		}catch(err:unknown){	
+			console.error('deleteFileAsync:',err);
+			return false;
+		}
+    }
+
+    private async deleteFolderHandlerAsync(arg0: string, srcPath: string, isRecycleBin?:boolean): Promise<boolean> {
+		await configuredFS;
+
+        const loadedDirectoryEntries = await fs.promises.readdir(srcPath);
+        for (const directoryEntry of loadedDirectoryEntries) {
+            const entryPath = `${srcPath}/${directoryEntry}`;
+            //this.removeAndUpdateSessionData(this.fileServiceRestoreKey, entryPath, this._restorePoint); TODO
+
+            const checkIfDirectory = await this.isDirectory(entryPath);
+            if(checkIfDirectory){
+                // Recursively call the rm_dir_handler for the subdirectory
+                const success = await this.deleteFolderHandlerAsync(arg0, entryPath);
+                if(!success){
+                    console.error(`Failed to delete directory: ${entryPath}`);
+                    return false;
+                }
+            } else {
+                const result = await this.deleteFileAsync(entryPath);
+                if(result){
+                    // console.log(`File: ${directoryEntry} in ${entryPath} deleted successfully`);
+                }else{
+                    console.error(`File: ${directoryEntry} in ${entryPath} failed deletion`);
+                    return false;
+                }
+            }
+        }
+    
+        if(srcPath === Constants.RECYCLE_BIN_PATH && isRecycleBin)
+            return true;
+        // Delete the current directory after all its contents have been deleted
+        // console.log(`folder to delete: ${sourceArg}`);
+        const result = await this.deleteFolderAsync(srcPath);
+        if(result){
+            // console.log(`Directory: ${sourceArg} deleted successfully`);
+            return true;
+        }else{
+            console.error(`Failed to delete directory: ${srcPath}`);
+            return false;
+        }
+    }
+
+	private async deleteEmptyFolders(folders:string[]):Promise<void>{
+        for(let i = 0; i <= folders.length; i++){
+            const path = folders.pop();
+            if(path){
+                await this.deleteFolderAsync(path);                    
+            }
+        }
+    }
+
+    public getFolderOrigin(path:string):string{
+        if(this._restorePoint.has(path)){
+            return this._restorePoint.get(path) || Constants.EMPTY_STRING;
+        }
+        return Constants.EMPTY_STRING;
+    }
+
+    /**
+     *if file exists, increment it simple.txt, simple(1).txt ... 
+     * @param path 
+     * @returns 
+     */
+    private IncrementFileName(path:string):string{
+        const extension = extname(path);
+        const filename = basename(path, extension);
+
+        let count = Number(this._fileExistsMap.get(path) ?? Constants.NUM_ZERO);
+        count = count + Constants.NUM_ONE;
+        this._fileExistsMap.set(path, String(count));
+
+        return `${dirname(path)}/${filename} (${count})${extension}`;
+    }
+
+    private DecrementFileName(path:string):void{
+
+        let count  = Number(this._fileExistsMap.get(path) ?? Constants.NUM_ZERO);
+        if(count > Constants.NUM_ZERO){
+            count = count - Constants.NUM_ONE;
+            this._fileExistsMap.set(path, String(count));
+        }else{
+            if(this._fileExistsMap.get(path))
+                this._fileExistsMap.delete(path);
+        }
+    }
+
+	public async countFolderItems(path:string):Promise<number>{
 		try{
 			const dirFiles = await fs.promises.readdir(path);
 			return (dirFiles?.length || Constants.NUM_ZERO);
@@ -454,6 +1049,104 @@ export class FileService2 implements BaseService{
 			return Constants.NUM_ZERO;
 		}
 	}
+
+	public  async getFullCountOfFolderItems(path:string): Promise<string> {
+		await configuredFS;
+
+        const counts = { files: Constants.NUM_ZERO, folders: Constants.NUM_ZERO };
+        const queue:string[] = [];
+        
+        queue.push(path);
+        await this.traverseAndCountFolderItems(queue, counts);
+        return `${counts.files} Files, ${counts.folders} Folders`;
+    }
+
+    private  async traverseAndCountFolderItems(queue:string[], counts:{files: number, folders: number}): Promise<void> {
+		await configuredFS;
+
+        if(queue.length === Constants.NUM_ZERO)
+            return;
+
+        const srcPath = queue.shift() || Constants.EMPTY_STRING;
+ 
+        const directoryEntries = await fs.promises.readdir(srcPath);      
+        for(const directoryEntry of directoryEntries){
+			const directoryEntryPath = `${srcPath}/${directoryEntry}`;
+            const isDirectory = await this.isDirectory(directoryEntryPath);
+            if(isDirectory){
+                queue.push(directoryEntryPath);
+                counts.folders++;
+            }else{
+                counts.files++;
+            }
+        }
+
+        return this.traverseAndCountFolderItems(queue, counts);
+    }
+
+    public  async getFolderSizeAsync(path:string):Promise<number>{
+		await configuredFS;
+
+        const sizes = {files: Constants.NUM_ZERO, folders: Constants.NUM_ZERO};
+        const queue:string[] = [];
+        
+        queue.push(path);
+        await this.traverseAndSumFolderSize(queue, sizes);
+        return sizes.files + sizes.folders;
+    }
+
+    private  async traverseAndSumFolderSize(queue:string[], sizes:{files: number, folders: number}): Promise<void> {
+		await configuredFS;
+
+        if(queue.length === Constants.NUM_ZERO)
+            return;
+
+        const srcPath = queue.shift() || Constants.EMPTY_STRING;
+
+        const extraInfo = await fs.promises.stat(srcPath);
+        sizes.folders += extraInfo.size;
+
+        const directoryEntries = await fs.promises.readdir(srcPath);      
+        for(const entry of directoryEntries){
+            const entryPath = `${srcPath}/${entry}`;
+            const isDirectory = await this.isDirectory(entryPath);
+
+            if(isDirectory){
+                queue.push(entryPath);
+            }else{
+                const extraInfo = await fs.promises.stat(entryPath);
+                sizes.files += extraInfo.size;
+            }
+        }
+
+        return this.traverseAndSumFolderSize(queue, sizes);
+    }
+
+	private appendToFileName(filename: string, appStr:string): string {
+        const lastDotIndex = filename.lastIndexOf(Constants.DOT);
+
+        // If no dot is found (no extension),
+        // append "_rs" to the end
+        if (lastDotIndex === Constants.MINUS_ONE) 
+            return filename + appStr;
+    
+        const name = filename.substring(Constants.NUM_ZERO, lastDotIndex);
+        const extension = filename.substring(lastDotIndex); // Includes the dot
+
+        return name + appStr + extension;
+    }
+
+    public getAppAssociaton(appname:string):string{
+        return this._fileAndAppIconAssociation.get(appname) || Constants.EMPTY_STRING;
+    }
+
+    private pathCorrection(path:string):string{
+        if(path.slice(Constants.MINUS_ONE) === Constants.ROOT)
+            return path.slice(Constants.NUM_ZERO, Constants.MINUS_ONE);
+        else
+            return path;
+    }
+
 
 	private addAppAssociaton(appname:string, img:string):void{
         if(!this._fileAndAppIconAssociation.get(appname)){
@@ -468,6 +1161,18 @@ export class FileService2 implements BaseService{
 	private createEmptyShortCut(): ShortCut {
         const empty = Constants.EMPTY_STRING;
         return new ShortCut(empty, empty, empty, empty, empty);
+    }
+
+	/**
+     * Extracts the file or folder name from a full path.
+     * - If the path is a file, returns the file name with extension (e.g. "Test.png").
+     * - If the path is a folder, returns the last folder name (e.g. "Images").
+     *
+     * @param path Full file or directory path
+     * @returns File or folder name
+     */
+    private getNameFromPath(path: string): string {
+        return basename(path);
     }
 
 

@@ -27,6 +27,7 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { FileService2 } from 'src/app/shared/system-service/file.service.two';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -46,7 +47,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
  
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _fileService:FileService;
+  private _fileService:FileService2;
   private _directoryFilesEntires!:FileEntry[];
   private _processHandlerService:ProcessHandlerService;
   private _sessionManagmentService: SessionManagmentService;
@@ -237,7 +238,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   hasWindow = true;
 
 
-  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, 
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService2, 
               triggerProcessService:ProcessHandlerService, formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, 
               menuService:MenuService, notificationService:UserNotificationService, windowService:WindowService, 
               audioService:AudioService, systemNotificationService:SystemNotificationService) { 
@@ -259,7 +260,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this._dirFilesUpdatedSub = this._fileService.dirFilesUpdateNotify.subscribe(() =>{
       if(this._fileService.getEventOriginator() === this.name){
-        this.loadFilesInfoAsync();
+        this.loadFiles();
         this._fileService.removeEventOriginator();
       }
     });
@@ -332,7 +333,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     })
   
     await this.loadFileTreeAsync();
-    await this.loadFilesInfoAsync().then(()=>{
+    await this.loadFiles().then(()=>{
       setTimeout(()=>{
         this.captureComponentImg();
       },this.SECONDS_DELAY[4]) 
@@ -670,7 +671,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       await this._audioService.play(this.cheetahNavAudio);
       this.populateTraversalList();
       this.setNavPathIcon(folderName,this.directory);
-      await this.loadFilesInfoAsync();
+      await this.loadFiles();
     }
   }
 
@@ -777,7 +778,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       await this._audioService.play(this.cheetahNavAudio);
       this.populateTraversalList();
       this.setNavPathIcon(folderName,this.directory);
-      await this.loadFilesInfoAsync();
+      await this.loadFiles();
     }
   }
 
@@ -836,7 +837,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       await this._audioService.play(this.cheetahNavAudio);
       this.populateTraversalList();
       this.setNavPathIcon(folderName, this.directory);
-      await this.loadFilesInfoAsync();
+      await this.loadFiles();
     }
   }
 
@@ -972,39 +973,27 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(droppedFiles.length >= Constants.NUM_ONE){
       const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
       if(result){
-        await this.loadFilesInfoAsync();
+        await this.loadFiles();
       }
     }
   }
 
-  private async loadFilesInfoAsync(showUrlFiles=true):Promise<void>{
+  private async loadFiles(showUrlFiles=true):Promise<void>{
     this.fileExplrFiles = [];
-    this._fileService.resetDirectoryFiles();
-    let directoryEntries  = await this._fileService.getDirectoryEntriesAsync(this.directory);
+    const filteredDirectoryFiles: FileInfo[] = []
+    //this._fileService.resetDirectoryFiles();
+    let directoryFiles  = await Array.fromAsync(this._fileService.loadDirectoryFiles(this.directory));
 
     //console.log('directoryEntries:',directoryEntries); //TBD
 
     if(this.directory === Constants.ROOT){
       if(!showUrlFiles){
-        const filteredDirectoryEntries = directoryEntries.filter(x => !x.includes(Constants.URL));
-        directoryEntries = filteredDirectoryEntries;
-        this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(filteredDirectoryEntries,this.directory);
-      }
-      else{
-        const filteredDirectoryEntries = directoryEntries.filter(x => x.includes(Constants.URL));
-        directoryEntries = filteredDirectoryEntries;
-        this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(filteredDirectoryEntries,this.directory); 
+        this.fileExplrFiles.push(...directoryFiles.filter(x => x.getFileExtension !== Constants.URL))
+      }else{
+        this.fileExplrFiles.push(...directoryFiles);
       }
     }else{
-      this._directoryFilesEntires = this._fileService.getFileEntriesFromDirectory(directoryEntries,this.directory);
-    }
-
-    for(let i = 0; i < directoryEntries.length; i++){
-      const fileEntry = this._directoryFilesEntires[i];
-      const fileInfo = await this._fileService.getFileInfoAsync(fileEntry.getPath);
-
-      if(fileInfo.getCurrentPath !== Constants.RECYCLE_BIN_PATH)
-        this.fileExplrFiles.push(fileInfo)
+      this.fileExplrFiles.push(...directoryFiles.filter(x => x.getCurrentPath !== Constants.RECYCLE_BIN_PATH)); 
     }
   }
 
@@ -1013,8 +1002,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     const usersDir = '/Users/';
     this.fileTreeNode = [];
-    this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(usersDir);
+    const directoryEntries  = await this._fileService.readdir(usersDir);
 
     const osDrive:FileTreeNode = {
       name:Constants.OSDISK, path: Constants.ROOT, isFolder: true, children:[]
@@ -1022,10 +1010,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
-      const isFile =  await this._fileService.checkIfDirectoryAsync(usersDir + dirEntry);
+      const entryPath = `${usersDir}${dirEntry}`;
+      const isFile =  await this._fileService.isDirectory(entryPath);
       const ftn:FileTreeNode = {
         name : dirEntry,
-        path : `${usersDir}${dirEntry}`,
+        path : entryPath,
         isFolder: isFile,
         children: []
       }
@@ -1042,15 +1031,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(!this.fileTreeHistory.includes(path)){
       const tmpFileTreeNode:FileTreeNode[] = [];
-      this._fileService.resetDirectoryFiles();
-      const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(path);
+      const directoryEntries  = await this._fileService.readdir(path);
   
       // this.directory, will not be correct for all cases. Make sure to check
       for(const dirEntry of directoryEntries){
-        const isFile =  await this._fileService.checkIfDirectoryAsync(`${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT));
+        const entryPath = `${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+        const isFile =  await this._fileService.isDirectory(entryPath);
         const ftn:FileTreeNode = {
           name : dirEntry,
-          path: `${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT),
+          path: entryPath,
           isFolder: isFile,
           children: []
         }
@@ -1140,7 +1129,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.setNavPathIcon(file.getFileName, file.getCurrentPath);
       this.storeAppState(file.getCurrentPath);
   
-      await this.loadFilesInfoAsync();
+      await this.loadFiles();
     }else{
       //APPS opened from the fileexplore do not have their windows in focus,
       // and this is due to the mouse click event that causes fileexplorer to trigger setFocusOnWindow event
@@ -1182,9 +1171,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.storeAppState(path);
 
     if(path === thisPC || path !== Constants.ROOT)
-      await this.loadFilesInfoAsync();
+      await this.loadFiles();
     else if(path === Constants.ROOT)
-      await this.loadFilesInfoAsync(false);
+      await this.loadFiles(false);
   }
 
   setNavPathIcon(fileName:string, directory:string):void{
@@ -1911,7 +1900,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async refresh():Promise<void>{
     this.isIconInFocusDueToPriorAction = false;
-    await this.loadFilesInfoAsync();
+    await this.loadFiles();
   }
 
   async onDeleteFile():Promise<void>{
@@ -1921,14 +1910,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
     if(result){
       this._menuService.resetStoreData();
-      await this.loadFilesInfoAsync();
+      await this.loadFiles();
 
       await CommonFunctions.sleep(desktopRefreshDelay)
       this._fileService.addEventOriginator(Constants.DESKTOP);
       this._fileService.dirFilesUpdateNotify.next();
     }
   }
-
 
   onKeyPress(evt:KeyboardEvent):boolean{
     const regexStr = '^[a-zA-Z0-9_.]+$';
@@ -2256,12 +2244,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         //const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));
         const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getCurrentPath) && (f.getFileName == this.selectedFile.getFileName));
         this.selectedFile.setFileName = renameText;
-        this.selectedFile.setDateModified = Date.now();
+        //this.selectedFile.setDateModified = Date.now();
         this.fileExplrFiles[fileIdx] = this.selectedFile;
 
         this.renameForm.reset();
         this._menuService.resetStoreData();
-        await this.loadFilesInfoAsync();
+        await this.loadFiles();
       }
     }else{
       this.renameForm.reset();
@@ -2593,7 +2581,7 @@ Do you want the shortcut to be placed on the desktop instead?`;
     shortCut.setFileName= `${selectedFile.getFileName} - ${Constants.SHORTCUT}${Constants.URL}`;
     const result = await this._fileService.writeFileAsync(this.directory, shortCut);
     if(result){
-      await this.loadFilesInfoAsync();
+      await this.loadFiles();
     }
   }
 

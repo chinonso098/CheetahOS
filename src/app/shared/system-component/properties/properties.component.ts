@@ -11,6 +11,7 @@ import { ProcessIDService } from '../../system-service/process.id.service';
 import { RunningProcessService } from '../../system-service/running.process.service';
 import { WindowService } from '../../system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { FileService2 } from '../../system-service/file.service.two';
 
 @Component({
   selector: 'cos-properties',
@@ -22,7 +23,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 export class PropertiesComponent implements BaseComponent, OnChanges{
   @Input() fileInput!:FileInfo;
 
-  private _fileService:FileService;
+  private _fileService:FileService2;
   private _runningProcessService:RunningProcessService;
   private _processIdService:ProcessIDService
   private _windowService:WindowService;
@@ -30,7 +31,10 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   fileFolder = 'File folder';
   osDisk = 'OSDisk';
  
-  fileDate:Date= new Date();
+  createdfileDate:Date= new Date();
+  accessedfileDate:Date= new Date();
+  modifiedfileDate:Date= new Date();
+
   isFile = true;
   isInRecycleBin = false;
   isRootFolder = false;
@@ -67,7 +71,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, windowService:WindowService,
-              fileInfoService:FileService){ 
+              fileInfoService:FileService2){ 
     this._processIdService = processIdService;
     this._fileService = fileInfoService;
     this._windowService = windowService;
@@ -127,12 +131,12 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   }
 
   async getFolderContentDetails():Promise<void>{
-    const count =  await this._fileService.getCountOfFolderItemsAsync(this.fileInput.getCurrentPath);
+    const count =  await this._fileService.countFolderItems(this.fileInput.getCurrentPath);
 
     if(count === Constants.NUM_ZERO){
       this.contains = '0 Files, 0 Folders';
     }else{
-      this.contains = await this._fileService.getDetailedCountOfFolderItemsAsync(this.fileInput.getCurrentPath);
+      this.contains = await this._fileService.getFullCountOfFolderItems(this.fileInput.getCurrentPath);
     }
   }
 
@@ -145,7 +149,9 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed( Constants.NUM_ZERO));
 
     this.fileSizeUnit = this.fileInput.getFileSizeUnit;
-    this.fileDate = this.fileInput.getDateModified;
+    this.createdfileDate = this.fileInput.getDateCreated;
+    this.accessedfileDate = this.fileInput.getDateAccessed;
+    this.modifiedfileDate = this.fileInput.getDateModified;
   }
 
   async getFolderSizeData():Promise<void>{
@@ -158,7 +164,9 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(Constants.NUM_ZERO));
 
     this.fileSizeUnit  = CommonFunctions.getFileSizeUnit(folderSize);
-    this.fileDate = this.fileInput.getDateModified;
+    this.createdfileDate = this.fileInput.getDateCreated;
+    this.accessedfileDate = this.fileInput.getDateAccessed;
+    this.modifiedfileDate = this.fileInput.getDateModified;
 
     if(this.isRootFolder){
       this.availableSpace = this.capacity - folderSize;
