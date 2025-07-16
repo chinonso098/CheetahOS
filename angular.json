@@ -15,7 +15,10 @@
       "prefix": "cos",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:browser-esbuild",
+          "experiments": {
+                "topLevelAwait": true
+          },
           "options": {
             "allowedCommonJsDependencies": [
               "src/osdrive/Cheetah/System/BrowserFS/browserfs",
