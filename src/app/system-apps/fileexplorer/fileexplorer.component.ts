@@ -980,17 +980,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   private async loadFiles(showUrlFiles=true):Promise<void>{
     this.fileExplrFiles = [];
-    const filteredDirectoryFiles: FileInfo[] = []
-    //this._fileService.resetDirectoryFiles();
     let directoryFiles  = await this._fileService.loadDirectoryFiles(this.directory);
-
-    //console.log('directoryEntries:',directoryEntries); //TBD
 
     if(this.directory === Constants.ROOT){
       if(!showUrlFiles){
         this.fileExplrFiles.push(...directoryFiles.filter(x => x.getFileExtension !== Constants.URL))
       }else{
-        this.fileExplrFiles.push(...directoryFiles);
+        this.fileExplrFiles.push(...directoryFiles.filter(x => x.getFileExtension === Constants.URL));
       }
     }else{
       this.fileExplrFiles.push(...directoryFiles.filter(x => x.getCurrentPath !== Constants.RECYCLE_BIN_PATH)); 

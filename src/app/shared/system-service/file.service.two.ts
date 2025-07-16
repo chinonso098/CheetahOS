@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { basename, extname, join, } from '@zenfs/core/vfs/path.js';
+import { basename, extname, join, } from '@zenfs/core/path';
 import { FileInfo } from "src/app/system-files/file.info";
 import { ShortCut } from 'src/app/system-files/shortcut';
 
@@ -8,7 +8,7 @@ import { Buffer } from 'buffer';
 import ini from 'ini';
 import { Subject } from 'rxjs';
 
-import type { Dirent, ErrnoError, IndexData, Stats } from '@zenfs/core';
+import type { ErrnoError, IndexData } from '@zenfs/core';
 import { configure, CopyOnWrite, Fetch, default as fs } from '@zenfs/core';
 import { IndexedDB } from '@zenfs/dom';
 import OSFileSystemIndex from '../../../../index.json';
@@ -24,8 +24,9 @@ import { UserNotificationService } from "./user.notification.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { FileContent2 } from "src/app/system-files/file.content";
-import { err, levels } from "@zenfs/core/internal/log.js";
+import { err } from "@zenfs/core/internal/log.js";
 import { OpensWith } from "src/app/system-files/opens.with";
+import { FileMetaData } from "src/app/system-files/file.metadata";
 /// <reference types="node" />
 
 const fsPrefix = 'osdrive';
@@ -161,12 +162,11 @@ export class FileService2 implements BaseService{
     }
 
     private async copyFolderHandlerAsync(arg0:string, srcPath:string, destPath:string):Promise<boolean>{
-		await configuredFS;
 
         const folderName = this.getNameFromPath(srcPath);
         const  createFolderResult = await this.createFolderAsync(destPath, folderName);
         if(createFolderResult){
-            const loadedDirectoryEntries = await fs.promises.readdir(srcPath);
+            const loadedDirectoryEntries = await this.readDirectory(srcPath);
             for(const directoryEntry of loadedDirectoryEntries){
                 const checkIfDirResult = await this.isDirectory(`${srcPath}/${directoryEntry}`);
                 if(checkIfDirResult){
@@ -190,7 +190,7 @@ export class FileService2 implements BaseService{
         return true
     }
 
-	async readdir(path: string): Promise<string[]> {
+	async readDirectory(path: string): Promise<string[]> {
 		await configuredFS;
 
 		try{
@@ -202,35 +202,41 @@ export class FileService2 implements BaseService{
 
 	}
 
-	async *loadDirectoryFiles(path: string): AsyncIterableIterator<FileInfo>{
-		await configuredFS;
-
+	async loadDirectoryFiles(path: string): Promise<FileInfo[]>{
 		try{
-			for (const entry of await fs.promises
-				.readdir(path, { withFileTypes: true })
-				.catch(this.throwWithPath)) {
-				yield await this.getFileInfo(join(path, entry.path), entry);
-			}
+            const files:FileInfo[] = [];
+            const directoryEntries = await this.readDirectory(path);
+
+            for(const entry of directoryEntries){
+                const file =  await this.getFileInfo(`${path}/${entry}`);
+                files.push(file);
+            }
+
+            return files;
 		}catch(err){
 			console.error('loadDirectoryFiles:',err);
 			return [];
 		}
 	}
 	
-	public async getFileInfo(path:string,  entry: Dirent):Promise<FileInfo>{
-        const extension = extname(path);
+	private async getFileInfo(path:string):Promise<FileInfo>{
+ 
+        let opensWith = Constants.EMPTY_STRING;
         this._fileInfo = new FileInfo();
+
+        const useImage = true;
 		const isFile = true;
-		let opensWith = Constants.EMPTY_STRING;
+        const extension = extname(path);
+        const fileMetaData = await this.getFileMetaData(path);
         
         if(!extension){
-            const fc = await this.setOtherFolderProps(path, entry) as FileContent2;
-            this._fileInfo = this.populateFileInfo(path, !entry.isDirectory(), opensWith, Constants.EMPTY_STRING, false, undefined, fc);
-            this._fileInfo.setIconPath = await this.changeFolderIcon(fc.fileName, fc.iconPath, path, entry);
+            const fc = await this.setOtherFolderProps(path, fileMetaData.getIsDirectory) as FileContent2;
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, !isFile, opensWith, Constants.EMPTY_STRING, !useImage, undefined, fc);
+            this._fileInfo.setIconPath = await this.changeFolderIcon(fc.fileName, fc.iconPath, path);
         }
         else if(extension === Constants.URL){
             const sc = await this.getShortCutFromURL(path);
-            this._fileInfo = this.populateFileInfo(path, isFile, opensWith, Constants.EMPTY_STRING, true, sc);
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, isFile, opensWith, Constants.EMPTY_STRING, useImage, sc);
             this._fileInfo.setIsShortCut = true;
         }
         else if(Constants.IMAGE_FILE_EXTENSIONS.includes(extension)
@@ -244,14 +250,19 @@ export class FileService2 implements BaseService{
 			if(opensWith.fileType === 'image' ||opensWith.fileType === 'video' || opensWith.fileType === 'audio' )
             	fileContent = await this.getFileContentFromB64DataUrl(path, 'image') as FileContent2;
 
-            this._fileInfo = this.populateFileInfo(path, isFile, opensWith.appName, opensWith.appIcon, false, undefined, fileContent);
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, isFile, opensWith.appName, opensWith.appIcon, !useImage, undefined, fileContent);
 
         }else if(Constants.KNOWN_FILE_EXTENSIONS.includes(extension)){
 			const opensWith = this.getOpensWith(extension);
- 			this._fileInfo = this.populateFileInfo(path, isFile, opensWith.appName, opensWith.appIcon);
+ 			this._fileInfo = this.populateFileInfo(path, fileMetaData, isFile, opensWith.appName, opensWith.appIcon);
 		} else{
             this._fileInfo.setIconPath=`${Constants.IMAGE_BASE_PATH}unknown.png`;
             this._fileInfo.setCurrentPath = path;
+            this._fileInfo.setDateAccessed = fileMetaData.getAccessDate;
+            this._fileInfo.setDateCreated = fileMetaData.getCreatedDate;
+            this._fileInfo.setDateModified = fileMetaData.getModifiedDate;
+            this._fileInfo.setSizeInBytes = fileMetaData.getSize;
+            this._fileInfo.setBlkSizeInBytes = fileMetaData.getBlkSize;
             this._fileInfo.setFileName = basename(path, extname(path));
             this._fileInfo.setFileExtension = extension;
         }
@@ -297,7 +308,7 @@ export class FileService2 implements BaseService{
 		return {fileType:empty, appName:empty, appIcon: empty};
     }
 
-	populateFileInfo(path:string, isFile =true, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut, fileCntnt?:FileContent2):FileInfo{
+	populateFileInfo(path:string, fileMetaData:FileMetaData, isFile:boolean, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut, fileCntnt?:FileContent2):FileInfo{
         const fileInfo = new FileInfo();
         const img = `${Constants.IMAGE_BASE_PATH}${imageName}`;
 
@@ -316,6 +327,12 @@ export class FileService2 implements BaseService{
             fileInfo.setOpensWith = fileCntnt?.opensWith || opensWith;
         }
         fileInfo.setIsFile = isFile;
+        fileInfo.setDateAccessed = fileMetaData.getAccessDate;
+        fileInfo.setDateCreated = fileMetaData.getCreatedDate;
+        fileInfo.setDateModified = fileMetaData.getModifiedDate;
+        fileInfo.setSizeInBytes = fileMetaData.getSize;
+        fileInfo.setBlkSizeInBytes = fileMetaData.getBlkSize;
+        fileInfo.setMode = fileMetaData.getMode;
         fileInfo.setFileExtension = extname(path);
 
         return fileInfo;
@@ -392,6 +409,18 @@ export class FileService2 implements BaseService{
 		}
 	}
 
+        public async getFileMetaData(path: string): Promise<FileMetaData> {
+            await configuredFS
+
+            try{
+                const stats = await fs.promises.stat(path);
+                return new FileMetaData(stats?.atime, stats?.birthtime, stats?.mtime, stats?.size, stats?.blksize, stats?.mode, stats?.isDirectory());
+            }catch(err){
+                console.error('getFileMetaData:', err);
+                return new FileMetaData();
+            }
+        }
+
 	private createFileContentFromBuffer(buffer: Buffer, contentType: string, path: string): FileContent2 {
 		const fileUrl = this.bufferToUrl2(buffer);
 		return this.createFileContent(fileUrl, path, contentType === 'image');
@@ -434,7 +463,7 @@ export class FileService2 implements BaseService{
 		}
     }
 
-	private async changeFolderIcon(fileName:string, iconPath:string, path:string, entry: Dirent):Promise<string>{
+	private async changeFolderIcon(fileName:string, iconPath:string, path:string):Promise<string>{
 		const iconMaybe = `/Cheetah/System/Imageres/${fileName.toLocaleLowerCase()}_folder.png`;
 
         if(path === Constants.RECYCLE_BIN_PATH){
@@ -455,14 +484,14 @@ export class FileService2 implements BaseService{
 		return iconPath;
     }
 
-	private async setOtherFolderProps(path:string,  entry: Dirent):Promise<FileContent2>{
+	private async setOtherFolderProps(path:string, isDirectory:boolean):Promise<FileContent2>{
         const fileName = basename(path, extname(path));
         let iconFile = Constants.EMPTY_STRING;
         const fileType = Constants.FOLDER;
         const opensWith = Constants.FILE_EXPLORER;
 
 		try{
-			const isDirectory = entry.isDirectory(); //await this.isDirectory(path);
+			//const isDirectory = await this.isDirectory(path);
 			if(!isDirectory){
 				iconFile= `${Constants.IMAGE_BASE_PATH}unknown.png`;
 				return this.populateFileContent(iconFile, fileName, Constants.EMPTY_STRING, fileName, Constants.EMPTY_STRING);
@@ -534,7 +563,7 @@ export class FileService2 implements BaseService{
 				console.warn('writeRawAsync:', error.code);
 				return Constants.NUM_ONE;
 			}else{
-				console.error(`Error creating folder: ${err}`);
+				console.error(`Error writing file: ${err}`);
 				return Constants.NUM_TWO;
 			}
 		}
@@ -695,7 +724,6 @@ export class FileService2 implements BaseService{
      * @returns 
      */
     private async moveHandlerAAsync(destPath:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], isRecycleBin?: boolean):Promise<boolean>{
-		await configuredFS;
 
         if(folderToProcessingQueue.length === Constants.NUM_ZERO)
             return true;
@@ -704,7 +732,7 @@ export class FileService2 implements BaseService{
         const folderName = this.getNameFromPath(srcPath);
         folderToDeleteStack.push(srcPath);
 
-        const loadedDirectoryEntries = await fs.promises.readdir(srcPath);
+        const loadedDirectoryEntries = await this.readDirectory(srcPath);
         const  moveFolderResult = await this.createFolderAsync(destPath,folderName);
         if(moveFolderResult){
             for(const directoryEntry of loadedDirectoryEntries){
@@ -738,7 +766,6 @@ export class FileService2 implements BaseService{
      * @returns 
      */
     private async moveHandlerBAsync(destPath:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
-		await configuredFS;
 
         if(folderToProcessingQueue.length === Constants.NUM_ZERO)
             return true;
@@ -749,7 +776,7 @@ export class FileService2 implements BaseService{
         if(skipCounter === Constants.NUM_ZERO){ folderName = Constants.EMPTY_STRING; }
 
         let  moveFolderResult = false;
-        const loadedDirectoryEntries = await fs.promises.readdir(srcPath);
+        const loadedDirectoryEntries = await this.readDirectory(srcPath);
 
         //skip creating the 
         if(skipCounter > Constants.NUM_ZERO){
@@ -779,24 +806,46 @@ export class FileService2 implements BaseService{
         return this.moveHandlerBAsync(`${destPath}/${folderName}`, folderToProcessingQueue, folderToDeleteStack, skipCounter);
     }
 
-	private async moveFileAsync(srcPath: string, destPath: string, generatePath?: boolean, isRecycleBin?: boolean): Promise<boolean> {
-		await configuredFS;
+	// private async moveFileAsync(srcPath: string, destPath: string, generatePath?: boolean, isRecycleBin?: boolean): Promise<boolean> {
+	// 	await configuredFS;
 
+    //     let destinationPath = Constants.EMPTY_STRING;
+    //     if (generatePath === undefined || generatePath){
+	// 		const fileName =  this.getNameFromPath(srcPath);
+    //         destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+    //     } else {
+    //         destinationPath = destPath;
+    //     }
+
+	// 	try{
+	// 		await fs.promises.rename(srcPath, destinationPath);
+	// 		return true;
+	// 	}catch(err){
+	// 		console.error('moveFileAsync:', err);
+	// 		return false;
+	// 	}
+    // }
+
+        //virtual filesystem, use copy and then delete. 
+    private async moveFileAsync(srcPath: string, destPath: string, generatePath?: boolean, isRecycleBin?: boolean): Promise<boolean> {
+        await configuredFS
         let destinationPath = Constants.EMPTY_STRING;
         if (generatePath === undefined || generatePath){
-			const fileName =  this.getNameFromPath(srcPath);
+            const fileName =  this.getNameFromPath(srcPath);
             destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
         } else {
             destinationPath = destPath;
         }
 
-		try{
-			await fs.promises.rename(srcPath, destinationPath);
-			return true;
-		}catch(err){
-			console.error('moveFileAsync:', err);
-			return false;
-		}
+        const readResult = await fs.promises.readFile(srcPath);
+        if(!readResult) return false;
+
+        //overwrite the file
+        const writeResult = await this.writeRawAsync(destinationPath, readResult, 'wx');
+        if(writeResult !== Constants.NUM_ZERO)
+            return false
+        
+        return await this.deleteFileAsync(srcPath);
     }
 
 
@@ -839,7 +888,7 @@ OpensWith=${shortCutData.getOpensWith}
             this._restorePoint.set(`${Constants.RECYCLE_BIN_PATH}/${name}`, path);
             //this.addAndUpdateSessionData(this.fileServiceRestoreKey, this._restorePoint);
 
-            this.DecrementFileName(path);
+            //this.DecrementFileName(path);
             //this.removeAndUpdateSessionData(this.fileServiceIterateKey, path, this._fileExistsMap);
             //move to rbin
             return await this.moveAsync(path, Constants.RECYCLE_BIN_PATH, isFile);
@@ -883,9 +932,8 @@ OpensWith=${shortCutData.getOpensWith}
     }
 
     private async deleteFolderHandlerAsync(arg0: string, srcPath: string, isRecycleBin?:boolean): Promise<boolean> {
-		await configuredFS;
 
-        const loadedDirectoryEntries = await fs.promises.readdir(srcPath);
+        const loadedDirectoryEntries = await this.readDirectory(srcPath);
         for (const directoryEntry of loadedDirectoryEntries) {
             const entryPath = `${srcPath}/${directoryEntry}`;
             //this.removeAndUpdateSessionData(this.fileServiceRestoreKey, entryPath, this._restorePoint); TODO
@@ -969,7 +1017,7 @@ OpensWith=${shortCutData.getOpensWith}
 
 	public async countFolderItems(path:string):Promise<number>{
 		try{
-			const dirFiles = await fs.promises.readdir(path);
+			const dirFiles = await this.readDirectory(path);
 			return (dirFiles?.length || Constants.NUM_ZERO);
 		}catch(err:any){
 			console.error('countFolderItems:', err);
@@ -978,7 +1026,6 @@ OpensWith=${shortCutData.getOpensWith}
 	}
 
 	public  async getFullCountOfFolderItems(path:string): Promise<string> {
-		await configuredFS;
 
         const counts = { files: Constants.NUM_ZERO, folders: Constants.NUM_ZERO };
         const queue:string[] = [];
@@ -989,14 +1036,13 @@ OpensWith=${shortCutData.getOpensWith}
     }
 
     private  async traverseAndCountFolderItems(queue:string[], counts:{files: number, folders: number}): Promise<void> {
-		await configuredFS;
 
         if(queue.length === Constants.NUM_ZERO)
             return;
 
         const srcPath = queue.shift() || Constants.EMPTY_STRING;
  
-        const directoryEntries = await fs.promises.readdir(srcPath);      
+        const directoryEntries = await this.readDirectory(srcPath);      
         for(const directoryEntry of directoryEntries){
 			const directoryEntryPath = `${srcPath}/${directoryEntry}`;
             const isDirectory = await this.isDirectory(directoryEntryPath);
@@ -1012,7 +1058,6 @@ OpensWith=${shortCutData.getOpensWith}
     }
 
     public  async getFolderSizeAsync(path:string):Promise<number>{
-		await configuredFS;
 
         const sizes = {files: Constants.NUM_ZERO, folders: Constants.NUM_ZERO};
         const queue:string[] = [];
@@ -1023,7 +1068,6 @@ OpensWith=${shortCutData.getOpensWith}
     }
 
     private  async traverseAndSumFolderSize(queue:string[], sizes:{files: number, folders: number}): Promise<void> {
-		await configuredFS;
 
         if(queue.length === Constants.NUM_ZERO)
             return;
@@ -1033,7 +1077,7 @@ OpensWith=${shortCutData.getOpensWith}
         const extraInfo = await fs.promises.stat(srcPath);
         sizes.folders += extraInfo.size;
 
-        const directoryEntries = await fs.promises.readdir(srcPath);      
+        const directoryEntries = await this.readDirectory(srcPath);      
         for(const entry of directoryEntries){
             const entryPath = `${srcPath}/${entry}`;
             const isDirectory = await this.isDirectory(entryPath);

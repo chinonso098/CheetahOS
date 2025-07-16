@@ -162,7 +162,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   VANTAS:any = [this.waveBkgrnd, this.ringsBkgrnd,this.haloBkgrnd, this.globeBkgrnd, this.birdBkgrnd ];
   private readonly MIN_NUMS_OF_DESKTOPS = Constants.NUM_ZERO;
   private readonly MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - Constants.NUM_ONE;
-  private readonly CLIPPY_INIT_DELAY = 300000; // 5mins
+  private readonly CLIPPY_INIT_DELAY = 600000; // 10mins
   private readonly COLOR_CHANGE_DELAY = 30000; // 30secs
   private readonly COLOR_TRANSITION_DURATION = 1500; // 1.5sec
   private readonly MIN_NUM_COLOR_RANGE = 200;
@@ -270,12 +270,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._processHandlerService = triggerProcessService;
     this._scriptService = scriptService;
     this._menuService = menuService;
-    //this._fileService = fileService;
+    this._fileService = fileService;
     this._windowService = windowService;
     this._audioService = audioService;
     this._systemNotificationServices = systemNotificationServices;
     this._userNotificationService = userNotificationService;
-    this._fileService = fileService;
     this._formBuilder = formBuilder;
     this._elRef = elRef;
 
@@ -286,8 +285,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.hideContextMenus.subscribe(() => { this.hideDesktopContextMenuAndOthers()});
     this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
     this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
-    this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;});
-    this._windowService.windowDragIsInActive.subscribe(() => {this.isWindowDragActive = false;});
+    this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;}); //TODO these will not be needed, use evt.stopPropagation
+    this._windowService.windowDragIsInActive.subscribe(() => {this.isWindowDragActive = false;});  //TODO these will not be needed, use evt.stopPropagation
     this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
     this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
     this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
@@ -336,17 +335,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.initClippy();
 
     this.removeVantaJSSideEffect();
-
-    // setTimeout(async () => {
-    //       await this.loadFilesInfoAsync();
-    // }, this.SECONDS_DELAY[3]);
-
-
-    setTimeout(async () => {
-        
-          
-    }, 2000);
-
     await CommonFunctions.sleep(this.SECONDS_DELAY[3])
     await this.loadFiles();
   }
@@ -1271,16 +1259,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           this.refresh();
         }
       }
-    }
-        
+    }  
   }
-  
-
 
   protected async loadFiles(): Promise<void> {
     this.files = [];
 		this.files = await this._fileService.loadDirectoryFiles(this.directory);
-    console.log('ZenFS files:',this.files);
 	}
   
   removeVantaJSSideEffect(): void {
@@ -1294,9 +1278,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }, this.SECONDS_DELAY[1]);
   }
 
-  runProcess(file:FileInfo):void{
+  async runProcess(file:FileInfo):Promise<void>{
     console.log('desktopmanager-runProcess:',file)
-    this._audioService.play(this.cheetahNavAudio);
+    await this._audioService.play(this.cheetahNavAudio);
     this._processHandlerService.startApplicationProcess(file);
     this.btnStyleAndValuesReset();
   }
@@ -1950,8 +1934,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async onEmptyRecyleBin():Promise<void>{
     let result = false;
-    this._audioService.play(this.emptyTrashAudio);
-    result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, false, true);
+    const isRecycleBin = true;
+    const isFile = false;
+
+    await this._audioService.play(this.emptyTrashAudio);
+    result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, isFile, isRecycleBin);
     if(result){
       this._menuService.resetStoreData();
       await this.loadFiles();
