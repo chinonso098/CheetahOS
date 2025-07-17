@@ -337,17 +337,6 @@ export class FileService implements BaseService{
         });
     }
 
-    // public  getFileEntriesFromDirectory(fileList:string[], directory:string):FileEntry[]{
-
-    //     for(let i = 0; i < fileList.length; i++){
-    //         const  file = fileList[i];
-    //         const fileEntry = new FileEntry();
-    //         fileEntry.setName = basename(file, extname(file));
-    //         fileEntry.setPath = resolve(directory, file);
-    //         this._directoryFileEntires.push(fileEntry);
-    //     }
-    //     return this._directoryFileEntires;
-    // }
 
     /**
      * Extracts the file or folder name from a full path.
