@@ -25,7 +25,8 @@ declare const SiriWave:any;
 @Component({
   selector: 'cos-audioplayer',
   templateUrl: './audioplayer.component.html',
-  styleUrls: ['./audioplayer.component.css']
+  styleUrls: ['./audioplayer.component.css'],
+  
 })
 export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit  {
 

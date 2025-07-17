@@ -12,6 +12,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
   selector: 'cos-taskbar',
   templateUrl: './taskbar.component.html',
   styleUrls: ['./taskbar.component.css'],
+  
     animations: [
     trigger('tskBarSlideStatusAnimation', [
       state('slideDown', style({ bottom: '-40px' })),

@@ -15,7 +15,8 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 @Component({
   selector: 'cos-taskbarentries',
   templateUrl: './taskbarentries.component.html',
-  styleUrls: ['./taskbarentries.component.css']
+  styleUrls: ['./taskbarentries.component.css'],
+  
 })
 export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 

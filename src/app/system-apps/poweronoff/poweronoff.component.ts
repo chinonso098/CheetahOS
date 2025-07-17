@@ -11,7 +11,8 @@ import { ComponentType } from 'src/app/system-files/system.types';
 @Component({
   selector: 'cos-poweronoff',
   templateUrl: './poweronoff.component.html',
-  styleUrl: './poweronoff.component.css'
+  styleUrl: './poweronoff.component.css',
+  
 })
 export class PowerOnOffComponent implements OnInit, AfterViewInit {
 

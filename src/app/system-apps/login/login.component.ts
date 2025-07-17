@@ -13,7 +13,8 @@ import { ComponentType } from 'src/app/system-files/system.types';
 @Component({
   selector: 'cos-login',
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrl: './login.component.css',
+  
 })
 
 export class LoginComponent implements OnInit, AfterViewInit {

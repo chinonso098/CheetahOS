@@ -6,7 +6,8 @@ import { ComponentType } from 'src/app/system-files/system.types';
 @Component({
   selector: 'cos-greeting',
   templateUrl: './greeting.component.html',
-  styleUrls: ['./greeting.component.css']
+  styleUrls: ['./greeting.component.css'],
+  
 })
 export class GreetingComponent implements OnInit, BaseComponent {
   @Input() priorUId = Constants.EMPTY_STRING;

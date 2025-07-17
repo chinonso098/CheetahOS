@@ -10,7 +10,8 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'cos-search',
   templateUrl: './search.component.html',
-  styleUrl: './search.component.css'
+  styleUrl: './search.component.css',
+  
 })
 
 export class SearchComponent implements OnDestroy {

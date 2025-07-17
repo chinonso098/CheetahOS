@@ -20,7 +20,8 @@ import { MenuService } from 'src/app/shared/system-service/menu.services';
 @Component({
   selector: 'cos-startmenu',
   templateUrl: './startmenu.component.html',
-  styleUrls: ['./startmenu.component.css']
+  styleUrls: ['./startmenu.component.css'],
+  
 })
 
 export class StartMenuComponent implements OnInit, AfterViewInit {
@@ -191,14 +192,8 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   private async loadFilesInfoAsync():Promise<void>{
     this.startMenuFiles = [];
     this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(this.START_MENU_DIRECTORY);
-    this._startMenuDirectoryFilesEntries = this._fileService.getFileEntriesFromDirectory(directoryEntries,this.START_MENU_DIRECTORY);
-
-    for(let i = 0; i < directoryEntries.length; i++){
-      const fileEntry = this._startMenuDirectoryFilesEntries[i];
-      const fileInfo = await this._fileService.getFileInfoAsync(fileEntry.getPath);
-      this.startMenuFiles.push(fileInfo)
-    }
+    const directoryEntries  = await this._fileService.loadDirectoryFiles(this.START_MENU_DIRECTORY);
+    this.startMenuFiles.push(...directoryEntries)
   }
 
   runProcess(file:FileInfo, evt:MouseEvent):void{

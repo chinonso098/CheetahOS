@@ -28,6 +28,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
   selector: 'cos-photoviewer',
   templateUrl: './photoviewer.component.html',
   styleUrls: ['./photoviewer.component.css'],
+  
   animations: [
     trigger('slideToggle', [
       transition( '* => *', [
@@ -201,7 +202,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
         // else, go fetch.
         const dirPath = dirname(this._fileInfo.getCurrentPath);
         //console.log('dirPath:', dirPath);
-        const entries:string[] = await this._fileService.getDirectoryEntriesAsync(dirPath);
+        const entries:string[] = await this._fileService.readDirectory(dirPath);
 
         //check for images
         for(const entry of entries){

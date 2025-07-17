@@ -18,7 +18,8 @@ import { Constants } from 'src/app/system-files/constants';
 @Component({
   selector: 'cos-basicwindow',
   templateUrl: './basicwindow.component.html',
-  styleUrl: './basicwindow.component.css'
+  styleUrl: './basicwindow.component.css',
+  
 })
  export class BasicWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
    @ViewChild('bdivWindow') bdivWindow!: ElementRef;

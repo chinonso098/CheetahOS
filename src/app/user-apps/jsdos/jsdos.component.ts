@@ -22,7 +22,8 @@ declare let Dos: any;
 @Component({
   selector: 'cos-jsdos',
   templateUrl: './jsdos.component.html',
-  styleUrls: ['./jsdos.component.css']
+  styleUrls: ['./jsdos.component.css'],
+  
 })
 export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
   @ViewChild('doswindow') dosWindow!: ElementRef; 

@@ -10,7 +10,8 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'cos-startbutton',
   templateUrl: './startbutton.component.html',
-  styleUrls: ['./startbutton.component.css']
+  styleUrls: ['./startbutton.component.css'],
+  
 })
 export class StartButtonComponent implements OnDestroy {
   private _processIdService:ProcessIDService;

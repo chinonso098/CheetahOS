@@ -147,7 +147,7 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             if(dlDest === '.'){ dest = this.currentDirectoryPath; }
 
             if(filePathRegex.test(dlDest)){
-               const result = await this._fileService.checkIfExistsAsync(dlDest);
+               const result = await this._fileService.exists(dlDest);
                if(!result){
                 return {response:'download folder does not exist', result:true};
                }
@@ -521,7 +521,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         }else{
             fixedPath = `${this.currentDirectoryPath}/${path}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
         }
-        const res = await this._fileService.checkIfExistsAsync(fixedPath);
+        const res = await this._fileService.exists(fixedPath);
         if(res){
             this.currentDirectoryPath = fixedPath;
             result = {response:fixedPath, result:res};
@@ -581,11 +581,11 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         console.log('directory:', directory);
         console.log('fallBackDirPath:', this.fallBackDirPath);
 
-        const firstDirectoryCheck = await this._fileService.checkIfExistsAsync(directory);
+        const firstDirectoryCheck = await this._fileService.exists(directory);
         let secondDirectoryCheck = false;
 
         if(!firstDirectoryCheck){
-            secondDirectoryCheck = await this._fileService.checkIfExistsAsync(this.fallBackDirPath);
+            secondDirectoryCheck = await this._fileService.exists(this.fallBackDirPath);
 
             if(secondDirectoryCheck){
                 directory = this.fallBackDirPath;
@@ -781,7 +781,7 @@ touch <filename>{start_char..end_char}`;
             const parts = arg0.split(Constants.BLANK_SPACE)
             const fileName = parts[1];
 
-            const result = await this._fileService.checkIfExistsAsync(`${this.currentDirectoryPath}/${fileName}`);
+            const result = await this._fileService.exists(`${this.currentDirectoryPath}/${fileName}`);
             if(result){
                 const textCntnt = await this._fileService.getFileAsTextAsync(`${this.currentDirectoryPath}/${fileName}`);
 
@@ -1018,14 +1018,8 @@ Mandatory argument to long options are mandotory for short options too.
     private async loadFilesInfoAsync(directory:string):Promise<void>{
         this.files = [];
         this._fileService.resetDirectoryFiles();
-        const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(directory);
-        this._directoryFilesEntries = this._fileService.getFileEntriesFromDirectory(directoryEntries,directory);
+        const directoryEntries  = await this._fileService.loadDirectoryFiles(directory);
+        this.files.push(...directoryEntries)
     
-        for(let i = 0; i < directoryEntries.length; i++){
-          const fileEntry = this._directoryFilesEntries[i];
-          const fileInfo = await this._fileService.getFileInfoAsync(fileEntry.getPath);
-    
-          this.files.push(fileInfo)
-        }
     }
 }

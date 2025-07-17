@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, Input } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, Input, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -19,9 +19,10 @@ declare const THREE: any;
 @Component({
   selector: 'cos-warpingstarfield',
   templateUrl: './warpingstarfield.component.html',
-  styleUrl: './warpingstarfield.component.css'
+  styleUrl: './warpingstarfield.component.css',
+  
 })
-export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, AfterViewInit {
+export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, AfterViewInit, OnInit {
 
   @ViewChild('canvas', {static: true}) canvasRef!: ElementRef;
   @ViewChild('starfield', {static: true}) starfield!: ElementRef;

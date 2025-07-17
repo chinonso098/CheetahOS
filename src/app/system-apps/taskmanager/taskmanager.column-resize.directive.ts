@@ -2,7 +2,8 @@ import { Directive, Output, ElementRef, EventEmitter, HostListener, Renderer2 } 
 
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector
-  selector: '[columnResize]'
+  selector: '[columnResize]',
+  
 })
 export class ColumnResizeDirective {
   private startX!: number;

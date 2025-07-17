@@ -24,7 +24,8 @@ declare const Quill:any;
 @Component({
   selector: 'cos-texteditor',
   templateUrl: './texteditor.component.html',
-  styleUrls: ['./texteditor.component.css']
+  styleUrls: ['./texteditor.component.css'],
+  
 })
 
 

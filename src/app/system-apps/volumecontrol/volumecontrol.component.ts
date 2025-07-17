@@ -5,7 +5,8 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 @Component({
   selector: 'cos-volumecontrol',
   templateUrl: './volumecontrol.component.html',
-  styleUrl: './volumecontrol.component.css'
+  styleUrl: './volumecontrol.component.css',
+  
 })
 export class VolumeControlComponent implements AfterViewInit {
   private _audioService!:AudioService

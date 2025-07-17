@@ -35,6 +35,7 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
   selector: 'cos-desktop',
   templateUrl: './desktop.component.html',
   styleUrls: ['./desktop.component.css'],
+  
   animations: [
     trigger('slideStatusAnimation', [
       state('slideOut', style({ right: '-480px' })),
@@ -291,7 +292,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this._fileService.dirFilesUpdateNotify.subscribe(() =>{
       if(this._fileService.getEventOriginator() === this.name){
-        this.loadFilesInfoAsync();
+        this.loadFiles();
         this._fileService.removeEventOriginator();
       }
     });
@@ -331,11 +332,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.hideDesktopContextMenuAndOthers();
     this.initClippy();
 
-    this.removeVantaJSSideEffect();
-
-    setTimeout(async () => {
-          await this.loadFilesInfoAsync();
-    }, this.SECONDS_DELAY[3]);
+   this.removeVantaJSSideEffect();
+    await CommonFunctions.sleep(this.SECONDS_DELAY[3])
+    await this.loadFiles();
   }
 
   ngOnDestroy(): void {
@@ -756,7 +755,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async refresh():Promise<void>{
     this.isIconInFocusDueToPriorAction = false;
-    await this.loadFilesInfoAsync();
+    await this.loadFiles();
   }
 
   hideDesktopIcon():void{
@@ -1262,18 +1261,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         
   }
   
-  private async loadFilesInfoAsync():Promise<void>{
-      this.files = [];
-      this._fileService.resetDirectoryFiles();
-      const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(this.directory);
-      this._directoryFilesEntries = this._fileService.getFileEntriesFromDirectory(directoryEntries,this.directory);
-  
-      for(let i = 0; i < directoryEntries.length; i++){
-        const fileEntry = this._directoryFilesEntries[i];
-        const fileInfo = await this._fileService.getFileInfoAsync(fileEntry.getPath);
-        this.files.push(fileInfo)
-      }
-  }
+  protected async loadFiles(): Promise<void> {
+    this.files = [];
+		this.files = await this._fileService.loadDirectoryFiles(this.directory);
+	}
   
   removeVantaJSSideEffect(): void {
     // VANTA js wallpaper is adding an unwanted style position:relative and z-index:1
@@ -1286,9 +1277,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }, this.SECONDS_DELAY[1]);
   }
 
-  runProcess(file:FileInfo):void{
+  async runProcess(file:FileInfo):Promise<void>{
     console.log('desktopmanager-runProcess:',file)
-    this._audioService.play(this.cheetahNavAudio);
+    await this._audioService.play(this.cheetahNavAudio);
     this._processHandlerService.startApplicationProcess(file);
     this.btnStyleAndValuesReset();
   }
@@ -1936,19 +1927,23 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
     if(result){
       this._menuService.resetStoreData();
-      await this.loadFilesInfoAsync();
+      await this.loadFiles();
     }
   }
 
   async onEmptyRecyleBin():Promise<void>{
     let result = false;
-    this._audioService.play(this.emptyTrashAudio);
-    result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, false, true);
+    const isRecycleBin = true;
+    const isFile = false;
+
+    await this._audioService.play(this.emptyTrashAudio);
+    result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, isFile, isRecycleBin);
     if(result){
       this._menuService.resetStoreData();
-      await this.loadFilesInfoAsync();
+      await this.loadFiles();
     }
   }
+
 
   async createShortCut(): Promise<void>{
     const selectedFile = this.selectedFile;
@@ -1971,7 +1966,7 @@ OpensWith=${selectedFile.getOpensWith}
     shortCut.setFileName= `${selectedFile.getFileName} - ${Constants.SHORTCUT}${Constants.URL}`;
     const result = await this._fileService.writeFileAsync(this.directory, shortCut);
     if(result){
-      await this.loadFilesInfoAsync();
+      await this.loadFiles();
     }
   }
   
@@ -2092,12 +2087,12 @@ OpensWith=${selectedFile.getOpensWith}
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         const fileIdx = this.files.findIndex(f => (dirname(f.getCurrentPath) === dirname(this.selectedFile.getCurrentPath)) && (f.getFileName === this.selectedFile.getFileName));
         this.selectedFile.setFileName = renameText;
-        this.selectedFile.setDateModified = Date.now();
+        this.selectedFile.setDateModified = Date.now().toString();
         this.files[fileIdx] = this.selectedFile;
 
         this.renameForm.reset();
         this._menuService.resetStoreData();
-        await this.loadFilesInfoAsync();
+        await this.loadFiles();
       }
     }else{
       this.renameForm.reset();

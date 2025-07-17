@@ -7,7 +7,8 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 @Component({
   selector: 'cos-taskbarpreviews',
   templateUrl: './taskbarpreviews.component.html',
-  styleUrl: './taskbarpreviews.component.css'
+  styleUrl: './taskbarpreviews.component.css',
+  
 })
 export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
 

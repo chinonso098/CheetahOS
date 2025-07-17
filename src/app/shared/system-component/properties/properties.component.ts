@@ -15,7 +15,8 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 @Component({
   selector: 'cos-properties',
   templateUrl: './properties.component.html',
-  styleUrl: './properties.component.css'
+  styleUrl: './properties.component.css',
+  
 })
 
 export class PropertiesComponent implements BaseComponent, OnChanges{
@@ -126,12 +127,12 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   }
 
   async getFolderContentDetails():Promise<void>{
-    const count =  await this._fileService.getCountOfFolderItemsAsync(this.fileInput.getCurrentPath);
+    const count =  await this._fileService.countFolderItems(this.fileInput.getCurrentPath);
 
     if(count === Constants.NUM_ZERO){
       this.contains = '0 Files, 0 Folders';
     }else{
-      this.contains = await this._fileService.getDetailedCountOfFolderItemsAsync(this.fileInput.getCurrentPath);
+      this.contains = await this._fileService.getFullCountOfFolderItems(this.fileInput.getCurrentPath);
     }
   }
 

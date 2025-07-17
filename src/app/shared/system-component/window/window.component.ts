@@ -21,7 +21,8 @@ import { Constants } from 'src/app/system-files/constants';
    selector: 'cos-window',
    templateUrl: './window.component.html',
    animations: [openCloseAnimation,hideShowAnimation,minimizeMaximizeAnimation],
-   styleUrls: ['./window.component.css']
+   styleUrls: ['./window.component.css'],
+   
  })
  export class WindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
    @ViewChild('divWindow') divWindow!: ElementRef;
