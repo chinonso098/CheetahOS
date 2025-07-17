@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { Constants } from 'src/app/system-files/constants';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -6,7 +7,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
   selector: 'cos-taskbarentry',
   templateUrl: './taskbarentry.component.html',
   styleUrls: ['./taskbarentry.component.css'],
-  
+  standalone:false,
 })
 export class TaskBarEntryComponent implements OnInit, OnChanges {
 
