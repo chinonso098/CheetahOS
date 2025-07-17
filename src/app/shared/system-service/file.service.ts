@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { FileInfo } from "src/app/system-files/file.info";
 import { ShortCut } from "src/app/system-files/shortcut";
-import {extname, basename, resolve, dirname} from 'path';
+import {extname, basename, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FSModule } from "src/osdrive/Cheetah/System/BrowserFS/node/core/FS";
 import { FileEntry } from 'src/app/system-files/file.entry';
@@ -62,8 +62,7 @@ export class FileService implements BaseService{
 
     
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService,
-                sessionManagmentService:SessionManagmentService
-    ){ 
+                sessionManagmentService:SessionManagmentService){ 
         this.initBrowserFS();
         this._fileExistsMap =  new Map<string, string>();
         this._restorePoint =  new Map<string, string>();
@@ -138,7 +137,6 @@ export class FileService implements BaseService{
             );
         });
     }
-
 
     public async checkIfDirectoryAsync(path:string):Promise<boolean> {
         return new Promise<boolean>((resolve) =>{
@@ -262,7 +260,7 @@ export class FileService implements BaseService{
                         console.error('getExtraFileMetaDataAsync error:',err)
                         resolve(new FileMetaData());
                     }
-                    resolve(new FileMetaData(stats?.atime, stats?.birthtime, stats?.mtime, stats?.size, stats?.blksize, stats?.mode));
+                    resolve(new FileMetaData(stats?.atime, stats?.birthtime, stats?.mtime, stats?.size, stats?.blksize, stats?.mode, stats?.isDirectory()));
                 });
            });
         });
@@ -337,7 +335,6 @@ export class FileService implements BaseService{
         });
     }
 
-
     /**
      * Extracts the file or folder name from a full path.
      * - If the path is a file, returns the file name with extension (e.g. "Test.png").
@@ -349,7 +346,6 @@ export class FileService implements BaseService{
     private getNameFromPath(path: string): string {
         return basename(path);
     }
-
 
 	async loadDirectoryFiles(path: string): Promise<FileInfo[]>{
 		try{
@@ -367,8 +363,6 @@ export class FileService implements BaseService{
 			return [];
 		}
 	}
-
-
 
 	private async getFileInfo(path:string):Promise<FileInfo>{
  
