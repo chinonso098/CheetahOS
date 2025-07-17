@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -23,7 +24,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   selector: 'cos-chatter',
   templateUrl: './chatter.component.html',
   styleUrl: './chatter.component.css',
-  
+  standalone:false,
   providers: [SocketService] // New instance per component
 })
 export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{

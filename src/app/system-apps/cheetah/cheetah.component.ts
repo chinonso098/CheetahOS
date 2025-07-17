@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, OnInit, AfterViewInit} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Constants } from "src/app/system-files/constants";
@@ -13,7 +14,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   selector:'cos-cheetah',
   templateUrl: './cheetah.component.html',
   styleUrls: ["./cheetah.component.css"],
-  
+  standalone:false,
 })
 
 export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{

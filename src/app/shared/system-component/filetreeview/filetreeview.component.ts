@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 //Option A
 
 import { Component, Input, OnInit, OnChanges, ElementRef, ViewChild } from '@angular/core';
@@ -16,7 +17,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
   selector: 'cos-filetreeview',
   templateUrl: './filetreeview.component.html',
   styleUrl: './filetreeview.component.css',
-  
+  standalone:false,
 })
 export class FileTreeViewComponent implements OnInit, OnChanges {
   @Input() pid = Constants.NUM_ZERO;

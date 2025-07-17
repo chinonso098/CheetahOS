@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit, Renderer2, Input} from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -26,7 +27,7 @@ declare const marked:any;
   selector: 'cos-markdownviewer',
   templateUrl: './markdownviewer.component.html',
   styleUrl: './markdownviewer.component.css',
-  
+  standalone:false,
 })
 
 export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, AfterViewInit, OnInit {

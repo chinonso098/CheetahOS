@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { GeneralMenu } from 'src/app/shared/system-component/menu/menu.types';
@@ -14,7 +15,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
   selector: 'cos-login',
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
-  
+  standalone:false,
 })
 
 export class LoginComponent implements OnInit, AfterViewInit {

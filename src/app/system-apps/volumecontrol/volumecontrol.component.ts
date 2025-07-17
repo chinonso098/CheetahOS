@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { AfterViewInit, Component } from '@angular/core';
 import { Constants } from 'src/app/system-files/constants';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
@@ -6,7 +7,7 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
   selector: 'cos-volumecontrol',
   templateUrl: './volumecontrol.component.html',
   styleUrl: './volumecontrol.component.css',
-  
+  standalone:false,
 })
 export class VolumeControlComponent implements AfterViewInit {
   private _audioService!:AudioService

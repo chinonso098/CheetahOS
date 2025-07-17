@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import {Component, Input, OnChanges, SimpleChanges, AfterViewInit} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { UserNotificationType } from 'src/app/system-files/notification.type';
@@ -20,7 +21,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   selector: 'cos-dialog',
   templateUrl: './dialog.component.html',
   styleUrls: ['./dialog.component.css'],
-  
+  standalone:false,
 })
 
 export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit {

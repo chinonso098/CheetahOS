@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -12,7 +13,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
   selector: 'cos-poweronoff',
   templateUrl: './poweronoff.component.html',
   styleUrl: './poweronoff.component.css',
-  
+  standalone:false,
 })
 export class PowerOnOffComponent implements OnInit, AfterViewInit {
 

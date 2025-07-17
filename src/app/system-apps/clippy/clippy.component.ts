@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, OnChanges, ViewChild, ChangeDetectorRef, SimpleChanges  } from '@angular/core';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -9,7 +10,7 @@ import { Process } from 'src/app/system-files/process';
   selector: 'cos-clippy',
   templateUrl: './clippy.component.html',
   styleUrl: './clippy.component.css',
-  
+  standalone:false,
 })
 
 export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChanges, AfterViewInit {

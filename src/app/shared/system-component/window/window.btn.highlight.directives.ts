@@ -1,9 +1,10 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Directive, ElementRef, HostListener } from '@angular/core';
 
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector
   selector: '[appHighlight]',
-  
+  standalone:false,
 })
 export class HighlightDirective {
 
