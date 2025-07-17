@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild, ElementRef, ViewEncapsulation, Input} from '@angular/core';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -32,7 +33,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   selector: 'cos-fileexplorer',
   templateUrl: './fileexplorer.component.html',
   styleUrls: ['./fileexplorer.component.css'],
-  
+  standalone:false,
   encapsulation: ViewEncapsulation.None,
 })
 

@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChanges, ViewChild, ChangeDetectorRef, SimpleChanges, Renderer2 } from '@angular/core';
 
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -22,7 +23,7 @@ import { Constants } from 'src/app/system-files/constants';
    templateUrl: './window.component.html',
    animations: [openCloseAnimation,hideShowAnimation,minimizeMaximizeAnimation],
    styleUrls: ['./window.component.css'],
-  
+   standalone:false,
  })
  export class WindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
    @ViewChild('divWindow') divWindow!: ElementRef;

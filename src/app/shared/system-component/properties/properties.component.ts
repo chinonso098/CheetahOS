@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { FileInfo } from 'src/app/system-files/file.info';
@@ -16,7 +17,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   selector: 'cos-properties',
   templateUrl: './properties.component.html',
   styleUrl: './properties.component.css',
-  
+  standalone:false,
 })
 
 export class PropertiesComponent implements BaseComponent, OnChanges{

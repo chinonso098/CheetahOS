@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -25,7 +26,7 @@ declare const Quill:any;
   selector: 'cos-texteditor',
   templateUrl: './texteditor.component.html',
   styleUrls: ['./texteditor.component.css'],
-  
+  standalone:false,
 })
 
 

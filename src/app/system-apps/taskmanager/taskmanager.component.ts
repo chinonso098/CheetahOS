@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, OnInit,OnDestroy, AfterViewInit, ViewChild, ElementRef, Renderer2, Input} from '@angular/core';
 import { Subject, Subscription, interval, switchMap } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -21,7 +22,7 @@ import { AppState } from 'src/app/system-files/state/state.interface';
   selector: 'cos-taskmanager',
   templateUrl: './taskmanager.component.html',
   styleUrls: ['./taskmanager.component.css'],
-  
+  standalone:false,
 })
 export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,AfterViewInit {
 

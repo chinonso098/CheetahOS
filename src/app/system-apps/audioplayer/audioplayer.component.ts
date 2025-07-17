@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -26,7 +27,7 @@ declare const SiriWave:any;
   selector: 'cos-audioplayer',
   templateUrl: './audioplayer.component.html',
   styleUrls: ['./audioplayer.component.css'],
-  
+  standalone:false,
 })
 export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit  {
 

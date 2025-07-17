@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef, signal, WritableSignal, Input } from '@angular/core';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -28,7 +29,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
   selector: 'cos-photoviewer',
   templateUrl: './photoviewer.component.html',
   styleUrls: ['./photoviewer.component.css'],
-  
+  standalone:false,
   animations: [
     trigger('slideToggle', [
       transition( '* => *', [

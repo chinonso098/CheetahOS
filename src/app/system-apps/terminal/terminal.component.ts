@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, ViewChild, OnInit, AfterViewInit, OnDestroy, Input } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -22,7 +23,7 @@ import { FileService } from 'src/app/shared/system-service/file.service';
   selector: 'cos-terminal',
   templateUrl: './terminal.component.html',
   styleUrls: ['./terminal.component.css'],
-  
+  standalone:false,
 })
 export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, OnDestroy{
 
