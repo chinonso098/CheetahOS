@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, OnInit } from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -11,7 +12,8 @@ import { SystemNotificationService } from 'src/app/shared/system-service/system.
   selector: 'cos-systemtray',
   templateUrl: './systemtray.component.html',
   styleUrl: './systemtray.component.css',
-  
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 export class SystemtrayComponent implements OnInit {
 

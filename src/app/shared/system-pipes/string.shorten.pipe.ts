@@ -1,7 +1,9 @@
 import { Pipe, PipeTransform } from "@angular/core";
 
+@Pipe({ name: 'truncateString',  
 
-@Pipe({ name: 'truncateString',   })
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false  })
 export class TruncatePipe implements PipeTransform {
   
 

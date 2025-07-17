@@ -20,7 +20,8 @@ declare const THREE: any;
   selector: 'cos-warpingstarfield',
   templateUrl: './warpingstarfield.component.html',
   styleUrl: './warpingstarfield.component.css',
-  
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, AfterViewInit, OnInit {
 

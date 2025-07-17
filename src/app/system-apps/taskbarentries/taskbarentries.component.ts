@@ -16,7 +16,8 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
   selector: 'cos-taskbarentries',
   templateUrl: './taskbarentries.component.html',
   styleUrls: ['./taskbarentries.component.css'],
-  
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 

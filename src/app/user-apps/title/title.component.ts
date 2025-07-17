@@ -16,7 +16,8 @@ import { AppState } from 'src/app/system-files/state/state.interface';
   selector:'cos-title',
   templateUrl: './title.component.html',
   styleUrls: ["./title.component.css"],
-  
+   // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 
 export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{

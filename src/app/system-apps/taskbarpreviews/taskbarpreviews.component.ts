@@ -8,7 +8,8 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
   selector: 'cos-taskbarpreviews',
   templateUrl: './taskbarpreviews.component.html',
   styleUrl: './taskbarpreviews.component.css',
-  
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
 

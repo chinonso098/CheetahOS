@@ -10,7 +10,8 @@ import { MenuAction } from './menu.enums';
   selector: 'cos-menu',
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.css'],
-  
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 export class MenuComponent implements OnDestroy{
 

@@ -19,7 +19,8 @@ import { Constants } from 'src/app/system-files/constants';
   selector: 'cos-basicwindow',
   templateUrl: './basicwindow.component.html',
   styleUrl: './basicwindow.component.css',
-  
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
  export class BasicWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
    @ViewChild('bdivWindow') bdivWindow!: ElementRef;

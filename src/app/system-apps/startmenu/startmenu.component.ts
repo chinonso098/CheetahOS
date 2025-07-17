@@ -21,7 +21,8 @@ import { MenuService } from 'src/app/shared/system-service/menu.services';
   selector: 'cos-startmenu',
   templateUrl: './startmenu.component.html',
   styleUrls: ['./startmenu.component.css'],
-  
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 
 export class StartMenuComponent implements OnInit, AfterViewInit {
