@@ -57,13 +57,15 @@
     transition: transform 0.1s ease-in-out; 
     flex-direction: column;
     place-items: center;
+    align-items: center;
     font-family: sans-serif;
 }
 
 .desktopIcon-img-section {
     margin-bottom: -2px; 
     place-items:center;
-    display: inline-block;
+    display: block;
+    margin: 0 auto;
     position: relative;
 }
 
@@ -99,7 +101,6 @@
 
 .desktopIcon-label-section{
     position: relative;
-    top: -2px;
     height: min-content
 }
 
