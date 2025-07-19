@@ -1472,14 +1472,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   removeBtnStyle(id:number):void{
     const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
+    const figCapElement = document.getElementById(`figCap${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = Constants.EMPTY_STRING;
       btnElement.style.borderColor = Constants.EMPTY_STRING;
+    }
+
+    if(figCapElement){
+        figCapElement.style.overflow = 'hidden'; 
+        figCapElement.style.overflowWrap = 'unset'
+        figCapElement.style.webkitLineClamp = '2';
     }
   }
 
   setBtnStyle(id:number, isMouseHover:boolean):void{
     const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
+    const figCapElement = document.getElementById(`figCap${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
       btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
@@ -1493,6 +1501,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(!isMouseHover && this.isIconInFocusDueToPriorAction){
         btnElement.style.backgroundColor = Constants.EMPTY_STRING;
         btnElement.style.border = '1px solid white'
+      }
+    }
+
+    if(figCapElement){
+      if(this.selectedElementId == id){
+          figCapElement.style.overflow = 'unset'; 
+          figCapElement.style.overflowWrap = 'break-word';
+          figCapElement.style.webkitLineClamp = 'unset'
       }
     }
   }
