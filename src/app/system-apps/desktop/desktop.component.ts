@@ -1311,7 +1311,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.doBtnClickThings(id);
 
     const axis = this.checkAndHandleDesktopIconCntxtMenuBounds(evt, menuHeight);
-  
     this.iconCntxtMenuStyle = {
       'position':'absolute',
       'transform':`translate(${String(evt.clientX + Constants.NUM_TWO)}px, ${String(axis.yAxis)}px)`,
@@ -1362,8 +1361,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const windowHeight =  mainWindow?.offsetHeight || Constants.NUM_ZERO;
     const verticalSum = evt.clientY + menuHeight;
 
+    console.log('verticalSum:', verticalSum);
 
-    if(verticalSum >= windowHeight){
+    if(verticalSum >= windowHeight || (windowHeight - verticalSum) <= 40){
       verticalShift = true;
       const shifMenuUpBy = verticalSum - windowHeight;
       yAxis = evt.clientY - (shifMenuUpBy + taskBarHeight);

@@ -48,27 +48,23 @@
 }
 
 .desktopIcon-btn{
+    position: relative;
+    display: flex;
     background-color: transparent;
     border: 1px solid transparent;
     width: 90px;
-    /* height: 70px; */
     height: fit-content;
     transition: transform 0.1s ease-in-out; 
-    display: flex;
     flex-direction: column;
     place-items: center;
-    /* align-items: center; */
     font-family: sans-serif;
 }
 
 .desktopIcon-img-section {
-    /* display: flex; */
-    /* flex-direction: column;*/
     margin-bottom: -2px; 
     place-items:center;
     display: inline-block;
     position: relative;
-    /* display: inline-block; */
 }
 
 .desktopIcon-img-container{
@@ -129,7 +125,6 @@
                 0 2px 2px rgba(0, 0, 0, 50%),
                 0 2px 3px rgba(0, 0, 0, 25%);
 
-    top: 0px;
     line-height: normal;
     overflow: hidden;
     width: 90px;
@@ -156,26 +151,6 @@
     overflow:hidden;
     resize: none;
  }
-
-
-.desktopIcon-input{
-    font-size: 12px;
-    /* text-overflow:ellipsis; */
-    /* resize: none; */
-    
-    overflow: hidden;
-    box-sizing: border-box;
-    height: 20px;
-    width: 90px;
-    border: 0.5px dotted #ccc;
-    padding: 4px;
-    line-height: 1.4;
-}
-
-.desktopIcon-input::selection{
-    background-color: #0056b3;
-    color: #fff;
-}
 
 .tool-tip-container{
     position: absolute;
