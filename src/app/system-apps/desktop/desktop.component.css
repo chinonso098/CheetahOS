@@ -36,7 +36,7 @@
     height: calc(100% - 40px);
     width: 100%;
     padding: 5px 0;
-    row-gap: 20px;
+    row-gap: 25px;
     z-index: 1;
 }
 
@@ -103,16 +103,16 @@
 
 .desktopIcon-label-section{
     position: relative;
+    top: -2px;
     height: min-content
 }
 
 .desktopIcon-caption{
     -webkit-box-orient: vertical;
-    color: #fff;
     display: -webkit-box;
+    color: #fff;
     font-size: 12px;
     letter-spacing: 0.1px;
-    /* line-clamp: 2; */
     -webkit-line-clamp:2;
     position: relative;
     text-align:center;
@@ -129,31 +129,34 @@
                 0 2px 2px rgba(0, 0, 0, 50%),
                 0 2px 3px rgba(0, 0, 0, 25%);
 
-    top: -1px;
-    /* line-height: 15px; */
+    top: 0px;
+    line-height: normal;
     overflow: hidden;
-    /* word-break: break-all;
-    white-space: nowrap; */
-    /* text-overflow: ellipsis;*/ /* Add "..." when text overflows */
     width: 90px;
 }
 
-.desktopIcon-rename-container{
+
+.desktopIcon-rename-form, .desktopIcon-rename-textbox{
     position: relative;
     display: none;
-    /* top: 2px; */
-    margin-bottom: 2px;
-    max-width: 90px;
-    min-height: 20px;
+    margin: 0;
+}
+
+.desktopIcon-rename-textbox{
+    position: relative;
+    display: none;
+    text-align: center;
+    top: 2px;
+    font-size: 12px;
+    font-weight:200;
+    margin-bottom: 1px;
+    width: 90px;
+    height: 20px;
     border: 1px solid #ccc;
     overflow:hidden;
-    z-index: 2;
+    resize: none;
  }
- .desktopIcon-form{
-    width: fit-content;
-    height: fit-content;
-    margin-bottom: -6px;
- }
+
 
 .desktopIcon-input{
     font-size: 12px;

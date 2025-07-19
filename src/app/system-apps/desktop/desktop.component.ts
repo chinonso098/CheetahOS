@@ -4,7 +4,6 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { BIRDS, GLOBE, HALO, RINGS, WAVE } from './vanta-object/vanta.interfaces';
-import { IconsSizes } from './desktop.enums';
 import { SortBys } from 'src/app/system-files/common.enums';
 import { Colors } from './colorutil/colors';
 import { FileInfo } from 'src/app/system-files/file.info';
@@ -23,7 +22,7 @@ import { SystemNotificationService } from 'src/app/shared/system-service/system.
 import { TaskBarIconInfo } from '../taskbarentries/taskbar.entries.type';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { FileEntry } from 'src/app/system-files/file.entry';
-import { mousePosition } from './desktop.types';
+import { mousePosition, IconsSizes, IconsSizesPX, ShortCutIconsSizes, ShortCutIconsBottom} from './desktop.types';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { VantaDefaults } from './vanta-object/vanta.defaults';
@@ -104,8 +103,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   isSortBySize = false;
   isSortByDateModified = false;
   isShiftSubMenuLeft = false;
-  isTaskBarHidden = false
-  isTaskBarTemporarilyVisible = false
+  isTaskBarHidden = false;
+  isTaskBarTemporarilyVisible = false;
 
   autoAlignIcons = true;
   autoArrangeIcons = true;
@@ -797,7 +796,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   loadOtherBackgrounds(i:number):void{
     const names:string[] = ["vanta-waves","vanta-rings","vanta-halo", "vanta-globe", "vanta-birds"]
     const bkgrounds:string[] = ["osdrive/Program-Files/Backgrounds/vanta.waves.min.js", "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
-                                 "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
+                                "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
         
 
     this._scriptService.loadScript(names[i], bkgrounds[i]).then(() =>{
@@ -899,45 +898,45 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   showTheDesktop():void{
-    const menuOption:GeneralMenu = {icon:'', label: 'Show open windows', action:this.showOpenWindows.bind(this)}
+    const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Show open windows', action:this.showOpenWindows.bind(this)}
     // raise show the destop evt
     this._menuService.showTheDesktop.next();
     this.taskBarContextMenuData[0] = menuOption;
   }
 
   resetMenuOption():void{
-    const menuOption:GeneralMenu = {icon:'', label: 'Show the desktop', action: this.showTheDesktop.bind(this)}
+    const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Show the desktop', action: this.showTheDesktop.bind(this)}
     this.taskBarContextMenuData[0] = menuOption;
   }
 
   showOpenWindows():void{
-    const menuOption:GeneralMenu = {icon:'', label: 'Show the desktop', action: this.showTheDesktop.bind(this)}
+    const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Show the desktop', action: this.showTheDesktop.bind(this)}
     this._menuService.showOpenWindows.next();
     this.taskBarContextMenuData[0] = menuOption;
   }
 
   hideTheTaskBar():void{
-    const menuOption:GeneralMenu = {icon:'', label: 'Show the taskbar', action:this.showTheTaskBar.bind(this)}
+    const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Show the taskbar', action:this.showTheTaskBar.bind(this)}
     this.isTaskBarHidden = true;
     this._systemNotificationServices.hideTaskBarNotify.next();
     this.taskBarContextMenuData[2] = menuOption;
   }
 
   showTheTaskBar():void{
-    const menuOption:GeneralMenu = {icon:'', label: 'Hide the taskbar', action:this.hideTheTaskBar.bind(this)}
+    const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Hide the taskbar', action:this.hideTheTaskBar.bind(this)}
     this.isTaskBarHidden = false;
     this._systemNotificationServices.showTaskBarNotify.next();
     this.taskBarContextMenuData[2] = menuOption;
   }
 
   mergeTaskBarButton():void{
-    const menuOption:GeneralMenu = {icon:'', label: 'Unmerge taskbar Icons', action:this.unMergeTaskBarButton.bind(this)}
+    const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Unmerge taskbar Icons', action:this.unMergeTaskBarButton.bind(this)}
     this._menuService.mergeTaskBarIcon.next();
     this.taskBarContextMenuData[3] = menuOption;
   }
 
   unMergeTaskBarButton():void{
-    const menuOption:GeneralMenu = {icon:'', label: 'Merge taskbar Icons', action: this.mergeTaskBarButton.bind(this)}
+    const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Merge taskbar Icons', action: this.mergeTaskBarButton.bind(this)}
     this._menuService.UnMergeTaskBarIcon.next();
     this.taskBarContextMenuData[3] = menuOption;
   }
@@ -960,26 +959,28 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   getDesktopMenuData():void{
+    const empty = Constants.EMPTY_STRING;
     this.deskTopMenu = [
-        {icon1:'',  icon2: `${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'View', nest:this.buildViewByMenu(), action: ()=>'', action1: this.shiftViewSubMenu.bind(this), emptyline:false},
-        {icon1:'',  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=>'', action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
-        {icon1:'',  icon2:'', label: 'Refresh', nest:[], action:this.refresh.bind(this), action1: ()=> '', emptyline:true},
-        {icon1:'',  icon2:'', label: 'Paste', nest:[], action:this.onPaste.bind(this), action1: ()=> '', emptyline:false},
+        {icon1:empty,  icon2: `${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'View', nest:this.buildViewByMenu(), action: ()=>empty, action1: this.shiftViewSubMenu.bind(this), emptyline:false},
+        {icon1:empty,  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=>empty, action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
+        {icon1:empty,  icon2:'', label: 'Refresh', nest:[], action:this.refresh.bind(this), action1: ()=> empty, emptyline:true},
+        {icon1:empty,  icon2:'', label: 'Paste', nest:[], action:this.onPaste.bind(this), action1: ()=> empty, emptyline:false},
         {icon1:`${Constants.IMAGE_BASE_PATH}terminal.png`, icon2:'', label:'Open in Terminal', nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
         {icon1:`${Constants.IMAGE_BASE_PATH}camera.png`, icon2:'', label:'Screen Shot', nest:[], action: this.captureComponentImg.bind(this), action1: ()=> '', emptyline:false},
-        {icon1:'',  icon2:'', label:'Next Background', nest:[], action: this.nextBackground.bind(this), action1: ()=> '', emptyline:false},
-        {icon1:'',  icon2:'', label:'Previous Background', nest:[], action: this.previousBackground.bind(this), action1: ()=> '', emptyline:true},
-        {icon1:'',  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> '', action1: this.shiftNewSubMenu.bind(this), emptyline:true},
-        {icon1:'',  icon2:'', label:'Many Thanks', nest:[], action: this.openMarkDownViewer.bind(this), action1: ()=> '', emptyline:false}
+        {icon1:empty,  icon2:'', label:'Next Background', nest:[], action: this.nextBackground.bind(this), action1: ()=> empty, emptyline:false},
+        {icon1:empty,  icon2:'', label:'Previous Background', nest:[], action: this.previousBackground.bind(this), action1: ()=> empty, emptyline:true},
+        {icon1:empty,  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> empty, action1: this.shiftNewSubMenu.bind(this), emptyline:true},
+        {icon1:empty,  icon2:'', label:'Many Thanks', nest:[], action: this.openMarkDownViewer.bind(this), action1: ()=> empty, emptyline:false}
       ]
   }
 
   getTaskBarContextData():void{
+    const empty = Constants.EMPTY_STRING;
     this.taskBarContextMenuData = [
-      {icon:'', label: 'Show the desktop', action: this.showTheDesktop.bind(this)},
-      {icon:'', label: 'Task Manager', action: this.openTaskManager.bind(this)},
-      {icon:'', label: 'Hide the taskbar', action:this.hideTheTaskBar.bind(this)},
-      {icon:'', label: 'Merge taskbar Icons', action: this.mergeTaskBarButton.bind(this)}
+      {icon:empty, label: 'Show the desktop', action: this.showTheDesktop.bind(this)},
+      {icon:empty, label: 'Task Manager', action: this.openTaskManager.bind(this)},
+      {icon:empty, label: 'Hide the taskbar', action:this.hideTheTaskBar.bind(this)},
+      {icon:empty, label: 'Merge taskbar Icons', action: this.mergeTaskBarButton.bind(this)}
     ]
   }
 
@@ -1204,6 +1205,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showTaskBarToolTip(data:unknown[]):void{
     const delay = 1500; //1.5secs
     const rect = data[0] as number[];
+    const xAxis = rect[0]; const yAxis = rect[1];
     const appName = data[1] as string;
 
     this.tskBarToolTipText = appName;
@@ -1213,7 +1215,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.tskBarToolTipStyle = {
         'position':'absolute',
         'z-index': Constants.NUM_FIVE,
-        'transform': `translate(${rect[0] - 6}px, ${rect[1] - 20}px)`
+        'transform': `translate(${xAxis- 6}px, ${yAxis - 20}px)`
       }
     }, delay);
   }
@@ -1478,7 +1480,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   setBtnStyle(id:number, isMouseHover:boolean):void{
     const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
     if(btnElement){
-      btnElement.style.height = 'min-content';
       btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
       btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
 
@@ -1556,9 +1557,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   // }
 
   handleIconHighLightState():void{
+
     //First case - I'm clicking only on the desktop icons
-    if((this.isBtnClickEvt && this.btnClickCnt >= Constants.NUM_ONE) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt == Constants.NUM_ZERO)){  
+    if((this.isBtnClickEvt && this.btnClickCnt >= Constants.NUM_ONE) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === Constants.NUM_ZERO)){  
       if(this.isRenameActive){
+        console.log('herer');
         this.isFormDirty();
       }
       if(this.isIconInFocusDueToPriorAction){
@@ -1577,7 +1580,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.hideCntxtMenuEvtCnt++;
       this.isHideCntxtMenuEvt = true;
       //Second case - I was only clicking on the desktop
-      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= Constants.NUM_ONE) && (!this.isBtnClickEvt && this.btnClickCnt == Constants.NUM_ZERO)){
+      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= Constants.NUM_ONE) && (!this.isBtnClickEvt && this.btnClickCnt === Constants.NUM_ZERO)){
         this.deskTopClickCounter++;
         this.btnStyleAndValuesReset();
 
@@ -1878,7 +1881,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   changeIconsSize(iconSize:string):void{
-    const iconsSizes:number[][] = [[30, 8, -12], [45, 12, -8], [80, 21, 1]];
+    const iconsSizes:number[][] = [[IconsSizesPX.SMALL_ICONS, ShortCutIconsSizes.SMALL_ICONS, ShortCutIconsBottom.SMALL_ICONS], 
+                                   [IconsSizesPX.MEDIUM_ICONS, ShortCutIconsSizes.MEDIUM_ICONS, ShortCutIconsBottom.MEDIUM_ICONS], 
+                                   [IconsSizesPX.LARGE_ICONS, ShortCutIconsSizes.LARGE_ICONS, ShortCutIconsBottom.LARGE_ICONS], 
+                                  ];
 
     const size = (iconSize === IconsSizes.SMALL_ICONS) ? iconsSizes[Constants.NUM_ZERO] :
                  (iconSize === IconsSizes.MEDIUM_ICONS) ? iconsSizes[Constants.NUM_ONE] :
@@ -1903,7 +1909,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   changeGridRowColSize():void{
-    const rowSpace  = 20; //row space of 20px between each icons
+    const rowSpace  = 25; //row space of 20px between each icons
 
     const colSize = (this.GRID_SIZE === this.MAX_GRID_SIZE) ? this.MAX_GRID_SIZE :
                     (this.GRID_SIZE === this.MID_GRID_SIZE) ? this.MID_GRID_SIZE :
@@ -1973,30 +1979,32 @@ OpensWith=${selectedFile.getOpensWith}
     }
   }
   
-  onInputChange(evt:KeyboardEvent):boolean{
-    const regexStr = '^[a-zA-Z0-9_.]+$';
-    if(evt.key === 'Enter'){
-      evt.preventDefault(); // prevent newline in textarea
-      this.isFormDirty(); // trigger form submit logic
+  onInputChange(evt: KeyboardEvent): boolean {
+    const regexStr = '^[a-zA-Z0-9_.\\s-]+$';
+    const key = evt.key;
 
+    // Block enter
+    if (key === 'Enter') {
+      evt.preventDefault();
+      evt.stopPropagation();
+      console.log('llasdlaldlasd')
+      this.isFormDirty();
       return true;
-    }else{
-      const res = new RegExp(regexStr).test(evt.key)
-      if(res){
-        this.hideInvalidCharsToolTip();
-        this.autoResize();
-        return res
-      }else{
-        this.showInvalidCharsToolTip();
+    }
 
-        setTimeout(()=>{ // hide after 6 secs
-          this.hideInvalidCharsToolTip();
-        },this.SECONDS_DELAY[0]) 
+    const isValid = new RegExp(regexStr).test(key);
 
-        return res;
-      }
+    if (isValid) {
+      this.hideInvalidCharsToolTip();
+      this.autoResize();
+      return true;
+    } else {
+      this.showInvalidCharsToolTip();
+      setTimeout(() => this.hideInvalidCharsToolTip(), this.SECONDS_DELAY[0]);
+      return false;
     }
   }
+
 
   autoResize() {
     const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.selectedElementId}`) as HTMLTextAreaElement;
@@ -2053,26 +2061,22 @@ OpensWith=${selectedFile.getOpensWith}
     const renameContainerElement= document.getElementById(`renameContainer${this.selectedElementId}`) as HTMLElement;
     const renameTxtBoxElement= document.getElementById(`renameTxtBox${this.selectedElementId}`) as HTMLInputElement;
     this.removeBtnStyle(this.selectedElementId);
-    
-    if(figCapElement){
+
+
+    if((figCapElement && renameContainerElement && renameTxtBoxElement)) {
       figCapElement.style.display = 'none';
-    }
-
-    if(renameContainerElement){
-
-      renameTxtBoxElement.style.textAlign = `calc(${this.GRID_SIZE}px / ${Constants.NUM_TWO}px)`;
-      renameTxtBoxElement.style.width = `${this.GRID_SIZE}px`;
-
       renameContainerElement.style.display = 'block';
+      
+      renameTxtBoxElement.style.display = 'block';
+      renameTxtBoxElement.style.zIndex = '3'; // ensure it's on top
+
       this.currentIconName = this.selectedFile.getFileName;
       this.renameForm.setValue({
         renameInput:this.currentIconName
       })
 
-
-
-      renameTxtBoxElement?.focus();
-      renameTxtBoxElement?.select();
+      renameTxtBoxElement.focus();
+      renameTxtBoxElement.select();
     }
   }
   
