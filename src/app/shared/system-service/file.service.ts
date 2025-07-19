@@ -1126,98 +1126,88 @@ OpensWith=${shortCutData.getOpensWith}
         return this.traverseAndSumFolderSize(queue, sizes);
     }
 
-    private async zipEntity(srcPath:string, isDirectory:boolean): Promise<boolean>{
-
+    private async zipEntity(srcPath: string, isDirectory: boolean): Promise<boolean> {
         const directory = dirname(srcPath);
-        const filePath = `${directory}${this.changeExtToZip(this.getNameFromPath(srcPath))}`;
+        const zipFileName = this.changeExtToZip(this.getNameFromPath(srcPath));
+        const zipFilePath = `${directory}/${zipFileName}`;
 
         const zip = new JSZip();
-        let result = false;
+        const result = isDirectory
+            ? await this.zipEntityHandlerAsync(srcPath, zip)
+            : await this.zipFile(srcPath, zip);
 
+        if (!result) return false;
 
-        if(isDirectory)
-            result = await this.zipEntityHandlerAsync(srcPath, zip);
-        else
-            result = await this.zipFile(srcPath, zip);
+        const data = await zip.generateAsync({ type: "blob" });
+        const writeResult = await this.writeRawAsync(zipFilePath, data);
 
-        if(result){
-            const data = await zip.generateAsync({type: "blob"});
-            const res = await this.writeRawAsync(filePath, data);
-
-            if(res === Constants.NUM_ZERO)
-                return true;
-            else
-                return false;
-        }
-
-        return result
+        return writeResult === Constants.NUM_ZERO;
     }
 
-    changeExtToZip(filename: string): string{
+    private changeExtToZip(filename: string): string {
         const lastDotIndex = filename.lastIndexOf('.');
-        if (lastDotIndex === Constants.MINUS_ONE) {
-            return `${filename}.cab`;
-        }
-        return `${filename.slice(0, lastDotIndex)}.cab`;
+        return lastDotIndex === Constants.MINUS_ONE
+            ? `${filename}.cab`
+            : `${filename.slice(0, lastDotIndex)}.cab`;
     }
 
-    private async zipFile(srcPath:string, zip:JSZip): Promise<boolean>{
+    private async zipFile(srcPath: string, zip: JSZip): Promise<boolean> {
         const extension = extname(srcPath);
-        const contents = await this.readRawAsync(srcPath); //contents retrieved as Uint8Array
+        const contents = await this.readRawAsync(srcPath); // Returns Uint8Array or null/undefined
 
-        if(contents){
-            if(Constants.AUDIO_FILE_EXTENSIONS.includes(extension)
-                || Constants.IMAGE_FILE_EXTENSIONS.includes(extension)
-                || Constants.VIDEO_FILE_EXTENSIONS.includes(extension)){
+        if (!contents) return false;
 
-        
-                const encoding:BufferEncoding = 'utf8';
-                const utf8Data = contents.toString(encoding);
+        const fileName = this.getNameFromPath(srcPath);
 
-                const option = this.isDataUrl(utf8Data) ? {base64: true} : {binary: true};
-                const data =  this.isDataUrl(utf8Data) ?  utf8Data.split(Constants.COMMA)[Constants.NUM_ONE] : contents;
+        if (
+            Constants.AUDIO_FILE_EXTENSIONS.includes(extension) ||
+            Constants.IMAGE_FILE_EXTENSIONS.includes(extension) ||
+            Constants.VIDEO_FILE_EXTENSIONS.includes(extension)
+        ) {
+            const utf8Data = new TextDecoder("utf-8").decode(contents);
 
-                zip.file(this.getNameFromPath(srcPath), data, option);
-                return true;
-            }else{
-                zip.file(this.getNameFromPath(srcPath), contents, {binary: true});
+            const isBase64 = this.isDataUrl(utf8Data);
+            const data = isBase64
+                ? utf8Data.split(Constants.COMMA)[Constants.NUM_ONE]
+                : contents;
 
-                return true;
-            }
+            zip.file(fileName, data, isBase64 ? { base64: true } : { binary: true });
+        } else {
+            zip.file(fileName, contents, { binary: true });
         }
 
-        return false;
+        return true;
     }
 
-    private async zipEntityHandlerAsync(srcPath:string, zip:JSZip): Promise<boolean> {
-        const loadedDirectoryEntries = await this.readDirectory(srcPath);
-    
-        for (const directoryEntry of loadedDirectoryEntries) {
-            const entryPath = `${srcPath}/${directoryEntry}`;
+    private async zipEntityHandlerAsync(srcPath: string, zip: JSZip): Promise<boolean> {
+        const entries = await this.readDirectory(srcPath);
 
-            const checkIfDirectory = await this.isDirectory(entryPath);
-            if(checkIfDirectory){
-                // Recursively call the zio_dir_handler for the subdirectory
-                const img = zip.folder(this.getNameFromPath(entryPath));
+        for (const entry of entries) {
+            const entryPath = `${srcPath}/${entry}`;
+            const isDir = await this.isDirectory(entryPath);
+            const entryName = this.getNameFromPath(entryPath);
 
-                if(img){
-                    const success = await this.zipEntityHandlerAsync(entryPath, img);
-                    if(!success){
-                        console.error(`Failed to zip directory: ${entryPath}`);
-                        return false;
-                    }
+            if (isDir) {
+                const subfolder = zip.folder(entryName);
+                if (!subfolder) {
+                    console.error(`Failed to create subfolder in zip: ${entryPath}`);
+                    return false;
+                }
+
+                const success = await this.zipEntityHandlerAsync(entryPath, subfolder);
+                if (!success) {
+                    console.error(`Failed to zip directory: ${entryPath}`);
+                    return false;
                 }
             } else {
-                const result = await this.zipFile(entryPath, zip);
-                if(result){
-                    // console.log(`File: ${directoryEntry} in ${entryPath} deleted successfully`);
-                }else{
-                    console.error(`File: ${directoryEntry} in ${entryPath} failed to Zip`);
+                const success = await this.zipFile(entryPath, zip);
+                if (!success) {
+                    console.error(`Failed to zip file: ${entryPath}`);
                     return false;
                 }
             }
         }
-    
+
         return true;
     }
 

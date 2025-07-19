@@ -1478,8 +1478,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   setBtnStyle(id:number, isMouseHover:boolean):void{
     const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
     if(btnElement){
+      btnElement.style.height = 'min-content';
       btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
       btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
+
 
       if(this.selectedElementId == id){
         (isMouseHover)? btnElement.style.backgroundColor ='#607c9c' : 
@@ -1919,7 +1921,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.btnStyle = {
       'width': `${colSize}px`, 
-      'height': `${rowSize}px`,
+      // 'height': `${rowSize}px`,
     }
   }
 
