@@ -213,6 +213,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   readonly MAX_GRID_SIZE = 120;
 
   GRID_SIZE = this.MID_GRID_SIZE; //column size of grid = 90px
+  ROW_GAP = 25;
   SECONDS_DELAY:number[] = [6000, 250, 4000, 300];
   renameForm!: FormGroup;
 
@@ -1807,11 +1808,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
   
-  moveBtnIconsToNewPositionAlignOn(mPos: mousePosition): void {
+  moveBtnIconsToNewPositionAlignOn_TBD(mPos: mousePosition): void {
     const dsktpmngrOlElmnt = document.getElementById('desktopIcon_ol') as HTMLElement;
     const maxIconWidth = this.GRID_SIZE;
     const maxIconHeight = this.GRID_SIZE;
     const offset = Constants.NUM_SEVEN;
+    const rowGap = 25; 
+    const effectiveRowHeight = maxIconHeight + rowGap;
     
     if (!dsktpmngrOlElmnt) return;
   
@@ -1836,7 +1839,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         // Calculate snap position
         const newX = (Math.round(mPos.x / columnWidth) * columnWidth);
         if(counter === Constants.NUM_ZERO)
-            newY = (Math.round(mPos.y / maxIconHeight) * maxIconHeight) + offset;
+            //newY = (Math.round(mPos.y / maxIconHeight) * maxIconHeight) + offset;
+          newY = Math.round(mPos.y / effectiveRowHeight) * effectiveRowHeight + offset;
         else{
           const product = (this.GRID_SIZE * counter);
           newY =(Math.round(mPos.y / maxIconHeight) * maxIconHeight) + product + offset;
@@ -1850,31 +1854,88 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     });
 
     if(justAdded) 
-      this.markedBtnIds.pop(); 
+      this.markedBtnIds.pop();  
   }
-  
+
+  moveBtnIconsToNewPositionAlignOn(mPos: mousePosition): void {
+    const gridEl = document.getElementById('desktopIcon_ol') as HTMLElement;
+    const heightAdjustment = 20;
+    const iconWidth = this.GRID_SIZE; 
+    const iconHeight = this.GRID_SIZE - heightAdjustment;  
+
+    if (!gridEl) return;
+
+    const rect = gridEl.getBoundingClientRect();
+    const relativeX = mPos.x - rect.left;
+    const relativeY = mPos.y - rect.top;
+
+    const effectiveRowHeight = iconHeight + this.ROW_GAP;
+
+    let counter = Constants.NUM_ZERO;
+    let justAdded = false;
+
+    if (this.markedBtnIds.length === Constants.NUM_ZERO) {
+      justAdded = true;
+      this.markedBtnIds.push(String(this.draggedElementId));
+    }
+
+    this.markedBtnIds.forEach(id => {
+      const btnIconElmnt = document.getElementById(`desktopIcon_li${id}`) as HTMLElement;
+      this.movedBtnIds.push(id);
+
+      if (btnIconElmnt) {
+        // Calculate grid position (1-based index for CSS Grid)
+        const col = Math.floor(relativeX / iconWidth) + Constants.NUM_ONE;
+        const row = Math.floor(relativeY / effectiveRowHeight) + Constants.NUM_ONE + counter;
+
+        btnIconElmnt.style.removeProperty('position');
+        btnIconElmnt.style.removeProperty('transform');
+        btnIconElmnt.style.setProperty('--grid-col', col.toString());
+        btnIconElmnt.style.setProperty('--grid-row', row.toString());
+        btnIconElmnt.style.gridColumn = `var(--grid-col)`;
+        btnIconElmnt.style.gridRow = `var(--grid-row)`;
+      }
+
+      counter++;
+    });
+
+    if (justAdded) 
+      this.markedBtnIds.pop();
+  }
+
   correctMisalignedIcons(): void {
-    const columnWidth = this.GRID_SIZE;
-    const rowHeight = this.GRID_SIZE;
-    const offset = Constants.NUM_SEVEN;
+    const heightAdjustment = 20;
+    const iconWidth = this.GRID_SIZE;
+    const iconHeight = this.GRID_SIZE - heightAdjustment
+    const rowGap = this.ROW_GAP; 
+    const effectiveRowHeight = iconHeight + rowGap; 
+    const offsetY = Constants.NUM_FIVE;
+
+    const grid = document.getElementById('desktopIcon_ol');
+    if (!grid) return;
+
+    const gridRect = grid.getBoundingClientRect();
 
     this.movedBtnIds.forEach((id) => {
       const btnIcon = document.getElementById(`desktopIcon_li${id}`);
+      if (!btnIcon) return;
 
-      if(btnIcon){
-        const rect = btnIcon.getBoundingClientRect();
+      const iconRect = btnIcon.getBoundingClientRect();
 
-        const correctedX = Math.round(rect.left / columnWidth) * columnWidth;
-        const correctedY = (Math.round(rect.top / rowHeight) * rowHeight) + offset;
+      // Convert to coordinates relative to the grid container
+      const relativeLeft = iconRect.left - gridRect.left;
+      const relativeTop = iconRect.top - gridRect.top;
 
-        // Apply the transformation
-        const btnIconElmnt = btnIcon as HTMLElement
-        if(btnIconElmnt){
-          btnIconElmnt.style.transform = `translate(${correctedX}px, ${correctedY}px)`;
-        }
-      }
+      // Snap to nearest column and row
+      const correctedX = Math.round(relativeLeft / iconWidth) * iconWidth;
+      const correctedY = Math.round(relativeTop / effectiveRowHeight) * effectiveRowHeight;
+
+      // Apply corrected transform (positioning within grid)
+      btnIcon.style.position = 'absolute';
+      btnIcon.style.transform = `translate(${correctedX}px, ${correctedY + offsetY}px)`;
     });
   }
+
 
   sortIcons(sortBy:string):void {
     this.files = CommonFunctions.sortIconsBy(this.files, sortBy);
