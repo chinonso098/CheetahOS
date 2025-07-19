@@ -23,6 +23,7 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { SessionManagmentService } from "./session.management.service";
 import { OpensWith } from "src/app/system-files/opems.with";
+import JSZip from "jszip";
 
 @Injectable({
     providedIn: 'root'
@@ -138,7 +139,7 @@ export class FileService implements BaseService{
         });
     }
 
-    public async checkIfDirectoryAsync(path:string):Promise<boolean> {
+    public async isDirectory(path:string):Promise<boolean> {
         return new Promise<boolean>((resolve) =>{
             this._fileSystem.stat(path,(err, stats) =>{
                 if(err){
@@ -163,7 +164,7 @@ export class FileService implements BaseService{
     }
 
     public async copyAsync(srcPath:string, destPath:string, isFile?:boolean):Promise<boolean>{
-        const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(srcPath) : !isFile;
+        const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
 
         return isDirectory
             ? await this.copyFolderHandlerAsync(Constants.EMPTY_STRING, srcPath, destPath)
@@ -190,7 +191,7 @@ export class FileService implements BaseService{
         if(createFolderResult){
             const loadedDirectoryEntries = await this.readDirectory(srcPath);
             for(const directoryEntry of loadedDirectoryEntries){
-                const checkIfDirResult = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+                const checkIfDirResult = await this.isDirectory(`${srcPath}/${directoryEntry}`);
                 if(checkIfDirResult){
                     const result = await this.copyFolderHandlerAsync(arg0,`${srcPath}/${directoryEntry}`,`${destPath}/${folderName}`);
                     if(!result){
@@ -393,7 +394,7 @@ export class FileService implements BaseService{
 			const opensWith = this.getOpensWith(extension);
 
 			if(opensWith.fileType === 'image' ||opensWith.fileType === 'video' || opensWith.fileType === 'audio' )
-                fileContent = await this.getFileContentFromB64DataUrl(path, 'image') as FileContent;
+                fileContent = await this.getFileContentFromB64DataUrl(path, opensWith.fileType) as FileContent;
 
             this._fileInfo = this.populateFileInfo(path, fileMetaData, isFile, opensWith.appName, opensWith.appIcon, !useImage, undefined, fileContent);
 
@@ -443,7 +444,8 @@ export class FileService implements BaseService{
 			'.md': { fileType: cleanedExt, appName: 'markdownviewer', appIcon: 'markdown_file.png' },
 			'.jsdos': { fileType: cleanedExt, appName: 'jsdos', appIcon: 'js-dos_file.png' },
 			'.swf': { fileType: cleanedExt, appName: 'ruffle', appIcon: 'swf_file.png' },
-			'.pdf': { fileType: cleanedExt, appName: 'pdfviewer', appIcon: 'pdf_file.png' }
+			'.pdf': { fileType: cleanedExt, appName: 'pdfviewer', appIcon: 'pdf_file.png' },
+            '.zip': { fileType: cleanedExt, appName: 'fileexlporer', appIcon: 'zip_file.png' }
 		};
 
 		if (Constants.KNOWN_FILE_EXTENSIONS.includes(extension) && knownFileHandlers[extension]) {
@@ -500,9 +502,7 @@ export class FileService implements BaseService{
                 }
 
                 const dataPrefix = utf8Data.substring(Constants.NUM_ZERO, Constants.NUM_TEN);
-                const isDataUrl = (dataPrefix === 'data:image') || (dataPrefix === 'data:video') || (dataPrefix === 'data:audio');
-
-                if (isDataUrl) {
+                if (this.isDataUrl(utf8Data)) {
                     const base64Data = utf8Data.split(Constants.COMMA)[Constants.NUM_ONE];
                     const binaryData = Buffer.from(base64Data, 'base64');
                     const fileUrl = this.bufferToUrl(binaryData);
@@ -515,6 +515,12 @@ export class FileService implements BaseService{
         });
     }
 
+    private isDataUrl(utf8Data: string):boolean{
+        const dataPrefix = utf8Data.substring(Constants.NUM_ZERO, Constants.NUM_TEN);
+        const isDataUrl = (dataPrefix === 'data:image') || (dataPrefix === 'data:video') || (dataPrefix === 'data:audio');
+
+        return isDataUrl;
+    }
 
 	private createFileContentFromBuffer(buffer: Buffer, contentType: string, path: string): FileContent {
 		const fileUrl = this.bufferToUrl2(buffer);
@@ -576,7 +582,6 @@ export class FileService implements BaseService{
             });
         });
     }
-
 
     private createEmptyShortCut(): ShortCut {
         const empty = Constants.EMPTY_STRING;
@@ -659,7 +664,7 @@ export class FileService implements BaseService{
 
     //virtual filesystem, use copy and then delete
     public async moveAsync(srcPath: string, destPath: string, isFile?: boolean, isRecycleBin?: boolean): Promise<boolean> {
-        const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(srcPath) : !isFile;
+        const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
         
         if(isDirectory){
             const folderToProcessingQueue:string[] =  [];
@@ -711,7 +716,7 @@ export class FileService implements BaseService{
         const  moveFolderResult = await this.createFolderAsync(destPath,folderName);
         if(moveFolderResult){
             for(const directoryEntry of loadedDirectoryEntries){
-                const checkIfDirResult = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+                const checkIfDirResult = await this.isDirectory(`${srcPath}/${directoryEntry}`);
                 if(checkIfDirResult){
                     folderToProcessingQueue.push(`${srcPath}/${directoryEntry}`);
                 }else{
@@ -760,7 +765,7 @@ export class FileService implements BaseService{
     
         if(moveFolderResult || (skipCounter >= Constants.NUM_ZERO)){
             for(const directoryEntry of loadedDirectoryEntries){
-                const checkIfDirResult = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+                const checkIfDirResult = await this.isDirectory(`${srcPath}/${directoryEntry}`);
                 if(checkIfDirResult){
                     folderToProcessingQueue.push(`${srcPath}/${directoryEntry}`);
                 }else{
@@ -808,7 +813,6 @@ export class FileService implements BaseService{
         return await this.deleteFileAsync(srcPath);
     }
 
-
     //O for success, 1 for file already present, 2 other error
     // eslint-disable-next-line @typescript-eslint/no-inferrable-types
     private async writeRawAsync(destPath: string, content:any, flag:string = 'wx'): Promise<number>{
@@ -830,7 +834,7 @@ export class FileService implements BaseService{
         });
     }
 
-        /**
+    /**
      * handles instances where a file being written alredy exist in a given location
      * @param destPath 
      * @param cntnt 
@@ -895,7 +899,7 @@ export class FileService implements BaseService{
 
     public async renameAsync(path:string, newFileName:string, isFile?:boolean): Promise<boolean> {
         const rename = `${dirname(path)}/${newFileName}`;
-        const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(path) : !isFile;
+        const isDirectory = (isFile === undefined) ? await this.isDirectory(path) : !isFile;
 
         return isDirectory
             ? await this.renameDirectoryAsync(path, rename)
@@ -958,7 +962,7 @@ OpensWith=${shortCutData.getOpensWith}
             return await this.moveAsync(path, Constants.RECYCLE_BIN_PATH, isFile);
         }else{
             this.removeAndUpdateSessionData(this.fileServiceRestoreKey, path, this._restorePoint);
-            const isDirectory = (isFile === undefined) ? await this.checkIfDirectoryAsync(path) : !isFile;
+            const isDirectory = (isFile === undefined) ? await this.isDirectory(path) : !isFile;
             return isDirectory
                 ? await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path, isRecycleBin)
                 : await this.deleteFileAsync(path);
@@ -967,24 +971,16 @@ OpensWith=${shortCutData.getOpensWith}
 
     private async deleteFolderAsync(path:string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
-            this._fileSystem.exists(path, (exists: boolean)=> {
-                if (!exists) {
-                    console.warn(`deleteFolderAsync: Entry doesn't exist: ${path}`);
+            this._fileSystem.rmdir(path, (err)=>{
+                if(err){
+                    console.error('deleteFolderAsync: Folder delete failed:', err);
                     return resolve(false);
                 }
 
-                this._fileSystem.rmdir(path, (err)=>{
-                    if(err){
-                        console.error('deleteFolderAsync: Folder delete failed:', err);
-                        return resolve(false);
-                    }
-
-                    this.DecrementFileName(path);
-                    this.removeAndUpdateSessionData(this.fileServiceIterateKey, path, this._fileExistsMap);
-                    // console.log(`deleteFolderAsync: Folder deleted successfully: ${path}`);
-                    return resolve(true);
-                });
-
+                this.DecrementFileName(path);
+                this.removeAndUpdateSessionData(this.fileServiceIterateKey, path, this._fileExistsMap);
+                // console.log(`deleteFolderAsync: Folder deleted successfully: ${path}`);
+                return resolve(true);
             });
         });
     }
@@ -1005,7 +1001,6 @@ OpensWith=${shortCutData.getOpensWith}
         });
     }
 
-
     private async deleteFolderHandlerAsync(arg0: string, srcPath: string, isRecycleBin?:boolean): Promise<boolean> {
         const loadedDirectoryEntries = await this.readDirectory(srcPath);
     
@@ -1013,7 +1008,7 @@ OpensWith=${shortCutData.getOpensWith}
             const entryPath = `${srcPath}/${directoryEntry}`;
             this.removeAndUpdateSessionData(this.fileServiceRestoreKey, entryPath, this._restorePoint);
 
-            const checkIfDirectory = await this.checkIfDirectoryAsync(entryPath);
+            const checkIfDirectory = await this.isDirectory(entryPath);
             if(checkIfDirectory){
                 // Recursively call the rm_dir_handler for the subdirectory
                 const success = await this.deleteFolderHandlerAsync(arg0, entryPath);
@@ -1085,7 +1080,7 @@ OpensWith=${shortCutData.getOpensWith}
  
         const directoryEntries = await this.readDirectory(srcPath);      
         for(const directoryEntry of directoryEntries){
-            const isDirectory = await this.checkIfDirectoryAsync(`${srcPath}/${directoryEntry}`);
+            const isDirectory = await this.isDirectory(`${srcPath}/${directoryEntry}`);
             if(isDirectory){
                 queue.push(`${srcPath}/${directoryEntry}`);
                 counts.folders++;
@@ -1118,7 +1113,7 @@ OpensWith=${shortCutData.getOpensWith}
         const directoryEntries = await this.readDirectory(srcPath);      
         for(const entry of directoryEntries){
             const entryPath = `${srcPath}/${entry}`;
-            const isDirectory = await this.checkIfDirectoryAsync(entryPath);
+            const isDirectory = await this.isDirectory(entryPath);
 
             if(isDirectory){
                 queue.push(entryPath);
@@ -1129,6 +1124,117 @@ OpensWith=${shortCutData.getOpensWith}
         }
 
         return this.traverseAndSumFolderSize(queue, sizes);
+    }
+
+    private async zipEntity(srcPath:string, isDirectory:boolean): Promise<boolean>{
+
+        const directory = dirname(srcPath);
+        const filePath = `${directory}${this.changeExtToZip(this.getNameFromPath(srcPath))}`;
+
+        const zip = new JSZip();
+        let result = false;
+
+
+        if(isDirectory)
+            result = await this.zipEntityHandlerAsync(srcPath, zip);
+        else
+            result = await this.zipFile(srcPath, zip);
+
+        if(result){
+            const data = await zip.generateAsync({type: "blob"});
+            const res = await this.writeRawAsync(filePath, data);
+
+            if(res === Constants.NUM_ZERO)
+                return true;
+            else
+                return false;
+        }
+
+        return result
+    }
+
+    changeExtToZip(filename: string): string{
+        const lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex === Constants.MINUS_ONE) {
+            return `${filename}.cab`;
+        }
+        return `${filename.slice(0, lastDotIndex)}.cab`;
+    }
+
+    private async zipFile(srcPath:string, zip:JSZip): Promise<boolean>{
+        const extension = extname(srcPath);
+        const contents = await this.readRawAsync(srcPath); //contents retrieved as Uint8Array
+
+        if(contents){
+            if(Constants.AUDIO_FILE_EXTENSIONS.includes(extension)
+                || Constants.IMAGE_FILE_EXTENSIONS.includes(extension)
+                || Constants.VIDEO_FILE_EXTENSIONS.includes(extension)){
+
+        
+                const encoding:BufferEncoding = 'utf8';
+                const utf8Data = contents.toString(encoding);
+
+                const option = this.isDataUrl(utf8Data) ? {base64: true} : {binary: true};
+                const data =  this.isDataUrl(utf8Data) ?  utf8Data.split(Constants.COMMA)[Constants.NUM_ONE] : contents;
+
+                zip.file(this.getNameFromPath(srcPath), data, option);
+                return true;
+            }else{
+                zip.file(this.getNameFromPath(srcPath), contents, {binary: true});
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private async zipEntityHandlerAsync(srcPath:string, zip:JSZip): Promise<boolean> {
+        const loadedDirectoryEntries = await this.readDirectory(srcPath);
+    
+        for (const directoryEntry of loadedDirectoryEntries) {
+            const entryPath = `${srcPath}/${directoryEntry}`;
+
+            const checkIfDirectory = await this.isDirectory(entryPath);
+            if(checkIfDirectory){
+                // Recursively call the zio_dir_handler for the subdirectory
+                const img = zip.folder(this.getNameFromPath(entryPath));
+
+                if(img){
+                    const success = await this.zipEntityHandlerAsync(entryPath, img);
+                    if(!success){
+                        console.error(`Failed to zip directory: ${entryPath}`);
+                        return false;
+                    }
+                }
+            } else {
+                const result = await this.zipFile(entryPath, zip);
+                if(result){
+                    // console.log(`File: ${directoryEntry} in ${entryPath} deleted successfully`);
+                }else{
+                    console.error(`File: ${directoryEntry} in ${entryPath} failed to Zip`);
+                    return false;
+                }
+            }
+        }
+    
+        return true;
+    }
+
+    // private async zipFolder(srcPath:string, zip:JSZip): Promise<boolean>{
+
+    // }
+
+    private async unZipEntity(srcPath: string): Promise<void>{
+        const zipFile = await this.readRawAsync(srcPath);
+        
+        if(zipFile){
+            const zip = await JSZip.loadAsync(zipFile); // zipFile is a Blob or ArrayBuffer
+
+            const file = zip.file('hello.txt');
+            // const content = await file.async('text');
+            // console.log(content);
+        }
     }
 
 

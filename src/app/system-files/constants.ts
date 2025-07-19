@@ -184,6 +184,7 @@ export namespace Constants{
         '.jsdos',
         '.swf',
         '.pdf',
+        '.zip'
     ]
 
     export const FILE_EXTENSION_MAP = [
@@ -236,7 +237,8 @@ export namespace Constants{
         ['.py', 'Python File'],
         ['.c', 'C File'],
         ['.cpp', 'C++ File'],
-        ['.html', 'HTML File']
+        ['.html', 'HTML File'],
+        ['.zip', 'ZIP File']
 
     ]
 }

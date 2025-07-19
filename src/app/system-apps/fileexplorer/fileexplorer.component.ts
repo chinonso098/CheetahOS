@@ -11,7 +11,7 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
 import { Subscription } from 'rxjs';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FormGroup, FormBuilder } from '@angular/forms';
-import { ViewOptions } from './fileexplorer.enums';
+import { FileToolTip, ViewOptions } from './fileexplorer.types';
 import {basename, dirname} from 'path';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
@@ -111,7 +111,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileExplrCntxtCntr = Constants.NUM_ZERO;
   selectFilesSizeSum = Constants.EMPTY_STRING;
   selectFilesSizeUnit = Constants.EMPTY_STRING;
-  //hideInformationTip = false;
 
   fileExplrCntxtMenuStyle:Record<string, unknown> = {};
   clearSearchStyle:Record<string, unknown> = {};
@@ -208,7 +207,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileExplrMenuOption = Constants.NESTED_MENU_OPTION;
   menuOrder = Constants.EMPTY_STRING;
 
-  fileInfoTipData = [{label:Constants.EMPTY_STRING, data:Constants.EMPTY_STRING}];
+  fileInfoTipData:FileToolTip[] = [];
 
   fileType = Constants.EMPTY_STRING;
   fileAuthor = Constants.EMPTY_STRING;
@@ -1007,7 +1006,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
-      const isFile =  await this._fileService.checkIfDirectoryAsync(usersDir + dirEntry);
+      const isFile =  await this._fileService.isDirectory(usersDir + dirEntry);
       const ftn:FileTreeNode = {
         name : dirEntry,
         path : `${usersDir}${dirEntry}`,
@@ -1032,7 +1031,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
       // this.directory, will not be correct for all cases. Make sure to check
       for(const dirEntry of directoryEntries){
-        const isFile =  await this._fileService.checkIfDirectoryAsync(`${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT));
+        const isFile =  await this._fileService.isDirectory(`${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT));
         const ftn:FileTreeNode = {
           name : dirEntry,
           path: `${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH,Constants.ROOT),
@@ -1815,6 +1814,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   hideFileExplorerToolTip() {
     const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
     if (infoTip) {
+      this.fileInfoTipData = [];
       infoTip.classList.remove('visible');
     }
   }
@@ -1860,7 +1860,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const fileTypeName = this.getFileTypeName(fileType);
       this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SEVEN], data:fileTypeName});
       this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_THREE], data: fileDateModified });
-      this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:fileSize });
+
+      if(this.fileInfoTipData.filter(x => x.label !== infoTipFields[Constants.NUM_SIX]))
+        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:fileSize });
     }
     else if(isFolder){
       if(isRoot && (standardFolders.includes(fileName) || fileName === capitalizedDesktop)){
@@ -1874,7 +1876,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         const folderSizeInBytes = await this._fileService.getFolderSizeAsync(file.getCurrentPath);
         const folderSize = CommonFunctions.getReadableFileSizeValue(folderSizeInBytes);
         const folderUnit = CommonFunctions.getFileSizeUnit(folderSizeInBytes);
-        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:`${String(folderSize)} ${folderUnit}`});
+
+        if(this.fileInfoTipData.filter(x => x.label !== infoTipFields[Constants.NUM_SIX]))
+          this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:`${String(folderSize)} ${folderUnit}`});
 
         if(this.isRecycleBinFolder){
           const originalLocation = this._fileService.getFolderOrigin(file.getCurrentPath);

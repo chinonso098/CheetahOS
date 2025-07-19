@@ -8,3 +8,8 @@ export enum ViewOptions {
     LARGE_ICON_VIEW = 'Large Icon View',
     EXTRA_LARGE_ICON_VIEW = 'Extra Large Icon View',
 }
+
+export interface FileToolTip{
+    label:string;
+    data:string;
+}

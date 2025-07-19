@@ -923,7 +923,7 @@ Mandatory argument to long options are mandotory for short options too.
         if(destinationArg === undefined || destinationArg.length === Constants.NUM_ZERO)
             return 'destination path required';
 
-        const isDirectory = await this._fileService.checkIfDirectoryAsync(sourceArg);
+        const isDirectory = await this._fileService.isDirectory(sourceArg);
         if(isDirectory){
             if(option === Constants.EMPTY_STRING || option === '-f' || option === '--force' || option === '--verbose')
                 return `cp: omitting directory ${sourceArg}`;
@@ -982,7 +982,7 @@ Mandatory argument to long options are mandotory for short options too.
         if(sourceArg === undefined || sourceArg.length === Constants.NUM_ZERO)
             return 'source path required';
 
-        const isDirectory = await this._fileService.checkIfDirectoryAsync(sourceArg);
+        const isDirectory = await this._fileService.isDirectory(sourceArg);
         if(isDirectory){
             if(option === Constants.EMPTY_STRING)
                 return `rm: omitting directory ${sourceArg}`;
