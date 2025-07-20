@@ -362,7 +362,7 @@
                         </ng-template>
                         <ng-template #detailsView0>
                             <table class="detailsview-data-table ">
-                                <div>
+                                <div class="detailsview-table-header-cntnr">
                                     <thead>
                                         <tr>
                                             <th fxplrColumnResize id="th-1" (dataEvent)="updateTableFieldSize($event)" (mouseEvent)="enableDisableMultSelect($event)">
@@ -381,7 +381,7 @@
                                         </tr>
                                     </thead>
                                 </div>
-                                <div>
+                                <div class="detailsview-table-body-cntnr" id="detailsViewTableBodyCntnr-{{processId}}">
                                     <tbody>
                                         <tr class="li-detailsview-container" *ngFor='let file of fileExplrFiles; let i = index' (click)="onProcessSelected(i,i)" [class.active]="i === selectedRow"  id="trElmnt-{{this.processId}}-{{i}}">
                                             <td

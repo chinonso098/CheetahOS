@@ -1224,7 +1224,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const menuHeight = 213; //this is not ideal.. menu height should be gotten dynmically
     this.iconCntxtCntr++;
 
-    const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    let rect: DOMRect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    if (this.olClassName === 'ol-detailsview-grid') {
+      const tblCntnrElmnt = document.getElementById(`detailsViewTableBodyCntnr-${this.processId}`) as HTMLElement;
+      if (tblCntnrElmnt) {
+        rect = tblCntnrElmnt.getBoundingClientRect();
+      }
+    }
+
     const axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
     
     const uid = `${this.name}-${this.processId}`;
@@ -1244,7 +1251,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.fileExplrCntxtMenuStyle = {
       'position': 'absolute', 
-      'transform':`translate(${String(axis.xAxis)}px, ${String(axis.yAxis)}px)`,
+       'transform':`translate(${axis.xAxis}px, ${axis.yAxis}px)`,
+      //'transform':`translate(${evt.clientX  - rect.left}px, ${evt.clientY - rect.top}px)`,
       'z-index': Constants.NUM_TWO,
     }
 
@@ -1656,6 +1664,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   updateDivWithAndSize(evt:MouseEvent):void{
+
+    if(!this.isMultiSelectEnabled) return;
+
     const rect = this.fileExplorerBoundedRect;
     
     if(this.multiSelectStartingPosition && this.multiSelectElmnt){
