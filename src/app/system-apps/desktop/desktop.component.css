@@ -49,15 +49,15 @@
 
 .desktopIcon-btn{
     position: relative;
-    display: flex;
+    /* display: flex; */
     background-color: transparent;
     border: 1px solid transparent;
     width: 90px;
     height: fit-content;
     transition: transform 0.1s ease-in-out; 
-    flex-direction: column;
+    /* flex-direction: column; */
     place-items: center;
-    align-items: center;
+    /* align-items: center; */
     font-family: sans-serif;
 }
 

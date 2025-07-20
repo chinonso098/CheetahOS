@@ -570,7 +570,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ONE]})`;
         olElmnt.style.rowGap = '20px';
         olElmnt.style.columnGap = '5px';
-        olElmnt.style.padding = '5px 0';
+        olElmnt.style.padding = '5px 3px';
         olElmnt.style.gridAutoFlow = 'row';
       }
     }else if(iconView == this.contentView){

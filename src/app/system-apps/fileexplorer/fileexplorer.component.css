@@ -791,11 +791,11 @@ span.mid-search-entry{
     /* column-gap: 1px; */
     display: grid;
     grid-auto-flow: row;
-    grid-template-columns:  repeat(auto-fill,90px);
-    grid-template-rows: repeat(auto-fill,70px);
+    grid-template-columns:  repeat(auto-fill, 90px);
+    grid-template-rows: repeat(auto-fill, 70px);
     height: calc(100% - 5px);
     width: 100%;
-    padding: 5px 0 ;
+    padding: 5px 3px;
     row-gap: 20px;
     column-gap: 5px;
 }
@@ -803,7 +803,7 @@ span.mid-search-entry{
 .li-iconview-container{
     display: flex;
     justify-content: center;
-    padding: 2px;
+    /* padding: 2px; */
     height: min-content;
     z-index: 1;
 }
@@ -835,7 +835,7 @@ span.mid-search-entry{
     background-color: transparent;
     border: 0.5px solid transparent;
     width: 90px;
-    height: 70px;
+    height: min-content;
     transition: transform 0.1s ease-in-out;
     display: inline-flex;
     flex-direction: column;
@@ -859,28 +859,25 @@ span.mid-search-entry{
 
 .iconview-caption-container {
     position: relative;
-    height: 20px;
-    bottom: -4px;
+    height: min-content;
+    /* bottom: -4px; */
 }
 
 .iconview-caption {
-    color: white;
+    -webkit-box-orient: vertical;
     display: -webkit-box;
+    color: #fff;
     font-size: 12px;
     letter-spacing: 0.1px;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    -webkit-line-clamp:2;
     position: relative;
+    text-align:center;
     padding: 2px 0;
     top: 2px;
-    line-height: 15px;
+    line-height: normal;
     overflow: hidden;
-    word-break: break-word;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     width: 100%;
     max-width: 90px;
-    height: 20px;
 }
 
 .iconview-rename-form, .iconview-rename-textbox{
