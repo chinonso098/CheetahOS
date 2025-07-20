@@ -2,9 +2,11 @@ import { Directive, Output, ElementRef, EventEmitter, HostListener, Renderer2 } 
 
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector
-  selector: '[columnResize]'
+  selector: '[fxplrColumnResize]',
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone: false,
 })
-export class ColumnResizeDirective {
+export class FileExplorerColumnResizeDirective {
   private startX!: number;
   private isResizing = false;
   private initialWidth!: number;
@@ -23,7 +25,7 @@ export class ColumnResizeDirective {
     const minimumWidths:number[] = [124,91,81];
     let minimumWidth = 0;
 
-    //console.log("this.initialWidth:", this.initialWidth);
+    console.log("this.initialWidth:", this.initialWidth);
 
 
     // Find the index of the current column

@@ -797,7 +797,7 @@ span.mid-search-entry{
     width: 100%;
     padding: 5px 10px;
     row-gap: 25px;
-    column-gap: 10px;
+    column-gap: 5px;
 }
 
 .li-iconview-container{
@@ -954,6 +954,27 @@ span.mid-search-entry{
     margin: 0px 1px;
 }
 
+
+.detailsview-data-table tr.active td {
+  background-color:#d0ecfc !important;
+}
+
+/* Add this to your component's CSS or global styles */
+th[fxplrColumnResize], td[fxplrColumnResize] {
+  position: relative;
+}
+
+th[fxplrColumnResize]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px; /* Adjust the handle width */
+  height: 100%;
+  cursor: col-resize;
+  background-color: #f0f0f0; /* Handle background color */
+}
+
 .div-detailsview-figure-section{
     position: relative;
     width: 13.5%;
@@ -1027,6 +1048,16 @@ span.mid-search-entry{
     background-color: white;
     color: black;
  }
+
+.detailsview-table-header-cntnr{
+    height: fit-content;
+ }
+
+.detailsview-table-body-cntnr{  
+    height:410px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
 /*-------------------------Details Icon View End ----------------------------------*/
 
 

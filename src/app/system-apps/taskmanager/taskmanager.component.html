@@ -418,7 +418,7 @@
 
                       <div class='tskmgr-table-body-cntnr'  #tskMgrTableBodyCntnr>
                         <tbody #tskMgrTableBodyCntnt>
-                          <tr *ngFor='let process of processes; let i = index'(click)="onProcessSelected(i,process.getProcessId)" [class.active]="i === selectedRow"  id="trElmnt-{{this.processId}}-{{i}}">
+                          <tr *ngFor='let process of processes; let i = index' (click)="onProcessSelected(i,process.getProcessId)" [class.active]="i === selectedRow"  id="trElmnt-{{this.processId}}-{{i}}">
                             <td style="padding-left:16px;">
                                   <figure class="tskmgr-figure0"> 
                                       <img class="tskmgr-img0" [src]="process.getIcon">

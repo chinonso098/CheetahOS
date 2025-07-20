@@ -328,7 +328,7 @@
     
                         <ng-template #listView0>
                             <li class="li-listview" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}">
-                                <button class="button-listview" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
+                                <div class="button-listview" role="button" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)"  id="btnElmnt-{{this.processId}}-{{i}}">
     
                                     <div class="div-listview">
@@ -354,63 +354,74 @@
                                             </form>
                                         </div>
                                     </div>
-                                </button>
+                                </div>
                             </li>
                         </ng-template>
                         <ng-template #detailsView0>
                             <table class="detailsview-data-table ">
-                                <thead>
-                                    <tr>
-                                    <th><p class="detailsview-ptag">Name</p></th>
-                                    <th><p class="detailsview-ptag">Date modified</p></th>
-                                    <th><p class="detailsview-ptag">Type</p></th>
-                                    <th><p class="detailsview-ptag">Size</p></th>
-                                    <!-- <th><p class="detailsview-ptag">Opening app</p></th> -->
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="li-detailsview-container" *ngFor="let file of fileExplrFiles; let i = index">
-                                        <td>
-                                            <div class="div-detailsview-figure-section">
-                                                <figure class="figure-detailsview">
-                                                    <img class="img-detailsview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
-                                                </figure>
-                                            </div>
-        
-                                            <div class="div-detailsview-caption-section">
-                                                <figcaption class="figcaption-detailsview" id="figCapElmnt-{{this.processId}}-{{i}}">
-                                                    <p class="figcaption-detailsview-p"> {{file.getFileName}} </p>
-                                                </figcaption>
-                                                <form [formGroup]="renameForm" class="detailsview-rename-form"  id="renameForm-{{this.processId}}-{{i}}"
-                                                    (ngSubmit)="isFormDirty()">
-                                                    <input type="text" 
-                                                        formControlName="renameInput"  
-                                                        class="detailsview-rename-textbox"
-                                                        (keydown)="onKeyPress($event)" 
-                                                        autofocus spellcheck="false" 
-                                                        id="renameTxtBox-{{this.processId}}-{{i}}"
-                                                    />
-                                                </form>
-                                            </div>
-                                        </td>
-                                        <td><p class="detailsview-ptag">{{ file.getDateModifiedUS }}</td>
-                                        <td>
-                                            @if (file.getIsFile) {
-                                                <p class="detailsview-ptag">{{ getFileTypeName(file.getFileType) }}</p>
-                                            } @else {
-                                                <p class="detailsview-ptag">File folder</p>
-                                            }
-                                        </td>
-                                        <td><p class="detailsview-ptag" *ngIf="file.getIsFile">{{ file.getSize }} {{file.getFileSizeUnit}}</p></td>
-                                        <!-- <td><p class="detailsview-ptag">{{ file.getOpensWith }}</p></td> -->
-                                    </tr>
-                                </tbody>
+                                <div>
+                                    <thead>
+                                        <tr>
+                                            <th fxplrColumnResize id="th-1">
+                                                <p class="detailsview-ptag">Name</p>
+                                            </th>
+                                            <th fxplrColumnResize id="th-2">
+                                                <p class="detailsview-ptag">Date modified</p>
+                                            </th>
+                                            <th fxplrColumnResize id="th-3">
+                                                <p class="detailsview-ptag">Type</p>
+                                            </th>
+                                            <th>
+                                                <p class="detailsview-ptag">Size</p>
+                                            </th>
+                                            <!-- <th><p class="detailsview-ptag">Opening app</p></th> -->
+                                        </tr>
+                                    </thead>
+                                </div>
+                                <div>
+                                    <tbody>
+                                        <tr class="li-detailsview-container" *ngFor='let file of fileExplrFiles; let i = index' (click)="onProcessSelected(i,i)" [class.active]="i === selectedRow"  id="trElmnt-{{this.processId}}-{{i}}">
+                                            <td>
+                                                <div class="div-detailsview-figure-section">
+                                                    <figure class="figure-detailsview">
+                                                        <img class="img-detailsview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                                    </figure>
+                                                </div>
+            
+                                                <div class="div-detailsview-caption-section">
+                                                    <figcaption class="figcaption-detailsview" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                                        <p class="figcaption-detailsview-p" id="fileName-{{i}}"> {{file.getFileName}} </p>
+                                                    </figcaption>
+                                                    <form [formGroup]="renameForm" class="detailsview-rename-form"  id="renameForm-{{this.processId}}-{{i}}"
+                                                        (ngSubmit)="isFormDirty()">
+                                                        <input type="text" 
+                                                            formControlName="renameInput"  
+                                                            class="detailsview-rename-textbox"
+                                                            (keydown)="onKeyPress($event)" 
+                                                            autofocus spellcheck="false" 
+                                                            id="renameTxtBox-{{this.processId}}-{{i}}"
+                                                        />
+                                                    </form>
+                                                </div>
+                                            </td>
+                                            <td><p class="detailsview-ptag">{{ file.getDateModifiedUS }}</td>
+                                            <td>
+                                                @if (file.getIsFile) {
+                                                    <p class="detailsview-ptag">{{ getFileTypeName(file.getFileType) }}</p>
+                                                } @else {
+                                                    <p class="detailsview-ptag">File folder</p>
+                                                }
+                                            </td>
+                                            <td><p class="detailsview-ptag" *ngIf="file.getIsFile">{{ file.getSize }} {{file.getFileSizeUnit}}</p></td>
+                                            <!-- <td><p class="detailsview-ptag">{{ file.getOpensWith }}</p></td> -->
+                                        </tr>
+                                    </tbody>
+                                </div>
                             </table>
-
                         </ng-template>
                         <ng-template #contentView0>
                             <li class="li-contentview-container" *ngFor="let file of fileExplrFiles; let i = index">
-                                <button class="button-contentview" tabindex="0" (dblclick)="runProcess(file)" 
+                                <div class="button-contentview" role="button" tabindex="0" (dblclick)="runProcess(file)" 
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
@@ -450,12 +461,12 @@
                                         </div>
                                     </div>
                                     <div class="line-container"><div class="line"></div></div>
-                                </button>
+                                </div>
                             </li>
                         </ng-template>
                         <ng-template #tilesView0>
                             <li class="li-tilesview" *ngFor="let file of fileExplrFiles; let i = index">
-                                <button class="button-tilesview" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
+                                <div class="button-tilesview" role="button" tabindex="0" (dblclick)="runProcess(file)" (mouseenter)="onMouseEnter($event, file, i)" (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
                                     <div class="div-tilesview">
                                         <figure class="figure-tilesview">
@@ -488,7 +499,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </button>
+                                </div>
                             </li>
                         </ng-template>
                     
@@ -498,7 +509,6 @@
                                  \ / : * ? " < > |'
                             </div>
                         </div>
-                
     
                         <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
                         <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>

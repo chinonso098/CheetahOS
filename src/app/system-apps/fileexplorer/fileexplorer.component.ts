@@ -85,6 +85,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isShiftSubMenuLeft = false;
   private isRecycleBinFolder = false;
 
+  private isActive = false;
+  private isFocus = false;
+
   _isBtnClickEvt= false;
   isMultiSelectEnabled = true;
   isMultiSelectActive = false;
@@ -127,6 +130,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   olClassName = 'ol-iconview-grid';
   btnTypeRibbon = 'Ribbon';
   btnTypeFooter = 'Footer';
+  selectedRow = Constants.MINUS_ONE;
 
 
   fileExplrFiles:FileInfo[] = [];
@@ -166,6 +170,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   isDetailsIcon = false;
   isContentIcon = false;
   isTitleIcon = false;
+   
 
   isSortByName = false;
   isSortByItemType = false;
@@ -191,6 +196,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     {icon:Constants.EMPTY_STRING, label: 'Pin to Quick access', action: this.doNothing.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Open in Terminal', action: this.doNothing.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Pin to Start', action: this.doNothing.bind(this) },
+    //{icon:Constants.EMPTY_STRING, label: 'Send to', action: this.doNothing.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Cut', action: this.onCut.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Copy', action: this.onCopy.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Create shortcut', action: this.createShortCut.bind(this) },
@@ -300,7 +306,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         const fileName = (this._fileInfo.getFileName === Constants.EMPTY_STRING)? Constants.NEW_FOLDER : this._fileInfo.getFileName;
 
         this.populateTraversalList();
-        this.getProperRecycleBinIcon();
+        this.checkAndSetIfRecycleBin();
         this.setNavPathIcon(fileName, this._fileInfo.getCurrentPath);
       }
     }
@@ -332,6 +338,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     })
   
     await this.loadFileTreeAsync();
+    await this.setProperRecycleBinIcon();
     await this.loadFiles().then(()=>{
       setTimeout(()=>{
         this.captureComponentImg();
@@ -354,18 +361,21 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     return this._isBtnClickEvt;
   }
 
-
-  getProperRecycleBinIcon():void{
+  checkAndSetIfRecycleBin():void{
     if(this.directory === Constants.RECYCLE_BIN_PATH){
       this.isRecycleBinFolder = true;
-
-      // const count = await this._fileService.getCountOfFolderItemsAsync(Constants.RECYCLE_BIN_PATH);
-      // this.icon  = (count === Constants.NUM_ZERO) 
-      //   ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
-      //   :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
-
       this.icon  =  `${Constants.IMAGE_BASE_PATH}empty_bin.png`;
-        
+    }
+  }
+
+  async setProperRecycleBinIcon():Promise<void>{
+    if(this.directory === Constants.RECYCLE_BIN_PATH){
+
+      const count = await this._fileService.countFolderItems(Constants.RECYCLE_BIN_PATH);
+      this.icon = (count === Constants.NUM_ZERO) 
+        ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
+        :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
+  
     }
   }
 
@@ -455,7 +465,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   changeFileExplorerLayoutCSS(inputViewOption:any):void{
-    if(inputViewOption === this.smallIconsView || inputViewOption === this.mediumIconsView ||inputViewOption === this.largeIconsView || inputViewOption === this.extraLargeIconsView){
+    if(inputViewOption === this.smallIconsView || inputViewOption === this.mediumIconsView || inputViewOption === this.largeIconsView || inputViewOption === this.extraLargeIconsView){
       this.currentViewOption = inputViewOption;
       this.changeLayoutCss(inputViewOption);
       this.changeOrderedlistStyle(inputViewOption);
@@ -471,7 +481,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   changeTabLayoutIconCntnrCSS(id:number, isMouseHover:boolean):void{
     const btnElement = document.getElementById(`tabLayoutIconCntnr-${this.processId}-${id}`) as HTMLElement;
-    if(this.currentViewOptionId == id){
+    if(this.currentViewOptionId === id){
       if(btnElement){
         btnElement.style.border = '0.5px solid #ccc';
 
@@ -483,7 +493,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     }
 
-    if(this.currentViewOptionId != id){
+    if(this.currentViewOptionId !== id){
       if(btnElement){
         if(isMouseHover){
           btnElement.style.backgroundColor = '#403c3c';
@@ -515,7 +525,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
          So, options 0 - 3 in the layoutOptions = option 0 in the cssLayoutOptions
        */
       const idx = layoutIdx - Constants.NUM_THREE;
-      console.log('idx:',idx);
       this.olClassName = `ol-${cssLayoutOptions[idx]}-grid`;
     }
   }
@@ -570,7 +579,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ZERO]})`;
         olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ONE]})`;
         olElmnt.style.rowGap = '25px';
-        olElmnt.style.columnGap = '10px';
+        olElmnt.style.columnGap = '5px';
         olElmnt.style.padding = '5px 10px';
         olElmnt.style.gridAutoFlow = 'row';
       }
@@ -1436,7 +1445,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   setBtnStyle(id:number, isMouseHover:boolean):void{
     const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
-    const figCapElement = document.getElementById(`figCapElmnt-${this.processId}-${id}`) as HTMLElement;
+    //const figCapElement = document.getElementById(`figCapElmnt-${this.processId}-${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = '#4c4c4c';
       btnElement.style.border = '0.5px solid #3c3c3c';
@@ -1462,13 +1471,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     }
 
-    if(figCapElement){
-      if(this.selectedElementId === id){
-          // figCapElement.style.overflow = 'unset'; 
-          // figCapElement.style.overflowWrap = 'break-word';
-          // figCapElement.style.webkitLineClamp = '2';
-      }
-    }
+    // if(figCapElement){
+    //   if(this.selectedElementId === id){
+    //       figCapElement.style.overflow = 'unset'; 
+    //       figCapElement.style.overflowWrap = 'break-word';
+    //       figCapElement.style.webkitLineClamp = '2';
+    //   }
+    // }
   }
 
   btnStyleAndValuesReset():void{
@@ -1494,17 +1503,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
   removeBtnStyle(id:number):void{
     const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
-    const figCapElement = document.getElementById(`figCapElmnt-${this.processId}-${id}`) as HTMLElement;
+    //const figCapElement = document.getElementById(`figCapElmnt-${this.processId}-${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = Constants.EMPTY_STRING;
       btnElement.style.border = '0.5px solid transparent'
     }
 
-    if(figCapElement){
-      figCapElement.style.overflow = 'hidden'; 
-      figCapElement.style.overflowWrap = 'unset'
-      figCapElement.style.webkitLineClamp = '3';
-    }
+    // if(figCapElement){
+    //   figCapElement.style.overflow = 'hidden'; 
+    //   figCapElement.style.overflowWrap = 'unset'
+    //   figCapElement.style.webkitLineClamp = '3';
+    // }
   }
 
   doNothing():void{/** */}
@@ -2225,25 +2234,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       renameTxtBoxElement.focus();
       renameTxtBoxElement.select();
     }
-    
 
-
-
-
-    // if(figCapElement){
-    //   figCapElement.style.display = 'none';
-    // }
-
-    // if(renameContainerElement){
-    //   renameContainerElement.style.display = 'block';
-    //   this.currentIconName = this.selectedFile.getFileName;
-    //   this.renameForm.setValue({
-    //     renameInput:this.currentIconName
-    //   })
-
-    //   renameTxtBoxElement?.focus();
-    //   renameTxtBoxElement?.select();
-    // }
   }
 
   async onRenameFileTxtBoxDataSave():Promise<void>{
@@ -2397,6 +2388,35 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+  updateTableFieldSize(data:string[]) {
+    const tdId = data[0];
+    for(let i =0; i <= this.fileExplrFiles.length; i++){    
+      if(tdId === 'th-1') {
+        const fileName =  document.getElementById(`fileName-${i}`) as HTMLElement;
+        if(fileName){
+          const px_offSet = 25;
+          fileName.style.width = `${Number(data[1]) - px_offSet}px`;
+        }
+      }
+      // else if(tdId === 'th-1'){
+      //   const procType =  document.getElementById(`procType-${i}`) as HTMLElement;
+      //   if(procType){
+      //     const px_offSet = 10;
+      //     procType.style.width =`${Number(data[1]) - px_offSet}px`;
+      //   }
+      // }
+    }
+  }
+
+    onProcessSelected(rowIndex:number, btnId:number):void{
+    this.selectedRow = rowIndex;
+    
+    if(this.selectedRow != -1){
+      this.isActive = true;
+      this.isFocus = true;
+    }
+  }
+
   sortByNameM():void{
     this.sortBy(this.sortByName)
   }
@@ -2489,6 +2509,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
 
+
   buildViewMenu():NestedMenuItem[]{
 
     const extraLargeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Extra Large icons', action: this.showExtraLargeIconsM,
@@ -2536,19 +2557,19 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     const sortByMenu = [sortByName, sortBySize, sortByItemType, sortByDateModified ]
 
-    return sortByMenu
+    return sortByMenu;
   }
 
   buildNewMenu(): NestedMenuItem[]{
     const newFolder:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action:()=> console.log(),  variables:true , 
       emptyline:false, styleOption:'C' }
 
-    const textEditor:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}text_editor.png`, label:'Rich Text',  action:  ()=> console.log(),  variables:true , 
+    const textEditor:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}text_editor.png`, label:'Rich Text',  action:()=> console.log(),  variables:true , 
       emptyline:false, styleOption:'C' }
 
     const sortByMenu = [newFolder, textEditor ]
 
-    return sortByMenu
+    return sortByMenu;
   }
 
   getFileExplorerMenuData():void{
