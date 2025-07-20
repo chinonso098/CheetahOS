@@ -1009,7 +1009,7 @@ th[fxplrColumnResize]::after {
     align-items: center;
 }
 
-.figcaption-detailsview-p, .detailsview-ptag{
+.figcaption-detailsview-p, .detailsview-ptag, .detailsview-ptag-right{
     position: relative;
     text-align: left;
     color: white;
@@ -1025,6 +1025,14 @@ th[fxplrColumnResize]::after {
 
 .figcaption-detailsview-p{
     top: 4px;
+}
+
+.detailsview-ptag{
+    padding-left: 5px;
+}
+
+.detailsview-ptag-right{
+    text-align: right;
 }
 
 .detailsview-rename-form, .detailsview-rename-textbox{

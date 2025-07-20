@@ -13,6 +13,7 @@ export class FileExplorerColumnResizeDirective {
   private columnIndex!: number;
   private table: HTMLElement | null = null; // Initialize table as null
   @Output() dataEvent = new EventEmitter<string[]>();
+  @Output() mouseEvent = new EventEmitter<string>();
 
   constructor(private el: ElementRef, private renderer: Renderer2) {}
 
@@ -22,11 +23,8 @@ export class FileExplorerColumnResizeDirective {
     this.startX = event.pageX;
     this.isResizing = true;
     this.initialWidth = this.el.nativeElement.offsetWidth;
-    const minimumWidths:number[] = [124,91,81];
+    const minimumWidths:number[] = [70, 90, 90];
     let minimumWidth = 0;
-
-    console.log("this.initialWidth:", this.initialWidth);
-
 
     // Find the index of the current column
     const row = this.el.nativeElement.parentElement;
@@ -37,7 +35,7 @@ export class FileExplorerColumnResizeDirective {
     this.renderer.addClass(document.body, 'resizing');
     this.table = this.findParentTable(this.el.nativeElement);
 
-    if (this.table) {
+    if(this.table){
       const columns = this.table.querySelectorAll('th');
 
       const onMouseMove = (moveEvent: MouseEvent) => {
@@ -92,6 +90,18 @@ export class FileExplorerColumnResizeDirective {
       document.addEventListener('mousemove', onMouseMove);
       document.addEventListener('mouseup', onMouseUp);
     }
+  }
+
+  @HostListener('mouseenter', ['$event'])
+  onMouseEnter(event: MouseEvent){
+    //emit Mouse Enter
+    this.mouseEvent.emit(event.type);
+  }
+
+  @HostListener('mouseleave', ['$event'])
+  onMouseLeave (event: MouseEvent) {
+    //emit Mouse Leave
+   this.mouseEvent.emit(event.type);
   }
 
   private findParentTable(element: HTMLElement): HTMLElement | null {

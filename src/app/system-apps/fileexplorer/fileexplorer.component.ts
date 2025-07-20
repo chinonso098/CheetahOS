@@ -2390,28 +2390,40 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   updateTableFieldSize(data:string[]) {
     const tdId = data[0];
-    for(let i =0; i <= this.fileExplrFiles.length; i++){    
-      if(tdId === 'th-1') {
-        const fileName =  document.getElementById(`fileName-${i}`) as HTMLElement;
-        if(fileName){
-          const px_offSet = 25;
-          fileName.style.width = `${Number(data[1]) - px_offSet}px`;
-        }
-      }
-      // else if(tdId === 'th-1'){
-      //   const procType =  document.getElementById(`procType-${i}`) as HTMLElement;
-      //   if(procType){
-      //     const px_offSet = 10;
-      //     procType.style.width =`${Number(data[1]) - px_offSet}px`;
-      //   }
-      // }
+    // for(let i =0; i <= this.fileExplrFiles.length; i++){    
+    //   if(tdId === 'th-1') {
+    //     const fileName =  document.getElementById(`fileName-${i}`) as HTMLElement;
+    //     if(fileName){
+    //       const px_offSet = 25;
+    //       fileName.style.width = `${Number(data[1]) - px_offSet}px`;
+    //     }
+    //   }
+    //   // else if(tdId === 'th-1'){
+    //   //   const procType =  document.getElementById(`procType-${i}`) as HTMLElement;
+    //   //   if(procType){
+    //   //     const px_offSet = 10;
+    //   //     procType.style.width =`${Number(data[1]) - px_offSet}px`;
+    //   //   }
+    //   // }
+    // }
+  }
+
+  enableDisableMultSelect(evt:string){
+    const MouseEnter = 'mouseenter';
+    const MouseLeave = 'mouseleave';
+
+    if(evt === MouseEnter){
+      if(!this.isMultiSelectActive)
+          this.isMultiSelectEnabled = false;
+    }else if(evt === MouseLeave){
+          this.isMultiSelectEnabled = true;
     }
   }
 
-    onProcessSelected(rowIndex:number, btnId:number):void{
+  onProcessSelected(rowIndex:number, btnId:number):void{
     this.selectedRow = rowIndex;
     
-    if(this.selectedRow != -1){
+    if(this.selectedRow !== Constants.MINUS_ONE){
       this.isActive = true;
       this.isFocus = true;
     }

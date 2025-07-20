@@ -273,7 +273,10 @@
                 <!-- ngDraggable  [inBounds]="true" zIndex="1" [preventDefaultEvent]="true"
                     (stopped)="onDragEnd($event)" (started)="onDragStart($event)" -->
                 
-                    <ol [ngClass]="olClassName" (dragover)="onDragOver($event)"  (drop)="onDrop($event)" (click)="hideIconContextMenu($event, name)" 
+                    <ol [ngClass]="olClassName" 
+                        (dragover)="onDragOver($event)"  
+                        (drop)="onDrop($event)" 
+                        (click)="hideIconContextMenu($event, name)" 
                         (click)="handleIconHighLightState()" 
                         (contextmenu)="onShowFileExplorerContextMenu($event)" 
                         (mousedown)="activateMultiSelect($event)"
@@ -362,13 +365,13 @@
                                 <div>
                                     <thead>
                                         <tr>
-                                            <th fxplrColumnResize id="th-1">
+                                            <th fxplrColumnResize id="th-1" (dataEvent)="updateTableFieldSize($event)" (mouseEvent)="enableDisableMultSelect($event)">
                                                 <p class="detailsview-ptag">Name</p>
                                             </th>
-                                            <th fxplrColumnResize id="th-2">
+                                            <th fxplrColumnResize id="th-2" (dataEvent)="updateTableFieldSize($event)" (mouseEvent)="enableDisableMultSelect($event)">
                                                 <p class="detailsview-ptag">Date modified</p>
                                             </th>
-                                            <th fxplrColumnResize id="th-3">
+                                            <th fxplrColumnResize id="th-3" (dataEvent)="updateTableFieldSize($event)" (mouseEvent)="enableDisableMultSelect($event)">
                                                 <p class="detailsview-ptag">Type</p>
                                             </th>
                                             <th>
@@ -381,13 +384,18 @@
                                 <div>
                                     <tbody>
                                         <tr class="li-detailsview-container" *ngFor='let file of fileExplrFiles; let i = index' (click)="onProcessSelected(i,i)" [class.active]="i === selectedRow"  id="trElmnt-{{this.processId}}-{{i}}">
-                                            <td>
+                                            <td
+                                                (mouseenter)="onMouseEnter($event, file, i)" 
+                                                (mouseleave)="onMouseLeave(i)"
+                                                (contextmenu)="onShowIconContextMenu($event, file, i)" 
+                                                (click)="onBtnClick($event, i)" 
+                                                id="btnElmnt-{{this.processId}}-{{i}}">
+
                                                 <div class="div-detailsview-figure-section">
                                                     <figure class="figure-detailsview">
                                                         <img class="img-detailsview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
                                                     </figure>
                                                 </div>
-            
                                                 <div class="div-detailsview-caption-section">
                                                     <figcaption class="figcaption-detailsview" id="figCapElmnt-{{this.processId}}-{{i}}">
                                                         <p class="figcaption-detailsview-p" id="fileName-{{i}}"> {{file.getFileName}} </p>
@@ -412,7 +420,7 @@
                                                     <p class="detailsview-ptag">File folder</p>
                                                 }
                                             </td>
-                                            <td><p class="detailsview-ptag" *ngIf="file.getIsFile">{{ file.getSize }} {{file.getFileSizeUnit}}</p></td>
+                                            <td><p class="detailsview-ptag-right" *ngIf="file.getIsFile">{{ file.getSize }} {{file.getFileSizeUnit}}</p></td>
                                             <!-- <td><p class="detailsview-ptag">{{ file.getOpensWith }}</p></td> -->
                                         </tr>
                                     </tbody>
