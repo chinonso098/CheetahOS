@@ -292,7 +292,7 @@
         
                         <ng-template #iconsView>
                             <li class="li-iconview-container" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}" >
-                                <button class="iconview-button" tabindex="0" (dblclick)="runProcess(file)"
+                                <div class="iconview-button" role="button" tabindex="0" (dblclick)="runProcess(file)"
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
@@ -322,7 +322,7 @@
                                             </textarea>
                                         </form>
                                     </div> 
-                                </button>
+                                </div>
                             </li>
                         </ng-template>
     

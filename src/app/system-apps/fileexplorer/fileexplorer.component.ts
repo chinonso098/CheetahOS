@@ -537,7 +537,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       if(btnElmnt){
         btnElmnt.style.width = btn_width_height_sizes[iconIdx][Constants.NUM_ZERO];
-        btnElmnt.style.height = btn_width_height_sizes[iconIdx][Constants.NUM_ONE];
+        //btnElmnt.style.height = btn_width_height_sizes[iconIdx][Constants.NUM_ONE];
+        btnElmnt.style.height = 'min-content';
       }
 
       if(imgElmnt){
@@ -568,9 +569,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(olElmnt){
         olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ZERO]})`;
         olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ONE]})`;
-        olElmnt.style.rowGap = '20px';
-        olElmnt.style.columnGap = '5px';
-        olElmnt.style.padding = '5px 3px';
+        olElmnt.style.rowGap = '25px';
+        olElmnt.style.columnGap = '10px';
+        olElmnt.style.padding = '5px 10px';
         olElmnt.style.gridAutoFlow = 'row';
       }
     }else if(iconView == this.contentView){
@@ -1435,11 +1436,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   setBtnStyle(id:number, isMouseHover:boolean):void{
     const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
+    const figCapElement = document.getElementById(`figCapElmnt-${this.processId}-${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = '#4c4c4c';
       btnElement.style.border = '0.5px solid #3c3c3c';
 
-      if(this.selectedElementId == id){
+      if(this.selectedElementId === id){
 
         if(isMouseHover && this.isIconInFocusDueToCurrentAction){
           btnElement.style.backgroundColor ='#787474'
@@ -1457,6 +1459,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           btnElement.style.backgroundColor = Constants.EMPTY_STRING;
           btnElement.style.border = '0.5px solid white'
         }
+      }
+    }
+
+    if(figCapElement){
+      if(this.selectedElementId === id){
+          // figCapElement.style.overflow = 'unset'; 
+          // figCapElement.style.overflowWrap = 'break-word';
+          // figCapElement.style.webkitLineClamp = '2';
       }
     }
   }
@@ -1484,9 +1494,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
   removeBtnStyle(id:number):void{
     const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
+    const figCapElement = document.getElementById(`figCapElmnt-${this.processId}-${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = Constants.EMPTY_STRING;
       btnElement.style.border = '0.5px solid transparent'
+    }
+
+    if(figCapElement){
+      figCapElement.style.overflow = 'hidden'; 
+      figCapElement.style.overflowWrap = 'unset'
+      figCapElement.style.webkitLineClamp = '3';
     }
   }
 
@@ -1920,7 +1937,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
 
   onKeyPress(evt:KeyboardEvent):boolean{
-    const regexStr = '^[a-zA-Z0-9_.]+$';
+    const regexStr = '^[a-zA-Z0-9_.\\s-]+$';
     if(evt.key === 'Enter'){
       evt.preventDefault(); // prevent newline in textarea
       this.isFormDirty(); // trigger form submit logic
@@ -2198,7 +2215,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       renameContainerElement.style.display = 'block';
       
       renameTxtBoxElement.style.display = 'block';
-      renameTxtBoxElement.style.zIndex = '5'; // ensure it's on top
+      renameTxtBoxElement.style.zIndex = '3'; // ensure it's on top
 
       this.currentIconName = this.selectedFile.getFileName;
       this.renameForm.setValue({

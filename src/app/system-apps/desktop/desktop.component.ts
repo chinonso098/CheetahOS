@@ -177,8 +177,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   deskTopMenu:NestedMenu[] = [];
   taskBarContextMenuData:GeneralMenu[] = [];
   taskBarAppIconMenuData:GeneralMenu[] = [
-    {icon:'', label: '', action: this.openApplicationFromTaskBar.bind(this)},
-    {icon:'', label: '', action: ()=> console.log() },
+    {icon: Constants.EMPTY_STRING, label: Constants.EMPTY_STRING, action: this.openApplicationFromTaskBar.bind(this)},
+    {icon: Constants.EMPTY_STRING, label: Constants.EMPTY_STRING, action: ()=> console.log() },
   ];
 
   private isRenameActive = false;
@@ -1493,7 +1493,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
 
 
-      if(this.selectedElementId == id){
+      if(this.selectedElementId === id){
         (isMouseHover)? btnElement.style.backgroundColor ='#607c9c' : 
           btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
       }
@@ -1505,7 +1505,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
 
     if(figCapElement){
-      if(this.selectedElementId == id){
+      if(this.selectedElementId === id){
           figCapElement.style.overflow = 'unset'; 
           figCapElement.style.overflowWrap = 'break-word';
           figCapElement.style.webkitLineClamp = 'unset'
@@ -1823,59 +1823,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.markedBtnIds.pop();
     }
   }
-  
-  moveBtnIconsToNewPositionAlignOn_TBD(mPos: mousePosition): void {
-    const dsktpmngrOlElmnt = document.getElementById('desktopIcon_ol') as HTMLElement;
-    const maxIconWidth = this.GRID_SIZE;
-    const maxIconHeight = this.GRID_SIZE;
-    const offset = Constants.NUM_SEVEN;
-    const rowGap = 25; 
-    const effectiveRowHeight = maxIconHeight + rowGap;
-    
-    if (!dsktpmngrOlElmnt) return;
-  
-    const gridWidth = dsktpmngrOlElmnt.clientWidth; // Get total width of the container
-    const columnCount = Math.floor(gridWidth / maxIconWidth); // Assuming each icon is 100px wide
-    const columnWidth = Math.floor(gridWidth / columnCount) - Constants.NUM_ONE; // Compute exact column width
-
-    let counter = Constants.NUM_ZERO;
-    let justAdded = false;
-    let newY = Constants.NUM_ZERO;
-
-    if(this.markedBtnIds.length === Constants.NUM_ZERO){
-      justAdded = true;
-      this.markedBtnIds.push(String(this.draggedElementId));
-    }
-
-    this.markedBtnIds.forEach(id =>{
-      const btnIconElmnt = document.getElementById(`desktopIcon_li${id}`) as HTMLElement;
-      this.movedBtnIds.push(id);
-
-      if(btnIconElmnt){
-        // Calculate snap position
-        const newX = (Math.round(mPos.x / columnWidth) * columnWidth);
-        if(counter === Constants.NUM_ZERO)
-            //newY = (Math.round(mPos.y / maxIconHeight) * maxIconHeight) + offset;
-          newY = Math.round(mPos.y / effectiveRowHeight) * effectiveRowHeight + offset;
-        else{
-          const product = (this.GRID_SIZE * counter);
-          newY =(Math.round(mPos.y / maxIconHeight) * maxIconHeight) + product + offset;
-        }
-
-        btnIconElmnt.style.position = 'absolute';
-        btnIconElmnt.style.transform = `translate(${Math.abs(newX)}px, ${Math.abs(newY)}px)`;
-      }
-
-      counter++;
-    });
-
-    if(justAdded) 
-      this.markedBtnIds.pop();  
-  }
 
   moveBtnIconsToNewPositionAlignOn(mPos: mousePosition): void {
     const gridEl = document.getElementById('desktopIcon_ol') as HTMLElement;
-    const heightAdjustment = 20;
+    const heightAdjustment = Constants.NUM_TWENTY;
     const iconWidth = this.GRID_SIZE; 
     const iconHeight = this.GRID_SIZE - heightAdjustment;  
 
@@ -1920,7 +1871,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   correctMisalignedIcons(): void {
-    const heightAdjustment = 20;
+    const heightAdjustment = Constants.NUM_TWENTY;
     const iconWidth = this.GRID_SIZE;
     const iconHeight = this.GRID_SIZE - heightAdjustment
     const rowGap = this.ROW_GAP; 
@@ -1986,7 +1937,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   changeGridRowColSize():void{
-    const rowSpace  = 25; //row space of 20px between each icons
+    const rowSpace  = this.ROW_GAP; //row space of 25px between each icons
 
     const colSize = (this.GRID_SIZE === this.MAX_GRID_SIZE) ? this.MAX_GRID_SIZE :
                     (this.GRID_SIZE === this.MID_GRID_SIZE) ? this.MID_GRID_SIZE :
@@ -2004,6 +1955,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.btnStyle = {
       'width': `${colSize}px`, 
+      'height': 'min-content',
       // 'height': `${rowSize}px`,
     }
   }

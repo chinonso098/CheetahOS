@@ -8,7 +8,7 @@ export namespace VantaDefaults {
             el: '#vanta',
             color: color,
             waveHeight: 30,
-            shininess: 45,
+            shininess: 40,
             waveSpeed: 0.2,
             zoom: 1.3,
             scale: 1.20,

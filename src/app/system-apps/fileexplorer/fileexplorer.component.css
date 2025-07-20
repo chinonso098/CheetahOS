@@ -795,9 +795,9 @@ span.mid-search-entry{
     grid-template-rows: repeat(auto-fill, 70px);
     height: calc(100% - 5px);
     width: 100%;
-    padding: 5px 3px;
-    row-gap: 20px;
-    column-gap: 5px;
+    padding: 5px 10px;
+    row-gap: 25px;
+    column-gap: 10px;
 }
 
 .li-iconview-container{
@@ -869,7 +869,7 @@ span.mid-search-entry{
     color: #fff;
     font-size: 12px;
     letter-spacing: 0.1px;
-    -webkit-line-clamp:2;
+    -webkit-line-clamp:3;
     position: relative;
     text-align:center;
     padding: 2px 0;
@@ -889,6 +889,7 @@ span.mid-search-entry{
 .iconview-rename-textbox{
     position: relative;
     display: none;
+    text-align:center;
     top: 2px;
     font-size: 12px;
     font-weight:200;
