@@ -796,7 +796,7 @@ span.mid-search-entry{
     height: calc(100% - 5px);
     width: 100%;
     padding: 5px 10px;
-    row-gap: 25px;
+    row-gap: 32px;
     column-gap: 5px;
 }
 
@@ -869,7 +869,7 @@ span.mid-search-entry{
     color: #fff;
     font-size: 12px;
     letter-spacing: 0.1px;
-    -webkit-line-clamp:3;
+    -webkit-line-clamp:4;
     position: relative;
     text-align:center;
     padding: 2px 0;

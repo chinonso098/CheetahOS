@@ -426,7 +426,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  onMouseEnterTabLayoutBtn(iconView:string, id:number):void{
+  onMouseEnterTabLayoutBtn(iconView:ViewOptions, id:number):void{
     this.changeTabLayoutIconCntnrCSS(id,true);
     this.changeFileExplorerLayoutCSS(iconView);
   }
@@ -467,7 +467,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.changeIconViewBtnSize( this.currentViewOption );
   }
 
-  changeFileExplorerLayoutCSS(inputViewOption:any):void{
+  changeFileExplorerLayoutCSS(inputViewOption:ViewOptions):void{
     if(inputViewOption === this.smallIconsView || inputViewOption === this.mediumIconsView || inputViewOption === this.largeIconsView || inputViewOption === this.extraLargeIconsView){
       this.currentViewOption = inputViewOption;
       this.changeLayoutCss(inputViewOption);
@@ -511,28 +511,31 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
 
-  changeLayoutCss(iconSize:string):void{
-    const layoutOptions:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView,
-                                    this.listView, this.detailsView, this.tilesView, this.contentView];
+  changeLayoutCss(iconSize:ViewOptions):void{
+    const layoutOptions:ViewOptions[] = [ViewOptions.SMALL_ICON_VIEW, ViewOptions.MEDIUM_ICON_VIEW, ViewOptions.LARGE_ICON_VIEW, 
+                                        ViewOptions.EXTRA_LARGE_ICON_VIEW, ViewOptions.LIST_VIEW, ViewOptions.DETAILS_VIEW,
+                                        ViewOptions.TILES_VIEW, ViewOptions.CONTENT_VIEW];
 
-    const cssLayoutOptions:ViewOptionsCSS[] = [ViewOptionsCSS.ICONS_VIEW_CSS, ViewOptionsCSS.LIST_VIEW_CSS, 
+    const LayoutOptionsCSS:ViewOptionsCSS[] = [ViewOptionsCSS.ICONS_VIEW_CSS, ViewOptionsCSS.LIST_VIEW_CSS, 
                                               ViewOptionsCSS.DETAILS_VIEW_CSS, ViewOptionsCSS.TITLES_VIEW_CSS,
                                               ViewOptionsCSS.CONTENT_VIEW_CSS];
 
     const layoutIdx = layoutOptions.indexOf(iconSize);
     if(layoutIdx <= Constants.NUM_THREE){
-      this.olClassName = cssLayoutOptions[Constants.NUM_ZERO];
+      this.olClassName = LayoutOptionsCSS[Constants.NUM_ZERO];
     } else if (layoutIdx >= Constants.NUM_FOUR){
       /* the icon-views has various sizes, but it is still treated as one distinct layout. 
          So, options 0 - 3 in the layoutOptions = option 0 in the cssLayoutOptions */
       const idx = layoutIdx - Constants.NUM_THREE;
-      this.olClassName = cssLayoutOptions[idx];
+      this.olClassName = LayoutOptionsCSS[idx];
     }
   }
 
-  changeIconViewBtnSize(iconSize:string):void{
+  changeIconViewBtnSize(iconSize:ViewOptions):void{
 
-    const icon_sizes:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView];
+    const icon_sizes:ViewOptions[] = [ViewOptions.SMALL_ICON_VIEW, ViewOptions.MEDIUM_ICON_VIEW, ViewOptions.LARGE_ICON_VIEW, 
+                                      ViewOptions.EXTRA_LARGE_ICON_VIEW];
+
     const fig_img_sizes:string[] = ['30px', '45px', '80px', '96px']; //small, med, large, ext large
     const btn_width_height_sizes:string[][] = [['70px', '50px'], ['90px', '70px'], ['120px', '100px'], ['140px', '120px']];
     const shortCutIconSizes:string[][] = [['8', '-12'], ['12', '-8'], ['21', '1'],  ['25', '5']];
@@ -568,23 +571,29 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  changeOrderedlistStyle(iconView:string):void{
-    const icon_sizes:string[] = [this.smallIconsView,this.mediumIconsView,this.largeIconsView,this.extraLargeIconsView];
+  changeOrderedlistStyle(iconView:ViewOptions):void{
+    const icon_sizes:ViewOptions[] = [ViewOptions.SMALL_ICON_VIEW, ViewOptions.MEDIUM_ICON_VIEW, ViewOptions.LARGE_ICON_VIEW, 
+                                ViewOptions.EXTRA_LARGE_ICON_VIEW];
+
     const btn_width_height_sizes = [['70px', '50px'], ['90px', '70px'], ['120px', '100px'],  ['140px', '120px']];
     const iconIdx = icon_sizes.indexOf(iconView);
     
     const olElmnt = document.getElementById(`olElmnt-${this.processId}`) as HTMLElement;
 
-    if(iconView == this.smallIconsView || iconView == this.mediumIconsView ||iconView == this.largeIconsView || iconView == this.extraLargeIconsView){
+    if(iconView === ViewOptions.SMALL_ICON_VIEW || 
+      iconView === ViewOptions.MEDIUM_ICON_VIEW ||
+      iconView === ViewOptions.LARGE_ICON_VIEW  || 
+      iconView === ViewOptions.EXTRA_LARGE_ICON_VIEW){
+
       if(olElmnt){
         olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ZERO]})`;
         olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ONE]})`;
-        olElmnt.style.rowGap = '25px';
+        olElmnt.style.rowGap = '32px';
         olElmnt.style.columnGap = '5px';
         olElmnt.style.padding = '5px 10px';
         olElmnt.style.gridAutoFlow = 'row';
       }
-    }else if(iconView == this.contentView){
+    }else if(iconView === ViewOptions.CONTENT_VIEW){
       const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
       if(olElmnt){
         olElmnt.style.gridTemplateColumns = `repeat(auto-fill, minmax(50px, ${rect.width}px)`;
@@ -1226,13 +1235,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.iconCntxtCntr++;
 
     let axis:MenuPosition = {xAxis:0, yAxis:0}
-    if (this.olClassName === ViewOptionsCSS.DETAILS_VIEW_CSS) {
+    if (this.olClassName === ViewOptionsCSS.DETAILS_VIEW_CSS){
       this.isDetailsView = true;
       this.isNotDetailsView = false;
 
       const tblBodyElmnt = document.getElementById(`tblBody-${this.processId}`) as HTMLTableCellElement;
       const rect = tblBodyElmnt.getBoundingClientRect();
-      axis =  {xAxis: evt.clientX  - rect.left - Constants.NUM_TWENTY, yAxis:evt.clientY - rect.top - Constants.NUM_TWENTY}
+      axis =  {xAxis: evt.clientX  - rect.left - 50, yAxis:evt.clientY - rect.top - 50}
     }else{
       this.isDetailsView = false;
       this.isNotDetailsView = true;
@@ -2492,41 +2501,41 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   //Methods defined as class fields, you learn somthing new every day.
   private showExtraLargeIconsM = ():void=>{
-    this.onMouseEnterTabLayoutBtn(this.extraLargeIconsView, Constants.NUM_ONE);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.EXTRA_LARGE_ICON_VIEW, Constants.NUM_ONE);
   };
 
   private showLargeIconsM = ():void=>{
-    this.onMouseEnterTabLayoutBtn(this.largeIconsView, Constants.NUM_TWO);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.LARGE_ICON_VIEW, Constants.NUM_TWO);
    
   }
 
   private showMediumIconsM = ():void=>{
-    this.onMouseEnterTabLayoutBtn(this.mediumIconsView, Constants.NUM_THREE);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.MEDIUM_ICON_VIEW, Constants.NUM_THREE);
    
   }
 
   private showSmallIconsM = ():void=>{
-    this.onMouseEnterTabLayoutBtn(this.smallIconsView, Constants.NUM_FOUR);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.SMALL_ICON_VIEW, Constants.NUM_FOUR);
    
   }
 
   private showListIconsM = ():void=>{
-    this.onMouseEnterTabLayoutBtn(this.listView, Constants.NUM_FIVE);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.LIST_VIEW, Constants.NUM_FIVE);
    
   }
 
   private showDetailsIconsM = ():void=>{
-    this.onMouseEnterTabLayoutBtn(this.detailsView, Constants.NUM_SIX);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.DETAILS_VIEW, Constants.NUM_SIX);
     
   }
 
   private showTilesIconsM = ():void=>{
-    this.onMouseEnterTabLayoutBtn(this.tilesView, Constants.NUM_SEVEN);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.TILES_VIEW, Constants.NUM_SEVEN);
     
   }
 
   private showContentIconsM = (evt:MouseEvent):void=>{
-    this.onMouseEnterTabLayoutBtn(this.contentView, Constants.NUM_EIGHT);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.CONTENT_VIEW, Constants.NUM_EIGHT);
   }
 
 
