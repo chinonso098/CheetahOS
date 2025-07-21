@@ -429,6 +429,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onMouseEnterTabLayoutBtn(iconView:ViewOptions, id:number):void{
     this.changeTabLayoutIconCntnrCSS(id,true);
     this.changeFileExplorerLayoutCSS(iconView);
+
+    // this should be an update of the menuData, rather than a re-generation
+    this.getFileExplorerMenuData()
   }
 
   onMouseLeaveTabLayoutBtn(id:number):void{
@@ -436,10 +439,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.changeFileExplorerLayoutCSS(this.defaultviewOption);
   }
 
-  onClickTabLayoutBtn(iconView:any, id:number):void{
-
-    console.log('i was called');
-
+  onClickTabLayoutBtn(iconView:ViewOptions, id:number):void{
     this.currentViewOptionId = id;
     this.currentViewOption = iconView;
     this.defaultviewOption = iconView;
@@ -454,28 +454,30 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   toggleLargeIconsView():void{
-    this.currentViewOption = this.largeIconsView;
+    this.currentViewOption = ViewOptions.LARGE_ICON_VIEW;
     this.changeLayoutCss( this.currentViewOption );
     this.changeOrderedlistStyle( this.currentViewOption );
     this.changeIconViewBtnSize( this.currentViewOption );
   }
 
   toggleDetailsView():void{
-    this.currentViewOption = this.detailsView;
+    this.currentViewOption = ViewOptions.DETAILS_VIEW;
     this.changeLayoutCss( this.currentViewOption );
     this.changeOrderedlistStyle( this.currentViewOption );
     this.changeIconViewBtnSize( this.currentViewOption );
   }
 
   changeFileExplorerLayoutCSS(inputViewOption:ViewOptions):void{
-    if(inputViewOption === this.smallIconsView || inputViewOption === this.mediumIconsView || inputViewOption === this.largeIconsView || inputViewOption === this.extraLargeIconsView){
+    if(inputViewOption === ViewOptions.SMALL_ICON_VIEW || inputViewOption === ViewOptions.MEDIUM_ICON_VIEW || 
+      inputViewOption === ViewOptions.LARGE_ICON_VIEW || inputViewOption === ViewOptions.EXTRA_LARGE_ICON_VIEW){
       this.currentViewOption = inputViewOption;
       this.changeLayoutCss(inputViewOption);
       this.changeOrderedlistStyle(inputViewOption);
       this.changeIconViewBtnSize(inputViewOption);
     }
 
-    if(inputViewOption === this.listView || inputViewOption === this.detailsView || inputViewOption === this.tilesView || inputViewOption === this.contentView){
+    if(inputViewOption === ViewOptions.LIST_VIEW || inputViewOption === ViewOptions.DETAILS_VIEW || 
+      inputViewOption === ViewOptions.TILES_VIEW || inputViewOption === ViewOptions.CONTENT_VIEW){
       this.currentViewOption = inputViewOption;
       this.changeLayoutCss(inputViewOption);
       this.changeOrderedlistStyle(inputViewOption);
@@ -487,7 +489,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(this.currentViewOptionId === id){
       if(btnElement){
         btnElement.style.border = '0.5px solid #ccc';
-
         if(isMouseHover){
           btnElement.style.backgroundColor = '#807c7c';
         }else{
@@ -509,7 +510,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }    
     }
   }
-
 
   changeLayoutCss(iconSize:ViewOptions):void{
     const layoutOptions:ViewOptions[] = [ViewOptions.SMALL_ICON_VIEW, ViewOptions.MEDIUM_ICON_VIEW, ViewOptions.LARGE_ICON_VIEW, 
@@ -588,12 +588,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(olElmnt){
         olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ZERO]})`;
         olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ONE]})`;
-        olElmnt.style.rowGap = '32px';
+        olElmnt.style.rowGap = '34px';
         olElmnt.style.columnGap = '5px';
         olElmnt.style.padding = '5px 10px';
         olElmnt.style.gridAutoFlow = 'row';
       }
-    }else if(iconView === ViewOptions.CONTENT_VIEW){
+    }
+    
+    else if(iconView === ViewOptions.CONTENT_VIEW){
       const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
       if(olElmnt){
         olElmnt.style.gridTemplateColumns = `repeat(auto-fill, minmax(50px, ${rect.width}px)`;
@@ -1235,13 +1237,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.iconCntxtCntr++;
 
     let axis:MenuPosition = {xAxis:0, yAxis:0}
-    if (this.olClassName === ViewOptionsCSS.DETAILS_VIEW_CSS){
+    if(this.currentViewOption === ViewOptions.DETAILS_VIEW){
       this.isDetailsView = true;
       this.isNotDetailsView = false;
 
       const tblBodyElmnt = document.getElementById(`tblBody-${this.processId}`) as HTMLTableCellElement;
       const rect = tblBodyElmnt.getBoundingClientRect();
-      axis =  {xAxis: evt.clientX  - rect.left - 50, yAxis:evt.clientY - rect.top - 50}
+      axis =  {xAxis: evt.clientX  - rect.left - 75, yAxis:evt.clientY - rect.top - 50}
     }else{
       this.isDetailsView = false;
       this.isNotDetailsView = true;
@@ -1355,6 +1357,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   hideIconContextMenu(evt?:MouseEvent, caller?:string):void{
     this.showIconCntxtMenu = false;
     this.isDetailsView = false;
+    this.isNotDetailsView = true;
     this.showFileExplrCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
     this.iconCntxtCntr = Constants.NUM_ZERO;
@@ -1843,7 +1846,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async showFileExplorerToolTip(evt: MouseEvent,  file:FileInfo):Promise<void>{
 
-    if(this.olClassName === ViewOptionsCSS.CONTENT_VIEW_CSS)
+    if(this.currentViewOption === ViewOptions.CONTENT_VIEW)
       return;
 
     const rect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
@@ -1856,7 +1859,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     await this.setInformationTipInfo(file);
 
     // Position tooltip slightly to the right and below the cursor
-    infoTip.style.transform = `translate(${x - Constants.NUM_FIFTEEN}px, ${y + Constants.NUM_TEN}px)`;
+    if(this.currentViewOption === ViewOptions.DETAILS_VIEW)
+      infoTip.style.transform = `translate(${x - 25}px, ${y - 50}px)`;
+    else
+       infoTip.style.transform = `translate(${x - Constants.NUM_FIFTEEN}px, ${y + Constants.NUM_TEN}px)`;
+
     infoTip.classList.add('visible');
   }
 
@@ -2501,44 +2508,63 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   //Methods defined as class fields, you learn somthing new every day.
   private showExtraLargeIconsM = ():void=>{
+    this.setViewFlagsToFalse();
+    this.isExtraLargeIcon = true;
     this.onMouseEnterTabLayoutBtn(ViewOptions.EXTRA_LARGE_ICON_VIEW, Constants.NUM_ONE);
-  };
+  }
 
   private showLargeIconsM = ():void=>{
+    this.setViewFlagsToFalse();
+    this.isLargeIcon = true;
     this.onMouseEnterTabLayoutBtn(ViewOptions.LARGE_ICON_VIEW, Constants.NUM_TWO);
-   
   }
 
   private showMediumIconsM = ():void=>{
+    this.setViewFlagsToFalse();
+    this.isMediumIcon = true;
     this.onMouseEnterTabLayoutBtn(ViewOptions.MEDIUM_ICON_VIEW, Constants.NUM_THREE);
-   
   }
 
   private showSmallIconsM = ():void=>{
+    this.setViewFlagsToFalse();
+    this.isSmallIcon = true;
     this.onMouseEnterTabLayoutBtn(ViewOptions.SMALL_ICON_VIEW, Constants.NUM_FOUR);
-   
   }
 
   private showListIconsM = ():void=>{
+    this.setViewFlagsToFalse();
+    this.isListIcon = true;
     this.onMouseEnterTabLayoutBtn(ViewOptions.LIST_VIEW, Constants.NUM_FIVE);
-   
   }
 
   private showDetailsIconsM = ():void=>{
+    this.setViewFlagsToFalse();
+    this.isDetailsIcon = true;
     this.onMouseEnterTabLayoutBtn(ViewOptions.DETAILS_VIEW, Constants.NUM_SIX);
-    
   }
 
   private showTilesIconsM = ():void=>{
+    this.setViewFlagsToFalse();
+    this.isTitleIcon = true;
     this.onMouseEnterTabLayoutBtn(ViewOptions.TILES_VIEW, Constants.NUM_SEVEN);
-    
   }
 
   private showContentIconsM = (evt:MouseEvent):void=>{
+    this.setViewFlagsToFalse();
+    this.isContentIcon = true;
     this.onMouseEnterTabLayoutBtn(ViewOptions.CONTENT_VIEW, Constants.NUM_EIGHT);
   }
 
-
+  setViewFlagsToFalse():void{
+    this.isExtraLargeIcon = false;
+    this.isLargeIcon = false;
+    this.isMediumIcon = false;
+    this.isSmallIcon = false;
+    this.isListIcon = false;
+    this.isDetailsIcon = false;
+    this.isTitleIcon = false;
+    this.isContentIcon = false;
+  }
 
   buildViewMenu():NestedMenuItem[]{
 

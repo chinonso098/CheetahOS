@@ -796,7 +796,7 @@ span.mid-search-entry{
     height: calc(100% - 5px);
     width: 100%;
     padding: 5px 10px;
-    row-gap: 32px;
+    row-gap: 34px;
     column-gap: 5px;
 }
 
