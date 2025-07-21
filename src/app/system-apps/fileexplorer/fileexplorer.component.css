@@ -927,7 +927,7 @@ span.mid-search-entry{
 }
 
 .detailsview-data-table th {
-    border: 0.5px solid transparent; ; /* Adds a border to each header and data cell */
+    border: 0.5px solid #202020; /* Adds a border to each header and data cell */
     padding: 8px;
     width: 155px;
     text-align: left; /* Aligns text to the left */
@@ -935,7 +935,14 @@ span.mid-search-entry{
 }
 
 .detailsview-data-table th:first-child{
-     width: 200px;
+    width: 200px;
+}
+
+.detailsview-data-table thead th {
+  background: #202020;
+  position: sticky;
+  top: -1px;
+  z-index: 1;
 }
 
 .detailsview-data-table td {
@@ -1056,16 +1063,6 @@ th[fxplrColumnResize]::after {
     background-color: white;
     color: black;
  }
-
-.detailsview-table-header-cntnr{
-    height: fit-content;
- }
-
-.detailsview-table-body-cntnr{  
-    height:410px;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
 /*-------------------------Details Icon View End ----------------------------------*/
 
 

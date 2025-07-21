@@ -11,7 +11,7 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
 import { Subscription } from 'rxjs';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FormGroup, FormBuilder } from '@angular/forms';
-import { FileToolTip, ViewOptions } from './fileexplorer.types';
+import { FileToolTip, ViewOptions, ViewOptionsCSS } from './fileexplorer.types';
 import {basename, dirname} from 'path';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
@@ -88,6 +88,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isActive = false;
   private isFocus = false;
 
+  isDetailsView = false;
+  isNotDetailsView = true;
+
   _isBtnClickEvt= false;
   isMultiSelectEnabled = true;
   isMultiSelectActive = false;
@@ -127,7 +130,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   ribbonMenuBtnStyle:Record<string, unknown> = {};
   ribbonMenuCntnrStyle:Record<string, unknown> = {};
 
-  olClassName = 'ol-iconview-grid';
+  olClassName = ViewOptionsCSS.ICONS_VIEW_CSS;
   btnTypeRibbon = 'Ribbon';
   btnTypeFooter = 'Footer';
   selectedRow = Constants.MINUS_ONE;
@@ -510,22 +513,20 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   changeLayoutCss(iconSize:string):void{
     const layoutOptions:string[] = [this.smallIconsView, this.mediumIconsView, this.largeIconsView, this.extraLargeIconsView,
-                              this.listView, this.detailsView, this.tilesView, this.contentView];
-    const cssLayoutOptions:string[] = ['iconview', 'listview', 'detailsview', 'tilesview', 'contentview']
+                                    this.listView, this.detailsView, this.tilesView, this.contentView];
+
+    const cssLayoutOptions:ViewOptionsCSS[] = [ViewOptionsCSS.ICONS_VIEW_CSS, ViewOptionsCSS.LIST_VIEW_CSS, 
+                                              ViewOptionsCSS.DETAILS_VIEW_CSS, ViewOptionsCSS.TITLES_VIEW_CSS,
+                                              ViewOptionsCSS.CONTENT_VIEW_CSS];
+
     const layoutIdx = layoutOptions.indexOf(iconSize);
-
-    console.log('layoutIdx:',layoutIdx);
-
     if(layoutIdx <= Constants.NUM_THREE){
-      this.olClassName = `ol-${cssLayoutOptions[Constants.NUM_ZERO]}-grid`;
-    }
-    else if (layoutIdx >= Constants.NUM_FOUR){
-      /*
-         the icon-views has various sizes, but it is still treated as one distinct layout. 
-         So, options 0 - 3 in the layoutOptions = option 0 in the cssLayoutOptions
-       */
+      this.olClassName = cssLayoutOptions[Constants.NUM_ZERO];
+    } else if (layoutIdx >= Constants.NUM_FOUR){
+      /* the icon-views has various sizes, but it is still treated as one distinct layout. 
+         So, options 0 - 3 in the layoutOptions = option 0 in the cssLayoutOptions */
       const idx = layoutIdx - Constants.NUM_THREE;
-      this.olClassName = `ol-${cssLayoutOptions[idx]}-grid`;
+      this.olClassName = cssLayoutOptions[idx];
     }
   }
 
@@ -1224,15 +1225,21 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const menuHeight = 213; //this is not ideal.. menu height should be gotten dynmically
     this.iconCntxtCntr++;
 
-    let rect: DOMRect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-    if (this.olClassName === 'ol-detailsview-grid') {
-      const tblCntnrElmnt = document.getElementById(`detailsViewTableBodyCntnr-${this.processId}`) as HTMLElement;
-      if (tblCntnrElmnt) {
-        rect = tblCntnrElmnt.getBoundingClientRect();
-      }
-    }
+    let axis:MenuPosition = {xAxis:0, yAxis:0}
+    if (this.olClassName === ViewOptionsCSS.DETAILS_VIEW_CSS) {
+      this.isDetailsView = true;
+      this.isNotDetailsView = false;
 
-    const axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
+      const tblBodyElmnt = document.getElementById(`tblBody-${this.processId}`) as HTMLTableCellElement;
+      const rect = tblBodyElmnt.getBoundingClientRect();
+      axis =  {xAxis: evt.clientX  - rect.left - Constants.NUM_TWENTY, yAxis:evt.clientY - rect.top - Constants.NUM_TWENTY}
+    }else{
+      this.isDetailsView = false;
+      this.isNotDetailsView = true;
+
+      const rect: DOMRect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+      axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
+    }
     
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
@@ -1251,8 +1258,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.fileExplrCntxtMenuStyle = {
       'position': 'absolute', 
-       'transform':`translate(${axis.xAxis}px, ${axis.yAxis}px)`,
-      //'transform':`translate(${evt.clientX  - rect.left}px, ${evt.clientY - rect.top}px)`,
+      'transform':`translate(${axis.xAxis}px, ${axis.yAxis}px)`,
       'z-index': Constants.NUM_TWO,
     }
 
@@ -1333,13 +1339,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     evt.stopPropagation();
   }
 
-
   showPropertiesWindow():void{
     this._menuService.showPropertiesView.next(this.propertiesViewFile);
   }
 
   hideIconContextMenu(evt?:MouseEvent, caller?:string):void{
     this.showIconCntxtMenu = false;
+    this.isDetailsView = false;
     this.showFileExplrCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
     this.iconCntxtCntr = Constants.NUM_ZERO;
@@ -1355,7 +1361,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       evt.preventDefault();
       evt.stopPropagation();
     }
-
   }
 
   handleIconHighLightState():void{
@@ -1411,7 +1416,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   doBtnClickThings(id:number):void{
-
     this.isIconInFocusDueToCurrentAction = true;
     this.isIconInFocusDueToPriorAction = false;
     this.prevSelectedElementId = this.selectedElementId 
@@ -1428,7 +1432,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   onMouseEnter(evt:MouseEvent, file:FileInfo, id:number):void{
-
     if(!this.isMultiSelectActive){
       this.isMultiSelectEnabled = false;
 
@@ -1831,7 +1834,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async showFileExplorerToolTip(evt: MouseEvent,  file:FileInfo):Promise<void>{
 
-    if(this.olClassName === 'ol-contentview-grid')
+    if(this.olClassName === ViewOptionsCSS.CONTENT_VIEW_CSS)
       return;
 
     const rect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
@@ -2225,12 +2228,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const renameContainerElement= document.getElementById(`renameForm-${this.processId}-${this.selectedElementId}`) as HTMLElement;
     const renameTxtBoxElement= document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLInputElement;
 
-    //TODO: fileexplorer behaves differently from the desktop
-    //this.removeBtnStyle(this.selectedElementId);
-
-
     if((figCapElement && renameContainerElement && renameTxtBoxElement)) {
-      console.log('olClassName;', this.olClassName)
       figCapElement.style.display = 'none';
       renameContainerElement.style.display = 'block';
       
