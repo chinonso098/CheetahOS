@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ParticaleflowComponent } from './particaleflow.component';
+import { ParticaleFlowComponent } from './particaleflow.component';
 
 describe('ParticaleflowComponent', () => {
-  let component: ParticaleflowComponent;
-  let fixture: ComponentFixture<ParticaleflowComponent>;
+  let component: ParticaleFlowComponent;
+  let fixture: ComponentFixture<ParticaleFlowComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ParticaleflowComponent]
+      declarations: [ParticaleFlowComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ParticaleflowComponent);
+    fixture = TestBed.createComponent(ParticaleFlowComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -56,7 +56,7 @@ import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.col
 import { FileExplorerColumnResizeDirective } from './system-apps/fileexplorer/fileexplorer.column-resize.directive';
 import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.capture.directive';
 import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.directives';
-import { ParticaleflowComponent } from './user-apps/particaleflow/particaleflow.component';
+import { ParticaleFlowComponent } from './user-apps/particaleflow/particaleflow.component';
 
 
 
@@ -114,7 +114,7 @@ import { ParticaleflowComponent } from './user-apps/particaleflow/particaleflow.
     WarpingstarfieldComponent,
     BoidsComponent,
     BasicWindowComponent,
-    ParticaleflowComponent
+    ParticaleFlowComponent
     
   ],
   imports: [

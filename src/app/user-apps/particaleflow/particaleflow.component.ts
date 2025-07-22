@@ -18,7 +18,7 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
   templateUrl: './particaleflow.component.html',
   styleUrl: './particaleflow.component.css'
 })
-export class ParticaleflowComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
+export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
   @ViewChild('particleFlowCanvas', { static: true }) particleFlowCanvas!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
   
@@ -88,7 +88,7 @@ export class ParticaleflowComponent implements BaseComponent, OnInit, OnDestroy,
       //
     }
   }
-  
+
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
   }

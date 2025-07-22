@@ -37,6 +37,7 @@ import { MarkDownViewerComponent } from "src/app/user-apps/markdownviewer/markdo
 import { RuffleComponent } from "src/app/user-apps/ruffle/ruffle.component";
 import { TitleComponent } from "src/app/user-apps/title/title.component";
 import { WarpingstarfieldComponent } from "src/app/user-apps/warpingstarfield/warpingstarfield.component";
+import { ParticaleFlowComponent } from "src/app/user-apps/particaleflow/particaleflow.component";
 
 
 @Injectable({
@@ -100,6 +101,7 @@ export class ProcessHandlerService implements BaseService{
         {type: MarkDownViewerComponent},
         {type: WarpingstarfieldComponent},
         {type: BoidsComponent},
+        {type: ParticaleFlowComponent},
     ];
 
     constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, windowService:WindowService, 
