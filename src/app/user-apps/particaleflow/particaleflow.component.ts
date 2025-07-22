@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, AfterViewInit, ViewChild, Input } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, AfterViewInit, ViewChild, Input, Renderer2 } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
@@ -10,6 +10,7 @@ import { Process } from 'src/app/system-files/process';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { ParticleScene } from './particle.types';
 
 @Component({
   selector: 'cos-particaleflow',
@@ -19,7 +20,6 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
   styleUrl: './particaleflow.component.css'
 })
 export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('particleFlowCanvas', { static: true }) particleFlowCanvas!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
   
   private _windowService:WindowService;
@@ -31,6 +31,9 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
 
 
   private _appState!:AppState;
+  private _particileScene!: ParticleScene;
+  private _x = 0;
+  private _y = 0;
 
   name= 'particleflow';
   hasWindow = true;
@@ -41,7 +44,7 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
   displayName = 'Particle Flow';
 
 
-  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService,
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, private renderer: Renderer2,
               windowService:WindowService, triggerProcessService:ProcessHandlerService, sessionManagmentService:SessionManagmentService) { 
                 
     this._processIdService = processIdService;
@@ -59,12 +62,68 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
   }
 
   ngAfterViewInit():void{
-    const delay = 500; //500ms
+    this.initScene();
+    this.getParticle();
+    this.animate();
   }
 
   ngOnDestroy(): void {
     const delay = 500; //500ms
   }
+
+  initScene():void{
+    const nativeEl = document.getElementById('particleFlowCntnr') as HTMLElement;
+    const width = nativeEl.offsetWidth;
+    const height = nativeEl.offsetHeight;
+
+    const canvas = this.renderer.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Append to the body
+    this.renderer.appendChild(nativeEl, canvas);
+    canvas.width = width;
+    canvas.height = height;
+    const timeMult = 0.0002;
+
+    // console.log('initScene-ctx:', ctx);
+    // console.log('initScene-width:', width);
+    // console.log('initScene-height:', height);
+
+    this._particileScene = {context:ctx, width:width, height:height };
+  }
+
+  animate():void{
+    const data:ParticleScene = this._particileScene;
+    console.log('animate:', data);
+
+    const ctx  = data.context;
+    requestAnimationFrame(this.animate.bind(this));
+    ctx.clearRect(Constants.NUM_ZERO, Constants.NUM_ZERO, data.width, data.height);
+
+    this.update()
+    this.render(ctx);
+  }
+
+  render(ctx:CanvasRenderingContext2D):void{
+    ctx.fillStyle = "rgba(225, 225, 225, 1.0)";
+    ctx.beginPath();
+    ctx.arc(this._x, this._y, Constants.NUM_TEN, Constants.NUM_ZERO, Math.PI * Constants.NUM_TWO);
+    ctx.fill();
+  } 
+
+  update():void{
+    const xVel = Math.random() * Constants.NUM_TWO;
+    const yVel = Math.random() * Constants.NUM_TWO;
+    this._x += xVel;
+    this._y += yVel;
+  }
+
+  getParticle():void{
+    const data:ParticleScene = this._particileScene;
+    this._x = data.width * Constants.NUM_HALF;
+    this._y = data.height * Constants.NUM_HALF;
+  }
+
 
   setParticleFlowWindowToFocus(pid:number):void{
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
