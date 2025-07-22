@@ -22,7 +22,7 @@ import { UserNotificationService } from "./user.notification.service";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { SessionManagmentService } from "./session.management.service";
-import { OpensWith } from "src/app/system-files/opems.with";
+import { OpensWith } from "src/app/system-files/opens.with";
 import JSZip from "jszip";
 
 @Injectable({

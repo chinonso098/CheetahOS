@@ -8,26 +8,22 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { ComponentType } from 'src/app/system-files/system.types';
-import { Boid } from './boid';
-import { FormBuilder, FormGroup } from '@angular/forms';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 
-declare const p5:any;
-
 @Component({
-  selector: 'cos-boids',
-  templateUrl: './boids.component.html',
-  styleUrls: ['./boids.component.css'],
+  selector: 'cos-particaleflow',
   // eslint-disable-next-line @angular-eslint/prefer-standalone
-  standalone:false,
+  standalone: false,
+  templateUrl: './particaleflow.component.html',
+  styleUrl: './particaleflow.component.css'
 })
-export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('boidCanvas', { static: true }) boidCanvas!: ElementRef;
+export class ParticaleflowComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('particleFlowCanvas', { static: true }) particleFlowCanvas!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
   
   private _windowService:WindowService;
-  private _scriptService: ScriptService;
+  // private _scriptService: ScriptService;
   private _processIdService:ProcessIDService;
   private _processHandlerService:ProcessHandlerService;
   private _runningProcessService:RunningProcessService;
@@ -35,33 +31,20 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
 
   private _appState!:AppState;
-  private p5Instance: any;
-  flocks: Boid[] = [];
 
-  params = {
-    align: 1.2,
-    cohesion: 1.5,
-    separation: 1.8
-  };
-
-  form!:FormGroup;
-  sliders = ['align', 'cohesion', 'separation'];
-
-  name= 'boids';
+  name= 'particleflow';
   hasWindow = true;
   isMaximizable=false;
-  icon = `${Constants.IMAGE_BASE_PATH}bird_oid.png`;
+  icon = `${Constants.IMAGE_BASE_PATH}particles.png`;
   processId = 0;
   type = ComponentType.User;
-  displayName = 'Boids';
+  displayName = 'Particle Flow';
 
 
-  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService,  scriptService: ScriptService, 
-              windowService:WindowService, triggerProcessService:ProcessHandlerService, private fb: FormBuilder,
-              sessionManagmentService:SessionManagmentService) { 
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService,
+              windowService:WindowService, triggerProcessService:ProcessHandlerService, sessionManagmentService:SessionManagmentService) { 
                 
     this._processIdService = processIdService;
-    this._scriptService = scriptService;
     this._windowService = windowService;
     this._processHandlerService = triggerProcessService;
     this._sessionManagmentService = sessionManagmentService;
@@ -72,60 +55,18 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   }
 
   ngOnInit(): void {
-    this.form = this.fb.group({
-      align: [1.2],
-      cohesion: [1.5],
-      separation: [1.4]
-    });
-
-    this._scriptService.loadScript("P5JS","osdrive/Cheetah/System/P5JS/p5.min.js").then(()=>{
-      console.log('p5 loaded');
-    });
-
     this.retrievePastSessionData();
   }
 
   ngAfterViewInit():void{
     const delay = 500; //500ms
-    setTimeout(() => {
-      this.p5Instance = new p5(this.sketch.bind(this), this.boidCanvas.nativeElement);
-    }, delay);
   }
 
   ngOnDestroy(): void {
-    if (this.p5Instance) {
-      this.p5Instance.remove();
-    }
+    const delay = 500; //500ms
   }
 
-  sketch(p: any) {
-    const boidCntnr = document.getElementById('boidCntnr');
-    p.setup = () => {
-      p.createCanvas(boidCntnr?.offsetWidth, boidCntnr?.offsetHeight);
-
-      for (let i = 0; i < 100; i++) {
-        this.flocks.push(new Boid(p));
-      }
-    };
-
-    p.draw = () => {
-      p.background('#393e46');
-      const params = this.form.value;
-
-      for (const boid of this.flocks) {
-        boid.edges();
-        boid.behavior(this.flocks, params);
-        boid.update();
-        boid.draw();
-      }
-    };
-
-    p.windowResized = () => {
-      p.resizeCanvas(boidCntnr?.offsetWidth, boidCntnr?.offsetHeight);
-    };
-  }
-
-  setBoidWindowToFocus(pid:number):void{
+  setParticleFlowWindowToFocus(pid:number):void{
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
   
@@ -147,9 +88,8 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
       //
     }
   }
+  
   private getComponentDetail():Process{
-  return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
+  }
 }
-}
-
-
