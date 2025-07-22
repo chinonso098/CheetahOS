@@ -48,7 +48,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _fileService:FileService;
-  private _directoryFilesEntires!:FileEntry[];
   private _processHandlerService:ProcessHandlerService;
   private _sessionManagmentService: SessionManagmentService;
   private _userNotificationService:UserNotificationService;
@@ -1217,7 +1216,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async onTriggerRunProcess():Promise<void>{
-    this._audioService.play(this.cheetahNavAudio);
     await this.runProcess(this.selectedFile);
   }
 
@@ -2741,7 +2739,7 @@ OpensWith=${selectedFile.getOpensWith}
       const msg = `Cheetah can't create a shortcut here.
 Do you want the shortcut to be placed on the desktop instead?`;
 
-      this._audioService.play(this.cheetahGenericNotifyAudio);
+      await this._audioService.play(this.cheetahGenericNotifyAudio);
       this._menuService.setStageData(fileContent);
       this._userNotificationService.showWarningNotification(msg);
       return;

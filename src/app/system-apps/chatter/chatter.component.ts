@@ -175,13 +175,14 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }, 25);
   }
 
-  updateChatData():void{
+  async updateChatData():Promise<void>{
     const data = this._chatService.getChatData();
     this.chatData = data
     this.setMessageLastReceievedTime();
 
-    this._audioService.play(this.newMsgAudio);
-    setTimeout(() => this.scrollToBottom(), 500);
+    await this._audioService.play(this.newMsgAudio);
+    await CommonFunctions.sleep(500);
+    this.scrollToBottom();
   }
 
   updateOnlineUserCount(value:number):void{
