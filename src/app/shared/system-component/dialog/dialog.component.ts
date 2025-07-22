@@ -47,7 +47,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
 
   cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
-  errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_error.wav`;
+  errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_critical_stop.wav`;
 
   pwrOnOffOptions = [
     { value: 'Shut down', label: 'Closes all apps and turns off the PC.' },
