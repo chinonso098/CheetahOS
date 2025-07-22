@@ -90,12 +90,6 @@
   table-layout: auto;
 }
 
-.tskmgr-table-header-cntnr{ 
-  /* width:715px; */
-  /* width: 400px; */
-  height: 50px ;
-}
-
 .tskmgr-table-svc-header-cntnr{ 
   height: 20px;
 }
@@ -114,11 +108,18 @@
   vertical-align: middle;
 }
 
+.tskmgr-table thead th {
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
 .tskmgr-table-svc th {
   height: 20px;
 }
 
-.tskmgr-table-body-cntnr, .tskmgr-table-svc-body-cntnr{  
+.tskmgr-table-svc-body-cntnr{  
   /* width:715px; */
   /* width: 400px; */
   height:260px;

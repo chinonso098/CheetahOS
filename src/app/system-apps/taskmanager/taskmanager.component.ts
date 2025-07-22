@@ -30,8 +30,6 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   @ViewChild('tskMgrTable') tskMgrTable!: ElementRef;  
   @ViewChild('tskmgrTblCntnr') tskmgrTblCntnr!: ElementRef;
   @ViewChild('tskmgrCardBody') tskmgrCardBody!: ElementRef; 
-  @ViewChild('tskMgrTableHeaderCntnr') tskMgrTableHeaderCntnr!: ElementRef;  
-  @ViewChild('tskMgrTableBodyCntnr') tskMgrTableBodyCntnr!: ElementRef;  
   @ViewChild('tskMgrTableHeaderCntnt') tskMgrTableHeaderCntnt!: ElementRef;  
   @ViewChild('tskMgrTableBodyCntnt') tskMgrTableBodyCntnt!: ElementRef;  
   @Input() priorUId = Constants.EMPTY_STRING;
@@ -1097,13 +1095,6 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
       //when next you decide to focus on the Window min/max, use the chrome dev mode to see whhich containers 
       // do not return to their original size on minimize. The minimize functionality for the taskmanger, is 95% there 
-
-      //avoid setting these manully
-      // this.tskMgrTableHeaderCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-      // this.tskMgrTableBodyCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-
-      //this.tskMgrTableHeaderCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-      //this.tskMgrTableBodyCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
     }
   }
 

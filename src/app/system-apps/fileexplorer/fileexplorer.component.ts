@@ -223,6 +223,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileSize = Constants.EMPTY_STRING;
   fileDimesions = Constants.EMPTY_STRING;
   fileDateModified = Constants.EMPTY_STRING;
+  currentTooltipFileId = Constants.EMPTY_STRING;
 
   readonly shortCutImg = `${Constants.IMAGE_BASE_PATH}shortcut.png`;
   readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
@@ -1844,7 +1845,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
-  async showFileExplorerToolTip(evt: MouseEvent,  file:FileInfo):Promise<void>{
+  async showFileExplorerToolTip_TBD(evt: MouseEvent,  file:FileInfo):Promise<void>{
 
     if(this.currentViewOption === ViewOptions.CONTENT_VIEW)
       return;
@@ -1864,13 +1865,44 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     else
        infoTip.style.transform = `translate(${x - Constants.NUM_FIFTEEN}px, ${y + Constants.NUM_TEN}px)`;
 
+    if (this.fileInfoTipData.length === 0) return;
+
     infoTip.classList.add('visible');
   }
 
+  async showFileExplorerToolTip(evt: MouseEvent, file: FileInfo): Promise<void> {
+    if (this.currentViewOption === ViewOptions.CONTENT_VIEW) return;
+
+    const rect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    const x = evt.clientX - rect.left;
+    const y = evt.clientY - rect.top;
+
+    const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
+    if (!infoTip) return;
+
+    //this.fileInfoTipData = [];
+    this.currentTooltipFileId = file.getCurrentPath;
+    await this.setInformationTipInfo(file);
+
+    if (this.fileInfoTipData.length === Constants.NUM_ZERO) return;
+
+    requestAnimationFrame(() => {
+      const offsetX = this.currentViewOption === ViewOptions.DETAILS_VIEW ? -25 : -Constants.NUM_FIFTEEN;
+      const offsetY = this.currentViewOption === ViewOptions.DETAILS_VIEW ? -50 : Constants.NUM_TEN;
+
+      infoTip.style.transform = `translate(${x + offsetX}px, ${y + offsetY}px)`;
+      infoTip.classList.add('visible');
+    });
+  }
+
+
+
   hideFileExplorerToolTip() {
+    this.currentTooltipFileId = Constants.EMPTY_STRING;
+    this.fileInfoTipData = [];
+
     const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
     if (infoTip) {
-      this.fileInfoTipData = [];
       infoTip.classList.remove('visible');
     }
   }
@@ -1895,30 +1927,63 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const currentPath = dirname(file.getCurrentPath);
     const isFolder = fileType === Constants.FOLDER;
     const isRoot = currentPath === Constants.ROOT;
+    const localFileId = file.getCurrentPath
+
     //reset
     this.fileInfoTipData = [];
 
-    if(Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileType)){
-      const img = new Image();
-      img.src = file.getContentPath;
-      img.onload = () => {
-        const width = img.naturalWidth;
-        const height = img.naturalHeight;
-        const imgDimensions = `${width} x ${height}`;
+    // if(Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileType)){
+    //   const img = new Image();
+    //   img.src = file.getContentPath;
+    //   img.onload = () => {
+    //     const width = img.naturalWidth;
+    //     const height = img.naturalHeight;
+    //     const imgDimensions = `${width} x ${height}`;
 
-        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_ONE], data:`${file.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`});
-        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_FOUR], data:imgDimensions });
-        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:fileSize });
-      };
-      img.onerror = (err) => { console.error("Failed to load image", err); };
-    }
-    else if(isFile && !isFolder){
+    //     this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_ONE], data:`${file.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`});
+    //     this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_FOUR], data:imgDimensions });
+    //     this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:fileSize });
+    //   };
+    //   img.onerror = (err) => { console.error("Failed to load image", err); };
+    // }
+
+    if (Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileType)) {
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        img.src = file.getContentPath;
+        img.onload = () => {
+          const width = img.naturalWidth;
+          const height = img.naturalHeight;
+          const imgDimensions = `${width} x ${height}`;
+
+          this.fileInfoTipData.push({
+            label: infoTipFields[Constants.NUM_ONE],
+            data: `${file.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`
+          });
+          this.fileInfoTipData.push({ label: infoTipFields[Constants.NUM_FOUR], data: imgDimensions });
+          this.fileInfoTipData.push({ label: infoTipFields[Constants.NUM_SIX], data: fileSize });
+
+          resolve();
+        };
+        img.onerror = (err) => {
+          console.error("Failed to load image", err);
+          resolve(); // Still resolve to prevent blocking
+        };
+      });
+    }else if(isFile && !isFolder){
       const fileTypeName = this.getFileTypeName(fileType);
       this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SEVEN], data:fileTypeName});
       this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_THREE], data: fileDateModified });
+      this.fileInfoTipData.push({ label: infoTipFields[Constants.NUM_SIX], data: fileSize });
 
-      if(this.fileInfoTipData.filter(x => x.label !== infoTipFields[Constants.NUM_SIX]))
-        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:fileSize });
+      // if(this.fileInfoTipData.filter(x => x.label !== infoTipFields[Constants.NUM_SIX]))
+      //   this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:fileSize });
+
+      // const sizeLabelExists = this.fileInfoTipData.some(x => x.label === infoTipFields[Constants.NUM_SIX]);
+      // if (!sizeLabelExists) {
+      //   this.fileInfoTipData.push({ label: infoTipFields[Constants.NUM_SIX], data: fileSize });
+      // }
+
     }
     else if(isFolder){
       if(isRoot && (standardFolders.includes(fileName) || fileName === capitalizedDesktop)){
@@ -1930,11 +1995,21 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_TWO], data:fileDateModified });
 
         const folderSizeInBytes = await this._fileService.getFolderSizeAsync(file.getCurrentPath);
+        if (this.currentTooltipFileId !== localFileId) {
+          // User has hovered over a different file before this resolved
+          return;
+        }
         const folderSize = CommonFunctions.getReadableFileSizeValue(folderSizeInBytes);
         const folderUnit = CommonFunctions.getFileSizeUnit(folderSizeInBytes);
 
-        if(this.fileInfoTipData.filter(x => x.label !== infoTipFields[Constants.NUM_SIX]))
+        // if(this.fileInfoTipData.filter(x => x.label !== infoTipFields[Constants.NUM_SIX]))
+        //   this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:`${String(folderSize)} ${folderUnit}`});
+
+        const sizeLabelExists = this.fileInfoTipData.some(x => x.label === infoTipFields[Constants.NUM_SIX]);
+        if (!sizeLabelExists) {
           this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:`${String(folderSize)} ${folderUnit}`});
+        }
+
 
         if(this.isRecycleBinFolder){
           const originalLocation = this._fileService.getFolderOrigin(file.getCurrentPath);
