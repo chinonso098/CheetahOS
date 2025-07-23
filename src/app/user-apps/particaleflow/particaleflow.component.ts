@@ -28,12 +28,16 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
   private _processHandlerService:ProcessHandlerService;
   private _runningProcessService:RunningProcessService;
   private _sessionManagmentService:SessionManagmentService;
+  private _animationId = Constants.NUM_ZERO;
 
 
   private _appState!:AppState;
   private _particileScene!: ParticleScene;
-  private _x = 0;
-  private _y = 0;
+  // private _x = 0;
+  // private _y = 0;
+
+  private particle!:any;
+  private emitter!:any;
 
   name= 'particleflow';
   hasWindow = true;
@@ -63,12 +67,16 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
 
   ngAfterViewInit():void{
     this.initScene();
-    this.getParticle();
+
+    this.particle = this.getParticle();
+    this.emitter = this.getParticleEmitter();
+
     this.animate();
   }
 
   ngOnDestroy(): void {
     const delay = 500; //500ms
+    cancelAnimationFrame(this._animationId);
   }
 
   initScene():void{
@@ -85,11 +93,97 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
     canvas.height = height;
     const timeMult = 0.0002;
 
-    // console.log('initScene-ctx:', ctx);
-    // console.log('initScene-width:', width);
-    // console.log('initScene-height:', height);
+    this._particileScene = {context:ctx, width:width, height:height};
+  }
 
-    this._particileScene = {context:ctx, width:width, height:height };
+  getParticle_no_curl():{ update: () => void;  render: (ctx: CanvasRenderingContext2D) => void;} {
+    const data:ParticleScene = this._particileScene;
+    const angle = Math.random() * Math.PI * 2;
+    const speed_erratic = Math.random() * Constants.NUM_TWO + Constants.NUM_ONE
+
+    let x = data.width * Constants.NUM_HALF;
+    let y = data.height * Constants.NUM_HALF;
+
+    // const xVel = Math.random() * Constants.NUM_TWO - Constants.NUM_ONE;
+    // const yVel = Math.random() * Constants.NUM_TWO - Constants.NUM_ONE;
+
+    const vel = {
+      x: Math.cos(angle) * speed_erratic,
+      y:Math.sin(angle) * speed_erratic
+    }
+
+    let alpha = 1.0;
+    const fadeRate = 0.003
+    function update(): void {
+      x += vel.x;
+      y += vel.y;
+      alpha -= fadeRate
+    }
+
+    function render(ctx:CanvasRenderingContext2D):void{
+      ctx.fillStyle = `rgba(225, 0, 225, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(x, y, Constants.NUM_FOUR, Constants.NUM_ZERO, Math.PI * Constants.NUM_TWO);
+      ctx.fill();
+    } 
+
+    return {update , render}
+  }
+
+  getParticle():{ update: () => void;  render: (ctx: CanvasRenderingContext2D) => void;} {
+    const data:ParticleScene = this._particileScene;
+    const angle = Math.random() * Math.PI * 2;
+    const speed_erratic = Math.random() * Constants.NUM_TWO + Constants.NUM_ONE
+
+    let x = data.width * Constants.NUM_HALF;
+    let y = data.height * Constants.NUM_HALF;
+
+    // const xVel = Math.random() * Constants.NUM_TWO - Constants.NUM_ONE;
+    // const yVel = Math.random() * Constants.NUM_TWO - Constants.NUM_ONE;
+
+    const vel = {
+      x: Math.cos(angle) * speed_erratic,
+      y:Math.sin(angle) * speed_erratic
+    }
+
+    let alpha = 1.0;
+    const fadeRate = 0.003
+    function update(): void {
+      x += vel.x;
+      y += vel.y;
+      alpha -= fadeRate
+    }
+
+    function render(ctx:CanvasRenderingContext2D):void{
+      ctx.fillStyle = `rgba(225, 0, 225, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(x, y, Constants.NUM_FOUR, Constants.NUM_ZERO, Math.PI * Constants.NUM_TWO);
+      ctx.fill();
+    } 
+
+    return {update , render}
+  }
+
+  getParticleEmitter(): {update: () => void; }{
+    const data:ParticleScene = this._particileScene;  
+    const particles: { update: () => void; render: (ctx: CanvasRenderingContext2D) => void; }[] = [];
+    const maxParticles = 500;
+
+    const update = () =>{
+      particles.forEach( p =>{
+          p.update();
+          p.render(data.context);
+      })
+
+      const particle = this.getParticle();
+      particles.push(particle);
+
+      while(particles.length > maxParticles){
+        particles.shift();
+      }
+    }
+
+    return {update}
   }
 
   animate():void{
@@ -97,33 +191,15 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
     console.log('animate:', data);
 
     const ctx  = data.context;
-    requestAnimationFrame(this.animate.bind(this));
-    ctx.clearRect(Constants.NUM_ZERO, Constants.NUM_ZERO, data.width, data.height);
+    this._animationId = requestAnimationFrame(this.animate.bind(this));
+    //ctx.clearRect(Constants.NUM_ZERO, Constants.NUM_ZERO, data.width, data.height);
 
-    this.update()
-    this.render(ctx);
+    //create trails
+    ctx.fillStyle = 'rgba(0, 0, 0.01)';
+    ctx.fillRect(Constants.NUM_ZERO, Constants.NUM_ZERO, data.width, data.height);
+
+    this.emitter.update();
   }
-
-  render(ctx:CanvasRenderingContext2D):void{
-    ctx.fillStyle = "rgba(225, 225, 225, 1.0)";
-    ctx.beginPath();
-    ctx.arc(this._x, this._y, Constants.NUM_TEN, Constants.NUM_ZERO, Math.PI * Constants.NUM_TWO);
-    ctx.fill();
-  } 
-
-  update():void{
-    const xVel = Math.random() * Constants.NUM_TWO;
-    const yVel = Math.random() * Constants.NUM_TWO;
-    this._x += xVel;
-    this._y += yVel;
-  }
-
-  getParticle():void{
-    const data:ParticleScene = this._particileScene;
-    this._x = data.width * Constants.NUM_HALF;
-    this._y = data.height * Constants.NUM_HALF;
-  }
-
 
   setParticleFlowWindowToFocus(pid:number):void{
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);

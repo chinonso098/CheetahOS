@@ -107,7 +107,7 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
       })
     }
 
-  private initScene() {
+  private initScene():void {
     this.scene = new THREE.Scene();
     const starfieldWidow = document.getElementById('starfieldApp');
     const canvas = this.canvasRef?.nativeElement;
