@@ -33,7 +33,6 @@ export class FileService implements BaseService{
     private _fileInfo!:FileInfo;
   
     private _fileSystem!:FSModule;
-    private _directoryFileEntires:FileEntry[]=[];
     private _fileExistsMap!:Map<string, string>; 
     private _fileAndAppIconAssociation!:Map<string,string>; 
     private _restorePoint!:Map<string,string>; 
@@ -1228,8 +1227,9 @@ OpensWith=${shortCutData.getOpensWith}
     }
 
 
-    public resetDirectoryFiles(){
-        this._directoryFileEntires=[];
+    /**To Be Deleted */
+    public resetDirectoryFiles():void{
+        //
     }
 
     public getFolderOrigin(path:string):string{

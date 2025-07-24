@@ -188,6 +188,7 @@ export namespace Constants{
     ]
 
     export const FILE_EXTENSION_MAP = [
+        ['.url','Shortcut File'],
         ['.txt','Text Document'],
         ['.log','Log File'],
         ['.wasm','WASM File'],

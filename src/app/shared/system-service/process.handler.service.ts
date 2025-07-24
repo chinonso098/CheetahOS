@@ -58,7 +58,7 @@ export class ProcessHandlerService implements BaseService{
     private _TriggerList:FileInfo[];
 
     private _onlyOneInstanceAllowed:string[] = ["audioplayer", "chatter", "cheetah", "jsdos", "photoviewer", 
-        "ruffle", "runsystem", "taskmanager", "videoplayer"];
+        "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow"];
 
     private userOpenedAppsList:string[] = [];
     private openedAppInstanceUID:string[] = [];
@@ -77,8 +77,10 @@ export class ProcessHandlerService implements BaseService{
     readonly CHATTER ="chatter";
     readonly RUN_SYSTEM = "runsystem";
     readonly CHEETAH = "cheetah";
-    
-
+    readonly BOIDS = "boids";
+    readonly STAR_FIELD = "starfield";
+    readonly PARTICLE_FLOW = "particleflow";
+       
     //:TODO when you have more apps with a UI worth looking at, add a way to select the right component for the give
     //appname
     private apps: {type: Type<BaseComponent>}[] =[
@@ -144,8 +146,13 @@ export class ProcessHandlerService implements BaseService{
                     //this._userNotificationService.showInfoNotification(msg);
 
                     if(runningProcess){
-                        if(runningProcess.getProcessName === this.TASK_MANAGER || runningProcess.getProcessName === this.CHATTER
-                            || runningProcess.getProcessName === this.RUN_SYSTEM || runningProcess.getProcessName === this.CHEETAH){
+                        if( runningProcess.getProcessName === this.BOIDS ||
+                            runningProcess.getProcessName === this.CHATTER || 
+                            runningProcess.getProcessName === this.CHEETAH ||
+                            runningProcess.getProcessName === this.STAR_FIELD || 
+                            runningProcess.getProcessName === this.RUN_SYSTEM || 
+                            runningProcess.getProcessName === this.TASK_MANAGER || 
+                            runningProcess.getProcessName === this.PARTICLE_FLOW ){
                             this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
                         }else{
                             const uid = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
