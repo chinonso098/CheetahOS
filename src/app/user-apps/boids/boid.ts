@@ -21,19 +21,19 @@ export class Boid {
   edges() {
     const { width, height, createVector } = this.p;
 
-    if (this.position.x < Constants.NUM_ZERO || this.position.x > width) {
+    if (this.position.x < 0 || this.position.x > width) {
       const reflect = createVector(
-        this.position.x < Constants.NUM_ZERO ? this.maxSpeed : -this.maxSpeed,
+        this.position.x < 0 ? this.maxSpeed : -this.maxSpeed,
         this.velocity.y
       );
       reflect.sub(this.velocity).limit(this.maxForce);
       this.acceleration.add(reflect);
     }
 
-    if (this.position.y < Constants.NUM_ZERO || this.position.y > height) {
+    if (this.position.y < 0 || this.position.y > height) {
       const reflect = createVector(
         this.velocity.x,
-        this.position.y < Constants.NUM_ZERO ? this.maxSpeed : -this.maxSpeed
+        this.position.y < 0 ? this.maxSpeed : -this.maxSpeed
       );
       reflect.sub(this.velocity).limit(this.maxForce);
       this.acceleration.add(reflect);
@@ -41,9 +41,9 @@ export class Boid {
   }
 
   align(flocks: Boid[]) {
-    const senseRadius = Constants.NUM_TEN;
+    const senseRadius = 10;
     const steering = this.p.createVector();
-    let total = Constants.NUM_ZERO;
+    let total = 0;
 
     for (const other of flocks) {
       if (other !== this) {
@@ -55,7 +55,7 @@ export class Boid {
       }
     }
 
-    if (total > Constants.NUM_ZERO) {
+    if (total > 0) {
       steering.div(total);
       steering.setMag(this.maxSpeed);
       steering.sub(this.velocity);
@@ -68,7 +68,7 @@ export class Boid {
   cohesion(flocks: Boid[]) {
     const senseRadius = 50;
     const steering = this.p.createVector();
-    let total = Constants.NUM_ZERO;
+    let total = 0;
 
     for (const other of flocks) {
       if (other !== this) {
@@ -80,7 +80,7 @@ export class Boid {
       }
     }
 
-    if (total > Constants.NUM_ZERO) {
+    if (total > 0) {
       steering.div(total);
       steering.sub(this.position);
       steering.setMag(this.maxSpeed);
@@ -94,7 +94,7 @@ export class Boid {
   separation(flocks: Boid[]) {
     const senseRadius = 15;
     const steering = this.p.createVector();
-    let total = Constants.NUM_ZERO;
+    let total = 0;
 
     for (const other of flocks) {
       if (other !== this) {
@@ -108,7 +108,7 @@ export class Boid {
       }
     }
 
-    if (total > Constants.NUM_ZERO) {
+    if (total > 0) {
       steering.div(total);
       steering.setMag(this.maxSpeed);
       steering.sub(this.velocity);
@@ -132,7 +132,7 @@ export class Boid {
     this.position.add(this.velocity);
     this.velocity.add(this.acceleration);
     this.velocity.limit(this.maxSpeed);
-    this.acceleration.mult(Constants.NUM_ZERO);
+    this.acceleration.mult(0);
   }
 
   draw() {
@@ -143,7 +143,7 @@ export class Boid {
     const angle = this.p.atan2(this.velocity.y, this.velocity.x);
     this.p.translate(this.position.x, this.position.y);
     this.p.rotate(angle);
-    this.p.quad(-15, Constants.NUM_ZERO, Constants.NUM_ZERO, -5, 5, Constants.NUM_ZERO, Constants.NUM_ZERO, Constants.NUM_FIVE);
+    this.p.quad(-15, 0, 0, -5, 5, 0, 0, 5);
     this.p.pop();
   }
 

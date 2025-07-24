@@ -73,7 +73,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'cheetah_authentication';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   
@@ -315,7 +315,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
           this.powerMenuStyle = {
             'position':'absolute',
             'transform':`translate(${String(pbRect.x - 50)}px, ${String(pbRect.y - 352)}px)`,
-            'z-index': Constants.NUM_SIX,
+            'z-index': 6,
           }
           this.isPowerMenuVisible = true;
           this.onPwdFieldRemoveFocus();
@@ -327,7 +327,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
       evt.preventDefault();
       
-    }, Constants.NUM_TEN);
+    }, 10);
   }
 
   onPowerBtnMouseEnter():void{

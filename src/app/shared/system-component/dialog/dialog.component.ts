@@ -71,7 +71,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   hasWindow = false;
   isMaximizable = false;
   icon = Constants.EMPTY_STRING;
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   displayName = Constants.EMPTY_STRING;
 
   constructor(notificationServices:UserNotificationService, menuService:MenuService, windowService:WindowService,
@@ -97,7 +97,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   }
 
   async ngAfterViewInit(): Promise<void> {
-    await CommonFunctions.sleep(Constants.NUM_ONE_HUNDRED * Constants.NUM_ONE);
+    const delay = 200; //200ms
+    await CommonFunctions.sleep(delay);
     this.playDialogNotifcationSound();
   }
 
@@ -114,13 +115,13 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
       if(action === this.UPDATE){
         this._systemNotificationService.setPwrDialogPid(this.processId);
       }else{
-        this._systemNotificationService.setPwrDialogPid(Constants.NUM_ZERO);
+        this._systemNotificationService.setPwrDialogPid(0);
       }
     }
   }
 
   onYesPowerDialogBox():void{
-    const delay = Constants.NUM_ONE_HUNDRED * Constants.NUM_TWO; //200ms
+    const delay = 200; //200ms
     const clearSessionData = !this.reOpenWindows;
     
     this.onCloseDialogBox();

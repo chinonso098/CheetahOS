@@ -55,7 +55,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   icon = `${Constants.IMAGE_BASE_PATH}text_editor.png`;
   name = 'texteditor';
   isMaximizable = false;
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
 
@@ -100,7 +100,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     this._scriptService.loadScript("quilljs","osdrive/Program-Files/Quill/quill.js").then( async() =>{
   
       const textCntnt = await this._fileService.getFileAsTextAsync(this.fileSrc);
-      const index = Constants.NUM_ZERO;
+      const index = 0;
 
       this.quill = new Quill(this.editorContainer.nativeElement, options)
       this.quill.insertText(index, textCntnt, {

@@ -17,7 +17,7 @@ export class ProcessIDService implements BaseService{
     
     name = 'pid_gen_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = Constants.NUM_ONE;
+    processId = 1;
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
@@ -33,7 +33,7 @@ export class ProcessIDService implements BaseService{
      }
 
     public getNewProcessId(): number{
-        let pid = Constants.NUM_ONE;
+        let pid = 1;
         pid = this.generateProcessId();
 
         while(this._activeProcessIds.includes(pid))
@@ -46,13 +46,13 @@ export class ProcessIDService implements BaseService{
     private generateProcessId(): number{
         const min = Math.ceil(1000);
         const max = Math.floor(9999);
-        return Math.floor(Math.random() * (max - min + Constants.NUM_ONE)) + min; 
+        return Math.floor(Math.random() * (max - min + 1)) + min; 
     }
 
     public removeProcessId(pid:number):void{
-       const deleteCount = Constants.NUM_ONE;
+       const deleteCount = 1;
        const pidIndex = this._activeProcessIds.indexOf(pid)
-       if (pidIndex !== Constants.MINUS_ONE) {
+       if (pidIndex !== -1) {
             this._activeProcessIds.splice(pidIndex, deleteCount);
         }
     }

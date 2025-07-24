@@ -65,7 +65,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     this._menuService = menuService;
 
     this.processId = this._processIdService.getNewProcessId()
-    if(this._runningProcessService.getProcesses().findIndex(x => x.getProcessName === this.name) === Constants.MINUS_ONE){
+    if(this._runningProcessService.getProcesses().findIndex(x => x.getProcessName === this.name) === -1){
       this._runningProcessService.addProcess(this.getComponentDetail());
     }
   }
@@ -76,7 +76,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   
   async ngAfterViewInit():Promise<void>{
 
-    await CommonFunctions.sleep(this.SECONDS_DELAY * Constants.NUM_TWO)
+    await CommonFunctions.sleep(this.SECONDS_DELAY * 2)
     await this.loadFilesInfoAsync();
     this.removeVantaJSSideEffect();
   }

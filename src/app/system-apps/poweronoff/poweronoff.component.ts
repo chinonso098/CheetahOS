@@ -48,7 +48,7 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'cheetah_pwr_mgt';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   

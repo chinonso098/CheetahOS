@@ -57,7 +57,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   ADD_AND_BROADCAST = 'Add&Broadcast';
   UPDATE = 'Update';
-  A_NEW_USER_HAS_JOINED_THE_CHAT_MSG = Constants.NUM_ZERO;
+  A_NEW_USER_HAS_JOINED_THE_CHAT_MSG = 0;
   USER_HAS_LEFT_THE_CHAT_MSG = 1;
   USER_CHANGED_NAME_MSG = 2;
   SCROLL_DELAY = 300;
@@ -67,8 +67,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   isTyping = false;
   isFirstOnlineUserUpdateResponse = true;
   messageLastRecieved = Constants.EMPTY_STRING;
-  scrollCounter = Constants.NUM_ZERO;
-  userCount = Constants.NUM_ZERO;
+  scrollCounter = 0;
+  userCount = 0;
 
   userNameAcronym = Constants.EMPTY_STRING;
   bkgrndIconColor = Constants.EMPTY_STRING;
@@ -77,13 +77,13 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   chatData: ChatMessage[] = [];
   onlineUsers: IUserData[] = [];
-  onlineUsersListFirstUpdateTS = Constants.NUM_ZERO;
+  onlineUsersListFirstUpdateTS = 0;
   chatUser!: IUser;
   chatUserData!:IUserData;
 
   RETRIEVAL_DELAY = 150;
-  currIteration = Constants.NUM_ZERO;
-  prevScrollHeight = Constants.NUM_ZERO;
+  currIteration = 0;
+  prevScrollHeight = 0;
 
 
   logonAudio = `${Constants.AUDIO_BASE_PATH}cheetah_logon.wav`;
@@ -95,7 +95,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
   name = 'chatter';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = 'Chatter';
 
@@ -127,6 +127,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   async ngOnInit(): Promise<void> {
+    const delay = 200; //200ms
     this.userNameAcronymStyle = {
       'background-color': this.bkgrndIconColor
     };
@@ -143,7 +144,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     // set as my timestamp for when i came online
     this._chatService.setComeOnlineTS(Date.now());
     
-    await CommonFunctions.sleep(Constants.NUM_ONE_HUNDRED * Constants.NUM_TWO);
+  
+    await CommonFunctions.sleep(delay);
     await this._audioService.play(this.logonAudio);
     this.retrieveEarlierMessages();
   }
@@ -176,12 +178,13 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   async updateChatData():Promise<void>{
+    const delay = 500; //500ms
     const data = this._chatService.getChatData();
     this.chatData = data
     this.setMessageLastReceievedTime();
 
     await this._audioService.play(this.newMsgAudio);
-    await CommonFunctions.sleep(500);
+    await CommonFunctions.sleep(delay);
     this.scrollToBottom();
   }
 
@@ -205,7 +208,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   generateAndSendAppMessages(msgType:number, userName?:string):void{
 
-    let chatInput = '';
+    let chatInput = Constants.EMPTY_STRING;
     if(msgType == this.A_NEW_USER_HAS_JOINED_THE_CHAT_MSG){
       chatInput = `${this.userName} has joined the chat.`
     }else if(msgType == this.USER_HAS_LEFT_THE_CHAT_MSG){
@@ -383,7 +386,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
   
   getRandomNum(min?:number, max?:number):number {
-    const defaultMin = Constants.NUM_ZERO;
+    const defaultMin = 0;
     const defaultMax = 100000;
     min =(min === undefined)? defaultMin :min;
     max =(max === undefined)? defaultMax : max;
@@ -392,7 +395,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
    /** Generates the next color dynamically */
   geIconColor(): string {
-    const defaultMin = Constants.NUM_ZERO;
+    const defaultMin = 0;
     const defaultMax = 36;
     const colorSet = ['#00FFFF', '#AAFF00', '#228B22', '#7CFC00', '#00A36C', '#32CD32', '#00FF7F','#FFBF00','#ECFFDC',
       '#F88379', '#FF4433', '#FF00FF', '#FFB6C1', '#E30B5C', '#800080', '#D8BFD8', '#AA98A9', '#7F00FF','#7B68EE',
@@ -468,7 +471,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     const remainingMessages = chatHistory.length - this.chatData.length;
     if (remainingMessages <= 0) return;
 
-    const startIdx = Math.max(remainingMessages - batchSize, Constants.NUM_ZERO);
+    const startIdx = Math.max(remainingMessages - batchSize, 0);
     const moreMessages = chatHistory.slice(startIdx, remainingMessages);
 
     this.chatData.unshift(...moreMessages);

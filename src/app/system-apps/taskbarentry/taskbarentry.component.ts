@@ -13,7 +13,7 @@ export class TaskBarEntryComponent implements OnInit, OnChanges {
 
   @Input() taskBarIconImgUrl = Constants.EMPTY_STRING;
   @Input() taskBarIconName = Constants.EMPTY_STRING;
-  @Input() taskBarPid = Constants.NUM_ZERO;
+  @Input() taskBarPid = 0;
   @Input() taskBarEntryType = Constants.EMPTY_STRING;
   @Output() restoreOrMinizeWindowEvent = new EventEmitter<number>();
 
@@ -26,7 +26,7 @@ export class TaskBarEntryComponent implements OnInit, OnChanges {
   hover = false;
   icon = Constants.EMPTY_STRING;
   name = Constants.EMPTY_STRING;
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   defaultIcon = Constants.EMPTY_STRING;
@@ -40,7 +40,7 @@ export class TaskBarEntryComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges):void{
     //console.log('WINDOW onCHANGES:',changes);
-    const delay = Constants.NUM_FIVE;
+    const delay = 5;
 
     this.setTaskBarEntryType = this.taskBarEntryType;
     this.processId = this.taskBarPid;

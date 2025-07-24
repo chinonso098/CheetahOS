@@ -38,7 +38,7 @@ export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   icon = `${Constants.IMAGE_BASE_PATH}angular.png`;
   isMaximizable = false;
   name = 'hello';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.User;
   displayName = 'Hello';
 

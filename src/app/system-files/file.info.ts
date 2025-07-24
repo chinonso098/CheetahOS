@@ -31,12 +31,12 @@ export class FileInfo {
         this._dateModified = new Date('1990-01-01');
         this._dateCreated = new Date('1990-01-01');
         this._dateAccessed = new Date('1990-01-01');
-        this._size = Constants.NUM_ZERO;
-        this._blkSize = Constants.NUM_ZERO;
+        this._size = 0;
+        this._blkSize = 0;
         this._isFile = true;
         this._isShortCut = false;
         this._fileSizeUnit = 'B';
-        this._mode = Constants.NUM_ZERO;
+        this._mode = 0;
         this._contentBuffer = null;
     }
 
@@ -171,7 +171,7 @@ export class FileInfo {
     }
 
     get getMode() {
-        return '0' + (this._mode & parseInt('777', Constants.NUM_EIGHT)).toString(Constants.NUM_EIGHT);
+        return '0' + (this._mode & parseInt('777', 8)).toString(8);
     }
 
     set setMode(mode: number) {

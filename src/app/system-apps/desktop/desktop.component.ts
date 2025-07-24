@@ -81,9 +81,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _formBuilder:FormBuilder;
 
   private _vantaEffect: any;
-  private _numSequence = Constants.NUM_ZERO;
+  private _numSequence = 0;
   private _charSequence = 'a';
-  private _charSequenceCount = Constants.NUM_ZERO;
+  private _charSequenceCount = 0;
 
   readonly largeIcons = IconsSizes.LARGE_ICONS;
   readonly mediumIcons = IconsSizes.MEDIUM_ICONS;
@@ -158,7 +158,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   birdBkgrnd:BIRDS =  {el:'#vanta'}
 
   VANTAS:any = [this.waveBkgrnd, this.ringsBkgrnd, this.haloBkgrnd, this.globeBkgrnd, this.birdBkgrnd ];
-  private readonly MIN_NUMS_OF_DESKTOPS = Constants.NUM_ZERO;
+  private readonly MIN_NUMS_OF_DESKTOPS = 0;
 
   // i didn't subtract 1 because there is a particles flows bkgrnd in the names array
   private readonly MAX_NUMS_OF_DESKTOPS = this.VANTAS.length;
@@ -169,7 +169,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private readonly MAX_NUM_COLOR_RANGE = 99999;
   private readonly DEFAULT_COLOR = 0x274c;
 
-  private currentDesktopNum = Constants.NUM_ZERO;
+  private currentDesktopNum = 0;
 
   readonly cheetahDsktpIconSortKey = 'cheetahDsktpIconSortKey';
   readonly cheetahDsktpIconSizeKey = 'cheetahDsktpIconSizeKey';
@@ -196,12 +196,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
-  private selectedElementId = Constants.MINUS_ONE;
-  private draggedElementId = Constants.MINUS_ONE;
-  private prevSelectedElementId = Constants.MINUS_ONE; 
-  private hideCntxtMenuEvtCnt = Constants.NUM_ZERO;
-  private btnClickCnt = Constants.NUM_ZERO;
-  private renameFileTriggerCnt = Constants.NUM_ZERO; 
+  private selectedElementId = -1;
+  private draggedElementId = -1;
+  private prevSelectedElementId = -1; 
+  private hideCntxtMenuEvtCnt = 0;
+  private btnClickCnt = 0;
+  private renameFileTriggerCnt = 0; 
   private currentIconName = Constants.EMPTY_STRING;
 
   iconCntxtMenuStyle:Record<string, unknown> = {};
@@ -219,7 +219,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   SECONDS_DELAY:number[] = [6000, 250, 4000, 300];
   renameForm!: FormGroup;
 
-  deskTopClickCounter = Constants.NUM_ZERO;
+  deskTopClickCounter = 0;
 
   cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
   emptyTrashAudio = `${Constants.AUDIO_BASE_PATH}cheetah_recycle.wav`;
@@ -254,7 +254,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'desktop';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   directory = Constants.DESKTOP_PATH;
@@ -360,7 +360,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this._numSequence++;
     } else {
       this._numSequence = this.MIN_NUM_COLOR_RANGE;
-      this._charSequenceCount = (this._charSequenceCount + Constants.NUM_ONE) % charSet.length;
+      this._charSequenceCount = (this._charSequenceCount + 1) % charSet.length;
       this._charSequence = charSet[this._charSequenceCount];
     }
 
@@ -374,13 +374,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const startTime = performance.now();
 
     //Vanta wave
-    if(this.currentDesktopNum === Constants.NUM_ZERO){
+    if(this.currentDesktopNum === 0){
       const animateColorTransition = (time: number) => {
-        const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, Constants.NUM_ONE);
+        const progress = Math.min((time - startTime) / this.COLOR_TRANSITION_DURATION, 1);
         const interpolatedColor = Colors.interpolateHexColor(startColor, endColor, progress);
         this._vantaEffect.setOptions({ color: interpolatedColor });
   
-        if (progress < Constants.NUM_ONE) {
+        if (progress < 1) {
           requestAnimationFrame(animateColorTransition);
         }
       };
@@ -440,9 +440,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.dskTopCntxtMenuStyle = {
         'position':'absolute',
         'width': '210px', 
-        'transform':`translate(${String(axis.xAxis + Constants.NUM_TWO)}px, ${String(axis.yAxis)}px)`,
-        'z-index': Constants.NUM_FOUR,
-        'opacity': Constants.NUM_ONE
+        'transform':`translate(${String(axis.xAxis + 2)}px, ${String(axis.yAxis)}px)`,
+        'z-index': 4,
+        'opacity': 1
       }
       evt.preventDefault();
     }
@@ -473,16 +473,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   checkAndHandleDesktopCntxtMenuBounds(evt:MouseEvent, menuHeightInput:number, menuWidthInput:number):MenuPosition{
 
-    let xAxis = Constants.NUM_ZERO;
-    let yAxis = Constants.NUM_ZERO;
+    let xAxis = 0;
+    let yAxis = 0;
     const menuWidth = menuWidthInput;
     const menuHeight = menuHeightInput;
     const subMenuWidth = 205;
     const taskBarHeight = 40;
 
     const mainWindow = document.getElementById('vanta');
-    const windowWidth =  mainWindow?.offsetWidth || Constants.NUM_ZERO;
-    const windowHeight =  mainWindow?.offsetHeight || Constants.NUM_ZERO;
+    const windowWidth =  mainWindow?.offsetWidth || 0;
+    const windowHeight =  mainWindow?.offsetHeight || 0;
 
     const horizontalDiff =  windowWidth - evt.clientX;
     const verticalDiff = windowHeight - evt.clientY;
@@ -595,7 +595,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     setTimeout(() => {
       this.closePwrDialogBox();
-    }, Constants.NUM_TEN);
+    }, 10);
 
   }
 
@@ -614,7 +614,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   closePwrDialogBox():void{
     const pid = this._systemNotificationServices.getPwrDialogPid();
 
-    if(pid !== Constants.NUM_ZERO){
+    if(pid !== 0){
       this._userNotificationService.closeDialogMsgBox(pid);
     }
   }
@@ -626,7 +626,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       const clientY = evt.clientY;
       const diff = (maxHeight - clientY);
       if(!this.isTaskBarTemporarilyVisible){
-        if(diff <= Constants.NUM_FIVE){
+        if(diff <= 5){
           this.isTaskBarTemporarilyVisible = true;
           this._systemNotificationServices.showTaskBarNotify.next();
           this.showTaskBarTemporarilyHelper();
@@ -648,7 +648,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if (!this.isTaskBarTemporarilyVisible) {
         clearInterval(intervalId);
       }
-    }, Constants.NUM_TEN); //10ms
+    }, 10); //10ms
   }
 
   hideShowVolumeControl():void{
@@ -1010,19 +1010,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     try {
       const vanta = this.VANTAS[n];
-      if(n === Constants.NUM_ZERO){
+      if(n === 0){
         this._vantaEffect = VANTA.WAVES(VantaDefaults.getDefaultWave(this.DEFAULT_COLOR))
       }
-      if(n === Constants.NUM_ONE){
+      if(n === 1){
         this._vantaEffect = VANTA.RINGS(vanta)
       }
-      if(n === Constants.NUM_TWO){
+      if(n === 2){
         this._vantaEffect = VANTA.HALO(vanta)
       }
-      if(n === Constants.NUM_THREE){
+      if(n === 3){
         this._vantaEffect = VANTA.GLOBE(vanta)
       }
-      if(n === Constants.NUM_FOUR){
+      if(n === 4){
         this._vantaEffect = VANTA.BIRDS(vanta)
       }
 
@@ -1051,17 +1051,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.removeOldTaskBarPreviewWindowNow();
     this.showTskBarAppIconMenu = true;
 
-    if(processCount == Constants.NUM_ZERO){
+    if(processCount == 0){
       this.tskBarAppIconMenuStyle = {
         'position':'absolute',
         'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 72)}px)`,
-        'z-index': Constants.NUM_FIVE,
+        'z-index': 5,
       }
     }else {
       this.tskBarAppIconMenuStyle = {
         'position':'absolute',
         'transform':`translate(${String(rect.x - 60)}px, ${String(rect.y - 104)}px)`,
-        'z-index': Constants.NUM_FIVE,
+        'z-index': 5,
       }
     }
   }
@@ -1084,7 +1084,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.tskBarCntxtMenuStyle = {
       'position':'absolute',
       'transform':`translate(${axis.xAxis + 2}px, ${evt.y - menuHeight - taskBarHeight}px)`,
-      'z-index': Constants.NUM_FIVE,
+      'z-index': 5,
     }
   }
 
@@ -1123,12 +1123,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     rowZero.label = file.getOpensWith;
     this.taskBarAppIconMenuData[0] = rowZero;
 
-    if(processCount === Constants.NUM_ZERO){
-      if(this.taskBarAppIconMenuData.length === Constants.NUM_THREE){
+    if(processCount === 0){
+      if(this.taskBarAppIconMenuData.length === 3){
         this.taskBarAppIconMenuData.pop()
       }
-    }else if(processCount === Constants.NUM_ONE){
-      if(this.taskBarAppIconMenuData.length === Constants.NUM_TWO){
+    }else if(processCount === 1){
+      if(this.taskBarAppIconMenuData.length === 2){
         const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}x_32.png`, label: 'Close window', action:this.closeApplicationFromTaskBar.bind(this)};
         this.taskBarAppIconMenuData.push(menuEntry);
       }else{
@@ -1204,7 +1204,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.tskBarPrevWindowStyle = {
       'position':'absolute',
       'transform':`translate(${String(rect.x)}px, ${String(rect.y - 131)}px)`,
-      'z-index': Constants.NUM_FIVE,
+      'z-index': 5,
     }
   }
 
@@ -1236,7 +1236,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.showTaskBarIconToolTip = true
       this.tskBarToolTipStyle = {
         'position':'absolute',
-        'z-index': Constants.NUM_FIVE,
+        'z-index': 5,
         'transform': `translate(${xAxis- 6}px, ${yAxis - 20}px)`
       }
     }, delay);
@@ -1274,7 +1274,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           droppedFiles  = [...event?.dataTransfer?.files];
       }
       
-      if(droppedFiles.length >= Constants.NUM_ONE){
+      if(droppedFiles.length >= 1){
         const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
         if(result){
           // this._fileService.addEventOriginator('desktop');
@@ -1335,8 +1335,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const axis = this.checkAndHandleDesktopIconCntxtMenuBounds(evt, menuHeight);
     this.iconCntxtMenuStyle = {
       'position':'absolute',
-      'transform':`translate(${String(evt.clientX + Constants.NUM_TWO)}px, ${String(axis.yAxis)}px)`,
-      'z-index': Constants.NUM_FOUR,
+      'transform':`translate(${String(evt.clientX + 2)}px, ${String(axis.yAxis)}px)`,
+      'z-index': 4,
     }
 
     evt.preventDefault();
@@ -1374,13 +1374,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
   checkAndHandleDesktopIconCntxtMenuBounds(evt:MouseEvent, menuHeight:number):MenuPosition{
 
-    let yAxis = Constants.NUM_ZERO;
+    let yAxis = 0;
     let verticalShift = false;
 
-    const xAxis = Constants.NUM_ZERO;
+    const xAxis = 0;
     const taskBarHeight = 40;
     const mainWindow = document.getElementById('vanta');
-    const windowHeight =  mainWindow?.offsetHeight || Constants.NUM_ZERO;
+    const windowHeight =  mainWindow?.offsetHeight || 0;
     const verticalSum = evt.clientY + menuHeight;
 
     console.log('verticalSum:', verticalSum);
@@ -1430,6 +1430,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
     }
     else if(action === MenuAction.CUT){
+      const delay = 20; //20ms
       const result = await this._fileService.moveAsync(cntntPath, Constants.DESKTOP_PATH);
       if(result){
         if(!cntntPath.includes(Constants.DESKTOP_PATH)){
@@ -1438,7 +1439,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           this._fileService.dirFilesUpdateNotify.next();
 
 
-          await CommonFunctions.sleep((Constants.NUM_TWENTY))
+          await CommonFunctions.sleep(delay)
           this.refresh();
         }else{
             this.refresh();
@@ -1482,12 +1483,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   btnStyleAndValuesReset():void{
     this.isBtnClickEvt = false;
-    this.btnClickCnt = Constants.NUM_ZERO;
+    this.btnClickCnt = 0;
     this.removeBtnStyle(this.selectedElementId);
     this.removeBtnStyle(this.prevSelectedElementId);
-    this.selectedElementId = Constants.MINUS_ONE;
-    this.prevSelectedElementId = Constants.MINUS_ONE;
-    this.btnClickCnt = Constants.NUM_ZERO;
+    this.selectedElementId = -1;
+    this.prevSelectedElementId = -1;
+    this.btnClickCnt = 0;
     this.isIconInFocusDueToPriorAction = false;
   }
 
@@ -1579,7 +1580,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.isBtnClickEvt = true;
     this.btnClickCnt++;
     this.isHideCntxtMenuEvt = false;
-    this.hideCntxtMenuEvtCnt = Constants.NUM_ZERO;
+    this.hideCntxtMenuEvtCnt = 0;
 
     if(this.prevSelectedElementId != id){
       this.removeBtnStyle(this.prevSelectedElementId);
@@ -1597,20 +1598,20 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   handleIconHighLightState():void{
 
     //First case - I'm clicking only on the desktop icons
-    if((this.isBtnClickEvt && this.btnClickCnt >= Constants.NUM_ONE) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === Constants.NUM_ZERO)){  
+    if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === 0)){  
       if(this.isRenameActive){
         console.log('herer');
         this.isFormDirty();
       }
       if(this.isIconInFocusDueToPriorAction){
-        if(this.hideCntxtMenuEvtCnt >= Constants.NUM_ZERO)
+        if(this.hideCntxtMenuEvtCnt >= 0)
           this.setBtnStyle(this.selectedElementId,false);
 
         this.isIconInFocusDueToPriorAction = false;
       }
       if(!this.isRenameActive){
         this.isBtnClickEvt = false;
-        this.btnClickCnt = Constants.NUM_ZERO;
+        this.btnClickCnt = 0;
       }
       console.log('turn off - areMultipleIconsHighlighted')
       this.areMultipleIconsHighlighted = false;
@@ -1618,24 +1619,24 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.hideCntxtMenuEvtCnt++;
       this.isHideCntxtMenuEvt = true;
       //Second case - I was only clicking on the desktop
-      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= Constants.NUM_ONE) && (!this.isBtnClickEvt && this.btnClickCnt === Constants.NUM_ZERO)){
+      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= 1) && (!this.isBtnClickEvt && this.btnClickCnt === 0)){
         this.deskTopClickCounter++;
         this.btnStyleAndValuesReset();
 
         //reset after clicking on the desktop 2wice
-        if(this.deskTopClickCounter >= Constants.NUM_ONE && !this.areMultipleIconsHighlighted){
-          this.deskTopClickCounter = Constants.NUM_ZERO;
-        }else if(this.deskTopClickCounter >= Constants.NUM_TWO){
+        if(this.deskTopClickCounter >= 1 && !this.areMultipleIconsHighlighted){
+          this.deskTopClickCounter = 0;
+        }else if(this.deskTopClickCounter >= 2){
           console.log('turn off - areMultipleIconsHighlighted-1')
           this.areMultipleIconsHighlighted = false;
           this.removeClassAndStyleFromBtn();
-          this.deskTopClickCounter = Constants.NUM_ZERO;
+          this.deskTopClickCounter = 0;
           this.markedBtnIds = [];
         }
       }
       //Third case - I was clicking on the desktop icons, then i click on the desktop.
       //clicking on the desktop triggers a hideContextMenuEvt
-      if((this.isBtnClickEvt && this.btnClickCnt >= Constants.NUM_ONE) && (this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt > Constants.NUM_ONE))
+      if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt > 1))
         this.btnStyleAndValuesReset();
     }
   }
@@ -1652,7 +1653,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
   deActivateMultiSelect():void{ 
     if(this.multiSelectElmnt){
-      this.setDivWithAndSize(this.multiSelectElmnt, Constants.NUM_ZERO, Constants.NUM_ZERO, Constants.NUM_ZERO, Constants.NUM_ZERO, false);
+      this.setDivWithAndSize(this.multiSelectElmnt, 0, 0, 0, 0, false);
     }
 
     this.multiSelectElmnt = null;
@@ -1660,7 +1661,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.isMultiSelectActive = false;
 
     const markedBtnCount = this.getCountOfAllTheMarkedButtons();
-    if(markedBtnCount === Constants.NUM_ZERO)
+    if(markedBtnCount === 0)
       this.areMultipleIconsHighlighted = false;
     else{
       this.areMultipleIconsHighlighted = true;
@@ -1741,9 +1742,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       y: evt.y,
     }
 
-    if(this.autoAlignIcons && this.markedBtnIds.length >= Constants.NUM_ZERO){
+    if(this.autoAlignIcons && this.markedBtnIds.length >= 0){
       this.moveBtnIconsToNewPositionAlignOn(mPos);
-    }else if (!this.autoAlignIcons && this.markedBtnIds.length >= Constants.NUM_ZERO){
+    }else if (!this.autoAlignIcons && this.markedBtnIds.length >= 0){
       this.moveBtnIconsToNewPositionAlignOff(mPos);
     }
 
@@ -1759,7 +1760,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const elementId = 'desktopIcon_clone_cntnr';
     const cloneIcon = document.getElementById(elementId);
     const countOfMarkedBtns = this.getCountOfAllTheMarkedButtons();
-    let counter = Constants.NUM_ZERO;
+    let counter = 0;
 
     if(cloneIcon){
       //Clear any previous content in the clone container
@@ -1776,7 +1777,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     
         // Set the cloned icon as the drag image
         if (evt.dataTransfer) {
-          evt.dataTransfer.setDragImage(cloneIcon, Constants.NUM_ZERO, Constants.NUM_ZERO);  // Offset positions for the drag image
+          evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
         }
       }else{
         this.markedBtnIds.forEach(id =>{
@@ -1790,7 +1791,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           spaceDiv.style.height =  '20px';
 
           cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
-          if(counter !== countOfMarkedBtns - Constants.NUM_ONE)
+          if(counter !== countOfMarkedBtns - 1)
             cloneIcon.appendChild(spaceDiv);
 
           counter++;
@@ -1801,17 +1802,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
         // Set the cloned icon as the drag image
         if (evt.dataTransfer) {
-          evt.dataTransfer.setDragImage(cloneIcon, Constants.NUM_ZERO, Constants.NUM_ZERO);  // Offset positions for the drag image
+          evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
         }
       }
     }
   }
   
   moveBtnIconsToNewPositionAlignOff(mPos:mousePosition):void{
-    let counter = Constants.NUM_ZERO;
+    let counter = 0;
     let justAdded = false;
 
-    if(this.markedBtnIds.length === Constants.NUM_ZERO){
+    if(this.markedBtnIds.length === 0){
       justAdded = true;
       this.markedBtnIds.push(String(this.draggedElementId));
     }
@@ -1825,8 +1826,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         const xDiff = mPos.x - btnIconRect.left;
         const newX = btnIconRect.left + xDiff;
 
-        let newY = Constants.NUM_ZERO;
-        if(counter === Constants.NUM_ZERO)
+        let newY = 0;
+        if(counter === 0)
             newY = mPos.y;
         else{
           const yDiff = btnIconRect.top - mPos.y;
@@ -1847,7 +1848,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   moveBtnIconsToNewPositionAlignOn(mPos: mousePosition): void {
     const gridEl = document.getElementById('desktopIcon_ol') as HTMLElement;
-    const heightAdjustment = Constants.NUM_TWENTY;
+    const heightAdjustment = 20;
     const iconWidth = this.GRID_SIZE; 
     const iconHeight = this.GRID_SIZE - heightAdjustment;  
 
@@ -1859,10 +1860,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     const effectiveRowHeight = iconHeight + this.ROW_GAP;
 
-    let counter = Constants.NUM_ZERO;
+    let counter = 0;
     let justAdded = false;
 
-    if (this.markedBtnIds.length === Constants.NUM_ZERO) {
+    if (this.markedBtnIds.length === 0) {
       justAdded = true;
       this.markedBtnIds.push(String(this.draggedElementId));
     }
@@ -1873,8 +1874,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
       if (btnIconElmnt) {
         // Calculate grid position (1-based index for CSS Grid)
-        const col = Math.floor(relativeX / iconWidth) + Constants.NUM_ONE;
-        const row = Math.floor(relativeY / effectiveRowHeight) + Constants.NUM_ONE + counter;
+        const col = Math.floor(relativeX / iconWidth) + 1;
+        const row = Math.floor(relativeY / effectiveRowHeight) + 1 + counter;
 
         btnIconElmnt.style.removeProperty('position');
         btnIconElmnt.style.removeProperty('transform');
@@ -1892,12 +1893,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   correctMisalignedIcons(): void {
-    const heightAdjustment = Constants.NUM_TWENTY;
+    const heightAdjustment = 20;
     const iconWidth = this.GRID_SIZE;
     const iconHeight = this.GRID_SIZE - heightAdjustment
     const rowGap = this.ROW_GAP; 
     const effectiveRowHeight = iconHeight + rowGap; 
-    const offsetY = Constants.NUM_FIVE;
+    const offsetY = 5;
 
     const grid = document.getElementById('desktopIcon_ol');
     if (!grid) return;
@@ -1935,9 +1936,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
                                    [IconsSizesPX.LARGE_ICONS, ShortCutIconsSizes.LARGE_ICONS, ShortCutIconsBottom.LARGE_ICONS], 
                                   ];
 
-    const size = (iconSize === IconsSizes.SMALL_ICONS) ? iconsSizes[Constants.NUM_ZERO] :
-                 (iconSize === IconsSizes.MEDIUM_ICONS) ? iconsSizes[Constants.NUM_ONE] :
-                 iconsSizes[Constants.NUM_TWO];
+    const size = (iconSize === IconsSizes.SMALL_ICONS) ? iconsSizes[0] :
+                 (iconSize === IconsSizes.MEDIUM_ICONS) ? iconsSizes[1] :
+                 iconsSizes[2];
 
     this.GRID_SIZE = (iconSize === IconsSizes.SMALL_ICONS) ? this.MIN_GRID_SIZE :
                      (iconSize === IconsSizes.MEDIUM_ICONS) ? this.MID_GRID_SIZE :
@@ -2097,9 +2098,9 @@ OpensWith=${selectedFile.getOpensWith}
         this.onRenameFileTxtBoxDataSave();
     }else if(!this.renameForm.dirty){
       this.renameFileTriggerCnt ++;
-      if(this.renameFileTriggerCnt > Constants.NUM_ONE){
+      if(this.renameFileTriggerCnt > 1){
         this.onRenameFileTxtBoxHide();
-        this.renameFileTriggerCnt = Constants.NUM_ZERO;
+        this.renameFileTriggerCnt = 0;
       }
     }
   }
@@ -2137,7 +2138,7 @@ OpensWith=${selectedFile.getOpensWith}
     const renameContainerElement = document.getElementById(`renameContainer${this.selectedElementId}`) as HTMLElement;
     const renameText = this.renameForm.value.renameInput as string;
  
-    if(renameText !== Constants.EMPTY_STRING && renameText.length !== Constants.NUM_ZERO && renameText !== this.currentIconName ){
+    if(renameText !== Constants.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName ){
       const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
 
       if(result){
@@ -2156,7 +2157,7 @@ OpensWith=${selectedFile.getOpensWith}
     }
 
     this.setBtnStyle(this.selectedElementId, false);
-    this.renameFileTriggerCnt = Constants.NUM_ZERO;
+    this.renameFileTriggerCnt = 0;
     
     if(figCapElement){
       figCapElement.style.display = 'block';

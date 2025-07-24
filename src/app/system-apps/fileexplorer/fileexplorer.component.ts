@@ -97,13 +97,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
-  private selectedElementId = Constants.MINUS_ONE;
-  private prevSelectedElementId = Constants.MINUS_ONE; 
-  private hideCntxtMenuEvtCnt = Constants.NUM_ZERO;
-  private btnClickCnt = Constants.NUM_ZERO;
-  private renameFileTriggerCnt = Constants.NUM_ZERO; 
+  private selectedElementId = -1;
+  private prevSelectedElementId = -1; 
+  private hideCntxtMenuEvtCnt = 0;
+  private btnClickCnt = 0;
+  private renameFileTriggerCnt = 0; 
   private currentIconName = Constants.EMPTY_STRING;
-  private blankSpaceClickCntr = Constants.NUM_ZERO; 
+  private blankSpaceClickCntr = 0; 
 
   isSearchBoxNotEmpty = false;
   showPathHistory = false;
@@ -112,8 +112,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showIconCntxtMenu = false;
   showFileExplrCntxtMenu = false;
   showFileSizeAndUnit = false;
-  iconCntxtCntr = Constants.NUM_ZERO;
-  fileExplrCntxtCntr = Constants.NUM_ZERO;
+  iconCntxtCntr = 0;
+  fileExplrCntxtCntr = 0;
   selectFilesSizeSum = Constants.EMPTY_STRING;
   selectFilesSizeUnit = Constants.EMPTY_STRING;
 
@@ -132,7 +132,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   olClassName = ViewOptionsCSS.ICONS_VIEW_CSS;
   btnTypeRibbon = 'Ribbon';
   btnTypeFooter = 'Footer';
-  selectedRow = Constants.MINUS_ONE;
+  selectedRow = -1;
 
 
   fileExplrFiles:FileInfo[] = [];
@@ -148,7 +148,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
   defaultviewOption = ViewOptions.MEDIUM_ICON_VIEW;
   currentViewOption = ViewOptions.MEDIUM_ICON_VIEW;
-  currentViewOptionId = Constants.NUM_THREE;
+  currentViewOptionId = 3;
   
   readonly smallIconsView = ViewOptions.SMALL_ICON_VIEW;
   readonly mediumIconsView = ViewOptions.MEDIUM_ICON_VIEW;
@@ -239,7 +239,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   navPathIcon = `${Constants.IMAGE_BASE_PATH}this_pc.png`;
   isMaximizable = false;
   name = 'fileexplorer';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   directory = Constants.ROOT;
   displayName = 'fileexplorer';
@@ -375,7 +375,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(this.directory === Constants.RECYCLE_BIN_PATH){
 
       const count = await this._fileService.countFolderItems(Constants.RECYCLE_BIN_PATH);
-      this.icon = (count === Constants.NUM_ZERO) 
+      this.icon = (count === 0) 
         ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
         :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
   
@@ -446,7 +446,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.changeTabLayoutIconCntnrCSS(id,true);
 
-    for(let i = Constants.NUM_ONE; i <= Constants.NUM_EIGHT; i++){
+    for(let i = 1; i <= 8; i++){
       if(i !== id){
         this.changeTabLayoutIconCntnrCSS(i, false);
       }
@@ -521,12 +521,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
                                               ViewOptionsCSS.CONTENT_VIEW_CSS];
 
     const layoutIdx = layoutOptions.indexOf(iconSize);
-    if(layoutIdx <= Constants.NUM_THREE){
-      this.olClassName = LayoutOptionsCSS[Constants.NUM_ZERO];
-    } else if (layoutIdx >= Constants.NUM_FOUR){
+    if(layoutIdx <= 3){
+      this.olClassName = LayoutOptionsCSS[0];
+    } else if (layoutIdx >= 4){
       /* the icon-views has various sizes, but it is still treated as one distinct layout. 
          So, options 0 - 3 in the layoutOptions = option 0 in the cssLayoutOptions */
-      const idx = layoutIdx - Constants.NUM_THREE;
+      const idx = layoutIdx - 3;
       this.olClassName = LayoutOptionsCSS[idx];
     }
   }
@@ -549,8 +549,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const shortCutElmt = document.getElementById(`shortCut-${this.processId}-${i}`) as HTMLElement;
 
       if(btnElmnt){
-        btnElmnt.style.width = btn_width_height_sizes[iconIdx][Constants.NUM_ZERO];
-        //btnElmnt.style.height = btn_width_height_sizes[iconIdx][Constants.NUM_ONE];
+        btnElmnt.style.width = btn_width_height_sizes[iconIdx][0];
+        //btnElmnt.style.height = btn_width_height_sizes[iconIdx][1];
         btnElmnt.style.height = 'min-content';
       }
 
@@ -560,13 +560,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       if(figCapElmnt){
-        figCapElmnt.style.width = btn_width_height_sizes[iconIdx][Constants.NUM_ZERO];
+        figCapElmnt.style.width = btn_width_height_sizes[iconIdx][0];
       }
 
       if(shortCutElmt){
-        shortCutElmt.style.width = shortCutIconSizes[iconIdx][Constants.NUM_ZERO];
-        shortCutElmt.style.height = shortCutIconSizes[iconIdx][Constants.NUM_ZERO];
-        shortCutElmt.style.bottom = shortCutIconSizes[iconIdx][Constants.NUM_ONE];
+        shortCutElmt.style.width = shortCutIconSizes[iconIdx][0];
+        shortCutElmt.style.height = shortCutIconSizes[iconIdx][0];
+        shortCutElmt.style.bottom = shortCutIconSizes[iconIdx][1];
       }
     }
   }
@@ -586,8 +586,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       iconView === ViewOptions.EXTRA_LARGE_ICON_VIEW){
 
       if(olElmnt){
-        olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ZERO]})`;
-        olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][Constants.NUM_ONE]})`;
+        olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][0]})`;
+        olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][1]})`;
         olElmnt.style.rowGap = '34px';
         olElmnt.style.columnGap = '5px';
         olElmnt.style.padding = '5px 10px';
@@ -658,7 +658,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async goUpAlevel():Promise<void>{
-    if(this.upPathEntries.length > Constants.NUM_ZERO){
+    if(this.upPathEntries.length > 0){
       const currentDirPath =  this.directory;
 
       if(!this.isNavigatedBefore){
@@ -682,7 +682,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       const folderName = basename(this.directory);
 
-      if(this.upPathEntries.length === Constants.NUM_ZERO){
+      if(this.upPathEntries.length === 0){
         this.isUpBtnActive = false;
         this.upNavBtnStyle ={
           'fill': '#ccc'
@@ -755,16 +755,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async goBackAlevel():Promise<void>{
-    if(this.prevPathEntries.length > Constants.NUM_ZERO){
+    if(this.prevPathEntries.length > 0){
       const currentDirPath =  this.directory;
 
-      if(this.recentPathEntries.indexOf(currentDirPath) === Constants.MINUS_ONE){
+      if(this.recentPathEntries.indexOf(currentDirPath) === -1){
         this.recentPathEntries.push(currentDirPath);
       }
 
       const idx = this.upPathEntries.indexOf(currentDirPath);
-      if(idx != Constants.MINUS_ONE){
-        this.upPathEntries.splice(idx, Constants.NUM_ONE);
+      if(idx !== -1){
+        this.upPathEntries.splice(idx, 1);
       }else{
         this.upPathEntries.push(currentDirPath);
       }
@@ -789,7 +789,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       const folderName = basename(this.directory);
 
-      if(this.prevPathEntries.length === Constants.NUM_ZERO){
+      if(this.prevPathEntries.length === 0){
         this.isPrevBtnActive = false;
         this.prevNavBtnStyle ={
           'fill': '#ccc'
@@ -822,7 +822,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async goForwardAlevel():Promise<void>{
-    if(this.nextPathEntries.length > Constants.NUM_ZERO){
+    if(this.nextPathEntries.length > 0){
 
       const currentDirPath =  this.directory;
       this.prevPathEntries.push(currentDirPath);
@@ -834,8 +834,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const nextDirPath = this.directory = this.nextPathEntries.pop() ?? Constants.EMPTY_STRING;
       const idx = this.upPathEntries.indexOf(nextDirPath)
 
-      if (idx !== Constants.MINUS_ONE) {
-           this.upPathEntries.splice(idx, Constants.NUM_ONE);
+      if (idx !== -1) {
+           this.upPathEntries.splice(idx, 1);
       }else{
         this.upPathEntries.push(nextDirPath);
       }
@@ -848,7 +848,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       const folderName = basename(this.directory);
-      if(this.nextPathEntries.length === Constants.NUM_ZERO){
+      if(this.nextPathEntries.length === 0){
         this.isNextBtnActive = false;
         this.nextNavBtnStyle ={
           'fill': '#ccc'
@@ -991,7 +991,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         droppedFiles  = [...event?.dataTransfer?.files];
     }
     
-    if(droppedFiles.length >= Constants.NUM_ONE){
+    if(droppedFiles.length >= 1){
       const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
       if(result){
         await this.loadFiles();
@@ -1138,7 +1138,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.prevPathEntries.push(this.directory);
       this.upPathEntries.push(this.directory);
 
-      if(this.recentPathEntries.indexOf(this.directory) === Constants.MINUS_ONE){
+      if(this.recentPathEntries.indexOf(this.directory) === -1){
         this.recentPathEntries.push(this.directory);
       }
 
@@ -1157,6 +1157,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async navigateToFolder(data:string[]):Promise<void>{
+    console.log('navigateToFolder:', data);
+    
     const thisPC = 'This-PC';
     const fileName = data[0];
     const path = data[1];
@@ -1269,7 +1271,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.fileExplrCntxtMenuStyle = {
       'position': 'absolute', 
       'transform':`translate(${axis.xAxis}px, ${axis.yAxis}px)`,
-      'z-index': Constants.NUM_TWO,
+      'z-index': 2,
     }
 
     evt.preventDefault();
@@ -1342,7 +1344,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.fileExplrCntxtMenuStyle = {
       'position': 'absolute', 
       'transform':`translate(${String(axis.xAxis)}px, ${String(axis.yAxis)}px)`,
-      'z-index': Constants.NUM_TWO,
+      'z-index': 2,
     }
 
     evt.preventDefault();
@@ -1359,8 +1361,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isNotDetailsView = true;
     this.showFileExplrCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
-    this.iconCntxtCntr = Constants.NUM_ZERO;
-    this.fileExplrCntxtCntr = Constants.NUM_ZERO;
+    this.iconCntxtCntr = 0;
+    this.fileExplrCntxtCntr = 0;
     this.showExpandTreeIcon = false;
 
     // to prevent an endless loop of calls,
@@ -1378,17 +1380,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.hideShowFileSizeAndUnit();
 
     //First case - I'm clicking only on the folder icons
-    if((this.getIsBtnClickEvt() && this.btnClickCnt >= Constants.NUM_ONE) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === Constants.NUM_ZERO)){  
+    if((this.getIsBtnClickEvt() && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === 0)){  
       
       if(this.isRenameActive){
         this.isFormDirty();
       }
       if(this.isIconInFocusDueToPriorAction){
-        if(this.hideCntxtMenuEvtCnt >= Constants.NUM_ZERO)
+        if(this.hideCntxtMenuEvtCnt >= 0)
           this.setBtnStyle(this.selectedElementId, false);
       }
       if(!this.isRenameActive){
-        this.btnClickCnt = Constants.NUM_ZERO;
+        this.btnClickCnt = 0;
         this.setIsBtnClickEvt(false, 'handleIconHighLightState');
 
         if(!this.areMultipleIconsHighlighted){
@@ -1400,7 +1402,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.hideCntxtMenuEvtCnt++;
       this.isHideCntxtMenuEvt = true;
       //Second case - I was only clicking on an empty space in the folder
-      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= Constants.NUM_ONE) && (!this.getIsBtnClickEvt() && this.btnClickCnt === Constants.NUM_ZERO)){
+      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= 1) && (!this.getIsBtnClickEvt() && this.btnClickCnt === 0)){
         this.isIconInFocusDueToCurrentAction = false;
         this.blankSpaceClickCntr++;
 
@@ -1410,9 +1412,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
 
         //reset after clicking on the folder 2wice
-        if(this.blankSpaceClickCntr >= Constants.NUM_ONE && !this.areMultipleIconsHighlighted){
-          this.blankSpaceClickCntr = Constants.NUM_ZERO;
-        }else if(this.blankSpaceClickCntr >= Constants.NUM_TWO && this.areMultipleIconsHighlighted){
+        if(this.blankSpaceClickCntr >= 1 && !this.areMultipleIconsHighlighted){
+          this.blankSpaceClickCntr = 0;
+        }else if(this.blankSpaceClickCntr >= 2 && this.areMultipleIconsHighlighted){
           console.log('turn off - fileExplr areMultipleIconsHighlighted-1')
   
           this.removeClassAndStyleFromBtn();
@@ -1420,7 +1422,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
           this.markedBtnIds = [];
           this.areMultipleIconsHighlighted = false;
-          this.blankSpaceClickCntr = Constants.NUM_ZERO;
+          this.blankSpaceClickCntr = 0;
         }
       }
     }
@@ -1435,7 +1437,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.setIsBtnClickEvt(true, 'doBtnClickThings');
     this.btnClickCnt++;
     this.isHideCntxtMenuEvt = false;
-    this.hideCntxtMenuEvtCnt = Constants.NUM_ZERO;
+    this.hideCntxtMenuEvtCnt = 0;
    
     if(this.prevSelectedElementId !== id){
       this.removeBtnStyle(this.prevSelectedElementId);
@@ -1504,18 +1506,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   btnStyleAndValuesReset():void{
     this.setIsBtnClickEvt(false, 'btnStyleAndValuesReset');
-    this.btnClickCnt = Constants.NUM_ZERO;
+    this.btnClickCnt = 0;
     this.removeBtnStyle(this.selectedElementId);
     this.removeBtnStyle(this.prevSelectedElementId);
-    this.selectedElementId = Constants.MINUS_ONE;
-    this.prevSelectedElementId = Constants.MINUS_ONE;
-    this.btnClickCnt = Constants.NUM_ZERO;
+    this.selectedElementId = -1;
+    this.prevSelectedElementId = -1;
+    this.btnClickCnt = 0;
     this.isIconInFocusDueToPriorAction = false;
   }
 
   btnStyleAndValuesChange():void{
     this.setIsBtnClickEvt(false, 'btnStyleAndValuesChange');
-    this.btnClickCnt = Constants.NUM_ZERO;
+    this.btnClickCnt = 0;
     this.prevSelectedElementId = this.selectedElementId;
     this.isIconInFocusDueToPriorAction = true;
     this.isIconInFocusDueToCurrentAction = false;
@@ -1574,7 +1576,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           this._fileService.addEventOriginator(Constants.DESKTOP);
           this._fileService.dirFilesUpdateNotify.next();
 
-          await CommonFunctions.sleep((Constants.NUM_TWENTY));
+          await CommonFunctions.sleep((20));
           this.refresh();
         }else{
           this.refresh();
@@ -1584,6 +1586,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async onRestore():Promise<void>{
+    const delay = 30;
     const srcPath = this.selectedFile.getCurrentPath;
     const originPath = this._fileService.getFolderOrigin(srcPath);
     const destPath = dirname(originPath);
@@ -1592,15 +1595,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this._fileService.addEventOriginator(Constants.DESKTOP);
       this._fileService.dirFilesUpdateNotify.next();
 
-      await CommonFunctions.sleep((Constants.NUM_FIFTEEN * Constants.NUM_TWO));
+      await CommonFunctions.sleep(delay);
       this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
       this._fileService.dirFilesUpdateNotify.next();
     }
   }
 
   checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
-    let xAxis = Constants.NUM_ZERO;
-    let yAxis = Constants.NUM_ZERO;
+    let xAxis = 0;
+    let yAxis = 0;
     let horizontalShift = false;
     let verticalShift = false;
 
@@ -1610,7 +1613,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const verticalDiff = verticalMax - evt.clientY;
     const menuWidth = 210;
     const subMenuWidth = 205;
-    const taskBarHeight = Constants.NUM_FIVE;
+    const taskBarHeight = 5;
 
     if(horizontalDiff < menuWidth){
       horizontalShift = true;
@@ -1634,11 +1637,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     return {xAxis, yAxis};
   }
 
-  shiftViewSubMenu():void{ this.shiftNestedMenuPosition(Constants.NUM_ZERO); }
+  shiftViewSubMenu():void{ this.shiftNestedMenuPosition(0); }
 
-  shiftSortBySubMenu():void{this.shiftNestedMenuPosition(Constants.NUM_ONE);  }
+  shiftSortBySubMenu():void{this.shiftNestedMenuPosition(1);  }
 
-  shiftNewSubMenu():void { this.shiftNestedMenuPosition(Constants.NUM_SIX); }
+  shiftNewSubMenu():void { this.shiftNestedMenuPosition(6); }
 
   shiftNestedMenuPosition(i:number):void{
     const nestedMenu =  document.getElementById(`dmNestedMenu-${i}`) as HTMLDivElement;
@@ -1660,7 +1663,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
   deActivateMultiSelect():void{ 
     if(this.multiSelectElmnt){
-      this.setDivWithAndSize(this.multiSelectElmnt, Constants.NUM_ZERO, Constants.NUM_ZERO, Constants.NUM_ZERO, Constants.NUM_ZERO, false);
+      this.setDivWithAndSize(this.multiSelectElmnt, 0, 0, 0, 0, false);
     }
 
     this.multiSelectElmnt = null;
@@ -1668,7 +1671,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isMultiSelectActive = false;
 
     const markedBtnCount = this.getCountOfAllTheMarkedButtons();
-    if(markedBtnCount === Constants.NUM_ZERO)
+    if(markedBtnCount === 0)
       this.areMultipleIconsHighlighted = false;
     else{
       this.areMultipleIconsHighlighted = true;
@@ -1768,9 +1771,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
   
   getSelectFileSizeSumAndUnit():void{
-    let sum = Constants.NUM_ZERO;
+    let sum = 0;
 
-    if(this.markedBtnIds.length > Constants.NUM_ZERO){
+    if(this.markedBtnIds.length > 0){
       for(const id of this.markedBtnIds){
         const file = this.fileExplrFiles[Number(id)];
         if(file.getIsFile){
@@ -1861,7 +1864,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(this.currentViewOption === ViewOptions.DETAILS_VIEW)
       infoTip.style.transform = `translate(${x - 25}px, ${y - 50}px)`;
     else
-       infoTip.style.transform = `translate(${x - Constants.NUM_FIFTEEN}px, ${y + Constants.NUM_TEN}px)`;
+       infoTip.style.transform = `translate(${x - 15}px, ${y + 10}px)`;
 
     if (this.fileInfoTipData.length === 0) return;
 
@@ -1882,11 +1885,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.currentTooltipFileId = file.getCurrentPath;
     await this.setInformationTipInfo(file);
 
-    if (this.fileInfoTipData.length === Constants.NUM_ZERO) return;
+    if (this.fileInfoTipData.length === 0) return;
 
     requestAnimationFrame(() => {
-      const offsetX = this.currentViewOption === ViewOptions.DETAILS_VIEW ? -25 : -Constants.NUM_FIFTEEN;
-      const offsetY = this.currentViewOption === ViewOptions.DETAILS_VIEW ? -50 : Constants.NUM_TEN;
+      const offsetX = this.currentViewOption === ViewOptions.DETAILS_VIEW ? -25 : -15;
+      const offsetY = this.currentViewOption === ViewOptions.DETAILS_VIEW ? -50 : 10;
 
       infoTip.style.transform = `translate(${x + offsetX}px, ${y + offsetY}px)`;
       infoTip.classList.add('visible');
@@ -1930,21 +1933,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     //reset
     this.fileInfoTipData = [];
 
-    // if(Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileType)){
-    //   const img = new Image();
-    //   img.src = file.getContentPath;
-    //   img.onload = () => {
-    //     const width = img.naturalWidth;
-    //     const height = img.naturalHeight;
-    //     const imgDimensions = `${width} x ${height}`;
-
-    //     this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_ONE], data:`${file.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`});
-    //     this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_FOUR], data:imgDimensions });
-    //     this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:fileSize });
-    //   };
-    //   img.onerror = (err) => { console.error("Failed to load image", err); };
-    // }
-
     if (Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileType)) {
       await new Promise<void>((resolve) => {
         const img = new Image();
@@ -1955,11 +1943,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           const imgDimensions = `${width} x ${height}`;
 
           this.fileInfoTipData.push({
-            label: infoTipFields[Constants.NUM_ONE],
+            label: infoTipFields[1],
             data: `${file.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`
           });
-          this.fileInfoTipData.push({ label: infoTipFields[Constants.NUM_FOUR], data: imgDimensions });
-          this.fileInfoTipData.push({ label: infoTipFields[Constants.NUM_SIX], data: fileSize });
+          
+          this.fileInfoTipData.push({ label: infoTipFields[4], data: imgDimensions });
+          this.fileInfoTipData.push({ label: infoTipFields[6], data: fileSize });
 
           resolve();
         };
@@ -1970,27 +1959,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       });
     }else if(isFile && !isFolder){
       const fileTypeName = this.getFileTypeName(fileType);
-      this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SEVEN], data:fileTypeName});
-      this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_THREE], data: fileDateModified });
-      this.fileInfoTipData.push({ label: infoTipFields[Constants.NUM_SIX], data: fileSize });
-
-      // if(this.fileInfoTipData.filter(x => x.label !== infoTipFields[Constants.NUM_SIX]))
-      //   this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:fileSize });
-
-      // const sizeLabelExists = this.fileInfoTipData.some(x => x.label === infoTipFields[Constants.NUM_SIX]);
-      // if (!sizeLabelExists) {
-      //   this.fileInfoTipData.push({ label: infoTipFields[Constants.NUM_SIX], data: fileSize });
-      // }
-
+      this.fileInfoTipData.push({label:infoTipFields[7], data:fileTypeName});
+      this.fileInfoTipData.push({label:infoTipFields[3], data: fileDateModified });
+      this.fileInfoTipData.push({ label: infoTipFields[6], data: fileSize });
     }
     else if(isFolder){
       if(isRoot && (standardFolders.includes(fileName) || fileName === capitalizedDesktop)){
-        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_TWO], data:fileDateModified });
+        this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified });
       }else if((isRoot && specialFolders[fileName])){
         this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:specialFolders[fileName]})
       }else{
-        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SEVEN], data:fileType });
-        this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_TWO], data:fileDateModified });
+        this.fileInfoTipData.push({label:infoTipFields[7], data:fileType });
+        this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified });
 
         const folderSizeInBytes = await this._fileService.getFolderSizeAsync(file.getCurrentPath);
         if (this.currentTooltipFileId !== localFileId) {
@@ -1999,19 +1979,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
         const folderSize = CommonFunctions.getReadableFileSizeValue(folderSizeInBytes);
         const folderUnit = CommonFunctions.getFileSizeUnit(folderSizeInBytes);
-
-        // if(this.fileInfoTipData.filter(x => x.label !== infoTipFields[Constants.NUM_SIX]))
-        //   this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:`${String(folderSize)} ${folderUnit}`});
-
-        const sizeLabelExists = this.fileInfoTipData.some(x => x.label === infoTipFields[Constants.NUM_SIX]);
+        const sizeLabelExists = this.fileInfoTipData.some(x => x.label === infoTipFields[6]);
         if (!sizeLabelExists) {
-          this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_SIX], data:`${String(folderSize)} ${folderUnit}`});
+          this.fileInfoTipData.push({label:infoTipFields[6], data:`${String(folderSize)} ${folderUnit}`});
         }
 
 
         if(this.isRecycleBinFolder){
           const originalLocation = this._fileService.getFolderOrigin(file.getCurrentPath);
-          this.fileInfoTipData.push({label:infoTipFields[Constants.NUM_EIGHT], data:originalLocation });
+          this.fileInfoTipData.push({label:infoTipFields[8], data:originalLocation });
         }
       }
     }
@@ -2019,8 +1995,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   getFileTypeName(fileExt:string):string{
     for(const map of Constants.FILE_EXTENSION_MAP){
-      if(map[Constants.NUM_ZERO] === fileExt) {
-         return map[Constants.NUM_ONE];
+      if(map[0] === fileExt) {
+         return map[1];
       }
     }
 
@@ -2089,7 +2065,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const lines = textValue.substring(0, cursorPosition).split(Constants.NEW_LINE);
       const currentLineNumber = lines.length;
 
-      if (currentLineNumber > Constants.NUM_ONE) {
+      if (currentLineNumber > 1) {
         const currentHeight = renameTxtBoxElmt.clientHeight;
         renameTxtBoxElmt.style.height = `${currentHeight * 2}px`;
       } else {
@@ -2102,9 +2078,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onInputChange():void{
     const SearchTxtBox = document.getElementById(`searchTxtBox-${this.processId}`) as HTMLInputElement;
     const charLength = SearchTxtBox.value.length
-    if( charLength > Constants.NUM_ZERO){
+    if( charLength > 0){
       this.isSearchBoxNotEmpty = true;
-    }else if( charLength <= Constants.NUM_ZERO){
+    }else if( charLength <= 0){
       this.isSearchBoxNotEmpty = false;
     }
 
@@ -2249,8 +2225,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   populateTraversalList():void{
     const tmpArray = this.directory.split(Constants.ROOT).filter(x => x !== Constants.EMPTY_STRING);
-    if(tmpArray.length === Constants.NUM_ZERO){ 
-      tmpArray[Constants.NUM_ZERO]= Constants.THISPC; 
+    if(tmpArray.length === 0){ 
+      tmpArray[0]= Constants.THISPC; 
     }
     else{ tmpArray.unshift(Constants.THISPC); }
 
@@ -2260,7 +2236,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }else  if(this.directory.includes('/Users')){
       this._directoryTraversalList = tmpArray;
     }else{
-      tmpArray[Constants.NUM_ONE] = Constants.OSDISK;
+      tmpArray[1] = Constants.OSDISK;
       this._directoryTraversalList = tmpArray;
     }
 
@@ -2303,9 +2279,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
     }else if(this.renameForm.dirty == false){
       this.renameFileTriggerCnt ++;
-      if(this.renameFileTriggerCnt > Constants.NUM_ONE){
+      if(this.renameFileTriggerCnt > 1){
         this.onRenameFileTxtBoxHide();
-        this.renameFileTriggerCnt = Constants.NUM_ZERO;
+        this.renameFileTriggerCnt = 0;
       }
     }
   }
@@ -2343,7 +2319,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
      const renameTxtBoxElmnt= document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLInputElement;
     const renameText = this.renameForm.value.renameInput as string;
 
-    if(renameText !== Constants.EMPTY_STRING && renameText.length !== Constants.NUM_ZERO && renameText !== this.currentIconName){
+    if(renameText !== Constants.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName){
 
       const renameResult = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText,  this.selectedFile.getIsFile);
       if(renameResult){
@@ -2363,7 +2339,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
 
     this.setBtnStyle(this.selectedElementId, false);
-    this.renameFileTriggerCnt = Constants.NUM_ZERO;
+    this.renameFileTriggerCnt = 0;
 
     if(figCapElmnt && renameFormElmnt && renameTxtBoxElmnt){
       figCapElmnt.style.display = 'block';
@@ -2392,7 +2368,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showSearchHistory():void{
     const searchHistoryElement = document.getElementById(`searchHistory-${this.processId}`) as HTMLElement;
     if(searchHistoryElement){
-      if(this.searchHistory.length > Constants.NUM_ZERO){
+      if(this.searchHistory.length > 0){
         searchHistoryElement.style.display = 'block';
       }
     }
@@ -2413,7 +2389,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(this.showPathHistory){
       if(pathHistoryElement){
-        if(this.pathHistory.length > Constants.NUM_ZERO){
+        if(this.pathHistory.length > 0){
           pathHistoryElement.style.display = 'block';
           pathHistoryElement.style.width = `${minus24}px`;
         }
@@ -2521,7 +2497,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onProcessSelected(rowIndex:number, btnId:number):void{
     this.selectedRow = rowIndex;
     
-    if(this.selectedRow !== Constants.MINUS_ONE){
+    if(this.selectedRow !== -1){
       this.isActive = true;
       this.isFocus = true;
     }
@@ -2583,49 +2559,49 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private showExtraLargeIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isExtraLargeIcon = true;
-    this.onMouseEnterTabLayoutBtn(ViewOptions.EXTRA_LARGE_ICON_VIEW, Constants.NUM_ONE);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.EXTRA_LARGE_ICON_VIEW, 1);
   }
 
   private showLargeIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isLargeIcon = true;
-    this.onMouseEnterTabLayoutBtn(ViewOptions.LARGE_ICON_VIEW, Constants.NUM_TWO);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.LARGE_ICON_VIEW, 2);
   }
 
   private showMediumIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isMediumIcon = true;
-    this.onMouseEnterTabLayoutBtn(ViewOptions.MEDIUM_ICON_VIEW, Constants.NUM_THREE);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.MEDIUM_ICON_VIEW, 3);
   }
 
   private showSmallIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isSmallIcon = true;
-    this.onMouseEnterTabLayoutBtn(ViewOptions.SMALL_ICON_VIEW, Constants.NUM_FOUR);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.SMALL_ICON_VIEW, 4);
   }
 
   private showListIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isListIcon = true;
-    this.onMouseEnterTabLayoutBtn(ViewOptions.LIST_VIEW, Constants.NUM_FIVE);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.LIST_VIEW, 5);
   }
 
   private showDetailsIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isDetailsIcon = true;
-    this.onMouseEnterTabLayoutBtn(ViewOptions.DETAILS_VIEW, Constants.NUM_SIX);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.DETAILS_VIEW, 6);
   }
 
   private showTilesIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isTitleIcon = true;
-    this.onMouseEnterTabLayoutBtn(ViewOptions.TILES_VIEW, Constants.NUM_SEVEN);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.TILES_VIEW, 7);
   }
 
   private showContentIconsM = (evt:MouseEvent):void=>{
     this.setViewFlagsToFalse();
     this.isContentIcon = true;
-    this.onMouseEnterTabLayoutBtn(ViewOptions.CONTENT_VIEW, Constants.NUM_EIGHT);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.CONTENT_VIEW, 8);
   }
 
   setViewFlagsToFalse():void{

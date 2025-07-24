@@ -20,7 +20,7 @@ export class SystemNotificationService implements BaseService{
     private _systemMessage = Constants.EMPTY_STRING;
     private _appIconNotificationStore:Map<number, string[]>; 
     private _isScreenLocked = true;
-    private _pwrDialogPID = Constants.NUM_ZERO;
+    private _pwrDialogPID = 0;
 
     showLockScreenNotify: Subject<void> = new Subject<void>();
     showDesktopNotify: Subject<void> = new Subject<void>();
@@ -39,7 +39,7 @@ export class SystemNotificationService implements BaseService{
 
     name = 'sys_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = Constants.NUM_ZERO;
+    processId = 0;
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
@@ -94,7 +94,7 @@ export class SystemNotificationService implements BaseService{
 
     getPwrDialogPid():number{
         const tmp = this._pwrDialogPID;
-        this._pwrDialogPID = Constants.NUM_ZERO;
+        this._pwrDialogPID = 0;
         return tmp;
     }
 

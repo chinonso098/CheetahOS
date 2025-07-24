@@ -30,7 +30,7 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   cheetahIcon = `${Constants.IMAGE_BASE_PATH}cheetah-midsprint-dash.jpg`;
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = 'CheetahOS';
   name = 'cheetah';
@@ -51,12 +51,13 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   }
 
   async ngOnInit(): Promise<void> {
-    await CommonFunctions.sleep((Constants.NUM_TEN * Constants.NUM_FIVE))
+    const delay = 50; //50ms
+    await CommonFunctions.sleep(delay)
     await this._audioService.play(this.defaultAudio);
   }
 
    async ngAfterViewInit(): Promise<void> {
-    await CommonFunctions.sleep((Constants.NUM_TEN))
+    await CommonFunctions.sleep((10))
     this.getInfoMessage();
   }
 
@@ -96,6 +97,7 @@ Other trademarks and logos are property of their respective owners
   }
 
    onMouseLeave():void{
+    const delay = 4000;
     const toolTipID = 'cheetahAboutTooltip';
     const aboutToolTip = document.getElementById(toolTipID) as HTMLElement;
 
@@ -106,7 +108,7 @@ Other trademarks and logos are property of their respective owners
         aboutToolTip.style.transition = 'opacity 0.75s ease 1';
       }
       this.isVisible = false;
-    }, Constants.NUM_ONE_THOUSAND * Constants.NUM_FOUR); // wait 4 sec
+    }, delay); // wait 4 sec
   }
 
   setCheetahWindowToFocus(pid:number):void{

@@ -20,8 +20,8 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
   standalone:false,
 })
 export class FileTreeViewComponent implements OnInit, OnChanges {
-  @Input() pid = Constants.NUM_ZERO;
-  @Input() level = Constants.NUM_ZERO;
+  @Input() pid = 0;
+  @Input() level = 0;
   @Input() showRoot = true;
   @Input() isHoverActive = false;
   @Input() levelSrcId = Constants.EMPTY_STRING;
@@ -43,10 +43,10 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   expandedViews:string[]= [];
   selectedElementId = Constants.EMPTY_STRING;
   isClicked = false;
-  processId = Constants.NUM_ZERO;
-  nextLevel = Constants.NUM_ZERO;
+  processId = 0;
+  nextLevel = 0;
   nextLevelSrcId = Constants.EMPTY_STRING;
-  negTen = Constants.MINUS_TEN;
+  negTen = 10;
   name = 'filetreeview';
 
   readonly Quick_ACCESS = 'Quick access';
@@ -93,7 +93,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     // console.log('fileTreeViewLvl:', this.level); //TBD
 
     this.processId = this.pid;
-    this.nextLevel = this.level + Constants.NUM_ONE;
+    this.nextLevel = this.level + 1;
     this.nextLevelSrcId = this.levelSrcId;
 
     // if(!this.isClicked)
@@ -109,7 +109,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   showChildren(name:string):void{
-    let ulId = Constants.EMPTY_STRING;   let imgId = Constants.EMPTY_STRING; const lvl = Constants.NUM_ZERO;
+    let ulId = Constants.EMPTY_STRING;   let imgId = Constants.EMPTY_STRING; const lvl = 0;
 
     if(name === 'tp-fileExplrTreeView'){
       ulId = `ul-${this.pid}-${lvl}`;
@@ -436,8 +436,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const y  = evt.clientY- this.rect.top;
     this.fileExplrTreeCntxtMenuStyle = {
       'position': 'absolute', 
-      'transform':`translate(${x - (Constants.NUM_FIFTEEN * Constants.NUM_SIX )}px, ${y - (Constants.NUM_FIFTEEN * Constants.NUM_SEVEN) - Constants.NUM_TEN}px)`,
-      'z-index': Constants.NUM_TWO,
+      'transform':`translate(${x - 90}px, ${y - 115}px)`,
+      'z-index': 2,
     }
 
     evt.preventDefault();

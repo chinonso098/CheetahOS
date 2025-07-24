@@ -28,7 +28,7 @@
 //   private _processHandlerService:ProcessHandlerService;
 //   private _runningProcessService:RunningProcessService;
 //   private _sessionManagmentService:SessionManagmentService;
-//   private _animationId = Constants.NUM_ZERO;
+//   private _animationId = 0;
 
 
 //   private _appState!:AppState;
@@ -99,13 +99,13 @@
 //   getParticle():{ update: () => void;  render: (ctx: CanvasRenderingContext2D) => void;} {
 //     const data:ParticleScene = this._particileScene;
 //     const angle = Math.random() * Math.PI * 2;
-//     const speed_erratic = Math.random() * Constants.NUM_TWO + Constants.NUM_ONE
+//     const speed_erratic = Math.random() * 2 + 1
 
 //     let x = data.width * Constants.NUM_HALF;
 //     let y = data.height * Constants.NUM_HALF;
 
-//     // const xVel = Math.random() * Constants.NUM_TWO - Constants.NUM_ONE;
-//     // const yVel = Math.random() * Constants.NUM_TWO - Constants.NUM_ONE;
+//     // const xVel = Math.random() * 2 - 1;
+//     // const yVel = Math.random() * 2 - 1;
 
 //     const vel = {
 //       x: Math.cos(angle) * speed_erratic,
@@ -123,7 +123,7 @@
 //     function render(ctx:CanvasRenderingContext2D):void{
 //       ctx.fillStyle = `rgba(225, 0, 225, ${alpha})`;
 //       ctx.beginPath();
-//       ctx.arc(x, y, Constants.NUM_FOUR, Constants.NUM_ZERO, Math.PI * Constants.NUM_TWO);
+//       ctx.arc(x, y, 4, 0, Math.PI * 2);
 //       ctx.fill();
 //     } 
 
@@ -158,11 +158,11 @@
 
 //     const ctx  = data.context;
 //     this._animationId = requestAnimationFrame(this.animate.bind(this));
-//     //ctx.clearRect(Constants.NUM_ZERO, Constants.NUM_ZERO, data.width, data.height);
+//     //ctx.clearRect(0, 0, data.width, data.height);
 
 //     //create trails
 //     ctx.fillStyle = 'rgba(0, 0, 0.01)';
-//     ctx.fillRect(Constants.NUM_ZERO, Constants.NUM_ZERO, data.width, data.height);
+//     ctx.fillRect(0, 0, data.width, data.height);
 
 //     this.emitter.update();
 //   }
@@ -229,7 +229,7 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
   private _processHandlerService:ProcessHandlerService;
   private _runningProcessService:RunningProcessService;
   private _sessionManagmentService:SessionManagmentService;
-  private _animationId = Constants.NUM_ZERO;
+  private _animationId = 0;
 
 
   private _appState!:AppState;
@@ -357,7 +357,7 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
     this._animationId = requestAnimationFrame(this.animate.bind(this));
 
     ctx.fillStyle = `rgba(${0},${0},${0},${0.05})`;
-    ctx.fillRect(Constants.NUM_ZERO, Constants.NUM_ZERO, data.width, data.height);
+    ctx.fillRect(0, 0, data.width, data.height);
 
     this.emitter.update(t * timeMult);
   }

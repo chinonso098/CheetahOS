@@ -72,7 +72,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}photoviewer.png`;
   isMaximizable = false;
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = 'PhotoViewer';
   private defaultPath = '/Users/Pictures/';
@@ -106,7 +106,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.retrievePastSessionData();
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
 
-    if(this.imageList.length > Constants.NUM_ZERO)
+    if(this.imageList.length > 0)
       this.images = signal([this.imageList[0]]);
     else{
       const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);

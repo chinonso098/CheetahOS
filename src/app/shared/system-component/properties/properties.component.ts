@@ -55,14 +55,14 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   circumference: number = 2 * Math.PI * 35; // Circumference for a circle with radius 45
   strokeDashoffset: number = this.circumference; // Initialize to full offset (all white)
 
-  processId = Constants.NUM_ZERO;
-  fileSize = Constants.NUM_ZERO;
-  fileSize2 = Constants.NUM_ZERO;
-  fileSizeOnDisk = Constants.NUM_ZERO;
-  fileSizeOnDisk2 = Constants.NUM_ZERO;
-  availableSpace = Constants.NUM_ZERO;
-  availableSpace2 = Constants.NUM_ZERO;
-  capacity2 = Constants.NUM_ZERO;
+  processId = 0;
+  fileSize = 0;
+  fileSize2 = 0;
+  fileSizeOnDisk = 0;
+  fileSizeOnDisk2 = 0;
+  availableSpace = 0;
+  availableSpace2 = 0;
+  capacity2 = 0;
 
   private hiddenName = Constants.EMPTY_STRING
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
@@ -130,7 +130,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   async getFolderContentDetails():Promise<void>{
     const count =  await this._fileService.countFolderItems(this.fileInput.getCurrentPath);
 
-    if(count === Constants.NUM_ZERO){
+    if(count === 0){
       this.contains = '0 Files, 0 Folders';
     }else{
       this.contains = await this._fileService.getFullCountOfFolderItems(this.fileInput.getCurrentPath);
@@ -143,7 +143,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
     const tmpFilesOnDisk = this.getRandomNumber(this.fileInput.getSizeInBytes);
     this.fileSizeOnDisk = CommonFunctions.getReadableFileSizeValue(tmpFilesOnDisk);
-    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed( Constants.NUM_ZERO));
+    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed( 0));
 
     this.fileSizeUnit = this.fileInput.getFileSizeUnit;
     this.fileDate = this.fileInput.getDateModified;
@@ -156,7 +156,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
     const tmpFilesOnDisk = this.getRandomNumber(folderSize);
     this.fileSizeOnDisk = CommonFunctions.getReadableFileSizeValue(tmpFilesOnDisk);
-    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(Constants.NUM_ZERO));
+    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(0));
 
     this.fileSizeUnit  = CommonFunctions.getFileSizeUnit(folderSize);
     this.fileDate = this.fileInput.getDateModified;
@@ -193,7 +193,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     const result = x + randomAddition;
 
     // Limit to 2 decimal places
-    return parseFloat(result.toFixed(Constants.NUM_TWO));
+    return parseFloat(result.toFixed(2));
   }
 
   setPropertyWindowToFocus(pid:number):void{

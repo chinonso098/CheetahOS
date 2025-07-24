@@ -24,8 +24,8 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
 
   toolTipText = Constants.EMPTY_STRING;
   gifPath = Constants.EMPTY_STRING;
-  randomSelection = Constants.MINUS_ONE;
-  selectedDuration = Constants.MINUS_ONE;
+  randomSelection = -1;
+  selectedDuration = -1;
   selectedAnimation = Constants.EMPTY_STRING;
 
   isToolTipVisible = false;

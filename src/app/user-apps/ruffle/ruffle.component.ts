@@ -45,7 +45,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}ruffle.png`;
   isMaximizable = false;
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.User;
   displayName = 'Ruffle-EM';
 
