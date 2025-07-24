@@ -320,12 +320,23 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       renameInput: Constants.EMPTY_STRING,
     });
 
+
+    this.loadDefaultBackground();
+    //this.loadParticleFLow();
+    this.getDesktopMenuData();
+    this.getTaskBarContextData();
+  }
+
+  loadDefaultBackground():void{
     this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
       this._vantaEffect = VANTA.WAVES(VantaDefaults.getDefaultWave(this.DEFAULT_COLOR));
     })
-    
-    this.getDesktopMenuData();
-    this.getTaskBarContextData();
+  }
+
+  loadParticleFLow():void{
+    this._scriptService.loadScript('particleFlow',  "osdrive/Program-Files/Backgrounds/ParticleFlow/index.js").then(() =>{
+        console.log('loaded particle flow')
+    })
   }
 
   async ngAfterViewInit():Promise<void>{
@@ -795,6 +806,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   loadOtherBackgrounds(i:number):void{
+    this.removeOldCanvas();
+
     const names:string[] = ["vanta-waves","vanta-rings","vanta-halo", "vanta-globe", "vanta-birds"]
     const bkgrounds:string[] = ["osdrive/Program-Files/Backgrounds/vanta.waves.min.js", "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
                                 "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
@@ -819,6 +832,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.colorChgIntervalId = setInterval(() => {
       this.transitionToNextColor();
     }, this.COLOR_CHANGE_DELAY);
+  }
+
+  removeOldCanvas():void{
+
+    const vantaDiv = document.getElementById('vanta') as HTMLElement;
+    if(!vantaDiv) return;
+
+    const canvas = vantaDiv.querySelector('canvas');
+    if (canvas){
+      vantaDiv.removeChild(canvas);
+    }
   }
 
   openTerminal():void{

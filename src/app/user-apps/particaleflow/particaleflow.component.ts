@@ -287,37 +287,6 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
     this._particileScene = {context:ctx, width:width, height:height};
   }
 
-  getParticle_no_curl():{ update: () => void;  render: (ctx: CanvasRenderingContext2D) => void;} {
-    const data:ParticleScene = this._particileScene;
-    const angle = Math.random() * Math.PI * 2;
-    const speed_erratic = Math.random() * Constants.NUM_TWO + Constants.NUM_ONE
-
-    let x = data.width * Constants.NUM_HALF;
-    let y = data.height * Constants.NUM_HALF;
-
-    const vel = {
-      x: Math.cos(angle) * speed_erratic,
-      y:Math.sin(angle) * speed_erratic
-    }
-
-    let alpha = 1.0;
-    const fadeRate = 0.003
-    function update(): void {
-      x += vel.x;
-      y += vel.y;
-      alpha -= fadeRate
-    }
-
-    function render(ctx:CanvasRenderingContext2D):void{
-      ctx.fillStyle = `rgba(225, 0, 225, ${alpha})`;
-      ctx.beginPath();
-      ctx.arc(x, y, Constants.NUM_FOUR, Constants.NUM_ZERO, Math.PI * Constants.NUM_TWO);
-      ctx.fill();
-    } 
-
-    return {update , render}
-  }
-
   getParticle(opts:any):{ update: (t:any) => void;  render: (ctx: CanvasRenderingContext2D) => void;} {
     const data:ParticleScene = this._particileScene;
     const { pos, vel, col, fadeRate } = opts;

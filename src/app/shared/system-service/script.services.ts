@@ -43,21 +43,21 @@ export class ScriptService implements BaseService {
       this._runningProcessService.addService(this.getServiceDetail());
   }
 
-  async loadScript(name: string, src: string): Promise<void> {
+  async loadScript(name: string, src: string, isModule = true): Promise<void> {
     if (!this.scripts[name]) {
       this.scripts[name] = { name, src };
-      return await this.loadExternalScript(this.scripts[name]);
+      return await this.loadExternalScript(this.scripts[name], isModule);
     }
     return Promise.resolve();
   }
 
-  async loadScripts(names:string[], srcs: string[]): Promise<void> {
+  async loadScripts(names:string[], srcs: string[], isModule = true): Promise<void> {
     const promises: any[] = [];
 
     for(let i = 0; i <= names.length - 1 ; i++){
         if (!this.scripts[names[i]]) {
             this.scripts[names[i]] = { name:names[i], src:srcs[i] };
-            const res =  await this.loadExternalScript(this.scripts[names[i]]);
+            const res =  await this.loadExternalScript(this.scripts[names[i]], isModule);
             promises.push(res) 
         }
     }
@@ -65,11 +65,16 @@ export class ScriptService implements BaseService {
     return Promise.resolve();
   }
 
-  private async loadExternalScript(script: Script): Promise<void> {
+  private async loadExternalScript(script: Script, isModule:boolean): Promise<void> {
     return new Promise((resolve, reject) => {
       const scriptElement = document.createElement('script');
       scriptElement.type = "text/javascript";
       scriptElement.src = script.src;
+
+      if(isModule){
+        scriptElement.type = 'module';
+      }
+
       scriptElement.async = true;
       scriptElement.onload = () => {
         resolve();

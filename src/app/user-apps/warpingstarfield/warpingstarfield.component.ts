@@ -15,7 +15,6 @@ import { AppState } from 'src/app/system-files/state/state.interface';
 declare const THREE: any; 
 
 
-
 @Component({
   selector: 'cos-warpingstarfield',
   templateUrl: './warpingstarfield.component.html',
