@@ -151,14 +151,16 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   ngAfterViewInit(): void {
+    const delay = 50;
     setTimeout(() => {
       this._chatService.sendUserOnlineAddInfoMessage(this.chatUserData);
 
       this.generateAndSendAppMessages(this.A_NEW_USER_HAS_JOINED_THE_CHAT_MSG);
-    }, 50);
+    }, delay);
   }
 
   ngOnDestroy():void{
+    const delay = 25;
     this._chatService.sendUserOfflineRemoveInfoMessage(this.chatUserData);
     this.generateAndSendAppMessages(this.USER_HAS_LEFT_THE_CHAT_MSG);
 
@@ -174,7 +176,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       const ssPid = this._socketService.processId;
       const socketProccess = this._runningProcessService.getProcess(ssPid);
       this._runningProcessService.removeProcess(socketProccess);
-    }, 25);
+    }, delay);
   }
 
   async updateChatData():Promise<void>{
