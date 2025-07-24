@@ -157,9 +157,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   globeBkgrnd:GLOBE =  {el:'#vanta'}
   birdBkgrnd:BIRDS =  {el:'#vanta'}
 
-  VANTAS:any = [this.waveBkgrnd, this.ringsBkgrnd,this.haloBkgrnd, this.globeBkgrnd, this.birdBkgrnd ];
+  VANTAS:any = [this.waveBkgrnd, this.ringsBkgrnd, this.haloBkgrnd, this.globeBkgrnd, this.birdBkgrnd ];
   private readonly MIN_NUMS_OF_DESKTOPS = Constants.NUM_ZERO;
-  private readonly MAX_NUMS_OF_DESKTOPS = this.VANTAS.length - Constants.NUM_ONE;
+
+  // i didn't subtract 1 because there is a particles flows bkgrnd in the names array
+  private readonly MAX_NUMS_OF_DESKTOPS = this.VANTAS.length;
   private readonly CLIPPY_INIT_DELAY = 300000; // 5mins
   private readonly COLOR_CHANGE_DELAY = 30000; // 30secs
   private readonly COLOR_TRANSITION_DURATION = 1500; // 1.5sec
@@ -322,7 +324,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
 
     this.loadDefaultBackground();
-    //this.loadParticleFLow();
     this.getDesktopMenuData();
     this.getTaskBarContextData();
   }
@@ -330,12 +331,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   loadDefaultBackground():void{
     this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
       this._vantaEffect = VANTA.WAVES(VantaDefaults.getDefaultWave(this.DEFAULT_COLOR));
-    })
-  }
-
-  loadParticleFLow():void{
-    this._scriptService.loadScript('particleFlow',  "osdrive/Program-Files/Backgrounds/ParticleFlow/index.js").then(() =>{
-        console.log('loaded particle flow')
     })
   }
 
@@ -808,13 +803,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   loadOtherBackgrounds(i:number):void{
     this.removeOldCanvas();
 
-    const names:string[] = ["vanta-waves","vanta-rings","vanta-halo", "vanta-globe", "vanta-birds"]
+    const names:string[] = ["vanta-waves","vanta-rings","vanta-halo", "vanta-globe", "vanta-birds", "particle-flow"];
     const bkgrounds:string[] = ["osdrive/Program-Files/Backgrounds/vanta.waves.min.js", "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
-                                "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
+                                "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js", "osdrive/Program-Files/Backgrounds/ParticleFlow/index.js"];
         
 
     this._scriptService.loadScript(names[i], bkgrounds[i]).then(() =>{
-      this.buildVantaEffect(i);
+
+      if(names[i] !== "particle-flow")
+        this.buildVantaEffect(i);
 
       if(names[i] === "vanta-waves"){
         this.startVantaWaveColorChange();
