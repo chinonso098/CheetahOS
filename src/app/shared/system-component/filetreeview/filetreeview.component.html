@@ -10,13 +10,18 @@
         <ul class="ul-file-tree-view" id="qa-FileExplrTreeView-main-{{pid}}">
             <li class="li-file-tree-view0" id="qa-li-{{pid}}">
                 <div class="tree-view-cntnr"  id="qa-fileExplrTreeView-{{pid}}" 
+                    (click)="navigateToSelectedPath($event, Quick_ACCESS, Quick_ACCESS)" 
                     (click)="onBtnClick($event, 'qa-fileExplrTreeView-'+pid)" 
                     (mouseenter)="onMouseEnter('qa-fileExplrTreeView-'+pid)" 
                     (mouseleave)="onMouseLeave('qa-fileExplrTreeView-'+pid)">
                     <div class="fxtreeview-head"> 
                         <figure class="fxtreeview-figure">  
                             <div class="fxtreeview-img" >
-                                <svg xmlns="http://www.w3.org/2000/svg" (click)="showChildren('qa-fileExplrTreeView')" (mouseenter)="colorChevron(negTen,negTen)" (mouseleave)="unColorChevron(negTen,negTen)" [style]="chevronBtnStyle"
+                                <svg xmlns="http://www.w3.org/2000/svg" 
+                                    (click)="showChildren('qa-fileExplrTreeView')" 
+                                    (mouseenter)="colorChevron(negTen, negTen)" 
+                                    (mouseleave)="unColorChevron(negTen, negTen)" [style]="chevronBtnStyle"
+
                                     height="10" width="10" 
                                     viewBox="0 0 512 512"  id="qa-fileExplrTreeView-img-{{pid}}">
                                     <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>

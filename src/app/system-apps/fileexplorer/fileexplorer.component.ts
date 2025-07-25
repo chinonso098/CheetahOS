@@ -5,7 +5,6 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
-import { FileEntry } from 'src/app/system-files/file.entry';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { Subscription } from 'rxjs';
@@ -116,6 +115,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileExplrCntxtCntr = 0;
   selectFilesSizeSum = Constants.EMPTY_STRING;
   selectFilesSizeUnit = Constants.EMPTY_STRING;
+
+  readonly ROOT = Constants.ROOT;
+  readonly THISPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
+  readonly QUICKACCESS = 'Quick access';
+  fileTreeNavToPath = Constants.EMPTY_STRING
 
   fileExplrCntxtMenuStyle:Record<string, unknown> = {};
   clearSearchStyle:Record<string, unknown> = {};
@@ -280,7 +284,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this.updateFileTreeAsync(p);
         this._fileService.removeEventOriginator();
       }
-    })
+    });
+
     this._goToDirectoryDataSub = this._fileService.goToDirectoryNotify.subscribe((p) => {
       const name = 'filetreeview-1';
       const uid = `${name}-${this.processId}`;
@@ -290,7 +295,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           this._fileService.removeEventOriginator();
         }
       }
-    })
+    });
 
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
     this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)});
@@ -658,6 +663,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async goUpAlevel():Promise<void>{
+    this.fileTreeNavToPath = Constants.EMPTY_STRING;
     if(this.upPathEntries.length > 0){
       const currentDirPath =  this.directory;
 
@@ -755,6 +761,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async goBackAlevel():Promise<void>{
+    this.fileTreeNavToPath = Constants.EMPTY_STRING;
     if(this.prevPathEntries.length > 0){
       const currentDirPath =  this.directory;
 
@@ -822,6 +829,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async goForwardAlevel():Promise<void>{
+    this.fileTreeNavToPath = Constants.EMPTY_STRING;
     if(this.nextPathEntries.length > 0){
 
       const currentDirPath =  this.directory;
@@ -1043,8 +1051,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async updateFileTreeAsync(path:string):Promise<void>{
-
-    console.log('updateFileTreeAsync called', path);
+    //console.log('updateFileTreeAsync called', path);
 
     if(!this.fileTreeHistory.includes(path)){
       const tmpFileTreeNode:FileTreeNode[] = [];
@@ -1106,6 +1113,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async runProcess(file:FileInfo):Promise<void>{
     console.log('fileexplorer-runProcess:',file)
+    this.fileTreeNavToPath = Constants.EMPTY_STRING;
 
     this.hideFileExplorerToolTip();
     await this._audioService.play(this.cheetahNavAudio);
@@ -1157,9 +1165,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async navigateToFolder(data:string[]):Promise<void>{
-    console.log('navigateToFolder:', data);
+    console.log('navigateToFolder:', data); 
     
-    const thisPC = 'This-PC';
+    const quickAccess = 'Quick access';
+    const thisPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
     const fileName = data[0];
     const path = data[1];
 
@@ -1171,7 +1180,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.isPrevBtnActive = true;
     this.displayName = fileName;
-    this.directory = (path === thisPC)? Constants.ROOT : path;
+    this.fileTreeNavToPath = path;
+    this.directory = (path === thisPC || path === quickAccess)? Constants.ROOT : path;
 
     if(path === `/Users/${fileName}`)
       this.icon = `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png`;
@@ -1181,7 +1191,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.prevPathEntries.push(this.directory);
     this.upPathEntries.push(this.directory);
 
-    if(this.recentPathEntries.indexOf(this.directory) == -1){
+    if(this.recentPathEntries.indexOf(this.directory) === -1){
       this.recentPathEntries.push(this.directory);
     }
 
@@ -1201,7 +1211,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(directory === `/Users/${fileName}` || directory === Constants.RECYCLE_BIN_PATH){
       this.navPathIcon = `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder_small.png`;
     }
-    else if((fileName === 'OSDisk (C:)' && directory === Constants.ROOT)){
+    else if((fileName === Constants.OSDISK && directory === Constants.ROOT)){
       this.navPathIcon = `${Constants.IMAGE_BASE_PATH}os_disk.png`;
     }
     else if((fileName === Constants.FILE_EXPLORER && directory === Constants.ROOT) || (fileName === Constants.EMPTY_STRING && directory === Constants.ROOT)){
@@ -1817,30 +1827,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     })
   }
 
-  onDragStart(evt:any):void{
-    // const rect =  this.myBounds.nativeElement.getBoundingClientRect(); 
-    // console.log('start:',evt.id )
+  onDragStart(evt:any):void{1 }
 
-
-    // const btnTransform = window.getComputedStyle(evt)
-    // const matrix = new DOMMatrixReadOnly(btnTransform.transform)
-
-    // const transform = {
-    //   translateX: matrix.m41,
-    //   translateY: matrix.m42
-    // }
-
-    // // const transX = matrix.m41;
-    // // const transY = matrix.m42;
-
-
-    // console.log('start-transform:', transform)
-    // console.log('rect:',rect )
-  }
-
-  onDragEnd(evt:any):void{
-1
-  }
+  onDragEnd(evt:any):void{1 }
 
   setFileExplorerWindowToFocus(pid: number):void {
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
