@@ -94,10 +94,11 @@ Other trademarks and logos are property of their respective owners
       aboutToolTip.style.transition = 'opacity 0.5s ease';
     }
     this.isVisible = true;
+    this.fancyLetterEffect();
   }
 
    onMouseLeave():void{
-    const delay = 4000;
+    const delay = 3000; // wait 3 sec
     const toolTipID = 'cheetahAboutTooltip';
     const aboutToolTip = document.getElementById(toolTipID) as HTMLElement;
 
@@ -108,7 +109,32 @@ Other trademarks and logos are property of their respective owners
         aboutToolTip.style.transition = 'opacity 0.75s ease 1';
       }
       this.isVisible = false;
-    }, delay); // wait 4 sec
+    }, delay); 
+  }
+
+  fancyLetterEffect():void{
+    const LETTERS = 'ABCDEFGHIJKLMNOPQRSTVUWXYZ0123456789';
+
+    const text = 'CheetahOS';
+    const delay = 50;
+    let counter = 0;
+    
+    const loop = setInterval(() => {
+      this.displayName = text.split(Constants.EMPTY_STRING)
+        .map((letter, index) => {
+          if(index < counter) {
+            return letter
+          }
+        
+          return LETTERS[Math.floor(Math.random() * LETTERS.length)]
+      }).join(Constants.EMPTY_STRING)
+      
+      counter += 0.5;
+      
+      if(counter > text.length) {
+        clearInterval(loop)
+      }
+    }, delay);
   }
 
   setCheetahWindowToFocus(pid:number):void{

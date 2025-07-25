@@ -800,6 +800,24 @@ span.mid-search-entry{
     column-gap: 5px;
 }
 
+/* Optional: Add headers for folders and files */
+.li-iconview-container::before {
+    content: attr(data-type);
+    font-weight: bold;
+    display: block;
+    margin-bottom: 4px;
+    color: #aaa;
+}
+
+/* Optional spacing between folder and file groups */
+#olElmnt-[yourProcessIdHere] {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 90px);
+    gap: 10px 5px;
+    padding: 5px 10px;
+}
+
+
 .li-iconview-container{
     display: flex;
     justify-content: center;

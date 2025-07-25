@@ -6,9 +6,9 @@
                     <img [src]="cheetahIcon" />
                 </div>
                 <div class="cheetah-div">
-                    <div class="os-name">
-                        <span>{{displayName}}</span>
-                        <span (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()" class="info-icon">&#9432;</span>
+                    <div class="os-name fancy">
+                        <div class="os-name-display">{{displayName}}</div>
+                        <div class="info-icon" (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()">&#9432;</div>
                     </div>
                 </div>
                 <div class="cheetah-div"><p class="os-version">{{version}}</p></div>

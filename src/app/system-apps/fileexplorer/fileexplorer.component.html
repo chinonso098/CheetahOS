@@ -1,5 +1,5 @@
 
-<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayName" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId" (click)="setFileExplorerWindowToFocus(this.processId)">
+<cos-window [runningProcessID]="processId" [processAppIcon]="icon" [processAppName]="displayName" [isMaximizable]="isMaximizable" [priorUId]="priorUId" (click)="setFileExplorerWindowToFocus(processId)">
     <div #fileExplorerRootContainer>
         <div class="fileexp-header-tab-container" >
             <div class="fileexp-header-tabs">
@@ -40,7 +40,7 @@
                       <div class="view-tab-pane-container">
                           <div class="tab-empty-line-container "></div>
                           <div class="view-tab-pane-top-cntnr">
-                              <div class="view-tab-pane-top1" (click) = "onNavPaneBtnClick()" (mouseenter) ="onNavPaneBtnEnter()" (mouseleave)="onNavPaneBtnLeave()"  id="navPaneIconCntnr-{{this.processId}}">
+                              <div class="view-tab-pane-top1" (click) = "onNavPaneBtnClick()" (mouseenter) ="onNavPaneBtnEnter()" (mouseleave)="onNavPaneBtnLeave()"  id="navPaneIconCntnr-{{processId}}">
                                   <div class="tab-empty-space"></div>
                                   <figure class="figure-tab-view-pane">
                                       <img class="img-tab-view-pane" [src]="'osdrive/Cheetah/System/Imageres/navigation_pane.png' | safeResourceUrl"/>
@@ -54,7 +54,7 @@
                               </div>
                               <div class="view-tab-pane-top2">
                                   <div class="tab-empty-space"></div>
-                                  <div class="tab-pane-top2-1" (click) = "onPrevPaneBtnClick()" (mouseenter) ="onPrevPaneBtnEnter()" (mouseleave)="onPrevPaneBtnLeave()"  id="prevPaneIconCntnr-{{this.processId}}">
+                                  <div class="tab-pane-top2-1" (click) = "onPrevPaneBtnClick()" (mouseenter) ="onPrevPaneBtnEnter()" (mouseleave)="onPrevPaneBtnLeave()"  id="prevPaneIconCntnr-{{processId}}">
                                       <span class="span-tab-pane-cntnr">
                                           <figure class="figure-tab-view-pane1">
                                               <img class="img-tab-view-pane1" [src]="'osdrive/Cheetah/System/Imageres/preview_pane.png' | safeResourceUrl"/>
@@ -63,7 +63,7 @@
                                       </span>
                                   </div>
                                   <div class="tab-empty-space1"></div>
-                                  <div class="tab-pane-top2-2" (click) = "onDetailPaneBtnClick()" (mouseenter) ="onDetailPaneBtnEnter()" (mouseleave)="onDetailPaneBtnLeave()"  id="detailsPaneIconCntnr-{{this.processId}}">
+                                  <div class="tab-pane-top2-2" (click) = "onDetailPaneBtnClick()" (mouseenter) ="onDetailPaneBtnEnter()" (mouseleave)="onDetailPaneBtnLeave()"  id="detailsPaneIconCntnr-{{processId}}">
                                       <span class="span-tab-pane-cntnr">
                                           <figure class="figure-tab-view-pane1">
                                               <img class="img-tab-view-pane1" [src]="'osdrive/Cheetah/System/Imageres/details_pane.png' | safeResourceUrl"/>
@@ -83,21 +83,21 @@
                           <div class="view-tab-layout-top-cntnr">
                               <div class="view-tab-layout-top1" (mouseenter)="colorTabLayoutContainer()" (mouseleave)="unColorTabLayoutContainer()" [style]="tabLayoutCntnrStyle">
                                   <div class="view-tab-layout-content">
-                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.extraLargeIconsView, 1)" (mouseleave)="onMouseLeaveTabLayoutBtn(1)" (click)="onClickTabLayoutBtn(this.extraLargeIconsView, 1)"  id="tabLayoutIconCntnr-{{this.processId}}-1">
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(extraLargeIconsView, 1)" (mouseleave)="onMouseLeaveTabLayoutBtn(1)" (click)="onClickTabLayoutBtn(extraLargeIconsView, 1)"  id="tabLayoutIconCntnr-{{processId}}-1">
                                           <figure class="figure-tab-view-layout">
                                               <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/extra_large_image.png' | safeResourceUrl"/>
                                           </figure>
                                           <div class="div-tab-view-layout">Extra large icons</div>
                                       </span>
           
-                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.largeIconsView, 2)" (mouseleave)="onMouseLeaveTabLayoutBtn(2)" (click)="onClickTabLayoutBtn(this.largeIconsView, 2)" id="tabLayoutIconCntnr-{{this.processId}}-2">
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(largeIconsView, 2)" (mouseleave)="onMouseLeaveTabLayoutBtn(2)" (click)="onClickTabLayoutBtn(largeIconsView, 2)" id="tabLayoutIconCntnr-{{processId}}-2">
                                           <figure class="figure-tab-view-layout">
                                               <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/large_image.png' | safeResourceUrl"/>
                                           </figure>
                                           <div class="div-tab-view-layout">Large icons</div>
                                       </span>
           
-                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.mediumIconsView, 3)" (mouseleave)="onMouseLeaveTabLayoutBtn(3)" (click)="onClickTabLayoutBtn(this.mediumIconsView, 3)" id="tabLayoutIconCntnr-{{this.processId}}-3">
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(mediumIconsView, 3)" (mouseleave)="onMouseLeaveTabLayoutBtn(3)" (click)="onClickTabLayoutBtn(mediumIconsView, 3)" id="tabLayoutIconCntnr-{{processId}}-3">
                                           <figure class="figure-tab-view-layout">
                                               <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/medium_icons_view.png' | safeResourceUrl"/>
                                           </figure>
@@ -105,21 +105,21 @@
                                       </span>
                                   </div>
                                   <div class="view-tab-layout-content1">
-                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.smallIconsView, 4)" (mouseleave)="onMouseLeaveTabLayoutBtn(4)" (click)="onClickTabLayoutBtn(this.smallIconsView, 4)"  id="tabLayoutIconCntnr-{{this.processId}}-4">
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(smallIconsView, 4)" (mouseleave)="onMouseLeaveTabLayoutBtn(4)" (click)="onClickTabLayoutBtn(smallIconsView, 4)"  id="tabLayoutIconCntnr-{{processId}}-4">
                                           <figure class="figure-tab-view-layout">
                                               <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/small_icons_view.png' | safeResourceUrl"/>
                                           </figure>
                                           <div class="div-tab-view-layout">Small icons</div>
                                       </span>
           
-                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.listView, 5)" (mouseleave)="onMouseLeaveTabLayoutBtn(5)" (click)="onClickTabLayoutBtn(this.listView, 5)" id="tabLayoutIconCntnr-{{this.processId}}-5">
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(listView, 5)" (mouseleave)="onMouseLeaveTabLayoutBtn(5)" (click)="onClickTabLayoutBtn(listView, 5)" id="tabLayoutIconCntnr-{{processId}}-5">
                                           <figure class="figure-tab-view-layout">
                                               <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/list_of_thumbnails_view.png' | safeResourceUrl"/>
                                           </figure>
                                           <div class="div-tab-view-layout">List</div>
                                       </span>
           
-                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.detailsView, 6)" (mouseleave)="onMouseLeaveTabLayoutBtn(6)" (click)="onClickTabLayoutBtn(this.detailsView, 6)" id="tabLayoutIconCntnr-{{this.processId}}-6">
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(detailsView, 6)" (mouseleave)="onMouseLeaveTabLayoutBtn(6)" (click)="onClickTabLayoutBtn(detailsView, 6)" id="tabLayoutIconCntnr-{{processId}}-6">
                                           <figure class="figure-tab-view-layout">
                                               <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/details_view.png' | safeResourceUrl"/>
                                           </figure>
@@ -127,14 +127,14 @@
                                       </span>
                                   </div>
                                   <div class="view-tab-layout-content2">
-                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.tilesView, 7)" (mouseleave)="onMouseLeaveTabLayoutBtn(7)" (click)="onClickTabLayoutBtn(this.tilesView, 7)" id="tabLayoutIconCntnr-{{this.processId}}-7">
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(tilesView, 7)" (mouseleave)="onMouseLeaveTabLayoutBtn(7)" (click)="onClickTabLayoutBtn(tilesView, 7)" id="tabLayoutIconCntnr-{{processId}}-7">
                                           <figure class="figure-tab-view-layout">
                                               <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/tiles_view.png' | safeResourceUrl"/>
                                           </figure>
                                           <div class="div-tab-view-layout">Tiles</div>
                                       </span>
           
-                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(this.contentView, 8)" (mouseleave)="onMouseLeaveTabLayoutBtn(8)" (click)="onClickTabLayoutBtn(this.contentView, 8)" id="tabLayoutIconCntnr-{{this.processId}}-8">
+                                      <span class="span-tab-layout-cntnr" (mouseenter)="onMouseEnterTabLayoutBtn(contentView, 8)" (mouseleave)="onMouseLeaveTabLayoutBtn(8)" (click)="onClickTabLayoutBtn(contentView, 8)" id="tabLayoutIconCntnr-{{processId}}-8">
                                           <figure class="figure-tab-view-layout">
                                               <img class="img-tab-view-layout" [src]="'osdrive/Cheetah/System/Imageres/content_view.png' | safeResourceUrl"/>
                                           </figure>
@@ -197,12 +197,12 @@
                 </figure>
             </div>
     
-            <div class="header-nav-path-container" id="hdrNavPathCntnr-{{this.processId}}">
+            <div class="header-nav-path-container" id="hdrNavPathCntnr-{{processId}}">
                 <form [formGroup]="pathForm"  (ngSubmit)="isFormDirty()">
                     <div class="nav-path-container" (click)="showPathTextBox()"> <!--(focusout)="hidePathTextBox()"-->
                         <span class="span head-nav-path-cntnr"><figure class="figure-nav-path-cntnr"><img class="img-nav-path-cntnr" [src]="navPathIcon | safeResourceUrl"/></figure></span>
     
-                        <div class="nav-path-gen-main-container" id="pathIconBox-{{this.processId}}" >
+                        <div class="nav-path-gen-main-container" id="pathIconBox-{{processId}}" >
                             <span class="span head-nav-path-gen-cntnr0"><figure class="figure-nav-path-gen-cntnr"><img class="img-nav-path-gen-cntnr" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/></figure> </span>
                             <div class="nav-path-gen-container" *ngFor="let dirTraversal of _directoryTraversalList let j = index">
                                 <span *ngIf="j > 0" class="span head-nav-path-gen-cntnr">
@@ -214,8 +214,8 @@
                             </div>
                         </div>
     
-                        <div class="nav-path-gen-main-container" id="pathTxtBoxCntr-{{this.processId}}">
-                            <input class="path-input" type="text" placeholder="{{this.directory}}" formControlName="pathInput"  autofocus spellcheck="false" id="pathTxtBox-{{this.processId}}" />
+                        <div class="nav-path-gen-main-container" id="pathTxtBoxCntr-{{processId}}">
+                            <input class="path-input" type="text" placeholder="{{directory}}" formControlName="pathInput"  autofocus spellcheck="false" id="pathTxtBox-{{processId}}" />
                         </div> 
                    
                         <span class="span head-nav-path-cntnr1" [class.active]="showPathHistory" (click)="hideshowPathHistory()">
@@ -231,7 +231,7 @@
                     </div>
                 </form>
     
-                <div class="nav-path-containter1" id="pathHistory-{{this.processId}}">
+                <div class="nav-path-containter1" id="pathHistory-{{processId}}">
                     <div class="nav-path-entry-containter" *ngFor="let entry1 of pathHistory; let k = index">
                         <span class="span"><figure class="figure-nav-path-entry"><img class="img-nav-path-entry" [src]="'osdrive/Cheetah/System/Imageres/white_history_32.png' | safeResourceUrl"/></figure></span>
                         <span class="span mid-nav-path-entry">{{entry1}}</span>
@@ -243,13 +243,13 @@
                 <form [formGroup]="searchForm"  (ngSubmit)="isFormDirty()">
                     <div class="search-container">
                         <span class="span head-search-cntnr"><figure class="figure-search-cntnr"><img class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/search_32.png' | safeResourceUrl"/></figure></span>
-                        <input class="search-input" type="text" placeholder="Search OSDisk(C:)" formControlName="searchInput" (focus)="showSearchHistory()"  (focusout)="hideSearchHistory()" (input)="onInputChange()"  spellcheck="false" id="searchTxtBox-{{this.processId}}"/>
+                        <input class="search-input" type="text" placeholder="Search OSDisk(C:)" formControlName="searchInput" (focus)="showSearchHistory()"  (focusout)="hideSearchHistory()" (input)="onInputChange()"  spellcheck="false" id="searchTxtBox-{{processId}}"/>
                         <span class="span head-search-cntnr1" (click)="onClearSearchTextBox()" [style]="clearSearchStyle" (mouseenter)="handleClearSearchIconHighlights()" (mouseleave)="handleClearSearchIconHighlights()"><figure class="figure-search-cntnr"><img *ngIf="isSearchBoxNotEmpty" class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/cross_mark_32.png' | safeResourceUrl"/></figure></span>
                         <span class="span head-search-cntnr2" [class.active]="isSearchBoxNotEmpty" (click)="onSearch()" [style]="searchStyle" (mouseenter)="handleSearchIconHighlights()" (mouseleave)="handleSearchIconHighlights()"><figure class="figure-search-cntnr"><img *ngIf="isSearchBoxNotEmpty" class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/nav_right_32.png' | safeResourceUrl"/></figure></span>
                     </div>
                 </form>
     
-                <div class="search-history-containter" id="searchHistory-{{this.processId}}">
+                <div class="search-history-containter" id="searchHistory-{{processId}}">
                     <div class="search-entry-containter" *ngFor="let entry of searchHistory; let i = index">
                         <span class="span"><figure class="figure-search-entry"><img class="img-search-entry" [src]="'osdrive/Cheetah/System/Imageres/white_history_32.png' | safeResourceUrl"/></figure></span>
                         <span class="span mid-search-entry">{{entry}}</span>
@@ -261,9 +261,9 @@
         <div class="fileexp-main-container" #fileExplorerMainContainer>
             <div class="fileexp-content-container" (click)="onFileExplrCntntClick()">
                 <ng-container *ngIf="showNavigationPane">
-                    <div class="navigation-content-container"  (mouseenter)="showExpandTreeIconBtn()" (mouseleave)="hideExpandTreeIconBtn()" id="navExplorerContainer-{{this.processId}}" #navExplorerContainer>
+                    <div class="navigation-content-container"  (mouseenter)="showExpandTreeIconBtn()" (mouseleave)="hideExpandTreeIconBtn()" id="navExplorerContainer-{{processId}}" #navExplorerContainer>
                         <div style="height: 10px; width: 100%;"></div>
-                        <cos-filetreeview [pid] ="this.processId" [isHoverActive]="showExpandTreeIcon" [treeData]="fileTreeNode"></cos-filetreeview>
+                        <cos-filetreeview [pid] ="processId" [isHoverActive]="showExpandTreeIcon" [treeData]="fileTreeNode"></cos-filetreeview>
                     </div>
                 </ng-container>
 
@@ -285,7 +285,7 @@
                         (mousedown)="activateMultiSelect($event)"
                         (mouseup)="deActivateMultiSelect()"
                         (mousemove)="updateDivWithAndSize($event)" 
-                       id="olElmnt-{{this.processId}}"> 
+                       id="olElmnt-{{processId}}"> 
 
                         <ng-container [ngTemplateOutlet]="currentViewOption === smallIconsView ? iconsView :
                                                           currentViewOption === mediumIconsView ? iconsView :
@@ -296,50 +296,101 @@
                                                           currentViewOption === contentView ? contentView0 : tilesView0">
                         </ng-container>
         
-                        <ng-template #iconsView>
-                            <li class="li-iconview-container" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}" >
+                        <ng-template #iconsViewOriginal>
+                            <li class="li-iconview-container" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{processId}}" >
                                 <div class="iconview-button" role="button" tabindex="0" (dblclick)="runProcess(file)"
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
                                     (click)="onBtnClick($event, i)" 
-                                    id="btnElmnt-{{this.processId}}-{{i}}">
+                                    id="btnElmnt-{{processId}}-{{i}}">
 
-                                    <div class="iconview-img-container"  id="figElmnt-{{this.processId}}-{{i}}">
+                                    <div class="iconview-img-container"  id="figElmnt-{{processId}}-{{i}}">
                                         <div class="iconview-img-wrapper">
-                                            <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                            <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
                                         </div>
                                         <div class="iconview-shortcut-wrapper" *ngIf="file.getIsShortCut">
-                                            <img class="iconview-shortcut-img" [src]="shortCutImg"  id="shortCut-{{this.processId}}{{i}}"/>
+                                            <img class="iconview-shortcut-img" [src]="shortCutImg"  id="shortCut-{{processId}}{{i}}"/>
                                         </div>
                                     </div>
                                     <div class="iconview-caption-container">
-                                        <p class="iconview-caption"  id="figCapElmnt-{{this.processId}}-{{i}}">
+                                        <p class="iconview-caption"  id="figCapElmnt-{{processId}}-{{i}}">
                                             {{file.getFileName}} 
                                         </p>
                                     </div> 
                                 </div>
                             </li>
                         </ng-template>
+
+                        <ng-template #iconsView>
+                        <!-- Folder section -->
+                            <li class="li-iconview-container" *ngFor="let file of fileExplrFiles; let i = index"  id="ilElmnt-folder-{{processId}}-{{i}}">
+                                <div 
+                                *ngIf="!file.getIsFile" class="iconview-button" role="button" tabindex="0" (dblclick)="runProcess(file)"
+                                    (mouseenter)="onMouseEnter($event, file, i)" 
+                                    (mouseleave)="onMouseLeave(i)"
+                                    (contextmenu)="onShowIconContextMenu($event, file, i)" 
+                                    (click)="onBtnClick($event, i)" 
+                                    id="btnElmnt-folder-{{processId}}-{{i}}">
+
+                                    <div class="iconview-img-container" id="figElmnt-folder-{{processId}}-{{i}}">
+                                        <div class="iconview-img-wrapper">
+                                            <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-folder-{{processId}}-{{i}}" />
+                                        </div>
+                                    </div>
+                                    <div class="iconview-caption-container">
+                                        <p class="iconview-caption" id="figCapElmnt-folder-{{processId}}-{{i}}">
+                                            {{file.getFileName}} 
+                                        </p>
+                                    </div> 
+                                </div>
+                            </li>
+
+                            <!-- File section -->
+                            <li class="li-iconview-container" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-file-{{processId}}-{{i}}">
+                                <div *ngIf="file.getIsFile"  class="iconview-button" role="button" tabindex="0" (dblclick)="runProcess(file)"
+                                    (mouseenter)="onMouseEnter($event, file, i)" 
+                                    (mouseleave)="onMouseLeave(i)"
+                                    (contextmenu)="onShowIconContextMenu($event, file, i)" 
+                                    (click)="onBtnClick($event, i)" 
+                                    id="btnElmnt-file-{{processId}}-{{i}}">
+
+                                    <div class="iconview-img-container" id="figElmnt-file-{{processId}}-{{i}}">
+                                        <div class="iconview-img-wrapper">
+                                            <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-file-{{processId}}-{{i}}" />
+                                        </div>
+                                        <div class="iconview-shortcut-wrapper" *ngIf="file.getIsShortCut">
+                                            <img class="iconview-shortcut-img" [src]="shortCutImg" id="shortCut-file-{{processId}}-{{i}}" />
+                                        </div>
+                                    </div>
+                                    <div class="iconview-caption-container">
+                                        <p class="iconview-caption" id="figCapElmnt-file-{{processId}}-{{i}}">
+                                            {{file.getFileName}} 
+                                        </p>
+                                    </div> 
+                                </div>
+                            </li>
+                        </ng-template>
+
     
                         <ng-template #listView0>
-                            <li class="li-listview" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}">
+                            <li class="li-listview" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{processId}}">
                                 <div class="button-listview" role="button" tabindex="0" 
                                     (dblclick)="runProcess(file)" 
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
-                                    (click)="onBtnClick($event, i)"  id="btnElmnt-{{this.processId}}-{{i}}">
+                                    (click)="onBtnClick($event, i)"  id="btnElmnt-{{processId}}-{{i}}">
     
                                     <div class="div-listview">
                                         <div class="div-listview-figure-section">
                                             <figure class="figure-listview">
-                                                <img class="img-listview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                                <img class="img-listview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
                                             </figure>
                                         </div>
     
                                         <div class="div-listview-caption-section">
-                                            <figcaption class="figcaption-listview" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                            <figcaption class="figcaption-listview" id="figCapElmnt-{{processId}}-{{i}}">
                                                 <p class="figcaption-listview-p"> {{file.getFileName}} </p>
                                             </figcaption>
                                         </div>
@@ -367,8 +418,8 @@
                                         <!-- <th><p class="detailsview-ptag">Opening app</p></th> -->
                                     </tr>
                                 </thead>
-                                <tbody id="tblBody-{{this.processId}}">
-                                    <tr class="li-detailsview-container" *ngFor='let file of fileExplrFiles; let i = index' (click)="onProcessSelected(i,i)" [class.active]="i === selectedRow"  id="trElmnt-{{this.processId}}-{{i}}">
+                                <tbody id="tblBody-{{processId}}">
+                                    <tr class="li-detailsview-container" *ngFor='let file of fileExplrFiles; let i = index' (click)="onProcessSelected(i,i)" [class.active]="i === selectedRow"  id="trElmnt-{{processId}}-{{i}}">
                                         <td
                                             (mouseenter)="onMouseEnter($event, file, i)" 
                                             (mouseleave)="onMouseLeave(i)"
@@ -377,11 +428,11 @@
 
                                             <div class="div-detailsview-figure-section">
                                                 <figure class="figure-detailsview">
-                                                    <img class="img-detailsview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                                    <img class="img-detailsview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
                                                 </figure>
                                             </div>
                                             <div class="div-detailsview-caption-section">
-                                                <figcaption class="figcaption-detailsview" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                                <figcaption class="figcaption-detailsview" id="figCapElmnt-{{processId}}-{{i}}">
                                                     <p class="figcaption-detailsview-p" id="fileName-{{i}}"> {{file.getFileName}} </p>
                                                 </figcaption>
                                             </div>
@@ -411,15 +462,15 @@
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
-                                    (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
+                                    (click)="onBtnClick($event, i)" id="btnElmnt-{{processId}}-{{i}}">
                                     <div class="div-contentview">
-                                        <figure class="figure-contentview" id="figElmnt-{{this.processId}}-{{i}}">
-                                            <img class="img-contentview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                        <figure class="figure-contentview" id="figElmnt-{{processId}}-{{i}}">
+                                            <img class="img-contentview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
                                         </figure>
     
                                         <div class="div-contentview-info">
                                             <figcaption class="figcaption-contentview" >
-                                                <p class="figcaption-contentview-p" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                                <p class="figcaption-contentview-p" id="figCapElmnt-{{processId}}-{{i}}">
                                                     {{file.getFileName}} 
                                                 </p>
                                                 <p class="figcaption-contentview-p" *ngIf="file.getIsFile">
@@ -450,14 +501,14 @@
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
-                                    (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
+                                    (click)="onBtnClick($event, i)" id="btnElmnt-{{processId}}-{{i}}">
                                     <div class="div-tilesview">
                                         <figure class="figure-tilesview">
-                                            <img class="img-tilesview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                            <img class="img-tilesview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
                                         </figure>
     
                                         <div class="div-figcaption-tilesview-container">
-                                            <div class="div-figcaption-tilesview" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                            <div class="div-figcaption-tilesview" id="figCapElmnt-{{processId}}-{{i}}">
                                                 <p  class="figcaption-tilesview-p"> {{file.getFileName}}</p>
                                             </div>
 
@@ -476,7 +527,7 @@
                         <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
                         <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
     
-                        <div class="fx-information-tip-container" id="fx-information-tip-{{this.processId}}">
+                        <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
                             <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
                                 <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
                             </div>
@@ -495,7 +546,7 @@
                         (mousedown)="activateMultiSelect($event)"
                         (mouseup)="deActivateMultiSelect()"
                         (mousemove)="updateDivWithAndSize($event)" 
-                       id="olElmnt-{{this.processId}}"> 
+                       id="olElmnt-{{processId}}"> 
 
                         <ng-container [ngTemplateOutlet]="currentViewOption === smallIconsView ? iconsView :
                                                           currentViewOption === mediumIconsView ? iconsView :
@@ -507,34 +558,34 @@
                         </ng-container>
         
                         <ng-template #iconsView>
-                            <li class="li-iconview-container" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}" >
+                            <li class="li-iconview-container" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{processId}}" >
                                 <div class="iconview-button" role="button" tabindex="0" (dblclick)="runProcess(file)"
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
                                     (click)="onBtnClick($event, i)" 
-                                    id="btnElmnt-{{this.processId}}-{{i}}">
+                                    id="btnElmnt-{{processId}}-{{i}}">
 
-                                    <div class="iconview-img-container"  id="figElmnt-{{this.processId}}-{{i}}">
+                                    <div class="iconview-img-container"  id="figElmnt-{{processId}}-{{i}}">
                                         <div class="iconview-img-wrapper">
-                                            <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                            <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
                                         </div>
                                         <div class="iconview-shortcut-wrapper" *ngIf="file.getIsShortCut">
-                                            <img class="iconview-shortcut-img" [src]="shortCutImg"  id="shortCut-{{this.processId}}{{i}}"/>
+                                            <img class="iconview-shortcut-img" [src]="shortCutImg"  id="shortCut-{{processId}}{{i}}"/>
                                         </div>
                                     </div>
                                     <div class="iconview-caption-container">
-                                        <p class="iconview-caption"  id="figCapElmnt-{{this.processId}}-{{i}}">
+                                        <p class="iconview-caption"  id="figCapElmnt-{{processId}}-{{i}}">
                                             {{file.getFileName}} 
                                         </p>
                                         <form [formGroup]="renameForm" 
-                                            id="renameForm-{{this.processId}}-{{i}}" 
+                                            id="renameForm-{{processId}}-{{i}}" 
                                             class="iconview-rename-form" (ngSubmit)="isFormDirty()">
                                             <textarea class="iconview-rename-textbox" 
                                                 formControlName="renameInput"  
                                                 (keydown)="onKeyPress($event)" 
                                                 autofocus spellcheck="false" 
-                                                id="renameTxtBox-{{this.processId}}-{{i}}">
+                                                id="renameTxtBox-{{processId}}-{{i}}">
                                             </textarea>
                                         </form>
                                     </div> 
@@ -543,33 +594,33 @@
                         </ng-template>
     
                         <ng-template #listView0>
-                            <li class="li-listview" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{this.processId}}">
+                            <li class="li-listview" *ngFor="let file of fileExplrFiles; let i = index" id="ilElmnt-{{processId}}">
                                 <div class="button-listview" role="button" tabindex="0" 
                                     (dblclick)="runProcess(file)" 
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
-                                    (click)="onBtnClick($event, i)"  id="btnElmnt-{{this.processId}}-{{i}}">
+                                    (click)="onBtnClick($event, i)"  id="btnElmnt-{{processId}}-{{i}}">
     
                                     <div class="div-listview">
                                         <div class="div-listview-figure-section">
                                             <figure class="figure-listview">
-                                                <img class="img-listview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                                <img class="img-listview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
                                             </figure>
                                         </div>
     
                                         <div class="div-listview-caption-section">
-                                            <figcaption class="figcaption-listview" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                            <figcaption class="figcaption-listview" id="figCapElmnt-{{processId}}-{{i}}">
                                                 <p class="figcaption-listview-p"> {{file.getFileName}} </p>
                                             </figcaption>
-                                            <form [formGroup]="renameForm" class="listview-rename-form"  id="renameForm-{{this.processId}}-{{i}}"
+                                            <form [formGroup]="renameForm" class="listview-rename-form"  id="renameForm-{{processId}}-{{i}}"
                                                 (ngSubmit)="isFormDirty()">
                                                 <input type="text" 
                                                     formControlName="renameInput"  
                                                     class="listview-rename-textbox"
                                                     (keydown)="onKeyPress($event)" 
                                                     autofocus spellcheck="false" 
-                                                    id="renameTxtBox-{{this.processId}}-{{i}}"
+                                                    id="renameTxtBox-{{processId}}-{{i}}"
                                                 />
                                             </form>
                                         </div>
@@ -597,8 +648,8 @@
                                         <!-- <th><p class="detailsview-ptag">Opening app</p></th> -->
                                     </tr>
                                 </thead>
-                                <tbody id="tblBody-{{this.processId}}">
-                                    <tr class="li-detailsview-container" *ngFor='let file of fileExplrFiles; let i = index' (click)="onProcessSelected(i,i)" [class.active]="i === selectedRow"  id="trElmnt-{{this.processId}}-{{i}}">
+                                <tbody id="tblBody-{{processId}}">
+                                    <tr class="li-detailsview-container" *ngFor='let file of fileExplrFiles; let i = index' (click)="onProcessSelected(i,i)" [class.active]="i === selectedRow"  id="trElmnt-{{processId}}-{{i}}">
                                         <td
                                             (mouseenter)="onMouseEnter($event, file, i)" 
                                             (mouseleave)="onMouseLeave(i)"
@@ -607,21 +658,21 @@
 
                                             <div class="div-detailsview-figure-section">
                                                 <figure class="figure-detailsview">
-                                                    <img class="img-detailsview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                                    <img class="img-detailsview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
                                                 </figure>
                                             </div>
                                             <div class="div-detailsview-caption-section">
-                                                <figcaption class="figcaption-detailsview" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                                <figcaption class="figcaption-detailsview" id="figCapElmnt-{{processId}}-{{i}}">
                                                     <p class="figcaption-detailsview-p" id="fileName-{{i}}"> {{file.getFileName}} </p>
                                                 </figcaption>
-                                                <form [formGroup]="renameForm" class="detailsview-rename-form"  id="renameForm-{{this.processId}}-{{i}}"
+                                                <form [formGroup]="renameForm" class="detailsview-rename-form"  id="renameForm-{{processId}}-{{i}}"
                                                     (ngSubmit)="isFormDirty()">
                                                     <input type="text" 
                                                         formControlName="renameInput"  
                                                         class="detailsview-rename-textbox"
                                                         (keydown)="onKeyPress($event)" 
                                                         autofocus spellcheck="false" 
-                                                        id="renameTxtBox-{{this.processId}}-{{i}}"
+                                                        id="renameTxtBox-{{processId}}-{{i}}"
                                                     />
                                                 </form>
                                             </div>
@@ -651,24 +702,24 @@
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
-                                    (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
+                                    (click)="onBtnClick($event, i)" id="btnElmnt-{{processId}}-{{i}}">
                                     <div class="div-contentview">
-                                        <figure class="figure-contentview" id="figElmnt-{{this.processId}}-{{i}}">
-                                            <img class="img-contentview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                        <figure class="figure-contentview" id="figElmnt-{{processId}}-{{i}}">
+                                            <img class="img-contentview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
                                         </figure>
     
                                         <div class="div-contentview-info">
                                             <figcaption class="figcaption-contentview" >
-                                                <p class="figcaption-contentview-p" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                                <p class="figcaption-contentview-p" id="figCapElmnt-{{processId}}-{{i}}">
                                                     {{file.getFileName}} 
                                                 </p>
                                                 <form [formGroup]="renameForm" class="contentview-rename-form"  
-                                                    (ngSubmit)="isFormDirty()"  id="renameForm-{{this.processId}}-{{i}}">
+                                                    (ngSubmit)="isFormDirty()"  id="renameForm-{{processId}}-{{i}}">
                                                     <input type="text" formControlName="renameInput"  
                                                         class="contentview-rename-textbox"
                                                         (keydown)="onKeyPress($event)" 
                                                         autofocus 
-                                                        spellcheck="false" id="renameTxtBox-{{this.processId}}-{{i}}"
+                                                        spellcheck="false" id="renameTxtBox-{{processId}}-{{i}}"
                                                     />
                                                 </form>
                                                 <p class="figcaption-contentview-p" *ngIf="file.getIsFile">
@@ -699,27 +750,27 @@
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
-                                    (click)="onBtnClick($event, i)" id="btnElmnt-{{this.processId}}-{{i}}">
+                                    (click)="onBtnClick($event, i)" id="btnElmnt-{{processId}}-{{i}}">
                                     <div class="div-tilesview">
                                         <figure class="figure-tilesview">
-                                            <img class="img-tilesview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{this.processId}}-{{i}}"/>
+                                            <img class="img-tilesview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
                                         </figure>
     
                                         <div class="div-figcaption-tilesview-container">
-                                            <div class="div-figcaption-tilesview" id="figCapElmnt-{{this.processId}}-{{i}}">
+                                            <div class="div-figcaption-tilesview" id="figCapElmnt-{{processId}}-{{i}}">
                                                 <p  class="figcaption-tilesview-p"> {{file.getFileName}}</p>
                                             </div>
 
                                             <form [formGroup]="renameForm"   
                                                 class="tilesview-rename-form"
                                                 (ngSubmit)="isFormDirty()"
-                                                id="renameForm-{{this.processId}}-{{i}}">
+                                                id="renameForm-{{processId}}-{{i}}">
                                                 <input type="text" formControlName="renameInput"  
                                                     class="tilesview-rename-textbox"
                                                     (keydown)="onKeyPress($event)" 
                                                     autofocus 
                                                     spellcheck="false" 
-                                                    id="renameTxtBox-{{this.processId}}-{{i}}"
+                                                    id="renameTxtBox-{{processId}}-{{i}}"
                                                 />
                                             </form>
 
@@ -735,7 +786,7 @@
                             </li>
                         </ng-template>
                     
-                        <div class="tool-tip-container" id="invalidChars-{{this.processId}}">
+                        <div class="tool-tip-container" id="invalidChars-{{processId}}">
                             <div class="tool-tip-arrow"> </div>
                             <div class="tool-tip-base"> A file name can't contain any of the following characters: <br /><br />
                                  \ / : * ? " < > |'
@@ -745,7 +796,7 @@
                         <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
                         <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
     
-                        <div class="fx-information-tip-container" id="fx-information-tip-{{this.processId}}">
+                        <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
                             <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
                                 <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
                             </div>
