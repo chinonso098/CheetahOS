@@ -75,16 +75,15 @@ Other trademarks and logos are property of their respective owners
 
 
   onMouseEnter1():void{
-    //clear timeout just
-
+    const showFancyLetters = false;
     if(!this.isVisible)
         return;
 
     clearTimeout(this.infoMessageTimeOutId);
-    this.onMouseEnter();
+    this.onMouseEnter(showFancyLetters);
   }
 
-  onMouseEnter():void{
+  onMouseEnter(showFancyLetters = true):void{
 
     const toolTipID = 'cheetahAboutTooltip';
     const aboutToolTip = document.getElementById(toolTipID) as HTMLElement;
@@ -94,7 +93,9 @@ Other trademarks and logos are property of their respective owners
       aboutToolTip.style.transition = 'opacity 0.5s ease';
     }
     this.isVisible = true;
-    this.fancyLetterEffect();
+
+    if(showFancyLetters)
+      this.fancyLetterEffect();
   }
 
    onMouseLeave():void{
@@ -112,30 +113,33 @@ Other trademarks and logos are property of their respective owners
     }, delay); 
   }
 
-  fancyLetterEffect():void{
+  fancyLetterEffect(): void {
     const LETTERS = 'ABCDEFGHIJKLMNOPQRSTVUWXYZ0123456789';
-
     const text = 'CheetahOS';
     const delay = 50;
     let counter = 0;
-    
-    const loop = setInterval(() => {
-      this.displayName = text.split(Constants.EMPTY_STRING)
-        .map((letter, index) => {
-          if(index < counter) {
-            return letter
-          }
-        
-          return LETTERS[Math.floor(Math.random() * LETTERS.length)]
-      }).join(Constants.EMPTY_STRING)
-      
+
+    const intervalId = setInterval(() => {
+      let displayed = Constants.EMPTY_STRING;
+
+      for (let i = 0; i < text.length; i++) {
+        if (i < counter) {
+          displayed += text[i];
+        } else {
+          const randomIndex = Math.floor(Math.random() * LETTERS.length);
+          displayed += LETTERS[randomIndex];
+        }
+      }
+
+      this.displayName = displayed;
       counter += 0.5;
-      
-      if(counter > text.length) {
-        clearInterval(loop)
+
+      if (counter > text.length) {
+        clearInterval(intervalId);
       }
     }, delay);
   }
+
 
   setCheetahWindowToFocus(pid:number):void{
      this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
