@@ -70,8 +70,11 @@
 }
 
 .desktopIcon-img-container{
-    width: fit-content;
-    display: block;
+    /* width: fit-content;
+    display: block; */
+    display: flex;
+    align-items: center;   /* vertical centering */
+    justify-content: center; /* horizontal centering */
     max-width: 80px;
     max-height: 80px;
 }
