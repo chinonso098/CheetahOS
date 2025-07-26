@@ -138,8 +138,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   btnTypeFooter = 'Footer';
   selectedRow = -1;
 
+  fetchedFiles:FileInfo[] = [];
+  frequentFolders:FileInfo[] = [];
+  recentFiles:FileInfo[] = [];
+  devicesAndDrivesFiles:FileInfo[] = [];
 
-  fileExplrFiles:FileInfo[] = [];
   fileTreeNode:FileTreeNode[] = [];
   _fileInfo!:FileInfo;
   prevPathEntries:string[] = [];
@@ -345,6 +348,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       pathInput: (this.directory !== Constants.ROOT)? this.directory : Constants.ROOT
     })
   
+    this.loadFalseFrequentFolders();
+    this.loadFalseRecentFiles();
     await this.loadFileTreeAsync();
     await this.setProperRecycleBinIcon();
     await this.loadFiles().then(()=>{
@@ -547,7 +552,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     const iconIdx = icon_sizes.indexOf(iconSize);
 
-    for(let i = 0; i < this.fileExplrFiles.length; i++){
+    for(let i = 0; i < this.fetchedFiles.length; i++){
       const btnElmnt = document.getElementById(`btnElmnt-${this.processId}-${i}`) as HTMLElement;
       const imgElmnt = document.getElementById(`imgElmnt-${this.processId}-${i}`) as HTMLElement;
       const figCapElmnt = document.getElementById(`figCapElmnt-${this.processId}-${i}`) as HTMLElement;
@@ -1008,18 +1013,109 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   private async loadFiles(showUrlFiles=true):Promise<void>{
-    this.fileExplrFiles = [];
+    this.fetchedFiles = [];
     const directoryFiles  = await this._fileService.loadDirectoryFiles(this.directory);
 
     if(this.directory === Constants.ROOT){
       if(!showUrlFiles){
-        this.fileExplrFiles.push(...directoryFiles.filter(x => x.getFileExtension !== Constants.URL))
+        this.fetchedFiles.push(...directoryFiles.filter(x => x.getFileExtension !== Constants.URL))
       }else{
-        this.fileExplrFiles.push(...directoryFiles.filter(x => x.getFileExtension === Constants.URL));
+        this.fetchedFiles.push(...directoryFiles.filter(x => x.getFileExtension === Constants.URL));
       }
     }else{
-      this.fileExplrFiles.push(...directoryFiles.filter(x => x.getCurrentPath !== Constants.RECYCLE_BIN_PATH)); 
+      this.fetchedFiles.push(...directoryFiles.filter(x => x.getCurrentPath !== Constants.RECYCLE_BIN_PATH)); 
     }
+
+    console.log('Fetched files:', this.fetchedFiles);
+  }
+
+  private loadFalseFrequentFolders():void{
+
+    const desktopFile = new FileInfo();
+      desktopFile.setIconPath = "osdrive/Cheetah/System/Imageres/desktop_folder.png";
+      desktopFile.setContentPath = "Desktop";
+      desktopFile.setCurrentPath = "/Users/Desktop";
+      desktopFile.setFileName = "Desktop"
+      desktopFile.setFileType = Constants.FOLDER;
+      desktopFile.setIsFile = false;
+      desktopFile.setOpensWith = "fileexplorer";
+
+    const musicFile = new FileInfo();
+      musicFile.setIconPath = "osdrive/Cheetah/System/Imageres/music_folder.png";
+      musicFile.setContentPath = "Music";
+      musicFile.setCurrentPath = "/Users/Music";
+      musicFile.setFileName = "Music"
+      musicFile.setFileType = Constants.FOLDER;
+      musicFile.setIsFile = false;
+      musicFile.setOpensWith = "fileexplorer";
+
+
+    const documentFile = new FileInfo();
+      documentFile.setIconPath = "osdrive/Cheetah/System/Imageres/documents_folder.png";
+      documentFile.setContentPath = "Documents";
+      documentFile.setCurrentPath = "/Users/Documents";
+      documentFile.setFileName = "Documents";
+      documentFile.setFileType = Constants.FOLDER;
+      documentFile.setIsFile = false;
+      documentFile.setOpensWith = "fileexplorer";
+
+    const pictureFile = new FileInfo();
+      pictureFile.setIconPath = "osdrive/Cheetah/System/Imageres/pictures_folder.png";
+      pictureFile.setContentPath = "Pictures";
+      pictureFile.setCurrentPath = "/Users/Pictures";
+      pictureFile.setFileName = "Pictures";
+      pictureFile.setFileType = Constants.FOLDER;
+      pictureFile.setIsFile = false;
+      pictureFile.setOpensWith = "fileexplorer";
+
+    this.frequentFolders.push(desktopFile, musicFile, documentFile, pictureFile);
+  }
+
+  private loadFalseRecentFiles():void{
+
+    const file1 = new FileInfo();
+      file1.setIconPath = "osdrive/Cheetah/System/Imageres/file.png";
+      file1.setCurrentPath = "/Users/Documents/starting a new proj in VSCode.txt";
+      file1.setFileName = "starting a new proj in VSCode";
+      file1.setFileType = ".txt";
+      file1.setIsFile = true;
+      file1.setOpensWith = "texteditor";
+
+    const file2 = new FileInfo();
+      file2.setIconPath ="osdrive/Cheetah/System/Imageres/file.png";
+      file2.setCurrentPath = "/Users/Documents/Dynamic Programming.txt";
+      file2.setFileName = "Dynamic Programming";
+      file2.setFileType = ".txt";
+      file2.setIsFile = true;
+      file2.setOpensWith = "texteditor";
+
+
+    const file3 = new FileInfo();
+      file3.setIconPath ="osdrive/Cheetah/System/Imageres/pdf_file.png";
+      file3.setCurrentPath = "/Users/Documents/PDFs/MotherBoard/PRO-B650-P-WIFI.pdf";
+      file3.setFileName = "PRO-B650-P-WIFI";
+      file3.setFileType = ".pdf";
+      file3.setIsFile = true;
+      file3.setOpensWith = "pdfviewer";
+
+    const file4 = new FileInfo();
+      file4.setIconPath ="osdrive/Cheetah/System/Imageres/music_file.png";
+      file4.setCurrentPath = "/Users/Music/Farrgol-Msg My Future.mp3";
+      file4.setFileName = "Farrgol-Msg My Future";
+      file4.setFileType = ".mp3";
+      file4.setIsFile = true;
+      file4.setOpensWith = "audioplayer";
+
+
+    const file5 = new FileInfo();
+      file5.setIconPath ="osdrive/Cheetah/System/Imageres/video_file.png"
+      file5.setCurrentPath = "/Users/Videos/My 2024-Spotify-Wrapped.mp4"
+      file5.setFileName = "My 2024-Spotify-Wrapped";
+      file5.setFileType = ".mp4";
+      file5.setIsFile = true;
+      file5.setOpensWith = "videoplayer";
+
+    this.recentFiles.push(file1, file2, file3, file4, file5);
   }
 
   private async loadFileTreeAsync():Promise<void>{
@@ -1785,7 +1881,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(this.markedBtnIds.length > 0){
       for(const id of this.markedBtnIds){
-        const file = this.fileExplrFiles[Number(id)];
+        const file = this.fetchedFiles[Number(id)];
         if(file.getIsFile){
           sum += sum + file.getSizeInBytes;
         }else{
@@ -1800,7 +1896,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(this.getIsBtnClickEvt()){
       console.log('isBtnClickEvt:', this.getIsBtnClickEvt());
-      const file = this.fileExplrFiles[this.selectedElementId];
+      const file = this.fetchedFiles[this.selectedElementId];
       if(file && file.getIsFile){
         this.showFileSizeAndUnit = true;
         this.selectFilesSizeSum = String(file.getSize);
@@ -2314,10 +2410,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(renameResult){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         //const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));
-        const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getCurrentPath) && (f.getFileName == this.selectedFile.getFileName));
+        const fileIdx = this.fetchedFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getCurrentPath) && (f.getFileName == this.selectedFile.getFileName));
         this.selectedFile.setFileName = renameText;
         this.selectedFile.setDateModified = Date.now().toString();
-        this.fileExplrFiles[fileIdx] = this.selectedFile;
+        this.fetchedFiles[fileIdx] = this.selectedFile;
 
         this.renameForm.reset();
         this._menuService.resetStoreData();
@@ -2541,7 +2637,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   sortIcons(sortBy:string):void {
-    this.fileExplrFiles = CommonFunctions.sortIconsBy(this.fileExplrFiles, sortBy);
+    this.fetchedFiles = CommonFunctions.sortIconsBy(this.fetchedFiles, sortBy);
   }
 
   //Methods defined as class fields, you learn somthing new every day.

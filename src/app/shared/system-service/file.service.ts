@@ -353,7 +353,8 @@ export class FileService implements BaseService{
             const directoryEntries = await this.readDirectory(path);
 
             for(const entry of directoryEntries){
-                const file =  await this.getFileInfo(`${path}/${entry}`);
+                const entryPath = `${path}/${entry}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+                const file =  await this.getFileInfo(entryPath);
                 files.push(file);
             }
 

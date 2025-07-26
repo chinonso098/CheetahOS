@@ -786,9 +786,63 @@ span.mid-search-entry{
 
 /*****************************icon view and layout Started*****************************/
 
+.fileexplr-default-view-cntnr{
+    display: block;
+    padding: 5px  5px;
+}
+
+/* Section container */
+.fileexlpr-frequent-folders-section, .fileexlpr-recent-files-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+/* Section heading */
+.fileexlpr-frequent-folders-heading, .fileexlpr-recent-files-heading {
+    display: flex;
+    align-items: center;
+    font-family: sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    color: #ccc;
+    margin-bottom: 10px;
+    padding: 0 10px;
+}
+
+/* Heading text (label + count) */
+.fileexlpr-frequent-folders-heading p, .fileexlpr-recent-files-heading p {
+    margin: 0;
+    padding-right: 8px;
+}
+
+/* Content grid inside each section */
+.fileexlpr-frequent-folders-cntnt, .fileexlpr-recent-files-cntnt {
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fill, 90px);
+    grid-template-rows: repeat(auto-fill, 70px);
+    gap: 34px 5px;
+    padding: 0px 10px;
+    width: 100%;
+}
+
+/* Line that stretches next to the heading */
+.fileexlpr-nested-line-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.fileexlpr-nested-line {
+    border-bottom: 1px solid #333;
+    width: 100%;
+    height: 1px;
+}
+
 /*-------------------------Icon Size View Start -------------------------------*/
 .ol-iconview-grid{
-    /* column-gap: 1px; */
     display: grid;
     grid-auto-flow: row;
     grid-template-columns:  repeat(auto-fill, 90px);
@@ -796,27 +850,8 @@ span.mid-search-entry{
     height: calc(100% - 5px);
     width: 100%;
     padding: 5px 10px;
-    row-gap: 34px;
-    column-gap: 5px;
+    gap: 34px 5px;
 }
-
-/* Optional: Add headers for folders and files */
-.li-iconview-container::before {
-    content: attr(data-type);
-    font-weight: bold;
-    display: block;
-    margin-bottom: 4px;
-    color: #aaa;
-}
-
-/* Optional spacing between folder and file groups */
-#olElmnt-[yourProcessIdHere] {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, 90px);
-    gap: 10px 5px;
-    padding: 5px 10px;
-}
-
 
 .li-iconview-container{
     display: flex;

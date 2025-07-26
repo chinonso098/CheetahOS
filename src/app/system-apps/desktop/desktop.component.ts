@@ -1501,9 +1501,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
 
     if(figCapElement){
-        figCapElement.style.overflow = 'hidden'; 
-        figCapElement.style.overflowWrap = 'unset'
-        figCapElement.style.webkitLineClamp = '2';
+      figCapElement.style.overflow = 'hidden'; 
+      figCapElement.style.overflowWrap = 'unset'
+      figCapElement.style.webkitLineClamp = '2';
+      figCapElement.style.zIndex = 'unset';
     }
   }
 
@@ -1528,9 +1529,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     if(figCapElement){
       if(this.selectedElementId === id){
-          figCapElement.style.overflow = 'unset'; 
-          figCapElement.style.overflowWrap = 'break-word';
-          figCapElement.style.webkitLineClamp = 'unset'
+        figCapElement.style.overflow = 'unset'; 
+        figCapElement.style.overflowWrap = 'break-word';
+        figCapElement.style.webkitLineClamp = 'unset'
+        figCapElement.style.zIndex = '1';
       }
     }
   }
