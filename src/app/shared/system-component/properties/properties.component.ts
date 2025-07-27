@@ -150,7 +150,13 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   }
 
   async getFolderSizeData():Promise<void>{
-    const folderSize = await this._fileService.getFolderSizeAsync(this.fileInput.getCurrentPath);
+
+    let folderSize = 0;
+    if(this.fileInput.getContentPath === Constants.ROOT)
+      folderSize = this._fileService.getUsedStorage();
+    else
+      folderSize = await this._fileService.getFolderSizeAsync(this.fileInput.getCurrentPath);
+
     this.fileSize = CommonFunctions.getReadableFileSizeValue(folderSize);
     this.fileSize2 = folderSize;
 

@@ -90,7 +90,8 @@ export namespace Constants{
         '.tif',
         '.svg',
         '.webp',
-        '.xlm'
+        '.xlm',
+        '.gif'
     ]
 
     export const VIDEO_FILE_EXTENSIONS = [

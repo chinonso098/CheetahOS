@@ -61,6 +61,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   readonly ERROR_DIALOG = 'error-dialog';
   readonly WARNING_DIALOG = 'warning-dialog';
   readonly INFO_DIALOG = 'info-dialog';
+  readonly FILE_TRANSFER_DIALOG = 'fileTransfer-dialog';
 
   readonly UPDATE = 'Update';
   readonly UPDATE_0 = 'Update0';

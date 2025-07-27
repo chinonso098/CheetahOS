@@ -1141,7 +1141,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.devicesAndDrivesFiles.push(file1);
 
-    const folderSizeInBytes = await this._fileService.getFolderSizeAsync(file1.getCurrentPath);
+    //const folderSizeInBytes = await this._fileService.getFolderSizeAsync(file1.getCurrentPath);
+    const folderSizeInBytes = this._fileService.getUsedStorage();
     this.usedCapacity = ((folderSizeInBytes/this.capacity) * 100);
     const availableCapacity = this.capacity - folderSizeInBytes;
     const availableCapacity2 = CommonFunctions.getReadableFileSizeValue(availableCapacity);

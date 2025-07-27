@@ -4,7 +4,6 @@ import { ShortCut } from "src/app/system-files/shortcut";
 import {extname, basename, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FSModule } from "src/osdrive/Cheetah/System/BrowserFS/node/core/FS";
-import { FileEntry } from 'src/app/system-files/file.entry';
 import { FileMetaData } from "src/app/system-files/file.metadata";
 
 import { Subject } from "rxjs";
@@ -43,6 +42,9 @@ export class FileService implements BaseService{
     private _userNotificationService:UserNotificationService
     private _sessionManagmentService:SessionManagmentService;
 
+    private _isCalculated = false;
+    private _usedStorageSizeInBytes = 0;
+
     dirFilesUpdateNotify: Subject<void> = new Subject<void>();
     fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
     goToDirectoryNotify: Subject<string[]> = new Subject<string[]>();
@@ -58,7 +60,8 @@ export class FileService implements BaseService{
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
-    description = 'Mediates btwn ui & filesystem ';
+    description = 'Mediates btwn ui & filesystem';
+
 
     
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService,
@@ -82,10 +85,16 @@ export class FileService implements BaseService{
 
 
     private initBrowserFS(): void {
-        // Using setTimeout ensures it runs after the constructor has returned
+        const delay = 0;
         setTimeout(() => {
-            this.initBrowserFsAsync();
-        }, 0);
+            this.initBrowserFsAsync().then((success) => {
+                if (success) {
+                    this.postInitBrowserFs();
+                } else {
+                    console.warn("BrowserFS failed to initialize.");
+                }
+            });
+        }, delay);
     }
 
     private async initBrowserFsAsync():Promise<boolean>{
@@ -138,6 +147,10 @@ export class FileService implements BaseService{
         });
     }
 
+    private async postInitBrowserFs(): Promise<void> {
+        await this.calculateUsedStorage();
+    }   
+
     public async isDirectory(path:string):Promise<boolean> {
         return new Promise<boolean>((resolve) =>{
             this._fileSystem.stat(path,(err, stats) =>{
@@ -165,9 +178,12 @@ export class FileService implements BaseService{
     public async copyAsync(srcPath:string, destPath:string, isFile?:boolean):Promise<boolean>{
         const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
 
-        return isDirectory
+        const result = isDirectory
             ? await this.copyFolderHandlerAsync(Constants.EMPTY_STRING, srcPath, destPath)
             : await this.copyFileAsync(srcPath, destPath);
+
+        await this.recalculateUsedStorage();
+        return result;
     }
 
     private async copyFileAsync(srcPath:string, destPath:string):Promise<boolean>{
@@ -445,7 +461,7 @@ export class FileService implements BaseService{
 			'.jsdos': { fileType: cleanedExt, appName: 'jsdos', appIcon: 'js-dos_file.png' },
 			'.swf': { fileType: cleanedExt, appName: 'ruffle', appIcon: 'swf_file.png' },
 			'.pdf': { fileType: cleanedExt, appName: 'pdfviewer', appIcon: 'pdf_file.png' },
-            '.zip': { fileType: cleanedExt, appName: 'fileexlporer', appIcon: 'zip_file.png' }
+            '.zip': { fileType: cleanedExt, appName: 'fileexlporer', appIcon: 'zip_file.png' },
 		};
 
 		if (Constants.KNOWN_FILE_EXTENSIONS.includes(extension) && knownFileHandlers[extension]) {
@@ -554,7 +570,7 @@ export class FileService implements BaseService{
                 try {
                     shortCut = ini.parse(stage) || {
                         InternetShortcut: {
-                            FileName: 'hi',
+                            FileName: Constants.EMPTY_STRING,
                             IconPath: Constants.EMPTY_STRING,
                             FileType: Constants.EMPTY_STRING,
                             ContentPath: Constants.EMPTY_STRING,
@@ -846,6 +862,8 @@ export class FileService implements BaseService{
             // console.log('writeFileAsync: file successfully written');
             this._fileExistsMap.set(destPath, String(0));
             this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
+
+            await this.recalculateUsedStorage();
             return true;
         }
 
@@ -858,6 +876,7 @@ export class FileService implements BaseService{
                 // console.log('writeFileAsync: file successfully written');
                 this._fileExistsMap.set(newFileName, String(0));
                 this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
+                await this.recalculateUsedStorage();
                 return true;
             }else{
                 console.error('writeFileAsync Iterate Error:',);
@@ -963,9 +982,12 @@ OpensWith=${shortCutData.getOpensWith}
         }else{
             this.removeAndUpdateSessionData(this.fileServiceRestoreKey, path, this._restorePoint);
             const isDirectory = (isFile === undefined) ? await this.isDirectory(path) : !isFile;
-            return isDirectory
+            const result = isDirectory
                 ? await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path, isRecycleBin)
                 : await this.deleteFileAsync(path);
+
+            await this.recalculateUsedStorage();
+            return result;
         }
     }
 
@@ -1315,6 +1337,21 @@ OpensWith=${shortCutData.getOpensWith}
     //     const base64String = btoa(String.fromCharCode(...new Uint8Array(arr)));
     //     return base64String;
     // }
+
+    getUsedStorage():number{
+        return this._usedStorageSizeInBytes;
+    }
+
+    private async calculateUsedStorage():Promise<void>{
+        if(this._isCalculated) return;
+
+        this._usedStorageSizeInBytes = await this.getFolderSizeAsync(Constants.ROOT);
+        this._isCalculated = true;
+    }
+
+    private async recalculateUsedStorage():Promise<void>{
+        this._usedStorageSizeInBytes = await this.getFolderSizeAsync(Constants.ROOT);
+    }
 
     private isUtf8Encoded(data: string): boolean {
         try {
