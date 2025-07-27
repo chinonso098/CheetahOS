@@ -121,8 +121,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   selectFilesSizeUnit = Constants.EMPTY_STRING;
 
   readonly ROOT = Constants.ROOT;
-  readonly THISPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
-  readonly QUICKACCESS = 'Quick access';
+  readonly THIS_PC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
+  readonly EMPTY_STRING = Constants.EMPTY_STRING
+  readonly QUICK_ACCESS = 'Quick access';
   fileTreeNavToPath = Constants.EMPTY_STRING
 
   fileExplrCntxtMenuStyle:Record<string, unknown> = {};
@@ -195,6 +196,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showPreviewPane = false;
   showDetailsPane = false;
   showRibbonMenu = false;
+  showDefaultView = true;
 
   renameForm!: FormGroup;
   pathForm!: FormGroup;
@@ -317,6 +319,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(this._fileInfo){
       // is this a URL or and Actual Folder
       if(this._fileInfo.getOpensWith === Constants.FILE_EXPLORER && !this._fileInfo.getIsFile){ //Actual Folder
+        this.showDefaultView = false;
         this.directory = this._fileInfo.getCurrentPath;
         const fileName = (this._fileInfo.getFileName === Constants.EMPTY_STRING)? Constants.NEW_FOLDER : this._fileInfo.getFileName;
 
@@ -354,8 +357,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
     this.loadFalseFrequentFolders();
     this.loadFalseRecentFiles();
-    await this.loadDevciesAndDrives();
 
+    await this.loadDevciesAndDrives();
     await this.loadFileTreeAsync();
     await this.setProperRecycleBinIcon();
     await this.loadFiles().then(()=>{
@@ -1125,6 +1128,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   private async loadDevciesAndDrives(): Promise<void>{
+    const delay = 25; //25ms
+    await CommonFunctions.sleep(delay);
 
     const file1 = new FileInfo();
       file1.setIconPath = "osdrive/Cheetah/System/Imageres/os_disk_2.png";
@@ -1236,6 +1241,55 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     return updatedTreeData;
   }
 
+  async navigateToFolder(data:string[]):Promise<void>{
+    console.log('navigateToFolder:', data); 
+    
+    const quickAccess = 'Quick access';
+    const thisPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
+    const fileName = data[0];
+    const path = data[1];
+
+    if(!this.isNavigatedBefore){
+      this.prevPathEntries.push(this.directory);
+      this.upPathEntries.push(this.directory);
+      this.isNavigatedBefore = true;
+    }
+
+    this.isPrevBtnActive = true;
+    this.displayName = fileName;
+    this.fileTreeNavToPath = path;
+
+    if (path === thisPC || path === quickAccess){
+      this.showDefaultView = true;
+    }else if(path === Constants.ROOT){
+      this.showDefaultView = false;
+      this.fileTreeNavToPath = Constants.EMPTY_STRING;
+    }
+
+    this.directory = (path === thisPC || path === quickAccess)? Constants.ROOT : path;
+
+    if(path === `/Users/${fileName}`)
+      this.icon = `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png`;
+    else
+      this.icon = `${Constants.IMAGE_BASE_PATH}folder.png`;
+
+    this.prevPathEntries.push(this.directory);
+    this.upPathEntries.push(this.directory);
+
+    if(this.recentPathEntries.indexOf(this.directory) === -1){
+      this.recentPathEntries.push(this.directory);
+    }
+
+    this.populateTraversalList();
+    this.setNavPathIcon(fileName, path);
+    this.storeAppState(path);
+
+    if(path === thisPC || path !== Constants.ROOT)
+      await this.loadFiles();
+    else if(path === Constants.ROOT)
+      await this.loadFiles(false);
+  }
+
   async runProcess(file:FileInfo):Promise<void>{
     console.log('fileexplorer-runProcess:',file)
     this.fileTreeNavToPath = Constants.EMPTY_STRING;
@@ -1257,6 +1311,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       this.isPrevBtnActive = true;
+      this.showDefaultView = false;
 
       if(file.getCurrentPath.includes(Constants.URL)){
         this.directory = file.getContentPath;
@@ -1287,47 +1342,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this._processHandlerService.startApplicationProcess(file);
       }, this.SECONDS_DELAY[4]);
     }
-  }
-
-  async navigateToFolder(data:string[]):Promise<void>{
-    console.log('navigateToFolder:', data); 
-    
-    const quickAccess = 'Quick access';
-    const thisPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
-    const fileName = data[0];
-    const path = data[1];
-
-    if(!this.isNavigatedBefore){
-      this.prevPathEntries.push(this.directory);
-      this.upPathEntries.push(this.directory);
-      this.isNavigatedBefore = true;
-    }
-
-    this.isPrevBtnActive = true;
-    this.displayName = fileName;
-    this.fileTreeNavToPath = path;
-    this.directory = (path === thisPC || path === quickAccess)? Constants.ROOT : path;
-
-    if(path === `/Users/${fileName}`)
-      this.icon = `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png`;
-    else
-      this.icon = `${Constants.IMAGE_BASE_PATH}folder.png`;
-
-    this.prevPathEntries.push(this.directory);
-    this.upPathEntries.push(this.directory);
-
-    if(this.recentPathEntries.indexOf(this.directory) === -1){
-      this.recentPathEntries.push(this.directory);
-    }
-
-    this.populateTraversalList();
-    this.setNavPathIcon(fileName, path);
-    this.storeAppState(path);
-
-    if(path === thisPC || path !== Constants.ROOT)
-      await this.loadFiles();
-    else if(path === Constants.ROOT)
-      await this.loadFiles(false);
   }
 
   setNavPathIcon(fileName:string, directory:string):void{

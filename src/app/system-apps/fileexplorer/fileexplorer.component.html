@@ -273,9 +273,9 @@
                     <!-- ngDraggable  [inBounds]="true" zIndex="1" [preventDefaultEvent]="true"
                         (stopped)="onDragEnd($event)" (started)="onDragStart($event)" -->
 
-                    <div class="fileexplr-default-view-cntnr" *ngIf="directory === ROOT || directory === ROOT && (fileTreeNavToPath === THISPC || fileTreeNavToPath === QUICKACCESS)"> 
+                    <div class="fileexplr-default-view-cntnr" *ngIf="directory === ROOT && showDefaultView"> 
 
-                        <div *ngIf="fileTreeNavToPath === QUICKACCESS" class="fileexlpr-frequent-folders-section">
+                        <div *ngIf="fileTreeNavToPath === QUICK_ACCESS && showDefaultView" class="fileexlpr-frequent-folders-section">
                                 <div class="fileexlpr-frequent-folders-heading">
                                     <span><p> Frequent folders ({{frequentFolders.length}})</p></span>
                                     <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
@@ -308,7 +308,7 @@
                                 </div>
                         </div>
                         
-                        <div *ngIf="fileTreeNavToPath === QUICKACCESS" class="fileexlpr-recent-files-section">
+                        <div *ngIf="fileTreeNavToPath === QUICK_ACCESS && showDefaultView" class="fileexlpr-recent-files-section">
                             <div class="fileexlpr-recent-files-heading">
                                 <span><p> Recent files ({{recentFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
@@ -341,7 +341,7 @@
                             </div>
                         </div>
 
-                        <div *ngIf="fileTreeNavToPath === THISPC || directory === ROOT" class="fileexlpr-frequent-folders-section">
+                        <div *ngIf="(fileTreeNavToPath === THIS_PC  && showDefaultView)||(directory === ROOT && showDefaultView && fileTreeNavToPath !== QUICK_ACCESS)" class="fileexlpr-frequent-folders-section">
                             <div class="fileexlpr-frequent-folders-heading">
                                 <span><p>Folders ({{fetchedFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
@@ -371,7 +371,7 @@
                             </div>
                         </div>
                         
-                        <div *ngIf="fileTreeNavToPath === THISPC || directory === ROOT" class="fileexlpr-recent-files-section">
+                        <div *ngIf="(fileTreeNavToPath === THIS_PC  && showDefaultView) || (directory === ROOT && showDefaultView && fileTreeNavToPath !== QUICK_ACCESS)" class="fileexlpr-recent-files-section">
                             <div class="fileexlpr-recent-files-heading">
                                 <span><p> Devices and drives ({{devicesAndDrivesFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
@@ -424,7 +424,7 @@
                         <!-- <div #selectPaneContainer id="fileExplrMultiSelectPane"></div> -->
                     </div>
                 
-                    <ol *ngIf="directory !== ROOT || ((directory === ROOT && fileTreeNavToPath !== THISPC)  || (directory === ROOT && fileTreeNavToPath !== QUICKACCESS))"
+                    <ol *ngIf="directory !== ROOT || (directory === ROOT && !showDefaultView)"
                         [ngClass]="olClassName" 
                         (dragover)="onDragOver($event)"  
                         (drop)="onDrop($event)" 
