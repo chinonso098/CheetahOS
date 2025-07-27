@@ -273,9 +273,9 @@
                     <!-- ngDraggable  [inBounds]="true" zIndex="1" [preventDefaultEvent]="true"
                         (stopped)="onDragEnd($event)" (started)="onDragStart($event)" -->
 
-                    <div class="fileexplr-default-view-cntnr" *ngIf="directory === ROOT && (fileTreeNavToPath === THISPC || fileTreeNavToPath === QUICKACCESS)"> 
+                    <div class="fileexplr-default-view-cntnr" *ngIf="directory === ROOT || directory === ROOT && (fileTreeNavToPath === THISPC || fileTreeNavToPath === QUICKACCESS)"> 
 
-                        <div class="fileexlpr-frequent-folders-section">
+                        <div *ngIf="fileTreeNavToPath === QUICKACCESS" class="fileexlpr-frequent-folders-section">
                                 <div class="fileexlpr-frequent-folders-heading">
                                     <span><p> Frequent folders ({{frequentFolders.length}})</p></span>
                                     <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
@@ -294,6 +294,9 @@
                                                 <div class="iconview-img-wrapper">
                                                     <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-folder-{{processId}}-{{i}}" />
                                                 </div>
+                                                <!-- <div class="iconview-shortcut-wrapper" *ngIf="file.getIsShortCut">
+                                                    <img class="iconview-shortcut-img" [src]="shortCutImg" id="shortCut-file-{{processId}}-{{i}}" />
+                                                </div> -->
                                             </div>
                                             <div class="iconview-caption-container">
                                                 <p class="iconview-caption" id="figCapElmnt-folder-{{processId}}-{{i}}">
@@ -305,7 +308,7 @@
                                 </div>
                         </div>
                         
-                        <div class="fileexlpr-recent-files-section">
+                        <div *ngIf="fileTreeNavToPath === QUICKACCESS" class="fileexlpr-recent-files-section">
                             <div class="fileexlpr-recent-files-heading">
                                 <span><p> Recent files ({{recentFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
@@ -324,9 +327,9 @@
                                             <div class="iconview-img-wrapper">
                                                 <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-file-{{processId}}-{{i}}" />
                                             </div>
-                                            <div class="iconview-shortcut-wrapper" *ngIf="file.getIsShortCut">
+                                            <!-- <div class="iconview-shortcut-wrapper" *ngIf="file.getIsShortCut">
                                                 <img class="iconview-shortcut-img" [src]="shortCutImg" id="shortCut-file-{{processId}}-{{i}}" />
-                                            </div>
+                                            </div> -->
                                         </div>
                                         <div class="iconview-caption-container">
                                             <p class="iconview-caption" id="figCapElmnt-file-{{processId}}-{{i}}">
@@ -338,26 +341,77 @@
                             </div>
                         </div>
 
-                       <!-- <ol                         
-                        [ngClass]="olClassName" 
-                        (dragover)="onDragOver($event)"  
-                        (drop)="onDrop($event)" 
-                        (click)="hideIconContextMenu($event, name)" 
-                        (click)="handleIconHighLightState()" 
-                        (contextmenu)="onShowFileExplorerContextMenu($event)" 
-                        (mousedown)="activateMultiSelect($event)"
-                        (mouseup)="deActivateMultiSelect()"
-                        (mousemove)="updateDivWithAndSize($event)" 
-                       id="olElmnt-{{processId}}">
-
-                       </ol> -->
-
+                        <div *ngIf="fileTreeNavToPath === THISPC || directory === ROOT" class="fileexlpr-frequent-folders-section">
+                            <div class="fileexlpr-frequent-folders-heading">
+                                <span><p>Folders ({{fetchedFiles.length}})</p></span>
+                                <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
+                            </div>
+                            <div class="fileexlpr-frequent-folders-cntnt1">
+                                <!-- Folder section -->
+                                <li class="li-tilesview" *ngFor="let file of fetchedFiles; let i = index">
+                                    <div class="button-tilesview" role="button" tabindex="0" 
+                                        (dblclick)="runProcess(file)" 
+                                        (mouseenter)="onMouseEnter($event, file, i)" 
+                                        (mouseleave)="onMouseLeave(i)"
+                                        (contextmenu)="onShowIconContextMenu($event, file, i)" 
+                                        (click)="onBtnClick($event, i)" id="btnElmnt-{{processId}}-{{i}}">
+                                        <div class="div-tilesview">
+                                            <figure class="figure-tilesview">
+                                                <img class="img-tilesview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
+                                            </figure>
         
+                                            <div class="div-figcaption-tilesview-container">
+                                                <div class="div-figcaption-tilesview" id="figCapElmnt-{{processId}}-{{i}}">
+                                                    <p  class="figcaption-tilesview-p"> {{file.getFileName}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </div>
+                        </div>
+                        
+                        <div *ngIf="fileTreeNavToPath === THISPC || directory === ROOT" class="fileexlpr-recent-files-section">
+                            <div class="fileexlpr-recent-files-heading">
+                                <span><p> Devices and drives ({{devicesAndDrivesFiles.length}})</p></span>
+                                <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
+                            </div>
+                            <div class="fileexlpr-devices-and-drives-cntnt">
+                                <!-- devices and drives section -->
+                                <li class="li-tilesview" *ngFor="let file of devicesAndDrivesFiles; let i = index">
+                                    <div class="button-tilesview" role="button" tabindex="0" 
+                                        (dblclick)="runProcess(file)" 
+                                        (mouseenter)="onMouseEnter($event, file, i)" 
+                                        (mouseleave)="onMouseLeave(i)"
+                                        (contextmenu)="onShowIconContextMenu($event, file, i)" 
+                                        (click)="onBtnClick($event, i)" id="btnElmnt-{{processId}}-{{i}}">
+                                        <div class="div-tilesview">
+                                            <figure class="figure-tilesview">
+                                                <img class="img-tilesview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
+                                            </figure>
+        
+                                            <div class="div-figcaption-tilesview-container">
+                                                <div class="div-figcaption-tilesview" id="figCapElmnt-{{processId}}-{{i}}">
+                                                    <p  class="figcaption-tilesview-p"> {{file.getFileName}}</p>
+                                                </div>
 
-    
+                                                <div class="progress-container">
+                                                    <div
+                                                        class="progress-bar"
+                                                        [style.width.%]="usedCapacity">
+                                                    </div>
+                                                </div>
+                                                <div  class="div-figcaption-tilesview">
+                                                    <p  class="figcaption-tilesview-p"> {{availableCapacityText}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </div>
+                        </div>
 
-
-                    
+                 
                         <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
                         <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
     
@@ -370,7 +424,7 @@
                         <!-- <div #selectPaneContainer id="fileExplrMultiSelectPane"></div> -->
                     </div>
                 
-                    <ol *ngIf="directory !== ROOT || (directory === ROOT && fileTreeNavToPath !== THISPC && fileTreeNavToPath !== QUICKACCESS)"
+                    <ol *ngIf="directory !== ROOT || ((directory === ROOT && fileTreeNavToPath !== THISPC)  || (directory === ROOT && fileTreeNavToPath !== QUICKACCESS))"
                         [ngClass]="olClassName" 
                         (dragover)="onDragOver($event)"  
                         (drop)="onDrop($event)" 

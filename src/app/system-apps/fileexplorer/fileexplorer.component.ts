@@ -104,6 +104,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private currentIconName = Constants.EMPTY_STRING;
   private blankSpaceClickCntr = 0; 
 
+  readonly capacity = Constants.STORAGE_CAPACITY;
+  usedCapacity = 0;
+  availableCapacityText = Constants.EMPTY_STRING;
+
   isSearchBoxNotEmpty = false;
   showPathHistory = false;
   onClearSearchIconHover = false;
@@ -350,6 +354,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
     this.loadFalseFrequentFolders();
     this.loadFalseRecentFiles();
+    await this.loadDevciesAndDrives();
+
     await this.loadFileTreeAsync();
     await this.setProperRecycleBinIcon();
     await this.loadFiles().then(()=>{
@@ -1116,6 +1122,29 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       file5.setOpensWith = "videoplayer";
 
     this.recentFiles.push(file1, file2, file3, file4, file5);
+  }
+
+  private async loadDevciesAndDrives(): Promise<void>{
+
+    const file1 = new FileInfo();
+      file1.setIconPath = "osdrive/Cheetah/System/Imageres/os_disk_2.png";
+      file1.setCurrentPath = Constants.ROOT;
+      file1.setFileName = Constants.OSDISK;
+      file1.setFileType = Constants.FOLDER;
+      file1.setIsFile = false;
+      file1.setOpensWith = "fileexplorer";
+
+    this.devicesAndDrivesFiles.push(file1);
+
+    const folderSizeInBytes = await this._fileService.getFolderSizeAsync(file1.getCurrentPath);
+    this.usedCapacity = ((folderSizeInBytes/this.capacity) * 100);
+    const availableCapacity = this.capacity - folderSizeInBytes;
+    const availableCapacity2 = CommonFunctions.getReadableFileSizeValue(availableCapacity);
+    const availableCapacityUnit = CommonFunctions.getFileSizeUnit(availableCapacity);
+    const capacity2 =  CommonFunctions.getReadableFileSizeValue(this.capacity);
+    const folderUnit = CommonFunctions.getFileSizeUnit(folderSizeInBytes);
+
+    this.availableCapacityText = `${availableCapacity2.toFixed(0)} ${availableCapacityUnit} free of  ${capacity2.toFixed(0)} ${folderUnit}`
   }
 
   private async loadFileTreeAsync():Promise<void>{

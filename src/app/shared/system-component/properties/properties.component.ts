@@ -36,7 +36,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   isInRecycleBin = false;
   isRootFolder = false;
   URL = Constants.URL;
-  readonly capacity = 512_050_500;
+  readonly capacity = Constants.STORAGE_CAPACITY;
  
   type = ComponentType.System;
   hasWindow = false;
@@ -143,7 +143,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
     const tmpFilesOnDisk = this.getRandomNumber(this.fileInput.getSizeInBytes);
     this.fileSizeOnDisk = CommonFunctions.getReadableFileSizeValue(tmpFilesOnDisk);
-    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed( 0));
+    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(0));
 
     this.fileSizeUnit = this.fileInput.getFileSizeUnit;
     this.fileDate = this.fileInput.getDateModified;

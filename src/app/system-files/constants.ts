@@ -77,6 +77,7 @@ export namespace Constants{
 
     export const RSTRT_ORDER_LOCK_SCREEN = 0;
     export const RSTRT_ORDER_PWR_ON_OFF_SCREEN = 1;
+    export const STORAGE_CAPACITY = 512_050_500;
 
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
