@@ -44,9 +44,14 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   warnNotification = UserNotificationType.Warning;
   infoNotification =  UserNotificationType.Info;
   pwrOnOffNotification =  UserNotificationType.PowerOnOff;
+  fileTransferNotification =  UserNotificationType.FileTransfer;
 
   cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
+  infoIcon = `${Constants.IMAGE_BASE_PATH}info.png`;
+  warningIcon = `${Constants.IMAGE_BASE_PATH}warning.png`;
+  errorIcon = `${Constants.IMAGE_BASE_PATH}red_x.png`;
+  fileTransferIcon = `${Constants.IMAGE_BASE_PATH}file_transfer.png`;
   errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_critical_stop.wav`;
 
   pwrOnOffOptions = [
@@ -66,12 +71,21 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   readonly UPDATE = 'Update';
   readonly UPDATE_0 = 'Update0';
 
+  from = '<strong>Downloads</strong>';
+  to = '<b>Desktop</b>';
+  srcToDest = `from &nbsp ${this.from} &nbsp (C:/Downloads) to &nbsp ${this.to} &nbsp (C:/Users/Desktop)`;
+  transferPercentage = 35;
+  transferProgress = 35;
+  transferPercentageText = `${this.transferPercentage}% complete`;
+  fileName = 'wet ass pussy.txt';
+
   type = ComponentType.System;
   displayMgs = Constants.EMPTY_STRING;
+  displayAdditionalMsg ='Application not found';
   name = Constants.EMPTY_STRING;
   hasWindow = false;
   isMaximizable = false;
-  icon = Constants.EMPTY_STRING;
+  icon = this.fileTransferIcon;
   processId = 0;
   displayName = Constants.EMPTY_STRING;
 
@@ -93,8 +107,11 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   ngOnChanges(changes: SimpleChanges):void{
     console.log('DIALOG onCHANGES:',changes);
     this.displayMgs = this.inputMsg;
-    this.notificationOption =this.notificationType;
-    this.setPwrDialogPid(this.UPDATE);
+
+    if(this.notificationType === UserNotificationType.PowerOnOff){
+      this.notificationOption =this.notificationType;
+      this.setPwrDialogPid(this.UPDATE);
+    }
   }
 
   async ngAfterViewInit(): Promise<void> {

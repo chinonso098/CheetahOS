@@ -1,24 +1,25 @@
 <ng-container [ngTemplateOutlet]="notificationOption === errorNotification ? errorNotice :
                                   notificationOption === warnNotification ? warningNotice :
-                                  notificationOption === pwrOnOffNotification ? shutDownRestartNotice :  infoNotice ">
+                                  notificationOption === infoNotification ? infoNotice :
+                                  notificationOption === pwrOnOffNotification ? shutDownRestartNotice : fileTransfer">
 </ng-container>
 
 <ng-template #errorNotice>
-    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="this.displayMgs" [processAppName]="ERROR_DIALOG" [isDialog]="true">
+    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="displayMgs" [processAppName]="ERROR_DIALOG" [isDialog]="true">
         <div ngDraggable class="error-dialog-main-container">
             <div class="error-dialog-mid-container">
                 <div class="error-dialog-mid-section1">
                     <div class="error-dialog-mid-img1">
                         <figure class="error-dialog-figure1">
-                            <img class="error-dialog-img1" [src]="'osdrive/Cheetah/System/Imageres/red_x.png'"/>
+                            <img class="error-dialog-img1" [src]="errorIcon"/>
                         </figure>
                     </div>
                     <div class="error-dialog-mid-txt1">
-                        <span class="error-dialog-mid-section1-msg">{{this.displayMgs}}</span>
+                        <span class="error-dialog-mid-section1-msg">{{displayMgs}}</span>
                     </div>
                 </div>
                 <div class="error-dialog-mid-section2">
-                    <span class="error-dialog-mid-section2-msg">Application not found</span>
+                    <span class="error-dialog-mid-section2-msg">{{displayAdditionalMsg}}</span>
                 </div>
             </div>
             <div class="error-dialog-tail-container">
@@ -39,11 +40,11 @@
                 <div class="info-dialog-mid-section1">
                     <div class="info-dialog-mid-img1">
                         <figure class="info-dialog-figure1">
-                            <img class="info-dialog-img1" [src]="'osdrive/Cheetah/System/Imageres/info.png'"/>
+                            <img class="info-dialog-img1" [src]="infoIcon"/>
                         </figure>
                     </div>
                     <div class="info-dialog-mid-txt1">
-                        <span class="info-dialog-mid-section1-msg">{{this.displayMgs}}</span>
+                        <span class="info-dialog-mid-section1-msg">{{displayMgs}}</span>
                     </div>
                 </div>
             </div>
@@ -67,11 +68,11 @@
                 <div class="warning-dialog-mid-section1">
                     <div class="warning-dialog-mid-img1">
                         <figure class="warning-dialog-figure1">
-                            <img class="warning-dialog-img1" [src]="'osdrive/Cheetah/System/Imageres/warning.png'"/>
+                            <img class="warning-dialog-img1" [src]="warningIcon"/>
                         </figure>
                     </div>
                     <div class="warning-dialog-mid-txt1">
-                        <p class="warning-dialog-mid-section1-msg">{{this.displayMgs}}</p>
+                        <p class="warning-dialog-mid-section1-msg">{{displayMgs}}</p>
                     </div>
                 </div>
             </div>
@@ -93,14 +94,14 @@
 
 
 
-<ng-template #shutDownRestartNotice >
+<ng-template #shutDownRestartNotice>
     <div ngDraggable [handle]="leftHS4"  (click)="onPwrDialogWindowClick($event)"  [ngDraggable]="false" class="shutdown-restart-dialog-main-container" id="shutdown-restart-dialog-{{processId}}">
         <div class="shutdown-restart-dialog-header-container" tabindex="0">
             <div #leftHS4 class="shutdown-restart-dialog-left-header-section">
                 <h1 class="shutdown-restart-dialog-h1">
                     <figure class="shutdown-restart-dialog-figure">
                         <!-- <img class="shutdown-restart-dialog-img" [src]="this.icon" [alt]="this.name"/> -->
-                        <figcaption class="shutdown-restart-dialog-figcaption"> {{this.displayMgs}} </figcaption>
+                        <figcaption class="shutdown-restart-dialog-figcaption"> {{displayMgs}} </figcaption>
                     </figure>
                 </h1>
             </div>
@@ -163,101 +164,37 @@
 </ng-template>
 
 <ng-template #fileTransfer>
-    <!-- <cos-window [runningProcessID]="processId" [displayMessage]="'Shortcut'" [processAppName]="WARNING_DIALOG" [isDialog]="true">
-        <div  class="warning-dialog-main-container"> 
-            <div class="warning-dialog-mid-container" tabindex="0">
-                <div class="warning-dialog-mid-section1">
-                    <div class="warning-dialog-mid-img1">
-                        <figure class="warning-dialog-figure1">
-                            <img class="warning-dialog-img1" [src]="'osdrive/Cheetah/System/Imageres/warning.png'"/>
-                        </figure>
-                    </div>
-                    <div class="warning-dialog-mid-txt1">
-                        <p class="warning-dialog-mid-section1-msg">{{this.displayMgs}}</p>
+    <cos-window [runningProcessID]="processId" [processAppIcon]="fileTransferIcon" [processAppName]="transferPercentageText">
+        <div class="file-transfer-dialog-main-container" tabindex="0">
+            <div class="file-transfer-dialog-content-container" > 
+                <div class="file-transfer-dialog-from-to">
+                    <p [innerHTML]="srcToDest"></p>
+                </div>
+
+                <div class="file-transfer-dialog-progress-text">
+                    <p>{{transferPercentageText}}</p>
+                </div>
+
+                <div class="file-transfer-dialog-progress-container">
+                    <div
+                        class="file-transfer-dialog-progress-bar"
+                        [style.width.%]="transferProgress">
                     </div>
                 </div>
+
+                <div class="file-transfer-dialog-progress-file-name">
+                    <p>Name: {{fileName}}</p>
+                </div>
             </div>
-        
-            <div class="warning-dialog-tail-container">
+            <div class="file-transfer-dialog-tail-container">
                 <span style="position: fixed; margin-top:10px; right:4%;">
-                    <button class="btn btn-primary" (click)="onYesDialogBox()" >
-                    Yes
-                    </button>
-                    <div style="padding-left: 5px; display: inline;"></div>
                     <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
-                    No
+                        <p class="file-transfer-btn-cancel">Cancel</p>
                     </button>
                 </span>
             </div>
         </div>
-    </cos-window> -->
-
-    <div ngDraggable [handle]="leftHS4"  (click)="onPwrDialogWindowClick($event)"  [ngDraggable]="false" class="shutdown-restart-dialog-main-container" id="shutdown-restart-dialog-{{processId}}">
-        <div class="shutdown-restart-dialog-header-container" tabindex="0">
-            <div #leftHS4 class="shutdown-restart-dialog-left-header-section">
-                <h1 class="shutdown-restart-dialog-h1">
-                    <figure class="shutdown-restart-dialog-figure">
-                        <!-- <img class="shutdown-restart-dialog-img" [src]="this.icon" [alt]="this.name"/> -->
-                        <figcaption class="shutdown-restart-dialog-figcaption"> {{this.displayMgs}} </figcaption>
-                    </figure>
-                </h1>
-            </div>
-        </div>
-
-        <!-- Section 1 -->
-        <div class="shutdown-restart-section shutdown-restart-section1">
-          <div class="sr-section1-img">
-            <img [src]="cheetahOS" class="sr-section1-img">
-          </div>
-          <div class="sr-section1-text-container">
-            <span>CheetahOS</span>
-          </div>
-        </div>
-    
-        <!-- Section 2 -->
-        <div class="shutdown-restart-section shutdown-restart-section2">
-          <div class="shutdown-restart-section2-left-part">
-            <img [src]="myComputer" class="sr-section2-img">
-          </div>
-          <div class="right-part">
-            <div class="top-text">What do you want the computer to do?</div>
-
-            <div class="custom-select">
-                <select class="shutdown-restart-select" [(ngModel)]="selectedOption" (change)="onPwrOptionSelect($event)">
-                    <option class="shutdown-restart-option" *ngFor="let option of pwrOnOffOptions" [value]="option.value">
-                        {{ option.value }}
-                    </option>
-                </select>
-                <div class="custom-select-img-cntnr">
-                    <div class="custom-select-img"> 
-                        <svg xmlns="http://www.w3.org/2000/svg" 
-                        height="10" width="10" 
-                        viewBox="0 0 512 512" style="fill: #333;">
-                        <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
-                    </svg>
-                    </div>
-                </div>
-            </div>
-            <div class="bottom-text"> {{ pwrOnOffOptionsTxt }}</div>
-          </div>
-        </div>
-    
-        <!-- Section 3 -->
-        <div class="shutdown-restart-section shutdown-restart-section3">
-            <div class="sr-section3-question">
-                <div class="sr-section3-chxbox">
-                    <input type="checkbox" [(ngModel)]="reOpenWindows" (change)="onCheckboxChange()">
-                </div>
-                <div class="sr-section3-txt">
-                    Reopen windows when loggin back in
-                </div>
-            </div>
-            <div class="sr-section3-btns">
-                <button class="btn btn-primary-pwr" (click)="onYesPowerDialogBox()" >OK</button>
-                <button class="btn btn-secondary-pwr" (click)="onCloseDialogBox()">Cancel</button>
-            </div>
-        </div>
-    </div>
+    </cos-window>
 </ng-template>
 
 <!-- File Transfer Dialog To be Added -->

@@ -43,16 +43,12 @@ export class UserNotificationService implements BaseService{
     private showDialogMsgBox(dialogMsgType:string, msg:string):void{
         const componentRef = this._componentReferenceService.createComponent(DialogComponent);
 
-        if(dialogMsgType === UserNotificationType.Error){
-          componentRef.setInput('inputMsg', msg);
-          componentRef.setInput('notificationType', dialogMsgType);
-        }else if(dialogMsgType === UserNotificationType.Info){
-          componentRef.setInput('inputMsg', msg);
-          componentRef.setInput('notificationType', dialogMsgType);
-        }else if(dialogMsgType === UserNotificationType.PowerOnOff){
-          componentRef.setInput('inputMsg', msg);
-          componentRef.setInput('notificationType', dialogMsgType);
-        }else{
+        if(dialogMsgType === UserNotificationType.Error ||
+            dialogMsgType === UserNotificationType.Info ||
+            dialogMsgType === UserNotificationType.Warning ||
+            dialogMsgType === UserNotificationType.PowerOnOff ||
+            dialogMsgType === UserNotificationType.FileTransfer
+        ){
           componentRef.setInput('inputMsg', msg);
           componentRef.setInput('notificationType', dialogMsgType);
         }
@@ -76,6 +72,10 @@ export class UserNotificationService implements BaseService{
 
     showPowerOnOffNotification(msg:string){
         this.showDialogMsgBox(UserNotificationType.PowerOnOff, msg);
+    }
+
+    showFileTransferNotification(msg:string){
+        this.showDialogMsgBox(UserNotificationType.FileTransfer, msg);
     }
 
     private getProcessDetail():Process{
