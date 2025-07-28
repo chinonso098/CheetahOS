@@ -271,7 +271,7 @@ export class ProcessHandlerService implements BaseService{
     }
 
     private restorePriorSession(priorOpenedApps: string[]):void{
-        const delay = 750; //400ms
+        const delay = 750; //750ms
         if(priorOpenedApps.length > 0){
             const openedAppInstList = this._sessionMangamentServices.getSession(this.appsInstanceUIDKey) as string[];
             //console.log('openedAppInstList:', openedAppInstList);
