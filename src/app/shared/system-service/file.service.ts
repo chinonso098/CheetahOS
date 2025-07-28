@@ -887,8 +887,11 @@ export class FileService implements BaseService{
             return false;
     }
 
-    public async writeFilesAsync(directory:string, files:File[]):Promise<boolean>{
+    public async writeFilesAsync_TBD(directory:string, files:File[]):Promise<boolean>{
         return new Promise<boolean>(() =>{
+
+            let res = false;
+
             files.forEach((file)=>{
                 const fileReader = new FileReader()
                 fileReader.readAsDataURL(file);
@@ -903,11 +906,52 @@ export class FileService implements BaseService{
                         newFile.setContentPath = result || Constants.EMPTY_STRING;
                     }
                     newFile.setCurrentPath = `${this.pathCorrection(directory)}/${file.name}`;
-                    return await this.writeFileAsync(directory, newFile);
+                    res = await this.writeFileAsync(directory, newFile);
                 }
             })
+
+            return res;
         });
     }
+
+    public async writeFilesAsync(directory: string, files: File[]): Promise<boolean> {
+        const readFileAsDataURL = (file: File): Promise<string | ArrayBuffer | null> => {
+            return new Promise((resolve, reject) => {
+                const fileReader = new FileReader();
+                fileReader.readAsDataURL(file);
+                fileReader.onload = () => resolve(fileReader.result);
+                fileReader.onerror = () => reject(fileReader.error);
+            });
+        };
+
+        for (const file of files) {
+            try {
+                const result = await readFileAsDataURL(file);
+                const newFile: FileInfo = new FileInfo();
+                newFile.setFileName = file.name;
+
+                if (result instanceof ArrayBuffer) {
+                    newFile.setContentBuffer = result;
+                } else {
+                    newFile.setContentPath = result || Constants.EMPTY_STRING;
+                }
+
+                newFile.setCurrentPath = `${this.pathCorrection(directory)}/${file.name}`;
+                const success = await this.writeFileAsync(directory, newFile);
+
+                if (!success) {
+                    return false; // Return false if any file write fails
+                }
+
+            } catch (error) {
+                console.error(`Error processing file ${file.name}:`, error);
+                return false;
+            }
+        }
+
+        return true; // Return true if all files were written successfully
+    }
+
 
     public async writeFileAsync(path:string, file:FileInfo):Promise<boolean>{
         const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
@@ -1181,11 +1225,9 @@ OpensWith=${shortCutData.getOpensWith}
 
         const fileName = this.getNameFromPath(srcPath);
 
-        if (
-            Constants.AUDIO_FILE_EXTENSIONS.includes(extension) ||
+        if (Constants.AUDIO_FILE_EXTENSIONS.includes(extension) ||
             Constants.IMAGE_FILE_EXTENSIONS.includes(extension) ||
-            Constants.VIDEO_FILE_EXTENSIONS.includes(extension)
-        ) {
+            Constants.VIDEO_FILE_EXTENSIONS.includes(extension)) {
             const utf8Data = new TextDecoder("utf-8").decode(contents);
 
             const isBase64 = this.isDataUrl(utf8Data);

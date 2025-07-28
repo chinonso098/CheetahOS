@@ -1265,7 +1265,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     console.log('Dsktp onDrop evtOriginator:', evtOriginator);
 
     if(evtOriginator === Constants.EMPTY_STRING){
-      //Some about z-index is causing the drop to desktop to act funny.
       event.preventDefault();
       let droppedFiles:File[] = [];
 
