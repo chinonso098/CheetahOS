@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import {Component, Input, OnChanges, SimpleChanges, AfterViewInit} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { UserNotificationType } from 'src/app/system-files/notification.type';
@@ -20,7 +21,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   selector: 'cos-dialog',
   templateUrl: './dialog.component.html',
   styleUrls: ['./dialog.component.css'],
-  standalone: false,
+  standalone:false,
 })
 
 export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit {
@@ -43,10 +44,15 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   warnNotification = UserNotificationType.Warning;
   infoNotification =  UserNotificationType.Info;
   pwrOnOffNotification =  UserNotificationType.PowerOnOff;
+  fileTransferNotification =  UserNotificationType.FileTransfer;
 
   cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
-  errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_error.wav`;
+  infoIcon = `${Constants.IMAGE_BASE_PATH}info.png`;
+  warningIcon = `${Constants.IMAGE_BASE_PATH}warning.png`;
+  errorIcon = `${Constants.IMAGE_BASE_PATH}red_x.png`;
+  fileTransferIcon = `${Constants.IMAGE_BASE_PATH}file_transfer.png`;
+  errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_critical_stop.wav`;
 
   pwrOnOffOptions = [
     { value: 'Shut down', label: 'Closes all apps and turns off the PC.' },
@@ -60,17 +66,27 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   readonly ERROR_DIALOG = 'error-dialog';
   readonly WARNING_DIALOG = 'warning-dialog';
   readonly INFO_DIALOG = 'info-dialog';
+  readonly FILE_TRANSFER_DIALOG = 'fileTransfer-dialog';
 
   readonly UPDATE = 'Update';
   readonly UPDATE_0 = 'Update0';
 
+  from = '<strong>Downloads</strong>';
+  to = '<b>Desktop</b>';
+  srcToDest = `from &nbsp ${this.from} &nbsp (C:/Downloads) to &nbsp ${this.to} &nbsp (C:/Users/Desktop)`;
+  transferPercentage = 35;
+  transferProgress = 35;
+  transferPercentageText = `${this.transferPercentage}% complete`;
+  fileName = 'wet ass pussy.txt';
+
   type = ComponentType.System;
   displayMgs = Constants.EMPTY_STRING;
+  displayAdditionalMsg ='Application not found';
   name = Constants.EMPTY_STRING;
   hasWindow = false;
   isMaximizable = false;
-  icon = Constants.EMPTY_STRING;
-  processId = Constants.NUM_ZERO;
+  icon = this.fileTransferIcon;
+  processId = 0;
   displayName = Constants.EMPTY_STRING;
 
   constructor(notificationServices:UserNotificationService, menuService:MenuService, windowService:WindowService,
@@ -91,12 +107,16 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   ngOnChanges(changes: SimpleChanges):void{
     console.log('DIALOG onCHANGES:',changes);
     this.displayMgs = this.inputMsg;
-    this.notificationOption =this.notificationType;
-    this.setPwrDialogPid(this.UPDATE);
+
+    if(this.notificationType === UserNotificationType.PowerOnOff){
+      this.notificationOption =this.notificationType;
+      this.setPwrDialogPid(this.UPDATE);
+    }
   }
 
   async ngAfterViewInit(): Promise<void> {
-    await CommonFunctions.sleep(Constants.NUM_ONE_HUNDRED * Constants.NUM_ONE);
+    const delay = 200; //200ms
+    await CommonFunctions.sleep(delay);
     this.playDialogNotifcationSound();
   }
 
@@ -113,13 +133,13 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
       if(action === this.UPDATE){
         this._systemNotificationService.setPwrDialogPid(this.processId);
       }else{
-        this._systemNotificationService.setPwrDialogPid(Constants.NUM_ZERO);
+        this._systemNotificationService.setPwrDialogPid(0);
       }
     }
   }
 
   onYesPowerDialogBox():void{
-    const delay = Constants.NUM_ONE_HUNDRED * Constants.NUM_TWO; //200ms
+    const delay = 200; //200ms
     const clearSessionData = !this.reOpenWindows;
     
     this.onCloseDialogBox();

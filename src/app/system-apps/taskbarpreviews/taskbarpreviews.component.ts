@@ -9,7 +9,8 @@ import { Constants } from 'src/app/system-files/constants';
   selector: 'cos-taskbarpreviews',
   templateUrl: './taskbarpreviews.component.html',
   styleUrl: './taskbarpreviews.component.css',
-  standalone: false
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
 
@@ -23,10 +24,10 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
   @Input() icon = Constants.EMPTY_STRING;
   @Input() name = Constants.EMPTY_STRING;
   @Input() imageData = Constants.EMPTY_STRING;
-  @Input() pid = Constants.NUM_ZERO;
+  @Input() pid = 0;
 
   appInfo = Constants.EMPTY_STRING;
-  SECONDS_DELAY = Constants.NUM_TWENTY;
+  SECONDS_DELAY = 20;
 
 
   constructor(runningProcessService:RunningProcessService, windowServices:WindowService, systemNotificationService:SystemNotificationService){

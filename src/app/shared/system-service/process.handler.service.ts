@@ -37,6 +37,7 @@ import { MarkDownViewerComponent } from "src/app/user-apps/markdownviewer/markdo
 import { RuffleComponent } from "src/app/user-apps/ruffle/ruffle.component";
 import { TitleComponent } from "src/app/user-apps/title/title.component";
 import { WarpingstarfieldComponent } from "src/app/user-apps/warpingstarfield/warpingstarfield.component";
+import { ParticaleFlowComponent } from "src/app/user-apps/particaleflow/particaleflow.component";
 
 
 @Injectable({
@@ -57,7 +58,7 @@ export class ProcessHandlerService implements BaseService{
     private _TriggerList:FileInfo[];
 
     private _onlyOneInstanceAllowed:string[] = ["audioplayer", "chatter", "cheetah", "jsdos", "photoviewer", 
-        "ruffle", "runsystem", "taskmanager", "videoplayer"];
+        "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow"];
 
     private userOpenedAppsList:string[] = [];
     private openedAppInstanceUID:string[] = [];
@@ -66,7 +67,7 @@ export class ProcessHandlerService implements BaseService{
 
     name = 'trgr_proc_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = Constants.NUM_ZERO;
+    processId = 0;
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
@@ -76,8 +77,10 @@ export class ProcessHandlerService implements BaseService{
     readonly CHATTER ="chatter";
     readonly RUN_SYSTEM = "runsystem";
     readonly CHEETAH = "cheetah";
-    
-
+    readonly BOIDS = "boids";
+    readonly STAR_FIELD = "starfield";
+    readonly PARTICLE_FLOW = "particleflow";
+       
     //:TODO when you have more apps with a UI worth looking at, add a way to select the right component for the give
     //appname
     private apps: {type: Type<BaseComponent>}[] =[
@@ -100,6 +103,7 @@ export class ProcessHandlerService implements BaseService{
         {type: MarkDownViewerComponent},
         {type: WarpingstarfieldComponent},
         {type: BoidsComponent},
+        {type: ParticaleFlowComponent},
     ];
 
     constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, windowService:WindowService, 
@@ -142,8 +146,13 @@ export class ProcessHandlerService implements BaseService{
                     //this._userNotificationService.showInfoNotification(msg);
 
                     if(runningProcess){
-                        if(runningProcess.getProcessName === this.TASK_MANAGER || runningProcess.getProcessName === this.CHATTER
-                            || runningProcess.getProcessName === this.RUN_SYSTEM || runningProcess.getProcessName === this.CHEETAH){
+                        if( runningProcess.getProcessName === this.BOIDS ||
+                            runningProcess.getProcessName === this.CHATTER || 
+                            runningProcess.getProcessName === this.CHEETAH ||
+                            runningProcess.getProcessName === this.STAR_FIELD || 
+                            runningProcess.getProcessName === this.RUN_SYSTEM || 
+                            runningProcess.getProcessName === this.TASK_MANAGER || 
+                            runningProcess.getProcessName === this.PARTICLE_FLOW ){
                             this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
                         }else{
                             const uid = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
@@ -233,17 +242,17 @@ export class ProcessHandlerService implements BaseService{
     }
 
     private deleteEntryFromUserOpenedAppsAndSession(proccess:Process):void{
-      const deleteCount = Constants.NUM_ONE;
+      const deleteCount = 1;
       const uid = `${proccess.getProcessName}-${proccess.getProcessId}`;
 
       let pidIndex = this.userOpenedAppsList.indexOf(proccess.getProcessName);
-      if(pidIndex !== Constants.MINUS_ONE) 
+      if(pidIndex !== -1) 
         this.userOpenedAppsList.splice(pidIndex, deleteCount);
 
       this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList);
 
       pidIndex = this.openedAppInstanceUID.indexOf(uid);
-      if(pidIndex !== Constants.MINUS_ONE) 
+      if(pidIndex !== -1) 
         this.openedAppInstanceUID.splice(pidIndex, deleteCount);
 
         this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUID);
@@ -262,7 +271,7 @@ export class ProcessHandlerService implements BaseService{
     }
 
     private restorePriorSession(priorOpenedApps: string[]):void{
-        const delay = 750; //400ms
+        const delay = 750; //750ms
         if(priorOpenedApps.length > 0){
             const openedAppInstList = this._sessionMangamentServices.getSession(this.appsInstanceUIDKey) as string[];
             //console.log('openedAppInstList:', openedAppInstList);

@@ -21,7 +21,8 @@ import { MenuService } from 'src/app/shared/system-service/menu.services';
   selector: 'cos-startmenu',
   templateUrl: './startmenu.component.html',
   styleUrls: ['./startmenu.component.css'],
-  standalone: false,
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 
 export class StartMenuComponent implements OnInit, AfterViewInit {
@@ -64,7 +65,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     this._menuService = menuService;
 
     this.processId = this._processIdService.getNewProcessId()
-    if(this._runningProcessService.getProcesses().findIndex(x => x.getProcessName === this.name) === Constants.MINUS_ONE){
+    if(this._runningProcessService.getProcesses().findIndex(x => x.getProcessName === this.name) === -1){
       this._runningProcessService.addProcess(this.getComponentDetail());
     }
   }
@@ -75,7 +76,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   
   async ngAfterViewInit():Promise<void>{
 
-    await CommonFunctions.sleep(this.SECONDS_DELAY * Constants.NUM_TWO)
+    await CommonFunctions.sleep(this.SECONDS_DELAY * 2)
     await this.loadFilesInfoAsync();
     this.removeVantaJSSideEffect();
   }
@@ -192,14 +193,8 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   private async loadFilesInfoAsync():Promise<void>{
     this.startMenuFiles = [];
     this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(this.START_MENU_DIRECTORY);
-    this._startMenuDirectoryFilesEntries = this._fileService.getFileEntriesFromDirectory(directoryEntries,this.START_MENU_DIRECTORY);
-
-    for(let i = 0; i < directoryEntries.length; i++){
-      const fileEntry = this._startMenuDirectoryFilesEntries[i];
-      const fileInfo = await this._fileService.getFileInfoAsync(fileEntry.getPath);
-      this.startMenuFiles.push(fileInfo)
-    }
+    const directoryEntries  = await this._fileService.loadDirectoryFiles(this.START_MENU_DIRECTORY);
+    this.startMenuFiles.push(...directoryEntries)
   }
 
   runProcess(file:FileInfo, evt:MouseEvent):void{

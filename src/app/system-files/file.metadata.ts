@@ -11,10 +11,10 @@ export class FileMetaData {
         accessDate: Date = new Date('1990-01-01'),
         createdDate: Date = new Date('1990-01-01'),
         modifiedDate: Date = new Date('1990-01-01'),
-        size: number = 0,
-        blkSize: number = 0,
-        mode: number = 0,
-        isDir: boolean = false ) {
+        size = 0,
+        blkSize = 0,
+        mode = 0,
+        isDir = false ) {
         this._createdDate = createdDate;
         this._modifiedDate = modifiedDate;
         this._accessDate = accessDate;
@@ -72,13 +72,4 @@ export class FileMetaData {
     set setIsDirectory(isDir: boolean) {
         this._isDirectory = isDir;
     }
-}
-
-
-
-export interface FolderSizeMeta {
-    totalSize: number;
-    fileCount: number;
-    folderCount: number;
-    errors: string[];
 }

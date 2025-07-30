@@ -38,10 +38,24 @@
     position: relative;
 }
 
+.os-name-display{
+    width: 165px;
+    height: fit-content;
+}
+
+.fancy{
+    background: #007BFF;
+    -webkit-background-clip: text;
+    color: #007BFF;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 15, #007BFF);
+}
+
 .info-icon {
     cursor: pointer;
     font-size: 20px;
     color: #007BFF;
+    width: 22px;
 }
 
 .tooltip {

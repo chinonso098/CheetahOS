@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChanges, ViewChild, ChangeDetectorRef, SimpleChanges, Renderer2 } from '@angular/core';
 
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -22,13 +23,13 @@ import { Constants } from 'src/app/system-files/constants';
    templateUrl: './window.component.html',
    animations: [openCloseAnimation,hideShowAnimation,minimizeMaximizeAnimation],
    styleUrls: ['./window.component.css'],
-  standalone: false,
+   standalone:false,
  })
  export class WindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
    @ViewChild('divWindow') divWindow!: ElementRef;
    @ViewChild('glassPaneContainer') glassPaneContainer!: ElementRef;
 
-   @Input() runningProcessID = Constants.NUM_ZERO;  
+   @Input() runningProcessID = 0;  
    @Input() processAppIcon = Constants.EMPTY_STRING;  
    @Input() processAppName = Constants.EMPTY_STRING;  
    @Input() priorUId = Constants.EMPTY_STRING;  
@@ -57,10 +58,10 @@ import { Constants } from 'src/app/system-files/constants';
 
   readonly SECONDS_DELAY = 450;
   readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
-  readonly HIDDEN_Z_INDEX = Constants.NUM_ZERO;
-  readonly MIN_Z_INDEX = Constants.NUM_ONE;
-  readonly MAX_Z_INDEX = Constants.NUM_TWO;
-  readonly TMP_MAX_Z_INDEX = Constants.NUM_THREE;
+  readonly HIDDEN_Z_INDEX = 0;
+  readonly MIN_Z_INDEX = 1;
+  readonly MAX_Z_INDEX = 2;
+  readonly TMP_MAX_Z_INDEX = 3;
   readonly WIN_TOP = 25;
   readonly WIN_LEFT = 25;
 
@@ -82,13 +83,13 @@ import { Constants } from 'src/app/system-files/constants';
   windowWidth = '0px';
   windowHeight = '0px';
   windowZIndex = '0';
-  hsZIndex = Constants.NUM_TWO;
+  hsZIndex = 2;
 
-  xAxisTmp = Constants.NUM_ZERO;
-  yAxisTmp = Constants.NUM_ZERO;
+  xAxisTmp = 0;
+  yAxisTmp = 0;
 
-  windowTop = Constants.NUM_ZERO;
-  windowLeft = Constants.NUM_ZERO;
+  windowTop = 0;
+  windowLeft = 0;
 
   isWindowMaximizable = true;
   currentWindowSizeState = false;
@@ -101,7 +102,7 @@ import { Constants } from 'src/app/system-files/constants';
   hasWindow = false;
   icon = Constants.EMPTY_STRING;
   name = 'Window';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   uniqueId = Constants.EMPTY_STRING;
   uniqueGPId = Constants.EMPTY_STRING;
   type = ComponentType.System;
@@ -173,8 +174,8 @@ import { Constants } from 'src/app/system-files/constants';
         pid : this.processId,
         height:this.defaultHeightOnOpen,
         width: this.defaultWidthOnOpen,
-        x_axis: Constants.NUM_ZERO,
-        y_axis: Constants.NUM_ZERO,
+        x_axis: 0,
+        y_axis: 0,
         z_index:this.MAX_Z_INDEX,
         is_visible:true
       }
@@ -324,7 +325,7 @@ import { Constants } from 'src/app/system-files/constants';
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
           'z-index':zIndex,
-          'opacity': (zIndex > Constants.NUM_ZERO)? Constants.NUM_ONE : Constants.NUM_ZERO,
+          'opacity': (zIndex > 0)? 1 : 0,
           'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
         };
         window.z_index = zIndex;
@@ -338,7 +339,7 @@ import { Constants } from 'src/app/system-files/constants';
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
           'z-index':zIndex,
-          'opacity': (zIndex > Constants.NUM_ZERO)?  Constants.NUM_ONE : Constants.NUM_ZERO,
+          'opacity': (zIndex > 0)?  1 : 0,
           'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
         };
       }
@@ -380,7 +381,7 @@ import { Constants } from 'src/app/system-files/constants';
       const y_axis = matrix1.m42;
 
       //ignore false drag
-      if( x_axis!== Constants.NUM_ZERO  && y_axis !== Constants.NUM_ZERO){
+      if( x_axis!== 0  && y_axis !== 0){
         const windowState = this._windowService.getWindowState(this.processId);
         const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
 
@@ -596,10 +597,10 @@ import { Constants } from 'src/app/system-files/constants';
     stackWindow():void{
       let newTop = this.WIN_TOP;
       let newLeft = this.WIN_LEFT;
-      let mainWindowWidth = Constants.NUM_ZERO;
-      let adjMainWindowWidth = Constants.NUM_ZERO;
-      let mainWindowHeight = Constants.NUM_ZERO;
-      let adjMainWindowHeight = Constants.NUM_ZERO;
+      let mainWindowWidth = 0;
+      let adjMainWindowWidth = 0;
+      let mainWindowHeight = 0;
+      let adjMainWindowHeight = 0;
 
       const offset = 2;
       const taskBarHeight = 40;
@@ -639,10 +640,10 @@ import { Constants } from 'src/app/system-files/constants';
         const availableVerticalRoom = adjMainWindowHeight - taskBarHeight - winCmpnt.height;
   
         // handle out of bounds
-        if((availableVerticalRoom < Constants.NUM_ZERO) || (availableHorizontalRoom < Constants.NUM_ZERO)){
+        if((availableVerticalRoom < 0) || (availableHorizontalRoom < 0)){
           //horizontally out of bounds
-          if(availableHorizontalRoom < Constants.NUM_ZERO){
-            const  leftSubtraction = (currentBound?.x_bounds_subtraction || Constants.NUM_ZERO) - offset;
+          if(availableHorizontalRoom < 0){
+            const  leftSubtraction = (currentBound?.x_bounds_subtraction || 0) - offset;
             const resetLeft = this.WIN_LEFT - (leftSubtraction * -1);
             newLeft = resetLeft;
             newTop = this.WIN_TOP;
@@ -655,8 +656,8 @@ import { Constants } from 'src/app/system-files/constants';
           }
   
           //vertinally out of bounds
-          if(availableVerticalRoom < Constants.NUM_ZERO){
-            const  topSubtraction = (currentBound?.y_bounds_subtraction || Constants.NUM_ZERO) - offset;
+          if(availableVerticalRoom < 0){
+            const  topSubtraction = (currentBound?.y_bounds_subtraction || 0) - offset;
             const resetTop = this.WIN_TOP - (topSubtraction * -1);
             newTop = resetTop;
             newLeft = this.WIN_LEFT;
@@ -681,8 +682,8 @@ import { Constants } from 'src/app/system-files/constants';
     }
 
     resetWindowBoundsState():void{
-      let newLeft = Constants.NUM_ZERO;
-      let newTop = Constants.NUM_ZERO;
+      let newLeft = 0;
+      let newTop = 0;
 
       const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
       const mainWindow = document.getElementById('vanta')?.getBoundingClientRect();
@@ -696,8 +697,8 @@ import { Constants } from 'src/app/system-files/constants';
         if(currentBound){
           currentBound.x_offset = newLeft;
           currentBound.y_offset = newTop
-          currentBound.x_bounds_subtraction = Constants.NUM_ZERO;
-          currentBound.y_bounds_subtraction = Constants.NUM_ZERO;
+          currentBound.x_bounds_subtraction = 0;
+          currentBound.y_bounds_subtraction = 0;
 
           this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
         }
@@ -949,7 +950,7 @@ import { Constants } from 'src/app/system-files/constants';
           'left': `${this.windowLeft}%`,
           'z-index':this.HIDDEN_Z_INDEX,
           'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-          'opacity': Constants.NUM_ZERO,
+          'opacity': 0,
         };
         this._windowService.addWindowState(windowState);   
       }
@@ -964,7 +965,7 @@ import { Constants } from 'src/app/system-files/constants';
             'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-            'opacity': Constants.NUM_ONE
+            'opacity': 1
           };
         }else{
           this.currentStyles = {
@@ -972,7 +973,7 @@ import { Constants } from 'src/app/system-files/constants';
             'left': `${this.windowLeft}%`,
             'z-index':this.MIN_Z_INDEX,
             'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
-            'opacity': Constants.NUM_ONE
+            'opacity': 1
           };
         }
         this._windowService.addWindowState(windowState);   

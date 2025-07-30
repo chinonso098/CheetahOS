@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, OnInit, AfterViewInit, ViewChild, OnDestroy, Input } from '@angular/core';
 
 import {extname} from 'path';
@@ -23,7 +24,7 @@ declare let Dos: any;
   selector: 'cos-jsdos',
   templateUrl: './jsdos.component.html',
   styleUrls: ['./jsdos.component.css'],
-  standalone: false,
+  standalone:false,
 })
 export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
   @ViewChild('doswindow') dosWindow!: ElementRef; 
@@ -49,7 +50,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}js-dos_emulator.png`;
   isMaximizable = false;
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.User;
   displayName = 'JS-Dos';
 

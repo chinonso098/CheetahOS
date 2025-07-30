@@ -3,7 +3,8 @@ import { Directive, Output, ElementRef, EventEmitter, HostListener, Renderer2 } 
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector
   selector: '[columnResize]',
-  standalone: false
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 export class ColumnResizeDirective {
   private startX!: number;

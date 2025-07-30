@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, OnInit, AfterViewInit} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Constants } from "src/app/system-files/constants";
@@ -13,7 +14,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   selector:'cos-cheetah',
   templateUrl: './cheetah.component.html',
   styleUrls: ["./cheetah.component.css"],
-  standalone: false
+  standalone:false,
 })
 
 export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
@@ -29,7 +30,7 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   cheetahIcon = `${Constants.IMAGE_BASE_PATH}cheetah-midsprint-dash.jpg`;
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = 'CheetahOS';
   name = 'cheetah';
@@ -50,12 +51,13 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   }
 
   async ngOnInit(): Promise<void> {
-    await CommonFunctions.sleep((Constants.NUM_TEN * Constants.NUM_FIVE))
+    const delay = 50; //50ms
+    await CommonFunctions.sleep(delay)
     await this._audioService.play(this.defaultAudio);
   }
 
    async ngAfterViewInit(): Promise<void> {
-    await CommonFunctions.sleep((Constants.NUM_TEN))
+    await CommonFunctions.sleep((10))
     this.getInfoMessage();
   }
 
@@ -73,16 +75,15 @@ Other trademarks and logos are property of their respective owners
 
 
   onMouseEnter1():void{
-    //clear timeout just
-
+    const showFancyLetters = false;
     if(!this.isVisible)
         return;
 
     clearTimeout(this.infoMessageTimeOutId);
-    this.onMouseEnter();
+    this.onMouseEnter(showFancyLetters);
   }
 
-  onMouseEnter():void{
+  onMouseEnter(showFancyLetters = true):void{
 
     const toolTipID = 'cheetahAboutTooltip';
     const aboutToolTip = document.getElementById(toolTipID) as HTMLElement;
@@ -92,9 +93,13 @@ Other trademarks and logos are property of their respective owners
       aboutToolTip.style.transition = 'opacity 0.5s ease';
     }
     this.isVisible = true;
+
+    if(showFancyLetters)
+      this.fancyLetterEffect();
   }
 
    onMouseLeave():void{
+    const delay = 3000; // wait 3 sec
     const toolTipID = 'cheetahAboutTooltip';
     const aboutToolTip = document.getElementById(toolTipID) as HTMLElement;
 
@@ -105,8 +110,36 @@ Other trademarks and logos are property of their respective owners
         aboutToolTip.style.transition = 'opacity 0.75s ease 1';
       }
       this.isVisible = false;
-    }, Constants.NUM_ONE_THOUSAND * Constants.NUM_FOUR); // wait 4 sec
+    }, delay); 
   }
+
+  fancyLetterEffect(): void {
+    const LETTERS = 'ABCDEFGHIJKLMNOPQRSTVUWXYZ0123456789';
+    const text = 'CheetahOS';
+    const delay = 50;
+    let counter = 0;
+
+    const intervalId = setInterval(() => {
+      let displayed = Constants.EMPTY_STRING;
+
+      for (let i = 0; i < text.length; i++) {
+        if (i < counter) {
+          displayed += text[i];
+        } else {
+          const randomIndex = Math.floor(Math.random() * LETTERS.length);
+          displayed += LETTERS[randomIndex];
+        }
+      }
+
+      this.displayName = displayed;
+      counter += 0.5;
+
+      if (counter > text.length) {
+        clearInterval(intervalId);
+      }
+    }, delay);
+  }
+
 
   setCheetahWindowToFocus(pid:number):void{
      this._windowService.focusOnCurrentProcessWindowNotify.next(pid);

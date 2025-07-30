@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, OnDestroy } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -11,7 +12,7 @@ import { Subscription } from 'rxjs';
   selector: 'cos-search',
   templateUrl: './search.component.html',
   styleUrl: './search.component.css',
-  standalone: false,
+  standalone:false,
 })
 
 export class SearchComponent implements OnDestroy {

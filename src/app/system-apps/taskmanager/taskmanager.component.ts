@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, OnInit,OnDestroy, AfterViewInit, ViewChild, ElementRef, Renderer2, Input} from '@angular/core';
 import { Subject, Subscription, interval, switchMap } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -21,7 +22,7 @@ import { AppState } from 'src/app/system-files/state/state.interface';
   selector: 'cos-taskmanager',
   templateUrl: './taskmanager.component.html',
   styleUrls: ['./taskmanager.component.css'],
-  standalone: false,
+  standalone:false,
 })
 export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,AfterViewInit {
 
@@ -29,8 +30,6 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   @ViewChild('tskMgrTable') tskMgrTable!: ElementRef;  
   @ViewChild('tskmgrTblCntnr') tskmgrTblCntnr!: ElementRef;
   @ViewChild('tskmgrCardBody') tskmgrCardBody!: ElementRef; 
-  @ViewChild('tskMgrTableHeaderCntnr') tskMgrTableHeaderCntnr!: ElementRef;  
-  @ViewChild('tskMgrTableBodyCntnr') tskMgrTableBodyCntnr!: ElementRef;  
   @ViewChild('tskMgrTableHeaderCntnt') tskMgrTableHeaderCntnt!: ElementRef;  
   @ViewChild('tskMgrTableBodyCntnt') tskMgrTableBodyCntnt!: ElementRef;  
   @Input() priorUId = Constants.EMPTY_STRING;
@@ -57,11 +56,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     order: 'asc',
   }  
 
-  private sleepNumber = Constants.NUM_ZERO;
-  private sleepCounter = Constants.NUM_ZERO;
-  private processNumberToSuspend = Constants.NUM_ZERO;
-  private refreshRateInterval = Constants.NUM_ZERO;
-  private processIdToClose = Constants.NUM_ZERO;
+  private sleepNumber = 0;
+  private sleepCounter = 0;
+  private processNumberToSuspend = 0;
+  private refreshRateInterval = 0;
+  private processIdToClose = 0;
 
   statusColumnVisible = true;
   cpuColumnVisible = true;
@@ -83,7 +82,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   isActive = false;
   isFocus = false;
 
-  selectedRow = Constants.MINUS_ONE;
+  selectedRow = -1;
   showBtnNavMenu = false;
 
   detailedView = DisplayViews.DETAILED_VIEW;
@@ -97,20 +96,20 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     "cmpnt_ref_svc", "file_mgr_svc", "file_svc", "menu_svc", "notification_svc", "pid_gen_svc", "rning_proc_svc", "scripts_svc",
     "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc", "window_mgmt_svc", "audio_svc"];
   groupedData: any = {};
-  selectedRefreshRate = Constants.NUM_ZERO;
+  selectedRefreshRate = 0;
 
-  cpuUtil = Constants.NUM_ZERO;
-  memUtil = Constants.NUM_ZERO;
-  diskUtil = Constants.NUM_ZERO;
-  networkUtil = Constants.NUM_ZERO;
-  gpuUtil = Constants.NUM_ZERO;
+  cpuUtil = 0;
+  memUtil = 0;
+  diskUtil = 0;
+  networkUtil = 0;
+  gpuUtil = 0;
   powerUtil = 'Very low';
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}taskmanager.png`;
   isMaximizable=false;
   name = 'taskmanager';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = 'Task Manager';
 
@@ -314,11 +313,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.NUM_ONE;
+          return objA.getProcessName < objB.getProcessName ? -1 : 1;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.NUM_ONE
+          return objA.getProcessName < objB.getProcessName ? -1 : 1
         }).reverse();
       }
     }else if(column == TableColumns.PROCESS_NAME){
@@ -327,11 +326,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.NUM_ONE;
+          return objA.getProcessName < objB.getProcessName ? -1 : 1;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? Constants.MINUS_ONE : Constants.NUM_ONE
+          return objA.getProcessName < objB.getProcessName ? -1 : 1
         }).reverse();
       }
     }else if(column == TableColumns.POWER_USAGE){
@@ -340,11 +339,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getPowerUsage < objB.getPowerUsage ? Constants.MINUS_ONE : Constants.NUM_ONE;
+          return objA.getPowerUsage < objB.getPowerUsage ? -1 : 1;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getPowerUsage < objB.getPowerUsage ? Constants.MINUS_ONE : Constants.NUM_ONE
+          return objA.getPowerUsage < objB.getPowerUsage ? -1 : 1
         }).reverse();
       }
     }else if(column == TableColumns.TYPE){
@@ -353,11 +352,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       }
       if(this._currentSortingOrder == 'asc'){
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getType < objB.getType ? Constants.MINUS_ONE : Constants.NUM_ONE;
+          return objA.getType < objB.getType ? -1 : 1;
         });
       }else{
         this.processes = this.processes.sort((objA, objB) => {
-          return objA.getType < objB.getType ? Constants.MINUS_ONE : Constants.NUM_ONE
+          return objA.getType < objB.getType ? -1 : 1
         }).reverse();
       }
     }
@@ -375,8 +374,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       'display': 'block', 
       'width': '180px', 
       'transform':`translate(${x}px, ${y - 65}px)`,
-      'z-index': Constants.NUM_TWO,
-      'opacity': Constants.NUM_ONE
+      'z-index': 2,
+      'opacity': 1
     }
 
     evt.preventDefault();
@@ -502,13 +501,13 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     const powerLevels:string[] = ['Very low','Low','Moderate','High','Very high'];
 
     const maxAppUtilNum = 30; // should be 100
-    const minAppUtilNum = Constants.NUM_ZERO;
+    const minAppUtilNum = 0;
 
-    const maxBkgrndProcUtilNum = Constants.NUM_THREE;
-    const minBkgrndProcUtilNum = Constants.NUM_ZERO;
+    const maxBkgrndProcUtilNum = 3;
+    const minBkgrndProcUtilNum = 0;
 
-    const maxCheetahProcUtilNum = Constants.NUM_TWO;
-    const minCheetahProcUtilNum = Constants.NUM_ZERO;
+    const maxCheetahProcUtilNum = 2;
+    const minCheetahProcUtilNum = 0;
     const suspended = 'Suspended';
 
     const maxNum = 10;
@@ -1096,13 +1095,6 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
       //when next you decide to focus on the Window min/max, use the chrome dev mode to see whhich containers 
       // do not return to their original size on minimize. The minimize functionality for the taskmanger, is 95% there 
-
-      //avoid setting these manully
-      // this.tskMgrTableHeaderCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-      // this.tskMgrTableBodyCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-
-      //this.tskMgrTableHeaderCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-      //this.tskMgrTableBodyCntnt.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
     }
   }
 

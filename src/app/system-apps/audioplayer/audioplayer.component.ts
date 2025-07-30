@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -26,7 +27,7 @@ declare const SiriWave:any;
   selector: 'cos-audioplayer',
   templateUrl: './audioplayer.component.html',
   styleUrls: ['./audioplayer.component.css'],
-  standalone: false
+  standalone:false,
 })
 export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit  {
 
@@ -77,7 +78,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   hasWindow = true;
   isMaximizable=false;
   icon = `${Constants.IMAGE_BASE_PATH}audioplayer.png`;
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.User;
   displayName = 'Howlerjs';
   showTopMenu = false;
@@ -132,7 +133,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
             frequency: 2
           });
   
-          if(this.playList.length == Constants.NUM_ZERO){
+          if(this.playList.length == 0){
             this.loadHowlSingleTrackObjectAsync()
                 .then(howl => { this.audioPlayer = howl; 
                   this._audioService.addExternalAudioSrc(this.name, howl);
@@ -444,7 +445,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
         autoSuspend: false,
         onend:()=>{
           //console.log('Finished!');
-          this.siriWave.canvas.style.opacity = Constants.NUM_ZERO;
+          this.siriWave.canvas.style.opacity = 0;
           this.bar.nativeElement.style.display = 'block';
           this.pauseBtn.nativeElement.style.display = 'none';
           this.playBtn.nativeElement.style.display = 'block';

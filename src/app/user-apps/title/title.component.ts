@@ -16,7 +16,8 @@ import { AppState } from 'src/app/system-files/state/state.interface';
   selector:'cos-title',
   templateUrl: './title.component.html',
   styleUrls: ["./title.component.css"],
-  standalone: false,
+   // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 
 export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
@@ -37,7 +38,7 @@ export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   icon = `${Constants.IMAGE_BASE_PATH}angular.png`;
   isMaximizable = false;
   name = 'hello';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.User;
   displayName = 'Hello';
 

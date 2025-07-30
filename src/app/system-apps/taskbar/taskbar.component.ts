@@ -12,8 +12,9 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
   selector: 'cos-taskbar',
   templateUrl: './taskbar.component.html',
   styleUrls: ['./taskbar.component.css'],
-  standalone: false,
-  animations: [
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
+    animations: [
     trigger('tskBarSlideStatusAnimation', [
       state('slideDown', style({ bottom: '-40px' })),
       state('slideUp', style({ bottom: '0px' })),

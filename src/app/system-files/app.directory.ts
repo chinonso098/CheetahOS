@@ -22,7 +22,7 @@ export class AppDirectory {
     }
 
     private fetchUserApp(): string[]{
-        this._userProcessList = ["hello","greeting", "jsdos","ruffle","codeeditor","markdownviewer","starfield","boids"];
+        this._userProcessList = ["hello","greeting", "jsdos", "ruffle", "codeeditor", "markdownviewer", "starfield", "boids", "particleflow"];
         return this._userProcessList;
     }
 

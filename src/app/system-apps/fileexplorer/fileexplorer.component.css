@@ -752,7 +752,6 @@ span.mid-search-entry{
      
 }
 
-
 /*----------------------------Header navigation search box End------------------------*/
 
 /*****************************Header navigation view Ended*****************************/
@@ -787,24 +786,108 @@ span.mid-search-entry{
 
 /*****************************icon view and layout Started*****************************/
 
-/*-------------------------Icon Size View Start -------------------------------*/
-.ol-iconview-grid{
-    /* column-gap: 1px; */
+.fileexplr-default-view-cntnr{
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 5px  5px;
+}
+
+/* Section container */
+.fileexlpr-frequent-folders-section, .fileexlpr-recent-files-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+/* Section heading */
+.fileexlpr-frequent-folders-heading, .fileexlpr-recent-files-heading {
+    display: flex;
+    align-items: center;
+    font-family: sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    color: #fff;
+    margin-bottom: 10px;
+    padding: 0 10px;
+}
+
+/* Heading text (label + count) */
+.fileexlpr-frequent-folders-heading p, .fileexlpr-recent-files-heading p {
+    margin: 0;
+    padding-right: 8px;
+}
+
+/* Content grid inside each section */
+.fileexlpr-frequent-folders-cntnt, .fileexlpr-recent-files-cntnt {
     display: grid;
     grid-auto-flow: row;
-    grid-template-columns:  repeat(auto-fill,90px);
-    grid-template-rows: repeat(auto-fill,70px);
+    grid-template-columns: repeat(auto-fill, 90px);
+    grid-template-rows: repeat(auto-fill, 70px);
+    gap: 34px 5px;
+    padding: 0px 10px;
+    width: 100%;
+}
+
+.fileexlpr-frequent-folders-cntnt1, .fileexlpr-devices-and-drives-cntnt{
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns:  repeat(auto-fill,250px);
+    grid-template-rows: repeat(auto-fill,50px);
     height: calc(100% - 5px);
     width: 100%;
-    padding: 5px 0 ;
-    row-gap: 20px;
-    column-gap: 5px;
+    padding: 2px 2px;
+    row-gap: 4px;
+    column-gap: 6px;
+}
+
+/* Line that stretches next to the heading */
+.fileexlpr-nested-line-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.fileexlpr-nested-line {
+    border-bottom: 1px solid #333;
+    width: 100%;
+    height: 1px;
+}
+
+.progress-container {
+    display: block;
+    width: 180px;
+    height: 14px;
+    background-color: #eee;
+    /* border-radius: 15px; */
+    overflow: hidden;
+    border: 2px solid #ccc;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #2da6da;
+    transition: width 0.3s ease-in-out;
+}
+
+
+/*-------------------------Icon Size View Start -------------------------------*/
+.ol-iconview-grid{
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns:  repeat(auto-fill, 90px);
+    grid-template-rows: repeat(auto-fill, 70px);
+    height: calc(100% - 5px);
+    width: 100%;
+    padding: 5px 10px;
+    gap: 34px 5px;
 }
 
 .li-iconview-container{
     display: flex;
     justify-content: center;
-    padding: 2px;
+    /* padding: 2px; */
     height: min-content;
     z-index: 1;
 }
@@ -836,7 +919,7 @@ span.mid-search-entry{
     background-color: transparent;
     border: 0.5px solid transparent;
     width: 90px;
-    height: 70px;
+    height: min-content;
     transition: transform 0.1s ease-in-out;
     display: inline-flex;
     flex-direction: column;
@@ -860,28 +943,25 @@ span.mid-search-entry{
 
 .iconview-caption-container {
     position: relative;
-    height: 20px;
-    bottom: -4px;
+    height: min-content;
+    /* bottom: -4px; */
 }
 
 .iconview-caption {
-    color: white;
+    -webkit-box-orient: vertical;
     display: -webkit-box;
+    color: #fff;
     font-size: 12px;
     letter-spacing: 0.1px;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    -webkit-line-clamp:4;
     position: relative;
+    text-align:center;
     padding: 2px 0;
     top: 2px;
-    line-height: 15px;
+    line-height: normal;
     overflow: hidden;
-    word-break: break-word;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     width: 100%;
     max-width: 90px;
-    height: 20px;
 }
 
 .iconview-rename-form, .iconview-rename-textbox{
@@ -893,6 +973,7 @@ span.mid-search-entry{
 .iconview-rename-textbox{
     position: relative;
     display: none;
+    text-align:center;
     top: 2px;
     font-size: 12px;
     font-weight:200;
@@ -930,7 +1011,7 @@ span.mid-search-entry{
 }
 
 .detailsview-data-table th {
-    border: 0.5px solid transparent; ; /* Adds a border to each header and data cell */
+    border: 0.5px solid #202020; /* Adds a border to each header and data cell */
     padding: 8px;
     width: 155px;
     text-align: left; /* Aligns text to the left */
@@ -938,7 +1019,14 @@ span.mid-search-entry{
 }
 
 .detailsview-data-table th:first-child{
-     width: 200px;
+    width: 200px;
+}
+
+.detailsview-data-table thead th {
+  background: #202020;
+  position: sticky;
+  top: -1px;
+  z-index: 1;
 }
 
 .detailsview-data-table td {
@@ -955,6 +1043,27 @@ span.mid-search-entry{
     width: 200px;
     text-align: left; /* Aligns text to the left */
     margin: 0px 1px;
+}
+
+
+.detailsview-data-table tr.active td {
+  background-color:#d0ecfc !important;
+}
+
+/* Add this to your component's CSS or global styles */
+th[fxplrColumnResize], td[fxplrColumnResize] {
+  position: relative;
+}
+
+th[fxplrColumnResize]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px; /* Adjust the handle width */
+  height: 100%;
+  cursor: col-resize;
+  background-color: #f0f0f0; /* Handle background color */
 }
 
 .div-detailsview-figure-section{
@@ -991,7 +1100,7 @@ span.mid-search-entry{
     align-items: center;
 }
 
-.figcaption-detailsview-p, .detailsview-ptag{
+.figcaption-detailsview-p, .detailsview-ptag, .detailsview-ptag-right{
     position: relative;
     text-align: left;
     color: white;
@@ -1007,6 +1116,14 @@ span.mid-search-entry{
 
 .figcaption-detailsview-p{
     top: 4px;
+}
+
+.detailsview-ptag{
+    padding-left: 5px;
+}
+
+.detailsview-ptag-right{
+    text-align: right;
 }
 
 .detailsview-rename-form, .detailsview-rename-textbox{
@@ -1191,7 +1308,7 @@ span.mid-search-entry{
 
 .div-figcaption-tilesview{
    display: block;
-    height: 16px;
+   height: 16px;
    width: 100%;
 }
 

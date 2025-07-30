@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -23,7 +24,7 @@ declare const videojs: (arg0: any, arg1: object, arg2: () => void) => any;
   selector: 'cos-videoplayer',
   templateUrl: './videoplayer.component.html',
   styleUrls: ['./videoplayer.component.css'],
-  standalone: false,
+  standalone:false,
 })
 export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit  {
 
@@ -58,7 +59,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   hasWindow = true;
   isMaximizable=false;
   icon = `${Constants.IMAGE_BASE_PATH}videoplayer.png`;
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = 'Video-js';
   showTopMenu = false;

@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, OnInit, AfterViewInit, ViewChild, Input } from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -20,7 +21,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
   selector: 'cos-ruffle',
   templateUrl: './ruffle.component.html',
   styleUrls: ['./ruffle.component.css'],
-  standalone: false,
+  standalone:false,
 })
 export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   private rufflePlayer:any;
@@ -44,7 +45,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}ruffle.png`;
   isMaximizable = false;
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.User;
   displayName = 'Ruffle-EM';
 
@@ -69,11 +70,11 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
 
   async ngAfterViewInit() {
     //this.setRuffleWindowToFocus(this.processId); 
-
-    this.gameSrc = (this.gameSrc !=='')? 
+    const isModule = false;
+    this.gameSrc = (this.gameSrc !== Constants.EMPTY_STRING)? 
     this.gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    this._scriptService.loadScript("ruffle","osdrive/Program-Files/Ruffle/ruffle.js").then(()=>{
+    this._scriptService.loadScript("ruffle","osdrive/Program-Files/Ruffle/ruffle.js", isModule).then(()=>{
       this.rufflePlayer = (window as any).RufflePlayer.newest();
       this.loadSWF('ruffleWindow',this.gameSrc);
       this.storeAppState(this.gameSrc);

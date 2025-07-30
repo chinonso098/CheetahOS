@@ -1,7 +1,9 @@
 import { Pipe, PipeTransform } from "@angular/core";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 
-@Pipe({ name: 'safeResourceUrl', standalone: false })
+@Pipe({ name: 'safeResourceUrl',   
+   // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false, })
 export class SafeUrlPipe implements PipeTransform {
   constructor(private readonly sanitizer: DomSanitizer) {}
 

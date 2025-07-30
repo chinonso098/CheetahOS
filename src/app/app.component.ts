@@ -14,7 +14,8 @@ import { SessionManagmentService } from './shared/system-service/session.managem
   selector: 'cos-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  standalone: false,
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone: false
 })
 
 /**
@@ -36,7 +37,7 @@ export class AppComponent implements AfterViewInit {
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'system';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
 

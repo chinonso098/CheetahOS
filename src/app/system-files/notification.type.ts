@@ -3,4 +3,5 @@ export enum UserNotificationType{
     Info = "Info",
     Warning = "Warning",
     PowerOnOff = "ShutdownRestart",
+    FileTransfer = "FileTransfer",
 }

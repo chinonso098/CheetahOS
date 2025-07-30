@@ -8,7 +8,8 @@ import { SystemNotificationService } from 'src/app/shared/system-service/system.
   selector: 'cos-taskbarpreview',
   templateUrl: './taskbarpreview.component.html',
   styleUrl: './taskbarpreview.component.css',
-  standalone: false,
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
   animations: [
     trigger('fadeAnimation', [
       state('in', style({ opacity: 1 })),

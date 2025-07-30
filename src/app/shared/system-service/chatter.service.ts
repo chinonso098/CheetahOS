@@ -22,9 +22,9 @@ export class ChatterService implements BaseService{
     private _sessionManagmentService:SessionManagmentService
     private _socketService!:SocketService;
 
-    private _connectedUserCounter = Constants.NUM_ZERO;
-    private _listTS = Constants.MINUS_ONE;
-    private _comeOnlineTS = Constants.MINUS_ONE;
+    private _connectedUserCounter = 0;
+    private _listTS = -1;
+    private _comeOnlineTS = -1;
     private _chatData:ChatMessage[] = [];
     private _onlineUsers:IUserData[] = [];
 
@@ -59,7 +59,7 @@ export class ChatterService implements BaseService{
   
     name = 'chatter_msg_svc';
     icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
-    processId = Constants.NUM_ZERO;
+    processId = 0;
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
@@ -104,7 +104,7 @@ export class ChatterService implements BaseService{
     }
 
     sendMyOnlineUsersListMessage(data:IUserList) {
-        if(this._listTS === Constants.MINUS_ONE){
+        if(this._listTS === -1){
             this._listTS = data.timeStamp;
         }
         this._socketService.sendMessage(this.UPDATE_ONLINE_USER_LIST_EVT, data);
@@ -151,7 +151,7 @@ export class ChatterService implements BaseService{
             this._connectedUserCounter--;
         }
 
-        this.userCountChangeNotify.next(Constants.NUM_ZERO);
+        this.userCountChangeNotify.next(0);
     }
 
     private updateUserCountAfterComparing(userCount:any){
@@ -161,7 +161,7 @@ export class ChatterService implements BaseService{
 
             if(tStamp < this._comeOnlineTS &&  uCount > this._connectedUserCounter){
                 this._connectedUserCounter = uCount;
-                this.userCountChangeNotify.next(Constants.NUM_ONE);
+                this.userCountChangeNotify.next(1);
             }
         }
     }
@@ -259,9 +259,9 @@ export class ChatterService implements BaseService{
                 isTyping:userInfo.isTyping as boolean,
             }
 
-           const deleteCount = Constants.NUM_ONE;
+           const deleteCount = 1;
            const userInfoIdx = this._onlineUsers.findIndex(x => x.userId === offlineUser.userId);
-           if (userInfoIdx !== Constants.MINUS_ONE) {
+           if (userInfoIdx !== -1) {
                 this._onlineUsers.splice(userInfoIdx, deleteCount);
             }
             

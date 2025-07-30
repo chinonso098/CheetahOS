@@ -36,7 +36,7 @@
     height: calc(100% - 40px);
     width: 100%;
     padding: 5px 0;
-    row-gap: 20px;
+    row-gap: 25px;
     z-index: 1;
 }
 
@@ -44,34 +44,37 @@
     display: flex;
     justify-content: center;
     /* padding: 2px; */
-    height: max-content;
+    height: min-content;
 }
 
 .desktopIcon-btn{
+    position: relative;
+    /* display: flex; */
     background-color: transparent;
     border: 1px solid transparent;
     width: 90px;
-    height: 70px;
+    height: fit-content;
     transition: transform 0.1s ease-in-out; 
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
+    /* flex-direction: column; */
+    place-items: center;
+    /* align-items: center; */
     font-family: sans-serif;
 }
 
 .desktopIcon-img-section {
-    /* display: flex; */
-    /* flex-direction: column;*/
     margin-bottom: -2px; 
     place-items:center;
-    display: inline-block;
+    display: block;
+    margin: 0 auto;
     position: relative;
-    /* display: inline-block; */
 }
 
 .desktopIcon-img-container{
-    width: fit-content;
-    display: block;
+    /* width: fit-content;
+    display: block; */
+    display: flex;
+    align-items: center;   /* vertical centering */
+    justify-content: center; /* horizontal centering */
     max-width: 80px;
     max-height: 80px;
 }
@@ -101,19 +104,17 @@
 
 .desktopIcon-label-section{
     position: relative;
-    height: 20px;
+    height: min-content
 }
 
 .desktopIcon-caption{
     -webkit-box-orient: vertical;
-    color: #fff;
     display: -webkit-box;
+    color: #fff;
     font-size: 12px;
     letter-spacing: 0.1px;
-    line-clamp: 2;
     -webkit-line-clamp:2;
     position: relative;
-    text-overflow: ellipsis;
     text-align:center;
     padding: 2px 0;
     text-shadow:0 0 1px rgba(0, 0, 0, 75%),
@@ -128,50 +129,32 @@
                 0 2px 2px rgba(0, 0, 0, 50%),
                 0 2px 3px rgba(0, 0, 0, 25%);
 
-    top: -1px;
-    line-height: 15px;
+    line-height: normal;
     overflow: hidden;
-    word-break: break-all;
-    white-space: nowrap; /* Prevent text from wrapping */
-    text-overflow: ellipsis; /* Add "..." when text overflows */
     width: 90px;
 }
 
-.desktopIcon-rename-container{
+
+.desktopIcon-rename-form, .desktopIcon-rename-textbox{
     position: relative;
     display: none;
-    /* top: 2px; */
-    margin-bottom: 2px;
-    max-width: 90px;
-    min-height: 20px;
+    margin: 0;
+}
+
+.desktopIcon-rename-textbox{
+    position: relative;
+    display: none;
+    text-align: center;
+    top: 2px;
+    font-size: 12px;
+    font-weight:200;
+    margin-bottom: 1px;
+    width: 90px;
+    height: 20px;
     border: 1px solid #ccc;
     overflow:hidden;
-    z-index: 2;
+    resize: none;
  }
- .desktopIcon-form{
-    width: fit-content;
-    height: fit-content;
-    margin-bottom: -6px;
- }
-
-.desktopIcon-input{
-    font-size: 12px;
-    /* text-overflow:ellipsis; */
-    /* resize: none; */
-    
-    overflow: hidden;
-    box-sizing: border-box;
-    height: 20px;
-    width: 90px;
-    border: 0.5px dotted #ccc;
-    padding: 4px;
-    line-height: 1.4;
-}
-
-.desktopIcon-input::selection{
-    background-color: #0056b3;
-    color: #fff;
-}
 
 .tool-tip-container{
     position: absolute;

@@ -19,7 +19,8 @@ declare const p5:any;
   selector: 'cos-boids',
   templateUrl: './boids.component.html',
   styleUrls: ['./boids.component.css'],
-  standalone: false,
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
 export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
   @ViewChild('boidCanvas', { static: true }) boidCanvas!: ElementRef;
@@ -43,7 +44,7 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     separation: 1.8
   };
 
- form!:FormGroup;
+  form!:FormGroup;
   sliders = ['align', 'cohesion', 'separation'];
 
   name= 'boids';

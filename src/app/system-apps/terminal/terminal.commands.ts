@@ -147,7 +147,7 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             if(dlDest === '.'){ dest = this.currentDirectoryPath; }
 
             if(filePathRegex.test(dlDest)){
-               const result = await this._fileService.checkIfExistsAsync(dlDest);
+               const result = await this._fileService.exists(dlDest);
                if(!result){
                 return {response:'download folder does not exist', result:true};
                }
@@ -521,7 +521,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         }else{
             fixedPath = `${this.currentDirectoryPath}/${path}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
         }
-        const res = await this._fileService.checkIfExistsAsync(fixedPath);
+        const res = await this._fileService.exists(fixedPath);
         if(res){
             this.currentDirectoryPath = fixedPath;
             result = {response:fixedPath, result:res};
@@ -550,7 +550,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         const path = pathInput.replace(Constants.BACK_TICK, Constants.BLANK_SPACE);
 
         let directory = Constants.EMPTY_STRING;
-        let depth = Constants.NUM_ZERO;
+        let depth = 0;
         let result:ITraverseResult;
 
         if(path === undefined){
@@ -562,7 +562,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
            const cmdArg = path.split(Constants.ROOT);
       
            console.log('CMDARG:', cmdArg);
-           const moveUps = (cmdArg.length > Constants.NUM_ONE)? cmdArg.filter(x => x === goOneLevelUp) : [goOneLevelUp];
+           const moveUps = (cmdArg.length > 1)? cmdArg.filter(x => x === goOneLevelUp) : [goOneLevelUp];
            const impliedPath = this.getImpliedPath(moveUps);
            this.fallBackDirPath = impliedPath;
            const explicitPath = (path !== goOneLevelUp)? path.split(goOneLevelUpWithSlash).splice(-1)[0] : Constants.EMPTY_STRING;
@@ -581,11 +581,11 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         console.log('directory:', directory);
         console.log('fallBackDirPath:', this.fallBackDirPath);
 
-        const firstDirectoryCheck = await this._fileService.checkIfExistsAsync(directory);
+        const firstDirectoryCheck = await this._fileService.exists(directory);
         let secondDirectoryCheck = false;
 
         if(!firstDirectoryCheck){
-            secondDirectoryCheck = await this._fileService.checkIfExistsAsync(this.fallBackDirPath);
+            secondDirectoryCheck = await this._fileService.exists(this.fallBackDirPath);
 
             if(secondDirectoryCheck){
                 directory = this.fallBackDirPath;
@@ -781,7 +781,7 @@ touch <filename>{start_char..end_char}`;
             const parts = arg0.split(Constants.BLANK_SPACE)
             const fileName = parts[1];
 
-            const result = await this._fileService.checkIfExistsAsync(`${this.currentDirectoryPath}/${fileName}`);
+            const result = await this._fileService.exists(`${this.currentDirectoryPath}/${fileName}`);
             if(result){
                 const textCntnt = await this._fileService.getFileAsTextAsync(`${this.currentDirectoryPath}/${fileName}`);
 
@@ -856,17 +856,17 @@ usage: mkdir direcotry_name [-v]
         console.log(`sourceArg:${sourceArg}`);
         console.log(`destinationArg:${destinationArg}`);
 
-        if(sourceArg === undefined || sourceArg.length === Constants.NUM_ZERO)
+        if(sourceArg === undefined || sourceArg.length === 0)
             return 'source path required';
 
-        if(destinationArg === undefined || destinationArg.length === Constants.NUM_ZERO)
+        if(destinationArg === undefined || destinationArg.length === 0)
             return 'destination path required';
 
         const result =  await this._fileService.moveAsync(sourceArg, destinationArg);
         if(result){
             const result = await this.rm('-rf', sourceArg);
             if(result === Constants.EMPTY_STRING){
-                if(destinationArg.includes(Constants.DESKTOP_PATH.substring(Constants.NUM_ONE))){
+                if(destinationArg.includes(Constants.DESKTOP_PATH.substring(1))){
                     this.sendDirectoryUpdateNotification(sourceArg);
                     this.sendDirectoryUpdateNotification(destinationArg);
                 }
@@ -917,13 +917,13 @@ Mandatory argument to long options are mandotory for short options too.
             }
         }
 
-        if(sourceArg === undefined || sourceArg.length === Constants.NUM_ZERO)
+        if(sourceArg === undefined || sourceArg.length === 0)
             return 'source path required';
 
-        if(destinationArg === undefined || destinationArg.length === Constants.NUM_ZERO)
+        if(destinationArg === undefined || destinationArg.length === 0)
             return 'destination path required';
 
-        const isDirectory = await this._fileService.checkIfDirectoryAsync(sourceArg);
+        const isDirectory = await this._fileService.isDirectory(sourceArg);
         if(isDirectory){
             if(option === Constants.EMPTY_STRING || option === '-f' || option === '--force' || option === '--verbose')
                 return `cp: omitting directory ${sourceArg}`;
@@ -979,10 +979,10 @@ Mandatory argument to long options are mandotory for short options too.
             }
         }
 
-        if(sourceArg === undefined || sourceArg.length === Constants.NUM_ZERO)
+        if(sourceArg === undefined || sourceArg.length === 0)
             return 'source path required';
 
-        const isDirectory = await this._fileService.checkIfDirectoryAsync(sourceArg);
+        const isDirectory = await this._fileService.isDirectory(sourceArg);
         if(isDirectory){
             if(option === Constants.EMPTY_STRING)
                 return `rm: omitting directory ${sourceArg}`;
@@ -1007,7 +1007,7 @@ Mandatory argument to long options are mandotory for short options too.
     }
 
     private sendDirectoryUpdateNotification(arg0:string):void{
-        if(arg0.includes(Constants.DESKTOP_PATH.substring(Constants.NUM_ONE))){
+        if(arg0.includes(Constants.DESKTOP_PATH.substring(1))){
             this._fileService.addEventOriginator(Constants.DESKTOP);
         }else{
             this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
@@ -1018,14 +1018,8 @@ Mandatory argument to long options are mandotory for short options too.
     private async loadFilesInfoAsync(directory:string):Promise<void>{
         this.files = [];
         this._fileService.resetDirectoryFiles();
-        const directoryEntries  = await this._fileService.getDirectoryEntriesAsync(directory);
-        this._directoryFilesEntries = this._fileService.getFileEntriesFromDirectory(directoryEntries,directory);
+        const directoryEntries  = await this._fileService.loadDirectoryFiles(directory);
+        this.files.push(...directoryEntries)
     
-        for(let i = 0; i < directoryEntries.length; i++){
-          const fileEntry = this._directoryFilesEntries[i];
-          const fileInfo = await this._fileService.getFileInfoAsync(fileEntry.getPath);
-    
-          this.files.push(fileInfo)
-        }
     }
 }

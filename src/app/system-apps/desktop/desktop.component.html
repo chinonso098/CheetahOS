@@ -9,11 +9,10 @@
         (mouseup)="deActivateMultiSelect()"
         (mousemove)="updateDivWithAndSize($event)" id="desktopIcon_ol"> 
         <li class="li-desktopIcon-container" *ngFor="let file of files; let i = index" id="desktopIcon_li{{i}}">
-            <button class="desktopIcon-btn" 
+            <div role="button" tabindex="0" class="desktopIcon-btn" 
             (dblclick)="runProcess(file)" 
             (mouseenter)="onMouseEnter(i)" 
             (mouseleave)="onMouseLeave(i)"  
-            zIndex="1"  
             (contextmenu)="onShowDesktopIconCntxtMenu($event, file, i)" 
             (click)="onBtnClick($event, i)"
             (dragstart)="onDragStart($event, i)"
@@ -31,13 +30,19 @@
                     <p class="desktopIcon-caption"  id="figCap{{i}}" [style]="figCapIconSizeStyle">
                         {{file.getFileName}}
                     </p>
-                    <div class="desktopIcon-rename-container"  id="renameContainer{{i}}">
-                        <form [formGroup]="renameForm"  class="desktopIcon-form" (ngSubmit)="isFormDirty()">
-                            <textarea class="desktopIcon-input"  formControlName="renameInput"  (keydown)="onInputChange($event)" autofocus spellcheck="false" id="renameTxtBox{{i}}"></textarea>
-                        </form>
-                    </div>
+
+                    <form [formGroup]="renameForm" 
+                        id="renameContainer{{i}}"
+                        class="desktopIcon-rename-form" (ngSubmit)="isFormDirty()">
+                        <textarea class="desktopIcon-rename-textbox" 
+                            formControlName="renameInput"  
+                            (keydown)="onInputChange($event)" 
+                            autofocus spellcheck="false" 
+                            id="renameTxtBox{{i}}">
+                        </textarea>
+                    </form>
                 </div>                
-            </button>
+            </div>
         </li>
 
         <ng-container  *ngIf="showDesktopIconCntxtMenu">

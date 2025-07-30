@@ -1,3 +1,4 @@
+
 import {
     Directive,
     ElementRef,
@@ -11,7 +12,8 @@ import {
   @Directive({
     // eslint-disable-next-line @angular-eslint/directive-selector
     selector: '[longPress]',
-    standalone: false
+    // eslint-disable-next-line @angular-eslint/prefer-standalone
+    standalone:false,
   })
   export class LongPressDirective implements OnDestroy {
     private eventSubscribe: Subscription;

@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, ViewChild, OnInit, AfterViewInit, OnDestroy, Input } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -22,7 +23,7 @@ import { FileService } from 'src/app/shared/system-service/file.service';
   selector: 'cos-terminal',
   templateUrl: './terminal.component.html',
   styleUrls: ['./terminal.component.css'],
-  standalone: false,
+  standalone:false,
 })
 export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, OnDestroy{
 
@@ -43,8 +44,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private _appState!:AppState;
 
 
-  private msgPosCounter = Constants.NUM_ZERO;
-  private prevPtrIndex = Constants.NUM_ZERO;
+  private msgPosCounter = 0;
+  private prevPtrIndex = 0;
   private versionNum = '1.0.4.4';
   private SECONDS_DELAY:number[] = [120,250];
   private doesDirExist = true;
@@ -58,10 +59,10 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   stateOne = 'S1';
   stateTwo = 'S2';
 
-  Success = Constants.NUM_ONE;
-  Fail = Constants.NUM_TWO;
-  Warning = Constants.NUM_THREE;
-  Options = Constants.NUM_FOUR;
+  Success = 1;
+  Fail = 2;
+  Warning = 3;
+  Options = 4;
 
   isBannerVisible = true;
   isWelcomeVisible = true;
@@ -79,15 +80,15 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   haveISeenThisAutoCmplt = Constants.EMPTY_STRING;
 
   terminalForm!: FormGroup;
-  dirEntryTraverseCntr = Constants.NUM_ZERO;
-  directoryTraversalDepth = Constants.NUM_ZERO;
+  dirEntryTraverseCntr = 0;
+  directoryTraversalDepth = 0;
   readonly SCROLL_DELAY = 300;
   firstSection = true;
   secondSection = false;
-  sectionTabPressCntnr = Constants.NUM_ZERO;
+  sectionTabPressCntnr = 0;
 
-  firstSectionCntr = Constants.MINUS_ONE;
-  secondSectionCntr = Constants.MINUS_ONE;
+  firstSectionCntr = -1;
+  secondSectionCntr = -1;
   currentState =  this.stateOne;
   swtichToNextSection = false;
 
@@ -95,7 +96,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   isMaximizable = false;
   icon = `${Constants.IMAGE_BASE_PATH}terminal.png`;
   name = 'terminal';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.System;
   displayName = 'Terminal';
 
@@ -1095,7 +1096,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         droppedFiles  = [...event?.dataTransfer?.files];
     }
     
-    if(droppedFiles.length >= Constants.NUM_ONE){
+    if(droppedFiles.length >= 1){
       console.log('Terminal onDrop:', droppedFiles);
     }   
   }
@@ -1105,7 +1106,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     if(appSessionData !== null && appSessionData.app_data != Constants.EMPTY_STRING){
         const terminalCmds =  appSessionData.app_data as string[];
         for(let i = 0; i < terminalCmds.length; i++){
-          const cmd = new TerminalCommand(terminalCmds[i], Constants.NUM_ZERO, Constants.EMPTY_STRING);
+          const cmd = new TerminalCommand(terminalCmds[i], 0, Constants.EMPTY_STRING);
           this.commandHistory.push(cmd);
         }
     }

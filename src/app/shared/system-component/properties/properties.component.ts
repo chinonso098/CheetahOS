@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { FileInfo } from 'src/app/system-files/file.info';
@@ -16,7 +17,7 @@ import { FileService2 } from '../../system-service/file.service.two';
   selector: 'cos-properties',
   templateUrl: './properties.component.html',
   styleUrl: './properties.component.css',
-  standalone: false,
+  standalone:false,
 })
 
 export class PropertiesComponent implements BaseComponent, OnChanges{
@@ -38,7 +39,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   isInRecycleBin = false;
   isRootFolder = false;
   URL = Constants.URL;
-  readonly capacity = 512_050_500;
+  readonly capacity = Constants.STORAGE_CAPACITY;
  
   type = ComponentType.System;
   hasWindow = false;
@@ -57,14 +58,14 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   circumference: number = 2 * Math.PI * 35; // Circumference for a circle with radius 45
   strokeDashoffset: number = this.circumference; // Initialize to full offset (all white)
 
-  processId = Constants.NUM_ZERO;
-  fileSize = Constants.NUM_ZERO;
-  fileSize2 = Constants.NUM_ZERO;
-  fileSizeOnDisk = Constants.NUM_ZERO;
-  fileSizeOnDisk2 = Constants.NUM_ZERO;
-  availableSpace = Constants.NUM_ZERO;
-  availableSpace2 = Constants.NUM_ZERO;
-  capacity2 = Constants.NUM_ZERO;
+  processId = 0;
+  fileSize = 0;
+  fileSize2 = 0;
+  fileSizeOnDisk = 0;
+  fileSizeOnDisk2 = 0;
+  availableSpace = 0;
+  availableSpace2 = 0;
+  capacity2 = 0;
 
   private hiddenName = Constants.EMPTY_STRING
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
@@ -132,7 +133,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   async getFolderContentDetails():Promise<void>{
     const count =  await this._fileService.countFolderItems(this.fileInput.getCurrentPath);
 
-    if(count === Constants.NUM_ZERO){
+    if(count === 0){
       this.contains = '0 Files, 0 Folders';
     }else{
       this.contains = await this._fileService.getFullCountOfFolderItems(this.fileInput.getCurrentPath);
@@ -145,7 +146,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
 
     const tmpFilesOnDisk = this.getRandomNumber(this.fileInput.getSizeInBytes);
     this.fileSizeOnDisk = CommonFunctions.getReadableFileSizeValue(tmpFilesOnDisk);
-    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed( Constants.NUM_ZERO));
+    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(0));
 
     this.fileSizeUnit = this.fileInput.getFileSizeUnit;
     this.createdfileDate = this.fileInput.getDateCreated;
@@ -154,13 +155,19 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   }
 
   async getFolderSizeData():Promise<void>{
-    const folderSize = await this._fileService.getFolderSizeAsync(this.fileInput.getCurrentPath);
+
+    let folderSize = 0;
+    if(this.fileInput.getContentPath === Constants.ROOT)
+      folderSize = this._fileService.getUsedStorage();
+    else
+      folderSize = await this._fileService.getFolderSizeAsync(this.fileInput.getCurrentPath);
+
     this.fileSize = CommonFunctions.getReadableFileSizeValue(folderSize);
     this.fileSize2 = folderSize;
 
     const tmpFilesOnDisk = this.getRandomNumber(folderSize);
     this.fileSizeOnDisk = CommonFunctions.getReadableFileSizeValue(tmpFilesOnDisk);
-    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(Constants.NUM_ZERO));
+    this.fileSizeOnDisk2 = Number(tmpFilesOnDisk.toFixed(0));
 
     this.fileSizeUnit  = CommonFunctions.getFileSizeUnit(folderSize);
     this.createdfileDate = this.fileInput.getDateCreated;
@@ -199,7 +206,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     const result = x + randomAddition;
 
     // Limit to 2 decimal places
-    return parseFloat(result.toFixed(Constants.NUM_TWO));
+    return parseFloat(result.toFixed(2));
   }
 
   setPropertyWindowToFocus(pid:number):void{

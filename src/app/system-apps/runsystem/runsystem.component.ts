@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component } from '@angular/core';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -11,7 +12,7 @@ import { Process } from 'src/app/system-files/process';
   selector: 'cos-runsystem',
   templateUrl: './runsystem.component.html',
   styleUrl: './runsystem.component.css',
-	standalone: false,
+  standalone:false,
 })
 export class RunSystemComponent implements BaseComponent {
 

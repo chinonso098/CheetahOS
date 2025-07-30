@@ -1,0 +1,11 @@
+.particle-flow-main-cntnr{
+  width: 900px;
+  height: 480px;
+}
+
+.particle-flow-cntnr {
+  position: relative;
+  width: 900px;
+  height: 480px;
+  z-index: 1;
+}

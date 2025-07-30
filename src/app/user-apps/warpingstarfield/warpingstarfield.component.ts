@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, Input } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, Input, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -15,14 +15,14 @@ import { AppState } from 'src/app/system-files/state/state.interface';
 declare const THREE: any; 
 
 
-
 @Component({
   selector: 'cos-warpingstarfield',
   templateUrl: './warpingstarfield.component.html',
   styleUrl: './warpingstarfield.component.css',
-  standalone: false,
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
+  standalone:false,
 })
-export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, AfterViewInit {
+export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, AfterViewInit, OnInit {
 
   @ViewChild('canvas', {static: true}) canvasRef!: ElementRef;
   @ViewChild('starfield', {static: true}) starfield!: ElementRef;
@@ -41,7 +41,7 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
   private camera!: any
   private scene!: any
  
-  private animationId = Constants.NUM_ZERO;
+  private animationId = 0;
   private PARTICLE_SIZE = 500;
   private SPREAD_RADIUS = 450;
 
@@ -53,7 +53,7 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
   icon = `${Constants.IMAGE_BASE_PATH}star_field.png`;
   isMaximizable = false;
   name = 'starfield';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.User;
   displayName = 'StarField';
 
@@ -106,7 +106,7 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
       })
     }
 
-  private initScene() {
+  private initScene():void {
     this.scene = new THREE.Scene();
     const starfieldWidow = document.getElementById('starfieldApp');
     const canvas = this.canvasRef?.nativeElement;

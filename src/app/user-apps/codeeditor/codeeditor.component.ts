@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, OnInit, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -22,7 +23,7 @@ import { AppState } from 'src/app/system-files/state/state.interface';
   selector: 'cos-codeeditor',
   templateUrl: './codeeditor.component.html',
   styleUrl: './codeeditor.component.css',
-  standalone: false,
+  standalone:false,
 })
 export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterViewInit, OnInit {
 
@@ -54,7 +55,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   icon = `${Constants.IMAGE_BASE_PATH}vs_code.png`;
   isMaximizable = false;
   name = 'codeeditor';
-  processId = Constants.NUM_ZERO;
+  processId = 0;
   type = ComponentType.User;
   displayName = Constants.EMPTY_STRING;
 

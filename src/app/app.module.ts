@@ -53,8 +53,10 @@ import { HighlightDirective } from './shared/system-component/window/window.btn.
 import { TaskBarEntryHighlightDirective } from './system-apps/taskbarentries/taskbar.entries.highlight.directives';
 import { LongPressDirective } from './system-apps/audioplayer/long.press.directive';
 import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.column-resize.directive';
+import { FileExplorerColumnResizeDirective } from './system-apps/fileexplorer/fileexplorer.column-resize.directive';
 import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.capture.directive';
 import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.directives';
+import { ParticaleFlowComponent } from './user-apps/particaleflow/particaleflow.component';
 
 
 
@@ -104,13 +106,15 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     ColumnResizeDirective,
     KeyPressCaptureDirective,
     AlphaNumericDirective,
+    FileExplorerColumnResizeDirective,
 
     SafeUrlPipe,
     TruncatePipe,
     TaskbarpreviewsComponent,
     WarpingstarfieldComponent,
     BoidsComponent,
-    BasicWindowComponent
+    BasicWindowComponent,
+    ParticaleFlowComponent
     
   ],
   imports: [

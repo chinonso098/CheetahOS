@@ -22,7 +22,7 @@ export class SessionManagmentService implements BaseService{
   
     name = 'session_mgmt_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = Constants.NUM_ZERO;
+    processId = 0;
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;

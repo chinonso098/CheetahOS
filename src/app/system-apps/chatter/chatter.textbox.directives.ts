@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/prefer-standalone */
 import { Directive, HostListener, ElementRef } from '@angular/core';
 
 @Directive({
