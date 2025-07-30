@@ -887,33 +887,6 @@ export class FileService implements BaseService{
             return false;
     }
 
-    public async writeFilesAsync_TBD(directory:string, files:File[]):Promise<boolean>{
-        return new Promise<boolean>(() =>{
-
-            let res = false;
-
-            files.forEach((file)=>{
-                const fileReader = new FileReader()
-                fileReader.readAsDataURL(file);
-                fileReader.onload = async(evt) =>{
-                    const newFile:FileInfo = new FileInfo();
-                    newFile.setFileName = file.name;
-
-                    const result = evt.target?.result;
-                    if(result instanceof ArrayBuffer) {
-                        newFile.setContentBuffer = result;
-                    } else{
-                        newFile.setContentPath = result || Constants.EMPTY_STRING;
-                    }
-                    newFile.setCurrentPath = `${this.pathCorrection(directory)}/${file.name}`;
-                    res = await this.writeFileAsync(directory, newFile);
-                }
-            })
-
-            return res;
-        });
-    }
-
     public async writeFilesAsync(directory: string, files: File[]): Promise<boolean> {
         const readFileAsDataURL = (file: File): Promise<string | ArrayBuffer | null> => {
             return new Promise((resolve, reject) => {
