@@ -24,7 +24,7 @@ import { SessionManagmentService } from "./session.management.service";
 import { UserNotificationService } from "./user.notification.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
-import { FileContent2 } from "src/app/system-files/file.content";
+import { FileContent } from "src/app/system-files/file.content";
 import { OpensWith } from "src/app/system-files/opens.with";
 import { FileMetaData } from "src/app/system-files/file.metadata";
 /// <reference types="node" />
@@ -73,6 +73,10 @@ export class FileService2 implements BaseService{
     private _userNotificationService:UserNotificationService
     private _sessionManagmentService:SessionManagmentService;
 
+    private _isCalculated = false;
+    private _usedStorageSizeInBytes = 0;
+
+
 	dirFilesUpdateNotify: Subject<void> = new Subject<void>();
     fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
     goToDirectoryNotify: Subject<string[]> = new Subject<string[]>();
@@ -82,7 +86,7 @@ export class FileService2 implements BaseService{
 
 	name = 'file_svc2';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = Constants.NUM_ZERO;
+    processId = 0;
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
@@ -230,7 +234,7 @@ export class FileService2 implements BaseService{
         const fileMetaData = await this.getFileMetaData(path);
         
         if(!extension){
-            const fc = await this.setOtherFolderProps(path, fileMetaData.getIsDirectory) as FileContent2;
+            const fc = await this.setOtherFolderProps(path, fileMetaData.getIsDirectory) as FileContent;
             this._fileInfo = this.populateFileInfo(path, fileMetaData, !isFile, opensWith, Constants.EMPTY_STRING, !useImage, undefined, fc);
             this._fileInfo.setIconPath = await this.changeFolderIcon(fc.fileName, fc.iconPath, path);
         }
@@ -244,11 +248,11 @@ export class FileService2 implements BaseService{
 			|| Constants.AUDIO_FILE_EXTENSIONS.includes(extension)
 			|| Constants.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension)){
 
-			let fileContent:FileContent2| undefined = undefined;
+			let fileContent:FileContent| undefined = undefined;
 			const opensWith = this.getOpensWith(extension);
 
 			if(opensWith.fileType === 'image' ||opensWith.fileType === 'video' || opensWith.fileType === 'audio' )
-            	fileContent = await this.getFileContentFromB64DataUrl(path, 'image') as FileContent2;
+            	fileContent = await this.getFileContentFromB64DataUrl(path, 'image') as FileContent;
 
             this._fileInfo = this.populateFileInfo(path, fileMetaData, isFile, opensWith.appName, opensWith.appIcon, !useImage, undefined, fileContent);
 
@@ -308,7 +312,7 @@ export class FileService2 implements BaseService{
 		return {fileType:empty, appName:empty, appIcon: empty};
     }
 
-	populateFileInfo(path:string, fileMetaData:FileMetaData, isFile:boolean, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut, fileCntnt?:FileContent2):FileInfo{
+	populateFileInfo(path:string, fileMetaData:FileMetaData, isFile:boolean, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut, fileCntnt?:FileContent):FileInfo{
         const fileInfo = new FileInfo();
         const img = `${Constants.IMAGE_BASE_PATH}${imageName}`;
 
@@ -380,7 +384,7 @@ export class FileService2 implements BaseService{
     }
 
 
-	public async getFileContentFromB64DataUrl(path: string, contentType: string): Promise<FileContent2> {
+	public async getFileContentFromB64DataUrl(path: string, contentType: string): Promise<FileContent> {
 		await configuredFS;
 
 		try {
@@ -391,11 +395,11 @@ export class FileService2 implements BaseService{
 				return this.createFileContentFromBuffer(contents, contentType, path);
 			}
 
-			const dataPrefix = utf8Data.substring(Constants.NUM_ZERO, Constants.NUM_TEN);
+			const dataPrefix = utf8Data.substring(0, 10);
 			const isDataUrl = (dataPrefix === 'data:image') || (dataPrefix === 'data:video') || (dataPrefix === 'data:audio');
 
 			if (isDataUrl) {
-				const base64Data = utf8Data.split(Constants.COMMA)[Constants.NUM_ONE];
+				const base64Data = utf8Data.split(Constants.COMMA)[1];
 				const binaryData = Buffer.from(base64Data, 'base64');
 				const fileUrl = this.bufferToUrl(binaryData);
 
@@ -421,19 +425,19 @@ export class FileService2 implements BaseService{
             }
         }
 
-	private createFileContentFromBuffer(buffer: Buffer, contentType: string, path: string): FileContent2 {
+	private createFileContentFromBuffer(buffer: Buffer, contentType: string, path: string): FileContent {
 		const fileUrl = this.bufferToUrl2(buffer);
 		return this.createFileContent(fileUrl, path, contentType === 'image');
 	}
 
-	private createFileContent(fileUrl: string,  path: string, isImage: boolean): FileContent2 {
+	private createFileContent(fileUrl: string,  path: string, isImage: boolean): FileContent {
 		const fileName = basename(path, extname(path));
 		return isImage
 			? this.populateFileContent(fileUrl, fileName, Constants.EMPTY_STRING, fileUrl, Constants.EMPTY_STRING)
 			: this.populateFileContent(Constants.EMPTY_STRING, fileName, Constants.EMPTY_STRING, fileUrl, Constants.EMPTY_STRING);
 	}
 
-	private populateFileContent(iconPath = Constants.EMPTY_STRING, fileName = Constants.EMPTY_STRING, fileType = Constants.EMPTY_STRING, contentPath = Constants.EMPTY_STRING, opensWith = Constants.EMPTY_STRING ):FileContent2{
+	private populateFileContent(iconPath = Constants.EMPTY_STRING, fileName = Constants.EMPTY_STRING, fileType = Constants.EMPTY_STRING, contentPath = Constants.EMPTY_STRING, opensWith = Constants.EMPTY_STRING ):FileContent{
 		return{
 			iconPath: iconPath, fileName: fileName, fileType: fileType, contentPath: contentPath, opensWith: opensWith
 		}
@@ -469,7 +473,7 @@ export class FileService2 implements BaseService{
 
         if(path === Constants.RECYCLE_BIN_PATH){
             const count = await this.countFolderItems(Constants.RECYCLE_BIN_PATH);
-            return (count === Constants.NUM_ZERO) 
+            return (count === 0) 
                 ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
                 :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
         }
@@ -485,7 +489,7 @@ export class FileService2 implements BaseService{
 		return iconPath;
     }
 
-	private async setOtherFolderProps(path:string, isDirectory:boolean):Promise<FileContent2>{
+	private async setOtherFolderProps(path:string, isDirectory:boolean):Promise<FileContent>{
         const fileName = basename(path, extname(path));
         let iconFile = Constants.EMPTY_STRING;
         const fileType = Constants.FOLDER;
@@ -499,7 +503,7 @@ export class FileService2 implements BaseService{
 			}
 
 			const count = await this.countFolderItems(path);
-			if(count === Constants.NUM_ZERO){
+			if(count === 0){
 				iconFile = `${Constants.IMAGE_BASE_PATH}empty_folder.png`;
 				return this.populateFileContent(iconFile, fileName, fileType, fileName, opensWith);
 			}
@@ -520,7 +524,7 @@ export class FileService2 implements BaseService{
 			await fs.promises.mkdir(folderPath, 0o777);//.catch(e => {throw e.code});
 
 			// Folder created successfully
-			this._fileExistsMap.set(folderPath, String(Constants.NUM_ZERO));
+			this._fileExistsMap.set(folderPath, String(0));
 			return true;
 		}catch (err:unknown){
 			let error = err as ErrnoError;
@@ -534,7 +538,7 @@ export class FileService2 implements BaseService{
 
 					// Folder created successfully
 					await fs.promises.mkdir(uniqueFolderPath, 0o777);//.catch(e => {throw e.code});
-					this._fileExistsMap.set(uniqueFolderPath, String(Constants.NUM_ZERO));
+					this._fileExistsMap.set(uniqueFolderPath, String(0));
 
 					return true;
 				}catch(err){
@@ -556,16 +560,16 @@ export class FileService2 implements BaseService{
 		await configuredFS;
 		try{
 			await fs.promises.writeFile(destPath, content, {flag: flag});
-			return Constants.NUM_ZERO
+			return 0
 		}catch(err:unknown){
 			let error = err as ErrnoError;
 
 			if(error.code === 'EEXIST'){
 				console.warn('writeRawAsync:', error.code);
-				return Constants.NUM_ONE;
+				return 1;
 			}else{
 				console.error(`Error writing file: ${err}`);
-				return Constants.NUM_TWO;
+				return 2;
 			}
 		}
     }
@@ -578,21 +582,21 @@ export class FileService2 implements BaseService{
      */
     private async writeRawHandlerAsync(destPath:string, cntnt:any):Promise<boolean>{
         const writeResult = await this.writeRawAsync(destPath, cntnt, 'wx');
-        if(writeResult === Constants.NUM_ZERO){
+        if(writeResult === 0){
             // console.log('writeFileAsync: file successfully written');
-            this._fileExistsMap.set(destPath, String(Constants.NUM_ZERO));
+            this._fileExistsMap.set(destPath, String(0));
             //this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap); TODO
             return true;
         }
 
-        if(writeResult === Constants.NUM_ONE){
+        if(writeResult === 1){
             console.warn('writeFileAsync: file already exists');
             const newFileName = this.IncrementFileName(destPath);
             const writeResult2 = await this.writeRawAsync(newFileName, cntnt, 'wx');
 
-            if(writeResult2 === Constants.NUM_ZERO){
+            if(writeResult2 === 0){
                 // console.log('writeFileAsync: file successfully written');
-                this._fileExistsMap.set(newFileName, String(Constants.NUM_ZERO));
+                this._fileExistsMap.set(newFileName, String(0));
                 //this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap); TODO
                 return true;
             }else{
@@ -674,7 +678,7 @@ export class FileService2 implements BaseService{
         if(!result){ return result }
 
         folderToProcessingQueue.push(srcPath);
-        const isRenameSuccessful =  await this.moveHandlerBAsync(destPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
+        const isRenameSuccessful =  await this.moveHandlerBAsync(destPath, folderToProcessingQueue, folderToDeleteStack, 0);
         if(isRenameSuccessful){
           await this.deleteEmptyFolders(folderToDeleteStack);
         }
@@ -699,7 +703,7 @@ export class FileService2 implements BaseService{
             if(exists){
                 result = await this.moveHandlerAAsync(destPath, folderToProcessingQueue, folderToDeleteStack, isRecycleBin);
             }else{
-                result =  await this.moveHandlerBAsync(destPath, folderToProcessingQueue, folderToDeleteStack, Constants.NUM_ZERO);
+                result =  await this.moveHandlerBAsync(destPath, folderToProcessingQueue, folderToDeleteStack, 0);
             }
 
             if(result){
@@ -726,7 +730,7 @@ export class FileService2 implements BaseService{
      */
     private async moveHandlerAAsync(destPath:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], isRecycleBin?: boolean):Promise<boolean>{
 
-        if(folderToProcessingQueue.length === Constants.NUM_ZERO)
+        if(folderToProcessingQueue.length === 0)
             return true;
 
         const srcPath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
@@ -768,24 +772,24 @@ export class FileService2 implements BaseService{
      */
     private async moveHandlerBAsync(destPath:string, folderToProcessingQueue:string[], folderToDeleteStack:string[], skipCounter:number):Promise<boolean>{
 
-        if(folderToProcessingQueue.length === Constants.NUM_ZERO)
+        if(folderToProcessingQueue.length === 0)
             return true;
 
         const srcPath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
         folderToDeleteStack.push(srcPath);
         let folderName = this.getNameFromPath(srcPath);
-        if(skipCounter === Constants.NUM_ZERO){ folderName = Constants.EMPTY_STRING; }
+        if(skipCounter === 0){ folderName = Constants.EMPTY_STRING; }
 
         let  moveFolderResult = false;
         const loadedDirectoryEntries = await this.readDirectory(srcPath);
 
         //skip creating the 
-        if(skipCounter > Constants.NUM_ZERO){
+        if(skipCounter > 0){
             moveFolderResult = await this.createFolderAsync(destPath,folderName);  
         }
-        skipCounter = skipCounter + Constants.NUM_ONE;
+        skipCounter = skipCounter + 1;
     
-        if(moveFolderResult || (skipCounter >= Constants.NUM_ZERO)){
+        if(moveFolderResult || (skipCounter >= 0)){
             for(const directoryEntry of loadedDirectoryEntries){
                 const checkIfDirResult = await this.isDirectory(`${srcPath}/${directoryEntry}`);
                 if(checkIfDirResult){
@@ -843,7 +847,7 @@ export class FileService2 implements BaseService{
 
         //overwrite the file
         const writeResult = await this.writeRawAsync(destinationPath, readResult, 'wx');
-        if(writeResult !== Constants.NUM_ZERO)
+        if(writeResult !== 0)
             return false
         
         return await this.deleteFileAsync(srcPath);
@@ -997,8 +1001,8 @@ OpensWith=${shortCutData.getOpensWith}
         const extension = extname(path);
         const filename = basename(path, extension);
 
-        let count = Number(this._fileExistsMap.get(path) ?? Constants.NUM_ZERO);
-        count = count + Constants.NUM_ONE;
+        let count = Number(this._fileExistsMap.get(path) ?? 0);
+        count = count + 1;
         this._fileExistsMap.set(path, String(count));
 
         return `${dirname(path)}/${filename} (${count})${extension}`;
@@ -1006,9 +1010,9 @@ OpensWith=${shortCutData.getOpensWith}
 
     private DecrementFileName(path:string):void{
 
-        let count  = Number(this._fileExistsMap.get(path) ?? Constants.NUM_ZERO);
-        if(count > Constants.NUM_ZERO){
-            count = count - Constants.NUM_ONE;
+        let count  = Number(this._fileExistsMap.get(path) ?? 0);
+        if(count > 0){
+            count = count - 1;
             this._fileExistsMap.set(path, String(count));
         }else{
             if(this._fileExistsMap.get(path))
@@ -1019,16 +1023,16 @@ OpensWith=${shortCutData.getOpensWith}
 	public async countFolderItems(path:string):Promise<number>{
 		try{
 			const dirFiles = await this.readDirectory(path);
-			return (dirFiles?.length || Constants.NUM_ZERO);
+			return (dirFiles?.length || 0);
 		}catch(err:any){
 			console.error('countFolderItems:', err);
-			return Constants.NUM_ZERO;
+			return 0;
 		}
 	}
 
 	public  async getFullCountOfFolderItems(path:string): Promise<string> {
 
-        const counts = { files: Constants.NUM_ZERO, folders: Constants.NUM_ZERO };
+        const counts = { files: 0, folders: 0 };
         const queue:string[] = [];
         
         queue.push(path);
@@ -1038,7 +1042,7 @@ OpensWith=${shortCutData.getOpensWith}
 
     private  async traverseAndCountFolderItems(queue:string[], counts:{files: number, folders: number}): Promise<void> {
 
-        if(queue.length === Constants.NUM_ZERO)
+        if(queue.length === 0)
             return;
 
         const srcPath = queue.shift() || Constants.EMPTY_STRING;
@@ -1060,7 +1064,7 @@ OpensWith=${shortCutData.getOpensWith}
 
     public  async getFolderSizeAsync(path:string):Promise<number>{
 
-        const sizes = {files: Constants.NUM_ZERO, folders: Constants.NUM_ZERO};
+        const sizes = {files: 0, folders: 0};
         const queue:string[] = [];
         
         queue.push(path);
@@ -1070,7 +1074,7 @@ OpensWith=${shortCutData.getOpensWith}
 
     private  async traverseAndSumFolderSize(queue:string[], sizes:{files: number, folders: number}): Promise<void> {
 
-        if(queue.length === Constants.NUM_ZERO)
+        if(queue.length === 0)
             return;
 
         const srcPath = queue.shift() || Constants.EMPTY_STRING;
@@ -1099,10 +1103,10 @@ OpensWith=${shortCutData.getOpensWith}
 
         // If no dot is found (no extension),
         // append "_rs" to the end
-        if (lastDotIndex === Constants.MINUS_ONE) 
+        if (lastDotIndex === -1) 
             return filename + appStr;
     
-        const name = filename.substring(Constants.NUM_ZERO, lastDotIndex);
+        const name = filename.substring(0, lastDotIndex);
         const extension = filename.substring(lastDotIndex); // Includes the dot
 
         return name + appStr + extension;
@@ -1113,8 +1117,8 @@ OpensWith=${shortCutData.getOpensWith}
     }
 
     private pathCorrection(path:string):string{
-        if(path.slice(Constants.MINUS_ONE) === Constants.ROOT)
-            return path.slice(Constants.NUM_ZERO, Constants.MINUS_ONE);
+        if(path.slice(-1) === Constants.ROOT)
+            return path.slice(0, -1);
         else
             return path;
     }
@@ -1165,6 +1169,22 @@ OpensWith=${shortCutData.getOpensWith}
     private bufferToUrl2(arr:Uint8Array):string{
         return URL.createObjectURL(new Blob([arr]));
      }
+
+
+    getUsedStorage():number{
+        return this._usedStorageSizeInBytes;
+    }
+
+    private async calculateUsedStorage():Promise<void>{
+        if(this._isCalculated) return;
+
+        this._usedStorageSizeInBytes = await this.getFolderSizeAsync(Constants.ROOT);
+        this._isCalculated = true;
+    }
+
+    private async recalculateUsedStorage():Promise<void>{
+        this._usedStorageSizeInBytes = await this.getFolderSizeAsync(Constants.ROOT);
+    }
 
     private isUtf8Encoded(data: string): boolean {
         try {

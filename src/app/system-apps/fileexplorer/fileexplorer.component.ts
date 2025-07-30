@@ -35,7 +35,6 @@ import { FileService2 } from 'src/app/shared/system-service/file.service.two';
   styleUrls: ['./fileexplorer.component.css'],
   standalone:false,
   encapsulation: ViewEncapsulation.None,
-  standalone: false
 })
 
 export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewInit, OnDestroy {
@@ -48,7 +47,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
  
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _fileService:FileService;
+  private _fileService:FileService2;
   private _processHandlerService:ProcessHandlerService;
   private _sessionManagmentService: SessionManagmentService;
   private _userNotificationService:UserNotificationService;
@@ -1158,9 +1157,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private async loadFileTreeAsync():Promise<void>{
     if(this.isRecycleBinFolder) return;
 
-    const usersDir = '/Users/';
+    const usersDir = '/Users';
     this.fileTreeNode = [];
-    this._fileService.resetDirectoryFiles();
+    //this._fileService.resetDirectoryFiles();
     const directoryEntries  = await this._fileService.readDirectory(usersDir);
 
     const osDrive:FileTreeNode = {
@@ -1189,7 +1188,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(!this.fileTreeHistory.includes(path)){
       const tmpFileTreeNode:FileTreeNode[] = [];
-      this._fileService.resetDirectoryFiles();
+      //this._fileService.resetDirectoryFiles();
       const directoryEntries  = await this._fileService.readDirectory(path);
   
       // this.directory, will not be correct for all cases. Make sure to check
