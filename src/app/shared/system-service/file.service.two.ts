@@ -115,14 +115,6 @@ export class FileService2 implements BaseService{
         this.retrievePastSessionData(this.fileServiceIterateKey);
     }
 
-
-	private throwWithPath(error: Exception): never {
-		// We want the path in the message, since Angular won't throw the actual error.
-		error.message = error.toString();
-		error.code = error.code;
-		throw error;
-	}
-
 	async isDirectory(path: string):Promise<boolean>{
 		 await configuredFS;
 
