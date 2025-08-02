@@ -1168,7 +1168,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
-      const entryPath = `${usersDir}${dirEntry}`;
+      const entryPath = `${usersDir}/${dirEntry}`;
       const isFile =  await this._fileService.isDirectory(entryPath);
       const ftn:FileTreeNode = {
         name : dirEntry,

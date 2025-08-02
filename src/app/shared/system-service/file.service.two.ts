@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { basename, extname, join, } from '@zenfs/core/path';
+import { basename, extname } from '@zenfs/core/path';
 import { FileInfo } from "src/app/system-files/file.info";
 import { ShortCut } from 'src/app/system-files/shortcut';
 
@@ -7,8 +7,9 @@ import { Buffer } from 'buffer';
 import ini from 'ini';
 import { Subject } from 'rxjs';
 
+import * as log from 'kerium/log';
 import { IndexData } from '@zenfs/core';
-import { ErrnoError } from "@zenfs/core";
+import { Exception } from "kerium";
 import { configure, CopyOnWrite, Fetch, default as fs } from '@zenfs/core';
 
 import { IndexedDB } from '@zenfs/dom';
@@ -32,6 +33,13 @@ import { FileMetaData } from "src/app/system-files/file.metadata";
 const fsPrefix = 'osdrive';
 const currentURL = window.location.href;
 
+log.configure({
+	enabled: true,
+	level: 'debug',
+	format: log.fancy({ style: 'css', colorize: 'level' }),
+	output: console.log,
+});
+
 console.log('currentURL:', currentURL)
 export const configuredFS = configure({
     mounts: {
@@ -47,12 +55,7 @@ export const configuredFS = configure({
                 storeName: 'fs-cache',
             },
         },
-    },
-    log: {
-		enabled: true,
-		level: 'debug',
-		output: console.log
-	}
+    }
 });
 
 
@@ -111,14 +114,6 @@ export class FileService2 implements BaseService{
         this.retrievePastSessionData(this.fileServiceRestoreKey);
         this.retrievePastSessionData(this.fileServiceIterateKey);
     }
-
-
-	private throwWithPath(error: ErrnoError): never {
-		// We want the path in the message, since Angular won't throw the actual error.
-		error.message = error.toString();
-		error.code = error.code;
-		throw error;
-	}
 
 	async isDirectory(path: string):Promise<boolean>{
 		 await configuredFS;
@@ -527,7 +522,7 @@ export class FileService2 implements BaseService{
 			this._fileExistsMap.set(folderPath, String(0));
 			return true;
 		}catch (err:unknown){
-			let error = err as ErrnoError;
+			let error = err as Exception;
 			if(error.code === 'EEXIST'){
 
 				console.warn('createFolderAsync:', error.code);
@@ -542,7 +537,7 @@ export class FileService2 implements BaseService{
 
 					return true;
 				}catch(err){
-					error = err as ErrnoError;
+					error = err as Exception;
 					console.error('Error creating folder:', error);	
 					return false;
 				}
@@ -562,7 +557,7 @@ export class FileService2 implements BaseService{
 			await fs.promises.writeFile(destPath, content, {flag: flag});
 			return 0
 		}catch(err:unknown){
-			let error = err as ErrnoError;
+			let error = err as Exception;
 
 			if(error.code === 'EEXIST'){
 				console.warn('writeRawAsync:', error.code);
