@@ -108,8 +108,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
     console.log('DIALOG onCHANGES:',changes);
     this.displayMgs = this.inputMsg;
 
+    this.notificationOption = this.notificationType;
     if(this.notificationType === UserNotificationType.PowerOnOff){
-      this.notificationOption =this.notificationType;
       this.setPwrDialogPid(this.UPDATE);
     }
   }

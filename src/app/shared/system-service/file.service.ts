@@ -698,7 +698,7 @@ export class FileService implements BaseService{
         return isRenameSuccessful;
     }
 
-    	private async renameDirectoryAsync_1(srcPath:string, destPath:string):Promise<boolean>{
+    private async renameDirectoryAsync_1(srcPath:string, destPath:string):Promise<boolean>{
 		await configuredFS;
 
         const newName = this.getNameFromPath(destPath);
