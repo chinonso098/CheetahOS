@@ -27,7 +27,7 @@ import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { VantaDefaults } from './vanta-object/vanta.defaults';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { FileService2 } from 'src/app/shared/system-service/file.service.two';
+import { FileService } from 'src/app/shared/system-service/file.service';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
@@ -67,7 +67,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   @ViewChild('desktopContainer', {static: true}) desktopContainer!: ElementRef; 
   
   //private _fileService:FileService;
-  private _fileService:FileService2
+  private _fileService:FileService
   private _menuService:MenuService;
   private _audioService:AudioService;
   private _windowService:WindowService;
@@ -264,7 +264,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService, 
               scriptService:ScriptService, audioService:AudioService, menuService:MenuService, 
-              fileService:FileService2, windowService:WindowService, systemNotificationServices:SystemNotificationService,
+              fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
               userNotificationService:UserNotificationService, formBuilder:FormBuilder, elRef:ElementRef) { 
 
     this._processIdService = processIdService;

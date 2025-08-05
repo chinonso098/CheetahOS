@@ -27,7 +27,6 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { FileService2 } from 'src/app/shared/system-service/file.service.two';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -47,7 +46,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
  
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
-  private _fileService:FileService2;
+  private _fileService:FileService;
   private _processHandlerService:ProcessHandlerService;
   private _sessionManagmentService: SessionManagmentService;
   private _userNotificationService:UserNotificationService;
@@ -260,7 +259,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   hasWindow = true;
 
 
-  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService2, 
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, 
               triggerProcessService:ProcessHandlerService, formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, 
               menuService:MenuService, notificationService:UserNotificationService, windowService:WindowService, 
               audioService:AudioService, systemNotificationService:SystemNotificationService) { 
@@ -1739,12 +1738,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async onRestore():Promise<void>{
-    const delay = 30;
+    const delay0 = 100;
+    const delay = 750;
     const srcPath = this.selectedFile.getCurrentPath;
     const originPath = this._fileService.getFolderOrigin(srcPath);
     const destPath = dirname(originPath);
     const result = await this._fileService.moveAsync(srcPath, destPath, this.selectedFile.getIsFile, true);
     if(result){
+      await CommonFunctions.sleep(delay0);
       this._fileService.addEventOriginator(Constants.DESKTOP);
       this._fileService.dirFilesUpdateNotify.next();
 
@@ -2047,10 +2048,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       'Videos': 'Contains movies and other video files',
       'Pictures': 'Contains digital photos, images and graphic files'
     };
-
     const standardFolders = ['3D-Objects', 'Documents', 'Downloads', 'Desktop', 'Games'];
-    const capitalizedDesktop = Constants.DESKTOP.charAt(0).toUpperCase();
-
+   
     const fileAuthor = 'Relampago Del Catatumbo';
     const fileType = file.getFileType;
     const fileDateModified = file.getDateModifiedUS;
@@ -2058,12 +2057,19 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const fileName = file.getFileName;
     const isFile = file.getIsFile;
     const currentPath = dirname(file.getCurrentPath);
-    const isFolder = fileType === Constants.FOLDER;
     const isRoot = currentPath === Constants.ROOT;
-    const localFileId = file.getCurrentPath
+    const localFileId = file.getCurrentPath;
+
+    let isFolder = fileType === Constants.FOLDER;
 
     //reset
     this.fileInfoTipData = [];
+
+    //Special Cases
+    //Normally, IsFile & IsFolder can't both be true at the same time, expect in a few cases like fileexplorer.url, music.url etc...
+    //This is a condition that wayback when, i didn't foresee coming to bite me in the rear.
+    if(isFile && isFolder){ isFolder = false; }
+
 
     if (Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileType)) {
       await new Promise<void>((resolve) => {
@@ -2090,13 +2096,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         };
       });
     }else if(isFile && !isFolder){
-      const fileTypeName = this.getFileTypeName(fileType);
+      const fileTypeName = (fileType !== Constants.FOLDER)? this.getFileTypeName(fileType) : this.getFileTypeName(Constants.URL);
       this.fileInfoTipData.push({label:infoTipFields[7], data:fileTypeName});
       this.fileInfoTipData.push({label:infoTipFields[3], data: fileDateModified });
       this.fileInfoTipData.push({ label: infoTipFields[6], data: fileSize });
     }
     else if(isFolder){
-      if(isRoot && (standardFolders.includes(fileName) || fileName === capitalizedDesktop)){
+      if(isRoot && (standardFolders.includes(fileName))){
         this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified });
       }else if((isRoot && specialFolders[fileName])){
         this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:specialFolders[fileName]})

@@ -11,7 +11,7 @@ import { ProcessIDService } from '../../system-service/process.id.service';
 import { RunningProcessService } from '../../system-service/running.process.service';
 import { WindowService } from '../../system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { FileService2 } from '../../system-service/file.service.two';
+import { FileService } from '../../system-service/file.service';
 
 @Component({
   selector: 'cos-properties',
@@ -23,7 +23,7 @@ import { FileService2 } from '../../system-service/file.service.two';
 export class PropertiesComponent implements BaseComponent, OnChanges{
   @Input() fileInput!:FileInfo;
 
-  private _fileService:FileService2;
+  private _fileService:FileService;
   private _runningProcessService:RunningProcessService;
   private _processIdService:ProcessIDService
   private _windowService:WindowService;
@@ -71,7 +71,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, windowService:WindowService,
-              fileInfoService:FileService2){ 
+              fileInfoService:FileService){ 
     this._processIdService = processIdService;
     this._fileService = fileInfoService;
     this._windowService = windowService;

@@ -12,7 +12,6 @@ import { MenuService } from '../../system-service/menu.services';
 import { GeneralMenu } from '../menu/menu.types';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { ProcessHandlerService } from '../../system-service/process.handler.service';
-import { FileService2 } from '../../system-service/file.service.two';
 
 @Component({
   selector: 'cos-filetreeview',
@@ -30,7 +29,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
  
   quickAccessData: FileTreeNode[] = [];
   selectedFileTreeNode!:FileTreeNode;
-  private _fileService:FileService2;
+  private _fileService:FileService;
   private _audioService:AudioService;
   private _menuService:MenuService;
   private _processHandlerService:ProcessHandlerService;
@@ -66,7 +65,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     {icon:Constants.EMPTY_STRING, label: 'Properties', action: this.showPropertiesWindow.bind(this) }
   ];
 
-  constructor(fileService:FileService2, audioService:AudioService, menuService:MenuService,
+  constructor(fileService:FileService, audioService:AudioService, menuService:MenuService,
               processHandlerService:ProcessHandlerService){
     this._fileService = fileService;
     this._audioService = audioService;
