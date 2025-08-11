@@ -91,20 +91,20 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
     this._maximizeWindowSub?.unsubscribe();
   }
 
-    captureComponentImg():void{
-      htmlToImage.toPng(this.starfield.nativeElement).then(htmlImg =>{
-  
-        const cmpntImg:TaskBarPreviewImage = {
-          pid: this.processId,
-          appName: this.name,
-          displayName: this.name,
-          icon : this.icon,
-          defaultIcon: this.icon,
-          imageData: htmlImg
-        }
-        this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-      })
-    }
+  captureComponentImg():void{
+    htmlToImage.toPng(this.starfield.nativeElement).then(htmlImg =>{
+
+      const cmpntImg:TaskBarPreviewImage = {
+        pid: this.processId,
+        appName: this.name,
+        displayName: this.name,
+        icon : this.icon,
+        defaultIcon: this.icon,
+        imageData: htmlImg
+      }
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
+    })
+  }
 
   private initScene():void {
     this.scene = new THREE.Scene();

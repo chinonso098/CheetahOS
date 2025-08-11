@@ -1,0 +1,11 @@
+.pdf-viewer-cntnr {
+  /* background-image: radial-gradient( circle farthest-corner at 83.7% 4.3%,  rgba(35,10,45,1) 0%, rgba(10,10,10,1) 90% ); */
+  width: 650px;
+  height: 450px ;
+  overflow: auto; /* Enable horizontal/vertical scrolling when needed */
+}
+
+canvas {
+  border: 1px solid black;
+  direction: ltr;
+}

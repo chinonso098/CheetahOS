@@ -89,9 +89,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   async ngAfterViewInit() {
     
-    //this.setJSDosWindowToFocus(this.processId); 
-      
-    this.gameSrc = (this.gameSrc !=='')? 
+    this.gameSrc = (this.gameSrc !== Constants.EMPTY_STRING)? 
       this.gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
     this._scriptService.loadScript("js-dos", "osdrive/Program-Files/jsdos/js-dos.js").then(async() =>{
@@ -146,9 +144,9 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     const ext = ".jsdos";
     let res = false;
 
-    if(contentExt != Constants.EMPTY_STRING && contentExt == ext){
+    if(contentExt !== Constants.EMPTY_STRING && contentExt == ext){
       res = true;
-    }else if( currentPathExt == ext){
+    }else if( currentPathExt === ext){
       res = false;
     }
     return res;

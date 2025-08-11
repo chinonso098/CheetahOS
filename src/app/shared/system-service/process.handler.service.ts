@@ -38,6 +38,7 @@ import { RuffleComponent } from "src/app/user-apps/ruffle/ruffle.component";
 import { TitleComponent } from "src/app/user-apps/title/title.component";
 import { WarpingstarfieldComponent } from "src/app/user-apps/warpingstarfield/warpingstarfield.component";
 import { ParticaleFlowComponent } from "src/app/user-apps/particaleflow/particaleflow.component";
+import { PdfViewerComponent } from "src/app/user-apps/pdf-viewer/pdf-viewer.component";
 
 
 @Injectable({
@@ -104,6 +105,7 @@ export class ProcessHandlerService implements BaseService{
         {type: WarpingstarfieldComponent},
         {type: BoidsComponent},
         {type: ParticaleFlowComponent},
+        {type: PdfViewerComponent}
     ];
 
     constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, windowService:WindowService, 

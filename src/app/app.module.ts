@@ -57,6 +57,7 @@ import { FileExplorerColumnResizeDirective } from './system-apps/fileexplorer/fi
 import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.capture.directive';
 import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.directives';
 import { ParticaleFlowComponent } from './user-apps/particaleflow/particaleflow.component';
+import { PdfViewerComponent } from './user-apps/pdf-viewer/pdf-viewer.component';
 
 
 
@@ -99,6 +100,12 @@ import { ParticaleFlowComponent } from './user-apps/particaleflow/particaleflow.
     PowerOnOffComponent,
     SearchComponent,
     SystemtrayComponent,
+    TaskbarpreviewsComponent,
+    WarpingstarfieldComponent,
+    BoidsComponent,
+    BasicWindowComponent,
+    ParticaleFlowComponent,
+    PdfViewerComponent,
 
     HighlightDirective,
     TaskBarEntryHighlightDirective,
@@ -109,13 +116,7 @@ import { ParticaleFlowComponent } from './user-apps/particaleflow/particaleflow.
     FileExplorerColumnResizeDirective,
 
     SafeUrlPipe,
-    TruncatePipe,
-    TaskbarpreviewsComponent,
-    WarpingstarfieldComponent,
-    BoidsComponent,
-    BasicWindowComponent,
-    ParticaleFlowComponent
-    
+    TruncatePipe
   ],
   imports: [
     BrowserModule,

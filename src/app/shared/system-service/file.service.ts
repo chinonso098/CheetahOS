@@ -642,6 +642,44 @@ export class FileService implements BaseService{
         });
     }
 
+    // public async writeFileWithProgress( file: File, directory: string,  onProgress: (percent: number) => void ): Promise<boolean> {
+    // const filePath = `${this.pathCorrection(directory)}/${file.name}`;
+    // const chunkSize = 1024 * 1024; // 1MB
+    // const totalSize = file.size;
+    // let offset = 0;
+
+    // return new Promise((resolve, reject) => {
+    //     fs.open(filePath, 'w', (err, fd) => {
+    //     if (err) return reject(err);
+
+    //     const writeNextChunk = async () => {
+    //         if (offset >= totalSize) {
+    //         fs.close(fd, (err) => {
+    //             if (err) return reject(err);
+    //             resolve(true);
+    //         });
+    //         return;
+    //         }
+
+    //         const chunk = file.slice(offset, offset + chunkSize);
+    //         const buffer = new Uint8Array(await chunk.arrayBuffer());
+
+    //         fs.write(fd, buffer, 0, buffer.length, offset, (err, written) => {
+    //         if (err) return reject(err);
+
+    //         offset += written;
+    //         const percent = Math.round((offset / totalSize) * 100);
+    //         onProgress(percent);
+
+    //         writeNextChunk(); // Continue with next chunk
+    //         });
+    //     };
+
+    //     writeNextChunk();
+    //     });
+    // });
+    // }
+
     public async writeFileAsync(path:string, file:FileInfo):Promise<boolean>{
         const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
         const destPath = `${this.pathCorrection(path)}/${file.getFileName}`;
