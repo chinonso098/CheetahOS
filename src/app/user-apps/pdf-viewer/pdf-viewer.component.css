@@ -1,7 +1,14 @@
+.pdf-viewer-main-cntnr{
+  width: 660px;
+  height: 490px;
+  padding: 5px 5px 0px 5px;
+  background-color: #2d2d2df4;
+}
+
 .pdf-viewer-cntnr {
   /* background-image: radial-gradient( circle farthest-corner at 83.7% 4.3%,  rgba(35,10,45,1) 0%, rgba(10,10,10,1) 90% ); */
   width: 650px;
-  height: 450px ;
+  height: 450px;
   overflow: auto; /* Enable horizontal/vertical scrolling when needed */
 }
 
@@ -9,3 +16,43 @@ canvas {
   border: 1px solid black;
   direction: ltr;
 }
+
+.pdf-viewer-cntrl{
+  position: fixed;
+  display: flex;
+  align-items: center; /* vertically align buttons and text */
+  gap: 10px;           /* space between sections */
+  width: 650px;
+  height: 30px;
+  font-family: Arial, sans-serif;
+  background-color: #ccc;
+  bottom: 0;
+}
+
+.section {
+  border: 1px solid #ccc;
+  padding: 0px 4px;
+  text-align: center;
+}
+
+.nav-btn {
+/*   background-color: #007bff; Bootstrap-like blue */
+  color: #000;
+  border: none;
+  padding: 4px 4px;
+  font-size: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.nav-btn:hover {
+  background-color: #0056b3; /* darker on hover */
+}
+
+.nav-btn:active {
+  background-color: #00408f; /* even darker when pressed */
+}
+
+.page-label {
+  font-weight: bold;
+}
+

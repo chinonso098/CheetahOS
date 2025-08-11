@@ -123,17 +123,14 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, OnDestroy, Af
         const viewport = page.getViewport({scale: defaultScale});
         const pdfView = document.getElementById(`pdfviewer-${this.processId}`) as HTMLElement;
 
-        // const newScale = pdfView.offsetWidth / viewport.width;
-        // const scaledViewport = page.getViewport({scale:newScale});
-
         console.log('pdfView:',pdfView);
-        console.log('viewport-height:',viewport.height);
-        console.log('viewport-width:',viewport.width);
+        console.log('viewport-height:',viewport.height * outputScale);
+        console.log('viewport-width:',viewport.width * outputScale);
 
-        // if(!pdfView){
-        //   console.error('starfieldWidow not found!');
-        //   return;
-        // }
+
+        const transform = outputScale !== 1
+            ? [outputScale, 0, 0, outputScale, 0, 0]
+            : null;
 
         // Prepare canvas using PDF page dimensions
         const canvas = document.getElementById('pdf-canvas') as HTMLCanvasElement;
@@ -141,15 +138,16 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, OnDestroy, Af
           const context = canvas.getContext('2d');
 
           console.log('pdfView.offsetHeight:',pdfView.offsetHeight);
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
+          canvas.height = Math.floor(viewport.height * outputScale);
+          canvas.width = Math.floor(viewport.width * outputScale);
 
-          // canvas.style.height = `${viewport.height}px`;
-          // canvas.style.width = `${viewport.width}px`;
+          canvas.style.height = `${Math.floor(viewport.height)}px`;
+          canvas.style.width = `${Math.floor(viewport.width)}px`;
 
           // Render PDF page into canvas context
           const renderContext = {
             canvasContext: context,
+            transform: transform,
             viewport: viewport
           };
 
