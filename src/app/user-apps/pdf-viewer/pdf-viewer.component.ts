@@ -109,7 +109,7 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
         this.displayName = this._fileInfo.getFileName;
     });
 
-    CommonFunctions.sleep(this.SECONDS_DELAY);
+    await CommonFunctions.sleep(this.SECONDS_DELAY);
     this.captureComponentImg();
   }
 
@@ -123,7 +123,7 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
       this.pageCount = pdf.numPages;
 
       return true;
-    } catch (error) {
+    }catch (error){
       console.error('Error loading PDF file:', error);
       return false;
     }

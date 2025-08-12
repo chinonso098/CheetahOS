@@ -127,7 +127,7 @@ export class AudioService implements BaseService {
 
   getVolume():number{
     if(!this.isAudioFileReady || !this._audioPlayer)
-      return 0;
+      return -1;
 
     return this._audioPlayer.volume();
   }

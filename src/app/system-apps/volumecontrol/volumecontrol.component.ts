@@ -2,6 +2,7 @@
 import { AfterViewInit, Component } from '@angular/core';
 import { Constants } from 'src/app/system-files/constants';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 @Component({
   selector: 'cos-volumecontrol',
@@ -13,20 +14,24 @@ export class VolumeControlComponent implements AfterViewInit {
   private _audioService!:AudioService
 
   audioIcon =`${Constants.IMAGE_BASE_PATH}no_volume.png`;
-  private currentVolume = 0;
+  private currentVolume = -1;
   adjustedVolume = 0;
 
   constructor(audioService:AudioService) { 
     this._audioService = audioService;
   }
 
-  ngAfterViewInit():void{  
-      this.currentVolume = this._audioService.getVolume();
-      this.setVolumeIcon();
+  async ngAfterViewInit():Promise<void>{  
+    const delay = 50; //50ms    
+    await CommonFunctions.sleep(delay)
+    this.currentVolume = this._audioService.getVolume();
+    this.setVolumeIcon();
   }
 
   setVolumeIcon():void{
-    if(this.currentVolume === 0){
+    if(this.currentVolume === -1){
+      this.audioIcon =  `${Constants.IMAGE_BASE_PATH}volume_error.png`;
+    }else if(this.currentVolume === 0){
       this.audioIcon =  `${Constants.IMAGE_BASE_PATH}no_volume.png`;
       this.adjustedVolume = 0;
     }else  if(this.currentVolume > 0 && this.currentVolume <= 0.3){
@@ -47,6 +52,9 @@ export class VolumeControlComponent implements AfterViewInit {
     const enteredValue = Number(inputElement.value);
     this.adjustedVolume = enteredValue;
     const newVolume = (enteredValue/100);
+
+    this.currentVolume = newVolume;
+    this.setVolumeIcon();
 
     this._audioService.changeVolume(newVolume);
     this._audioService.changeVolumeNotify.next();
