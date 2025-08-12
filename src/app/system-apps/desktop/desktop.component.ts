@@ -1320,7 +1320,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
   
   onShowDesktopIconCntxtMenu(evt:MouseEvent, file:FileInfo, id:number):void{
-    const menuHeight = 253; //this is not ideal.. menu height should be gotten dynmically
+    const menuHeight = (file.getIsFile)? 253 : 337; //this is not ideal.. menu height should be gotten dynmically
     const uid = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uid);
     this._menuService.hideContextMenus.next();

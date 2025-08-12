@@ -191,7 +191,7 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
       viewport: viewport
     };
 
-    return renderContext
+    return renderContext;
   }
 
   async queueRenderPage(num:number):Promise<void>{
