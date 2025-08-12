@@ -25,6 +25,7 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   private currentVolume = 0;
 
   taskBarArrowIcon = `${Constants.IMAGE_BASE_PATH}taskbar_arrow_up.png`;
+  taskBarNotificationIcon = `${Constants.IMAGE_BASE_PATH}taskbar_no_notification.png`;
   audioIcon = `${Constants.IMAGE_BASE_PATH}no_volume.png`;
   currentVolumeTxt = Constants.EMPTY_STRING;
 
@@ -93,19 +94,19 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
     if(tskBarVolumeElmnt){
       if(this.currentVolume === -1){
         this.audioIcon =  `${Constants.IMAGE_BASE_PATH}volume_error.png`;
-        tskBarVolumeElmnt.style.left = '3px';
+        tskBarVolumeElmnt.style.left = '5px';
       }else  if(this.currentVolume === 0){
         this.audioIcon =  `${Constants.IMAGE_BASE_PATH}no_volume.png`;
-        tskBarVolumeElmnt.style.left = '3px';
+        tskBarVolumeElmnt.style.left = '5px';
       }else  if(this.currentVolume > 0 && this.currentVolume <= 0.3){
           this.audioIcon =  `${Constants.IMAGE_BASE_PATH}low_volume.png`;
-          tskBarVolumeElmnt.style.left = '0px';
+          tskBarVolumeElmnt.style.left = '4.5px';
       }else  if(this.currentVolume >= 0.4 && this.currentVolume <= 0.7){
         this.audioIcon =  `${Constants.IMAGE_BASE_PATH}medium_volume.png`;
-        tskBarVolumeElmnt.style.left = '0px';
+        tskBarVolumeElmnt.style.left = '4.5px';
       }else  if(this.currentVolume >= 0.8 && this.currentVolume <= 1){
         this.audioIcon =  `${Constants.IMAGE_BASE_PATH}high_volume.png`;
-        tskBarVolumeElmnt.style.left = '0px';
+        tskBarVolumeElmnt.style.left = '4.5px';
       }
 
       this.currentVolumeTxt = `speaker:${(this.currentVolume * 100)}%`;
