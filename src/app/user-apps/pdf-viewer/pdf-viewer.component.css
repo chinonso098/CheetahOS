@@ -45,7 +45,8 @@ canvas {
 }
 
 .nav-btn2 {
-    font-size: 15px;
+  padding: 3px 5px;
+  font-size: 15px;
 }
 
 .nav-btn:hover, .nav-btn2:hover {
