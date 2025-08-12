@@ -3,16 +3,23 @@
         <div class="pdf-viewer-cntnr">
             <canvas id="pdf-canvas" #pdfviewer></canvas>
         </div>
-        <div class="pdf-viewer-cntrl ">
-        <div class="section">
-            <button class="nav-btn">Prev</button>
-        </div>
-        <div class="section">
-            <button class="nav-btn">Next</button>
-        </div>
-        <div class="section page-label">
-            Page: 1 / 15
-        </div>
+        <div class="pdf-viewer-cntrl">
+            <div class="section">
+                <button class="nav-btn" (click)="onPrevPage()">Prev</button>
+            </div>
+            <div class="section">
+                <button class="nav-btn" (click)="onNextPage()">Next</button>
+            </div>
+
+            <div class="section">
+                <button class="nav-btn2" (click)="zoomOut()">-</button>
+            </div>
+            <div class="section">
+                <button class="nav-btn2" (click)="zoomIn()">+</button>
+            </div>
+            <div class="section page-label">
+                Page: {{pageNum}} / {{pageCount}}
+            </div>
         </div>
     </div>
 </cos-window>

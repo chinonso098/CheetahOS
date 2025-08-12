@@ -21,7 +21,7 @@ canvas {
   position: fixed;
   display: flex;
   align-items: center; /* vertically align buttons and text */
-  gap: 10px;           /* space between sections */
+  gap: 2px;           /* space between sections */
   width: 650px;
   height: 30px;
   font-family: Arial, sans-serif;
@@ -31,24 +31,28 @@ canvas {
 
 .section {
   border: 1px solid #ccc;
-  padding: 0px 4px;
+  padding: 0px 5px;
   text-align: center;
 }
 
-.nav-btn {
+.nav-btn, .nav-btn2 {
 /*   background-color: #007bff; Bootstrap-like blue */
   color: #000;
   border: none;
-  padding: 4px 4px;
+  padding: 4px 5px;
   font-size: 12px;
   transition: background-color 0.2s ease;
 }
 
-.nav-btn:hover {
+.nav-btn2 {
+    font-size: 15px;
+}
+
+.nav-btn:hover, .nav-btn2:hover {
   background-color: #0056b3; /* darker on hover */
 }
 
-.nav-btn:active {
+.nav-btn:active, .nav-btn2:active {
   background-color: #00408f; /* even darker when pressed */
 }
 

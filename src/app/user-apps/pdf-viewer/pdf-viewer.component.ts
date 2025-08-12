@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { Component, ElementRef, OnInit, AfterViewInit, ViewChild, OnDestroy, Input } from '@angular/core';
+import { Component, ElementRef, OnInit, AfterViewInit, ViewChild, Input } from '@angular/core';
 
 import {extname} from 'path';
 import { FileService } from 'src/app/shared/system-service/file.service';
@@ -19,7 +19,6 @@ import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.
 import { Constants } from "src/app/system-files/constants";
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { constants } from 'buffer';
 
 @Component({
   selector: 'cos-pdf-viewer',
@@ -27,7 +26,7 @@ import { constants } from 'buffer';
   templateUrl: './pdf-viewer.component.html',
   styleUrl: './pdf-viewer.component.css'
 })
-export class PdfViewerComponent  implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
+export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit {
   @ViewChild('pdfviewer', {static: true}) pdfviewer!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
   
@@ -40,12 +39,20 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, OnDestroy, Af
   private _windowService:WindowService;
   
   private pdfjsLib: any = null; // Store js-dos instance
+  private pdfDoc:any = null;
+  pageNum = 0;
+  pageCount = 0;
+  private zoomBy = 0;
+
+  private pageRendering = false;
+  private pageNumPending:any = null;
 
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private pdfFileSrc = Constants.EMPTY_STRING;
 
   SECONDS_DELAY = 450;
+  ZOOM_FACTOR = 0.1;
 
   name= 'pdfviewer';
   hasWindow = true;
@@ -74,90 +81,158 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, OnDestroy, Af
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
-  ngOnDestroy(): void {
-    //
-  }
-
   async ngAfterViewInit(): Promise<void> {
+    const firstPage = 1;
     this.pdfFileSrc = (this.pdfFileSrc !== Constants.EMPTY_STRING)
       ? this.pdfFileSrc
       : this.getPDFSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    console.log('pdfFileSrc:', this.pdfFileSrc);
-
     this._scriptService
       .loadScript("pdf-js", "osdrive/Program-Files/PDF-JS/build/pdf.mjs")
-      .then(async () => {
-      // Ensure pdfjsLib is available from the loaded script
-      this.pdfjsLib = (window as any).pdfjsLib;
+      .then(async() => {
+        // Ensure pdfjsLib is available from the loaded script
+        this.pdfjsLib = (window as any).pdfjsLib;
+        // Now set the workerSrc
+        this.pdfjsLib.GlobalWorkerOptions.workerSrc = 'osdrive/Program-Files/PDF-JS/build/pdf.worker.mjs';
 
-      // Now set the workerSrc
-      this.pdfjsLib.GlobalWorkerOptions.workerSrc = 'osdrive/Program-Files/PDF-JS/build/pdf.worker.mjs';
+        const file = await this._fileService.getFileAsBlobAsync(this.pdfFileSrc);
+        const isLoaded = await this.loadPDFFile(file);
 
-      const file = await this._fileService.getFileAsBlobAsync(this.pdfFileSrc);
-      console.log('file:', file);
-      await this.loadPDFFile(file);
+        if(isLoaded){
+          this.pageNum = firstPage
+          await this.renderPage(firstPage);
+        }
 
-      this.displayName = this._fileInfo.getFileName;
+        this.displayName = this._fileInfo.getFileName;
     });
 
     CommonFunctions.sleep(this.SECONDS_DELAY);
     this.captureComponentImg();
   }
 
-  async loadPDFFile(srcFile:string): Promise<void>{
-    // Asynchronous download of PDF
-    //var loadingTask = this.pdfjsLib.getDocument(`osdrive${this.pdfFileSrc}`);
-    const  loadingTask = this.pdfjsLib.getDocument(srcFile);
-    loadingTask.promise.then((pdf:any) => {
-      console.log('PDF loaded');
+  async loadPDFFile(srcFile: string): Promise<boolean> {
+    try {
+      // Asynchronous load file
+      const loadingTask = this.pdfjsLib.getDocument(srcFile);
+      const pdf:any = await loadingTask.promise;
 
-      // Fetch the first page
-      const pageNumber = 1;
-      pdf.getPage(pageNumber).then((page:any) => {
-        console.log('Page loaded');
+      this.pdfDoc = pdf;
+      this.pageCount = pdf.numPages;
 
-        const defaultScale = 1;
-        // Support HiDPI-screens.
-        const outputScale = window.devicePixelRatio || 1;
-        const viewport = page.getViewport({scale: defaultScale});
-        const pdfView = document.getElementById(`pdfviewer-${this.processId}`) as HTMLElement;
+      return true;
+    } catch (error) {
+      console.error('Error loading PDF file:', error);
+      return false;
+    }
+  }
 
-        console.log('pdfView:',pdfView);
-        console.log('viewport-height:',viewport.height * outputScale);
-        console.log('viewport-width:',viewport.width * outputScale);
+  async renderPage(pageNumber:number): Promise<void>{
+    // Fetch page
+    this.pdfDoc.getPage(pageNumber).then(async(page:any) =>{
+      const defaultScale = 1;
+      // Support HiDPI-screens.
+      const outputScale = window.devicePixelRatio || 1;
+      const viewport = page.getViewport({scale: defaultScale});
+      const pdfView = document.getElementById(`pdfviewer-${this.processId}`) as HTMLElement;
 
+      const transform = outputScale !== 1
+          ? [outputScale, 0, 0, outputScale, 0, 0]
+          : null;
 
-        const transform = outputScale !== 1
-            ? [outputScale, 0, 0, outputScale, 0, 0]
-            : null;
+      // Prepare canvas using PDF page dimensions
+      const canvas = document.getElementById('pdf-canvas') as HTMLCanvasElement;
+      if(canvas){
+        const context = canvas.getContext('2d');
+        canvas.height = Math.floor(viewport.height * outputScale);
+        canvas.width = Math.floor(viewport.width * outputScale);
+        canvas.style.height = `${Math.floor(viewport.height)}px`;
+        canvas.style.width = `${Math.floor(viewport.width)}px`;
 
-        // Prepare canvas using PDF page dimensions
-        const canvas = document.getElementById('pdf-canvas') as HTMLCanvasElement;
-        if(canvas){
-          const context = canvas.getContext('2d');
+        // Render PDF page into canvas context
+        const renderContext = {
+          canvasContext: context,
+          transform: transform,
+          viewport: viewport
+        };
 
-          console.log('pdfView.offsetHeight:',pdfView.offsetHeight);
-          canvas.height = Math.floor(viewport.height * outputScale);
-          canvas.width = Math.floor(viewport.width * outputScale);
-
-          canvas.style.height = `${Math.floor(viewport.height)}px`;
-          canvas.style.width = `${Math.floor(viewport.width)}px`;
-
-          // Render PDF page into canvas context
-          const renderContext = {
-            canvasContext: context,
-            transform: transform,
-            viewport: viewport
-          };
-
-          const renderTask = page.render(renderContext);
-          renderTask.promise.then(() =>{
-            console.log('Page rendered');
-          });
-        }
-      });
+        const renderTask = page.render(renderContext);
+        renderTask.promise.then(async() =>{
+          this.pageRendering  = false;
+          if(this.pageNumPending !== null){
+            await this.renderPage(this.pageNumPending);
+            this.pageNumPending = null;
+          }
+        });
+      }
     });
+  }
+
+  async pageZoom(pageNumber:number): Promise<void>{
+    // Fetch page
+    this.pdfDoc.getPage(pageNumber).then(async(page:any) =>{
+      const defaultScale = 1;
+      const newScale = defaultScale + this.zoomBy;
+      // Support HiDPI-screens.
+      const outputScale = window.devicePixelRatio || 1;
+      
+      console.log('newScale:', newScale);
+      const viewport = page.getViewport({scale: newScale});
+      const pdfView = document.getElementById(`pdfviewer-${this.processId}`) as HTMLElement;
+
+      const transform = outputScale !== 1
+          ? [outputScale, 0, 0, outputScale, 0, 0]
+          : null;
+
+      // Prepare canvas using PDF page dimensions
+      const canvas = document.getElementById('pdf-canvas') as HTMLCanvasElement;
+      if(canvas){
+        const context = canvas.getContext('2d');
+
+        console.log('pdfView.offsetHeight:',pdfView.offsetHeight);
+        canvas.height = Math.floor(viewport.height * outputScale);
+        canvas.width = Math.floor(viewport.width * outputScale);
+        canvas.style.height = `${Math.floor(viewport.height)}px`;
+        canvas.style.width = `${Math.floor(viewport.width)}px`;
+
+        // Render PDF page into canvas context
+        const renderContext = {
+          canvasContext: context,
+          transform: transform,
+          viewport: viewport
+        };
+
+        const renderTask = page.render(renderContext);
+        renderTask.promise.then(async() =>{
+          console.log('page Zoomed');
+        });
+      }
+    });
+  }
+
+  async queueRenderPage(num:number):Promise<void>{
+    if (this.pageRendering) {
+      this.pageNumPending = num;
+    } else {
+      await this.renderPage(num);
+    }
+  }
+
+  async zoomIn():Promise<void>{
+    if(this.zoomBy === 0.5) return;
+
+    if(this.zoomBy < 0.5){
+      this.zoomBy += this.ZOOM_FACTOR;
+      await this.pageZoom(this.pageNum);
+    }
+  }
+
+  async zoomOut():Promise<void>{
+    if(this.zoomBy === -0.5) return;
+
+    if(this.zoomBy > -0.5){
+      this.zoomBy -= this.ZOOM_FACTOR;
+      await this.pageZoom(this.pageNum);
+    }
   }
 
   captureComponentImg():void{
@@ -173,6 +248,22 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, OnDestroy, Af
       }
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
+  }
+
+  async onPrevPage():Promise<void>{
+    if (this.pageNum <= 1) {
+      return;
+    }
+    this.pageNum--;
+    await this.queueRenderPage(this.pageNum);
+  }
+
+  async onNextPage():Promise<void>{
+    if (this.pageNum >= this.pdfDoc.numPages) {
+      return;
+    }
+    this.pageNum++;
+    await this.queueRenderPage(this.pageNum);
   }
 
   setPDFViewerToFocus(pid:number):void{
