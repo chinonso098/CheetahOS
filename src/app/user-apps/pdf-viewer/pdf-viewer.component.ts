@@ -138,7 +138,8 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
       // Prepare canvas using PDF page dimensions
       const canvas = document.getElementById(`pdf-canvas-${this.processId}`) as HTMLCanvasElement;
       if(canvas){
-        const renderContext = this.setCanvasAndGetRenderCntxt(canvas, transform, this.OUTPUT_SCALE, viewport);
+        const context = this.getCanvasCntxt(canvas, this.OUTPUT_SCALE, viewport);
+        const renderContext = this.getRenderCntxt(context, transform, this.OUTPUT_SCALE, viewport);
         const renderTask = page.render(renderContext);
         renderTask.promise.then(async() =>{
           this.pageRendering  = false;
@@ -160,7 +161,8 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
       // Prepare canvas using PDF page dimensions
       const canvas = document.getElementById(`pdf-canvas-${this.processId}`) as HTMLCanvasElement;
       if(canvas){
-        const renderContext = this.setCanvasAndGetRenderCntxt(canvas, transform, this.OUTPUT_SCALE, viewport);
+        const context = this.getCanvasCntxt(canvas, this.OUTPUT_SCALE, viewport);
+        const renderContext = this.getRenderCntxt(context, transform, this.OUTPUT_SCALE, viewport);
         page.render(renderContext);
       }
     });
@@ -177,13 +179,17 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
           : null; 
   }
   
-  setCanvasAndGetRenderCntxt(canvas: HTMLCanvasElement, transform: number[] | null, outputScale: number, viewport: any):any{
+  getCanvasCntxt(canvas: HTMLCanvasElement, outputScale: number, viewport: any): CanvasRenderingContext2D | null{
     const context = canvas.getContext('2d');
     canvas.height = Math.floor(viewport.height * outputScale);
     canvas.width = Math.floor(viewport.width * outputScale);
     canvas.style.height = `${Math.floor(viewport.height)}px`;
     canvas.style.width = `${Math.floor(viewport.width)}px`;
 
+    return context
+  }
+
+  getRenderCntxt(context: CanvasRenderingContext2D | null, transform: number[] | null, outputScale: number, viewport: any):any{
     // Render PDF page into canvas context
     const renderContext = {
       canvasContext: context,
