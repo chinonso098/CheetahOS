@@ -225,6 +225,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
   emptyTrashAudio = `${Constants.AUDIO_BASE_PATH}cheetah_recycle.wav`;
+  systemNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
   shortCutImg = `${Constants.IMAGE_BASE_PATH}shortcut.png`;
 
   multiSelectElmnt!:HTMLDivElement | null;
@@ -542,6 +543,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     screenShot.setContentPath = htmlImg;
     screenShot.setIconPath = htmlImg;
      
+    await this._audioService.play(this.systemNotificationAudio);
     await CommonFunctions.sleep(storeImgDelay);
     this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
     this._fileService.addEventOriginator(Constants.FILE_EXPLORER);

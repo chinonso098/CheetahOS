@@ -1035,7 +1035,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.fetchedFiles.push(...directoryFiles.filter(x => x.getCurrentPath !== Constants.RECYCLE_BIN_PATH)); 
     }
 
-    console.log('Fetched files:', this.fetchedFiles);
+    //console.log('Fetched files:', this.fetchedFiles);
   }
 
   private loadFalseFrequentFolders():void{
@@ -1233,7 +1233,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       // If the node has children, recursively call this function on the children
-      if (node.children) {
+      if(node.children){
         updatedNode.children = this.addChildrenToNode(node.children, nodePath, newChildren);
       }
 
