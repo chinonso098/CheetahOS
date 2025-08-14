@@ -5,7 +5,7 @@ import { ShortCut } from 'src/app/system-files/shortcut';
 
 import { Buffer } from 'buffer';
 import ini from 'ini';
-import { Subject } from 'rxjs';
+import { delay, Subject } from 'rxjs';
 
 import * as log from 'kerium/log';
 import { IndexData } from '@zenfs/core';
@@ -29,6 +29,7 @@ import { Service } from "src/app/system-files/service";
 import { FileContent } from "src/app/system-files/file.content";
 import { OpensWith } from "src/app/system-files/opens.with";
 import { FileMetaData } from "src/app/system-files/file.metadata";
+import { CommonFunctions } from "src/app/system-files/common.functions";
 /// <reference types="node" />
 
 const fsPrefix = 'osdrive';
@@ -69,9 +70,12 @@ export const configuredFS = configure({
     }
 });
 
+//IIFE
 // (async () => {
+//     const delay = 2500; //2.5sec
 //   // Asynchronous code using await
-//   console.log("Vroom Vroom");
+//   await CommonFunctions.sleep(delay);
+//   this.
 // })();
 
 
@@ -130,6 +134,10 @@ export class FileService implements BaseService{
         this.retrievePastSessionData(this.fileServiceRestoreKey);
         this.retrievePastSessionData(this.fileServiceIterateKey);
     }
+
+    private async postZenFsInit(): Promise<void> {
+        await this.calculateUsedStorage();
+    }  
 
 	async isDirectory(path: string):Promise<boolean>{
 		 await configuredFS;
@@ -219,6 +227,9 @@ export class FileService implements BaseService{
 
 	async loadDirectoryFiles(path: string): Promise<FileInfo[]>{
         console.log('loadDirectoryFiles:', path);
+        if(!this._isCalculated)
+            await this.postZenFsInit();
+        
 		try{
             const files:FileInfo[] = [];
             const directoryEntries = await this.readDirectory(path);
@@ -426,7 +437,7 @@ export class FileService implements BaseService{
 	}
 
     public async getFileMetaData(path: string): Promise<FileMetaData> {
-        await configuredFS
+        await configuredFS;
 
         try{
             const stats = await fs.promises.stat(path);
@@ -900,7 +911,7 @@ export class FileService implements BaseService{
 
         //virtual filesystem, use copy and then delete. 
     private async moveFileAsync(srcPath: string, destPath: string, generatePath?: boolean, isRecycleBin?: boolean): Promise<boolean> {
-        await configuredFS
+        await configuredFS;
         let destinationPath = Constants.EMPTY_STRING;
         if (generatePath === undefined || generatePath){
             const fileName =  this.getNameFromPath(srcPath);

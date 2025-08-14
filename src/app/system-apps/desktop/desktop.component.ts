@@ -218,7 +218,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   GRID_SIZE = this.MID_GRID_SIZE; //column size of grid = 90px
   ROW_GAP = 25;
-  SECONDS_DELAY:number[] = [6000, 250, 4000, 300];
+  SECONDS_DELAY:number[] = [6000, 250, 4000, 1500];
   renameForm!: FormGroup;
 
   deskTopClickCounter = 0;
@@ -342,7 +342,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.initClippy();
 
    this.removeVantaJSSideEffect();
-    await CommonFunctions.sleep(this.SECONDS_DELAY[3])
+    await CommonFunctions.sleep(this.SECONDS_DELAY[3]);
     await this.loadFiles();
   }
 
