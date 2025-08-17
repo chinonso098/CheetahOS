@@ -273,20 +273,20 @@
                     <!-- ngDraggable  [inBounds]="true" zIndex="1" [preventDefaultEvent]="true"
                         (stopped)="onDragEnd($event)" (started)="onDragStart($event)" -->
 
-                    <div class="fileexplr-default-view-cntnr" *ngIf="directory === ROOT && showDefaultView"> 
+                    <div class="fileexplr-default-view-cntnr" *ngIf="directory === ROOT && showDefaultView" (contextmenu) = "supressPropagation($event)"> 
 
                         <div *ngIf="fileTreeNavToPath === QUICK_ACCESS && showDefaultView" class="fileexlpr-frequent-folders-section">
                                 <div class="fileexlpr-frequent-folders-heading">
                                     <span><p> Frequent folders ({{frequentFolders.length}})</p></span>
                                     <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
                                 </div>
-                                <div class="fileexlpr-frequent-folders-cntnt">
+                                <ul class="fileexlpr-frequent-folders-cntnt" id="fileExplrQAFolder-{{processId}}">
                                     <!-- Folder section -->
                                     <li class="li-iconview-container" *ngFor="let file of frequentFolders; let i = index"  id="ilElmnt-folder-{{processId}}-{{i}}">
                                         <div class="iconview-button" role="button" tabindex="0" (dblclick)="runProcess(file)"
-                                            (mouseenter)="onMouseEnter($event, file, i)" 
-                                            (mouseleave)="onMouseLeave(i)"
-                                            (contextmenu)="onShowIconContextMenu($event, file, i)" 
+                                            (mouseenter)="onQuickAccessMouseEnter($event, file, i, false)" 
+                                            (mouseleave)="onQuickAccessMouseLeave(i, false)"
+                                            (contextmenu)="onQuickAcessShowIconContextMenu($event, file, i, false)" 
                                             (click)="onBtnClick($event, i)" 
                                             id="btnElmnt-folder-{{processId}}-{{i}}">
 
@@ -305,7 +305,17 @@
                                             </div> 
                                         </div>
                                     </li>
-                                </div>
+
+                                    <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && quickAccessFolderSection && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
+                                    <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu && quickAccessFolderSection && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
+                                    @if(quickAccessFolderSectionHover){
+                                        <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
+                                            <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
+                                                <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
+                                            </div>
+                                        </div>
+                                     }
+                                </ul>
                         </div>
                         
                         <div *ngIf="fileTreeNavToPath === QUICK_ACCESS && showDefaultView" class="fileexlpr-recent-files-section">
@@ -313,13 +323,13 @@
                                 <span><p> Recent files ({{recentFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
                             </div>
-                            <div class="fileexlpr-recent-files-cntnt">
+                            <ul class="fileexlpr-recent-files-cntnt" id="fileExplrQAFiles-{{processId}}">
                                 <!-- File section -->
                                 <li class="li-iconview-container" *ngFor="let file of recentFiles; let i = index" id="ilElmnt-file-{{processId}}-{{i}}">
                                     <div class="iconview-button" role="button" tabindex="0" (dblclick)="runProcess(file)"
-                                        (mouseenter)="onMouseEnter($event, file, i)" 
-                                        (mouseleave)="onMouseLeave(i)"
-                                        (contextmenu)="onShowIconContextMenu($event, file, i)" 
+                                        (mouseenter)="onQuickAccessMouseEnter($event, file, i, true)" 
+                                        (mouseleave)="onQuickAccessMouseLeave(i, true)"
+                                        (contextmenu)="onQuickAcessShowIconContextMenu($event, file, i, true)" 
                                         (click)="onBtnClick($event, i)" 
                                         id="btnElmnt-file-{{processId}}-{{i}}">
 
@@ -338,7 +348,17 @@
                                         </div> 
                                     </div>
                                 </li>
-                            </div>
+
+                                <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && quickAccessFilesSection && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
+                                <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu && quickAccessFilesSection && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
+                                @if(quickAccessFilesSectionHover){
+                                    <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
+                                        <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
+                                            <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
+                                        </div>
+                                    </div>
+                                }
+                            </ul>
                         </div>
 
                         <div *ngIf="(fileTreeNavToPath === THIS_PC  && showDefaultView)||(directory === ROOT && showDefaultView && fileTreeNavToPath !== QUICK_ACCESS)" class="fileexlpr-frequent-folders-section">
@@ -412,14 +432,14 @@
                         </div>
 
                  
-                        <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
+                        <!-- <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
                         <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
     
                         <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
                             <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
                                 <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- <div #selectPaneContainer id="fileExplrMultiSelectPane"></div> -->
                     </div>

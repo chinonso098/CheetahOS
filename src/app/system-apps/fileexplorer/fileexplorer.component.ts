@@ -114,6 +114,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onSearchIconHover = false;
   showIconCntxtMenu = false;
   showFileExplrCntxtMenu = false;
+  quickAccessFolderSection = false;
+  quickAccessFilesSection = false;
+  quickAccessFolderSectionHover = false;
+  quickAccessFilesSectionHover = false;
   showFileSizeAndUnit = false;
   iconCntxtCntr = 0;
   fileExplrCntxtCntr = 0;
@@ -1381,12 +1385,35 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     evt.stopPropagation();
   }
 
-  onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
+  supressPropagation(evt:MouseEvent):void{
+    evt.stopPropagation();
+    evt.preventDefault()
+  }
+
+  onQuickAcessShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number, isFileSection:boolean):void{
+    const quickAcessSection = (isFileSection)? 'fileExplrQAFiles': 'fileExplrQAFolder';
+
+    if(isFileSection){
+      this.quickAccessFilesSection = true;
+      this.quickAccessFolderSection = false;
+    }else{
+      this.quickAccessFilesSection = false;
+      this.quickAccessFolderSection = true;
+    }
+
+    const quickAccesFileElmnt = document.getElementById(`${quickAcessSection}-${this.processId}`) as HTMLDivElement;
+    if(quickAccesFileElmnt){
+      const rect = quickAccesFileElmnt.getBoundingClientRect();
+      this.onShowIconContextMenu(evt, file, id, rect, isFileSection);
+    }
+  }
+
+  onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number, rectInput?:DOMRect, isFileSection?:boolean):void{
     // looking at what Windows does, at any given time. there is only one context window open
     this._menuService.hideContextMenus.next(); 
     this.hideFileExplorerToolTip();
 
-    const menuHeight = 213; //this is not ideal.. menu height should be gotten dynmically
+    const menuHeight = (file.getIsFile)? 225 : 344; //this is not ideal.. menu height should be gotten dynmically
     this.iconCntxtCntr++;
 
     let axis:MenuPosition = {xAxis:0, yAxis:0}
@@ -1401,8 +1428,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.isDetailsView = false;
       this.isNotDetailsView = true;
 
-      const rect: DOMRect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-      axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
+      if(rectInput){
+        const tmpAxis = this.checkAndHandleMenuBounds(rectInput, evt, menuHeight);
+        axis = (isFileSection)? {xAxis:tmpAxis.xAxis - 10, yAxis: tmpAxis.yAxis + 200} :
+         {xAxis:tmpAxis.xAxis - 10, yAxis: tmpAxis.yAxis + 300};
+      }else{
+        const rect:DOMRect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+        axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
+      }
     }
     
     const uid = `${this.name}-${this.processId}`;
@@ -1596,6 +1629,33 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+  onQuickAccessMouseEnter(evt:MouseEvent, file:FileInfo, id:number, isFileSection:boolean):void{
+    const quickAcessSection = (isFileSection)? 'btnElmnt-file': 'btnElmnt-folder';
+    const quickAcessSection2 = (isFileSection)? 'fileExplrQAFiles': 'fileExplrQAFolder';
+    
+
+    if(isFileSection){
+      this.quickAccessFilesSectionHover = true;
+      this.quickAccessFolderSectionHover = false;
+    }else{
+      this.quickAccessFilesSectionHover = false;
+      this.quickAccessFolderSectionHover = true;
+    }
+
+    if(!this.isMultiSelectActive){
+      this.isMultiSelectEnabled = false;
+
+      const quickAccesBtnElmnt = document.getElementById(`${quickAcessSection}-${this.processId}-${id}`) as HTMLDivElement;
+      const quickAccesUlElmnt = document.getElementById(`${quickAcessSection2}-${this.processId}`) as HTMLUListElement;
+      this.setBtnStyle(id, true, quickAccesBtnElmnt);
+
+      if(quickAccesUlElmnt){
+        const rect = quickAccesUlElmnt.getBoundingClientRect();
+        this.showFileExplorerToolTip(evt, file, rect, isFileSection);
+      }
+    }
+  }
+
   onMouseEnter(evt:MouseEvent, file:FileInfo, id:number):void{
     if(!this.isMultiSelectActive){
       this.isMultiSelectEnabled = false;
@@ -1605,6 +1665,22 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+  onQuickAccessMouseLeave(id:number, isFileSection:boolean):void{
+    const quickAcessSection = (isFileSection)? 'btnElmnt-file': 'btnElmnt-folder';
+
+    this.isMultiSelectEnabled = true;
+    this.hideFileExplorerToolTip();
+
+    const quickAccesBtnElmnt = document.getElementById(`${quickAcessSection}-${this.processId}-${id}`) as HTMLDivElement;
+    if(!this.isMultiSelectActive){
+      if(id != this.selectedElementId){
+        this.removeBtnStyle(id, quickAccesBtnElmnt);
+      }
+      else if((id == this.selectedElementId) && this.isIconInFocusDueToPriorAction){
+        this.setBtnStyle(id,false, quickAccesBtnElmnt);
+      }
+    }
+  }
   onMouseLeave(id:number):void{
     this.isMultiSelectEnabled = true;
     this.hideFileExplorerToolTip();
@@ -1619,8 +1695,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  setBtnStyle(id:number, isMouseHover:boolean):void{
-    const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
+  setBtnStyle(id:number, isMouseHover:boolean, btnElementInput?:HTMLElement):void{
+    const btnElement = (btnElementInput)? btnElementInput : document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
     //const figCapElement = document.getElementById(`figCapElmnt-${this.processId}-${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = '#4c4c4c';
@@ -1677,8 +1753,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     //this.removeBtnStyle(this.prevSelectedElementId);
   }
   
-  removeBtnStyle(id:number):void{
-    const btnElement = document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
+  removeBtnStyle(id:number, btnElementInput?:HTMLElement):void{
+    const btnElement = (btnElementInput)? btnElementInput : document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
     //const figCapElement = document.getElementById(`figCapElmnt-${this.processId}-${id}`) as HTMLElement;
     if(btnElement){
       btnElement.style.backgroundColor = Constants.EMPTY_STRING;
@@ -1979,35 +2055,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
-  async showFileExplorerToolTip_TBD(evt: MouseEvent,  file:FileInfo):Promise<void>{
-
-    if(this.currentViewOption === ViewOptions.CONTENT_VIEW)
-      return;
-
-    const rect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-    const x = evt.clientX - rect.left;
-    const y = evt.clientY - rect.top;
-
-    const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
-    if (!infoTip) return;
-
-    await this.setInformationTipInfo(file);
-
-    // Position tooltip slightly to the right and below the cursor
-    if(this.currentViewOption === ViewOptions.DETAILS_VIEW)
-      infoTip.style.transform = `translate(${x - 25}px, ${y - 50}px)`;
-    else
-       infoTip.style.transform = `translate(${x - 15}px, ${y + 10}px)`;
-
-    if (this.fileInfoTipData.length === 0) return;
-
-    infoTip.classList.add('visible');
-  }
-
-  async showFileExplorerToolTip(evt: MouseEvent, file: FileInfo): Promise<void> {
+  async showFileExplorerToolTip(evt: MouseEvent, file: FileInfo, rectInput?:DOMRect, isFileSection?:boolean): Promise<void> {
     if (this.currentViewOption === ViewOptions.CONTENT_VIEW) return;
 
-    const rect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    const rect:DOMRect = (rectInput)? rectInput : this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
 
@@ -2023,13 +2074,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     requestAnimationFrame(() => {
       const offsetX = this.currentViewOption === ViewOptions.DETAILS_VIEW ? -25 : -15;
       const offsetY = this.currentViewOption === ViewOptions.DETAILS_VIEW ? -50 : 10;
-
-      infoTip.style.transform = `translate(${x + offsetX}px, ${y + offsetY}px)`;
+      if(rectInput){
+        infoTip.style.transform =`translate(${x + -30}px, ${y + 2}px)`;
+      }else{
+        infoTip.style.transform = `translate(${x + offsetX}px, ${y + offsetY}px)`;
+      }
       infoTip.classList.add('visible');
     });
   }
-
-
 
   hideFileExplorerToolTip() {
     this.currentTooltipFileId = Constants.EMPTY_STRING;
@@ -2210,7 +2262,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     }
   }
-
 
   onInputChange():void{
     const SearchTxtBox = document.getElementById(`searchTxtBox-${this.processId}`) as HTMLInputElement;
