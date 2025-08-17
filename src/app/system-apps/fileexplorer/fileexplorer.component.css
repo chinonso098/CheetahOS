@@ -1594,9 +1594,9 @@ input::selection{
     transform: rotate(180deg);
 }
 
-.fx-information-tip-container {
+.fx-information-tip-container, .fx-information-tip-container-qa-files, .fx-information-tip-container-qa-folder{
     position: absolute;
-    z-index: 0;
+    z-index: -3;
     width: fit-content;
     border: 1px solid #5a5a5a;
     background-color: #202020;
@@ -1606,9 +1606,9 @@ input::selection{
     pointer-events: none; /* makes it non-interactive */
 }
 
-.fx-information-tip-container.visible {
+.fx-information-tip-container.visible, .fx-information-tip-container-qa-files.visible, .fx-information-tip-container-qa-folder.visible {
     opacity: 1;
-    z-index: 3;
+    z-index: 4;
     visibility: visible;
 }
 

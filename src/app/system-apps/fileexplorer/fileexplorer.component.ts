@@ -116,8 +116,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showFileExplrCntxtMenu = false;
   quickAccessFolderSection = false;
   quickAccessFilesSection = false;
-  quickAccessFolderSectionHover = false;
-  quickAccessFilesSectionHover = false;
   showFileSizeAndUnit = false;
   iconCntxtCntr = 0;
   fileExplrCntxtCntr = 0;
@@ -1632,15 +1630,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onQuickAccessMouseEnter(evt:MouseEvent, file:FileInfo, id:number, isFileSection:boolean):void{
     const quickAcessSection = (isFileSection)? 'btnElmnt-file': 'btnElmnt-folder';
     const quickAcessSection2 = (isFileSection)? 'fileExplrQAFiles': 'fileExplrQAFolder';
-    
-
-    if(isFileSection){
-      this.quickAccessFilesSectionHover = true;
-      this.quickAccessFolderSectionHover = false;
-    }else{
-      this.quickAccessFilesSectionHover = false;
-      this.quickAccessFolderSectionHover = true;
-    }
 
     if(!this.isMultiSelectActive){
       this.isMultiSelectEnabled = false;
@@ -2058,11 +2047,21 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   async showFileExplorerToolTip(evt: MouseEvent, file: FileInfo, rectInput?:DOMRect, isFileSection?:boolean): Promise<void> {
     if (this.currentViewOption === ViewOptions.CONTENT_VIEW) return;
 
-    const rect:DOMRect = (rectInput)? rectInput : this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    const rect:DOMRect = (rectInput)
+    ? rectInput 
+    : this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
 
-    const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
+    let infoTip:HTMLDivElement|null = null;
+    if(rectInput){
+      infoTip = (isFileSection)
+        ? document.getElementById(`fx-information-tip-qa-files-${this.processId}`) as HTMLDivElement 
+        : document.getElementById(`fx-information-tip-qa-folder-${this.processId}`) as HTMLDivElement;
+    }else{
+      infoTip =  document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
+    }
     if (!infoTip) return;
 
     //this.fileInfoTipData = [];
@@ -2083,13 +2082,24 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     });
   }
 
-  hideFileExplorerToolTip() {
+  hideFileExplorerToolTip():void {
     this.currentTooltipFileId = Constants.EMPTY_STRING;
     this.fileInfoTipData = [];
 
     const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
+    const infoTip1 = document.getElementById(`fx-information-tip-qa-files-${this.processId}`) as HTMLDivElement;
+    const infoTip2 = document.getElementById(`fx-information-tip-qa-folder-${this.processId}`) as HTMLDivElement;
+    
     if (infoTip) {
       infoTip.classList.remove('visible');
+    }
+
+    if (infoTip1) {
+      infoTip1.classList.remove('visible');
+    }
+
+    if (infoTip2) {
+      infoTip2.classList.remove('visible');
     }
   }
 

@@ -308,13 +308,12 @@
 
                                     <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && quickAccessFolderSection && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
                                     <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu && quickAccessFolderSection && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
-                                    @if(quickAccessFolderSectionHover){
-                                        <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
-                                            <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
-                                                <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
-                                            </div>
+
+                                    <div class="fx-information-tip-container-qa-folder" id="fx-information-tip-qa-folder-{{processId}}">
+                                        <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
+                                            <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
                                         </div>
-                                     }
+                                    </div>
                                 </ul>
                         </div>
                         
@@ -351,13 +350,12 @@
 
                                 <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && quickAccessFilesSection && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
                                 <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu && quickAccessFilesSection && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
-                                @if(quickAccessFilesSectionHover){
-                                    <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
-                                        <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
-                                            <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
-                                        </div>
+
+                                <div class="fx-information-tip-container-qa-files" id="fx-information-tip-qa-files-{{processId}}">
+                                    <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
+                                        <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
                                     </div>
-                                }
+                                </div>
                             </ul>
                         </div>
 
