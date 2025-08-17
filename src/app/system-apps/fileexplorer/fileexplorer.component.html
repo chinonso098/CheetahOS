@@ -386,6 +386,15 @@
                                         </div>
                                     </div>
                                 </li>
+
+                                <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
+                                <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
+            
+                                <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
+                                    <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
+                                        <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -394,7 +403,7 @@
                                 <span><p> Devices and drives ({{devicesAndDrivesFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
                             </div>
-                            <div class="fileexlpr-devices-and-drives-cntnt">
+                            <ul class="fileexlpr-devices-and-drives-cntnt">
                                 <!-- devices and drives section -->
                                 <li class="li-tilesview" *ngFor="let file of devicesAndDrivesFiles; let i = index">
                                     <div class="button-tilesview" role="button" tabindex="0" 
@@ -426,18 +435,17 @@
                                         </div>
                                     </div>
                                 </li>
-                            </div>
-                        </div>
 
-                 
-                        <!-- <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
-                        <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
-    
-                        <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
-                            <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
-                                <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
-                            </div>
-                        </div> -->
+                                <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
+                                <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu && isNotDetailsView" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
+            
+                                <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
+                                    <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
+                                        <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
+                                    </div>
+                                </div>
+                            </ul>
+                        </div>
 
                         <!-- <div #selectPaneContainer id="fileExplrMultiSelectPane"></div> -->
                     </div>
