@@ -218,7 +218,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   GRID_SIZE = this.MID_GRID_SIZE; //column size of grid = 90px
   ROW_GAP = 25;
-  SECONDS_DELAY:number[] = [6000, 250, 4000, 1500];
+  SECONDS_DELAY:number[] = [6000, 250, 4000, 2000];
   renameForm!: FormGroup;
 
   deskTopClickCounter = 0;
