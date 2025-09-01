@@ -2216,7 +2216,6 @@ OpensWith=${selectedFile.getOpensWith}
     //this.startClippy();
   }
 
-  
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }

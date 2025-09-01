@@ -199,7 +199,7 @@
     
             <div class="header-nav-path-container" id="hdrNavPathCntnr-{{processId}}">
                 <form [formGroup]="pathForm"  (ngSubmit)="isFormDirty()">
-                    <div class="nav-path-container" (click)="showPathTextBox()"> <!--(focusout)="hidePathTextBox()"-->
+                    <div class="nav-path-container" (click)="showPathTextBox($event)" (focusout)="hidePathTextBox()">
                         <span class="span head-nav-path-cntnr"><figure class="figure-nav-path-cntnr"><img class="img-nav-path-cntnr" [src]="navPathIcon | safeResourceUrl"/></figure></span>
     
                         <div class="nav-path-gen-main-container" id="pathIconBox-{{processId}}" >
@@ -223,7 +223,7 @@
                                 <img class="img-nav-path-cntnr1" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_expand_32.png' | safeResourceUrl"/>
                             </figure>
                         </span>
-                        <span class="span head-nav-path-cntnr2" (click)="refresh()">
+                        <span class="span head-nav-path-cntnr2" (click)="refresh($event)">
                             <figure class="figure-nav-path-cntnr2">
                                 <img class="img-nav-path-cntnr2" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_refresh_32.png' | safeResourceUrl"/>
                             </figure>
@@ -243,7 +243,7 @@
                 <form [formGroup]="searchForm"  (ngSubmit)="isFormDirty()">
                     <div class="search-container">
                         <span class="span head-search-cntnr"><figure class="figure-search-cntnr"><img class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/search_32.png' | safeResourceUrl"/></figure></span>
-                        <input class="search-input" type="text" placeholder="Search OSDisk(C:)" formControlName="searchInput" (focus)="showSearchHistory()"  (focusout)="hideSearchHistory()" (input)="onInputChange()"  spellcheck="false" id="searchTxtBox-{{processId}}"/>
+                        <input class="search-input" type="text" placeholder="Search OSDisk(C:)" formControlName="searchInput" (click)="showSearchHistory($event)"  (focusout)="hideSearchHistory()" (input)="onInputChange()"  spellcheck="false" id="searchTxtBox-{{processId}}"/>
                         <span class="span head-search-cntnr1" (click)="onClearSearchTextBox()" [style]="clearSearchStyle" (mouseenter)="handleClearSearchIconHighlights()" (mouseleave)="handleClearSearchIconHighlights()"><figure class="figure-search-cntnr"><img *ngIf="isSearchBoxNotEmpty" class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/cross_mark_32.png' | safeResourceUrl"/></figure></span>
                         <span class="span head-search-cntnr2" [class.active]="isSearchBoxNotEmpty" (click)="onSearch()" [style]="searchStyle" (mouseenter)="handleSearchIconHighlights()" (mouseleave)="handleSearchIconHighlights()"><figure class="figure-search-cntnr"><img *ngIf="isSearchBoxNotEmpty" class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/nav_right_32.png' | safeResourceUrl"/></figure></span>
                     </div>
@@ -259,9 +259,13 @@
         </div>
         <div class="header-empty-line-container2"></div>
         <div class="fileexp-main-container" #fileExplorerMainContainer>
-            <div class="fileexp-content-container" (click)="onFileExplrCntntClick()">
+            <div class="fileexp-content-container">
                 <ng-container *ngIf="showNavigationPane">
-                    <div class="navigation-content-container"  (mouseenter)="showExpandTreeIconBtn()" (mouseleave)="hideExpandTreeIconBtn()" id="navExplorerContainer-{{processId}}" #navExplorerContainer>
+                    <div class="navigation-content-container" 
+                        (mouseenter)="showExpandTreeIconBtn()" 
+                        (mouseleave)="hideExpandTreeIconBtn()" id="navExplorerContainer-{{processId}}"
+                        (click)="setFileExplorerWindowToFocus(processId)"
+                        #navExplorerContainer>
                         <div style="height: 10px; width: 100%;"></div>
                         <cos-filetreeview [pid] ="processId" [isHoverActive]="showExpandTreeIcon" [treeData]="fileTreeNode"></cos-filetreeview>
                     </div>
@@ -273,8 +277,10 @@
                     <!-- ngDraggable  [inBounds]="true" zIndex="1" [preventDefaultEvent]="true"
                         (stopped)="onDragEnd($event)" (started)="onDragStart($event)" -->
 
-                    <div class="fileexplr-default-view-cntnr" *ngIf="directory === ROOT && showDefaultView" (contextmenu) = "supressPropagation($event)"> 
-
+                    <div class="fileexplr-default-view-cntnr" *ngIf="directory === ROOT && showDefaultView" 
+                        (contextmenu) = "supressPropagation($event)"
+                        (click)="hideIconContextMenu($event, name)" 
+                        (click)="handleIconHighLightState()" > 
                         <div *ngIf="fileTreeNavToPath === QUICK_ACCESS && showDefaultView" class="fileexlpr-frequent-folders-section">
                                 <div class="fileexlpr-frequent-folders-heading">
                                     <span><p> Frequent folders ({{frequentFolders.length}})</p></span>
@@ -317,7 +323,10 @@
                                 </ul>
                         </div>
                         
-                        <div *ngIf="fileTreeNavToPath === QUICK_ACCESS && showDefaultView" class="fileexlpr-recent-files-section">
+                        <div class="fileexlpr-recent-files-section" *ngIf="fileTreeNavToPath === QUICK_ACCESS && showDefaultView"
+                            (contextmenu) = "supressPropagation($event)"
+                            (click)="hideIconContextMenu($event, name)" 
+                            (click)="handleIconHighLightState()" > 
                             <div class="fileexlpr-recent-files-heading">
                                 <span><p> Recent files ({{recentFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
@@ -359,7 +368,10 @@
                             </ul>
                         </div>
 
-                        <div *ngIf="(fileTreeNavToPath === THIS_PC  && showDefaultView)||(directory === ROOT && showDefaultView && fileTreeNavToPath !== QUICK_ACCESS)" class="fileexlpr-frequent-folders-section">
+                        <div class="fileexlpr-frequent-folders-section" *ngIf="(fileTreeNavToPath === THIS_PC  && showDefaultView)||(directory === ROOT && showDefaultView && fileTreeNavToPath !== QUICK_ACCESS)"
+                            (contextmenu) = "supressPropagation($event)"
+                            (click)="hideIconContextMenu($event, name)" 
+                            (click)="handleIconHighLightState()" > 
                             <div class="fileexlpr-frequent-folders-heading">
                                 <span><p>Folders ({{fetchedFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
@@ -398,7 +410,10 @@
                             </div>
                         </div>
                         
-                        <div *ngIf="(fileTreeNavToPath === THIS_PC  && showDefaultView) || (directory === ROOT && showDefaultView && fileTreeNavToPath !== QUICK_ACCESS)" class="fileexlpr-recent-files-section">
+                        <div class="fileexlpr-recent-files-section" *ngIf="(fileTreeNavToPath === THIS_PC  && showDefaultView) || (directory === ROOT && showDefaultView && fileTreeNavToPath !== QUICK_ACCESS)" 
+                            (contextmenu) = "supressPropagation($event)"
+                            (click)="hideIconContextMenu($event, name)" 
+                            (click)="handleIconHighLightState()" > 
                             <div class="fileexlpr-recent-files-heading">
                                 <span><p> Devices and drives ({{devicesAndDrivesFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>

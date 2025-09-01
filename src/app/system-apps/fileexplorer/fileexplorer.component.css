@@ -582,12 +582,10 @@ span.head-nav-path-cntnr2:hover{
     border: 0.5px solid #9d9d9d;
     border-left: none;
     border-right: none;
-    color: whitefff;
+    color: #fff;
     background-color: #191919;
-    /* background-color: whitef; */
     display: none;
 }
-
 
 .nav-path-containter1{
     position: absolute;

@@ -347,8 +347,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async ngAfterViewInit():Promise<void>{
-
-    //this.setFileExplorerWindowToFocus(this.processId); 
+ 
     this.hidePathTextBoxOnload();
     this.changeFileExplorerLayoutCSS(this.currentViewOption);
     this.changeTabLayoutIconCntnrCSS(this.currentViewOptionId,false);
@@ -1550,6 +1549,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){
+      this.setFileExplorerWindowToFocus(this.processId);
       this._menuService.hideContextMenus.next();
     }
 
@@ -2041,6 +2041,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onDragEnd(evt:any):void{1 }
 
   setFileExplorerWindowToFocus(pid: number):void {
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === pid)
+      return;
+
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
 
@@ -2203,8 +2206,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     return 'Unknown File';
   }
 
-  async refresh():Promise<void>{
+  async refresh(evt?:MouseEvent):Promise<void>{
+    console.log('Refresh Called !!!!!!!')
     this.isIconInFocusDueToPriorAction = false;
+
+    if(evt)
+      evt.stopPropagation();
+
     await this.loadFiles();
   }
 
@@ -2358,7 +2366,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const searchText = this.searchForm.value.searchInput as string;
   }
 
-  showPathTextBox():void{
+  showPathTextBox(evt:MouseEvent):void{
+    this.setFileExplorerWindowToFocus(this.processId);
+
     const pathTxtBoxCntrElement = document.getElementById(`pathTxtBoxCntr-${this.processId}`) as HTMLElement;
     const pathTxtBoxElement = document.getElementById(`pathTxtBox-${this.processId}`) as HTMLInputElement;
     const pathIconBoxElement = document.getElementById(`pathIconBox-${this.processId}`) as HTMLElement;
@@ -2388,6 +2398,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(pathIconBoxElement){
       pathIconBoxElement.style.display = 'none';
     }
+
+    evt.stopPropagation();
   }
 
   hidePathTextBox():void{
@@ -2563,17 +2575,20 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isIconInFocusDueToCurrentAction = false;
   }
 
-  showSearchHistory():void{
+  showSearchHistory(evt:MouseEvent):void{
+    this.setFileExplorerWindowToFocus(this.processId);
+
     const searchHistoryElement = document.getElementById(`searchHistory-${this.processId}`) as HTMLElement;
     if(searchHistoryElement){
       if(this.searchHistory.length > 0){
         searchHistoryElement.style.display = 'block';
       }
     }
+
+    evt.stopPropagation();
   }
 
   hideSearchHistory():void{
-    // this.isSearchBoxinFocus = !this.isSearchBoxinFocus ;
     const searchHistoryElement = document.getElementById(`searchHistory-${this.processId}`) as HTMLElement;
     searchHistoryElement.style.display = 'none';
   }
