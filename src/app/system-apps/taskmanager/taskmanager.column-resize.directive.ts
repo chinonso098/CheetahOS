@@ -22,7 +22,7 @@ export class ColumnResizeDirective {
     this.startX = event.pageX;
     this.isResizing = true;
     this.initialWidth = this.el.nativeElement.offsetWidth;
-    const minimumWidths:number[] = [124,91,81];
+    const minimumWidths:number[] = [124, 91, 81];
     let minimumWidth = 0;
 
     //console.log("this.initialWidth:", this.initialWidth);

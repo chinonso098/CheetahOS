@@ -320,7 +320,7 @@ import { Constants } from 'src/app/system-files/constants';
     }
 
     updateWindowZIndex(window: WindowState, zIndex:number):void{
-      if(this.processId == window.pid){
+      if(this.processId === window.pid){
         this.currentStyles = {
           'top': `${this.windowTop}%`,
           'left': `${this.windowLeft}%`,
@@ -456,7 +456,7 @@ import { Constants } from 'src/app/system-files/constants';
       const windowState = this._windowService.getWindowState(this.processId);
 
       if(this.windowHide && windowState){
-        if(windowState.pid == this.processId){
+        if(windowState.pid === this.processId){
           windowState.is_visible = false;
           windowState.z_index = this.HIDDEN_Z_INDEX;
           this._windowService.addWindowState(windowState);
@@ -480,7 +480,7 @@ import { Constants } from 'src/app/system-files/constants';
         }
       }
       else if(!this.windowHide && windowState){
-        if(windowState.pid == this.processId){
+        if(windowState.pid === this.processId){
           if(this.currentWindowSizeState){ 
             // if window was in full screen when hidden, give the proper z-index when unhidden
             this.setWindowToFullScreen(this.processId, windowState.z_index);
@@ -505,7 +505,7 @@ import { Constants } from 'src/app/system-files/constants';
         // CSS styles: set per current state of component properties
 
         if(this.windowHide){
-          if(windowState.pid == this.processId){
+          if(windowState.pid === this.processId){
             windowState.is_visible = false;
             windowState.z_index = this.HIDDEN_Z_INDEX;
             this._windowService.addWindowState(windowState);
@@ -528,7 +528,7 @@ import { Constants } from 'src/app/system-files/constants';
           this.generateHideAnimationValues(this.xAxisTmp, this.yAxisTmp);
 
           if(!this.windowHide){
-            if(windowState.pid == this.processId){
+            if(windowState.pid === this.processId){
               if(this.currentWindowSizeState){ 
                 // if window was in full screen when hidden, give the proper z-index when unhidden
                 this.setWindowToFullScreen(this.processId, windowState.z_index);
@@ -958,7 +958,7 @@ import { Constants } from 'src/app/system-files/constants';
 
     desktopIsActive():void{
       const windowState = this._windowService.getWindowState(this.processId);
-      if(windowState){
+      if(windowState && windowState.is_visible){
         if(windowState.pid === this._windowService.getProcessWindowIDWithHighestZIndex()){
           this.currentStyles = {
             'top': `${this.windowTop}%`,

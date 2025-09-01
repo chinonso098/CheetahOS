@@ -317,7 +317,7 @@ span {
 
 .tskmgr-numeric-th-div-cntnr{
   display:flex;
-  width: 80px;
+  width: 88px;
   height:50%;
 }
 
@@ -360,7 +360,7 @@ span {
 .tskmgr-numeric-th-name-cntnr{
   position: relative;
   height:50%;
-  width: 80px;
+  width: 88px;
   font-size:14px;
 }
 
