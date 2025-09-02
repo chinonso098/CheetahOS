@@ -1008,16 +1008,41 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async onDrop(event:DragEvent):Promise<void>{
     event.preventDefault();
+    event.stopPropagation();
+
     let droppedFiles:File[] = [];
     if(event?.dataTransfer?.files){
-        // eslint-disable-next-line no-unsafe-optional-chaining
-        droppedFiles  = [...event?.dataTransfer?.files];
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      droppedFiles  = [...event?.dataTransfer?.files];
     }
     
     if(droppedFiles.length >= 1){
       const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
       if(result){
         await this.loadFiles();
+      }
+    }else{
+      console.log('droppedFiles:', droppedFiles.length);
+      const fileData = this._fileService.getDragAndDropFile();
+      const isRecycleBin = false;
+      const skipRecycleBin = true;
+      
+      for(const file of fileData){
+        const originalPath = file.getCurrentPath;
+
+        console.log('originalPath:', originalPath);
+
+        const fileName = this._fileService.getNameFromPath(file.getCurrentPath);
+        console.log('fileName:', fileName);
+
+        file.setCurrentPath = `${this.directory}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+
+        console.log('file:', file);
+
+        const result = await this._fileService.writeFileAsync(this.directory, file);
+        if(result){
+          await this._fileService.deleteAsync(originalPath, file.getIsFile, isRecycleBin, skipRecycleBin);
+        }
       }
     }
   }
@@ -2902,25 +2927,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       ]
   }
 
-  async createShortCut(): Promise<void>{
+  async createShortCut(file?:FileInfo): Promise<void>{
     const selectedFile = this.selectedFile;
     const shortCut:FileInfo = new FileInfo();
-    let fileContent = Constants.EMPTY_STRING;
     //const directory = '/';//(inputDir)? inputDir : this.directory;
     const directory = this.directory;
+    const fileContent = this.createShortCutHelper(file ?? selectedFile);
 
 
-    if(selectedFile.getIsFile){
-      fileContent = `[InternetShortcut]
-FileName=${selectedFile.getFileName} - ${Constants.SHORTCUT}
-IconPath=${selectedFile.getIconPath}
-FileType=${selectedFile.getFileType}
-ContentPath=${selectedFile.getContentPath}
-OpensWith=${selectedFile.getOpensWith}
-`;
-    }else{
-      //
-    }
+
 
 
     if(directory === Constants.ROOT){
@@ -2939,6 +2954,23 @@ Do you want the shortcut to be placed on the desktop instead?`;
     if(result){
       await this.loadFiles();
     }
+  }
+
+  createShortCutHelper(file:FileInfo):string{
+    let fileContent = Constants.EMPTY_STRING;
+    if(file.getIsFile){
+      fileContent = `[InternetShortcut]
+FileName=${file.getFileName} - ${Constants.SHORTCUT}
+IconPath=${file.getIconPath}
+FileType=${file.getFileType}
+ContentPath=${file.getContentPath}
+OpensWith=${file.getOpensWith}
+`;
+    }else{
+      //
+    }
+
+    return fileContent;
   }
 
   async createShortCutOnDesktop(): Promise<void>{

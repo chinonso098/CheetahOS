@@ -6,7 +6,6 @@ import { Service } from "src/app/system-files/service";
 import { ProcessType } from "src/app/system-files/system.types";
 import { BaseService } from "./base.service.interface";
 
-
 @Injectable({
     providedIn: 'root'
 })
@@ -37,7 +36,6 @@ export class RunningProcessService implements BaseService{
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
     description = 'manages add/remove of all processes';
-
 
     constructor(){
         this._runningProcesses = [];
@@ -130,7 +128,6 @@ export class RunningProcessService implements BaseService{
         const processList = this._runningProcesses.filter(process =>  process.getProcessName === processName);
         return processList.length;
     }
-
 
     private getProcessDetail():Process{
         return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)

@@ -989,13 +989,13 @@ OpensWith=${shortCutData.getOpensWith}
         return await this.deleteFileAsync(srcPath);
     }
 
-    public async deleteAsync(path:string, isFile?:boolean, isRecycleBin?:boolean):Promise<boolean> {
+    public async deleteAsync(path:string, isFile?:boolean, isRecycleBin?:boolean, skipRecycleBin = false):Promise<boolean> {
         // is file or folder is not currently in the bin, move it to the bing
         if(isRecycleBin){
             return await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path, isRecycleBin);
         }
 
-        if(!path.includes(Constants.RECYCLE_BIN_PATH)){
+        if(!path.includes(Constants.RECYCLE_BIN_PATH) && !skipRecycleBin){
             const name = this.getNameFromPath(path);
             this._restorePoint.set(`${Constants.RECYCLE_BIN_PATH}/${name}`, path);
             //this.addAndUpdateSessionData(this.fileServiceRestoreKey, this._restorePoint);
@@ -1254,7 +1254,7 @@ OpensWith=${shortCutData.getOpensWith}
      * @param path Full file or directory path
      * @returns File or folder name
      */
-    private getNameFromPath(path: string): string {
+    getNameFromPath(path: string): string {
         return basename(path);
     }
 
