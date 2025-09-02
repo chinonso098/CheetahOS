@@ -1087,6 +1087,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   async onDrop(event:DragEvent):Promise<void>{
     this._runningProcessService.addEventOriginator(this.name);
+
+    console.log('Terminal onDrop evt:', event);
+
     //Some about z-index is causing the drop to desktop to act funny.
     event.preventDefault();
     let droppedFiles:File[] = [];
@@ -1096,6 +1099,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         droppedFiles  = [...event?.dataTransfer?.files];
     }
     
+        console.log('Terminal onDrop:', droppedFiles);
     if(droppedFiles.length >= 1){
       console.log('Terminal onDrop:', droppedFiles);
     }   

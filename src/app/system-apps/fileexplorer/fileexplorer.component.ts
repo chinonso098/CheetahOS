@@ -2518,7 +2518,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       renameTxtBoxElement.focus();
       renameTxtBoxElement.select();
     }
-
   }
 
   async onRenameFileTxtBoxDataSave():Promise<void>{

@@ -562,7 +562,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const folderName = Constants.NEW_FOLDER;
     const result =  await this._fileService.createFolderAsync(Constants.DESKTOP_PATH, folderName);
     if(result){
-      this.refresh();
+     await this.refresh();
     }
   }
 
@@ -747,11 +747,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.getDesktopMenuData();
   }
 
-  autoArrangeIcon():void{
+  async autoArrangeIcon():Promise<void>{
     this.autoArrangeIcons = !this.autoArrangeIcons
     if(this.autoArrangeIcons){
       // clear (x,y) position of icons in memory
-      this.refresh();
+      await this.refresh();
     }
     this.getDesktopMenuData();
   }
@@ -1278,11 +1278,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
       
       if(droppedFiles.length >= 1){
+        console.log('THE RESULT:');
         const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
+        console.log('THE RESULT:', result);
         if(result){
-          this._fileService.addEventOriginator('desktop');
-          this._fileService.dirFilesUpdateNotify.next();
-          this.refresh();
+          // this._fileService.addEventOriginator('desktop');
+          // this._fileService.dirFilesUpdateNotify.next();
+          await this.refresh();
         }
       }
     }
@@ -1429,7 +1431,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(action === MenuAction.COPY){
       const result = await this._fileService.copyAsync(cntntPath,  Constants.DESKTOP_PATH);
       if(result){
-        this.refresh();
+        await this.refresh();
       }
     }
     else if(action === MenuAction.CUT){
@@ -1441,11 +1443,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
           this._fileService.dirFilesUpdateNotify.next();
 
-
           await CommonFunctions.sleep(delay)
-          this.refresh();
+          await this.refresh();
         }else{
-            this.refresh();
+          await this.refresh();
         }
       }
     }
@@ -1756,7 +1757,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const cloneIcon = document.getElementById(elementId);
     if(cloneIcon) 
       cloneIcon.innerHTML = Constants.EMPTY_STRING;
-    
   }
   
   onDragStart(evt:DragEvent, i: number): void {

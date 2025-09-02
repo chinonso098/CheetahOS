@@ -631,27 +631,51 @@ export class FileService implements BaseService{
             return false;
     }
 
-    public async writeFilesAsync(directory:string, files:File[]):Promise<boolean>{
-        return new Promise<boolean>(() =>{
-            files.forEach((file)=>{
-                const fileReader = new FileReader()
-                fileReader.readAsDataURL(file);
-                fileReader.onload = async(evt) =>{
-                    const newFile:FileInfo = new FileInfo();
-                    newFile.setFileName = file.name;
+    public async writeFilesAsync(directory: string, files: File[]): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            const results: Promise<boolean>[] = [];
 
-                    const result = evt.target?.result;
-                    if(result instanceof ArrayBuffer) {
-                        newFile.setContentBuffer = result;
-                    } else{
-                        newFile.setContentPath = result || Constants.EMPTY_STRING;
-                    }
-                    newFile.setCurrentPath = `${this.pathCorrection(directory)}/${file.name}`;
-                    return await this.writeFileAsync(directory, newFile);
-                }
-            })
+            files.forEach((file) => {
+                const filePromise = new Promise<boolean>((fileResolve, fileReject) => {
+                    const fileReader = new FileReader();
+                    fileReader.readAsDataURL(file);
+
+                    fileReader.onload = async (evt) => {
+                        try {
+                            const newFile: FileInfo = new FileInfo();
+                            newFile.setFileName = file.name;
+
+                            const result = evt.target?.result;
+                            if (result instanceof ArrayBuffer) {
+                                newFile.setContentBuffer = result;
+                            } else {
+                                newFile.setContentPath = result || Constants.EMPTY_STRING;
+                            }
+                            newFile.setCurrentPath = `${this.pathCorrection(directory)}/${file.name}`;
+
+                            const success = await this.writeFileAsync(directory, newFile);
+                            fileResolve(success);
+                        } catch (err) {
+                            fileReject(err);
+                        }
+                    };
+
+                    fileReader.onerror = () => fileReject(fileReader.error);
+                });
+
+                results.push(filePromise);
+            });
+
+            // Wait for all files
+            Promise.all(results)
+                .then((values) => {
+                    // Return false if any failed
+                    resolve(values.every(v => v));
+                })
+                .catch((err) => reject(err));
         });
     }
+
 
     // public async writeFileWithProgress( file: File, directory: string,  onProgress: (percent: number) => void ): Promise<boolean> {
     // const filePath = `${this.pathCorrection(directory)}/${file.name}`;
