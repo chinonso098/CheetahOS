@@ -41,6 +41,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private _terminaCommandsProc!:TerminalCommandProcessor;
   private _sessionManagmentService: SessionManagmentService;
   private _windowService:WindowService;
+  private _fileService:FileService;
   private _appState!:AppState;
 
 
@@ -107,6 +108,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     this._formBuilder = formBuilder;
     this._sessionManagmentService = sessionManagmentService;
     this._windowService = windowService;
+    this._fileService = fileService;
     
     this._terminaCommandsProc = new TerminalCommandProcessor(controlProcessService,runningProcessService,fileService);
 
@@ -1088,21 +1090,30 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   async onDrop(event:DragEvent):Promise<void>{
     this._runningProcessService.addEventOriginator(this.name);
 
+    const fileData = this._fileService.getDragAndDropFile();
+
+    if(fileData.length === 1){
+      const cmd = this.terminalForm.value.terminalCmd as string;
+      this.terminalForm.setValue({
+        terminalCmd: `${cmd}${fileData[0].getCurrentPath}`
+      })
+    }
+
     console.log('Terminal onDrop evt:', event);
 
     //Some about z-index is causing the drop to desktop to act funny.
     event.preventDefault();
-    let droppedFiles:File[] = [];
+    // let droppedFiles:File[] = [];
 
-    if(event?.dataTransfer?.files){
-        // eslint-disable-next-line no-unsafe-optional-chaining
-        droppedFiles  = [...event?.dataTransfer?.files];
-    }
+    // if(event?.dataTransfer?.files){
+    //     // eslint-disable-next-line no-unsafe-optional-chaining
+    //     droppedFiles  = [...event?.dataTransfer?.files];
+    // }
     
-        console.log('Terminal onDrop:', droppedFiles);
-    if(droppedFiles.length >= 1){
-      console.log('Terminal onDrop:', droppedFiles);
-    }   
+    //     console.log('Terminal onDrop:', droppedFiles);
+    // if(droppedFiles.length >= 1){
+    //   console.log('Terminal onDrop:', droppedFiles);
+    // }   
   }
 
   retrievePastSessionData():void{

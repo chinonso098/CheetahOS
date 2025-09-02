@@ -1784,6 +1784,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         if (evt.dataTransfer) {
           evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
         }
+
+        const file = this.files[i];
+        if(file)
+          this._fileService.addDragAndDropFile(file);
       }else{
         this.markedBtnIds.forEach(id =>{
           const srcIconElmnt = document.getElementById(`iconBtn${id}`) as HTMLElement;
@@ -1809,6 +1813,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         if (evt.dataTransfer) {
           evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
         }
+
+        const file = this.files[i];
+        if(file)
+          this._fileService.addDragAndDropFile(file);
       }
     }
   }

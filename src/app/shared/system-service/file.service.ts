@@ -91,6 +91,8 @@ export class FileService implements BaseService{
     private _restorePoint!:Map<string,string>; 
     private _eventOriginator = Constants.EMPTY_STRING;
 
+    private _fileDragAndDrop!:FileInfo[];
+
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
     private _userNotificationService:UserNotificationService
@@ -122,6 +124,8 @@ export class FileService implements BaseService{
         this._fileExistsMap =  new Map<string, string>();
         this._restorePoint =  new Map<string, string>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
+        this._fileDragAndDrop = [];
+
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
         this._userNotificationService = userNotificationService;
@@ -1302,6 +1306,18 @@ OpensWith=${shortCutData.getOpensWith}
 
     addEventOriginator(eventOrig:string):void{
         this._eventOriginator = eventOrig;
+    }
+
+    addDragAndDropFile(file:FileInfo):void{
+        this._fileDragAndDrop.push(file);
+    }
+
+    getDragAndDropFile():FileInfo[]{
+        const result:FileInfo[] = [];
+        result.push(...this._fileDragAndDrop);
+        this._fileDragAndDrop = [];
+
+        return result;
     }
 
     getEventOriginator():string{
