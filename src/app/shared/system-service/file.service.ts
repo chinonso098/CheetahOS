@@ -230,6 +230,7 @@ export class FileService implements BaseService{
 	}
 
 	async loadDirectoryFiles(path: string): Promise<FileInfo[]>{
+        await configuredFS;
         path = path.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
         console.log('loadDirectoryFiles:', path);
         if(!this._isCalculated)
