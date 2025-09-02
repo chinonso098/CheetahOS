@@ -239,6 +239,7 @@ export class FileService implements BaseService{
 		try{
             const files:FileInfo[] = [];
             const directoryEntries = await this.readDirectory(path);
+            console.log('directoryEntries:', directoryEntries);
 
             for(const entry of directoryEntries){
                 const file =  await this.getFileInfo(`${path}/${entry}`);
