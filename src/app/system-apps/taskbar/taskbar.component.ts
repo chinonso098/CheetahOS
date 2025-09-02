@@ -82,7 +82,7 @@ export class TaskbarComponent implements AfterViewInit{
   }
 
   showTaskBarContextMenu(evt:MouseEvent):void{
-    if(this._runningProcessService.getEventOrginator() === Constants.EMPTY_STRING){
+    if(this._runningProcessService.getEventOriginator() === Constants.EMPTY_STRING){
       const uid = `${this.name}-${this.processId}`;
       this._runningProcessService.addEventOriginator(uid);
     

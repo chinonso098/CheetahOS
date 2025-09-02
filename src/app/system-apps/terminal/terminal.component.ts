@@ -120,7 +120,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   ngOnInit():void{
     this.terminalForm = this._formBuilder.nonNullable.group({
-      terminalCmd: '',
+      terminalCmd: Constants.EMPTY_STRING,
     });
 
     this.retrievePastSessionData();
@@ -341,7 +341,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     if(evt.key === "Enter"){
       this.isInLoopState = false;
       this.dirEntryTraverseCntr = 0;
-      const terminalCommand = new TerminalCommand(cmdString, 0, '');
+      const terminalCommand = new TerminalCommand(cmdString, 0, Constants.EMPTY_STRING);
 
       if(cmdString !== Constants.EMPTY_STRING){
         this.processCommand(terminalCommand, "Enter");
@@ -560,7 +560,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
           console.log('Handling empty directory list');
           const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
           await this.traverseDirectoryHelper(terminalCommand);
-          this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, "");
+          this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, Constants.EMPTY_STRING);
           this.isInLoopState = true;
       } else {
           await this.handleLoopState(rootCmd, rootArg);
@@ -575,7 +575,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
           this.dirEntryTraverseCntr++;
       } else {
           console.log('Handling directory loop');
-          this.loopThroughDirectory(rootCmd, rootArg, '');
+          this.loopThroughDirectory(rootCmd, rootArg, Constants.EMPTY_STRING);
       }
   }
 
@@ -800,7 +800,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
       this.prevPtrIndex = currPtrIndex;
       (currPtrIndex === this.commandHistory.length) ? 
-        this.terminalForm.setValue({terminalCmd:''}) : 
+        this.terminalForm.setValue({terminalCmd:Constants.EMPTY_STRING}) : 
         this.terminalForm.setValue({terminalCmd: this.commandHistory[currPtrIndex].getCommand});
     }
   }
@@ -817,13 +817,13 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   stringIsOnlyWhiteSpace(arg: string): boolean{
-    return  !arg.replace(/\s/g, '').length;
+    return  !arg.replace(/\s/g, Constants.EMPTY_STRING).length;
   }
 
   async traverseDirectoryHelper(terminalCmd:TerminalCommand):Promise<void>{
     const cmdStringArr = terminalCmd.getCommand.split(Constants.BLANK_SPACE);
     //const rootCmd = cmdStringArr[0].toLowerCase();
-    let path = '';
+    let path = Constants.EMPTY_STRING;
 
     if(this.firstSection)
         path = cmdStringArr[1];
@@ -1029,7 +1029,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   maximizeWindow():void{
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
@@ -1050,7 +1050,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   minimizeWindow(arg:number[]):void{
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
@@ -1088,7 +1088,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   async onDrop(event:DragEvent):Promise<void>{
-    this._runningProcessService.addEventOriginator(this.name);
+    this._fileService.addEventOriginator(this.name);
 
     const fileData = this._fileService.getDragAndDropFile();
 
@@ -1100,20 +1100,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
 
     console.log('Terminal onDrop evt:', event);
-
-    //Some about z-index is causing the drop to desktop to act funny.
     event.preventDefault();
-    // let droppedFiles:File[] = [];
-
-    // if(event?.dataTransfer?.files){
-    //     // eslint-disable-next-line no-unsafe-optional-chaining
-    //     droppedFiles  = [...event?.dataTransfer?.files];
-    // }
-    
-    //     console.log('Terminal onDrop:', droppedFiles);
-    // if(droppedFiles.length >= 1){
-    //   console.log('Terminal onDrop:', droppedFiles);
-    // }   
   }
 
   retrievePastSessionData():void{

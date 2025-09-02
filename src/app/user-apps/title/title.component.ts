@@ -90,7 +90,7 @@ export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   maximizeWindow():void{
 
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
 

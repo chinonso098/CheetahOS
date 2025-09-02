@@ -429,7 +429,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
      */
 
     console.log('showDesktopContextMenu:',evt);
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
     console.log('evtOriginator:',evtOriginator);
    
     if(evtOriginator === Constants.EMPTY_STRING){
@@ -1265,7 +1265,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async onDrop(event:DragEvent):Promise<void>{
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._fileService.getEventOriginator();
     console.log('Dsktp onDrop evtOriginator:', evtOriginator);
 
     if(evtOriginator === Constants.EMPTY_STRING){

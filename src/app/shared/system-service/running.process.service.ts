@@ -99,7 +99,7 @@ export class RunningProcessService implements BaseService{
         return process || null;
     }
 
-    getEventOrginator():string{
+    getEventOriginator():string{
         return this._eventOriginator;
     }
 

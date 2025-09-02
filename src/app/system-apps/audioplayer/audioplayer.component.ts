@@ -186,7 +186,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     console.log('previous audio source:',  this.audioSrc);
     this.audioSrc = Constants.EMPTY_STRING;
     console.log('previous audio source-1:',  this.audioSrc);
-    if(this._runningProcessService.getEventOrginator() === uid){
+    if(this._runningProcessService.getEventOriginator() === uid){
       this._fileInfo = this._processHandlerService.getLastProcessTrigger();
 
       this.audioSrc = (this.audioSrc !== Constants.EMPTY_STRING)? 
@@ -472,7 +472,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   maximizeWindow():void{
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
@@ -487,7 +487,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   minimizeWindow(arg:number[]):void{
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();

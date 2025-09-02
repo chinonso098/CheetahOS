@@ -163,7 +163,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.videoSrc = Constants.EMPTY_STRING;
     this.fileType = Constants.EMPTY_STRING;
 
-    if(this._runningProcessService.getEventOrginator() === uid){
+    if(this._runningProcessService.getEventOriginator() === uid){
       this._fileInfo = this._processHandlerService.getLastProcessTrigger();
       //console.log('new this._fileInfo:',  this._fileInfo);
 
@@ -273,7 +273,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   maximizeWindow():void{
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
@@ -299,7 +299,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   minmizeWindow(arg:number[]):void{
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();

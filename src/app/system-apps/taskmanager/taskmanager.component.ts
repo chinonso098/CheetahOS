@@ -1067,7 +1067,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   maximizeWindow():void{
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
@@ -1100,7 +1100,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   minimizeWindow(arg:number[]):void{
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();

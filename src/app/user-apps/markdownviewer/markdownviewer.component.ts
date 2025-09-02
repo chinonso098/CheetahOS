@@ -136,7 +136,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   maximizeWindow():void{
 
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
 

@@ -2640,7 +2640,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   maximizeWindow():void{
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
@@ -2658,7 +2658,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   minimizeWindow(arg:number[]):void{
     const uid = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOrginator();
+    const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
