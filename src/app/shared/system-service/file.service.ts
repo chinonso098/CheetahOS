@@ -230,6 +230,7 @@ export class FileService implements BaseService{
 	}
 
 	async loadDirectoryFiles(path: string): Promise<FileInfo[]>{
+        await configuredFS;
         console.log('loadDirectoryFiles:', path);
         if(!this._isCalculated)
             await this.postZenFsInit();
