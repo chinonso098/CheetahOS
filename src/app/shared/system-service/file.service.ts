@@ -246,6 +246,8 @@ export class FileService implements BaseService{
                 files.push(file);
             }
 
+            console.log('getFileInfo(s):', files);
+
             return files;
 		}catch(err){
 			console.error('loadDirectoryFiles:',err);
@@ -412,7 +414,6 @@ export class FileService implements BaseService{
         else
             return Constants.EMPTY_STRING;
     }
-
 
 	public async getFileContentFromB64DataUrl(path: string, contentType: string): Promise<FileContent> {
 		await configuredFS;
@@ -583,7 +584,6 @@ export class FileService implements BaseService{
 		}
     }
 
-
 	//O for success, 1 for file already present, 2 other error
     // eslint-disable-next-line @typescript-eslint/no-inferrable-types
     private async writeRawAsync(destPath: string, content:any, flag:string = 'wx'): Promise<number>{
@@ -604,7 +604,7 @@ export class FileService implements BaseService{
 		}
     }
 
-        /**
+    /**
      * handles instances where a file being written alredy exist in a given location
      * @param destPath 
      * @param cntnt 
@@ -683,7 +683,6 @@ export class FileService implements BaseService{
         });
     }
 
-
     // public async writeFileWithProgress( file: File, directory: string,  onProgress: (percent: number) => void ): Promise<boolean> {
     // const filePath = `${this.pathCorrection(directory)}/${file.name}`;
     // const chunkSize = 1024 * 1024; // 1MB
@@ -724,7 +723,7 @@ export class FileService implements BaseService{
 
     public async writeFileAsync(path:string, file:FileInfo):Promise<boolean>{
         const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
-        const destPath = `${this.pathCorrection(path)}/${file.getFileName}`;
+        const destPath =(file.getIsShortCut)?  `${this.pathCorrection(path)}/${this.getNameFromPath(file.getCurrentPath)}` : `${this.pathCorrection(path)}/${file.getFileName}`;
 
         return await this.writeRawHandlerAsync(destPath, cntnt);
     }

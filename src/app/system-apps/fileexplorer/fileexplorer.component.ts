@@ -1024,24 +1024,36 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }else{
       console.log('droppedFiles:', droppedFiles.length);
       const fileData = this._fileService.getDragAndDropFile();
-      const isRecycleBin = false;
-      const skipRecycleBin = true;
+
+      // handle single / multiple files
       
       for(const file of fileData){
-        const originalPath = file.getCurrentPath;
+        const srcPath = file.getCurrentPath;
+        const destPath = this.directory;
+        const delay = 20; //20ms
 
-        console.log('originalPath:', originalPath);
+        console.log('originalPath:', srcPath);
 
         const fileName = this._fileService.getNameFromPath(file.getCurrentPath);
         console.log('fileName:', fileName);
 
-        file.setCurrentPath = `${this.directory}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+        //file.setCurrentPath = `${this.directory}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
 
         console.log('file:', file);
 
-        const result = await this._fileService.writeFileAsync(this.directory, file);
+        //const result = await this._fileService.writeFileAsync(this.directory, file);
+        const result = await this._fileService.moveAsync(srcPath, destPath);
         if(result){
-          await this._fileService.deleteAsync(originalPath, file.getIsFile, isRecycleBin, skipRecycleBin);
+          if(!srcPath.includes(Constants.DESKTOP_PATH)){
+            console.log('refresh explor')
+            this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
+            this._fileService.dirFilesUpdateNotify.next();
+
+            await CommonFunctions.sleep(delay)
+            await this.refresh();
+          }else{
+            await this.refresh();
+          }
         }
       }
     }
