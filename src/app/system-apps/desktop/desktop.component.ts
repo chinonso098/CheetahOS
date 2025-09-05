@@ -1606,7 +1606,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     //First case - I'm clicking only on the desktop icons
     if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === 0)){  
       if(this.isRenameActive){
-        console.log('herer');
         this.isFormDirty();
       }
       if(this.isIconInFocusDueToPriorAction){
@@ -1747,6 +1746,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       x: evt.x,
       y: evt.y,
     }
+
+
+    /// add an await sleep function
+    // after wake, check if a drop evt (for now, file explorer and terminal) was raised
+    // if drop evt  matching the condtion was raised, do no execute the code below
 
     if(this.autoAlignIcons && this.markedBtnIds.length >= 0){
       this.moveBtnIconsToNewPositionAlignOn(mPos);

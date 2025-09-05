@@ -27,6 +27,7 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { file } from 'jszip';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -1025,35 +1026,39 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       console.log('droppedFiles:', droppedFiles.length);
       const fileData = this._fileService.getDragAndDropFile();
 
-      // handle single / multiple files
-      
-      for(const file of fileData){
-        const srcPath = file.getCurrentPath;
-        const destPath = this.directory;
-        const delay = 20; //20ms
+      const delay = 50; //50ms
+      const destPath = this.directory;
+      const result:boolean[] = [];
 
-        console.log('originalPath:', srcPath);
+      let srcPath = Constants.EMPTY_STRING;
 
-        const fileName = this._fileService.getNameFromPath(file.getCurrentPath);
-        console.log('fileName:', fileName);
+      // handle single
+      if(fileData.length === 1){
+        const file = fileData[0];
+        srcPath = file.getCurrentPath;
 
-        //file.setCurrentPath = `${this.directory}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+        const res= await this._fileService.moveAsync(srcPath, destPath);
+        result.push(res);
+      } // multiple files
+      else if(fileData.length > 1){
+        for(const file of fileData){
+          srcPath = file.getCurrentPath;
+          const res = await this._fileService.moveAsync(srcPath, destPath, file.getIsFile);
+          result.push(res);
+        }
+      }
 
-        console.log('file:', file);
+      const allTrue = result.every(value => value === true);
+      if(allTrue){
+        if(srcPath.includes(Constants.DESKTOP_PATH)){
+          console.log('refresh dsktp');
+          this._fileService.addEventOriginator(Constants.DESKTOP_PATH);
+          this._fileService.dirFilesUpdateNotify.next();
 
-        //const result = await this._fileService.writeFileAsync(this.directory, file);
-        const result = await this._fileService.moveAsync(srcPath, destPath);
-        if(result){
-          if(!srcPath.includes(Constants.DESKTOP_PATH)){
-            console.log('refresh explor')
-            this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
-            this._fileService.dirFilesUpdateNotify.next();
-
-            await CommonFunctions.sleep(delay)
-            await this.refresh();
-          }else{
-            await this.refresh();
-          }
+          await CommonFunctions.sleep(delay)
+          await this.refresh();
+        }else{
+          await this.refresh();
         }
       }
     }
@@ -1811,6 +1816,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   async onPaste():Promise<void>{
     const cntntPath = this._menuService.getPath();
     const action = this._menuService.getActions();
+    const delay = 40; //40ms
 
     console.log(`path: ${cntntPath}`);
     console.log(`action: ${action}`);
@@ -1820,17 +1826,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(action === MenuAction.COPY){
       const result = await this._fileService.copyAsync(cntntPath, this.directory);
       if(result){
-        this.refresh();
+          await CommonFunctions.sleep(delay);
+          this.refresh();
       }
     }
     else if(action === MenuAction.CUT){
-      const result = await this._fileService.moveAsync(cntntPath, Constants.DESKTOP_PATH);
+      const result = await this._fileService.moveAsync(cntntPath, this.directory);
       if(result){
         if(cntntPath.includes(Constants.DESKTOP_PATH)){
           this._fileService.addEventOriginator(Constants.DESKTOP);
           this._fileService.dirFilesUpdateNotify.next();
 
-          await CommonFunctions.sleep((20));
+          await CommonFunctions.sleep(delay);
           this.refresh();
         }else{
           this.refresh();
