@@ -1777,21 +1777,20 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(countOfMarkedBtns <= 1){
         this.draggedElementId = i;
         const srcIconElmnt = document.getElementById(`iconBtn${i}`) as HTMLElement;
-
         cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
 
-       // Move it out of view initially
+        // Move it out of view initially
         cloneIcon.style.left = '-9999px';  
         cloneIcon.style.opacity = '0.2';
+
+        const file = this.files[i];
+        if(file)
+          this._fileService.addDragAndDropFile(file);
     
         // Set the cloned icon as the drag image
         if (evt.dataTransfer) {
           evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
         }
-
-        const file = this.files[i];
-        if(file)
-          this._fileService.addDragAndDropFile(file);
       }else{
         this.markedBtnIds.forEach(id =>{
           const srcIconElmnt = document.getElementById(`iconBtn${id}`) as HTMLElement;
@@ -1808,6 +1807,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
             cloneIcon.appendChild(spaceDiv);
 
           counter++;
+
+          const file = this.files[Number(id)];
+          if(file)
+            this._fileService.addDragAndDropFile(file);
         });
 
         cloneIcon.style.left = '-9999px';  // Move it out of view initially
@@ -1817,10 +1820,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         if (evt.dataTransfer) {
           evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
         }
-
-        const file = this.files[i];
-        if(file)
-          this._fileService.addDragAndDropFile(file);
       }
     }
   }
