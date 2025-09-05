@@ -53,7 +53,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   readonly errorIcon = `${Constants.IMAGE_BASE_PATH}red_x.png`;
   readonly fileTransferIcon = `${Constants.IMAGE_BASE_PATH}file_transfer.png`;
   readonly errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_critical_stop.wav`;
-  readonly cheetahGenericNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
+  readonly cheetahBackGroundNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_background.wav`;
 
   pwrOnOffOptions = [
     { value: 'Shut down', label: 'Closes all apps and turns off the PC.' },
@@ -189,7 +189,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
         await this._audioService.play(this.errorNotificationAudio);
 
     if(this.notificationOption === this.warnNotification)
-        await this._audioService.play(this.cheetahGenericNotifyAudio);
+        await this._audioService.play(this.cheetahBackGroundNotifyAudio);
   }
 
   private generateNotificationId(): number{
