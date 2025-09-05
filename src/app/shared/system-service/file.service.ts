@@ -720,7 +720,7 @@ export class FileService implements BaseService{
 
     public async writeFileAsync(path:string, file:FileInfo):Promise<boolean>{
         const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
-        const destPath =(file.getIsShortCut)?  `${this.pathCorrection(path)}/${this.getNameFromPath(file.getCurrentPath)}` : `${this.pathCorrection(path)}/${file.getFileName}`;
+        const destPath =`${this.pathCorrection(path)}/${file.getFileName}`;
 
         return await this.writeRawHandlerAsync(destPath, cntnt);
     }
@@ -1252,7 +1252,7 @@ OpensWith=${shortCutData.getOpensWith}
      * @param path Full file or directory path
      * @returns File or folder name
      */
-    getNameFromPath(path: string): string {
+    private getNameFromPath(path: string): string {
         return basename(path);
     }
 

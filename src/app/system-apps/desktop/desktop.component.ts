@@ -2024,19 +2024,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   async createShortCut(): Promise<void>{
     const selectedFile = this.selectedFile;
     const shortCut:FileInfo = new FileInfo();
-    let fileContent = Constants.EMPTY_STRING;
-
-    if(selectedFile.getIsFile){
-      fileContent = `[InternetShortcut]
-FileName=${selectedFile.getFileName} - ${Constants.SHORTCUT}
-IconPath=${selectedFile.getIconPath}
-FileType=${selectedFile.getFileType}
-ContentPath=${selectedFile.getContentPath}
-OpensWith=${selectedFile.getOpensWith}
-`;
-    }else{
-      //
-    }
+    const fileContent = this.createShortCutHelper(selectedFile);
 
     shortCut.setContentPath = fileContent
     shortCut.setFileName= `${selectedFile.getFileName} - ${Constants.SHORTCUT}${Constants.URL}`;
@@ -2045,6 +2033,20 @@ OpensWith=${selectedFile.getOpensWith}
       await this.loadFiles();
     }
   }
+
+  createShortCutHelper(file:FileInfo):string{
+    let fileContent = Constants.EMPTY_STRING;
+
+    fileContent = `[InternetShortcut]
+FileName=${file.getFileName} - ${Constants.SHORTCUT}
+IconPath=${file.getIconPath}
+FileType=${file.getFileType}
+ContentPath=${(file.getIsFile)? file.getContentPath : file.getCurrentPath}
+OpensWith=${file.getOpensWith}
+`;
+    return fileContent;
+  }
+
   
   onInputChange(evt: KeyboardEvent): boolean {
     const regexStr = '^[a-zA-Z0-9_.\\s-]+$';

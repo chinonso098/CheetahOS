@@ -46,13 +46,14 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   pwrOnOffNotification =  UserNotificationType.PowerOnOff;
   fileTransferNotification =  UserNotificationType.FileTransfer;
 
-  cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
-  myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
-  infoIcon = `${Constants.IMAGE_BASE_PATH}info.png`;
-  warningIcon = `${Constants.IMAGE_BASE_PATH}warning.png`;
-  errorIcon = `${Constants.IMAGE_BASE_PATH}red_x.png`;
-  fileTransferIcon = `${Constants.IMAGE_BASE_PATH}file_transfer.png`;
-  errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_critical_stop.wav`;
+  readonly cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
+  readonly myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
+  readonly infoIcon = `${Constants.IMAGE_BASE_PATH}info.png`;
+  readonly warningIcon = `${Constants.IMAGE_BASE_PATH}warning.png`;
+  readonly errorIcon = `${Constants.IMAGE_BASE_PATH}red_x.png`;
+  readonly fileTransferIcon = `${Constants.IMAGE_BASE_PATH}file_transfer.png`;
+  readonly errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_critical_stop.wav`;
+  readonly cheetahGenericNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
 
   pwrOnOffOptions = [
     { value: 'Shut down', label: 'Closes all apps and turns off the PC.' },
@@ -186,6 +187,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
 
     if(this.notificationOption === this.errorNotification)
         await this._audioService.play(this.errorNotificationAudio);
+
+    if(this.notificationOption === this.warnNotification)
+        await this._audioService.play(this.cheetahGenericNotifyAudio);
   }
 
   private generateNotificationId(): number{

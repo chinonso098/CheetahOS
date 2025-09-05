@@ -242,7 +242,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   readonly shortCutImg = `${Constants.IMAGE_BASE_PATH}shortcut.png`;
   readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
-  readonly cheetahGenericNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
 
   fileExplorerBoundedRect!:DOMRect;
   multiSelectElmnt!:HTMLDivElement | null;
@@ -2946,22 +2945,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       ]
   }
 
-  async createShortCut(file?:FileInfo): Promise<void>{
+  async createShortCut(): Promise<void>{
     const selectedFile = this.selectedFile;
     const shortCut:FileInfo = new FileInfo();
     //const directory = '/';//(inputDir)? inputDir : this.directory;
     const directory = this.directory;
-    const fileContent = this.createShortCutHelper(file ?? selectedFile);
-
-
-
-
+    const fileContent = this.createShortCutHelper(selectedFile);
 
     if(directory === Constants.ROOT){
       const msg = `Cheetah can't create a shortcut here.
 Do you want the shortcut to be placed on the desktop instead?`;
 
-      await this._audioService.play(this.cheetahGenericNotifyAudio);
       this._menuService.setStageData(fileContent);
       this._userNotificationService.showWarningNotification(msg);
       return;
@@ -2977,18 +2971,14 @@ Do you want the shortcut to be placed on the desktop instead?`;
 
   createShortCutHelper(file:FileInfo):string{
     let fileContent = Constants.EMPTY_STRING;
-    if(file.getIsFile){
-      fileContent = `[InternetShortcut]
+
+    fileContent = `[InternetShortcut]
 FileName=${file.getFileName} - ${Constants.SHORTCUT}
 IconPath=${file.getIconPath}
 FileType=${file.getFileType}
-ContentPath=${file.getContentPath}
+ContentPath=${(file.getIsFile)? file.getContentPath : file.getCurrentPath}
 OpensWith=${file.getOpensWith}
 `;
-    }else{
-      //
-    }
-
     return fileContent;
   }
 
