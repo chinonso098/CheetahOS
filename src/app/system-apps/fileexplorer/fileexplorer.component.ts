@@ -1815,11 +1815,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   async onPaste():Promise<void>{
     const cntntPath = this._menuService.getPath();
     const action = this._menuService.getActions();
-    const delay = 40; //40ms
+    const delay = 50; //50ms
 
-    console.log(`path: ${cntntPath}`);
-    console.log(`action: ${action}`);
-
+    // console.log(`path: ${cntntPath}`);
+    // console.log(`action: ${action}`);
     //onPaste will be modified to handle cases such as multiselect, file or folder or both
 
     if(action === MenuAction.COPY){
@@ -1839,7 +1838,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           await CommonFunctions.sleep(delay);
           this.refresh();
         }else{
-          this.refresh();
+          await CommonFunctions.sleep(delay);
+          await this.refresh();
         }
       }
     }

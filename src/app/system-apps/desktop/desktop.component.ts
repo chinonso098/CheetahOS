@@ -218,7 +218,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   GRID_SIZE = this.MID_GRID_SIZE; //column size of grid = 90px
   ROW_GAP = 25;
-  SECONDS_DELAY:number[] = [6000, 250, 4000, 2000];
+  SECONDS_DELAY:number[] = [6000, 250, 4000, 350];
   renameForm!: FormGroup;
 
   deskTopClickCounter = 0;
@@ -395,7 +395,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(this.showClippy){
       this.clippyIntervalId = setInterval(() =>{
         const appName = 'clippy';
-        this.openApplication(appName);
+        this.initializeApplication(appName);
       },this.CLIPPY_INIT_DELAY);
     }
   }
@@ -847,26 +847,26 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   openTerminal():void{
-    this.openApplication(this.TERMINAL_APP);
+    this.initializeApplication(this.TERMINAL_APP);
   }
 
   openTextEditor():void{
-    this.openApplication(this.TEXT_EDITOR_APP);
+    this.initializeApplication(this.TEXT_EDITOR_APP);
   }
 
   openCodeEditor():void{
-    this.openApplication(this.CODE_EDITOR_APP);
+    this.initializeApplication(this.CODE_EDITOR_APP);
   }
 
   openMarkDownViewer():void{
-    this.openApplication(this.MARKDOWN_VIEWER_APP);
+    this.initializeApplication(this.MARKDOWN_VIEWER_APP);
   }
 
   openTaskManager():void{
-    this.openApplication(this.TASK_MANAGER_APP);
+    this.initializeApplication(this.TASK_MANAGER_APP);
   }
 
-  openApplication(arg0:string):void{
+  initializeApplication(arg0:string):void{
     const file = new FileInfo();
 
     file.setOpensWith = arg0;
@@ -969,7 +969,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
 
   buildNewMenu(): NestedMenuItem[]{
-
     const newFolder:NestedMenuItem={icon:`${Constants.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action: this.createFolder.bind(this),  variables:true , 
       emptyline:false, styleOption:'C'}
 
@@ -1011,7 +1010,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   private buildVantaEffect(n:number) {
-
     try {
       const vanta = this.VANTAS[n];
       if(n === 0){
@@ -1378,7 +1376,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
   
   checkAndHandleDesktopIconCntxtMenuBounds(evt:MouseEvent, menuHeight:number):MenuPosition{
-
     let yAxis = 0;
     let verticalShift = false;
 
@@ -1422,30 +1419,30 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   async onPaste():Promise<void>{
     const cntntPath = this._menuService.getPath();
     const action = this._menuService.getActions();
+    const delay = 50; //50ms
 
-    console.log(`path: ${cntntPath}`);
-    console.log(`action: ${action}`);
-
+    // console.log(`path: ${cntntPath}`);
+    // console.log(`action: ${action}`);
     //onPaste will be modified to handle cases such as multiselect, file or folder or both
 
     if(action === MenuAction.COPY){
       const result = await this._fileService.copyAsync(cntntPath,  Constants.DESKTOP_PATH);
       if(result){
+        await CommonFunctions.sleep(delay);
         await this.refresh();
       }
     }
     else if(action === MenuAction.CUT){
-      const delay = 20; //20ms
       const result = await this._fileService.moveAsync(cntntPath, Constants.DESKTOP_PATH);
       if(result){
-        if(!cntntPath.includes(Constants.DESKTOP_PATH)){
-          console.log('refresh explor')
+        if(cntntPath.includes(Constants.FILE_EXPLORER)){
           this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
           this._fileService.dirFilesUpdateNotify.next();
 
           await CommonFunctions.sleep(delay)
           await this.refresh();
         }else{
+          await CommonFunctions.sleep(delay);
           await this.refresh();
         }
       }
