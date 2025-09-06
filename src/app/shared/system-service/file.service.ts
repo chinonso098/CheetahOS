@@ -1396,15 +1396,20 @@ OpensWith=${shortCutData.getOpensWith}
     }
 
     addDragAndDropFile(file:FileInfo):void{
-        this._fileDragAndDrop.push(file);
+        if(!this._fileDragAndDrop.some(x => x.getFileName === file.getFileName))
+            this._fileDragAndDrop.push(file);
     }
 
     getDragAndDropFile():FileInfo[]{
         const result:FileInfo[] = [];
         result.push(...this._fileDragAndDrop);
-        this._fileDragAndDrop = [];
+        this.removeDragAndDropFile()
 
         return result;
+    }
+
+    removeDragAndDropFile():void{
+        this._fileDragAndDrop = [];
     }
 
     checkIfFileDropEventTriggered():boolean{

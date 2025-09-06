@@ -1606,6 +1606,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
       console.log('turn off - areMultipleIconsHighlighted')
       this.areMultipleIconsHighlighted = false;
+      this._fileService.removeDragAndDropFile();
     }else{
       this.hideCntxtMenuEvtCnt++;
       this.isHideCntxtMenuEvt = true;
