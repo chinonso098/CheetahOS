@@ -404,11 +404,7 @@ import { Constants } from 'src/app/system-files/constants';
       this._windowService.windowDragIsInActive.next();
     }
 
-    onDragStart(input:HTMLElement, pid:number):void{
-      // const style = window.getComputedStyle(input);
-      // const matrix1 = new WebKitCSSMatrix(style.transform);
-      // const x_axis = matrix1.m41;
-      // const y_axis = matrix1.m42;
+    onDragStart(pid:number):void{
 
       this.setFocsuOnThisWindow(pid);
       this._windowService.currentProcessInFocusNotify.next(pid);

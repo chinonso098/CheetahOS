@@ -1,7 +1,7 @@
 
 <div
     #bdivWindow class="window-container  window-dd-box" [ngStyle]="currentWinStyles"   tabindex="0" 
-    ngDraggable [handle]="leftHS" (stopped)="onDragEnd($event)" (started)="onDragStart($event, this.processId)" 
+    ngDraggable [handle]="leftHS" (stopped)="onDragEnd($event)" (started)="onDragStart(this.processId)" 
     id="bwincmpnt-{{uniqueId}}">
 
     <div class="header-container"

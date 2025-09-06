@@ -316,7 +316,7 @@ import { Constants } from 'src/app/system-files/constants';
       this._windowService.windowDragIsInActive.next();
     }
 
-    onDragStart(input:HTMLElement, pid:number):void{
+    onDragStart(pid:number):void{
       this.setFocsuOnThisWindow(pid);
       this._windowService.currentProcessInFocusNotify.next(pid);
       this._windowService.windowDragIsActive.next();
