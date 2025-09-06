@@ -181,7 +181,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   deskTopMenu:NestedMenu[] = [];
   taskBarContextMenuData:GeneralMenu[] = [];
   taskBarAppIconMenuData:GeneralMenu[] = [
-    {icon: Constants.EMPTY_STRING, label: Constants.EMPTY_STRING, action: this.openApplicationFromTaskBar.bind(this)},
+    {icon: Constants.EMPTY_STRING, label: Constants.EMPTY_STRING, action: this.initApplicationFromTaskBar.bind(this)},
     {icon: Constants.EMPTY_STRING, label: Constants.EMPTY_STRING, action: ()=> console.log() },
   ];
 
@@ -295,10 +295,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
     this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
 
-
-    this._fileService.dirFilesUpdateNotify.subscribe(() =>{
+    this._fileService.dirFilesUpdateNotify.subscribe(async () =>{
       if(this._fileService.getEventOriginator() === this.name){
-        this.loadFiles();
+        await this.loadFiles();
         this._fileService.removeEventOriginator();
       }
     });
@@ -1152,7 +1151,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     return processCount;
   }
 
-  openApplicationFromTaskBar():void{
+  initApplicationFromTaskBar():void{
     this.showTskBarAppIconMenu = false;
     const file = this.selectedTaskBarFile;  
     this._processHandlerService.startApplicationProcess(file);
@@ -1263,30 +1262,20 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async onDrop(event:DragEvent):Promise<void>{
-    const evtOriginator = this._fileService.getEventOriginator();
-    console.log('Dsktp onDrop evtOriginator:', evtOriginator);
+    event.preventDefault();
 
-    if(evtOriginator === Constants.EMPTY_STRING){
-      event.preventDefault();
-      let droppedFiles:File[] = [];
-
-      if(event?.dataTransfer?.files){
-          // eslint-disable-next-line no-unsafe-optional-chaining
-          droppedFiles  = [...event?.dataTransfer?.files];
-      }
-      
-      if(droppedFiles.length >= 1){
-        console.log('THE RESULT:');
-        const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
-        console.log('THE RESULT:', result);
-        if(result){
-          // this._fileService.addEventOriginator('desktop');
-          // this._fileService.dirFilesUpdateNotify.next();
-          await this.refresh();
-        }
+    const droppedFiles:File[] = [];
+    if(event?.dataTransfer?.files){
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      droppedFiles.push(...event?.dataTransfer?.files);
+    }
+    
+    if(droppedFiles.length >= 1){
+      const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
+      if(result){
+        await this.refresh();
       }
     }
-        
   }
   
   protected async loadFiles(): Promise<void> {
@@ -1294,8 +1283,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 		this.files = await this._fileService.loadDirectoryFiles(this.directory);
 	}
   
-  removeVantaJSSideEffect(): void {
-    // VANTA js wallpaper is adding an unwanted style position:relative and z-index:1
+  removeVantaJSSideEffect(): void { 
+    // VANTA js wallpaper is adding an unwanted style position:relative and z-index:1 #TBD
     setTimeout(()=> {
       const elfRef = this._elRef.nativeElement;
       if(elfRef) {
@@ -1732,9 +1721,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     });
   }
 
-  onDragEnd(evt:DragEvent):void{
-    // Get the cloneIcon container
-    const elementId = 'desktopIcon_clone_cntnr';
+  async onDragEnd(evt:DragEvent):Promise<void>{
+    const delay = 25; //25ms
+    const elementId = 'desktopIcon_clone_cntnr'; // Get the cloneIcon container
     const mPos:mousePosition = {
       clientX: evt.clientX,
       clientY: evt.clientY,
@@ -1744,10 +1733,18 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       y: evt.y,
     }
 
-
     /// add an await sleep function
     // after wake, check if a drop evt (for now, file explorer and terminal) was raised
     // if drop evt  matching the condtion was raised, do no execute the code below
+    await CommonFunctions.sleep(delay);
+    if(this._fileService.checkIfFileDropEventTriggered()
+      && (this._fileService.getEventOriginator() === 'terminal' 
+        || this._fileService.getEventOriginator() === 'fileexplorer')){
+
+        //this._fileService.removeEventOriginator();
+        this._fileService.setFileDropEventTriggeredFlag(false);
+        return;
+    }
 
     if(this.autoAlignIcons && this.markedBtnIds.length >= 0){
       this.moveBtnIconsToNewPositionAlignOn(mPos);
@@ -1938,7 +1935,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     });
   }
 
-
   sortIcons(sortBy:string):void {
     this.files = CommonFunctions.sortIconsBy(this.files, sortBy);
   }
@@ -2017,7 +2013,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-
   async createShortCut(): Promise<void>{
     const selectedFile = this.selectedFile;
     const shortCut:FileInfo = new FileInfo();
@@ -2043,7 +2038,6 @@ OpensWith=${file.getOpensWith}
 `;
     return fileContent;
   }
-
   
   onInputChange(evt: KeyboardEvent): boolean {
     const regexStr = '^[a-zA-Z0-9_.\\s-]+$';
@@ -2070,7 +2064,6 @@ OpensWith=${file.getOpensWith}
       return false;
     }
   }
-
 
   autoResize() {
     const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.selectedElementId}`) as HTMLTextAreaElement;

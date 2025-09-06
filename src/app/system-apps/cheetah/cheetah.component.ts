@@ -34,7 +34,7 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   type = ComponentType.System;
   displayName = 'CheetahOS';
   name = 'cheetah';
-  version = 'Version: 3.07.04';
+  version = 'Version: 4.09.05';
   year = `\u00A9 ${new Date().getFullYear()}`;
   infoMessage = Constants.EMPTY_STRING;
 

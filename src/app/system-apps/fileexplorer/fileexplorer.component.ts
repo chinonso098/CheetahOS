@@ -253,7 +253,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   icon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
   navPathIcon = `${Constants.IMAGE_BASE_PATH}this_pc.png`;
   isMaximizable = false;
-  name = 'fileexplorer';
+  readonly name = 'fileexplorer';
   processId = 0;
   type = ComponentType.System;
   directory = Constants.ROOT;
@@ -1010,10 +1010,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     event.preventDefault();
     event.stopPropagation();
 
-    let droppedFiles:File[] = [];
+    const droppedFiles:File[] = [];
     if(event?.dataTransfer?.files){
       // eslint-disable-next-line no-unsafe-optional-chaining
-      droppedFiles  = [...event?.dataTransfer?.files];
+      droppedFiles.push(...event?.dataTransfer?.files);
     }
     
     if(droppedFiles.length >= 1){
@@ -1023,6 +1023,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     }else{
       console.log('droppedFiles:', droppedFiles.length);
+      this._fileService.addEventOriginator(this.name);
+      this._fileService.setFileDropEventTriggeredFlag(true);
       const fileData = this._fileService.getDragAndDropFile();
 
       const delay = 50; //50ms
@@ -1051,7 +1053,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(allTrue){
         if(srcPath.includes(Constants.DESKTOP_PATH)){
           console.log('refresh dsktp');
-          this._fileService.addEventOriginator(Constants.DESKTOP_PATH);
+          this._fileService.addEventOriginator(Constants.DESKTOP);
           this._fileService.dirFilesUpdateNotify.next();
 
           await CommonFunctions.sleep(delay)
@@ -1847,7 +1849,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async onRestore():Promise<void>{
     const delay0 = 100;
-    const delay = 750;
+    const delay = 250;
     const srcPath = this.selectedFile.getCurrentPath;
     const originPath = this._fileService.getFolderOrigin(srcPath);
     const destPath = dirname(originPath);

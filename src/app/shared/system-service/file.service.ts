@@ -45,6 +45,7 @@ export class FileService implements BaseService{
 
     private _isCalculated = false;
     private _usedStorageSizeInBytes = 0;
+    private _isFileDropEventTriggered = false;
 
     dirFilesUpdateNotify: Subject<void> = new Subject<void>();
     fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
@@ -928,7 +929,6 @@ export class FileService implements BaseService{
         return true; // Return true if all files were written successfully
     }
 
-
     public async writeFileAsync(path:string, file:FileInfo):Promise<boolean>{
         const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
         const destPath = `${this.pathCorrection(path)}/${file.getFileName}`;
@@ -1405,6 +1405,14 @@ OpensWith=${shortCutData.getOpensWith}
         this._fileDragAndDrop = [];
 
         return result;
+    }
+
+    checkIfFileDropEventTriggered():boolean{
+        return this._isFileDropEventTriggered;
+    }
+
+    setFileDropEventTriggeredFlag(flag:boolean):void{
+        this._isFileDropEventTriggered = flag;
     }
 
     private addAndUpdateSessionData(key:string, map:Map<string, string>):void{
