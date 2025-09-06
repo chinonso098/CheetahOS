@@ -1022,7 +1022,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         await this.loadFiles();
       }
     }else{
-      console.log('droppedFiles:', droppedFiles.length);
       this._fileService.addEventOriginator(this.name);
       this._fileService.setFileDropEventTriggeredFlag(true);
       const fileData = this._fileService.getDragAndDropFile();
@@ -1032,7 +1031,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const result:boolean[] = [];
 
       let srcPath = Constants.EMPTY_STRING;
-
       // handle single
       if(fileData.length === 1){
         const file = fileData[0];
@@ -1052,7 +1050,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const allTrue = result.every(value => value === true);
       if(allTrue){
         if(srcPath.includes(Constants.DESKTOP_PATH)){
-          console.log('refresh dsktp');
           this._fileService.addEventOriginator(Constants.DESKTOP);
           this._fileService.dirFilesUpdateNotify.next();
 

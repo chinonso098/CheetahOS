@@ -66,7 +66,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   @ViewChild('desktopContainer', {static: true}) desktopContainer!: ElementRef; 
   
-  //private _fileService:FileService;
   private _fileService:FileService
   private _menuService:MenuService;
   private _audioService:AudioService;
@@ -79,7 +78,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _userNotificationService:UserNotificationService;
 
   private _elRef:ElementRef;
-  private _directoryFilesEntries!:FileEntry[];
   private _formBuilder:FormBuilder;
 
   private _vantaEffect: any;
@@ -289,8 +287,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.hideContextMenus.subscribe(() => { this.hideDesktopContextMenuAndOthers()});
     this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
     this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
-    this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;}); //TODO these will not be needed, use evt.stopPropagation
-    this._windowService.windowDragIsInActive.subscribe(() => {this.isWindowDragActive = false;});  //TODO these will not be needed, use evt.stopPropagation
+    this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;});
+    this._windowService.windowDragIsInActive.subscribe(() => {this.isWindowDragActive = false;}); 
     this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
     this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
     this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
@@ -527,9 +525,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async captureComponentImg(): Promise<void>{
-    const storeImgDelay = 1000;
-    const slideOutDelay = 4000;
-    const hideDeskopScreenShotDelay = 2000;
+    const storeImgDelay = 1000; // 1 sec
+    const slideOutDelay = 4000; // 4 secs
+    const hideDeskopScreenShotDelay = 2000; // 2 secs
 
     const htmlImg = await htmlToImage.toPng(this.desktopContainer.nativeElement);
     this.showDesktopScreenShotPreview = true;
@@ -834,7 +832,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }, this.COLOR_CHANGE_DELAY);
   }
 
-  removeOldCanvas():void{
+  removeOldCanvas():void{ //##
 
     const vantaDiv = document.getElementById('vanta') as HTMLElement;
     if(!vantaDiv) return;
@@ -1393,19 +1391,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     console.log('do nothing called');
   }
 
-  onCopy():void{
+  onCopy():void{ //##Handle Multiple files
     const action = MenuAction.COPY;
     const path = this.selectedFile.getCurrentPath;
     this._menuService.setStoreData([path, action]);
   }
 
-  onCut():void{
+  onCut():void{ //##Handle Multiple files
     const action = MenuAction.CUT;
     const path = this.selectedFile.getCurrentPath;
     this._menuService.setStoreData([path, action]);
   }
 
-  async onPaste():Promise<void>{
+  async onPaste():Promise<void>{ //##Handle Multiple files
     const cntntPath = this._menuService.getPath();
     const action = this._menuService.getActions();
     const delay = 50; //50ms
@@ -1722,8 +1720,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     });
   }
 
-  async onDragEnd(evt:DragEvent):Promise<void>{
-    const delay = 25; //25ms
+  onDragEnd(evt:DragEvent):void{
     const elementId = 'desktopIcon_clone_cntnr'; // Get the cloneIcon container
     const mPos:mousePosition = {
       clientX: evt.clientX,
@@ -1734,17 +1731,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       y: evt.y,
     }
 
-    /// add an await sleep function
-    // after wake, check if a drop evt (for now, file explorer and terminal) was raised
-    // if drop evt  matching the condtion was raised, do no execute the code below
-    await CommonFunctions.sleep(delay);
     if(this._fileService.checkIfFileDropEventTriggered()
       && (this._fileService.getEventOriginator() === 'terminal' 
-        || this._fileService.getEventOriginator() === 'fileexplorer')){
+      || this._fileService.getEventOriginator() === 'fileexplorer')){
 
-        //this._fileService.removeEventOriginator();
-        this._fileService.setFileDropEventTriggeredFlag(false);
-        return;
+      //this._fileService.removeEventOriginator();
+      this._fileService.setFileDropEventTriggeredFlag(false);
+      return;
     }
 
     if(this.autoAlignIcons && this.markedBtnIds.length >= 0){
