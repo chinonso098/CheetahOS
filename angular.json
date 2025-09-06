@@ -15,10 +15,7 @@
       "prefix": "cos",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser-esbuild",
-          "experiments": {
-                "topLevelAwait": true
-          },
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "allowedCommonJsDependencies": [
               "src/osdrive/Cheetah/System/BrowserFS/browserfs",
@@ -26,8 +23,7 @@
               "buffer",
               "ini",
               "path",
-              "js-dos",
-              "readable-stream"
+              "js-dos"
             ],
             "outputPath": "dist/cheetah-os",
             "index": "src/index.html",
