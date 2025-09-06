@@ -132,7 +132,7 @@ export class ProcessHandlerService implements BaseService{
         this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.closeApplicationProcess(p)})
     }
 
-    startApplicationProcess(file:FileInfo):void{
+    runApplication(file:FileInfo):void{
         let msg = Constants.EMPTY_STRING;
         if(this._appDirectory.appExist(file.getOpensWith)){
 

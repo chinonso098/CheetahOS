@@ -202,7 +202,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
     this._menuService.hideStartMenu.next();
   
-    this._processHandlerService.startApplicationProcess(file);
+    this._processHandlerService.runApplication(file);
 
     evt.stopPropagation();
   }

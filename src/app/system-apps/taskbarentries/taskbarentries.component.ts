@@ -618,7 +618,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     if(!this._runningProcessService.isProcessRunning(file.opensWith)){
       const tmpFile:FileInfo = new FileInfo();
       tmpFile.setOpensWith = file.opensWith;
-      this._processHandlerService.startApplicationProcess(tmpFile);
+      this._processHandlerService.runApplication(tmpFile);
       return;
     }
 
@@ -654,7 +654,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   }
 
   openApplication(file:FileInfo):void{
-    this._processHandlerService.startApplicationProcess(file);
+    this._processHandlerService.runApplication(file);
   }
 
   closeApplication(proccess:Process[]):void{

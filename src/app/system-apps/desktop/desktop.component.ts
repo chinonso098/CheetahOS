@@ -236,7 +236,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   files:FileInfo[] = [];
 
   sourceData:GeneralMenu[] = [
-    {icon:'', label: 'Open', action: this.onTriggerRunProcess.bind(this) },
+    {icon:'', label: 'Open', action: this.onTriggerRunApplication.bind(this) },
     {icon:`${Constants.IMAGE_BASE_PATH}recycle bin_folder_small.png`, label: 'Empty Recycle Bin', action:this.onEmptyRecyleBin.bind(this) },
     {icon:'', label: 'Pin to Quick access', action: this.doNothing.bind(this) },
     {icon:'', label: 'Open in Terminal', action: this.doNothing.bind(this) },
@@ -875,7 +875,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       file.setContentPath = '/Users/Documents/Credits.md';
     }
 
-    this._processHandlerService.startApplicationProcess(file);
+    this._processHandlerService.runApplication(file);
   }
 
   buildViewByMenu():NestedMenuItem[]{
@@ -1154,7 +1154,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   initApplicationFromTaskBar():void{
     this.showTskBarAppIconMenu = false;
     const file = this.selectedTaskBarFile;  
-    this._processHandlerService.startApplicationProcess(file);
+    this._processHandlerService.runApplication(file);
   }
 
   closeApplicationFromTaskBar():void{
@@ -1294,10 +1294,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }, this.SECONDS_DELAY[1]);
   }
 
-  async runProcess(file:FileInfo):Promise<void>{
-    console.log('desktopmanager-runProcess:',file)
+  async runApplication(file:FileInfo):Promise<void>{
+    console.log('desktopmanager-runApplication:',file)
     await this._audioService.play(this.cheetahNavAudio);
-    this._processHandlerService.startApplicationProcess(file);
+    this._processHandlerService.runApplication(file);
     this.btnStyleAndValuesReset();
   }
 
@@ -1306,8 +1306,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.setBtnStyle(id, true);
   }
 
-  onTriggerRunProcess():void{
-    this.runProcess(this.selectedFile);
+  onTriggerRunApplication():void{
+    this.runApplication(this.selectedFile);
   }
   
   onShowDesktopIconCntxtMenu(evt:MouseEvent, file:FileInfo, id:number):void{

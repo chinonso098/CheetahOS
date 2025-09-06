@@ -10,7 +10,7 @@
         (mousemove)="updateDivWithAndSize($event)" id="desktopIcon_ol"> 
         <li class="li-desktopIcon-container" *ngFor="let file of files; let i = index" id="desktopIcon_li{{i}}">
             <div role="button" tabindex="0" class="desktopIcon-btn" 
-            (dblclick)="runProcess(file)" 
+            (dblclick)="runApplication(file)" 
             (mouseenter)="onMouseEnter(i)" 
             (mouseleave)="onMouseLeave(i)"  
             (contextmenu)="onShowDesktopIconCntxtMenu($event, file, i)" 

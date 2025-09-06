@@ -482,7 +482,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     file.setIsFile = false;
     file.setCurrentPath = this.selectedFileTreeNode.path;
 
-    this._processHandlerService.startApplicationProcess(file);
+    this._processHandlerService.runApplication(file);
   }
 
   showPropertiesWindow():void{

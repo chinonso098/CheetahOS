@@ -278,7 +278,7 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             file.setOpensWith = arg1;
 
             if(this._processHandlerService){
-                this._processHandlerService.startApplicationProcess(file);
+                this._processHandlerService.runApplication(file);
             }
             return `opening app ${arg1}`;
         }else{

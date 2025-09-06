@@ -209,7 +209,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   pathHistory =['/Users/Vidoes','/Users/Games', '/Users/Music'];
 
   sourceData:GeneralMenu[] = [
-    {icon:Constants.EMPTY_STRING, label: 'Open', action: this.onTriggerRunProcess.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Open', action: this.onTriggerRunApplication.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Open in new window', action: this.doNothing.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Pin to Quick access', action: this.doNothing.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Open in Terminal', action: this.doNothing.bind(this) },
@@ -1337,8 +1337,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       await this.loadFiles(false);
   }
 
-  async runProcess(file:FileInfo):Promise<void>{
-    console.log('fileexplorer-runProcess:',file)
+  async runApplication(file:FileInfo):Promise<void>{
+    console.log('fileexplorer-runApplication:',file)
     this.fileTreeNavToPath = Constants.EMPTY_STRING;
 
     this.hideFileExplorerToolTip();
@@ -1386,7 +1386,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       //APPS opened from the fileexplore do not have their windows in focus,
       // and this is due to the mouse click event that causes fileexplorer to trigger setFocusOnWindow event
       setTimeout(() => {
-        this._processHandlerService.startApplicationProcess(file);
+        this._processHandlerService.runApplication(file);
       }, this.SECONDS_DELAY[4]);
     }
   }
@@ -1413,8 +1413,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._systemNotificationService.taskBarIconInfoChangeNotify.next(taskBarAppIconInfo);
   }
 
-  async onTriggerRunProcess():Promise<void>{
-    await this.runProcess(this.selectedFile);
+  async onTriggerRunApplication():Promise<void>{
+    await this.runApplication(this.selectedFile);
   }
 
   onBtnClick(evt:MouseEvent, id:number):void{

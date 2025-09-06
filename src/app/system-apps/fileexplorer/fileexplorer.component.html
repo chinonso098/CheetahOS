@@ -289,7 +289,7 @@
                                 <ul class="fileexlpr-frequent-folders-cntnt" id="fileExplrQAFolder-{{processId}}">
                                     <!-- Folder section -->
                                     <li class="li-iconview-container" *ngFor="let file of frequentFolders; let i = index"  id="ilElmnt-folder-{{processId}}-{{i}}">
-                                        <div class="iconview-button" role="button" tabindex="0" (dblclick)="runProcess(file)"
+                                        <div class="iconview-button" role="button" tabindex="0" (dblclick)="runApplication(file)"
                                             (mouseenter)="onQuickAccessMouseEnter($event, file, i, false)" 
                                             (mouseleave)="onQuickAccessMouseLeave(i, false)"
                                             (contextmenu)="onQuickAcessShowIconContextMenu($event, file, i, false)" 
@@ -334,7 +334,7 @@
                             <ul class="fileexlpr-recent-files-cntnt" id="fileExplrQAFiles-{{processId}}">
                                 <!-- File section -->
                                 <li class="li-iconview-container" *ngFor="let file of recentFiles; let i = index" id="ilElmnt-file-{{processId}}-{{i}}">
-                                    <div class="iconview-button" role="button" tabindex="0" (dblclick)="runProcess(file)"
+                                    <div class="iconview-button" role="button" tabindex="0" (dblclick)="runApplication(file)"
                                         (mouseenter)="onQuickAccessMouseEnter($event, file, i, true)" 
                                         (mouseleave)="onQuickAccessMouseLeave(i, true)"
                                         (contextmenu)="onQuickAcessShowIconContextMenu($event, file, i, true)" 
@@ -380,7 +380,7 @@
                                 <!-- Folder section -->
                                 <li class="li-tilesview" *ngFor="let file of fetchedFiles; let i = index">
                                     <div class="button-tilesview" role="button" tabindex="0" 
-                                        (dblclick)="runProcess(file)" 
+                                        (dblclick)="runApplication(file)" 
                                         (mouseenter)="onMouseEnter($event, file, i)" 
                                         (mouseleave)="onMouseLeave(i)"
                                         (contextmenu)="onShowIconContextMenu($event, file, i)" 
@@ -422,7 +422,7 @@
                                 <!-- devices and drives section -->
                                 <li class="li-tilesview" *ngFor="let file of devicesAndDrivesFiles; let i = index">
                                     <div class="button-tilesview" role="button" tabindex="0" 
-                                        (dblclick)="runProcess(file)" 
+                                        (dblclick)="runApplication(file)" 
                                         (mouseenter)="onMouseEnter($event, file, i)" 
                                         (mouseleave)="onMouseLeave(i)"
                                         (contextmenu)="onShowIconContextMenu($event, file, i)" 
@@ -488,7 +488,7 @@
         
                         <ng-template #iconsView>
                             <li class="li-iconview-container" *ngFor="let file of fetchedFiles; let i = index" id="ilElmnt-{{processId}}" >
-                                <div class="iconview-button" role="button" tabindex="0" (dblclick)="runProcess(file)"
+                                <div class="iconview-button" role="button" tabindex="0" (dblclick)="runApplication(file)"
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
@@ -525,7 +525,7 @@
                         <ng-template #listView0>
                             <li class="li-listview" *ngFor="let file of fetchedFiles; let i = index" id="ilElmnt-{{processId}}">
                                 <div class="button-listview" role="button" tabindex="0" 
-                                    (dblclick)="runProcess(file)" 
+                                    (dblclick)="runApplication(file)" 
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
@@ -627,7 +627,7 @@
                         <ng-template #contentView0>
                             <li class="li-contentview-container" *ngFor="let file of fetchedFiles; let i = index">
                                 <div class="button-contentview" role="button" tabindex="0" 
-                                    (dblclick)="runProcess(file)" 
+                                    (dblclick)="runApplication(file)" 
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
@@ -675,7 +675,7 @@
                         <ng-template #tilesView0>
                             <li class="li-tilesview" *ngFor="let file of fetchedFiles; let i = index">
                                 <div class="button-tilesview" role="button" tabindex="0" 
-                                    (dblclick)="runProcess(file)" 
+                                    (dblclick)="runApplication(file)" 
                                     (mouseenter)="onMouseEnter($event, file, i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
