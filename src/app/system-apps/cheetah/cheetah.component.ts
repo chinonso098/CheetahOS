@@ -64,7 +64,7 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   getInfoMessage():void{
     this.infoMessage =`
 CheetahOS
-Version 3.07.04
+Version 4.09.05
 Copyright\u00A9 Chinonso098 2022 - ${new Date().getFullYear()}
 
 Windows 10 icons & audio files Microsoft Corporation\u00A9. 
@@ -72,7 +72,6 @@ Windows \u2122 is a registered trademark of Microsoft Corporation.
 Other trademarks and logos are property of their respective owners
     `
   }
-
 
   onMouseEnter1():void{
     const showFancyLetters = false;

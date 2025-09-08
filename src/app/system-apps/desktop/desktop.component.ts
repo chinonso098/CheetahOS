@@ -308,7 +308,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.lockScreenIsActive();
     });
 
-    this._menuService.updateTaskBarContextMenu.subscribe(()=>{this.resetMenuOption()});
+    this._menuService.updateTaskBarContextMenu.subscribe(() =>{this.resetMenuOption()});
     this._systemNotificationServices.showTaskBarToolTipNotify.subscribe((p)=>{this.showTaskBarToolTip(p)});
     this._systemNotificationServices.hideTaskBarToolTipNotify.subscribe(() => {this.hideTaskBarToolTip()});
 
@@ -322,14 +322,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       renameInput: Constants.EMPTY_STRING,
     });
 
-
     this.loadDefaultBackground();
     this.getDesktopMenuData();
     this.getTaskBarContextData();
   }
 
   loadDefaultBackground():void{
-    this._scriptService.loadScript("vanta-waves","osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
+    this._scriptService.loadScript("vanta-waves", "osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
       this._vantaEffect = VANTA.WAVES(VantaDefaults.getDefaultWave(this.DEFAULT_COLOR));
     })
   }
@@ -808,7 +807,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const bkgrounds:string[] = ["osdrive/Program-Files/Backgrounds/vanta.waves.min.js", "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
                                 "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js", "osdrive/Program-Files/Backgrounds/ParticleFlow/index.js"];
         
-
     this._scriptService.loadScript(names[i], bkgrounds[i]).then(() =>{
 
       if(names[i] !== "particle-flow")
@@ -963,7 +961,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.UnMergeTaskBarIcon.next();
     this.taskBarContextMenuData[3] = menuOption;
   }
-
 
   buildNewMenu(): NestedMenuItem[]{
     const newFolder:NestedMenuItem={icon:`${Constants.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action: this.createFolder.bind(this),  variables:true , 
@@ -1587,6 +1584,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   handleIconHighLightState():void{
 
+
     //First case - I'm clicking only on the desktop icons
     if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === 0)){  
       if(this.isRenameActive){
@@ -1603,8 +1601,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         this.btnClickCnt = 0;
       }
       console.log('turn off - areMultipleIconsHighlighted')
-      this.areMultipleIconsHighlighted = false;
-      this._fileService.removeDragAndDropFile();
+      this.clearThese(1);
     }else{
       this.hideCntxtMenuEvtCnt++;
       this.isHideCntxtMenuEvt = true;
@@ -1616,12 +1613,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         //reset after clicking on the desktop 2wice
         if(this.deskTopClickCounter >= 1 && !this.areMultipleIconsHighlighted){
           this.deskTopClickCounter = 0;
+          //this.removeClassAndStyleFromBtn();
         }else if(this.deskTopClickCounter >= 2){
-          console.log('turn off - areMultipleIconsHighlighted-1')
-          this.areMultipleIconsHighlighted = false;
-          this.removeClassAndStyleFromBtn();
-          this.deskTopClickCounter = 0;
-          this.markedBtnIds = [];
+          console.log('turn off - areMultipleIconsHighlighted-1');
+          this.clearThese(2);
+          // this.areMultipleIconsHighlighted = false;
+          // this._fileService.removeDragAndDropFile();
+          // this.removeClassAndStyleFromBtn();
+          // this.deskTopClickCounter = 0;
+          // this.markedBtnIds = [];
         }
       }
       //Third case - I was clicking on the desktop icons, then i click on the desktop.
@@ -1629,6 +1629,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt > 1))
         this.btnStyleAndValuesReset();
     }
+
+    console.log('deskTopClickCounter:', this.deskTopClickCounter);
+  }
+
+  clearThese(cnd:number):void{
+    this.areMultipleIconsHighlighted = false;
+    this._fileService.removeDragAndDropFile();
+    this.removeClassAndStyleFromBtn();
+
+    if(cnd === 2)
+      this.deskTopClickCounter = 0;
+
+    this.markedBtnIds = [];
   }
 
   activateMultiSelect(evt:MouseEvent):void{
@@ -1986,11 +1999,41 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async onDelete():Promise<void>{
-    let result = false;
-    result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
-    if(result){
-      this._menuService.resetStoreData();
-      await this.loadFiles();
+    let result: boolean[] = [];
+    let res = false;
+
+    const deleteCount = 1;
+
+    // check for multiple highlighted files
+    if(this.areMultipleIconsHighlighted){
+      for(const i of this.markedBtnIds){
+        const file = this.files[Number(i)];
+        res = await this._fileService.deleteAsync(file.getCurrentPath, file.getIsFile);
+        result.push(res);
+      }
+
+      const allTrue = result.every(Boolean);
+      if(allTrue){
+        // do stuff
+        this._fileService.removeDragAndDropFile();
+      }
+
+    }else{
+      //res = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
+
+      res = true;
+      if(res){
+        this._menuService.resetStoreData();
+        console.log('Delete successful');
+        //await this.loadFiles();
+
+        // const idx = this.files.findIndex(x => x.getFileName === this.selectedFile.getFileName 
+        //             && x.getCurrentPath === this.selectedFile.getCurrentPath);
+
+        // console.log('idx:', idx);
+        console.log('selectedElementID:', this.selectedElementId);  
+        //this.files.splice(this.selectedElementId, deleteCount);                             
+      }
     }
   }
 
