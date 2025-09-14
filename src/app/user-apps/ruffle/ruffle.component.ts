@@ -121,7 +121,7 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
       }
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
-}
+  }
 
   getGamesSrc(pathOne:string, pathTwo:string):string{
     let gameSrc = Constants.EMPTY_STRING;
