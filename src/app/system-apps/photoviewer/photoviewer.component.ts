@@ -188,43 +188,51 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     }
   }
 
-  focusOnInput():void{
+  focusHere(evt:MouseEvent):void{
+    evt.stopPropagation();
+
     const photoCntnr= document.getElementById('photoCntnr') as HTMLElement;
     if(photoCntnr){
       photoCntnr?.focus();
     }
+
+    this.focusWindow();
   }
 
   async getCurrentPicturePathAndSearchForOthers():Promise<void>{
     let imgCount = 0;
 
     // if stuff was reutrned from session, then use it.
-    if(this.imageList.length == 0){
-        // else, go fetch.
-        const dirPath = dirname(this._fileInfo.getCurrentPath);
-        //console.log('dirPath:', dirPath);
-        const entries:string[] = await this._fileService.readDirectory(dirPath);
+    if(this.imageList.length === 0){
+      // else, go fetch.
+      const dirPath = dirname(this._fileInfo.getCurrentPath);
+      //console.log('dirPath:', dirPath);
+      const entries:string[] = await this._fileService.readDirectory(dirPath);
 
-        //check for images
-        for(const entry of entries){
-          if(Constants.IMAGE_FILE_EXTENSIONS.includes(extname(entry)) ){
-            imgCount = imgCount +  1;
+      //check for images
+      for(const entry of entries){
+        if(Constants.IMAGE_FILE_EXTENSIONS.includes(extname(entry)) ){
+          imgCount = imgCount +  1;
 
-            if(`${dirPath}/${entry}` !== this._fileInfo.getCurrentPath){
-              const blobPath = await this._fileService.getFileAsBlobAsync(`${dirPath}/${entry}`);
-              this.imageList.push(blobPath);
-            }
+          if(`${dirPath}/${entry}` !== this._fileInfo.getCurrentPath){
+            const blobPath = await this._fileService.getFileAsBlobAsync(`${dirPath}/${entry}`);
+            this.imageList.push(blobPath);
           }
         }
+      }
 
-        if(imgCount > 1){
-          this.imageList.unshift(this._fileInfo.getContentPath);
-        }
+      if(imgCount > 1){
+        this.imageList.unshift(this._fileInfo.getContentPath);
+      }
     }
   }
 
-  setImageViewerWindowToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  focusWindow(evt?:MouseEvent):void{
+      evt?.stopPropagation();
+
+      if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+      this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   getPictureSrc(pathOne:string, pathTwo:string):string{

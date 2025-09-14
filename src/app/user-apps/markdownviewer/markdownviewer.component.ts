@@ -90,8 +90,6 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   }
 
   ngAfterViewInit(): void{
-    this.setMardkDownViewerWindowToFocus(this.processId); 
-
     this.fileSrc = (this.fileSrc !=='')? 
     this.fileSrc : this.getFileSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
@@ -151,8 +149,12 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   }
 
 
-  setMardkDownViewerWindowToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  focusWindow(evt:MouseEvent):void{
+    evt.stopPropagation();
+
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   getFileSrc(pathOne:string, pathTwo:string):string{

@@ -263,8 +263,12 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
     this.zoomBy = 0;
   }
 
-  setPDFViewerToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  focusWindow(evt:MouseEvent):void{
+    evt.stopPropagation();
+
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   getPDFSrc(pathOne:string, pathTwo:string):string{

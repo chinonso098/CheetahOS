@@ -150,9 +150,12 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
     return 'function x() {\nconsole.log("Hello world!");\n}';
   }
 
+  focusWindow(evt?:MouseEvent):void{
+    evt?.stopPropagation();
 
-  setCodeEditorWindowToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   private getComponentDetail():Process{

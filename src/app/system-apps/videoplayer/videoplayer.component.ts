@@ -106,10 +106,10 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   async ngAfterViewInit(): Promise<void> {
     //this.setVideoWindowToFocus(this.processId);
     
-    this.fileType =  (this.fileType !=='') ? 
-      this.fileType : 'video/' + this._fileInfo.getFileType.replace('.','');
+    this.fileType =  (this.fileType !== Constants.EMPTY_STRING) ? 
+      this.fileType : 'video/' + this._fileInfo.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING);
 
-    this.videoSrc = (this.videoSrc !=='') ? 
+    this.videoSrc = (this.videoSrc !== Constants.EMPTY_STRING) ? 
       this.videoSrc : this.getVideoSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
     const videoOptions = {
@@ -187,7 +187,6 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     }
   }
 
-
   captureComponentImg():void{
     htmlToImage.toPng(this.videowindow.nativeElement).then(htmlImg =>{
       //console.log('img data:',htmlImg);
@@ -202,7 +201,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       }
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
-}
+  }
 
   onFullscreenChange = () => {
     const isFullscreen = this.player.isFullscreen();
@@ -217,11 +216,15 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   addToRecentsList(videoPath:string):void{
     if(!this.recents.includes(videoPath))
-        this.recents.push(videoPath);
+      this.recents.push(videoPath);
   }
 
-  setVideoWindowToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  focusWindow(evt?:MouseEvent):void{
+    evt?.stopPropagation();
+
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   getVideoSrc(pathOne:string, pathTwo:string):string{

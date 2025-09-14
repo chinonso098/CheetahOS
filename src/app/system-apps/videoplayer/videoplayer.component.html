@@ -1,5 +1,5 @@
-<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId" (click)="setVideoWindowToFocus(this.processId)">
-    <div class="my-video-main-container" #mainVideoCntnr>
+<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
+    <div class="my-video-main-container" #mainVideoCntnr (click)="focusWindow($event)">
         <!-- <div class="video-top-menu-bar">
             <button class=" btn btn-primary head" (click)="showMenu()"> File</button>
                 <span class="video-top-menu" *ngIf="showTopMenu">

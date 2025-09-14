@@ -1589,7 +1589,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){
-      this.setFileExplorerWindowToFocus(this.processId);
+      this.focusWindow();
       this._menuService.hideContextMenus.next();
     }
 
@@ -2082,11 +2082,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onDragEnd(evt:any):void{1 }
 
-  setFileExplorerWindowToFocus(pid: number):void {
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === pid)
-      return;
+  focusWindow(evt?:MouseEvent):void{
+    evt?.stopPropagation();
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   async showFileExplorerToolTip(evt: MouseEvent, file: FileInfo, rectInput?:DOMRect, isFileSection?:boolean): Promise<void> {
@@ -2409,7 +2409,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   showPathTextBox(evt:MouseEvent):void{
-    this.setFileExplorerWindowToFocus(this.processId);
+    this.focusWindow();
 
     const pathTxtBoxCntrElement = document.getElementById(`pathTxtBoxCntr-${this.processId}`) as HTMLElement;
     const pathTxtBoxElement = document.getElementById(`pathTxtBox-${this.processId}`) as HTMLInputElement;
@@ -2617,7 +2617,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   showSearchHistory(evt:MouseEvent):void{
-    this.setFileExplorerWindowToFocus(this.processId);
+    this.focusWindow();
 
     const searchHistoryElement = document.getElementById(`searchHistory-${this.processId}`) as HTMLElement;
     if(searchHistoryElement){

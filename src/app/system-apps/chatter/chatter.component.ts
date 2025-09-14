@@ -19,6 +19,8 @@ import { IUser, IUserData, IUserList } from './model/chat.interfaces';
 import { Subscription } from 'rxjs';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import * as htmlToImage from 'html-to-image';
+import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 
 @Component({
   selector: 'cos-chatter',
@@ -29,6 +31,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 })
 export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
 
+  @ViewChild('chatterContainer', {static: true}) chatterContainer!: ElementRef;
   @ViewChild('chatHistoryOutput', {static: true}) chatHistoryOutput!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
 
@@ -61,6 +64,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   USER_HAS_LEFT_THE_CHAT_MSG = 1;
   USER_CHANGED_NAME_MSG = 2;
   SCROLL_DELAY = 300;
+  SECONDS_DELAY = 250;
 
   showUserNameLabel = true;
   showUserNameForm = false;
@@ -101,7 +105,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   constructor(socketService:SocketService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
               windowService:WindowService, formBuilder:FormBuilder, chatService:ChatterService, audioService:AudioService,
-              sessionManagmentService: SessionManagmentService) { 
+              sessionManagmentService:SessionManagmentService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
@@ -157,6 +161,10 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
       this.generateAndSendAppMessages(this.A_NEW_USER_HAS_JOINED_THE_CHAT_MSG);
     }, delay);
+
+  setTimeout(()=>{
+      this.captureComponentImg();
+    },this.SECONDS_DELAY) 
   }
 
   ngOnDestroy():void{
@@ -188,6 +196,22 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     await this._audioService.play(this.newMsgAudio);
     await CommonFunctions.sleep(delay);
     this.scrollToBottom();
+  }
+
+    captureComponentImg():void{
+    htmlToImage.toPng(this.chatterContainer.nativeElement).then(htmlImg =>{
+      //console.log('img data:',htmlImg);
+
+      const cmpntImg:TaskBarPreviewImage = {
+        pid: this.processId,
+        appName: this.name,
+        displayName: this.name,
+        icon : this.icon,
+        defaultIcon: this.icon,
+        imageData: htmlImg
+      }
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
+    })
   }
 
   updateOnlineUserCount(value:number):void{
@@ -330,11 +354,15 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.showUserNameLabel = true;
   }
 
-  focusOnInput():void{
+  focusOnInput(evt:any):void{
+    evt.stopPropagation();
+
     const chatterMsgBoxElm= document.getElementById('chatterMsgBox') as HTMLInputElement;
     if(chatterMsgBoxElm){
       chatterMsgBoxElm?.focus();
     }
+
+    this.focusWindow();
   }
 
   scrollToBottom(): void {
@@ -343,8 +371,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
-    
-    if(evt.key == "Enter"){
+    if(evt.key === "Enter"){
       this.createChat();
     }else{
       const chatInput = this.chatterForm.value.msgText as string;
@@ -483,12 +510,16 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   maintainScrollPosition() {
-      const chatContainer = this.chatHistoryOutput.nativeElement;
-      chatContainer.scrollTop = chatContainer.scrollHeight - this.prevScrollHeight;
+    const chatContainer = this.chatHistoryOutput.nativeElement;
+    chatContainer.scrollTop = chatContainer.scrollHeight - this.prevScrollHeight;
   }
 
-  setChatterWindowToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  focusWindow(evt?:MouseEvent):void{
+    evt?.stopPropagation();
+
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   storeAppState(app_data:unknown):void{

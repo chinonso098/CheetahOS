@@ -365,6 +365,14 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
   setParticleFlowWindowToFocus(pid:number):void{
     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
   }
+
+  focusWindow(evt:MouseEvent):void{
+    evt.stopPropagation();
+
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+  }
   
   storeAppState(app_data:unknown):void{
     const uid = `${this.name}-${this.processId}`;

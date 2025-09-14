@@ -307,7 +307,9 @@ import { Constants } from 'src/app/system-files/constants';
       }
     }
    
-    onHideBtnClick(pid:number):void{
+    onHideBtnClick(pid:number, evt:MouseEvent):void{
+      evt.stopPropagation();
+      
       if(this.processId === pid){
         this.setHideAndShow();
       }
@@ -345,7 +347,9 @@ import { Constants } from 'src/app/system-files/constants';
       }
     }
 
-    onMaximizeBtnClick():void{
+    onMaximizeBtnClick(evt:MouseEvent):void{
+      evt.stopPropagation();
+
       if(this.isWindowMaximizable){
         this.windowMaximize = true;
         this.windowMinMaxAction = 'maximized';
@@ -353,13 +357,16 @@ import { Constants } from 'src/app/system-files/constants';
       }
     }
 
-    onUnMaximizeBtnClick():void{
+    onUnMaximizeBtnClick(evt:MouseEvent):void{
+      evt.stopPropagation();
+
       this.windowMaximize = false;
       this.windowMinMaxAction = 'minimized';
       this.setMaximizeAndUnMaximize();
     }
 
-    onTitleBarDoubleClick():void{
+    onTitleBarDoubleClick(evt:MouseEvent):void{
+      evt.stopPropagation();
       console.log('this featured is turned off');
 
       // if(this.isWindowMaximizable){
@@ -722,7 +729,9 @@ import { Constants } from 'src/app/system-files/constants';
       this.renderer.appendChild(this.glassPaneContainer.nativeElement, glassPane);
     }
 
-    onCloseBtnClick():void{
+    onCloseBtnClick(evt:MouseEvent):void{
+      evt.stopPropagation();
+
       this.windowOpenCloseAction = 'close';
       this.generateCloseAnimationValues(this.xAxisTmp, this.yAxisTmp);
       this._windowService.removeWindowState(this.processId);

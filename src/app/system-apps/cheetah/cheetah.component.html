@@ -1,5 +1,5 @@
-<cos-basicwindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setCheetahWindowToFocus(this.processId)">
-    <div class="cheetah-main-container" id="cheetahAboutMainCntnr">
+<cos-basicwindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name">
+    <div class="cheetah-main-container"   (click)="focusWindow($event)" id="cheetahAboutMainCntnr">
         <div class="cheetah-body-container">
             <div class="os-info"> 
                 <div class="os-image">

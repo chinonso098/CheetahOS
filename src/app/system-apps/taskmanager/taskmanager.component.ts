@@ -217,8 +217,12 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     return this._sorting.column === column && this._sorting.order === 'asc';
   }
 
-  setTaskMangrWindowToFocus(pid: number):void {
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  focusWindow(evt?:MouseEvent):void{
+    evt?.stopPropagation();
+
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
     this.hideContextMenu();
   }
 

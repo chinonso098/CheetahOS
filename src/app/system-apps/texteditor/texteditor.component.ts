@@ -29,7 +29,6 @@ declare const Quill:any;
   standalone:false,
 })
 
-
 export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterViewInit, OnInit  {
 
   @ViewChild('editorContainer', {static: true}) editorContainer!: ElementRef;
@@ -151,8 +150,12 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     }
   }
 
-  setTextEditorWindowToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  focusWindow(evt?:MouseEvent):void{
+    evt?.stopPropagation();
+
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   getFileSrc(pathOne:string, pathTwo:string):string{

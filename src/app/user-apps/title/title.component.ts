@@ -104,8 +104,12 @@ export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     }
   }
 
-  setTitleWindowToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  focusWindow(evt:MouseEvent):void{
+    evt.stopPropagation();
+
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   storeAppState(app_data:unknown):void{

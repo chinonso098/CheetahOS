@@ -1,6 +1,10 @@
+<cos-window 
+    [runningProcessID]="processId" 
+    [processAppIcon]="icon" 
+    [processAppName]="displayName" 
+    [isMaximizable]="isMaximizable" [priorUId]="priorUId">
 
-<cos-window [runningProcessID]="processId" [processAppIcon]="icon" [processAppName]="displayName" [isMaximizable]="isMaximizable" [priorUId]="priorUId" (click)="setFileExplorerWindowToFocus(processId)">
-    <div #fileExplorerRootContainer>
+    <div #fileExplorerRootContainer tabindex="0" (click)="focusWindow($event)">
         <div class="fileexp-header-tab-container" >
             <div class="fileexp-header-tabs">
               <div class="fileexp-tab highlight-default">File</div>
@@ -258,13 +262,12 @@
             </div>
         </div>
         <div class="header-empty-line-container2"></div>
-        <div class="fileexp-main-container" #fileExplorerMainContainer>
+        <div class="fileexp-main-container" tabindex="0" #fileExplorerMainContainer>
             <div class="fileexp-content-container">
                 <ng-container *ngIf="showNavigationPane">
                     <div class="navigation-content-container" 
                         (mouseenter)="showExpandTreeIconBtn()" 
                         (mouseleave)="hideExpandTreeIconBtn()" id="navExplorerContainer-{{processId}}"
-                        (click)="setFileExplorerWindowToFocus(processId)"
                         #navExplorerContainer>
                         <div style="height: 10px; width: 100%;"></div>
                         <cos-filetreeview [pid] ="processId" [isHoverActive]="showExpandTreeIcon" [treeData]="fileTreeNode"></cos-filetreeview>

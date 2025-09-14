@@ -140,8 +140,12 @@ Other trademarks and logos are property of their respective owners
   }
 
 
-  setCheetahWindowToFocus(pid:number):void{
-     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+focusWindow(evt?:MouseEvent):void{
+    evt?.stopPropagation();
+
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   private getComponentDetail():Process{

@@ -1,5 +1,5 @@
-<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId"  (click)="setPDFViewerToFocus(this.processId)" >
-    <div class="pdf-viewer-main-cntnr">
+<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
+    <div class="pdf-viewer-main-cntnr"  (click)="focusWindow($event)">
         <div class="pdf-viewer-cntnr">
             <canvas id="pdf-canvas-{{processId}}" #pdfviewer></canvas>
         </div>

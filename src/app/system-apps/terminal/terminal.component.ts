@@ -200,7 +200,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   onKeyDownOnWindow(evt:KeyboardEvent):void{
-    this.focusOnInput(evt);
     if (evt.key === "Tab") {
       // Prevent tab from moving focus
       evt.preventDefault();
@@ -211,14 +210,13 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     console.log(`${evt.key} Key pressed  rapidly.`);
   }
 
-
-  focusOnInput(evt:any):void{
-    this.setTerminalWindowToFocus(this.processId);
+  focusOnInput(evt:MouseEvent):void{
+    evt.stopPropagation();
     const cmdTxtBoxElm= document.getElementById(`cmdTxtBox-${this.processId}`) as HTMLInputElement;
     if(cmdTxtBoxElm){
       cmdTxtBoxElm?.focus();
     }
-    evt.stopPropagation();
+    this.focusWindow();
   }
 
   getCursorPosition():number{
@@ -1063,8 +1061,12 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }
   }
 
-  setTerminalWindowToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  focusWindow(evt?:MouseEvent):void{
+    evt?.stopPropagation();
+
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   storeAppState():void{

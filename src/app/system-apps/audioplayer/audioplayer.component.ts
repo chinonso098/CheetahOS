@@ -89,7 +89,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
  
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-              sessionManagmentService: SessionManagmentService, scriptService: ScriptService, 
+              sessionManagmentService: SessionManagmentService, scriptService:ScriptService, 
     windowService:WindowService, audioService:AudioService) { 
     this._processIdService = processIdService;
     this._processHandlerService = triggerProcessService;
@@ -347,11 +347,15 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   addToRecentsList(audioPath:string):void{
     if(!this.recents.includes(audioPath))
-        this.recents.push(audioPath);
+      this.recents.push(audioPath);
   }
 
-  setAudioWindowToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  focusWindow(evt?:MouseEvent):void{
+    evt?.stopPropagation();
+
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   resizeSiriWave():void{
