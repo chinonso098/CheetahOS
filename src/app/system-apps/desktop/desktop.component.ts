@@ -830,12 +830,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }, this.COLOR_CHANGE_DELAY);
   }
 
-  removeOldCanvas():void{ //##
-
+  removeOldCanvas():void{
     const vantaDiv = document.getElementById('vanta') as HTMLElement;
     if(!vantaDiv) return;
 
-    const canvas = vantaDiv.querySelector('canvas');
+    const canvas = vantaDiv.querySelector('.vanta-canvas');
     if (canvas){
       vantaDiv.removeChild(canvas);
     }
