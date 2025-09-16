@@ -18,7 +18,7 @@ export class StartButtonComponent implements OnDestroy {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _menuService:MenuService;
-    private _hideStartMenuSub!:Subscription;
+  private _hideStartMenuSub!:Subscription;
 
   private isStartMenuVisible = false;
 

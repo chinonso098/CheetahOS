@@ -10,3 +10,43 @@
     right: 0;
     z-index: 4;
 }
+
+.cheetah-start-button{
+    color: white;
+    font-size: 20px;
+    display: flex;
+    place-content: center;
+    place-items: center;
+    position: absolute;
+    height: 100%;
+    width: 45px;
+    left: 0px;
+    background-color: unset;
+    /* bottom: 0; */
+}
+
+.main-taskbar-search-cntnr{
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    left: 45px;
+}
+
+.taskbar-search-fig{
+    align-items: center;
+    display:inline-flex;
+    width: 32px;
+    padding: 0 1px;
+    position: relative;
+    top: 8.5px;
+    left: 4.5px;
+}
+
+.taskbar-search-img{
+    height: 27px;
+    width: 27px;
+}
+
+.main-taskbar-search-cntnr:hover{
+    background-color: hsla(0,0%,30%,60%);
+}

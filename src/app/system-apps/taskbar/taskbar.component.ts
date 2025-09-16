@@ -36,9 +36,15 @@ export class TaskbarComponent implements AfterViewInit{
   private _systemNotificationServices:SystemNotificationService;
   private _el: ElementRef;
 
+  private isStartMenuVisible = false;
+  private isSearchWindowVisible = false;
+  
   
   SECONDS_DELAY = 250;
   slideState = 'slideUp';
+
+  searchIcon = `${Constants.IMAGE_BASE_PATH}taskbar_search.png`;
+  hover = false;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -63,6 +69,9 @@ export class TaskbarComponent implements AfterViewInit{
     this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
     this._systemNotificationServices.showTaskBarNotify.subscribe(() => {this.showTaskBar()});
     this._systemNotificationServices.hideTaskBarNotify.subscribe(() => {this.hideTaskBar()});
+
+    this._menuService.hideStartMenu.subscribe(() => { this.changeStartMenuFlag()});
+    this._menuService.hideSearchBox.subscribe(() => { this.changeSearchFlag()});
   }
 
   
@@ -112,6 +121,37 @@ export class TaskbarComponent implements AfterViewInit{
 
   hideTaskBar():void{
     this.slideState = 'slideDown';
+  }
+
+
+  showStartMenu(evt:MouseEvent):void{
+    if(!this.isStartMenuVisible){
+      this._menuService.showStartMenu.next();
+      this.isStartMenuVisible = true;
+    }else{
+      this._menuService.hideStartMenu.next();
+    }
+
+    evt.stopPropagation();
+  }
+
+  changeStartMenuFlag():void{
+    this.isStartMenuVisible = false;
+  }
+
+  hideShowSearch(evt:MouseEvent):void{
+    if(this.isSearchWindowVisible){
+      this.isSearchWindowVisible = false;
+      this._menuService.hideSearchBox.next();
+    }else{
+      this.isSearchWindowVisible = true;
+      this._menuService.showSearchBox.next();
+    }
+    evt.stopPropagation();
+  }
+
+  changeSearchFlag():void{
+    this.isSearchWindowVisible = false
   }
 
   private getComponentDetail():Process{

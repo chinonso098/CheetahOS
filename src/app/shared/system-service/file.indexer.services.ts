@@ -42,12 +42,12 @@ export class FileIndexerService implements BaseService{
     }
 
 
-    public async indexDirectoryAsync(path:string):Promise<void>{
+    public async indexDirectoryAsync(path = Constants.USER_BASE_PATH):Promise<void>{
         const queue:string[] = [];
         
         queue.push(path);
         await this.indexDirectoryHelperAsync(queue);
-        console.log('_Index Result:', this._Index)
+        //console.log('_Index Result:', this._Index)
         return;
     }
 

@@ -1,12 +1,13 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, Renderer2, ElementRef, ViewChild } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { MenuService } from 'src/app/shared/system-service/menu.services';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
-import { MenuService } from 'src/app/shared/system-service/menu.services';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'cos-search',
@@ -15,11 +16,16 @@ import { Subscription } from 'rxjs';
   standalone:false,
 })
 
-export class SearchComponent implements OnDestroy {
+export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('cheetahSearchDiv', {static: true}) cheetahSearchDiv!: ElementRef<HTMLDivElement>;
+
+  private _renderer:Renderer2
+
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _menuService:MenuService;
-  private _hideSearchSub!:Subscription;
+  private _systemNotificationServices:SystemNotificationService;
+
   private isSearchWindowVisible = false;
 
   searchIcon = `${Constants.IMAGE_BASE_PATH}taskbar_search.png`;
@@ -32,45 +38,54 @@ export class SearchComponent implements OnDestroy {
   type = ComponentType.System
   displayName = '';
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService) { 
+  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, menuService:MenuService,
+                systemNotificationServices:SystemNotificationService, renderer:Renderer2) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._menuService = menuService;
+    this._systemNotificationServices = systemNotificationServices;
+
+    this._renderer = renderer;
+
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
-    this._hideSearchSub = this._menuService.hideStartMenu.subscribe(() => { this.hideSearchWindow()});
+
+    this._menuService.hideSearchBox.subscribe(() => { this.hideSearchBox()});
+    this._menuService.showSearchBox.subscribe(() => { this.showSearchBox()});
+
+    this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.hideSearchBox()});
+    this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+
   }
 
-  ngOnDestroy(): void {
-    // this._hideStartMenuSub?.unsubscribe();
-    1
+  ngOnInit(): void {}
+
+  ngAfterViewInit(): void {}
+
+  ngOnDestroy(): void {}
+
+  showSearchBox():void{
+
+    console.log('search box should be visible')
+    const  searchDiv = this.cheetahSearchDiv.nativeElement;
+    this._renderer.setStyle(searchDiv, 'display', 'block');
+    this._renderer.setStyle(searchDiv, 'z-index', '3');
   }
 
-  showSearchWindow():void{
-    1
-    // if(!this.isSearchWindowVisible){
-    //   this._menuService.showStartMenu.next();
-    //   this.isSearchWindowVisible = true;
-    // }
-    // else{
-    //   const uid = `${this.name}-${this.processId}`;
-    //   this._runningProcessService.addEventOriginator(uid);
+  hideSearchBox():void{
+    if(!this.cheetahSearchDiv) return;
 
-    //   this._menuService.hideStartMenu.next();
-    //   this.isSearchWindowVisible = false;
-    // }
+    console.log('search box should not be visible')
+
+    const  searchDiv = this.cheetahSearchDiv.nativeElement;
+    this._renderer.setStyle(searchDiv, 'z-index', '-1')
+    this._renderer.setStyle(searchDiv, 'display', 'none')
   }
 
-  hideSearchWindow():void{
-    1
-    // const uid = `${this.name}-${this.processId}`;
-    // const evtOriginator = this._runningProcessService.getEventOrginator();
-    // if(evtOriginator !== uid){
-    //   this.isSearchWindowVisible = false;
-    // }
-  }
+  desktopIsActive():void{ }
   
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }
 }
+

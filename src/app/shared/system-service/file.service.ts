@@ -24,6 +24,7 @@ import { SessionManagmentService } from "./session.management.service";
 import { FileIndexerService } from "./file.indexer.services";
 import { OpensWith } from "src/app/system-files/opens.with";
 import JSZip from "jszip";
+import { CommonFunctions } from "src/app/system-files/common.functions";
 @Injectable({
     providedIn: 'root'
 })
@@ -152,8 +153,12 @@ export class FileService implements BaseService{
     }
 
     private async postInitBrowserFs(): Promise<void> {
+        const delay = 100; //100ms
         await this.calculateUsedStorage();
         this._fileIndexerService = FileIndexerService.instance;
+
+        await CommonFunctions.sleep(delay);
+        await this._fileIndexerService.indexDirectoryAsync();
     }   
 
     public async isDirectory(path:string):Promise<boolean> {

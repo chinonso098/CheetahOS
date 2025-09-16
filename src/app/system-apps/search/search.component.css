@@ -1,11 +1,26 @@
-.main-taskbar-search-div{
-    width: 40px;
-    height: 40px;
-    position: absolute;
-    left: 45px;
+.main-search-cntnr{
+    height: fit-content;
+    width: fit-content;
+    display: none;
+    z-index: -1;
 }
 
-.taskbar-search-fig{
+.main-search-bar-cntnr{
+    height: 45px;
+    min-width: 550px;
+    color: #000;
+    background-color: #fff;
+    position: absolute;
+    top: 30%;
+    left: 35%;
+}
+
+.search-bar-option-cntnr{
+    height: 45px;
+    width: 32px;
+}
+
+.search-bar-option-fig{
     align-items: center;
     display:inline-flex;
     width: 32px;
@@ -15,11 +30,12 @@
     left: 4.5px;
 }
 
-.taskbar-search-img{
+.search-bar-option-img{
     height: 27px;
     width: 27px;
 }
 
-.main-taskbar-search-div:hover{
+/* .main-taskbar-search-cntnr:hover{
     background-color: hsla(0,0%,30%,60%);
-}
+} */
+

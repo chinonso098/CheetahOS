@@ -35,7 +35,7 @@ export class AppComponent implements AfterViewInit {
   private _componentReferenceService:ComponentReferenceService;
   private _audioService:AudioService;
   private _sessionManagmentService:SessionManagmentService;
-  private _fileIndexerServices: FileIndexerService;
+
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -48,8 +48,10 @@ export class AppComponent implements AfterViewInit {
 
   // the order of the service init matter.
   //runningProcesssService must come first
-  constructor(audioService:AudioService, runningProcessService:RunningProcessService, processIdService:ProcessIDService, 
-              componentReferenceService:ComponentReferenceService, fileIndexerServices: FileIndexerService, sessionManagmentService:SessionManagmentService){
+  //a number of these servies are injected here (like fileIndexerService), even though it isn't utiized hear. This is to get around 
+  //circular reference error, should it be injected in the fileService
+  constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
+              componentReferenceService:ComponentReferenceService, fileIndexerService: FileIndexerService, sessionManagmentService:SessionManagmentService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
@@ -57,20 +59,14 @@ export class AppComponent implements AfterViewInit {
     this._audioService = audioService;
     this._componentReferenceService = componentReferenceService; 
     this._sessionManagmentService = sessionManagmentService;
-    this._fileIndexerServices = fileIndexerServices;
 
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
   async ngAfterViewInit(): Promise<void>{
-    const delay = 100; //100ms
 
     if(this.itemViewContainer)
       this._componentReferenceService.setViewContainerRef(this.itemViewContainer);
-
-    await CommonFunctions.sleep(delay);
-    await this._fileIndexerServices.indexDirectoryAsync(Constants.USER_BASE_PATH);
-
 
     // This quiets the - audioservice error
     // const cheetahLogonKey = this._sessionManagmentService.getSession(Constants.CHEETAH_LOGON_KEY) as string;

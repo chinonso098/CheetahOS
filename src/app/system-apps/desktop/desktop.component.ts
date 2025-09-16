@@ -592,10 +592,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
 
     this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
+    this._menuService.hideSearchBox.next();
 
-    setTimeout(() => {
-      this.closePwrDialogBox();
-    }, 10);
+    this.closePwrDialogBox();
 
   }
 
