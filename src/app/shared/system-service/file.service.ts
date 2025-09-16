@@ -21,13 +21,12 @@ import { UserNotificationService } from "./user.notification.service";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { SessionManagmentService } from "./session.management.service";
+import { FileIndexerService } from "./file.indexer.services";
 import { OpensWith } from "src/app/system-files/opens.with";
 import JSZip from "jszip";
-
 @Injectable({
     providedIn: 'root'
 })
-
 export class FileService implements BaseService{ 
     private _fileInfo!:FileInfo;
   
@@ -42,6 +41,7 @@ export class FileService implements BaseService{
     private _processIdService:ProcessIDService;
     private _userNotificationService:UserNotificationService
     private _sessionManagmentService:SessionManagmentService;
+    private _fileIndexerService!:FileIndexerService;
 
     private _isCalculated = false;
     private _usedStorageSizeInBytes = 0;
@@ -153,6 +153,7 @@ export class FileService implements BaseService{
 
     private async postInitBrowserFs(): Promise<void> {
         await this.calculateUsedStorage();
+        this._fileIndexerService = FileIndexerService.instance;
     }   
 
     public async isDirectory(path:string):Promise<boolean> {

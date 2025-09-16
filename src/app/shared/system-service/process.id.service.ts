@@ -17,7 +17,7 @@ export class ProcessIDService implements BaseService{
     
     name = 'pid_gen_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
-    processId = 1;
+    processId = 0;
     type = ProcessType.Cheetah;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
@@ -30,10 +30,10 @@ export class ProcessIDService implements BaseService{
         this.processId = this.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
-     }
+    }
 
     public getNewProcessId(): number{
-        let pid = 1;
+        let pid = 0;
         pid = this.generateProcessId();
 
         while(this._activeProcessIds.includes(pid))

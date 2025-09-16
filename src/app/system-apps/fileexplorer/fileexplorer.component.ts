@@ -1197,10 +1197,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private async loadFileTreeAsync():Promise<void>{
     if(this.isRecycleBinFolder) return;
 
-    const usersDir = '/Users';
     this.fileTreeNode = [];
     //this._fileService.resetDirectoryFiles();
-    const directoryEntries  = await this._fileService.readDirectory(usersDir);
+    const directoryEntries  = await this._fileService.readDirectory(Constants.USER_BASE_PATH);
 
     const osDrive:FileTreeNode = {
       name:Constants.OSDISK, path: Constants.ROOT, isFolder: true, children:[]
@@ -1208,7 +1207,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
-      const entryPath = `${usersDir}/${dirEntry}`;
+      const entryPath = `${Constants.USER_BASE_PATH}/${dirEntry}`;
       const isFile =  await this._fileService.isDirectory(entryPath);
       const ftn:FileTreeNode = {
         name : dirEntry,
@@ -2485,7 +2484,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(this.directory === Constants.RECYCLE_BIN_PATH){
       this._directoryTraversalList = [];
       this._directoryTraversalList.push(Constants.RECYCLE_BIN);
-    }else  if(this.directory.includes('/Users')){
+    }else  if(this.directory.includes(Constants.USER_BASE_PATH)){
       this._directoryTraversalList = tmpArray;
     }else{
       tmpArray[1] = Constants.OSDISK;

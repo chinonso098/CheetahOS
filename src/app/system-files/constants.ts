@@ -26,6 +26,7 @@ export namespace Constants{
     export const AUDIO_BASE_PATH = 'osdrive/Cheetah/System/Media/';
     export const RECYCLE_BIN_PATH = '/Users/Desktop/Recycle Bin';
     export const DESKTOP_PATH = '/Users/Desktop';
+    export const USER_BASE_PATH = '/Users';
 
     export const FILE_EXPLORER = 'fileexplorer';
     export const DESKTOP = 'desktop';
