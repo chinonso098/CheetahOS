@@ -83,6 +83,10 @@ export class FileIndexerService implements BaseService{
         
     }
 
+    public getFileIndex():string[][]{
+        return this._Index
+    }
+
     private getProcessDetail():Process{
         return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
     }
