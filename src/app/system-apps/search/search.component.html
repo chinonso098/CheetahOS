@@ -1,16 +1,27 @@
 <div class="main-search-cntnr" #cheetahSearchDiv>
     <div class="main-search-bar-cntnr">
         <div class="search-bar-option-cntnr">
-            <figure  class="search-bar-option-fig">
-                <img class="search-bar-option-img" [src]="searchIcon">
+            <figure  class="search-bar-option-fig" (click)="hideShowOptions($event)">
+                <img class="search-bar-option-img" [src]="searchAll">
             </figure>
         </div>
 
-        <!-- <div class="search-bar-option-cntnr">
-            <figure  class="taskbar-search-fig">
-                <img class="taskbar-search-img" [src]="searchIcon">
+        <div class="search-bar-dropdwn-cntnr">
+            <figure  class="search-bar-dropdwn-fig" (click)="hideShowOptions($event)">
+                <div class="search-bar-dropdwn-img">
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                        height="10" width="10" 
+                        viewBox="0 0 512 512" *ngIf="isShowOptionsMenu" >
+                        <path d="M278.6 233.4c-12.5-12.5-32.8-12.5-45.3 0l-192 192c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L256 300.3l169.4 169.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-192-192z"/>
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                        height="10" width="10" 
+                        viewBox="0 0 512 512" *ngIf="!isShowOptionsMenu" >
+                        <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                    </svg>
+                </div>
             </figure>
-        </div> -->
+        </div>
 
         <!-- <div class="search-bar-option-cntnr">
 
@@ -20,4 +31,29 @@
     <div class="main-search-content-cntnr">
 
     </div>
+
+
+    <div class="main-search-options-cntnr" *ngIf="showOptionsMenu" >
+        <ol>
+            <li class="li-file-tree-view" *ngFor="let option of menuOptions; let i = index">
+                <div class="tree-view-cntnr"  
+                    id="dd-option-{{i}}" 
+                    (click)="selectOption($event, i)" 
+                    (mouseenter)="onMouseEnter(i)" 
+                    (mouseleave)="onMouseLeave(i)">
+                    
+                    <div class="search-option-head">
+                        <figure class="search-option-figure">
+                            <img class="search-option-img" [src]="option[0]" />
+                        </figure>
+                    </div>
+
+                    <div class="search-option-tail">
+                        <p class="search-option-p">{{ option[1] }}</p>
+                    </div>
+                </div>
+            </li>
+        </ol>
+    </div>
+
 </div>

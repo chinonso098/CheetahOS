@@ -18,17 +18,24 @@ import { Constants } from 'src/app/system-files/constants';
 
 export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('cheetahSearchDiv', {static: true}) cheetahSearchDiv!: ElementRef<HTMLDivElement>;
-
-  private _renderer:Renderer2
+  private _renderer:Renderer2;
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _menuService:MenuService;
   private _systemNotificationServices:SystemNotificationService;
 
-  private isSearchWindowVisible = false;
+  searchAll = `${Constants.IMAGE_BASE_PATH}search_all.png`;
+  searchFile = `${Constants.IMAGE_BASE_PATH}search_file.png`;
+  searchMusic = `${Constants.IMAGE_BASE_PATH}search_music.png`;
+  searchVideo = `${Constants.IMAGE_BASE_PATH}search_video.png`;
+  searchFolder = `${Constants.IMAGE_BASE_PATH}search_folder.png`;
+  searchPicture = `${Constants.IMAGE_BASE_PATH}search_picture.png`;
+  searchApplicatiion = `${Constants.IMAGE_BASE_PATH}search_app.png`;
 
-  searchIcon = `${Constants.IMAGE_BASE_PATH}taskbar_search.png`;
+  isShowOptionsMenu = false;
+  showOptionsMenu = false;
+  menuOptions!:string[][];
 
   hasWindow = false;
   hover = false;
@@ -55,18 +62,17 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.hideSearchBox()});
     this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
-
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.menuOptions = this.generateOptions();
+  }
 
   ngAfterViewInit(): void {}
 
   ngOnDestroy(): void {}
 
   showSearchBox():void{
-
-    console.log('search box should be visible')
     const  searchDiv = this.cheetahSearchDiv.nativeElement;
     this._renderer.setStyle(searchDiv, 'display', 'block');
     this._renderer.setStyle(searchDiv, 'z-index', '3');
@@ -75,11 +81,40 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   hideSearchBox():void{
     if(!this.cheetahSearchDiv) return;
 
-    console.log('search box should not be visible')
-
     const  searchDiv = this.cheetahSearchDiv.nativeElement;
     this._renderer.setStyle(searchDiv, 'z-index', '-1')
     this._renderer.setStyle(searchDiv, 'display', 'none')
+  }
+
+  hideShowOptions(evt:MouseEvent):void{
+    evt.stopPropagation();
+
+    if(this.isShowOptionsMenu){
+      this.showOptionsMenu = false;
+      this.isShowOptionsMenu = false;
+    }else{
+      this.showOptionsMenu = true;
+      this.isShowOptionsMenu = true;
+    }
+  }
+
+  generateOptions():string[][]{
+    const options = [[this.searchAll, 'All'], [this.searchApplicatiion, 'Apps'], [this.searchFile, 'Documents'],
+                     [this.searchFolder, 'Folders'], [this.searchMusic, 'Music'], [this.searchPicture, 'Photos'],
+                     [this.searchVideo, 'Videos']];
+    return options;
+  }
+
+  selectOption(evt:MouseEvent, id:number):void{
+
+  }
+
+  onMouseEnter(id:number):void{
+
+  }
+
+  onMouseLeave(id:number):void{
+    
   }
 
   desktopIsActive():void{ }
