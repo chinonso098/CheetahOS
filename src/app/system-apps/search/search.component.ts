@@ -34,7 +34,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   searchBarForm!: FormGroup;
 
-
   defaultsearchIcon = `${Constants.IMAGE_BASE_PATH}search_all.png`;
   searchAllIcon = `${Constants.IMAGE_BASE_PATH}search_all.png`;
   searchFileIcon = `${Constants.IMAGE_BASE_PATH}search_file.png`;
@@ -44,10 +43,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   searchPictureIcon = `${Constants.IMAGE_BASE_PATH}search_picture.png`;
   searchApplicatiionIcon = `${Constants.IMAGE_BASE_PATH}search_app.png`;
 
-  searchPlaceHolder = 'Search';
+  searchPlaceHolder = 'Search now';
 
+  optionsMenuToggle = false;
   isShowOptionsMenu = false;
-  showOptionsMenu = false;
   menuOptions!:string[][];
 
   selectedOptionID = 0;
@@ -58,7 +57,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   name = 'search';
   processId = 0;
   type = ComponentType.System
-  displayName = '';
+  displayName = Constants.EMPTY_STRING;
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, menuService:MenuService,
                 systemNotificationServices:SystemNotificationService, renderer:Renderer2, formBuilder:FormBuilder,
@@ -103,8 +102,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   hideSearchBox():void{
-    this.showOptionsMenu = false;
     this.isShowOptionsMenu = false;
+    this.optionsMenuToggle = false;
 
     if(!this.cheetahSearchDiv) return;
 
@@ -114,22 +113,31 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   hideShowOptions(evt:MouseEvent):void{
+    const delay = 25; //25ms
     evt.stopPropagation();
 
-    if(this.isShowOptionsMenu){
-      this.showOptionsMenu = false;
-      this.isShowOptionsMenu = false;
+    if(this.optionsMenuToggle){
+      this.hideOptionsMenuDD();
 
       this.selectedOptionID = 0;
       this.defaultsearchIcon = this.searchAllIcon;
     }else{
-      this.showOptionsMenu = true;
-      this.isShowOptionsMenu = true;
+      this.showOptionsMenuDD();
     }
 
     setTimeout(() => {
       this.onMouseLeave(this.selectedOptionID);
-    }, 50);
+    }, delay);
+  }
+
+  private showOptionsMenuDD():void{
+    this.isShowOptionsMenu = true;
+    this.optionsMenuToggle = true;
+  }
+
+  private hideOptionsMenuDD():void{
+    this.isShowOptionsMenu = false;
+    this.optionsMenuToggle = false;
   }
 
   generateOptions():string[][]{
@@ -142,43 +150,34 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   selectOption(evt:MouseEvent, id:number):void{
     evt.stopPropagation();
 
-    const currentSelectedOptionID = this.selectedOptionID;
+    const previousId = this.selectedOptionID;
     this.selectedOptionID = id;
 
-    this.defaultsearchIcon = this.menuOptions[id][0];
-    const searchFocus = this.menuOptions[id][1];
+    const [icon, searchFocus] = this.menuOptions[id];
+    this.defaultsearchIcon = icon;
     this.changeSearchFocus(searchFocus);
 
-    if(currentSelectedOptionID !== this.selectedOptionID){
-      const liElmnt = document.getElementById(`dd-option-${currentSelectedOptionID}`) as HTMLLIElement;
-      if(liElmnt){
-        liElmnt.style.backgroundColor = '#fff';
-      }
+    if (previousId !== id) {
+      this.updateOptionStyle(previousId, "#fff");
     }
-    const liElmnt = document.getElementById(`dd-option-${id}`) as HTMLLIElement;
-    if(liElmnt){
-      liElmnt.style.backgroundColor = '#76B9ED';
-    }
+
+    this.updateOptionStyle(id, "#76B9ED");
+    this.hideOptionsMenuDD();
   }
 
   onMouseEnter(id:number):void{
-    const liElmnt = document.getElementById(`dd-option-${id}`) as HTMLLIElement;
-    if(liElmnt){
-      liElmnt.style.backgroundColor = '#ccc';
-    }
+    this.updateOptionStyle(id, "#ccc");
   }
 
   onMouseLeave(id:number):void{    
-    if(id === this.selectedOptionID){
-      const liElmnt = document.getElementById(`dd-option-${id}`) as HTMLLIElement;
-      if(liElmnt){
-        liElmnt.style.backgroundColor = '#76B9ED';
-      }
-    }else{
-      const liElmnt = document.getElementById(`dd-option-${id}`) as HTMLLIElement;
-      if(liElmnt){
-        liElmnt.style.backgroundColor = '#fff';
-      }
+    const color = (id === this.selectedOptionID)? "#76B9ED" : "#fff";
+    this.updateOptionStyle(id, color);
+  }
+
+  private updateOptionStyle(id: number, color: string): void {
+    const liElement = document.getElementById(`dd-option-${id}`) as HTMLLIElement | null;
+    if (liElement) {
+      liElement.style.backgroundColor = color;
     }
   }
 

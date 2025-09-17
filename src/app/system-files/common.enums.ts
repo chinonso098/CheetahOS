@@ -6,11 +6,11 @@ export enum SortBys {
 }
 
 export enum FileIndexIDs { 
-    FILE = '0',
-    APPS = '1',
-    DOCUMENTS = '2', 
-    FOLDERS = '3',
-    MUSIC = '4',
-    PHOTOS = '5',
-    VIDEOS = '6',
+    // FILE = 'FILE',
+    APPS = 'APPS',
+    DOCUMENTS = 'DOCUMENTS', 
+    FOLDERS = 'FOLDERS',
+    MUSIC = 'MUSIC',
+    PHOTOS = 'PHOTOS',
+    VIDEOS = 'VIDEOS',
 }

@@ -103,10 +103,7 @@ export class FileIndexerService implements BaseService{
         if(Constants.IMAGE_FILE_EXTENSIONS.includes(extension))
             return FileIndexIDs.PHOTOS;
 
-        if(extension === '.pdf' || extension === '.txt')
-            return FileIndexIDs.DOCUMENTS;
-
-        return FileIndexIDs.FILE;
+        return FileIndexIDs.DOCUMENTS;
     }
 
     public fileAddNotify():void{

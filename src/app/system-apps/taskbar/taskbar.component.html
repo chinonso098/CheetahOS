@@ -9,12 +9,13 @@
             </svg>
     </button>
 
-    
     <div class="main-taskbar-search-cntnr"> 
         <figure  class="taskbar-search-fig" (click)="hideShowSearch($event)">
             <img class="taskbar-search-img" [src]="searchIcon">
         </figure>
     </div>
+
+    <div class="main-taskbar-space"> </div>
 
     <ng-content> </ng-content> 
 </div>

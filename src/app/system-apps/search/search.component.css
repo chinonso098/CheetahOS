@@ -15,6 +15,9 @@
     top: 30%;
     left: 35%;
     border: 2px solid #b8b6b6;
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+            0 8px 10px 1px rgba(0, 0, 0, 0.14),
+            0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }
 
 .main-search-bar-cntnr:hover {
@@ -72,6 +75,9 @@
     top: 34.5%;
     left: 35%;
     border: 2px solid #ccc;
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+            0 8px 10px 1px rgba(0, 0, 0, 0.14),
+            0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }
 
 .main-search-options-cntnr:hover {
@@ -126,28 +132,29 @@
 }
 
 .search-bar-form-cntnr{
+    position: relative;
     height: 40px;
-    width: 500px;
+    width: 490px;
+    left: 6px;
 }
 
 .search-bar-form, .search-bar-textbox{
-    position: relative;
     margin: 0;
-    width: 500px;
-    height: 40;
+    width: 490px;
+    height: 40px;
 }
 
 .search-bar-textbox{
     position: relative;
     margin: 0;
-    width: 495px;
+    width: 490px;
+    /* border: 1px solid #ccc; */
     height: 20px;
     font-size: 13px;
     font-weight:200;
     background-color: #fff;
     color: #000;
     text-align: left;
-    left: 4px;
     top: 8px;
  }
 

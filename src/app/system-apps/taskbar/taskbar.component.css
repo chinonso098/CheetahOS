@@ -32,6 +32,13 @@
     left: 45px;
 }
 
+.main-taskbar-space{
+    height: 40px;
+    min-width: 2px;
+    position: absolute;
+    left: 85px;
+}
+
 .taskbar-search-fig{
     align-items: center;
     display:inline-flex;
