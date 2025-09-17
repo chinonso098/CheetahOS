@@ -8,6 +8,7 @@ import { SystemNotificationService } from 'src/app/shared/system-service/system.
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'cos-search',
@@ -24,18 +25,27 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private _runningProcessService:RunningProcessService;
   private _menuService:MenuService;
   private _systemNotificationServices:SystemNotificationService;
+  private _formBuilder:FormBuilder;
 
-  searchAll = `${Constants.IMAGE_BASE_PATH}search_all.png`;
-  searchFile = `${Constants.IMAGE_BASE_PATH}search_file.png`;
-  searchMusic = `${Constants.IMAGE_BASE_PATH}search_music.png`;
-  searchVideo = `${Constants.IMAGE_BASE_PATH}search_video.png`;
-  searchFolder = `${Constants.IMAGE_BASE_PATH}search_folder.png`;
-  searchPicture = `${Constants.IMAGE_BASE_PATH}search_picture.png`;
-  searchApplicatiion = `${Constants.IMAGE_BASE_PATH}search_app.png`;
+  searchBarForm!: FormGroup;
+
+
+  defaultsearchIcon = `${Constants.IMAGE_BASE_PATH}search_all.png`;
+  searchAllIcon = `${Constants.IMAGE_BASE_PATH}search_all.png`;
+  searchFileIcon = `${Constants.IMAGE_BASE_PATH}search_file.png`;
+  searchMusicIcon = `${Constants.IMAGE_BASE_PATH}search_music.png`;
+  searchVideoIcon = `${Constants.IMAGE_BASE_PATH}search_video.png`;
+  searchFolderIcon = `${Constants.IMAGE_BASE_PATH}search_folder.png`;
+  searchPictureIcon = `${Constants.IMAGE_BASE_PATH}search_picture.png`;
+  searchApplicatiionIcon = `${Constants.IMAGE_BASE_PATH}search_app.png`;
+
+  searchPlaceHolder = 'Search';
 
   isShowOptionsMenu = false;
   showOptionsMenu = false;
   menuOptions!:string[][];
+
+  selectedOptionID = 0;
 
   hasWindow = false;
   hover = false;
@@ -46,13 +56,14 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   displayName = '';
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, menuService:MenuService,
-                systemNotificationServices:SystemNotificationService, renderer:Renderer2) { 
+                systemNotificationServices:SystemNotificationService, renderer:Renderer2, formBuilder:FormBuilder) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._menuService = menuService;
     this._systemNotificationServices = systemNotificationServices;
 
     this._renderer = renderer;
+    this._formBuilder = formBuilder;
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -65,6 +76,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.searchBarForm = this._formBuilder.nonNullable.group({
+      searchBarText: this.searchPlaceHolder,
+    });
+
     this.menuOptions = this.generateOptions();
   }
 
@@ -79,6 +94,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   hideSearchBox():void{
+    this.showOptionsMenu = false;
+    this.isShowOptionsMenu = false;
+
     if(!this.cheetahSearchDiv) return;
 
     const  searchDiv = this.cheetahSearchDiv.nativeElement;
@@ -92,29 +110,78 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     if(this.isShowOptionsMenu){
       this.showOptionsMenu = false;
       this.isShowOptionsMenu = false;
+
+      this.selectedOptionID = 0;
+      this.defaultsearchIcon = this.searchAllIcon;
     }else{
       this.showOptionsMenu = true;
       this.isShowOptionsMenu = true;
     }
+
+    setTimeout(() => {
+      this.onMouseLeave(this.selectedOptionID);
+    }, 50);
   }
 
   generateOptions():string[][]{
-    const options = [[this.searchAll, 'All'], [this.searchApplicatiion, 'Apps'], [this.searchFile, 'Documents'],
-                     [this.searchFolder, 'Folders'], [this.searchMusic, 'Music'], [this.searchPicture, 'Photos'],
-                     [this.searchVideo, 'Videos']];
+    const options = [[this.searchAllIcon, 'All'], [this.searchApplicatiionIcon, 'Apps'], [this.searchFileIcon, 'Documents'],
+                     [this.searchFolderIcon, 'Folders'], [this.searchMusicIcon, 'Music'], [this.searchPictureIcon, 'Photos'],
+                     [this.searchVideoIcon, 'Videos']];
     return options;
   }
 
   selectOption(evt:MouseEvent, id:number):void{
+    evt.stopPropagation();
 
+    const currentSelectedOptionID = this.selectedOptionID;
+    this.selectedOptionID = id;
+    this.defaultsearchIcon = this.menuOptions[id][0];
+
+    if(currentSelectedOptionID !== this.selectedOptionID){
+      const liElmnt = document.getElementById(`dd-option-${currentSelectedOptionID}`) as HTMLLIElement;
+      if(liElmnt){
+        liElmnt.style.backgroundColor = '#fff';
+      }
+    }
+    const liElmnt = document.getElementById(`dd-option-${id}`) as HTMLLIElement;
+    if(liElmnt){
+      liElmnt.style.backgroundColor = '#76B9ED';
+    }
   }
 
   onMouseEnter(id:number):void{
-
+    const liElmnt = document.getElementById(`dd-option-${id}`) as HTMLLIElement;
+    if(liElmnt){
+      liElmnt.style.backgroundColor = '#ccc';
+    }
   }
 
-  onMouseLeave(id:number):void{
-    
+  onMouseLeave(id:number):void{    
+    if(id === this.selectedOptionID){
+      const liElmnt = document.getElementById(`dd-option-${id}`) as HTMLLIElement;
+      if(liElmnt){
+        liElmnt.style.backgroundColor = '#76B9ED';
+      }
+    }else{
+      const liElmnt = document.getElementById(`dd-option-${id}`) as HTMLLIElement;
+      if(liElmnt){
+        liElmnt.style.backgroundColor = '#fff';
+      }
+    }
+  }
+
+  onKeyDownInInputBox(evt:KeyboardEvent):void{
+    console.log('evt.key:',evt.key);
+
+    let searchString = this.searchBarForm.value.searchBarText as string;
+  }
+
+  focusOnInput(evt:MouseEvent):void{
+    evt.stopPropagation();
+    const searchBarTxtBoxElm = document.getElementById('searchBarTxtBox') as HTMLInputElement;
+    if(searchBarTxtBoxElm){
+      searchBarTxtBoxElm?.focus();
+    }
   }
 
   desktopIsActive():void{ }

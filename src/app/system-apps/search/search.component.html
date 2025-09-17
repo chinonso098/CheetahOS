@@ -2,7 +2,7 @@
     <div class="main-search-bar-cntnr">
         <div class="search-bar-option-cntnr">
             <figure  class="search-bar-option-fig" (click)="hideShowOptions($event)">
-                <img class="search-bar-option-img" [src]="searchAll">
+                <img class="search-bar-option-img" [src]="defaultsearchIcon">
             </figure>
         </div>
 
@@ -23,9 +23,22 @@
             </figure>
         </div>
 
-        <!-- <div class="search-bar-option-cntnr">
-
-        </div> -->
+        <div class="search-bar-form-cntnr">
+                <form [formGroup]="searchBarForm"  class="search-bar-form">
+                    <input
+                    appKeyPressCapture
+                    class="search-bar-textbox"
+                    formControlName="terminalCmd"
+                    (keydown)="onKeyDownInInputBox($event)"
+                    (click)="focusOnInput($event)"
+                    autofocus ="false" 
+                    spellcheck="false"
+                    autocomplete="off"
+                    autocapitalize="off"
+                    id="searchBarTxtBox"
+                    />
+                </form>
+        </div>
     </div>
 
     <div class="main-search-content-cntnr">

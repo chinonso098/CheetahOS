@@ -58,8 +58,6 @@
 }
 
 .search-bar-dropdwn-img{
-    /* padding-left: 2.5px; */
-    /* padding: 0px 2px; */
     height: 10px; 
     width: 10px;
 }
@@ -71,20 +69,24 @@
     background-color: #fff;
     z-index: 3;
     position: absolute;
-    top: 34.36%;
+    top: 34.5%;
     left: 35%;
+    border: 2px solid #ccc;
+}
+
+.main-search-options-cntnr:hover {
     border: 2px solid #fff;
 }
 
 .li-file-tree-view{
     height: 40px;
-    width: 200px;
+    width: 196px;
 }
 
 .tree-view-cntnr{
     display: inline-flex;
     height: 40px;
-    width: 200px;
+    width: 196px;
 }
 
 .search-option-p{
@@ -122,6 +124,28 @@
     width: 17px;
     position: relative;
 }
+
+.search-bar-form-cntnr{
+    height: 45px;
+    width: 500px;
+}
+
+.search-bar-form, .search-bar-textbox{
+    position: relative;
+    margin: 0;
+}
+
+.search-bar-textbox{
+    width: 100%;
+    max-width: 200px;
+    height: 16px;
+    border: 1px solid #ccc;
+    overflow:hidden;
+    font-size: 13px;
+    font-weight:200;
+    background-color: white;
+    color: black;
+ }
 
 /* .main-taskbar-search-cntnr:hover{
     background-color: hsla(0,0%,30%,60%);
