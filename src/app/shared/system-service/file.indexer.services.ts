@@ -1,12 +1,17 @@
 import { Injectable } from "@angular/core";
-import { RunningProcessService } from "./running.process.service";
 import { Constants } from "src/app/system-files/constants";
 import { ProcessType } from "src/app/system-files/system.types";
 import { BaseService } from "./base.service.interface";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
-import { ProcessIDService } from "./process.id.service";
+import { AppDirectory } from "src/app/system-files/app.directory";
+
 import { FileService } from "./file.service";
+import { RunningProcessService } from "./running.process.service";
+import { ProcessIDService } from "./process.id.service";
+import { FileIndexIDs } from "src/app/system-files/common.enums";
+
+import {extname} from 'path';
 
 @Injectable({
     providedIn: 'root'
@@ -17,8 +22,10 @@ export class FileIndexerService implements BaseService{
 
     private _Index: string[][];
     private _runningProcessService:RunningProcessService;
-    private _processIdService:ProcessIDService
-    private _fileService:FileService
+    private _processIdService:ProcessIDService;
+    private _fileService:FileService;
+
+    private _appDirectory:AppDirectory;
     
     name = 'file_indexing_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -29,6 +36,9 @@ export class FileIndexerService implements BaseService{
     description = 'handles file indexing';
 
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService) {
+
+        this._appDirectory = new AppDirectory();
+
         this._Index = [[]];
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
@@ -46,6 +56,7 @@ export class FileIndexerService implements BaseService{
         const queue:string[] = [];
         
         queue.push(path);
+        this.indexApps();
         await this.indexDirectoryHelperAsync(queue);
         //console.log('_Index Result:', this._Index)
         return;
@@ -62,13 +73,40 @@ export class FileIndexerService implements BaseService{
             const entryPath = `${filePath}/${entry}`;
             const isDirectory = await this._fileService.isDirectory(entryPath);
             if(isDirectory){
+                this._Index.push([entryPath, entry, FileIndexIDs.FOLDERS]);
                 queue.push(entryPath);
             }else{
-                this._Index.push([entryPath, entry]);
+                this._Index.push([entryPath, entry, this.determinFileType(entryPath)]);
             }
         }
 
         return this.indexDirectoryHelperAsync(queue);
+    }
+
+    private indexApps(): void {
+        const entryPath = 'None';
+        const installApps = this._appDirectory.getAppList(); 
+        for(const app of installApps){
+            this._Index.push([entryPath, app, FileIndexIDs.APPS]);
+        }
+    }
+
+    private determinFileType(path:string):string{
+        const extension = extname(path);
+
+        if(Constants.AUDIO_FILE_EXTENSIONS.includes(extension))
+            return FileIndexIDs.MUSIC;
+
+        if(Constants.VIDEO_FILE_EXTENSIONS.includes(extension))
+            return FileIndexIDs.VIDEOS;
+
+        if(Constants.IMAGE_FILE_EXTENSIONS.includes(extension))
+            return FileIndexIDs.PHOTOS;
+
+        if(extension === '.pdf' || extension === '.txt')
+            return FileIndexIDs.DOCUMENTS;
+
+        return FileIndexIDs.FILE;
     }
 
     public fileAddNotify():void{

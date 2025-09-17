@@ -126,25 +126,29 @@
 }
 
 .search-bar-form-cntnr{
-    height: 45px;
+    height: 40px;
     width: 500px;
 }
 
 .search-bar-form, .search-bar-textbox{
     position: relative;
     margin: 0;
+    width: 500px;
+    height: 40;
 }
 
 .search-bar-textbox{
-    width: 100%;
-    max-width: 200px;
-    height: 16px;
-    border: 1px solid #ccc;
-    overflow:hidden;
+    position: relative;
+    margin: 0;
+    width: 495px;
+    height: 20px;
     font-size: 13px;
     font-weight:200;
-    background-color: white;
-    color: black;
+    background-color: #fff;
+    color: #000;
+    text-align: left;
+    left: 4px;
+    top: 8px;
  }
 
 /* .main-taskbar-search-cntnr:hover{

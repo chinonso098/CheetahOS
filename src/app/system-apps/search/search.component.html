@@ -24,11 +24,11 @@
         </div>
 
         <div class="search-bar-form-cntnr">
-                <form [formGroup]="searchBarForm"  class="search-bar-form">
-                    <input
+            <form [formGroup]="searchBarForm"  class="search-bar-form">
+                <input
                     appKeyPressCapture
                     class="search-bar-textbox"
-                    formControlName="terminalCmd"
+                    formControlName="searchBarText"
                     (keydown)="onKeyDownInInputBox($event)"
                     (click)="focusOnInput($event)"
                     autofocus ="false" 
@@ -36,8 +36,8 @@
                     autocomplete="off"
                     autocapitalize="off"
                     id="searchBarTxtBox"
-                    />
-                </form>
+                />
+            </form>
         </div>
     </div>
 
@@ -46,7 +46,7 @@
     </div>
 
 
-    <div class="main-search-options-cntnr" *ngIf="showOptionsMenu" >
+    <div class="main-search-options-cntnr" *ngIf="showOptionsMenu">
         <ol>
             <li class="li-file-tree-view" *ngFor="let option of menuOptions; let i = index">
                 <div class="tree-view-cntnr"  

@@ -4,12 +4,14 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { FileIndexerService } from 'src/app/shared/system-service/file.indexer.services';
 
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
+import { FileIndexIDs } from "src/app/system-files/common.enums";
 @Component({
   selector: 'cos-search',
   templateUrl: './search.component.html',
@@ -25,7 +27,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private _runningProcessService:RunningProcessService;
   private _menuService:MenuService;
   private _systemNotificationServices:SystemNotificationService;
+  private _fileIndexerService:FileIndexerService;
   private _formBuilder:FormBuilder;
+
+  private _fileIndex!:string[][];
 
   searchBarForm!: FormGroup;
 
@@ -56,11 +61,13 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   displayName = '';
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, menuService:MenuService,
-                systemNotificationServices:SystemNotificationService, renderer:Renderer2, formBuilder:FormBuilder) { 
+                systemNotificationServices:SystemNotificationService, renderer:Renderer2, formBuilder:FormBuilder,
+                fileIndexerService:FileIndexerService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._menuService = menuService;
     this._systemNotificationServices = systemNotificationServices;
+    this._fileIndexerService = fileIndexerService
 
     this._renderer = renderer;
     this._formBuilder = formBuilder;
@@ -83,7 +90,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.menuOptions = this.generateOptions();
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void {
+    this._fileIndex = this._fileIndexerService.getFileIndex();
+  }
 
   ngOnDestroy(): void {}
 
@@ -135,7 +144,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const currentSelectedOptionID = this.selectedOptionID;
     this.selectedOptionID = id;
+
     this.defaultsearchIcon = this.menuOptions[id][0];
+    const searchFocus = this.menuOptions[id][1];
+    this.changeSearchFocus(searchFocus);
 
     if(currentSelectedOptionID !== this.selectedOptionID){
       const liElmnt = document.getElementById(`dd-option-${currentSelectedOptionID}`) as HTMLLIElement;
@@ -182,6 +194,20 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     if(searchBarTxtBoxElm){
       searchBarTxtBoxElm?.focus();
     }
+  }
+
+  changeSearchFocus(focus:string):void{
+    let focusPath = Constants.EMPTY_STRING;
+
+    //if focuse is All, pull everything, apps included,
+    if(focus === 'All' || focus === 'Apps' || focus === 'Folders'){
+
+
+    }else{
+
+    }
+
+    //if files, exclude folders 
   }
 
   desktopIsActive():void{ }
