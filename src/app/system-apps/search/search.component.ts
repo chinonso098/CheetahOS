@@ -46,10 +46,35 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   searchPlaceHolder = 'Search now';
 
   optionsMenuToggle = false;
-  isShowOptionsMenu = false;
+  showOptionsMenu = false;
+  showSearchResult = false
+
+  showBestMatchSection = true;
+  showFilesSection = true;
+  showFoldersSection = true;
+  showApplicationSection = true;
+  showOthersSection = false;
+  otherSectionName = Constants.EMPTY_STRING;
+  bestMatchFor = Constants.EMPTY_STRING;
+  
   menuOptions!:string[][];
 
   selectedOptionID = 0;
+
+  readonly APPS = FileIndexIDs.APPS.toString();
+  readonly DOCUMENTS = FileIndexIDs.DOCUMENTS.toString();
+  readonly FOLDERS = FileIndexIDs.FOLDERS.toString();
+  readonly MUSIC = FileIndexIDs.MUSIC.toString();
+  readonly PHOTOS = FileIndexIDs.PHOTOS.toString();
+  readonly VIDEOS = FileIndexIDs.VIDEOS.toString();
+
+  readonly OPTION_ALL = 'All';
+  readonly OPTION_APPS = 'Apps';
+  readonly OPTION_DOCUMENTS = 'Documents';
+  readonly OPTION_FOLDERS = 'Folders';
+  readonly OPTION_MUSIC = 'Music';
+  readonly OPTION_PHOTOS = 'Photos';
+  readonly OPTION_VIDEOS = 'Videos';
 
   hasWindow = false;
   hover = false;
@@ -102,7 +127,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   hideSearchBox():void{
-    this.isShowOptionsMenu = false;
+    this.showOptionsMenu = false;
     this.optionsMenuToggle = false;
 
     if(!this.cheetahSearchDiv) return;
@@ -125,25 +150,24 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showOptionsMenuDD();
     }
 
-    setTimeout(() => {
-      this.onMouseLeave(this.selectedOptionID);
-    }, delay);
+    setTimeout(() => { this.onMouseLeave(this.selectedOptionID); }, delay);
   }
 
   private showOptionsMenuDD():void{
-    this.isShowOptionsMenu = true;
+    this.showOptionsMenu = true;
     this.optionsMenuToggle = true;
   }
 
   private hideOptionsMenuDD():void{
-    this.isShowOptionsMenu = false;
+    this.showOptionsMenu = false;
     this.optionsMenuToggle = false;
   }
 
   generateOptions():string[][]{
-    const options = [[this.searchAllIcon, 'All'], [this.searchApplicatiionIcon, 'Apps'], [this.searchFileIcon, 'Documents'],
-                     [this.searchFolderIcon, 'Folders'], [this.searchMusicIcon, 'Music'], [this.searchPictureIcon, 'Photos'],
-                     [this.searchVideoIcon, 'Videos']];
+    const options = [[this.searchAllIcon, this.OPTION_ALL], [this.searchApplicatiionIcon, this.OPTION_APPS], 
+                    [this.searchFileIcon, this.OPTION_DOCUMENTS], [this.searchFolderIcon, this.OPTION_FOLDERS],
+                     [this.searchMusicIcon, this.OPTION_MUSIC], [this.searchPictureIcon, this.OPTION_PHOTOS],
+                     [this.searchVideoIcon, this.OPTION_VIDEOS]];
     return options;
   }
 
@@ -199,7 +223,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     let focusPath = Constants.EMPTY_STRING;
 
     //if focuse is All, pull everything, apps included,
-    if(focus === 'All' || focus === 'Apps' || focus === 'Folders'){
+    if(focus === this.OPTION_ALL || focus === this.OPTION_APPS || focus === this.OPTION_FOLDERS){
 
 
     }else{
@@ -207,6 +231,22 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     //if files, exclude folders 
+  }
+
+  hideShowSearchSections(focus:string):void{
+    this.showBestMatchSection = true;
+
+    this.showApplicationSection = (focus === this.OPTION_ALL || focus === this.OPTION_APPS);
+
+    this.showFilesSection = (focus === this.OPTION_ALL);
+
+    this.showFoldersSection = (focus === this.OPTION_ALL || focus === this.OPTION_FOLDERS);
+
+    this.showOthersSection = (focus === this.OPTION_DOCUMENTS || focus === this.OPTION_MUSIC 
+                              || focus === this.OPTION_VIDEOS || focus === this.OPTION_MUSIC);
+
+    this.otherSectionName = (this.showOthersSection)? focus : Constants.EMPTY_STRING;
+    this.bestMatchFor = (this.showOthersSection)? focus.toLowerCase() : Constants.EMPTY_STRING;
   }
 
   desktopIsActive():void{ }

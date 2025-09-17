@@ -65,6 +65,8 @@
     width: 10px;
 }
 
+ /*SearchBox Options Section*/
+
 .main-search-options-cntnr{
     width: 200px;
     height: fit-content;
@@ -131,6 +133,9 @@
     position: relative;
 }
 
+
+/*SearchBox Form Section*/
+
 .search-bar-form-cntnr{
     position: relative;
     height: 40px;
@@ -158,7 +163,67 @@
     top: 8px;
  }
 
-/* .main-taskbar-search-cntnr:hover{
-    background-color: hsla(0,0%,30%,60%);
-} */
 
+ /*SearchBox Result Window Section*/
+
+.main-search-result-cntnr{
+    display: flex;
+    width: 550px;
+    height: 380px;
+    color: #000;
+    background-color: #fff;
+    z-index: 3;
+    position: absolute;
+    top: 34.5%;
+    left: 35%;
+    border: 2px solid #ccc;
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+            0 8px 10px 1px rgba(0, 0, 0, 0.14),
+            0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.search-result-set-cntnr{
+    display: block;
+    position: relative;
+    width: 250px;
+    height: 376px;
+    background-color: #f2f2f2;
+    overflow-y: scroll;
+}
+
+.result-set-best-match-section,
+.result-set-app-section,
+.result-set-files-section,
+.result-set-folders-section,
+.result-set-others-section {
+    display: block;
+    background-color: #f2f2f2;
+    padding: 10px 10px;
+    height: fit-content;
+    width: 246px;
+}
+
+.result-set-section-heading{
+    max-width: 230px;
+}
+
+.section-heading-p{
+    font-size: 13px;
+    font-weight:bold;
+    background-color: #f2f2f2;
+    color: #000;
+    text-align: left;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.result-set-section-body{
+    max-width: 230px;
+}
+
+
+.search-result-detail-cntnr{
+    position: relative;
+    width: 300px;
+    height: 376px;
+    background-color: #fff;
+}

@@ -41,12 +41,63 @@
         </div>
     </div>
 
-    <div class="main-search-content-cntnr">
+    <div class="main-search-result-cntnr">
+        <div class="search-result-set-cntnr">
 
+            <div class="result-set-best-match-section">
+                <div class="result-set-section-heading">
+                    <p class="section-heading-p">Best match</p>
+                </div>
+                <div class="result-set-section-body">
+                    <!-- Best match results go here -->
+                </div>
+            </div>
+
+            <div class="result-set-app-section">
+                <div class="result-set-section-heading">
+                    <p class="section-heading-p">Apps</p>
+                </div>
+                <div class="result-set-section-body">
+                    <!-- Best match results go here -->
+                </div>
+            </div>
+
+            <div class="result-set-files-section">
+                <div class="result-set-section-heading">
+                    <p class="section-heading-p">Files</p>
+                </div>
+                <div class="result-set-section-body">
+                    <!-- Best match results go here -->
+                </div>
+            </div>
+
+            <div class="result-set-folders-section">
+                <div class="result-set-section-heading">
+                    <p class="section-heading-p">Folders</p>
+                </div>
+                <div class="result-set-section-body">
+                    <!-- Best match results go here -->
+                </div>
+            </div>
+
+            <div class="result-set-others-section">
+                <div class="result-set-section-heading">
+                    <p class="section-heading-p">{{otherSectionName}}</p>
+                </div>
+                <div class="result-set-section-body">
+                    <!-- Best match results go here -->
+                </div>
+            </div>
+
+        </div>
+
+        <div class="search-result-detail-cntnr">
+            <!-- Detailed result info goes here -->
+        </div>
     </div>
 
 
-    <div class="main-search-options-cntnr" *ngIf="isShowOptionsMenu">
+    <div class="main-search-options-cntnr" *ngIf="showOptionsMenu">
         <ol>
             <li class="li-file-tree-view" *ngFor="let option of menuOptions; let i = index">
                 <div class="tree-view-cntnr"  

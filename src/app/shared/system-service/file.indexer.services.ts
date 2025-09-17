@@ -58,7 +58,7 @@ export class FileIndexerService implements BaseService{
         queue.push(path);
         this.indexApps();
         await this.indexDirectoryHelperAsync(queue);
-        //console.log('_Index Result:', this._Index)
+        console.log('_Index Result:', this._Index)
         return;
     }
 
@@ -76,7 +76,9 @@ export class FileIndexerService implements BaseService{
                 this._Index.push([entryPath, entry, FileIndexIDs.FOLDERS]);
                 queue.push(entryPath);
             }else{
-                this._Index.push([entryPath, entry, this.determinFileType(entryPath)]);
+                //exclude shortcut files(urls)
+                if(extname(entry) !== Constants.URL)
+                    this._Index.push([entryPath, entry, this.determinFileType(entryPath)]);
             }
         }
 
