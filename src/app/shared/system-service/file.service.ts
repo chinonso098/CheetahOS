@@ -442,7 +442,7 @@ export class FileService implements BaseService{
         return this._fileInfo;
     }
 
-	private getOpensWith(extension: string): OpensWith{
+	public getOpensWith(extension: string): OpensWith{
 		const empty = Constants.EMPTY_STRING;
 		const isAudioFile = Constants.AUDIO_FILE_EXTENSIONS.includes(extension);
 		if(isAudioFile)

@@ -36,21 +36,19 @@ export class FileIndexerService implements BaseService{
     description = 'handles file indexing';
 
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService) {
-
         this._appDirectory = new AppDirectory();
+        FileIndexerService.instance = this;
 
         this._Index = [[]];
+        this._Index.pop();
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
         this._fileService = fileService;
-
-        FileIndexerService.instance = this;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
     }
-
 
     public async indexDirectoryAsync(path = Constants.USER_BASE_PATH):Promise<void>{
         const queue:string[] = [];
@@ -58,7 +56,7 @@ export class FileIndexerService implements BaseService{
         queue.push(path);
         this.indexApps();
         await this.indexDirectoryHelperAsync(queue);
-        console.log('_Index Result:', this._Index)
+        //console.log('_Index Result:', this._Index)
         return;
     }
 
@@ -73,12 +71,25 @@ export class FileIndexerService implements BaseService{
             const entryPath = `${filePath}/${entry}`;
             const isDirectory = await this._fileService.isDirectory(entryPath);
             if(isDirectory){
-                this._Index.push([entryPath, entry, FileIndexIDs.FOLDERS]);
-                queue.push(entryPath);
+                const isFile = false;
+                const entryToExclude = 'Recycle Bin';
+                const pathToExclude = '/Users/Desktop/Recycle Bin';
+
+                if(pathToExclude !== entryPath && entryToExclude !== entry){
+                    this._Index.push([FileIndexIDs.FOLDERS, entry,  entryPath, this.handleNonAppIcons(entry, isFile)]);
+                    queue.push(entryPath);
+                }
             }else{
+                const isFile = true;
+                const hasExt = false;
                 //exclude shortcut files(urls)
-                if(extname(entry) !== Constants.URL)
-                    this._Index.push([entryPath, entry, this.determinFileType(entryPath)]);
+                const ext = extname(entry);
+                if(ext !== Constants.URL){
+                    if(ext !== Constants.EMPTY_STRING)
+                        this._Index.push([this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry)]);
+                    else
+                         this._Index.push([this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry, isFile, hasExt)]);
+                }
             }
         }
 
@@ -89,7 +100,22 @@ export class FileIndexerService implements BaseService{
         const entryPath = 'None';
         const installApps = this._appDirectory.getAppList(); 
         for(const app of installApps){
-            this._Index.push([entryPath, app, FileIndexIDs.APPS]);
+            this._Index.push([FileIndexIDs.APPS, app, entryPath, this._appDirectory.getAppIcon(app)]);
+        }
+    }
+
+    private handleNonAppIcons(fileName:string, isFile = true, hasExt = true):string{
+        const folderIcon = 'folder.png';
+        const unknownIcon = 'unknown.png'
+        if(!isFile){
+            return `${Constants.IMAGE_BASE_PATH}${folderIcon}`;
+        }else{
+            if(hasExt){
+                const opensWith = this._fileService.getOpensWith(extname(fileName));
+                return `${Constants.IMAGE_BASE_PATH}${opensWith.appIcon}`;
+            }else{
+                return `${Constants.IMAGE_BASE_PATH}${unknownIcon}`;
+            }
         }
     }
 

@@ -133,7 +133,6 @@
     position: relative;
 }
 
-
 /*SearchBox Form Section*/
 
 .search-bar-form-cntnr{
@@ -218,6 +217,60 @@
 
 .result-set-section-body{
     max-width: 230px;
+}
+
+/*sdsdsd*/
+
+.li-result-set-view{
+    height: 30px;
+    width: 226px;
+}
+
+.result-set-cntnr{
+    display: inline-flex;
+    height: 30px;
+    width: 226px;
+}
+
+.result-set-option-p{
+    position: relative;
+    width: 196px;
+    top: 5px;
+    overflow: hidden;         
+    text-overflow: ellipsis; 
+    white-space: nowrap;
+}
+
+.result-set-option-head{
+    padding-left: 2px;
+    width: 30px;
+    height: 30px;
+}
+
+.result-set-option-tail{
+    padding: 0 1px;
+    color: #000;
+    text-align: left;
+    font-size: 13px;
+    font-weight:200;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 196px;
+    height: 30px;
+}
+
+.result-set-option-figure{
+    position: relative;
+    align-items: center;
+    /* display: inline-flex; */
+    height: 24px;
+    width: 24px;
+    top: 2.5px;
+}
+
+.result-set-option-img{
+    height: 24px;
+    width: 24px;
+    position: relative;
 }
 
 

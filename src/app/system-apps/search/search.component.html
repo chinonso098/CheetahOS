@@ -28,8 +28,8 @@
                 <input
                     appKeyPressCapture
                     class="search-bar-textbox"
+                    placeholder="{{searchPlaceHolder}}"
                     formControlName="searchBarText"
-                    (keydown)="onKeyDownInInputBox($event)"
                     (click)="focusOnInput($event)"
                     autofocus ="false" 
                     spellcheck="false"
@@ -49,7 +49,26 @@
                     <p class="section-heading-p">Best match</p>
                 </div>
                 <div class="result-set-section-body">
-                    <!-- Best match results go here -->
+                    <ol>
+                        <li class="li-result-set-view" *ngFor="let fileIndex of filteredFileIndex; let i = index">
+                            <div class="result-set-cntnr"  
+                                id="result-set-option-{{i}}" 
+                                (click)="selectOption($event, i)" 
+                                (mouseenter)="onMouseEnter(i)" 
+                                (mouseleave)="onMouseLeave(i)">
+                                
+                                <div class="result-set-option-head">
+                                    <figure class="result-set-option-figure">
+                                        <img class="result-set-option-img" [src]="fileIndex[3]" />
+                                    </figure>
+                                </div>
+
+                                <div class="result-set-option-tail">
+                                    <p class="result-set-option-p">{{ fileIndex[1] }}</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ol>
                 </div>
             </div>
 

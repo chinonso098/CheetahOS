@@ -32,6 +32,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _fileIndex!:string[][];
 
+
   searchBarForm!: FormGroup;
 
   defaultsearchIcon = `${Constants.IMAGE_BASE_PATH}search_all.png`;
@@ -58,6 +59,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   bestMatchFor = Constants.EMPTY_STRING;
   
   menuOptions!:string[][];
+  filteredFileIndex!:string[][];
 
   selectedOptionID = 0;
 
@@ -92,6 +94,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this._menuService = menuService;
     this._systemNotificationServices = systemNotificationServices;
     this._fileIndexerService = fileIndexerService
+    this._fileIndex = [[]];
+    this._fileIndex.pop();
+    this.filteredFileIndex = [[]];
+    this.filteredFileIndex.pop()
 
     this._renderer = renderer;
     this._formBuilder = formBuilder;
@@ -108,7 +114,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.searchBarForm = this._formBuilder.nonNullable.group({
-      searchBarText: this.searchPlaceHolder,
+      searchBarText: Constants.EMPTY_STRING,
+    });
+
+    this.searchBarForm.get('searchBarText')?.valueChanges.subscribe(value => {
+      this.handleSearch(value);
     });
 
     this.menuOptions = this.generateOptions();
@@ -205,10 +215,29 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  onKeyDownInInputBox(evt:KeyboardEvent):void{
-    console.log('evt.key:',evt.key);
+  handleSearch(searchString:string):void{
+    if(searchString.length === 0 || searchString.trim() === Constants.EMPTY_STRING){
+      this.resetFilteredArray();
+      return;
+    }
 
-    let searchString = this.searchBarForm.value.searchBarText as string;
+    if(!this.showSearchResult)
+      this.showSearchResult = true;
+
+    //this.filteredFileIndex = this._fileIndex.filter(e => e.indexOf(searchString) !== -1) 
+    //console.log('_fileIndex:', this._fileIndex);
+
+    this.filteredFileIndex = this._fileIndex.filter(
+      ([type, name, srcPath, imgPath]) => name.includes(searchString));
+
+    console.log('filteredFileIndex:', this.filteredFileIndex);
+  }
+
+  resetFilteredArray():void{
+    this.filteredFileIndex = [[]];
+    this.filteredFileIndex.pop();
+
+    this.showSearchResult = false;
   }
 
   focusOnInput(evt:MouseEvent):void{
