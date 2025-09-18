@@ -57,3 +57,8 @@
 .main-taskbar-search-cntnr:hover{
     background-color: hsla(0,0%,30%,60%);
 }
+
+.main-taskbar-search-cntnr:active,
+.main-taskbar-search-cntnr.active {
+  background-color: hsla(0, 0%, 40%, 60%);
+}

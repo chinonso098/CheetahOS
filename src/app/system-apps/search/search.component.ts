@@ -149,8 +149,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     if(!this.cheetahSearchDiv) return;
 
     const  searchDiv = this.cheetahSearchDiv.nativeElement;
-    this._renderer.setStyle(searchDiv, 'z-index', '-1')
-    this._renderer.setStyle(searchDiv, 'display', 'none')
+    this._renderer.setStyle(searchDiv, 'z-index', '-1');
+    this._renderer.setStyle(searchDiv, 'display', 'none');
+
+    //this._menuService.hideSearchBox.next();
   }
 
   hideShowOptions(evt:MouseEvent):void{
@@ -167,6 +169,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     setTimeout(() => { this.onMouseLeave(this.selectedOptionID); }, delay);
+  }
+
+  shhhhh(evt:MouseEvent):void{
+    evt.stopPropagation();
   }
 
   private showOptionsMenuDD():void{
@@ -199,7 +205,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.hideShowSearchSections(searchFocus)
 
     if (previousId !== id) {
-      this.updateOptionStyle(previousId, "#fff");
+      this.updateOptionStyle(previousId, "rgba(41,41, 41, 0.75)");
     }
 
     this.updateOptionStyle(id, "#76B9ED");
@@ -211,7 +217,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onMouseLeave(id:number):void{    
-    const color = (id === this.selectedOptionID)? "#76B9ED" : "#fff";
+    const color = (id === this.selectedOptionID)? "#76B9ED" : "";
     this.updateOptionStyle(id, color);
   }
 

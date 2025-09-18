@@ -36,8 +36,8 @@ export class TaskbarComponent implements AfterViewInit{
   private _systemNotificationServices:SystemNotificationService;
   private _el: ElementRef;
 
-  private isStartMenuVisible = false;
-  private isSearchWindowVisible = false;
+  isStartMenuVisible = false;
+  isSearchWindowVisible = false;
   
   
   SECONDS_DELAY = 250;

@@ -9,7 +9,7 @@
             </svg>
     </button>
 
-    <div class="main-taskbar-search-cntnr"> 
+    <div class="main-taskbar-search-cntnr" [class.active]="isSearchWindowVisible"> 
         <figure  class="taskbar-search-fig" (click)="hideShowSearch($event)">
             <img class="taskbar-search-img" [src]="searchIcon">
         </figure>
