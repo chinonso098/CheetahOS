@@ -15,7 +15,7 @@
     position: absolute;
     top: 30%;
     left: 35%;
-    border: 2px solid #fff;
+    border: 1px solid #fff;
     box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
             0 8px 10px 1px rgba(0, 0, 0, 0.14),
             0 3px 14px 2px rgba(0, 0, 0, 0.12);
@@ -67,13 +67,12 @@
 .main-search-options-cntnr{
     width: 200px;
     height: fit-content;
-    color: #fff;
-    background-color: #fff;
+    backdrop-filter: blur(30px);
     z-index: 3;
     position: absolute;
     top: 34.5%;
     left: 35%;
-    border: 2px solid #fff;
+    border: 1px solid #fff;
     box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
             0 8px 10px 1px rgba(0, 0, 0, 0.14),
             0 3px 14px 2px rgba(0, 0, 0, 0.12);
@@ -133,6 +132,7 @@
     height: 40px;
     width: 490px;
     left: 6px;
+    background-color: transparent;
 }
 
 .search-bar-form, .search-bar-textbox{
@@ -141,19 +141,22 @@
     height: 40px;
 }
 
+.search-bar-form{
+    background-color: transparent;
+}
+
 .search-bar-textbox{
     position: relative;
     margin: 0;
     width: 490px;
-    /* border: 1px solid #ccc; */
-    height: 20px;
+    border: 1px solid #ccc;
+    height: 26px;
     font-size: 13px;
     font-weight:200;
-    background-color: rgba(41,41, 41, 0.75);
-    backdrop-filter: blur(30px);
     color: #fff;
+    background-color: transparent;
     text-align: left;
-    top: 8px;
+    top: 8.5px;
  }
 
 
@@ -168,7 +171,7 @@
     position: absolute;
     top: 34.5%;
     left: 35%;
-    border: 2px solid #fff;
+    border: 1px solid #fff;
     box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
             0 8px 10px 1px rgba(0, 0, 0, 0.14),
             0 3px 14px 2px rgba(0, 0, 0, 0.12);
@@ -178,7 +181,7 @@
     display: block;
     position: relative;
     width: 250px;
-    height: 376px;
+    height: 378px;
     background-color: rgba(41,41, 41, 0.75);
     overflow-y: scroll;
     overflow-x: hidden;
@@ -279,6 +282,6 @@
 .search-result-detail-cntnr{
     position: relative;
     width: 300px;
-    height: 376px;
+    height: 378px;
     background-color: rgba(46,46, 46, 0.55);
 }

@@ -43,7 +43,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   searchPictureIcon = `${Constants.IMAGE_BASE_PATH}search_picture.png`;
   searchApplicatiionIcon = `${Constants.IMAGE_BASE_PATH}search_app.png`;
 
-  searchPlaceHolder = 'Search now';
+  searchPlaceHolder = '  Search now';
 
   optionsMenuToggle = false;
   showOptionsMenu = false;
