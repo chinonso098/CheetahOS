@@ -44,13 +44,41 @@
     <div class="main-search-result-cntnr">
         <div class="search-result-set-cntnr">
 
-            <div class="result-set-best-match-section">
+            <div class="result-set-best-match-section" *ngIf="showBestMatchSection">
                 <div class="result-set-section-heading">
                     <p class="section-heading-p">Best match</p>
                 </div>
                 <div class="result-set-section-body">
                     <ol>
-                        <li class="li-result-set-view" *ngFor="let fileIndex of filteredFileIndex; let i = index">
+                        <li class="li-result-set-view">
+                            <div class="result-set-cntnr"  
+                                id="best-match-option" 
+                                (click)="selectOption($event, -1)" 
+                                (mouseenter)="onMouseEnter(-1)" 
+                                (mouseleave)="onMouseLeave(-1)">
+                                
+                                <div class="result-set-option-head">
+                                    <figure class="result-set-option-figure">
+                                        <img class="result-set-option-img" [src]="bestMatch.iconPath" />
+                                    </figure>
+                                </div>
+
+                                <div class="result-set-option-tail">
+                                    <p class="result-set-option-p">{{ bestMatch.name }}</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="result-set-app-section" *ngIf="showApplicationSection && isAppPresent">
+                <div class="result-set-section-heading">
+                    <p class="section-heading-p">Apps</p>
+                </div>
+                <div class="result-set-section-body">
+                    <ol>
+                        <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyAppsSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
                                 id="result-set-option-{{i}}" 
                                 (click)="selectOption($event, i)" 
@@ -59,12 +87,12 @@
                                 
                                 <div class="result-set-option-head">
                                     <figure class="result-set-option-figure">
-                                        <img class="result-set-option-img" [src]="fileIndex[3]" />
+                                        <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
                                     </figure>
                                 </div>
 
                                 <div class="result-set-option-tail">
-                                    <p class="result-set-option-p">{{ fileIndex[1] }}</p>
+                                    <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
                                 </div>
                             </div>
                         </li>
@@ -72,39 +100,89 @@
                 </div>
             </div>
 
-            <div class="result-set-app-section">
-                <div class="result-set-section-heading">
-                    <p class="section-heading-p">Apps</p>
-                </div>
-                <div class="result-set-section-body">
-                    <!-- Best match results go here -->
-                </div>
-            </div>
-
-            <div class="result-set-files-section">
+            <div class="result-set-files-section" *ngIf="showFilesSection && isFilePresent">
                 <div class="result-set-section-heading">
                     <p class="section-heading-p">Files</p>
                 </div>
                 <div class="result-set-section-body">
-                    <!-- Best match results go here -->
+                    <ol>
+                        <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
+                            <div class="result-set-cntnr"  
+                                id="result-set-option-{{i}}" 
+                                (click)="selectOption($event, i)" 
+                                (mouseenter)="onMouseEnter(i)" 
+                                (mouseleave)="onMouseLeave(i)">
+                                
+                                <div class="result-set-option-head">
+                                    <figure class="result-set-option-figure">
+                                        <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
+                                    </figure>
+                                </div>
+
+                                <div class="result-set-option-tail">
+                                    <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ol>
                 </div>
             </div>
 
-            <div class="result-set-folders-section">
+            <div class="result-set-folders-section" *ngIf="showFoldersSection && isFolderPresent">
                 <div class="result-set-section-heading">
                     <p class="section-heading-p">Folders</p>
                 </div>
                 <div class="result-set-section-body">
-                    <!-- Best match results go here -->
+                    <ol>
+                        <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFoldersSearchIndex; let i = index">
+                            <div class="result-set-cntnr"  
+                                id="result-set-option-{{i}}" 
+                                (click)="selectOption($event, i)" 
+                                (mouseenter)="onMouseEnter(i)" 
+                                (mouseleave)="onMouseLeave(i)">
+                                
+                                <div class="result-set-option-head">
+                                    <figure class="result-set-option-figure">
+                                        <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
+                                    </figure>
+                                </div>
+
+                                <div class="result-set-option-tail">
+                                    <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ol>
                 </div>
             </div>
 
-            <div class="result-set-others-section">
+            <div class="result-set-others-section" *ngIf="showOthersSection && isFilePresent">
                 <div class="result-set-section-heading">
                     <p class="section-heading-p">{{otherSectionName}}</p>
                 </div>
                 <div class="result-set-section-body">
-                    <!-- Best match results go here -->
+                    <ol>
+                        <li class="li-result-set-view" *ngFor="let fileSearchIndex of filteredFileSearchIndex; let i = index">
+                            <div class="result-set-cntnr"  
+                                id="result-set-option-{{i}}" 
+                                (click)="selectOption($event, i)" 
+                                (mouseenter)="onMouseEnter(i)" 
+                                (mouseleave)="onMouseLeave(i)"
+                                
+                                *ngIf="fileSearchIndex.type === otherSectionFocusType">
+                                
+                                <div class="result-set-option-head">
+                                    <figure class="result-set-option-figure">
+                                        <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
+                                    </figure>
+                                </div>
+
+                                <div class="result-set-option-tail">
+                                    <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ol>
                 </div>
             </div>
 

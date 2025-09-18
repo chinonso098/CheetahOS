@@ -85,6 +85,16 @@
     /* padding:0px 12px; */
 }
 
+/* For Chrome, Safari, Edge */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: none; /* hides scrollbar */
+}
+
 .start-menu-list-ol{
     width: 100%;
     padding: 10px 0;

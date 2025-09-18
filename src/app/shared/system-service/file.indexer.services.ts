@@ -12,6 +12,7 @@ import { ProcessIDService } from "./process.id.service";
 import { FileIndexIDs } from "src/app/system-files/common.enums";
 
 import {extname} from 'path';
+import { FileSearchIndex } from "src/app/system-files/file.search.index";
 
 @Injectable({
     providedIn: 'root'
@@ -20,7 +21,7 @@ import {extname} from 'path';
 export class FileIndexerService implements BaseService{
     static instance:FileIndexerService;
 
-    private _Index: string[][];
+    private _Index:FileSearchIndex[] = [];
     private _runningProcessService:RunningProcessService;
     private _processIdService:ProcessIDService;
     private _fileService:FileService;
@@ -38,9 +39,6 @@ export class FileIndexerService implements BaseService{
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService) {
         this._appDirectory = new AppDirectory();
         FileIndexerService.instance = this;
-
-        this._Index = [[]];
-        this._Index.pop();
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
         this._fileService = fileService;
@@ -56,7 +54,7 @@ export class FileIndexerService implements BaseService{
         queue.push(path);
         this.indexApps();
         await this.indexDirectoryHelperAsync(queue);
-        //console.log('_Index Result:', this._Index)
+        //console.log('_SearchIndex Result:', this._Index)
         return;
     }
 
@@ -76,7 +74,7 @@ export class FileIndexerService implements BaseService{
                 const pathToExclude = '/Users/Desktop/Recycle Bin';
 
                 if(pathToExclude !== entryPath && entryToExclude !== entry){
-                    this._Index.push([FileIndexIDs.FOLDERS, entry,  entryPath, this.handleNonAppIcons(entry, isFile)]);
+                    this._Index.push(this.getFileSearchIndex(FileIndexIDs.FOLDERS, entry,  entryPath, this.handleNonAppIcons(entry, isFile)));
                     queue.push(entryPath);
                 }
             }else{
@@ -86,9 +84,9 @@ export class FileIndexerService implements BaseService{
                 const ext = extname(entry);
                 if(ext !== Constants.URL){
                     if(ext !== Constants.EMPTY_STRING)
-                        this._Index.push([this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry)]);
+                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry)));
                     else
-                         this._Index.push([this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry, isFile, hasExt)]);
+                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry, isFile, hasExt)));
                 }
             }
         }
@@ -100,8 +98,12 @@ export class FileIndexerService implements BaseService{
         const entryPath = 'None';
         const installApps = this._appDirectory.getAppList(); 
         for(const app of installApps){
-            this._Index.push([FileIndexIDs.APPS, app, entryPath, this._appDirectory.getAppIcon(app)]);
+            this._Index.push(this.getFileSearchIndex(FileIndexIDs.APPS, app, entryPath, this._appDirectory.getAppIcon(app)));
         }
+    }
+
+    private getFileSearchIndex(type:string, name:string, srcPath:string, iconPath:string):FileSearchIndex{
+        return{ type:type, name:name, srcPath:srcPath, iconPath:iconPath }
     }
 
     private handleNonAppIcons(fileName:string, isFile = true, hasExt = true):string{
@@ -146,7 +148,7 @@ export class FileIndexerService implements BaseService{
         
     }
 
-    public getFileIndex():string[][]{
+    public getFileIndex():FileSearchIndex[]{
         return this._Index
     }
 

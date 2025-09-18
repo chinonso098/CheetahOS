@@ -9,19 +9,16 @@
     display: inline-flex;
     height: 45px;
     min-width: 550px;
-    color: #000;
-    background-color: #fff;
+    color: #fff;
+    background-color: rgba(41,41, 41, 0.75);
+    backdrop-filter: blur(30px);
     position: absolute;
     top: 30%;
     left: 35%;
-    border: 2px solid #b8b6b6;
+    border: 2px solid #fff;
     box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
             0 8px 10px 1px rgba(0, 0, 0, 0.14),
             0 3px 14px 2px rgba(0, 0, 0, 0.12);
-}
-
-.main-search-bar-cntnr:hover {
-    border: 2px solid #fff;
 }
 
 .search-bar-option-cntnr{
@@ -70,20 +67,16 @@
 .main-search-options-cntnr{
     width: 200px;
     height: fit-content;
-    color: #000;
+    color: #fff;
     background-color: #fff;
     z-index: 3;
     position: absolute;
     top: 34.5%;
     left: 35%;
-    border: 2px solid #ccc;
+    border: 2px solid #fff;
     box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
             0 8px 10px 1px rgba(0, 0, 0, 0.14),
             0 3px 14px 2px rgba(0, 0, 0, 0.12);
-}
-
-.main-search-options-cntnr:hover {
-    border: 2px solid #fff;
 }
 
 .li-file-tree-view{
@@ -110,7 +103,7 @@
 
 .search-option-tail{
     padding: 0 1px;
-    color: #000;
+    color: #fff;
     text-align: left;
     font-size: 13px;
     font-weight:200;
@@ -156,8 +149,9 @@
     height: 20px;
     font-size: 13px;
     font-weight:200;
-    background-color: #fff;
-    color: #000;
+    background-color: rgba(41,41, 41, 0.75);
+    backdrop-filter: blur(30px);
+    color: #fff;
     text-align: left;
     top: 8px;
  }
@@ -169,13 +163,12 @@
     display: flex;
     width: 550px;
     height: 380px;
-    color: #000;
-    background-color: #fff;
+    backdrop-filter: blur(30px);
     z-index: 3;
     position: absolute;
     top: 34.5%;
     left: 35%;
-    border: 2px solid #ccc;
+    border: 2px solid #fff;
     box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
             0 8px 10px 1px rgba(0, 0, 0, 0.14),
             0 3px 14px 2px rgba(0, 0, 0, 0.12);
@@ -186,8 +179,19 @@
     position: relative;
     width: 250px;
     height: 376px;
-    background-color: #f2f2f2;
+    background-color: rgba(41,41, 41, 0.75);
     overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+/* For Chrome, Safari, Edge */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: none; /* hides scrollbar */
 }
 
 .result-set-best-match-section,
@@ -196,7 +200,6 @@
 .result-set-folders-section,
 .result-set-others-section {
     display: block;
-    background-color: #f2f2f2;
     padding: 10px 10px;
     height: fit-content;
     width: 246px;
@@ -209,8 +212,7 @@
 .section-heading-p{
     font-size: 13px;
     font-weight:bold;
-    background-color: #f2f2f2;
-    color: #000;
+    color: #fff;
     text-align: left;
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -224,6 +226,7 @@
 .li-result-set-view{
     height: 30px;
     width: 226px;
+    padding: 2px 0px;
 }
 
 .result-set-cntnr{
@@ -249,10 +252,10 @@
 
 .result-set-option-tail{
     padding: 0 1px;
-    color: #000;
+    color: #fff;
     text-align: left;
     font-size: 13px;
-    font-weight:200;
+    font-weight:normal;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     width: 196px;
     height: 30px;
@@ -273,10 +276,9 @@
     position: relative;
 }
 
-
 .search-result-detail-cntnr{
     position: relative;
     width: 300px;
     height: 376px;
-    background-color: #fff;
+    background-color: rgba(46,46, 46, 0.55);
 }

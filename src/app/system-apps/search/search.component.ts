@@ -12,6 +12,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { FileIndexIDs } from "src/app/system-files/common.enums";
+import { FileSearchIndex } from 'src/app/system-files/file.search.index';
 @Component({
   selector: 'cos-search',
   templateUrl: './search.component.html',
@@ -29,9 +30,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private _systemNotificationServices:SystemNotificationService;
   private _fileIndexerService:FileIndexerService;
   private _formBuilder:FormBuilder;
-
-  private _fileIndex!:string[][];
-
+  private _fileSearchIndex:FileSearchIndex[] = [];
 
   searchBarForm!: FormGroup;
 
@@ -55,13 +54,23 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   showFoldersSection = true;
   showApplicationSection = true;
   showOthersSection = false;
+
+  isAppPresent = false;
+  isFolderPresent = false;
+  isFilePresent = false;
+
+  bestMatchFor = Constants.EMPTY_STRING;  
   otherSectionName = Constants.EMPTY_STRING;
-  bestMatchFor = Constants.EMPTY_STRING;
+  otherSectionFocusType = Constants.EMPTY_STRING;
   
   menuOptions!:string[][];
-  filteredFileIndex!:string[][];
+  filteredFileSearchIndex:FileSearchIndex[] = [];
+  onlyAppsSearchIndex:FileSearchIndex[] = [];
+  onlyFilesSearchIndex:FileSearchIndex[] = [];
+  onlyFoldersSearchIndex:FileSearchIndex[] = [];
 
   selectedOptionID = 0;
+  bestMatch!:FileSearchIndex;
 
   readonly APPS = FileIndexIDs.APPS.toString();
   readonly DOCUMENTS = FileIndexIDs.DOCUMENTS.toString();
@@ -70,13 +79,13 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly PHOTOS = FileIndexIDs.PHOTOS.toString();
   readonly VIDEOS = FileIndexIDs.VIDEOS.toString();
 
-  readonly OPTION_ALL = 'All';
-  readonly OPTION_APPS = 'Apps';
-  readonly OPTION_DOCUMENTS = 'Documents';
-  readonly OPTION_FOLDERS = 'Folders';
-  readonly OPTION_MUSIC = 'Music';
-  readonly OPTION_PHOTOS = 'Photos';
-  readonly OPTION_VIDEOS = 'Videos';
+  private readonly OPTION_ALL = 'All';
+  private readonly OPTION_APPS = 'Apps';
+  private readonly OPTION_DOCUMENTS = 'Documents';
+  private readonly OPTION_FOLDERS = 'Folders';
+  private readonly OPTION_MUSIC = 'Music';
+  private readonly OPTION_PHOTOS = 'Photos';
+  private readonly OPTION_VIDEOS = 'Videos';
 
   hasWindow = false;
   hover = false;
@@ -94,10 +103,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this._menuService = menuService;
     this._systemNotificationServices = systemNotificationServices;
     this._fileIndexerService = fileIndexerService
-    this._fileIndex = [[]];
-    this._fileIndex.pop();
-    this.filteredFileIndex = [[]];
-    this.filteredFileIndex.pop()
+    this.bestMatch = {type: Constants.EMPTY_STRING, name:'Test', srcPath:Constants.EMPTY_STRING, iconPath:this.icon}
 
     this._renderer = renderer;
     this._formBuilder = formBuilder;
@@ -125,7 +131,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this._fileIndex = this._fileIndexerService.getFileIndex();
+    this._fileSearchIndex = this._fileIndexerService.getFileIndex();
   }
 
   ngOnDestroy(): void {}
@@ -175,7 +181,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   generateOptions():string[][]{
     const options = [[this.searchAllIcon, this.OPTION_ALL], [this.searchApplicatiionIcon, this.OPTION_APPS], 
-                    [this.searchFileIcon, this.OPTION_DOCUMENTS], [this.searchFolderIcon, this.OPTION_FOLDERS],
+                     [this.searchFileIcon, this.OPTION_DOCUMENTS], [this.searchFolderIcon, this.OPTION_FOLDERS],
                      [this.searchMusicIcon, this.OPTION_MUSIC], [this.searchPictureIcon, this.OPTION_PHOTOS],
                      [this.searchVideoIcon, this.OPTION_VIDEOS]];
     return options;
@@ -189,7 +195,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const [icon, searchFocus] = this.menuOptions[id];
     this.defaultsearchIcon = icon;
-    this.changeSearchFocus(searchFocus);
+    //this.changeSearchFocus(searchFocus);
+    this.hideShowSearchSections(searchFocus)
 
     if (previousId !== id) {
       this.updateOptionStyle(previousId, "#fff");
@@ -224,19 +231,15 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     if(!this.showSearchResult)
       this.showSearchResult = true;
 
-    //this.filteredFileIndex = this._fileIndex.filter(e => e.indexOf(searchString) !== -1) 
-    //console.log('_fileIndex:', this._fileIndex);
+    this.filteredFileSearchIndex = this._fileSearchIndex.filter(f => f.name.toLowerCase().includes(searchString.toLowerCase()));
+    this.getBestMatch();
+    this.checkIfSectionIsPresent();
 
-    this.filteredFileIndex = this._fileIndex.filter(
-      ([type, name, srcPath, imgPath]) => name.includes(searchString));
-
-    console.log('filteredFileIndex:', this.filteredFileIndex);
+    console.log('filteredFileIndex:', this.filteredFileSearchIndex);
   }
 
   resetFilteredArray():void{
-    this.filteredFileIndex = [[]];
-    this.filteredFileIndex.pop();
-
+    this.filteredFileSearchIndex = [];
     this.showSearchResult = false;
   }
 
@@ -247,6 +250,67 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       searchBarTxtBoxElm?.focus();
     }
   }
+
+  hideShowSearchSections(focus:string):void{
+    this.showBestMatchSection = true;
+
+    this.showApplicationSection = (focus === this.OPTION_ALL || focus === this.OPTION_APPS);
+
+    this.showFilesSection = (focus === this.OPTION_ALL);
+
+    this.showFoldersSection = (focus === this.OPTION_ALL || focus === this.OPTION_FOLDERS);
+
+    this.showOthersSection = (focus === this.OPTION_DOCUMENTS || focus === this.OPTION_MUSIC 
+                              || focus === this.OPTION_VIDEOS || focus === this.OPTION_PHOTOS);
+
+    if(this.showOthersSection){
+      this.otherSectionFocusType = (focus === this.OPTION_DOCUMENTS) 
+        ? this.DOCUMENTS : (focus === this.OPTION_MUSIC) 
+        ? this.MUSIC : (focus === this.OPTION_VIDEOS) 
+        ? this.VIDEOS : this.PHOTOS
+    }
+
+    this.bestMatchFor = (this.showOthersSection)? focus.toLowerCase() : Constants.EMPTY_STRING;                          
+    this.otherSectionName = (this.showOthersSection)? focus : Constants.EMPTY_STRING;
+  }
+
+  checkIfSectionIsPresent():void{
+    this.resetSectionBucket();
+
+    this.isAppPresent = this.isTypePresent(this.APPS);
+    this.onlyAppsSearchIndex = this.filterByType(this.APPS);
+
+    this.isFilePresent = (this.isTypePresent(this.DOCUMENTS) || this.isTypePresent(this.PHOTOS) 
+                          || this.isTypePresent(this.MUSIC) || this.isTypePresent(this.VIDEOS));
+
+    this.onlyFilesSearchIndex.push(...this.filterByType(this.DOCUMENTS));
+    this.onlyFilesSearchIndex.push(...this.filterByType(this.PHOTOS));
+    this.onlyFilesSearchIndex.push(...this.filterByType(this.MUSIC));
+    this.onlyFilesSearchIndex.push(...this.filterByType(this.VIDEOS));
+
+    this.isFolderPresent = this.isTypePresent(this.FOLDERS);
+    this.onlyFoldersSearchIndex = this.filterByType(this.FOLDERS);
+  }
+
+  isTypePresent(type:string):boolean{
+    return  this.filteredFileSearchIndex.some(f => f.type === type);
+  }
+
+  filterByType(type:string):FileSearchIndex[]{
+    return  this.filteredFileSearchIndex.filter(f => f.type === type);
+  }
+
+  resetSectionBucket():void{    
+    this.onlyAppsSearchIndex = [];
+    this.onlyFilesSearchIndex = [];
+    this.onlyFoldersSearchIndex = [];
+  }
+
+  getBestMatch():void{
+
+  }
+
+  desktopIsActive():void{ }
 
   changeSearchFocus(focus:string):void{
     let focusPath = Constants.EMPTY_STRING;
@@ -261,24 +325,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     //if files, exclude folders 
   }
-
-  hideShowSearchSections(focus:string):void{
-    this.showBestMatchSection = true;
-
-    this.showApplicationSection = (focus === this.OPTION_ALL || focus === this.OPTION_APPS);
-
-    this.showFilesSection = (focus === this.OPTION_ALL);
-
-    this.showFoldersSection = (focus === this.OPTION_ALL || focus === this.OPTION_FOLDERS);
-
-    this.showOthersSection = (focus === this.OPTION_DOCUMENTS || focus === this.OPTION_MUSIC 
-                              || focus === this.OPTION_VIDEOS || focus === this.OPTION_MUSIC);
-
-    this.otherSectionName = (this.showOthersSection)? focus : Constants.EMPTY_STRING;
-    this.bestMatchFor = (this.showOthersSection)? focus.toLowerCase() : Constants.EMPTY_STRING;
-  }
-
-  desktopIsActive():void{ }
   
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
