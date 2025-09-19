@@ -142,7 +142,7 @@ export class TaskbarComponent implements AfterViewInit{
   hideShowSearch(evt:MouseEvent):void{
     if(this.isSearchWindowVisible){
       this.isSearchWindowVisible = false;
-      this._menuService.hideSearchBox.next();
+      this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
     }else{
       this.isSearchWindowVisible = true;
       this._menuService.showSearchBox.next();

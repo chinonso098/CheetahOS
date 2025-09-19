@@ -43,7 +43,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   searchPictureIcon = `${Constants.IMAGE_BASE_PATH}search_picture.png`;
   searchApplicatiionIcon = `${Constants.IMAGE_BASE_PATH}search_app.png`;
 
-  searchPlaceHolder = '  Search now';
+  searchPlaceHolder = ' Search now';
 
   optionsMenuToggle = false;
   showOptionsMenu = false;
@@ -58,6 +58,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   isAppPresent = false;
   isFolderPresent = false;
   isFilePresent = false;
+
+  isSearchWindowVisible = false;
 
   bestMatchFor = Constants.EMPTY_STRING;  
   otherSectionName = Constants.EMPTY_STRING;
@@ -90,7 +92,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   hasWindow = false;
   hover = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
-  name = 'search';
+  readonly name = 'search';
   processId = 0;
   type = ComponentType.System
   displayName = Constants.EMPTY_STRING;
@@ -111,7 +113,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    this._menuService.hideSearchBox.subscribe(() => { this.hideSearchBox()});
+    this._menuService.hideSearchBox.subscribe((p) => { 
+      if(p !== this.name)  //endless call with this check
+        this.hideSearchBox();
+    });
     this._menuService.showSearchBox.subscribe(() => { this.showSearchBox()});
 
     this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.hideSearchBox()});
@@ -137,14 +142,18 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {}
 
   showSearchBox():void{
+    this.isSearchWindowVisible = true;
     const  searchDiv = this.cheetahSearchDiv.nativeElement;
     this._renderer.setStyle(searchDiv, 'display', 'block');
     this._renderer.setStyle(searchDiv, 'z-index', '3');
   }
 
   hideSearchBox():void{
+    if(!this.isSearchWindowVisible) return;
+
     this.showOptionsMenu = false;
     this.optionsMenuToggle = false;
+    this.isSearchWindowVisible = false;
 
     if(!this.cheetahSearchDiv) return;
 
@@ -152,7 +161,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this._renderer.setStyle(searchDiv, 'z-index', '-1');
     this._renderer.setStyle(searchDiv, 'display', 'none');
 
-    //this._menuService.hideSearchBox.next();
+    this._menuService.hideSearchBox.next(this.name);
   }
 
   hideShowOptions(evt:MouseEvent):void{

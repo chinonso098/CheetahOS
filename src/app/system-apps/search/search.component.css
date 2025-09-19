@@ -159,9 +159,12 @@
     top: 8.5px;
  }
 
+ .search-bar-textbox:hover,
+ .search-bar-textbox:focus{
+    border: 1px solid #fff;
+ }
 
  /*SearchBox Result Window Section*/
-
 .main-search-result-cntnr{
     display: flex;
     width: 550px;
@@ -229,7 +232,7 @@
 .li-result-set-view{
     height: 30px;
     width: 226px;
-    padding: 2px 0px;
+    padding: 4px 0px;
 }
 
 .result-set-cntnr{

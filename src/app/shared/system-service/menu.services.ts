@@ -44,7 +44,7 @@ export class MenuService implements BaseService{
     showOpenWindows: Subject<void> = new Subject<void>();
     updateTaskBarContextMenu:Subject<void> = new Subject<void>();
 
-    hideSearchBox: Subject<void> = new Subject<void>();
+    hideSearchBox: Subject<string> = new Subject<string>();
     showSearchBox: Subject<void> = new Subject<void>();
 
     private storeData:string[] = []
