@@ -162,14 +162,12 @@
                 </div>
                 <div class="result-set-section-body">
                     <ol>
-                        <li class="li-result-set-view" *ngFor="let fileSearchIndex of filteredFileSearchIndex; let i = index">
+                        <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
                                 id="result-set-option-{{i}}" 
                                 (click)="selectOption($event, i)" 
                                 (mouseenter)="onMouseEnter(i)" 
-                                (mouseleave)="onMouseLeave(i)"
-                                
-                                *ngIf="fileSearchIndex.type === otherSectionFocusType">
+                                (mouseleave)="onMouseLeave(i)">
                                 
                                 <div class="result-set-option-head">
                                     <figure class="result-set-option-figure">

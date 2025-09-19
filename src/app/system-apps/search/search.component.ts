@@ -89,6 +89,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly OPTION_PHOTOS = 'Photos';
   private readonly OPTION_VIDEOS = 'Videos';
 
+  private defaultFocus = this.OPTION_ALL;
+
   hasWindow = false;
   hover = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -210,8 +212,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const [icon, searchFocus] = this.menuOptions[id];
     this.defaultsearchIcon = icon;
-    //this.changeSearchFocus(searchFocus);
-    this.hideShowSearchSections(searchFocus)
+    this.defaultFocus = searchFocus;
+    this.hideShowSearchSections(searchFocus);
+    this.checkIfSectionIsPresent(searchFocus);
 
     if (previousId !== id) {
       this.updateOptionStyle(previousId, "rgba(41,41, 41, 0.75)");
@@ -248,7 +251,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.filteredFileSearchIndex = this._fileSearchIndex.filter(f => f.name.toLowerCase().includes(searchString.toLowerCase()));
     this.getBestMatch();
-    this.checkIfSectionIsPresent();
+    this.checkIfSectionIsPresent(this.defaultFocus);
 
     console.log('filteredFileIndex:', this.filteredFileSearchIndex);
   }
@@ -289,22 +292,48 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.otherSectionName = (this.showOthersSection)? focus : Constants.EMPTY_STRING;
   }
 
-  checkIfSectionIsPresent():void{
+  checkIfSectionIsPresent(focus:string):void{
     this.resetSectionBucket();
 
-    this.isAppPresent = this.isTypePresent(this.APPS);
-    this.onlyAppsSearchIndex = this.filterByType(this.APPS);
+    if(focus === this.OPTION_ALL || focus === this.OPTION_APPS){
+      this.isAppPresent = this.isTypePresent(this.APPS);
+      this.onlyAppsSearchIndex = this.filterByType(this.APPS);
+    }
 
-    this.isFilePresent = (this.isTypePresent(this.DOCUMENTS) || this.isTypePresent(this.PHOTOS) 
-                          || this.isTypePresent(this.MUSIC) || this.isTypePresent(this.VIDEOS));
+    if(focus === this.OPTION_ALL || focus === this.OPTION_FOLDERS){
+      this.isFolderPresent = this.isTypePresent(this.FOLDERS);
+      this.onlyFoldersSearchIndex = this.filterByType(this.FOLDERS);
+    }
 
-    this.onlyFilesSearchIndex.push(...this.filterByType(this.DOCUMENTS));
-    this.onlyFilesSearchIndex.push(...this.filterByType(this.PHOTOS));
-    this.onlyFilesSearchIndex.push(...this.filterByType(this.MUSIC));
-    this.onlyFilesSearchIndex.push(...this.filterByType(this.VIDEOS));
+    if(focus === this.OPTION_ALL){
+      this.isFilePresent = (this.isTypePresent(this.DOCUMENTS) || this.isTypePresent(this.PHOTOS) 
+                  || this.isTypePresent(this.MUSIC) || this.isTypePresent(this.VIDEOS));
 
-    this.isFolderPresent = this.isTypePresent(this.FOLDERS);
-    this.onlyFoldersSearchIndex = this.filterByType(this.FOLDERS);
+      this.onlyFilesSearchIndex.push(...this.filterByType(this.DOCUMENTS));
+      this.onlyFilesSearchIndex.push(...this.filterByType(this.PHOTOS));
+      this.onlyFilesSearchIndex.push(...this.filterByType(this.MUSIC));
+      this.onlyFilesSearchIndex.push(...this.filterByType(this.VIDEOS));
+    }
+
+    if(focus === this.OPTION_DOCUMENTS){
+      this.isFilePresent = this.isTypePresent(this.DOCUMENTS);
+      this.onlyFilesSearchIndex.push(...this.filterByType(this.DOCUMENTS));
+    }
+
+    if(focus === this.OPTION_PHOTOS){
+      this.isFilePresent = this.isTypePresent(this.PHOTOS);
+      this.onlyFilesSearchIndex.push(...this.filterByType(this.PHOTOS));
+    }
+
+    if(focus === this.OPTION_MUSIC){
+      this.isFilePresent =  this.isTypePresent(this.MUSIC);
+      this.onlyFilesSearchIndex.push(...this.filterByType(this.MUSIC));
+    }
+
+    if(focus === this.OPTION_VIDEOS){
+      this.isFilePresent = this.isTypePresent(this.VIDEOS);
+      this.onlyFilesSearchIndex.push(...this.filterByType(this.VIDEOS));
+    }
   }
 
   isTypePresent(type:string):boolean{
@@ -327,20 +356,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   desktopIsActive():void{ }
 
-  changeSearchFocus(focus:string):void{
-    let focusPath = Constants.EMPTY_STRING;
-
-    //if focuse is All, pull everything, apps included,
-    if(focus === this.OPTION_ALL || focus === this.OPTION_APPS || focus === this.OPTION_FOLDERS){
-
-
-    }else{
-
-    }
-
-    //if files, exclude folders 
-  }
-  
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }
