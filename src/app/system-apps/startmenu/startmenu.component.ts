@@ -8,7 +8,7 @@ import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { FileService } from 'src/app/shared/system-service/file.service';
-import { FileEntry } from 'src/app/system-files/file.entry';
+
 
 import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
@@ -39,7 +39,6 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   delayStartMenuOverlayShowTimeoutId!: NodeJS.Timeout;
 
   startMenuFiles:FileInfo[] = [];
-  private _startMenuDirectoryFilesEntries!:FileEntry[];
   private SECONDS_DELAY = 250;
   readonly START_MENU_DIRECTORY ='/AppData/StartMenu';
   readonly Documents= 'Documents';

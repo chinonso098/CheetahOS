@@ -1,13 +1,13 @@
 import { GenericResult, ITraverseResult, LSResult, TerminalCommand } from "./model/terminal.types";
 import { AppDirectory } from "src/app/system-files/app.directory";
-import { ProcessHandlerService } from "src/app/shared/system-service/process.handler.service";
-import { FileInfo } from "src/app/system-files/file.info";
-import { RunningProcessService } from "src/app/shared/system-service/running.process.service";
-//import {extname, basename, resolve, dirname} from 'path';
+
 import { FileService } from "src/app/shared/system-service/file.service";
-import { FileEntry } from 'src/app/system-files/file.entry';
+import { ProcessHandlerService } from "src/app/shared/system-service/process.handler.service";
+import { RunningProcessService } from "src/app/shared/system-service/running.process.service";
+
+import { FileInfo } from "src/app/system-files/file.info";
+//import {extname, basename, resolve, dirname} from 'path';
 import { Constants } from 'src/app/system-files/constants';
-import { Buffer } from 'buffer';
 
 
 export interface OctalRepresentation {
@@ -21,7 +21,6 @@ export class TerminalCommandProcessor{
     private _processHandlerService:ProcessHandlerService;
     private _runningProcessService:RunningProcessService;
     private _fileService:FileService;
-    private _directoryFilesEntries!:FileEntry[];
     private _appDirctory = new AppDirectory();
   
     

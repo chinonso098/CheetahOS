@@ -1,33 +1,36 @@
 import { AfterViewInit, OnInit,OnDestroy, Component, ElementRef, ViewChild} from '@angular/core';
-import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
-import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { BIRDS, GLOBE, HALO, RINGS, WAVE } from './vanta-object/vanta.interfaces';
 import { SortBys } from 'src/app/system-files/common.enums';
 import { Colors } from './colorutil/colors';
 import { FileInfo } from 'src/app/system-files/file.info';
+
+import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
+import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
-import { GeneralMenu, MenuPosition, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
-import * as htmlToImage from 'html-to-image';
-//import { FileService } from 'src/app/shared/system-service/file.service';
-import { trigger, state, style, transition, animate } from '@angular/animations';
-import { dirname} from 'path';
-import { Constants } from 'src/app/system-files/constants';
+import { FileService } from 'src/app/shared/system-service/file.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+
+import { GeneralMenu, MenuPosition, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
+import * as htmlToImage from 'html-to-image';
+import { trigger, state, style, transition, animate } from '@angular/animations';
+import { dirname} from 'path';
+import { Constants } from 'src/app/system-files/constants';
+
 import { TaskBarIconInfo } from '../taskbarentries/taskbar.entries.type';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { FileEntry } from 'src/app/system-files/file.entry';
 import { mousePosition, IconsSizes, IconsSizesPX, ShortCutIconsSizes, ShortCutIconsBottom} from './desktop.types';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { VantaDefaults } from './vanta-object/vanta.defaults';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { FileService } from 'src/app/shared/system-service/file.service';
+
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 
