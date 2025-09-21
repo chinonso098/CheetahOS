@@ -14,3 +14,9 @@ export enum FileIndexIDs {
     PHOTOS = 'PHOTOS',
     VIDEOS = 'VIDEOS',
 }
+
+
+export enum ActivityType { 
+    FILE = 'FILE',
+    APPS = 'APPS',
+}

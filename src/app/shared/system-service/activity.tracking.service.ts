@@ -38,7 +38,7 @@ export class ActivityHistoryService implements BaseService {
         this._runningProcessService.addService(this.getServiceDetail());
     }
 
-    private addActivityHistory(type:string, name:string, path:string): void {
+    public addActivityHistory(type:string, name:string, path:string): void {
         const entry = {
             type : type, name : name, path : path, count: 1, lastOpened: Date.now()
         }

@@ -59,7 +59,7 @@ export class ProcessHandlerService implements BaseService{
     private _TriggerList:FileInfo[];
 
     private _onlyOneInstanceAllowed:string[] = ["audioplayer", "chatter", "cheetah", "jsdos", "photoviewer", 
-        "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow"];
+        "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow", "search"];
 
     private userOpenedAppsList:string[] = [];
     private openedAppInstanceUID:string[] = [];

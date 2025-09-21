@@ -3,7 +3,7 @@ import { AfterViewInit, OnInit,OnDestroy, Component, ElementRef, ViewChild} from
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { BIRDS, GLOBE, HALO, RINGS, WAVE } from './vanta-object/vanta.interfaces';
-import { SortBys } from 'src/app/system-files/common.enums';
+import { ActivityType, SortBys } from 'src/app/system-files/common.enums';
 import { Colors } from './colorutil/colors';
 import { FileInfo } from 'src/app/system-files/file.info';
 
@@ -16,6 +16,7 @@ import { FileService } from 'src/app/shared/system-service/file.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
 
 import { GeneralMenu, MenuPosition, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import * as htmlToImage from 'html-to-image';
@@ -30,6 +31,7 @@ import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { VantaDefaults } from './vanta-object/vanta.defaults';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+
 
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
@@ -79,6 +81,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _runningProcessService:RunningProcessService;
   private _systemNotificationServices:SystemNotificationService;
   private _userNotificationService:UserNotificationService;
+  private _activityHistoryService:ActivityHistoryService;
 
   private _elRef:ElementRef;
   private _formBuilder:FormBuilder;
@@ -267,7 +270,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService, 
               scriptService:ScriptService, audioService:AudioService, menuService:MenuService, 
               fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
-              userNotificationService:UserNotificationService, formBuilder:FormBuilder, elRef:ElementRef) { 
+              userNotificationService:UserNotificationService, activityHistoryService:ActivityHistoryService, formBuilder:FormBuilder, elRef:ElementRef) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -280,6 +283,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._audioService = audioService;
     this._systemNotificationServices = systemNotificationServices;
     this._userNotificationService = userNotificationService;
+    this._activityHistoryService = activityHistoryService;
     this._formBuilder = formBuilder;
     this._elRef = elRef;
 
@@ -864,12 +868,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   initializeApplication(arg0:string):void{
     const file = new FileInfo();
-
+    const path = 'None';
     file.setOpensWith = arg0;
 
     if(arg0 ==  this.MARKDOWN_VIEWER_APP){
       file.setCurrentPath = Constants.DESKTOP_PATH;
       file.setContentPath = '/Users/Documents/Credits.md';
+    }
+
+    if(file.getFileExtension === Constants.URL){
+      this.trackingActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
+      this.trackingActivity(ActivityType.APPS, arg0, path);
     }
 
     this._processHandlerService.runApplication(file);
@@ -1585,7 +1594,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   handleIconHighLightState():void{
 
-
     //First case - I'm clicking only on the desktop icons
     if((this.isBtnClickEvt && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === 0)){  
       if(this.isRenameActive){
@@ -2103,7 +2111,7 @@ OpensWith=${file.getOpensWith}
     }
   }
 
-  autoResize() {
+  autoResize() { //##
     const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.selectedElementId}`) as HTMLTextAreaElement;
     if(renameTxtBoxElmt){
       renameTxtBoxElmt.style.height = 'auto'; // Reset the height
@@ -2177,16 +2185,17 @@ OpensWith=${file.getOpensWith}
     }
   }
   
-  async onRenameFileTxtBoxDataSave():Promise<void>{
+  async onRenameFileTxtBoxDataSave():Promise<void>{ //##. if rename successful, do not re-load
     this.isRenameActive = !this.isRenameActive;
+    const isRename = true;
 
     const figCapElement = document.getElementById(`figCap${this.selectedElementId}`) as HTMLElement;
     const renameContainerElement = document.getElementById(`renameContainer${this.selectedElementId}`) as HTMLElement;
     const renameText = this.renameForm.value.renameInput as string;
+    const oldFileName = this.selectedFile.getFileName;
  
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName ){
       const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
-
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         const fileIdx = this.files.findIndex(f => (dirname(f.getCurrentPath) === dirname(this.selectedFile.getCurrentPath)) && (f.getFileName === this.selectedFile.getFileName));
@@ -2196,7 +2205,9 @@ OpensWith=${file.getOpensWith}
 
         this.renameForm.reset();
         this._menuService.resetStoreData();
-        await this.loadFiles();
+        //await this.loadFiles();
+
+        this.trackingActivity(ActivityType.FILE, renameText, this.selectedFile.getCurrentPath, oldFileName, isRename);
       }
     }else{
       this.renameForm.reset();
@@ -2255,6 +2266,26 @@ OpensWith=${file.getOpensWith}
     this.showDesktopIcon();
     this.restorPriorOpenApps();
     //this.startClippy();
+  }
+
+  trackingActivity(type:string, name:string, path:string, oldFileName = Constants.EMPTY_STRING, isRename?:boolean):void{
+    //check for exisiting activity
+    if(isRename){
+      const activityHistory = this._activityHistoryService.getActivityHistory(oldFileName, path, type); 
+      if(activityHistory){
+        const isNameChanged = true;
+        this._activityHistoryService.updateActivityHistory(activityHistory, isNameChanged, oldFileName);
+      }else{
+        this._activityHistoryService.addActivityHistory(name, path, type);
+      }
+    }else{
+      const activityHistory = this._activityHistoryService.getActivityHistory(name, path, type);
+      if(activityHistory){
+        this._activityHistoryService.updateActivityHistory(activityHistory);
+      }else{
+        this._activityHistoryService.addActivityHistory(name, path, type);
+      }
+    }
   }
 
   private getComponentDetail():Process{
