@@ -156,6 +156,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private readonly CODE_EDITOR_APP ="codeeditor";
   private readonly MARKDOWN_VIEWER_APP ="markdownviewer";
   private readonly TASK_MANAGER_APP ="taskmanager";
+  private readonly CLIPPY_APP = "clippy";
 
   waveBkgrnd:WAVE =  {el:'#vanta'}
   ringsBkgrnd:RINGS =  {el:'#vanta'}
@@ -397,16 +398,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   initClippy():void{
     if(this.showClippy){
       this.clippyIntervalId = setInterval(() =>{
-        const appName = 'clippy';
-        this.initializeApplication(appName);
-      },this.CLIPPY_INIT_DELAY);
+        this.initializeApplication(this.CLIPPY_APP);
+      }, this.CLIPPY_INIT_DELAY);
     }
   }
 
   stopClippy():void{
-    const appName = 'clippy';
     //check if clippy is running, and end it
-    const clippy = this._runningProcessService.getProcessByName(appName);
+    const clippy = this._runningProcessService.getProcessByName(this.CLIPPY_APP);
     if(clippy)
       this._runningProcessService.closeProcessNotify.next(clippy);
 
@@ -868,7 +867,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   initializeApplication(arg0:string):void{
     const file = new FileInfo();
-    const path = 'None';
+    const appPath = 'None';
     file.setOpensWith = arg0;
 
     if(arg0 ==  this.MARKDOWN_VIEWER_APP){
@@ -876,11 +875,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       file.setContentPath = '/Users/Documents/Credits.md';
     }
 
-    if(file.getFileExtension === Constants.URL){
-      this.trackingActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
-      this.trackingActivity(ActivityType.APPS, arg0, path);
-    }
-
+    if(arg0 !== this.CLIPPY_APP)
+      this.trackActivity(ActivityType.APPS, arg0, appPath);
+  
     this._processHandlerService.runApplication(file);
   }
 
@@ -1301,7 +1298,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async runApplication(file:FileInfo):Promise<void>{
     console.log('desktopmanager-runApplication:',file)
+
     await this._audioService.play(this.cheetahNavAudio);
+
+    this.handleTracking(file);
     this._processHandlerService.runApplication(file);
     this.btnStyleAndValuesReset();
   }
@@ -1958,8 +1958,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   changeIconsSize(iconSize:string):void{
     const iconsSizes:number[][] = [[IconsSizesPX.SMALL_ICONS, ShortCutIconsSizes.SMALL_ICONS, ShortCutIconsBottom.SMALL_ICONS], 
                                    [IconsSizesPX.MEDIUM_ICONS, ShortCutIconsSizes.MEDIUM_ICONS, ShortCutIconsBottom.MEDIUM_ICONS], 
-                                   [IconsSizesPX.LARGE_ICONS, ShortCutIconsSizes.LARGE_ICONS, ShortCutIconsBottom.LARGE_ICONS], 
-                                  ];
+                                   [IconsSizesPX.LARGE_ICONS, ShortCutIconsSizes.LARGE_ICONS, ShortCutIconsBottom.LARGE_ICONS]];
 
     const size = (iconSize === IconsSizes.SMALL_ICONS) ? iconsSizes[0] :
                  (iconSize === IconsSizes.MEDIUM_ICONS) ? iconsSizes[1] :
@@ -2074,9 +2073,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   createShortCutHelper(file:FileInfo):string{
     let fileContent = Constants.EMPTY_STRING;
+    const shortCut = ` - ${Constants.SHORTCUT}`;
 
     fileContent = `[InternetShortcut]
-FileName=${file.getFileName} - ${Constants.SHORTCUT}
+FileName=${file.getFileName}${shortCut}
 IconPath=${file.getIconPath}
 FileType=${file.getFileType}
 ContentPath=${(file.getIsFile)? file.getContentPath : file.getCurrentPath}
@@ -2207,7 +2207,7 @@ OpensWith=${file.getOpensWith}
         this._menuService.resetStoreData();
         //await this.loadFiles();
 
-        this.trackingActivity(ActivityType.FILE, renameText, this.selectedFile.getCurrentPath, oldFileName, isRename);
+        this.trackActivity(ActivityType.FILE, renameText, this.selectedFile.getCurrentPath, oldFileName, isRename);
       }
     }else{
       this.renameForm.reset();
@@ -2268,7 +2268,7 @@ OpensWith=${file.getOpensWith}
     //this.startClippy();
   }
 
-  trackingActivity(type:string, name:string, path:string, oldFileName = Constants.EMPTY_STRING, isRename?:boolean):void{
+  trackActivity(type:string, name:string, path:string, oldFileName = Constants.EMPTY_STRING, isRename?:boolean):void{
     //check for exisiting activity
     if(isRename){
       const activityHistory = this._activityHistoryService.getActivityHistory(oldFileName, path, type); 
@@ -2286,6 +2286,21 @@ OpensWith=${file.getOpensWith}
         this._activityHistoryService.addActivityHistory(name, path, type);
       }
     }
+  }
+
+  handleTracking(file:FileInfo):void{
+    const appPath = 'None';
+    const shortCut = ` - ${Constants.SHORTCUT}`;
+
+    if(file.getFileExtension === Constants.URL && file.getIsShortCut){
+      if(file.getFileType === Constants.FOLDER && file.getOpensWith === 'fileexplorer') //## what if contentPath is not a URL ???
+        this.trackActivity(ActivityType.FOLDERS, file.getFileName.replace(shortCut, Constants.EMPTY_STRING), file.getContentPath);
+      else
+        this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
+    }else{
+      this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
+    }
+      this.trackActivity(ActivityType.APPS, file.getOpensWith, appPath);
   }
 
   private getComponentDetail():Process{

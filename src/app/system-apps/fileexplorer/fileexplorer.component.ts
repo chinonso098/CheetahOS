@@ -19,7 +19,7 @@ import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
-import { SortBys } from 'src/app/system-files/common.enums';
+import { ActivityType, SortBys } from 'src/app/system-files/common.enums';
 import { FileTreeNode } from 'src/app/system-files/file.tree.node';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
@@ -28,6 +28,7 @@ import { SystemNotificationService } from 'src/app/shared/system-service/system.
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { file } from 'jszip';
+import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -55,6 +56,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _menuService:MenuService;
   private _audioService:AudioService;
   private _systemNotificationService:SystemNotificationService;
+  private _activityHistoryService:ActivityHistoryService;
   private _formBuilder;
   private _appState!:AppState;
 
@@ -264,7 +266,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, 
               triggerProcessService:ProcessHandlerService, formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, 
               menuService:MenuService, notificationService:UserNotificationService, windowService:WindowService, 
-              audioService:AudioService, systemNotificationService:SystemNotificationService) { 
+              audioService:AudioService, systemNotificationService:SystemNotificationService, activityHistoryService:ActivityHistoryService) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -276,6 +278,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._windowService = windowService;
     this._audioService = audioService;
     this._systemNotificationService = systemNotificationService;
+    this._activityHistoryService = activityHistoryService;
     this._formBuilder = formBuilder;
 
     this.processId = this._processIdService.getNewProcessId();
@@ -1338,6 +1341,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.fileTreeNavToPath = Constants.EMPTY_STRING;
 
     this.hideFileExplorerToolTip();
+    this.handleTracking(file);
     await this._audioService.play(this.cheetahNavAudio);
 
     if(this.isRecycleBinFolder){
@@ -1381,9 +1385,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }else{
       //APPS opened from the fileexplore do not have their windows in focus,
       // and this is due to the mouse click event that causes fileexplorer to trigger setFocusOnWindow event
-      setTimeout(() => {
-        this._processHandlerService.runApplication(file);
-      }, this.SECONDS_DELAY[4]);
+      await CommonFunctions.sleep(this.SECONDS_DELAY[4]);
+      this._processHandlerService.runApplication(file);
     }
   }
 
@@ -2561,13 +2564,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  async onRenameFileTxtBoxDataSave():Promise<void>{
+  async onRenameFileTxtBoxDataSave():Promise<void>{ //##
     this.isRenameActive = !this.isRenameActive;
+    const isRename = true;
 
     const figCapElmnt= document.getElementById(`figCapElmnt-${this.processId}-${this.selectedElementId}`) as HTMLElement;
     const renameFormElmnt= document.getElementById(`renameForm-${this.processId}-${this.selectedElementId}`) as HTMLElement;
-     const renameTxtBoxElmnt= document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLInputElement;
+    const renameTxtBoxElmnt= document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLInputElement;
     const renameText = this.renameForm.value.renameInput as string;
+    const oldFileName = this.selectedFile.getFileName;
 
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName){
 
@@ -2582,7 +2587,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
         this.renameForm.reset();
         this._menuService.resetStoreData();
-        await this.loadFiles();
+        //await this.loadFiles();
+
+        this.trackActivity(ActivityType.FILE, renameText, this.selectedFile.getCurrentPath, oldFileName, isRename);
       }
     }else{
       this.renameForm.reset();
@@ -2969,9 +2976,10 @@ Do you want the shortcut to be placed on the desktop instead?`;
 
   createShortCutHelper(file:FileInfo):string{
     let fileContent = Constants.EMPTY_STRING;
+    const shortCut = ` - ${Constants.SHORTCUT}`;
 
     fileContent = `[InternetShortcut]
-FileName=${file.getFileName} - ${Constants.SHORTCUT}
+FileName=${file.getFileName}${shortCut}
 IconPath=${file.getIconPath}
 FileType=${file.getFileType}
 ContentPath=${(file.getIsFile)? file.getContentPath : file.getCurrentPath}
@@ -2992,6 +3000,41 @@ OpensWith=${file.getOpensWith}
       this._fileService.addEventOriginator(Constants.DESKTOP);
       this._fileService.dirFilesUpdateNotify.next();
     }
+  }
+
+  trackActivity(type:string, name:string, path:string, oldFileName = Constants.EMPTY_STRING, isRename?:boolean):void{
+    //check for exisiting activity
+    if(isRename){
+      const activityHistory = this._activityHistoryService.getActivityHistory(oldFileName, path, type); 
+      if(activityHistory){
+        const isNameChanged = true;
+        this._activityHistoryService.updateActivityHistory(activityHistory, isNameChanged, oldFileName);
+      }else{
+        this._activityHistoryService.addActivityHistory(name, path, type);
+      }
+    }else{
+      const activityHistory = this._activityHistoryService.getActivityHistory(name, path, type);
+      if(activityHistory){
+        this._activityHistoryService.updateActivityHistory(activityHistory);
+      }else{
+        this._activityHistoryService.addActivityHistory(name, path, type);
+      }
+    }
+  }
+
+  handleTracking(file:FileInfo):void{
+    const appPath = 'None';
+    const shortCut = ` - ${Constants.SHORTCUT}`;
+
+    if(file.getFileExtension === Constants.URL && file.getIsShortCut){
+      if(file.getFileType === Constants.FOLDER && file.getOpensWith === 'fileexplorer') //## what if contentPath is not a URL ???
+        this.trackActivity(ActivityType.FOLDERS, file.getFileName.replace(shortCut, Constants.EMPTY_STRING), file.getContentPath);
+      else
+        this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
+    }else{
+      this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
+    }
+      this.trackActivity(ActivityType.APPS, file.getOpensWith, appPath);
   }
 
   private getComponentDetail():Process{

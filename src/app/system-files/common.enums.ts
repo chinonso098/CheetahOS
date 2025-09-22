@@ -18,5 +18,6 @@ export enum FileIndexIDs {
 
 export enum ActivityType { 
     FILE = 'FILE',
+    FOLDERS = 'FOLDERS',
     APPS = 'APPS',
 }

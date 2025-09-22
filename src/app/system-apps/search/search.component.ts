@@ -13,6 +13,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { FileIndexIDs } from "src/app/system-files/common.enums";
 import { FileSearchIndex } from 'src/app/system-files/file.search.index';
+import { debounceTime, Subscription } from 'rxjs';
 @Component({
   selector: 'cos-search',
   templateUrl: './search.component.html',
@@ -31,6 +32,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private _fileIndexerService:FileIndexerService;
   private _formBuilder:FormBuilder;
   private _fileSearchIndex:FileSearchIndex[] = [];
+
+  private _searchBoxChangeSub?:Subscription;
 
   searchBarForm!: FormGroup;
 
@@ -126,13 +129,16 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const delay = 200; //200ms
     this.searchBarForm = this._formBuilder.nonNullable.group({
       searchBarText: Constants.EMPTY_STRING,
     });
 
-    this.searchBarForm.get('searchBarText')?.valueChanges.subscribe(value => {
-      this.handleSearch(value);
-    });
+    this._searchBoxChangeSub = this.searchBarForm.get('searchBarText')?.valueChanges
+      .pipe(debounceTime(delay))
+      .subscribe(value => {
+        this.handleSearch(value);
+      });
 
     this.menuOptions = this.generateOptions();
   }
@@ -141,7 +147,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this._fileSearchIndex = this._fileIndexerService.getFileIndex();
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this._searchBoxChangeSub?.unsubscribe();
+  }
 
   showSearchBox():void{
     this.isSearchWindowVisible = true;
@@ -250,7 +258,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showSearchResult = true;
 
     this.filteredFileSearchIndex = this._fileSearchIndex.filter(f => f.name.toLowerCase().includes(searchString.toLowerCase()));
-    this.getBestMatch();
+    this.getBestMatches();
     this.checkIfSectionIsPresent(this.defaultFocus);
 
     console.log('filteredFileIndex:', this.filteredFileSearchIndex);
@@ -350,7 +358,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.onlyFoldersSearchIndex = [];
   }
 
-  getBestMatch():void{
+  getBestMatches():void{
 
   }
 
