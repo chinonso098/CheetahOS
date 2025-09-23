@@ -70,7 +70,7 @@
     backdrop-filter: blur(30px);
     z-index: 3;
     position: absolute;
-    top: 34.5%;
+    top: 34.6%;
     left: 35%;
     border: 1px solid #fff;
     box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
@@ -151,8 +151,8 @@
     width: 490px;
     border: 1px solid #ccc;
     height: 26px;
-    font-size: 13px;
-    font-weight:200;
+    font-size: 13.5px;
+    font-weight:normal;
     color: #fff;
     background-color: transparent;
     text-align: left;
@@ -172,7 +172,7 @@
     backdrop-filter: blur(30px);
     z-index: 3;
     position: absolute;
-    top: 35%;
+    top: 34.6%;
     left: 35%;
     border: 1px solid #fff;
     box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
