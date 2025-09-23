@@ -55,7 +55,11 @@ export namespace CommonFunctions {
       }
 
     export const sleep = (ms:number):Promise<void> =>{
-        return new Promise(resolve => setTimeout(resolve, ms));
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    export const isPath = (path:string): boolean =>{
+      return  path.split(Constants.ROOT).length > 1 ? true : false;
     }
 
 }

@@ -8,6 +8,9 @@ import { RunningProcessService } from "src/app/shared/system-service/running.pro
 import { FileInfo } from "src/app/system-files/file.info";
 //import {extname, basename, resolve, dirname} from 'path';
 import { Constants } from 'src/app/system-files/constants';
+import { ActivityType } from "src/app/system-files/common.enums";
+import { CommonFunctions } from "src/app/system-files/common.functions";
+import { ActivityHistoryService } from "src/app/shared/system-service/activity.tracking.service";
 
 
 export interface OctalRepresentation {
@@ -20,6 +23,8 @@ export class TerminalCommandProcessor{
 
     private _processHandlerService:ProcessHandlerService;
     private _runningProcessService:RunningProcessService;
+    private _activityHistoryService:ActivityHistoryService;
+
     private _fileService:FileService;
     private _appDirctory = new AppDirectory();
   
@@ -36,9 +41,12 @@ export class TerminalCommandProcessor{
     private currentDirectoryPath = Constants.ROOT;
     private fallBackDirPath = Constants.EMPTY_STRING;
 
-    constructor(controlProcessService:ProcessHandlerService, runningProcessService:RunningProcessService, fileService:FileService) { 
+    constructor(controlProcessService:ProcessHandlerService, runningProcessService:RunningProcessService, fileService:FileService,
+                activityHistoryService:ActivityHistoryService) { 
         this._processHandlerService = controlProcessService;
         this._runningProcessService = runningProcessService;
+        this._activityHistoryService = activityHistoryService;
+
         this._fileService = fileService;
         this.permissionChart = new Map<number, OctalRepresentation>();
         this.genPermissionsRepresentation();
@@ -1020,5 +1028,43 @@ Mandatory argument to long options are mandotory for short options too.
         const directoryEntries  = await this._fileService.loadDirectoryFiles(directory);
         this.files.push(...directoryEntries)
     
+    }
+
+    trackActivity(type:string, name:string, path:string, oldFileName = Constants.EMPTY_STRING, isRename?:boolean):void{
+        //check for exisiting activity
+        if(isRename){
+        const activityHistory = this._activityHistoryService.getActivityHistory(oldFileName, path, type); 
+        if(activityHistory){
+            const isNameChanged = true;
+            this._activityHistoryService.updateActivityHistory(activityHistory, isNameChanged, oldFileName);
+        }else{
+            this._activityHistoryService.addActivityHistory(name, path, type);
+        }
+        }else{
+        const activityHistory = this._activityHistoryService.getActivityHistory(name, path, type);
+        if(activityHistory){
+            this._activityHistoryService.updateActivityHistory(activityHistory);
+        }else{
+            this._activityHistoryService.addActivityHistory(name, path, type);
+        }
+        }
+    }
+
+    handleTracking(file:FileInfo):void{
+        const appPath = 'None';
+        const shortCut = ` - ${Constants.SHORTCUT}`;
+
+        if(file.getFileExtension === Constants.URL && file.getIsShortCut){
+        if(file.getFileType === Constants.FOLDER && file.getOpensWith === 'fileexplorer'){       
+            if(CommonFunctions.isPath(file.getContentPath))
+            this.trackActivity(ActivityType.FOLDERS, file.getFileName.replace(shortCut, Constants.EMPTY_STRING), file.getContentPath);
+        }
+        else
+            this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
+        }else{
+        this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
+        }
+        
+        this.trackActivity(ActivityType.APPS, file.getOpensWith, appPath);
     }
 }

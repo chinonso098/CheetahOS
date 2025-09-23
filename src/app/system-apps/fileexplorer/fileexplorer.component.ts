@@ -3027,14 +3027,17 @@ OpensWith=${file.getOpensWith}
     const shortCut = ` - ${Constants.SHORTCUT}`;
 
     if(file.getFileExtension === Constants.URL && file.getIsShortCut){
-      if(file.getFileType === Constants.FOLDER && file.getOpensWith === 'fileexplorer') //## what if contentPath is not a URL ???
-        this.trackActivity(ActivityType.FOLDERS, file.getFileName.replace(shortCut, Constants.EMPTY_STRING), file.getContentPath);
+      if(file.getFileType === Constants.FOLDER && file.getOpensWith === 'fileexplorer'){       
+        if(CommonFunctions.isPath(file.getContentPath))
+          this.trackActivity(ActivityType.FOLDERS, file.getFileName.replace(shortCut, Constants.EMPTY_STRING), file.getContentPath);
+      }
       else
         this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
     }else{
       this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
     }
-      this.trackActivity(ActivityType.APPS, file.getOpensWith, appPath);
+    
+    this.trackActivity(ActivityType.APPS, file.getOpensWith, appPath);
   }
 
   private getComponentDetail():Process{

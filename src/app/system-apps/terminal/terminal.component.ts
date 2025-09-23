@@ -18,6 +18,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ITabState, IState } from './model/terminal.types';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileService } from 'src/app/shared/system-service/file.service';
+import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
 
 @Component({
   selector: 'cos-terminal',
@@ -102,7 +103,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   displayName = 'Terminal';
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, controlProcessService:ProcessHandlerService, fileService:FileService,  formBuilder:FormBuilder,
-               sessionManagmentService: SessionManagmentService,windowService:WindowService ) { 
+               sessionManagmentService: SessionManagmentService, windowService:WindowService, activityHistoryService:ActivityHistoryService ) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._formBuilder = formBuilder;
@@ -110,7 +111,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     this._windowService = windowService;
     this._fileService = fileService;
     
-    this._terminaCommandsProc = new TerminalCommandProcessor(controlProcessService,runningProcessService,fileService);
+    this._terminaCommandsProc = new TerminalCommandProcessor(controlProcessService, runningProcessService, fileService, activityHistoryService);
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 

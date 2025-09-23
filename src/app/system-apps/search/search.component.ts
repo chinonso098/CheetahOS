@@ -14,6 +14,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { FileIndexIDs } from "src/app/system-files/common.enums";
 import { FileSearchIndex } from 'src/app/system-files/file.search.index';
 import { debounceTime, Subscription } from 'rxjs';
+import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
 @Component({
   selector: 'cos-search',
   templateUrl: './search.component.html',
@@ -30,6 +31,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private _menuService:MenuService;
   private _systemNotificationServices:SystemNotificationService;
   private _fileIndexerService:FileIndexerService;
+  private _activityHistoryService:ActivityHistoryService;
+
   private _formBuilder:FormBuilder;
   private _fileSearchIndex:FileSearchIndex[] = [];
 
@@ -104,12 +107,14 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, menuService:MenuService,
                 systemNotificationServices:SystemNotificationService, renderer:Renderer2, formBuilder:FormBuilder,
-                fileIndexerService:FileIndexerService) { 
+                fileIndexerService:FileIndexerService, activityHistoryService:ActivityHistoryService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._menuService = menuService;
     this._systemNotificationServices = systemNotificationServices;
-    this._fileIndexerService = fileIndexerService
+    this._fileIndexerService = fileIndexerService;
+    this._activityHistoryService = activityHistoryService;
+
     this.bestMatch = {type: Constants.EMPTY_STRING, name:'Test', srcPath:Constants.EMPTY_STRING, iconPath:this.icon}
 
     this._renderer = renderer;
@@ -359,7 +364,124 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getBestMatches():void{
+    const c = 100;
+    let maxScore = 0;
 
+    this._fileSearchIndex.forEach(file =>{
+      const searchScore = (this.searchScore(file) / c);
+      if(maxScore < searchScore){
+        maxScore = searchScore;
+        this.bestMatch = file;
+      }
+    });
+  }
+
+  searchScore(file:FileSearchIndex):number{
+
+    const exactMatchScore = (this.exactMatch('', '')) ? 100 : 0;
+    const preFixMatchScore = (this.prefixMatch('', '')) ? 15 : 0;
+    const containsMatchScore =  (this.containsMatch('', '')) ? 10 : 0;
+    const frequencyScore = this.frequencyOfUse(file);
+    const recencyScore = this.recencyOfUse(file);
+    const priorityScore = this.folderPriority(file.srcPath);
+
+    return exactMatchScore + preFixMatchScore + containsMatchScore + frequencyScore + recencyScore + priorityScore;
+  }
+
+  /**
+   * Returns true if `str` starts with `prefix`.
+   * Uses String.prototype.startsWith (fast & builtin).
+   */
+  prefixMatch(str: string, prefix: string, caseSensitive = false): boolean {
+    if (!caseSensitive) {
+      return str.toLowerCase().startsWith(prefix.toLowerCase());
+    }
+    return str.startsWith(prefix);
+  }
+
+  /**
+   * Returns true if `str` contain the `prefix`.
+   * Uses String.prototype.includes (fast & builtin).
+   */
+  containsMatch(str: string, prefix: string, caseSensitive = false): boolean {
+    if (!caseSensitive) {
+      return str.toLowerCase().includes(prefix.toLowerCase());
+    }
+    return str.includes(prefix);
+  }
+
+    /**
+   * Returns true if `str` contain the `prefix`.
+   * Uses String.prototype.includes (fast & builtin).
+   */
+  exactMatch(str: string, prefix: string, caseSensitive = false): boolean {
+    if (!caseSensitive) {
+      return (str.toLowerCase() === prefix.toLowerCase());
+    }
+    return (str === prefix);
+  }
+
+  frequencyOfUse(file:FileSearchIndex):number{
+    const w = 10;
+    const typeFile = 'FILE'; //document, music, videos, pictures, ...
+
+    const type = (file.type === this.APPS || file.type === this.FOLDERS) ? file.type : typeFile;
+    const activityHistory = this._activityHistoryService.getActivityHistory(file.name, file.srcPath, type);
+
+    if(activityHistory){
+      const frequency = activityHistory.count;
+      return w * Math.log(1 + frequency);
+    }
+
+    return 0;
+  }
+
+  recencyOfUse(file: FileSearchIndex): number {
+    const maxScore = 10.0;   // score at d = 0 (today)
+    const minScore = 1.0;    // floor
+    const decay = 0.433;     // decay constant tuned to your sequence
+
+    const defaultType = 'FILE'; //document, music, videos, pictures, ...
+
+    const type = (file.type === this.APPS || file.type === this.FOLDERS) ? file.type : defaultType;
+
+    const activityHistory = this._activityHistoryService.getActivityHistory(
+      file.name,
+      file.srcPath,
+      type
+    );
+
+    if (activityHistory) {
+      const now = Date.now();
+      const diffMs = now - activityHistory.lastOpened;
+      const daysAgo = diffMs / (1000 * 60 * 60 * 24); // difference in days
+
+      // sanitize input (no negatives, round down)
+      const d = Math.max(0, Math.floor(daysAgo));
+
+      // logarithmic decay
+      const score = maxScore - decay * Math.log(d + 1);
+
+      return Math.max(minScore, score);
+    }
+
+    return minScore;
+  }
+
+
+  folderPriority(path:string):number{
+    const documentsFolder = '/Users/Documents/';
+    const downloadsFolder = '/Users/Downloads/';
+    const desktopFolder = '/Users/Downloads/';
+    const musicFolder = '/Users/Music/';
+    const picturesFolder = '/Users/Pictures/';
+    const gamesFolder = '/Users/Games/';
+
+    if(path.startsWith(documentsFolder) || path.startsWith(downloadsFolder) || path.startsWith(desktopFolder) || 
+       path.startsWith(musicFolder) || path.startsWith(picturesFolder) || path.startsWith(gamesFolder))
+      return 15;
+    
+    return 5;
   }
 
   desktopIsActive():void{ }
