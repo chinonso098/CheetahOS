@@ -48,6 +48,8 @@ export class ActivityHistoryService implements BaseService {
     }
 
     updateActivityHistory(entry: ActivityHistory, isNameChanged = false, oldName?: string): void {
+        if(this._activityHistory.length <= 0) return;
+
         let existing: ActivityHistory | undefined;
 
         if(isNameChanged && oldName) {
@@ -78,6 +80,8 @@ export class ActivityHistoryService implements BaseService {
     }
 
     getActivityHistory(name: string, path:string, type:string): ActivityHistory | undefined {
+        if(this._activityHistory.length <= 0) return;
+
         const activityHistory = this._activityHistory.find( h => ( h.name === name &&
                                                             h.path === path &&
                                                             h.type === type
@@ -87,6 +91,8 @@ export class ActivityHistoryService implements BaseService {
     } 
 
     removeActivityHistory(entry: ActivityHistory): void {
+        if(this._activityHistory.length <= 0) return;
+
         const deleteCount = 1;
         const activityHistoryIdx = this._activityHistory.findIndex( h =>( h.name === entry.name &&
                                                                     h.path === entry.path &&

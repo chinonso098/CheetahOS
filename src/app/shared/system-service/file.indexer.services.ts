@@ -107,7 +107,7 @@ export class FileIndexerService implements BaseService{
     }
 
     private handleNonAppIcons(fileName:string, isFile = true, hasExt = true):string{
-        const folderIcon = 'folder.png';
+        const folderIcon = 'folder_2.png';
         const unknownIcon = 'unknown.png'
         if(!isFile){
             return `${Constants.IMAGE_BASE_PATH}${folderIcon}`;

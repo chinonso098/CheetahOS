@@ -263,7 +263,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showSearchResult = true;
 
     this.filteredFileSearchIndex = this._fileSearchIndex.filter(f => f.name.toLowerCase().includes(searchString.toLowerCase()));
-    this.getBestMatches();
+    this.getBestMatches(searchString);
     this.checkIfSectionIsPresent(this.defaultFocus);
 
     console.log('filteredFileIndex:', this.filteredFileSearchIndex);
@@ -363,12 +363,12 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.onlyFoldersSearchIndex = [];
   }
 
-  getBestMatches():void{
+  getBestMatches(searchString:string):void{
     const c = 100;
     let maxScore = 0;
 
     this._fileSearchIndex.forEach(file =>{
-      const searchScore = (this.searchScore(file) / c);
+      const searchScore = (this.searchScore(file, searchString) / c);
       if(maxScore < searchScore){
         maxScore = searchScore;
         this.bestMatch = file;
@@ -376,52 +376,22 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  searchScore(file:FileSearchIndex):number{
+  searchScore(file:FileSearchIndex, searchString:string):number{
 
-    const exactMatchScore = (this.exactMatch('', '')) ? 100 : 0;
-    const preFixMatchScore = (this.prefixMatch('', '')) ? 15 : 0;
-    const containsMatchScore =  (this.containsMatch('', '')) ? 10 : 0;
+    const exactMatchScore = (file.name.toLowerCase() === searchString.toLowerCase()) ? 100 : 0;
+    if(exactMatchScore === 100) return exactMatchScore;
+
+    const preFixMatchScore = (file.name.toLowerCase().startsWith(searchString.toLowerCase())) ? 35 : 0;
+    const containsMatchScore =  (file.name.toLowerCase().includes(searchString.toLowerCase())) ? 15 : 0;
     const frequencyScore = this.frequencyOfUse(file);
     const recencyScore = this.recencyOfUse(file);
     const priorityScore = this.folderPriority(file.srcPath);
 
-    return exactMatchScore + preFixMatchScore + containsMatchScore + frequencyScore + recencyScore + priorityScore;
-  }
-
-  /**
-   * Returns true if `str` starts with `prefix`.
-   * Uses String.prototype.startsWith (fast & builtin).
-   */
-  prefixMatch(str: string, prefix: string, caseSensitive = false): boolean {
-    if (!caseSensitive) {
-      return str.toLowerCase().startsWith(prefix.toLowerCase());
-    }
-    return str.startsWith(prefix);
-  }
-
-  /**
-   * Returns true if `str` contain the `prefix`.
-   * Uses String.prototype.includes (fast & builtin).
-   */
-  containsMatch(str: string, prefix: string, caseSensitive = false): boolean {
-    if (!caseSensitive) {
-      return str.toLowerCase().includes(prefix.toLowerCase());
-    }
-    return str.includes(prefix);
-  }
-
-    /**
-   * Returns true if `str` contain the `prefix`.
-   * Uses String.prototype.includes (fast & builtin).
-   */
-  exactMatch(str: string, prefix: string, caseSensitive = false): boolean {
-    if (!caseSensitive) {
-      return (str.toLowerCase() === prefix.toLowerCase());
-    }
-    return (str === prefix);
+    return preFixMatchScore + containsMatchScore + frequencyScore + recencyScore + priorityScore;
   }
 
   frequencyOfUse(file:FileSearchIndex):number{
+    const bias = 5.0;
     const w = 10;
     const typeFile = 'FILE'; //document, music, videos, pictures, ...
 
@@ -430,27 +400,23 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if(activityHistory){
       const frequency = activityHistory.count;
-      return w * Math.log(1 + frequency);
+      return w * Math.log(1 + frequency) + bias;
     }
 
-    return 0;
+    return 1.0;
   }
 
   recencyOfUse(file: FileSearchIndex): number {
+    const bias = 5.0;
     const maxScore = 10.0;   // score at d = 0 (today)
     const minScore = 1.0;    // floor
-    const decay = 0.433;     // decay constant tuned to your sequence
+    const decay = 0.5;     // decay constant tuned to your sequence
 
     const defaultType = 'FILE'; //document, music, videos, pictures, ...
 
     const type = (file.type === this.APPS || file.type === this.FOLDERS) ? file.type : defaultType;
 
-    const activityHistory = this._activityHistoryService.getActivityHistory(
-      file.name,
-      file.srcPath,
-      type
-    );
-
+    const activityHistory = this._activityHistoryService.getActivityHistory(file.name, file.srcPath, type);
     if (activityHistory) {
       const now = Date.now();
       const diffMs = now - activityHistory.lastOpened;
@@ -459,17 +425,17 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       // sanitize input (no negatives, round down)
       const d = Math.max(0, Math.floor(daysAgo));
 
-      // logarithmic decay
+      // logarithmic decay S(d)=A−B⋅log(d)
       const score = maxScore - decay * Math.log(d + 1);
-
-      return Math.max(minScore, score);
+      return Math.max(minScore, score) + bias;
     }
 
-    return minScore;
+    return minScore + bias;
   }
 
 
   folderPriority(path:string):number{
+    const bias = 5.0;
     const documentsFolder = '/Users/Documents/';
     const downloadsFolder = '/Users/Downloads/';
     const desktopFolder = '/Users/Downloads/';
@@ -479,9 +445,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if(path.startsWith(documentsFolder) || path.startsWith(downloadsFolder) || path.startsWith(desktopFolder) || 
        path.startsWith(musicFolder) || path.startsWith(picturesFolder) || path.startsWith(gamesFolder))
-      return 15;
+      return 15.0 + bias;
     
-    return 5;
+    return 3.0 + bias;
   }
 
   desktopIsActive():void{ }
