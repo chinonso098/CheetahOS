@@ -30,6 +30,7 @@ export class ActivityHistoryService implements BaseService {
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService) {
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
+        this._activityHistory = [];
 
         //this.loadFromStorage();
 

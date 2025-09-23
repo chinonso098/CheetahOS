@@ -15,6 +15,8 @@ import { FileIndexIDs } from "src/app/system-files/common.enums";
 import { FileSearchIndex } from 'src/app/system-files/file.search.index';
 import { debounceTime, Subscription } from 'rxjs';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
+import {extname} from 'path';
+
 @Component({
   selector: 'cos-search',
   templateUrl: './search.component.html',
@@ -364,11 +366,12 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getBestMatches(searchString:string):void{
-    const c = 100;
+    const c = 100.0;
     let maxScore = 0;
 
     this._fileSearchIndex.forEach(file =>{
-      const searchScore = (this.searchScore(file, searchString) / c);
+      const searchScore = (this.searchScore(file, searchString));
+      //console.log(`searchName:${file.name}  -  searchName:${file.name}  -  search scores: ${searchScore}`);
       if(maxScore < searchScore){
         maxScore = searchScore;
         this.bestMatch = file;
@@ -377,21 +380,61 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   searchScore(file:FileSearchIndex, searchString:string):number{
+    const name = file.name.toLowerCase();
+    const query = searchString.toLowerCase();
 
-    const exactMatchScore = (file.name.toLowerCase() === searchString.toLowerCase()) ? 100 : 0;
-    if(exactMatchScore === 100) return exactMatchScore;
+    // exact match dominates
+    if (name === query) return 100;
 
-    const preFixMatchScore = (file.name.toLowerCase().startsWith(searchString.toLowerCase())) ? 35 : 0;
-    const containsMatchScore =  (file.name.toLowerCase().includes(searchString.toLowerCase())) ? 15 : 0;
-    const frequencyScore = this.frequencyOfUse(file);
-    const recencyScore = this.recencyOfUse(file);
-    const priorityScore = this.folderPriority(file.srcPath);
+    let score = 0;
+    score += this.longerPrefix(file, searchString);
+    score += this.frequencyOfUse(file);
+    score += this.recencyOfUse(file);
+    score += this.folderPriority(file.srcPath);
+    score += this.extensionPriority(file.name);   
 
-    return preFixMatchScore + containsMatchScore + frequencyScore + recencyScore + priorityScore;
+    return score;
+  }
+
+  longerPrefix(file: FileSearchIndex, searchString: string): number {
+    const name = file.name.toLowerCase();
+    const query = searchString.toLowerCase();
+
+    let rawScore = 0;
+
+    // 1. Prefix & contains scoring
+    if (name.startsWith(query)) {
+      rawScore += 13 + query.length * 2; 
+    } else {
+      const index = name.indexOf(query);
+      if (index >= 0) {
+        rawScore += Math.max(8, query.length - index);
+      }
+    }
+
+    /**
+       * Compute the raw score from all components.
+          Decide on a reasonable maximum possible raw score (upper bound).
+          Prefix/contains → up to ~31
+          Frequency → ~25 (logarithmic scaling)
+          Recency → up to 10
+          Folder priority → up to 10
+          Extension → up to 5
+          Rough max = ~82
+      Normalize:
+      normalized = min(100, (rawScore /maxRaw) × 100)
+      This way, exact matches still return 100, and other scores scale proportionally.
+    */
+
+    // 3. Normalize to 0–100
+    const maxRaw = 85; // safe upper bound for raw scores
+    const normalized = Math.min(100, (rawScore / maxRaw) * 100);
+
+    return normalized;
   }
 
   frequencyOfUse(file:FileSearchIndex):number{
-    const bias = 5.0;
+    const bias = 5;
     const w = 10;
     const typeFile = 'FILE'; //document, music, videos, pictures, ...
 
@@ -399,21 +442,20 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const activityHistory = this._activityHistoryService.getActivityHistory(file.name, file.srcPath, type);
 
     if(activityHistory){
+      //logarithmic scaling freqScore=w⋅log(1+f)
       const frequency = activityHistory.count;
       return w * Math.log(1 + frequency) + bias;
     }
 
-    return 1.0;
+    return 1;
   }
 
   recencyOfUse(file: FileSearchIndex): number {
-    const bias = 5.0;
-    const maxScore = 10.0;   // score at d = 0 (today)
-    const minScore = 1.0;    // floor
+    const maxScore = 10;   // score at d = 0 (today)
+    const minScore = 1;    // floor
     const decay = 0.5;     // decay constant tuned to your sequence
 
     const defaultType = 'FILE'; //document, music, videos, pictures, ...
-
     const type = (file.type === this.APPS || file.type === this.FOLDERS) ? file.type : defaultType;
 
     const activityHistory = this._activityHistoryService.getActivityHistory(file.name, file.srcPath, type);
@@ -427,28 +469,32 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // logarithmic decay S(d)=A−B⋅log(d)
       const score = maxScore - decay * Math.log(d + 1);
-      return Math.max(minScore, score) + bias;
+      return Math.max(minScore, score)
     }
 
-    return minScore + bias;
+    return minScore
   }
-
 
   folderPriority(path:string):number{
-    const bias = 5.0;
-    const documentsFolder = '/Users/Documents/';
-    const downloadsFolder = '/Users/Downloads/';
-    const desktopFolder = '/Users/Downloads/';
-    const musicFolder = '/Users/Music/';
-    const picturesFolder = '/Users/Pictures/';
-    const gamesFolder = '/Users/Games/';
+    const specialFolders = [
+      '/Users/Documents/',
+      '/Users/Downloads/',
+      '/Users/Desktop/',
+      '/Users/Music/',
+      '/Users/Pictures/',
+      '/Users/Games/'
+    ];
 
-    if(path.startsWith(documentsFolder) || path.startsWith(downloadsFolder) || path.startsWith(desktopFolder) || 
-       path.startsWith(musicFolder) || path.startsWith(picturesFolder) || path.startsWith(gamesFolder))
-      return 15.0 + bias;
-    
-    return 3.0 + bias;
+    return specialFolders.some(f => path.startsWith(f)) ? 10 : 2;
   }
+
+  extensionPriority(filename: string): number {
+    const preferred = [".pdf", ".txt", ".mp3", ".mp4", ".png", ".jpg", ".jpeg"];
+    const ext = extname(filename).toLowerCase();
+
+    return preferred.includes(ext) ? 5 : 1;
+  }
+
 
   desktopIsActive():void{ }
 
