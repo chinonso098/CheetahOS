@@ -394,7 +394,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   getBestMatches(searchString:string):void{
     let maxScore = 0;
 
-    this._fileSearchIndex.forEach(file =>{
+    this.filteredFileSearchIndex.forEach(file =>{
       const searchScore = (this.searchScore(file, searchString));
       //console.log(`searchName:${file.name}  -  searchName:${file.name}  -  search scores: ${searchScore}`);
       if(maxScore < searchScore){
@@ -402,6 +402,30 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
         this.bestMatch = file;
       }
     });
+
+    this.removeDuplicateEntry(this.bestMatch);
+  }
+
+  removeDuplicateEntry(file: FileSearchIndex):void{
+    const countOfType = this.filteredFileSearchIndex.filter(x => x.type === file.type).length;
+    if(countOfType === 1){
+
+      if(file.type === this.APPS){
+        this.isAppPresent  = false;
+      }else if(file.type === this.FOLDERS){
+        this.isFolderPresent = false;
+      }else{ //documents, music, pictures, videos, etc
+        this.isFilePresent = false;
+      }
+
+    }else if(countOfType > 1){
+
+      const result = this.filteredFileSearchIndex.filter(x => (x.name !== file.name
+                                                            && x.srcPath !== file.srcPath));
+
+      this.filteredFileSearchIndex = [];
+      this.filteredFileSearchIndex.push(...result);
+    }
   }
 
   searchScore(file:FileSearchIndex, searchString:string):number{
