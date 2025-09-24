@@ -58,6 +58,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   showSearchResult = false
 
   showBestMatchSection = true;
+  showNoMatchFound = true;
   showFilesSection = true;
   showFoldersSection = true;
   showApplicationSection = true;

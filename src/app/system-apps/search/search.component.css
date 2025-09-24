@@ -232,19 +232,24 @@
 .li-result-set-view{
     height: 30px;
     width: 226px;
-    padding: 4px 0px;
+    padding: 5px 0px;
 }
 
 .result-set-cntnr{
     display: inline-flex;
     height: 30px;
     width: 226px;
+    padding: 3px 0px;
+}
+
+.result-set-cntnr:hover{
+    background-color: #ccc;
 }
 
 .result-set-option-p{
     position: relative;
     width: 196px;
-    top: 5px;
+    top: 3px;
     overflow: hidden;         
     text-overflow: ellipsis; 
     white-space: nowrap;
@@ -273,7 +278,7 @@
     /* display: inline-flex; */
     height: 24px;
     width: 24px;
-    top: 2.5px;
+    top: 0px;
 }
 
 .result-set-option-img{

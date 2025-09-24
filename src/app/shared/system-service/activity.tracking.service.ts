@@ -122,7 +122,6 @@ export class ActivityHistoryService implements BaseService {
         }
     }
 
-
     private getProcessDetail():Process{
         return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
     }
