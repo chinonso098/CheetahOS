@@ -57,8 +57,12 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   showOptionsMenu = false;
   showSearchResult = false
 
-  showBestMatchSection = true;
-  showNoMatchFound = true;
+  showBestMatchView = true;
+  showNoMatchFoundView = false;
+  noMatchImg = Constants.EMPTY_STRING;
+  noMatchText = Constants.EMPTY_STRING;
+
+
   showFilesSection = true;
   showFoldersSection = true;
   showApplicationSection = true;
@@ -228,6 +232,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const [icon, searchFocus] = this.menuOptions[id];
     this.defaultsearchIcon = icon;
+    this.noMatchImg = icon;
     this.defaultFocus = searchFocus;
     this.hideShowSearchSections(searchFocus);
     this.checkIfSectionIsPresent(searchFocus);
@@ -266,10 +271,20 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showSearchResult = true;
 
     this.filteredFileSearchIndex = this._fileSearchIndex.filter(f => f.name.toLowerCase().includes(searchString.toLowerCase()));
-    this.getBestMatches(searchString);
-    this.checkIfSectionIsPresent(this.defaultFocus);
-
     console.log('filteredFileIndex:', this.filteredFileSearchIndex);
+
+    if(this.filteredFileSearchIndex.length === 0){
+      this.showNoMatchFoundView = true;
+      this.showBestMatchView = false;
+      this.noMatchText = `No result found for "${searchString}"`;
+
+      this.showOnlyBestMatchSection();
+    }else{
+      this.showNoMatchFoundView = false;
+      this.showBestMatchView = true;
+      this.getBestMatches(searchString);
+      this.checkIfSectionIsPresent(this.defaultFocus);
+    }
   }
 
   resetFilteredArray():void{
@@ -286,7 +301,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   hideShowSearchSections(focus:string):void{
-    this.showBestMatchSection = true;
+    this.showBestMatchView = true;
 
     this.showApplicationSection = (focus === this.OPTION_ALL || focus === this.OPTION_APPS);
 
@@ -352,6 +367,14 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  showOnlyBestMatchSection():void{
+    this.resetSectionBucket();
+
+    this.isAppPresent  = false;
+    this.isFolderPresent = false;
+    this.isFilePresent = false;
+  }
+
   isTypePresent(type:string):boolean{
     return  this.filteredFileSearchIndex.some(f => f.type === type);
   }
@@ -367,7 +390,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getBestMatches(searchString:string):void{
-    const c = 100.0;
     let maxScore = 0;
 
     this._fileSearchIndex.forEach(file =>{
