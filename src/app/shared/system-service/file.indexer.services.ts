@@ -9,10 +9,11 @@ import { AppDirectory } from "src/app/system-files/app.directory";
 import { FileService } from "./file.service";
 import { RunningProcessService } from "./running.process.service";
 import { ProcessIDService } from "./process.id.service";
-import { FileIndexIDs } from "src/app/system-files/common.enums";
+import { fileIndexChangeOperationType, FileIndexIDs } from "src/app/system-files/common.enums";
 
 import {extname} from 'path';
 import { FileSearchIndex } from "src/app/system-files/file.search.index";
+import { Subject } from "rxjs";
 
 @Injectable({
     providedIn: 'root'
@@ -27,6 +28,7 @@ export class FileIndexerService implements BaseService{
     private _fileService:FileService;
 
     private _appDirectory:AppDirectory;
+    fileIndexChangeOperation: Subject<string> = new Subject<string>();
     
     name = 'file_indexing_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -136,16 +138,17 @@ export class FileIndexerService implements BaseService{
         return FileIndexIDs.DOCUMENTS;
     }
 
-    public fileAddNotify():void{
-
+    public async fileAddNotify(): Promise<void>{
+        await this.indexDirectoryAsync();
+        this.fileIndexChangeOperation.next(fileIndexChangeOperationType.ADD);
     }
 
-    public fileDeleteNotify():void{
-        
+    public fileDeleteNotify(path:string):void{
+        this.fileIndexChangeOperation.next(fileIndexChangeOperationType.DELETE);
     }
 
-    public fileUpdateNotify():void{
-        
+    public fileUpdateNotify(path:string):void{
+        this.fileIndexChangeOperation.next(fileIndexChangeOperationType.UPDATE);
     }
 
     public getFileIndex():FileSearchIndex[]{

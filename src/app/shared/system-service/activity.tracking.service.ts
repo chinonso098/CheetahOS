@@ -44,6 +44,7 @@ export class ActivityHistoryService implements BaseService {
             type : type, name : name, path : path, count: 1, lastOpened: Date.now()
         }
 
+        //console.log('addActivityHistory entry:', entry);
         this._activityHistory.push(entry);
         this.save();
     }
@@ -88,7 +89,8 @@ export class ActivityHistoryService implements BaseService {
                                                             h.type === type
                                                         ));
 
-         return activityHistory;
+        //console.log('getActivityHistory:', activityHistory);
+        return activityHistory;
     } 
 
     removeActivityHistory(entry: ActivityHistory): void {

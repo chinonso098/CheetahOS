@@ -434,17 +434,16 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   frequencyOfUse(file:FileSearchIndex):number{
-    const bias = 5;
-    const w = 10;
-    const typeFile = 'FILE'; //document, music, videos, pictures, ...
+    const w = 5;
+    const defaultType = 'FILE'; //document, music, videos, pictures, ...
 
-    const type = (file.type === this.APPS || file.type === this.FOLDERS) ? file.type : typeFile;
+    const type = (file.type === this.APPS || file.type === this.FOLDERS) ? file.type : defaultType;
     const activityHistory = this._activityHistoryService.getActivityHistory(file.name, file.srcPath, type);
 
     if(activityHistory){
       //logarithmic scaling freqScore=w⋅log(1+f)
       const frequency = activityHistory.count;
-      return w * Math.log(1 + frequency) + bias;
+      return w * Math.log(1 + frequency);
     }
 
     return 1;

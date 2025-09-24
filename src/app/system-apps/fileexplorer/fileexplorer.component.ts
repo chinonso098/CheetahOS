@@ -3010,14 +3010,14 @@ OpensWith=${file.getOpensWith}
         const isNameChanged = true;
         this._activityHistoryService.updateActivityHistory(activityHistory, isNameChanged, oldFileName);
       }else{
-        this._activityHistoryService.addActivityHistory(name, path, type);
+        this._activityHistoryService.addActivityHistory(type, name, path);
       }
     }else{
       const activityHistory = this._activityHistoryService.getActivityHistory(name, path, type);
       if(activityHistory){
         this._activityHistoryService.updateActivityHistory(activityHistory);
       }else{
-        this._activityHistoryService.addActivityHistory(name, path, type);
+        this._activityHistoryService.addActivityHistory(type, name, path);
       }
     }
   }
