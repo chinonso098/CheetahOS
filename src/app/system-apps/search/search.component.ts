@@ -50,6 +50,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   searchFolderIcon = `${Constants.IMAGE_BASE_PATH}search_folder.png`;
   searchPictureIcon = `${Constants.IMAGE_BASE_PATH}search_picture.png`;
   searchApplicatiionIcon = `${Constants.IMAGE_BASE_PATH}search_app.png`;
+  cheetahIcon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
 
   searchPlaceHolder = ' Search now';
 
@@ -59,7 +60,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   showBestMatchView = true;
   showNoMatchFoundView = false;
-  noMatchImg = Constants.EMPTY_STRING;
+  noMatchImg = this.cheetahIcon;
   noMatchText = Constants.EMPTY_STRING;
 
 
@@ -232,8 +233,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const [icon, searchFocus] = this.menuOptions[id];
     this.defaultsearchIcon = icon;
-    this.noMatchImg = icon;
+    this.noMatchImg = (searchFocus === this.OPTION_ALL)? this.cheetahIcon : icon;
     this.defaultFocus = searchFocus;
+
     this.hideShowSearchSections(searchFocus);
     this.checkIfSectionIsPresent(searchFocus);
 
