@@ -419,3 +419,58 @@
     white-space: nowrap;
     text-align: center;
 }
+
+
+.detail-mid-general-section{
+    width: 100%;
+    padding: 10px 0px;
+}
+
+.general-tab-content{
+    display: inline-flex;
+    width: 100%;
+    /* border: 1px solid black; */
+}
+
+.general-tab-line-container {
+    position:relative;
+    bottom: 0;
+    max-height: 0.3px;
+    background-color: #ffffff;
+}
+
+.general-tab-line{
+    border: 0.3px solid #9c9898;
+    margin: 0 8px;
+}
+
+.general-tab-head{
+    width: 26%;
+}
+
+.general-tab-head1{
+    display: inline-flex;
+    width: 26%;
+}
+
+.general-tab-mid{
+    min-width: 5%;
+    padding: 0 4px;
+}
+
+.general-tab-tail{
+    width: 69%;
+    padding-right: 4px;
+}
+
+.general-tab-p1{
+    position: relative;
+    top: 0%;
+    font-size:11px;
+    font-weight:normal;
+    text-align: left;
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add "..." when text overflows */
+    width: 220px;
+}
