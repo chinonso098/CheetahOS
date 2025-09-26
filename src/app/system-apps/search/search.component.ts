@@ -44,6 +44,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   defaultsearchIcon = `${Constants.IMAGE_BASE_PATH}search_all.png`;
   searchAllIcon = `${Constants.IMAGE_BASE_PATH}search_all.png`;
+  searchPinIcon = `${Constants.IMAGE_BASE_PATH}search_pin.png`;
+  searchOpenIcon = `${Constants.IMAGE_BASE_PATH}search_open.png`;
+  searchCopyIcon = `${Constants.IMAGE_BASE_PATH}search_copy.png`;
   searchFileIcon = `${Constants.IMAGE_BASE_PATH}search_file.png`;
   searchMusicIcon = `${Constants.IMAGE_BASE_PATH}search_music.png`;
   searchVideoIcon = `${Constants.IMAGE_BASE_PATH}search_video.png`;
@@ -53,6 +56,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   cheetahIcon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
 
   searchPlaceHolder = ' Search now';
+  openApp = 'Open';
+  openSrcPath = 'Open file location';
+  copySrcPath = 'Copy path'
+
+  selectedEntryType = 'FILE'; //'APPS'
 
   optionsMenuToggle = false;
   showOptionsMenu = false;
@@ -284,8 +292,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }else{
       this.showNoMatchFoundView = false;
       this.showBestMatchView = true;
-      this.getBestMatches(searchString);
       this.checkIfSectionIsPresent(this.defaultFocus);
+      this.getBestMatches(searchString);
     }
   }
 
@@ -550,4 +558,3 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }
 }
-

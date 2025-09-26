@@ -360,7 +360,7 @@
     padding: 10px 10px;
 }
 
-.search-result-detail-head{
+.search-result-detail-head-section{
     display: block;
     height: 110px;
     width: 280px;
@@ -420,57 +420,105 @@
     text-align: center;
 }
 
+.search-result-detail-mid-section, .search-result-detail-tail-section{
+    display: block;
+    height: fit-content;
+    width: 280px;
+}
 
-.detail-mid-general-section{
+.search-result-detail-mid-cntnr, .search-result-detail-tail-cntnr{
     width: 100%;
     padding: 10px 0px;
 }
 
-.general-tab-content{
+.search-result-detail-mid-cntnt, .search-result-detail-tail-cntnt{
     display: inline-flex;
     width: 100%;
     /* border: 1px solid black; */
 }
 
-.general-tab-line-container {
+.search-result-detail-line-cntnr{
     position:relative;
-    bottom: 0;
-    max-height: 0.3px;
-    background-color: #ffffff;
+    height: 1px;
+    background-color: #ccc;
+    color: #ccc;
 }
 
-.general-tab-line{
-    border: 0.3px solid #9c9898;
-    margin: 0 8px;
-}
-
-.general-tab-head{
+.mid-cntnt-head{
     width: 26%;
 }
 
-.general-tab-head1{
-    display: inline-flex;
-    width: 26%;
-}
-
-.general-tab-mid{
+.mid-cntnt-mid{
     min-width: 5%;
     padding: 0 4px;
 }
 
-.general-tab-tail{
+.mid-cntnt-tail{
     width: 69%;
     padding-right: 4px;
 }
 
-.general-tab-p1{
+.mid-cntnt-p0, .mid-cntnt-p, .mid-cntnt-p1{
     position: relative;
     top: 0%;
+    color: #fff;
     font-size:11px;
     font-weight:normal;
     text-align: left;
+    width: 190px;
+}
+
+.mid-cntnt-p0{
+    word-wrap: break-word;
+    -webkit-line-clamp:3;
+}
+
+.mid-cntnt-p{
     white-space: nowrap; /* Prevent text from wrapping */
     overflow: hidden; /* Hide overflow */
     text-overflow: ellipsis; /* Add "..." when text overflows */
-    width: 220px;
+}
+
+.mid-cntnt-p1{
+    top: 2px;
+}
+
+.mid-cntnt-head-1{
+    padding-left: 4px;
+    width: 20px;
+    height: 20px;
+}
+
+.mid-cntnt-tail-1{
+    position: relative;
+    padding: 0 1px;
+    color: #fff;
+    text-align: left;
+    font-size: 13px;
+    font-weight:normal;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 196px;
+    height: 20px;
+    left: 10px;
+}
+
+.mid-cntnt-figure{
+    position: relative;
+    align-items: center;
+    /* display: inline-flex; */
+    height: 18px;
+    width: 18px;
+    top: 0px;
+}
+
+.mid-cntnt-img{
+    height: 18px;
+    width: 18px;
+    position: relative;
+}
+
+.search-result-detail-tail-section{
+    display: block;
+    height: fit-content;
+    width: fit-content;
 }

@@ -208,7 +208,7 @@
         <div class="search-result-detail-cntnr">
             <div class="search-result-detail-cntnt">
 
-                <div class="search-result-detail-head">
+                <div class="search-result-detail-head-section">
 
                     <div class="blank-space-b"></div>
 
@@ -230,27 +230,101 @@
                         <p class="detail-head-filetype-p"> PY File </p>
                     </div>
                 </div>
+                <div class="blank-space-b"></div>
+                <div class="search-result-detail-line-cntnr"></div>
 
-                <div class="search-result-detail-mid">
-                    
-                    <div class="detail-mid-general-section">
-                        <div class="general-tab-content">
-                            <div class="general-tab-head"><p class="general-tab-p1"> Location:</p></div>
-                            <div class="general-tab-mid"></div>
-                            <div class="general-tab-tail"><p class="general-tab-p1"> </p></div>
+                <div class="search-result-detail-mid-section">
+                    @if(selectedEntryType === 'FILE' || selectedEntryType === 'FOLDER'){
+                        <div class="search-result-detail-mid-cntnr">
+                            <div class="search-result-detail-mid-cntnt">
+                                <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Location:</p></div>
+                                <div class="mid-cntnt-mid"></div>
+                                <div class="mid-cntnt-tail"><p class="mid-cntnt-p0">/users/documents</p></div>
+                            </div>
+
+                            <div class="search-result-detail-mid-cntnt">
+                                <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Last mod:</p></div>
+                                <div class="mid-cntnt-mid"></div>
+                                <div class="mid-cntnt-tail"><p class="mid-cntnt-p">  09/25/2025 12:15 PM</div>
+                            </div>
                         </div>
+                    }
 
-                        <div class="general-tab-content">
-                            <div class="general-tab-head"><p class="general-tab-p1"> Last mod:</p></div>
-                            <div class="general-tab-mid"></div>
-                            <div class="general-tab-tail"><p class="general-tab-p1"> </div>
+                    @if(selectedEntryType === 'APPS'){
+                        <div class="search-result-detail-mid-cntnr">
+                            <div class="search-result-detail-mid-cntnt">
+                                <div class="mid-cntnt-head-1">
+                                    <figure class="mid-cntnt-figure">
+                                        <img class="mid-cntnt-img" [src]="searchOpenIcon" />
+                                    </figure>
+                                </div>
+
+                                <div class="mid-cntnt-tail-1">
+                                    <p class="mid-cntnt-p1">{{ openApp }}</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
+                    }
                 </div>
 
-                <div class="search-result-detail-tail">
-                    
+                <div class="search-result-detail-line-cntnr"></div>
+
+                <div class="search-result-detail-tail-section">
+                    @if(selectedEntryType === 'FILE' || selectedEntryType === 'FOLDER'){
+                        <div class="search-result-detail-tail-cntnr">
+                            <div class="search-result-detail-tail-cntnt">
+                                <div class="mid-cntnt-head-1">
+                                    <figure class="mid-cntnt-figure">
+                                        <img class="mid-cntnt-img" [src]="searchOpenIcon" />
+                                    </figure>
+                                </div>
+
+                                <div class="mid-cntnt-tail-1">
+                                    <p class="mid-cntnt-p1">{{ openApp }}</p>
+                                </div>
+                            </div>
+
+                            <div class="search-result-detail-tail-cntnt">
+                                <div class="mid-cntnt-head-1">
+                                    <figure class="mid-cntnt-figure">
+                                        <img class="mid-cntnt-img" [src]="searchFolderIcon" />
+                                    </figure>
+                                </div>
+
+                                <div class="mid-cntnt-tail-1">
+                                    <p class="mid-cntnt-p1">{{ openSrcPath }}</p>
+                                </div>
+                            </div>
+
+                            <div class="search-result-detail-tail-cntnt">
+                                <div class="mid-cntnt-head-1">
+                                    <figure class="mid-cntnt-figure">
+                                        <img class="mid-cntnt-img" [src]="searchCopyIcon" />
+                                    </figure>
+                                </div>
+
+                                <div class="mid-cntnt-tail-1">
+                                    <p class="mid-cntnt-p1">{{ copySrcPath }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if(selectedEntryType === 'APPS'){
+                        <div class="search-result-detail-tail-cntnr">
+                            <div class="search-result-detail-tail-cntnt">
+                                <div class="mid-cntnt-head-1">
+                                    <figure class="mid-cntnt-figure">
+                                        <img class="mid-cntnt-img" [src]="searchOpenIcon" />
+                                    </figure>
+                                </div>
+
+                                <div class="mid-cntnt-tail-1">
+                                    <p class="mid-cntnt-p1">{{ openApp }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
 
                 </div>
             </div>
