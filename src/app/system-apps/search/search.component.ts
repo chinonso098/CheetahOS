@@ -175,7 +175,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   showSearchBox():void{
     this.isSearchWindowVisible = true;
     const  searchDiv = this.cheetahSearchDiv.nativeElement;
-    this._renderer.setStyle(searchDiv, 'display', 'block');
+    this._renderer.setStyle(searchDiv, 'display', 'flex');
     this._renderer.setStyle(searchDiv, 'z-index', '3');
   }
 
