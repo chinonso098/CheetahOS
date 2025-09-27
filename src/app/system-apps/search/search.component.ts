@@ -233,6 +233,13 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     return options;
   }
 
+  selectResultSetOption(evt:MouseEvent, id:number):void{
+    evt.stopPropagation();
+
+
+    const selectedResultSetOption = id;
+  }
+
   selectOption(evt:MouseEvent, id:number):void{
     evt.stopPropagation();
 

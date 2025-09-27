@@ -51,20 +51,20 @@
                 <div class="result-set-section-body">
                     <ol>
                         @if(showBestMatchView){
-                            <li class="li-result-set-view">
-                                <div class="result-set-cntnr"  
+                            <li class="li-result-set-view-bm">
+                                <div class="result-set-cntnr-bm"  
                                     id="best-match-option" 
-                                    (click)="selectOption($event, -1)" 
+                                    (click)="selectResultSetOption($event, -1)" 
                                     (mouseenter)="onMouseEnter(-1)" 
                                     (mouseleave)="onMouseLeave(-1)">
                                     
-                                    <div class="result-set-option-head">
+                                    <div class="result-set-option-head-bm">
                                         <figure class="result-set-option-figure">
                                             <img class="result-set-option-img" [src]="bestMatch.iconPath" />
                                         </figure>
                                     </div>
 
-                                    <div class="result-set-option-mid">
+                                    <div class="result-set-option-mid-bm">
                                         <p class="result-set-option-p">{{ bestMatch.name }}</p>
                                     </div>
                                 </div>
@@ -100,7 +100,7 @@
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyAppsSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
                                 id="result-set-option-{{i}}" 
-                                (click)="selectOption($event, i)" 
+                                (click)="selectResultSetOption($event, i)" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 
@@ -140,7 +140,7 @@
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
                                 id="result-set-option-{{i}}" 
-                                (click)="selectOption($event, i)" 
+                                (click)="selectResultSetOption($event, i)" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 
@@ -180,7 +180,7 @@
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFoldersSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
                                 id="result-set-option-{{i}}" 
-                                (click)="selectOption($event, i)" 
+                                (click)="selectResultSetOption($event, i)" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 
@@ -220,7 +220,7 @@
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
                                 id="result-set-option-{{i}}" 
-                                (click)="selectOption($event, i)" 
+                                (click)="selectResultSetOption($event, i)" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 
@@ -291,7 +291,7 @@
                             </div>
 
                             <div class="search-result-detail-mid-cntnt">
-                                <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Last mod:</p></div>
+                                <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Last modified:</p></div>
                                 <div class="mid-cntnt-mid"></div>
                                 <div class="mid-cntnt-tail"><p class="mid-cntnt-p">  09/25/2025 12:15 PM</div>
                             </div>

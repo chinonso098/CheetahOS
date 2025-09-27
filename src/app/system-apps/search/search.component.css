@@ -10,6 +10,9 @@
     left: 50%;
     transform: translateX(-50%); 
     z-index: -1;                /* hidden by default */
+    box-shadow: 0 5px 5px -3px rgba(0,0,0,0.2),
+              0 8px 10px 1px rgba(0,0,0,0.14),
+              0 3px 14px 2px rgba(0,0,0,0.12);
 }
 
 .main-search-bar-cntnr {
@@ -20,9 +23,9 @@
   background-color: rgba(41,41,41,0.75);
   backdrop-filter: blur(30px);
   border: 1px solid #fff;
-  box-shadow: 0 5px 5px -3px rgba(0,0,0,0.2),
+  /* box-shadow: 0 5px 5px -3px rgba(0,0,0,0.2),
               0 8px 10px 1px rgba(0,0,0,0.14),
-              0 3px 14px 2px rgba(0,0,0,0.12);
+              0 3px 14px 2px rgba(0,0,0,0.12); */
 }
 
 .search-bar-option-cntnr{
@@ -175,9 +178,9 @@
   height: 400px;
   backdrop-filter: blur(30px);
   border: 1px solid #fff;
-  box-shadow: 0 5px 5px -3px rgba(0,0,0,0.2),
+  /* box-shadow: 0 5px 5px -3px rgba(0,0,0,0.2),
               0 8px 10px 1px rgba(0,0,0,0.14),
-              0 3px 14px 2px rgba(0,0,0,0.12);
+              0 3px 14px 2px rgba(0,0,0,0.12); */
 }
 
 .search-result-set-cntnr{
@@ -217,6 +220,7 @@
 
 .section-heading-p{
     font-size: 13px;
+    padding-left: 10px;
     font-weight:bold;
     color: #fff;
     text-align: left;
@@ -227,26 +231,36 @@
     max-width: 260px;
 }
 
-/*sdsdsd*/
-
-.li-result-set-view{
+.li-result-set-view, .li-result-set-view-br{
     height: fit-content;
     width: 260px;
     height: 30px;
-    padding: 4px 0px;
+    padding: 5px 0px;
 }
 
-.result-set-cntnr{
+.li-result-set-view-bm{
+    height: 40px;
+}
+
+.result-set-cntnr, .result-set-cntnr-bm{
     display: inline-flex;
     height: 30px;
     width: 260px;
+}
+
+.result-set-cntnr-bm{
+    height: 40px;
 }
 
 .result-set-cntnr:hover{
     background-color: #ccc;
 }
 
-.result-set-option-p{
+.result-set-cntnr-bm:hover{
+    background-color: #ccc;
+}
+
+.result-set-option-p, .result-set-option-p-bm{
     position: relative;
     width: 200px;
     top: 6px;
@@ -255,14 +269,18 @@
     white-space: nowrap;
 }
 
-.result-set-option-head{
+.result-set-option-head, .result-set-option-head-bm{
     position: relative;
     padding-left: 10px;
     width: 40px;
     height: 30px;
 }
 
-.result-set-option-mid{
+.result-set-option-head-bm{
+    height: 40px;
+}
+
+.result-set-option-mid, .result-set-option-mid-bm{
     padding: 0 1px;
     color: #fff;
     text-align: left;
@@ -273,9 +291,14 @@
     height: 30px;
 }
 
-.result-set-option-tail{
+.result-set-option-mid-bm{
+    height: 40px;
+}
+
+.result-set-option-tail, .result-set-option-tail-bm{
     width: 20px;
     height: 30px;
+    padding-right: 10px;
 }
 
 .result-set-option-figure{
@@ -311,16 +334,17 @@
 
 /*not found view*/
 .li-result-set-view-nf{
+    height: fit-content;
+    width: 260px;
     height: 40px;
-    width: 226px;
     padding: 2px 0px;
 }
 
 .result-set-cntnr-nf{
+
     display: inline-flex;
     height: 40px;
-    width: 226px;
-    padding: 3px 0px;
+    width: 260px;
 }
 
 .result-set-cntnr-nf:hover{
@@ -329,7 +353,8 @@
 
 .result-set-option-p-nf{
     position: relative;
-    width: 196px;
+    left: 5px;
+    width: 200px;
     top: 3px;
     overflow: hidden;         
     text-overflow: ellipsis; 
@@ -337,8 +362,8 @@
 }
 
 .result-set-option-head-nf{
-    margin-right: 10px;
-    width: 30px;
+    padding-left: 10px;
+    width: 40px;
     height: 40px;
 }
 
@@ -349,7 +374,7 @@
     font-size: 12px;
     font-weight:normal;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    width: 196px;
+    width: 200px;
     height: 40px;
 }
 
@@ -380,12 +405,13 @@
     height: 100%;
     display: block;
     padding: 10px 10px;
+    background-color: rgba(51, 51, 51, 0.35);
 }
 
 .search-result-detail-head-section{
     display: block;
     height: 110px;
-    width: 280px;
+    width: 300px;
 }
 
 .detail-head-icon-cntnr{
@@ -409,7 +435,8 @@
     /* display: inline-flex; */
     height: 50px;
     width: 50px;
-    left: 41%;
+    left: 50%;
+    transform: translateX(-50%); /* center horizontally across monitors */
 }
 
 .detail-head-icon-cntnr-img{
@@ -445,7 +472,7 @@
 .search-result-detail-mid-section, .search-result-detail-tail-section{
     display: block;
     height: fit-content;
-    width: 280px;
+    width: 300px;
 }
 
 .search-result-detail-mid-cntnr, .search-result-detail-tail-cntnr{
@@ -457,6 +484,10 @@
     display: inline-flex;
     width: 100%;
     /* border: 1px solid black; */
+}
+
+.search-result-detail-tail-cntnt{
+    padding: 4px 0px;
 }
 
 .search-result-detail-line-cntnr{
