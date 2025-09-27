@@ -97,9 +97,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   onlyFoldersSearchIndex:FileSearchIndex[] = [];
 
   selectedOptionID = 0;
-  selectedResultSetOption!:FileSearchIndex;
+  selectedResultSetOptionId = 0;
   selectedResultSetOptionType = Constants.EMPTY_STRING;
+
   bestMatch!:FileSearchIndex;
+  selectedResultSetOption!:FileSearchIndex;
 
   readonly APPS = FileIndexIDs.APPS.toString();
   readonly DOCUMENTS = FileIndexIDs.DOCUMENTS.toString();
@@ -241,8 +243,20 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   selectResultSetOption(evt:MouseEvent, file: FileSearchIndex, id:number):void{
     evt.stopPropagation();
 
-    const selectedResultSetOptionId = id;
+    const prevSelectedResultSetOptionId = this.selectedResultSetOptionId;
+    this.selectedResultSetOptionId = id;
     this.selectedResultSetOption = file;
+    this.getSelectedResultSetOptionType(file);
+
+    this.updateResultSetOptionStyle(this.selectedResultSetOptionId, '#ccc');
+    if(id !== this.bestMatchId){
+      const on = false;
+      this.handleBestMatchHightLight(on);
+    } 
+    
+    if(prevSelectedResultSetOptionId !== this.selectedResultSetOptionId){
+      this.updateResultSetOptionStyle(prevSelectedResultSetOptionId, '');
+    }
   }
 
   selectOption(evt:MouseEvent, id:number):void{
@@ -272,7 +286,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onMouseLeave(id:number):void{    
-    const color = (id === this.selectedOptionID)? "#76B9ED" : "";
+    const color = (id === this.selectedOptionID)? '#76B9ED' : '';
     this.updateOptionStyle(id, color);
   }
 
@@ -280,6 +294,13 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const liElement = document.getElementById(`dd-option-${id}`) as HTMLLIElement | null;
     if (liElement) {
       liElement.style.backgroundColor = color;
+    }
+  }
+
+  private updateResultSetOptionStyle(id: number, color: string): void {
+    const divElmnt = document.getElementById(`result-set-option-${id}`) as HTMLDivElement
+    if (divElmnt) {
+      divElmnt.style.backgroundColor = color;
     }
   }
 
@@ -413,9 +434,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     setTimeout(() => {
       const bestMatchElmnt = document.getElementById('best-match-option') as HTMLDivElement;
-      console.log('Best Match Should be ON:', bestMatchElmnt)
       if(bestMatchElmnt){
-        console.log('Best Match Should be ON')
         bestMatchElmnt.style.backgroundColor = (toggle) ? '#ccc' : '';
       }
     }, delay);
@@ -428,12 +447,13 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       if(ext && ext !== Constants.EMPTY_STRING){
         this.selectedResultSetOptionType = `${ext.toUpperCase().replace(Constants.DOT, Constants.EMPTY_STRING)} File`;
       }
-    }else if(file.type === this.APPS){
+    }
+    
+    if(file.type === this.APPS){
       this.selectedResultSetOptionType = 'App';
     }else if(file.type === this.FOLDERS){
       this.selectedResultSetOptionType = 'Folder';
     }
-
   }
 
   isTypePresent(type:string):boolean{
@@ -461,6 +481,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
         maxScore = searchScore;
         this.bestMatch = file;
         this.selectedResultSetOption = file;
+        this.selectedResultSetOptionId = this.bestMatchId;
         this.getSelectedResultSetOptionType(file);
       }
     });
