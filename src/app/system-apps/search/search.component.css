@@ -260,13 +260,17 @@
     background-color: #ccc;
 }
 
-.result-set-option-p, .result-set-option-p-bm{
+.result-set-option-p, .result-set-option-p-bm, .result-set-option-p-bm1{
     position: relative;
     width: 200px;
     top: 6px;
     overflow: hidden;         
     text-overflow: ellipsis; 
     white-space: nowrap;
+}
+
+.result-set-option-p-bm1{
+    top: 0px
 }
 
 .result-set-option-head, .result-set-option-head-bm{
@@ -280,7 +284,7 @@
     height: 40px;
 }
 
-.result-set-option-mid, .result-set-option-mid-bm{
+.result-set-option-mid, .result-set-option-mid-bm, .result-set-option-mid-bm1{
     padding: 0 1px;
     color: #fff;
     text-align: left;
@@ -293,6 +297,14 @@
 
 .result-set-option-mid-bm{
     height: 40px;
+}
+
+.result-set-option-mid-bm1{
+    position: absolute;
+    top: 55px;
+    left: 40px;
+    height: 10px;
+    font-size: 9px;
 }
 
 .result-set-option-tail, .result-set-option-tail-bm{
