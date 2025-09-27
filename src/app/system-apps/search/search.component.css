@@ -260,7 +260,7 @@
     background-color: #ccc;
 }
 
-.result-set-option-p, .result-set-option-p-bm, .result-set-option-p-bm1{
+.result-set-option-p, .result-set-option-p1, .result-set-option-p-bm, .result-set-option-p-bm1{
     position: relative;
     width: 200px;
     top: 6px;
@@ -269,7 +269,7 @@
     white-space: nowrap;
 }
 
-.result-set-option-p-bm1{
+.result-set-option-p1, .result-set-option-p-bm1{
     top: 0px
 }
 
@@ -301,7 +301,7 @@
 
 .result-set-option-mid-bm1{
     position: absolute;
-    top: 55px;
+    top: 52px;
     left: 40px;
     height: 10px;
     font-size: 9px;
