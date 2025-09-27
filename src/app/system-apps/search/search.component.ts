@@ -81,8 +81,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   isFolderPresent = false;
   isFilePresent = false;
 
+  hasRecents = false;
+
   isSearchWindowVisible = false;
 
+  bestMatchId = -1;
   bestMatchFor = Constants.EMPTY_STRING;  
   otherSectionName = Constants.EMPTY_STRING;
   otherSectionFocusType = Constants.EMPTY_STRING;
@@ -94,6 +97,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   onlyFoldersSearchIndex:FileSearchIndex[] = [];
 
   selectedOptionID = 0;
+  selectedResultSetOption!:FileSearchIndex;
+  selectedResultSetOptionType = Constants.EMPTY_STRING;
   bestMatch!:FileSearchIndex;
 
   readonly APPS = FileIndexIDs.APPS.toString();
@@ -131,7 +136,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this._fileIndexerService = fileIndexerService;
     this._activityHistoryService = activityHistoryService;
 
-    this.bestMatch = {type: Constants.EMPTY_STRING, name:'Test', srcPath:Constants.EMPTY_STRING, iconPath:this.icon}
+    //this.bestMatch = {type: Constants.EMPTY_STRING, name:'Test', srcPath:Constants.EMPTY_STRING, iconPath:this.icon}
 
     this._renderer = renderer;
     this._formBuilder = formBuilder;
@@ -233,11 +238,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     return options;
   }
 
-  selectResultSetOption(evt:MouseEvent, id:number):void{
+  selectResultSetOption(evt:MouseEvent, file: FileSearchIndex, id:number):void{
     evt.stopPropagation();
 
-
-    const selectedResultSetOption = id;
+    const selectedResultSetOptionId = id;
+    this.selectedResultSetOption = file;
   }
 
   selectOption(evt:MouseEvent, id:number):void{
@@ -291,16 +296,19 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     console.log('filteredFileIndex:', this.filteredFileSearchIndex);
 
     if(this.filteredFileSearchIndex.length === 0){
+      const on = false;
       this.showNoMatchFoundView = true;
       this.showBestMatchView = false;
       this.noMatchText = `No result found for "${searchString}"`;
 
+      this.handleBestMatchHightLight(on);
       this.showOnlyBestMatchSection();
     }else{
       this.showNoMatchFoundView = false;
       this.showBestMatchView = true;
       this.checkIfSectionIsPresent(this.defaultFocus);
       this.getBestMatches(searchString);
+      this.checkIfSectionIsPresent(this.defaultFocus, false);
     }
   }
 
@@ -340,22 +348,26 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.otherSectionName = (this.showOthersSection)? focus : Constants.EMPTY_STRING;
   }
 
-  checkIfSectionIsPresent(focus:string):void{
+  checkIfSectionIsPresent(focus:string, checkIfPresent = true):void{
     this.resetSectionBucket();
 
     if(focus === this.OPTION_ALL || focus === this.OPTION_APPS){
-      this.isAppPresent = this.isTypePresent(this.APPS);
+      if(checkIfPresent)
+        this.isAppPresent = this.isTypePresent(this.APPS);
       this.onlyAppsSearchIndex = this.filterByType(this.APPS);
     }
 
     if(focus === this.OPTION_ALL || focus === this.OPTION_FOLDERS){
-      this.isFolderPresent = this.isTypePresent(this.FOLDERS);
+      if(checkIfPresent)
+        this.isFolderPresent = this.isTypePresent(this.FOLDERS);
       this.onlyFoldersSearchIndex = this.filterByType(this.FOLDERS);
     }
 
     if(focus === this.OPTION_ALL){
-      this.isFilePresent = (this.isTypePresent(this.DOCUMENTS) || this.isTypePresent(this.PHOTOS) 
+      if(checkIfPresent){
+        this.isFilePresent = (this.isTypePresent(this.DOCUMENTS) || this.isTypePresent(this.PHOTOS) 
                   || this.isTypePresent(this.MUSIC) || this.isTypePresent(this.VIDEOS));
+      }
 
       this.onlyFilesSearchIndex.push(...this.filterByType(this.DOCUMENTS));
       this.onlyFilesSearchIndex.push(...this.filterByType(this.PHOTOS));
@@ -364,22 +376,26 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if(focus === this.OPTION_DOCUMENTS){
-      this.isFilePresent = this.isTypePresent(this.DOCUMENTS);
+      if(checkIfPresent)
+        this.isFilePresent = this.isTypePresent(this.DOCUMENTS);
       this.onlyFilesSearchIndex.push(...this.filterByType(this.DOCUMENTS));
     }
 
     if(focus === this.OPTION_PHOTOS){
-      this.isFilePresent = this.isTypePresent(this.PHOTOS);
+      if(checkIfPresent)
+        this.isFilePresent = this.isTypePresent(this.PHOTOS);
       this.onlyFilesSearchIndex.push(...this.filterByType(this.PHOTOS));
     }
 
     if(focus === this.OPTION_MUSIC){
-      this.isFilePresent =  this.isTypePresent(this.MUSIC);
+      if(checkIfPresent)
+        this.isFilePresent =  this.isTypePresent(this.MUSIC);
       this.onlyFilesSearchIndex.push(...this.filterByType(this.MUSIC));
     }
 
     if(focus === this.OPTION_VIDEOS){
-      this.isFilePresent = this.isTypePresent(this.VIDEOS);
+      if(checkIfPresent)
+        this.isFilePresent = this.isTypePresent(this.VIDEOS);
       this.onlyFilesSearchIndex.push(...this.filterByType(this.VIDEOS));
     }
   }
@@ -390,6 +406,34 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isAppPresent  = false;
     this.isFolderPresent = false;
     this.isFilePresent = false;
+  }
+
+  handleBestMatchHightLight(toggle:boolean):void{
+    const delay = 25; //25ms
+
+    setTimeout(() => {
+      const bestMatchElmnt = document.getElementById('best-match-option') as HTMLDivElement;
+      console.log('Best Match Should be ON:', bestMatchElmnt)
+      if(bestMatchElmnt){
+        console.log('Best Match Should be ON')
+        bestMatchElmnt.style.backgroundColor = (toggle) ? '#ccc' : '';
+      }
+    }, delay);
+  }
+
+  getSelectedResultSetOptionType(file:FileSearchIndex):void{
+    const ext = extname(file.name);
+
+    if(file.type !== this.APPS || file.type !== this.FOLDERS){ 
+      if(ext && ext !== Constants.EMPTY_STRING){
+        this.selectedResultSetOptionType = `${ext.toUpperCase().replace(Constants.DOT, Constants.EMPTY_STRING)} File`;
+      }
+    }else if(file.type === this.APPS){
+      this.selectedResultSetOptionType = 'App';
+    }else if(file.type === this.FOLDERS){
+      this.selectedResultSetOptionType = 'Folder';
+    }
+
   }
 
   isTypePresent(type:string):boolean{
@@ -407,6 +451,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getBestMatches(searchString:string):void{
+    const on = true;
     let maxScore = 0;
 
     this.filteredFileSearchIndex.forEach(file =>{
@@ -415,9 +460,12 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       if(maxScore < searchScore){
         maxScore = searchScore;
         this.bestMatch = file;
+        this.selectedResultSetOption = file;
+        this.getSelectedResultSetOptionType(file);
       }
     });
 
+    this.handleBestMatchHightLight(on);
     this.removeDuplicateEntry(this.bestMatch);
   }
 
@@ -434,9 +482,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
     }else if(countOfType > 1){
+      const result = this.filteredFileSearchIndex.filter(x => !(x.name === file.name 
+                                                             && x.srcPath === file.srcPath));
 
-      const result = this.filteredFileSearchIndex.filter(x => (x.name !== file.name
-                                                            && x.srcPath !== file.srcPath));
 
       this.filteredFileSearchIndex = [];
       this.filteredFileSearchIndex.push(...result);
@@ -481,7 +529,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
           Decide on a reasonable maximum possible raw score (upper bound).
           Prefix/contains → up to ~31
           Frequency → ~25 (logarithmic scaling)
-          Recency → up to 10
+          Recency → up to 10 (logarithmic decay)
           Folder priority → up to 10
           Extension → up to 5
           Rough max = ~82
@@ -557,7 +605,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     return preferred.includes(ext) ? 5 : 1;
   }
-
 
   desktopIsActive():void{ }
 

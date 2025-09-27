@@ -54,9 +54,9 @@
                             <li class="li-result-set-view-bm">
                                 <div class="result-set-cntnr-bm"  
                                     id="best-match-option" 
-                                    (click)="selectResultSetOption($event, -1)" 
-                                    (mouseenter)="onMouseEnter(-1)" 
-                                    (mouseleave)="onMouseLeave(-1)">
+                                    (click)="selectResultSetOption($event, bestMatch, bestMatchId)" 
+                                    (mouseenter)="onMouseEnter(bestMatchId)" 
+                                    (mouseleave)="onMouseLeave(bestMatchId)">
                                     
                                     <div class="result-set-option-head-bm">
                                         <figure class="result-set-option-figure">
@@ -68,6 +68,7 @@
                                         <p class="result-set-option-1">{{ bestMatch.name }}</p>
                                     </div>
                                 </div>
+
                                 <div class="result-set-option-mid-bm1">
                                     <p class="result-set-option-p-bm1">{{ bestMatch.type }}</p>
                                 </div>
@@ -103,7 +104,7 @@
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyAppsSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
                                 id="result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, i)" 
+                                (click)="selectResultSetOption($event, fileSearchIndex, i)" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 
@@ -143,7 +144,7 @@
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
                                 id="result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, i)" 
+                                (click)="selectResultSetOption($event, fileSearchIndex, i)" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 
@@ -183,7 +184,7 @@
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFoldersSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
                                 id="result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, i)" 
+                                (click)="selectResultSetOption($event, fileSearchIndex, i)" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 
@@ -223,7 +224,7 @@
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
                                 id="result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, i)" 
+                                (click)="selectResultSetOption($event, fileSearchIndex, i)" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 
@@ -264,20 +265,20 @@
 
                     <div  class="detail-head-icon-cntnr">
                         <figure class="detail-head-icon-cntnr-figure">
-                            <img class="detail-head-icon-cntnr-img" [src]="cheetahIcon" />
+                            <img class="detail-head-icon-cntnr-img" [src]="selectedResultSetOption.iconPath" />
                         </figure>
                     </div>
 
                     <div class="blank-space-a"></div>
 
                     <div class="detail-head-filename-cntnr">
-                        <p class="detail-head-filename-p"> test.py </p>
+                        <p class="detail-head-filename-p"> {{selectedResultSetOption.name}} </p>
                     </div>
 
                     <div class="blank-space-a"></div>
 
                     <div class="detail-head-filetype-cntnr">
-                        <p class="detail-head-filetype-p"> PY File </p>
+                        <p class="detail-head-filetype-p"> {{selectedResultSetOptionType}} </p>
                     </div>
                 </div>
 
@@ -303,7 +304,7 @@
 
                     @if(selectedEntryType === 'APPS'){
                         <div class="search-result-detail-mid-cntnr">
-                            <div class="search-result-detail-mid-cntnt">
+                            <div class="search-result-detail-mid-cntnt1">
                                 <div class="mid-cntnt-head-1">
                                     <figure class="mid-cntnt-figure">
                                         <img class="mid-cntnt-img" [src]="searchOpenIcon" />
