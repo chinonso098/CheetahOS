@@ -54,7 +54,7 @@
                             <li class="li-result-set-view-bm">
                                 <div class="result-set-cntnr-bm"  
                                     id="best-match-option" 
-                                    (click)="selectResultSetOption($event, bestMatch, bestMatchId)" 
+                                    (click)="selectResultSetOption($event, bestMatch, bestMatchId, '')" 
                                     (mouseenter)="onMouseEnter(bestMatchId)" 
                                     (mouseleave)="onMouseLeave(bestMatchId)">
                                     
@@ -103,8 +103,8 @@
                     <ol>
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyAppsSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
-                                id="result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, fileSearchIndex, i)" 
+                                id="app-result-set-option-{{i}}" 
+                                (click)="selectResultSetOption($event, fileSearchIndex, i, 'app')" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 
@@ -143,8 +143,8 @@
                     <ol>
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
-                                id="result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, fileSearchIndex, i)" 
+                                id="file-result-set-option-{{i}}" 
+                                (click)="selectResultSetOption($event, fileSearchIndex, i, 'file')" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 
@@ -183,8 +183,8 @@
                     <ol>
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFoldersSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
-                                id="result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, fileSearchIndex, i)" 
+                                id="folder-result-set-option-{{i}}" 
+                                (click)="selectResultSetOption($event, fileSearchIndex, i, 'folder')" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 
@@ -223,8 +223,8 @@
                     <ol>
                         <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
                             <div class="result-set-cntnr"  
-                                id="result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, fileSearchIndex, i)" 
+                                id="other-result-set-option-{{i}}" 
+                                (click)="selectResultSetOption($event, fileSearchIndex, i, 'other')" 
                                 (mouseenter)="onMouseEnter(i)" 
                                 (mouseleave)="onMouseLeave(i)">
                                 

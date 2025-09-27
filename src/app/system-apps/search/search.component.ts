@@ -86,6 +86,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   isSearchWindowVisible = false;
 
   bestMatchId = -1;
+  prefixType = Constants.EMPTY_STRING;
   bestMatchFor = Constants.EMPTY_STRING;  
   otherSectionName = Constants.EMPTY_STRING;
   otherSectionFocusType = Constants.EMPTY_STRING;
@@ -240,23 +241,33 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     return options;
   }
 
-  selectResultSetOption(evt:MouseEvent, file: FileSearchIndex, id:number):void{
+  selectResultSetOption(evt:MouseEvent, file: FileSearchIndex, id:number, prefix:string):void{
     evt.stopPropagation();
 
+    const prevPreFix = this.prefixType;
     const prevSelectedResultSetOptionId = this.selectedResultSetOptionId;
+    this.prefixType = prefix;
     this.selectedResultSetOptionId = id;
     this.selectedResultSetOption = file;
     this.getSelectedResultSetOptionType(file);
 
-    this.updateResultSetOptionStyle(this.selectedResultSetOptionId, '#ccc');
+    if(id === this.bestMatchId){
+      const on = true;
+      this.handleBestMatchHightLight(on);
+    } 
+
     if(id !== this.bestMatchId){
       const on = false;
       this.handleBestMatchHightLight(on);
     } 
     
-    if(prevSelectedResultSetOptionId !== this.selectedResultSetOptionId){
-      this.updateResultSetOptionStyle(prevSelectedResultSetOptionId, '');
-    }
+    // if((prevSelectedResultSetOptionId !== this.selectedResultSetOptionId) && (prevPreFix !== prefix)){
+    //   this.updateResultSetOptionStyle(prevSelectedResultSetOptionId, '', prevPreFix);
+    //   this.updateResultSetOptionStyle(this.selectedResultSetOptionId, '#ccc', prefix);
+    // }
+
+      this.updateResultSetOptionStyle(prevSelectedResultSetOptionId, '', prevPreFix);
+      this.updateResultSetOptionStyle(this.selectedResultSetOptionId, '#ccc', prefix);
   }
 
   selectOption(evt:MouseEvent, id:number):void{
@@ -297,8 +308,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private updateResultSetOptionStyle(id: number, color: string): void {
-    const divElmnt = document.getElementById(`result-set-option-${id}`) as HTMLDivElement
+  private updateResultSetOptionStyle(id: number, color: string, prefix: string): void {
+    const divElmnt = document.getElementById(`${prefix}-result-set-option-${id}`) as HTMLDivElement
     if (divElmnt) {
       divElmnt.style.backgroundColor = color;
     }
