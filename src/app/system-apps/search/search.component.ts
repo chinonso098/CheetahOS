@@ -639,24 +639,34 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     return preferred.includes(ext) ? 5 : 1;
   }
 
-  handlePath(fileSI:FileSearchIndex, intent:number, evt:MouseEvent):void{
+  handlePath(file:FileSearchIndex, intent:number, evt:MouseEvent):void{
     evt.stopPropagation();
 
-    const file = new FileInfo();
-    file.setFileName = basename(fileSI.name, extname(fileSI.name));
-    file.setOpensWith = (intent === this.RUN_APP)? fileSI.opensWith : Constants.FILE_EXPLORER;
-    file.setIsFile = false;
-    file.setCurrentPath = (intent === this.RUN_APP)? fileSI.srcPath : dirname(fileSI.srcPath);
+    /**
+     * files of type APPS should under no circumstance be able to call this method
+     * MUSIC, DOCUMENT, VIDEO, PICTURES, all fall under the umbrella of file
+     */
+    const fileInfo = new FileInfo();
+    fileInfo.setFileName = basename(file.name, extname(file.name));
+    if(file.type !== this.FOLDERS){
+      fileInfo.setIsFile = true;
+      fileInfo.setOpensWith = (intent === this.RUN_APP)? file.opensWith : Constants.FILE_EXPLORER;
+      fileInfo.setCurrentPath = (intent === this.RUN_APP)? file.srcPath : dirname(file.srcPath);
+    }else{
+      fileInfo.setIsFile = false;
+      fileInfo.setOpensWith = Constants.FILE_EXPLORER;
+      fileInfo.setCurrentPath = file.srcPath;
+    }
 
-    this._processHandlerService.runApplication(file);
+    this._processHandlerService.runApplication(fileInfo);
     this.hideSearchBox();
   }
 
-  copyPath(fileSI:FileSearchIndex, evt:MouseEvent):void{
+  copyPath(file:FileSearchIndex, evt:MouseEvent):void{
     evt.stopPropagation();
 
     const action = MenuAction.COPY;
-    const path = fileSI.srcPath;
+    const path = file.srcPath;
     this._menuService.setStoreData([path, action]);
 
     this.hideSearchBox();
