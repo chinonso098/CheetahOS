@@ -47,17 +47,20 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   searchBarForm!: FormGroup;
 
   defaultsearchIcon = `${Constants.IMAGE_BASE_PATH}search_all.png`;
-  searchAllIcon = `${Constants.IMAGE_BASE_PATH}search_all.png`;
-  searchPinIcon = `${Constants.IMAGE_BASE_PATH}search_pin.png`;
-  searchOpenIcon = `${Constants.IMAGE_BASE_PATH}search_open.png`;
-  searchCopyIcon = `${Constants.IMAGE_BASE_PATH}search_copy.png`;
-  searchFileIcon = `${Constants.IMAGE_BASE_PATH}search_file.png`;
-  searchMusicIcon = `${Constants.IMAGE_BASE_PATH}search_music.png`;
-  searchVideoIcon = `${Constants.IMAGE_BASE_PATH}search_video.png`;
-  searchFolderIcon = `${Constants.IMAGE_BASE_PATH}search_folder.png`;
-  searchPictureIcon = `${Constants.IMAGE_BASE_PATH}search_picture.png`;
-  searchApplicatiionIcon = `${Constants.IMAGE_BASE_PATH}search_app.png`;
-  cheetahIcon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
+  readonly searchAllIcon = `${Constants.IMAGE_BASE_PATH}search_all.png`;
+  readonly searchPinIcon = `${Constants.IMAGE_BASE_PATH}search_pin.png`;
+  readonly searchOpenIcon = `${Constants.IMAGE_BASE_PATH}search_open.png`;
+  readonly searchCopyIcon = `${Constants.IMAGE_BASE_PATH}search_copy.png`;
+  readonly searchFileIcon = `${Constants.IMAGE_BASE_PATH}search_file.png`;
+  readonly searchMusicIcon = `${Constants.IMAGE_BASE_PATH}search_music.png`;
+  readonly searchVideoIcon = `${Constants.IMAGE_BASE_PATH}search_video.png`;
+  readonly searchFolderIcon = `${Constants.IMAGE_BASE_PATH}search_folder.png`;
+  readonly searchPictureIcon = `${Constants.IMAGE_BASE_PATH}search_picture.png`;
+  readonly searchApplicatiionIcon = `${Constants.IMAGE_BASE_PATH}search_app.png`;
+  readonly cheetahIcon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
+
+  readonly NAVIGATE_TO_PATH = 1;
+  readonly RUN_APP = 2;
 
   searchPlaceHolder = ' Search now';
   openApp = 'Open';
@@ -636,14 +639,14 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     return preferred.includes(ext) ? 5 : 1;
   }
 
-  handlePath(fileSI:FileSearchIndex, evt:MouseEvent):void{
+  handlePath(fileSI:FileSearchIndex, intent:number, evt:MouseEvent):void{
     evt.stopPropagation();
 
     const file = new FileInfo();
     file.setFileName = basename(fileSI.name, extname(fileSI.name));
-    file.setOpensWith = Constants.FILE_EXPLORER;
+    file.setOpensWith = (intent === this.RUN_APP)? fileSI.opensWith : Constants.FILE_EXPLORER;
     file.setIsFile = false;
-    file.setCurrentPath = dirname(fileSI.srcPath);
+    file.setCurrentPath = (intent === this.RUN_APP)? fileSI.srcPath : dirname(fileSI.srcPath);
 
     this._processHandlerService.runApplication(file);
     this.hideSearchBox();
@@ -651,7 +654,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   copyPath(fileSI:FileSearchIndex, evt:MouseEvent):void{
     evt.stopPropagation();
-    
+
     const action = MenuAction.COPY;
     const path = fileSI.srcPath;
     this._menuService.setStoreData([path, action]);

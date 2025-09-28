@@ -3,5 +3,6 @@ export interface FileSearchIndex{
     name:string,
     srcPath:string,
     iconPath:string,
+    opensWith: string,
     dateModified: Date;
 }

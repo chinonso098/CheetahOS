@@ -304,7 +304,7 @@
 
                     @if(selectedResultSetOption.type === APPS){
                         <div class="search-result-detail-mid-cntnr">
-                            <div class="search-result-detail-mid-cntnt1" (click)="copyPath(selectedResultSetOption, $event)">
+                            <div class="search-result-detail-mid-cntnt1" (click)="handlePath(selectedResultSetOption, RUN_APP, $event)">
                                 <div class="mid-cntnt-head-1">
                                     <figure class="mid-cntnt-figure">
                                         <img class="mid-cntnt-img" [src]="searchOpenIcon" />
@@ -324,7 +324,7 @@
                 <div class="search-result-detail-tail-section">
                     @if(selectedResultSetOption.type !== APPS){
                         <div class="search-result-detail-tail-cntnr">
-                            <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, $event)">
+                            <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, RUN_APP, $event)">
                                 <div class="mid-cntnt-head-1">
                                     <figure class="mid-cntnt-figure">
                                         <img class="mid-cntnt-img" [src]="searchOpenIcon" />
@@ -336,7 +336,7 @@
                                 </div>
                             </div>
 
-                            <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, $event)">
+                            <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, NAVIGATE_TO_PATH, $event)">
                                 <div class="mid-cntnt-head-1">
                                     <figure class="mid-cntnt-figure">
                                         <img class="mid-cntnt-img" [src]="searchFolderIcon" />
