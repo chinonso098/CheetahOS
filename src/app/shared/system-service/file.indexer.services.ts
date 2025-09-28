@@ -70,13 +70,14 @@ export class FileIndexerService implements BaseService{
         for(const entry of directoryEntries){
             const entryPath = `${filePath}/${entry}`;
             const isDirectory = await this._fileService.isDirectory(entryPath);
+            const fileInfo = await this._fileService.getFileInfo(entryPath);
             if(isDirectory){
                 const isFile = false;
                 const entryToExclude = 'Recycle Bin';
                 const pathToExclude = '/Users/Desktop/Recycle Bin';
 
                 if(pathToExclude !== entryPath && entryToExclude !== entry){
-                    this._Index.push(this.getFileSearchIndex(FileIndexIDs.FOLDERS, entry,  entryPath, this.handleNonAppIcons(entry, isFile)));
+                    this._Index.push(this.getFileSearchIndex(FileIndexIDs.FOLDERS, entry,  entryPath, this.handleNonAppIcons(entry, isFile), fileInfo.getDateModified));
                     queue.push(entryPath);
                 }
             }else{
@@ -86,9 +87,9 @@ export class FileIndexerService implements BaseService{
                 const ext = extname(entry);
                 if(ext !== Constants.URL){
                     if(ext !== Constants.EMPTY_STRING)
-                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry)));
+                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry), fileInfo.getDateModified));
                     else
-                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry, isFile, hasExt)));
+                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry, isFile, hasExt), fileInfo.getDateModified ));
                 }
             }
         }
@@ -99,13 +100,14 @@ export class FileIndexerService implements BaseService{
     private indexApps(): void {
         const entryPath = 'None';
         const installApps = this._appDirectory.getAppList(); 
+        const date = new Date('1970-01-01');
         for(const app of installApps){
-            this._Index.push(this.getFileSearchIndex(FileIndexIDs.APPS, app, entryPath, this._appDirectory.getAppIcon(app)));
+            this._Index.push(this.getFileSearchIndex(FileIndexIDs.APPS, app, entryPath, this._appDirectory.getAppIcon(app), date));
         }
     }
 
-    private getFileSearchIndex(type:string, name:string, srcPath:string, iconPath:string):FileSearchIndex{
-        return{ type:type, name:name, srcPath:srcPath, iconPath:iconPath }
+    private getFileSearchIndex(type:string, name:string, srcPath:string, iconPath:string, dateModified:Date):FileSearchIndex{
+        return{ type:type, name:name, srcPath:srcPath, iconPath:iconPath, dateModified: dateModified}
     }
 
     private handleNonAppIcons(fileName:string, isFile = true, hasExt = true):string{

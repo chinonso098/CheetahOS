@@ -41,7 +41,7 @@ export class ActivityHistoryService implements BaseService {
 
     public addActivityHistory(type:string, name:string, path:string): void {
         const entry = {
-            type : type, name : name, path : path, count: 1, lastOpened: Date.now()
+            type : type, name : name, path : path, count: 1, lastInteractionTS: Date.now()
         }
 
         //console.log('addActivityHistory entry:', entry);
@@ -60,10 +60,10 @@ export class ActivityHistoryService implements BaseService {
                                         && h.path === entry.path 
                                         && h.type === entry.type);
             if(existing){
-                // Update the name and reset count/lastOpened
+                // Update the name and reset count/lastInteractionTS
                 existing.name = entry.name;
                 existing.count += 1;
-                existing.lastOpened = Date.now();
+                existing.lastInteractionTS = Date.now();
             }
         } else {
             // Normal lookup by current name
@@ -72,7 +72,7 @@ export class ActivityHistoryService implements BaseService {
                                                 && h.type === entry.type));
             if(existing){
                 existing.count += 1;
-                existing.lastOpened = Date.now();
+                existing.lastInteractionTS = Date.now();
             }
         }
 

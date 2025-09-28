@@ -3,5 +3,5 @@ export interface ActivityHistory{
     name:string,
     path:string,
     count:number,
-    lastOpened:number
+    lastInteractionTS:number
 }

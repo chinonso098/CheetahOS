@@ -15,7 +15,10 @@ import { FileIndexIDs } from "src/app/system-files/common.enums";
 import { FileSearchIndex } from 'src/app/system-files/file.search.index';
 import { debounceTime, Subscription } from 'rxjs';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
-import {extname} from 'path';
+import {basename, dirname, extname} from 'path';
+import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
+import { FileInfo } from 'src/app/system-files/file.info';
+import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 
 @Component({
   selector: 'cos-search',
@@ -34,6 +37,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private _systemNotificationServices:SystemNotificationService;
   private _fileIndexerService:FileIndexerService;
   private _activityHistoryService:ActivityHistoryService;
+  private _processHandlerService:ProcessHandlerService;
 
   private _formBuilder:FormBuilder;
   private _fileSearchIndex:FileSearchIndex[] = [];
@@ -60,8 +64,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   openSrcPath = 'Open file location';
   copySrcPath = 'Copy path'
 
-  selectedEntryType = 'FILE'; //'APPS'
-
   optionsMenuToggle = false;
   showOptionsMenu = false;
   showSearchResult = false
@@ -71,19 +73,17 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   noMatchImg = this.cheetahIcon;
   noMatchText = Constants.EMPTY_STRING;
 
-
   showFilesSection = true;
   showFoldersSection = true;
   showApplicationSection = true;
   showOthersSection = false;
 
   isAppPresent = false;
-  isFolderPresent = false;
   isFilePresent = false;
+  isFolderPresent = false;
+  isSearchWindowVisible = false;
 
   hasRecents = false;
-
-  isSearchWindowVisible = false;
 
   bestMatchId = -1;
   prefixType = Constants.EMPTY_STRING;
@@ -101,6 +101,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedResultSetOptionId = 0;
   selectedResultSetOptionType = Constants.EMPTY_STRING;
 
+  fileInfo!:FileInfo;
   bestMatch!:FileSearchIndex;
   selectedResultSetOption!:FileSearchIndex;
 
@@ -130,16 +131,16 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   displayName = Constants.EMPTY_STRING;
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, menuService:MenuService,
-                systemNotificationServices:SystemNotificationService, renderer:Renderer2, formBuilder:FormBuilder,
-                fileIndexerService:FileIndexerService, activityHistoryService:ActivityHistoryService) { 
+              systemNotificationServices:SystemNotificationService, renderer:Renderer2, formBuilder:FormBuilder,
+              fileIndexerService:FileIndexerService, activityHistoryService:ActivityHistoryService, processHandlerService :ProcessHandlerService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
-    this._menuService = menuService;
-    this._systemNotificationServices = systemNotificationServices;
-    this._fileIndexerService = fileIndexerService;
-    this._activityHistoryService = activityHistoryService;
 
-    //this.bestMatch = {type: Constants.EMPTY_STRING, name:'Test', srcPath:Constants.EMPTY_STRING, iconPath:this.icon}
+    this._menuService = menuService;
+    this._fileIndexerService = fileIndexerService;
+    this._processHandlerService = processHandlerService;
+    this._activityHistoryService = activityHistoryService;
+    this._systemNotificationServices = systemNotificationServices;
 
     this._renderer = renderer;
     this._formBuilder = formBuilder;
@@ -199,6 +200,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const  searchDiv = this.cheetahSearchDiv.nativeElement;
     this._renderer.setStyle(searchDiv, 'z-index', '-1');
     this._renderer.setStyle(searchDiv, 'display', 'none');
+
+    this.searchBarForm.reset();
 
     this._menuService.hideSearchBox.next(this.name);
   }
@@ -261,13 +264,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.handleBestMatchHightLight(on);
     } 
     
-    // if((prevSelectedResultSetOptionId !== this.selectedResultSetOptionId) && (prevPreFix !== prefix)){
-    //   this.updateResultSetOptionStyle(prevSelectedResultSetOptionId, '', prevPreFix);
-    //   this.updateResultSetOptionStyle(this.selectedResultSetOptionId, '#ccc', prefix);
-    // }
-
-      this.updateResultSetOptionStyle(prevSelectedResultSetOptionId, '', prevPreFix);
-      this.updateResultSetOptionStyle(this.selectedResultSetOptionId, '#ccc', prefix);
+    this.updateResultSetOptionStyle(prevSelectedResultSetOptionId, Constants.EMPTY_STRING, prevPreFix);
+    this.updateResultSetOptionStyle(this.selectedResultSetOptionId, '#ccc', prefix);
   }
 
   selectOption(evt:MouseEvent, id:number):void{
@@ -293,16 +291,16 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onMouseEnter(id:number):void{
-    this.updateOptionStyle(id, "#ccc");
+    this.updateOptionStyle(id, '#ccc');
   }
 
   onMouseLeave(id:number):void{    
-    const color = (id === this.selectedOptionID)? '#76B9ED' : '';
+    const color = (id === this.selectedOptionID)? '#76B9ED' : Constants.EMPTY_STRING;
     this.updateOptionStyle(id, color);
   }
 
   private updateOptionStyle(id: number, color: string): void {
-    const liElement = document.getElementById(`dd-option-${id}`) as HTMLLIElement | null;
+    const liElement = document.getElementById(`dd-option-${id}`) as HTMLLIElement;
     if (liElement) {
       liElement.style.backgroundColor = color;
     }
@@ -325,7 +323,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showSearchResult = true;
 
     this.filteredFileSearchIndex = this._fileSearchIndex.filter(f => f.name.toLowerCase().includes(searchString.toLowerCase()));
-    console.log('filteredFileIndex:', this.filteredFileSearchIndex);
+    //console.log('filteredFileIndex:', this.filteredFileSearchIndex);
 
     if(this.filteredFileSearchIndex.length === 0){
       const on = false;
@@ -604,7 +602,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const activityHistory = this._activityHistoryService.getActivityHistory(file.name, file.srcPath, type);
     if (activityHistory) {
       const now = Date.now();
-      const diffMs = now - activityHistory.lastOpened;
+      const diffMs = now - activityHistory.lastInteractionTS;
       const daysAgo = diffMs / (1000 * 60 * 60 * 24); // difference in days
 
       // sanitize input (no negatives, round down)
@@ -636,6 +634,29 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const ext = extname(filename).toLowerCase();
 
     return preferred.includes(ext) ? 5 : 1;
+  }
+
+  handlePath(fileSI:FileSearchIndex, evt:MouseEvent):void{
+    evt.stopPropagation();
+
+    const file = new FileInfo();
+    file.setFileName = basename(fileSI.name, extname(fileSI.name));
+    file.setOpensWith = Constants.FILE_EXPLORER;
+    file.setIsFile = false;
+    file.setCurrentPath = dirname(fileSI.srcPath);
+
+    this._processHandlerService.runApplication(file);
+    this.hideSearchBox();
+  }
+
+  copyPath(fileSI:FileSearchIndex, evt:MouseEvent):void{
+    evt.stopPropagation();
+    
+    const action = MenuAction.COPY;
+    const path = fileSI.srcPath;
+    this._menuService.setStoreData([path, action]);
+
+    this.hideSearchBox();
   }
 
   desktopIsActive():void{ }

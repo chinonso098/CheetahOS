@@ -391,7 +391,7 @@ export class FileService implements BaseService{
 		}
 	}
 
-	private async getFileInfo(path:string):Promise<FileInfo>{
+	public async getFileInfo(path:string):Promise<FileInfo>{
  
         const opensWith = Constants.EMPTY_STRING;
         this._fileInfo = new FileInfo();

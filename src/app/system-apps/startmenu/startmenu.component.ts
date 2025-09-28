@@ -53,13 +53,14 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   type = ComponentType.System
   displayName = '';
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-              elRef: ElementRef, fileService:FileService, userNotificationService:UserNotificationService, menuService:MenuService) { 
+  constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, processHandlerService:ProcessHandlerService,
+               elRef: ElementRef, fileService:FileService, userNotificationService:UserNotificationService,
+               menuService:MenuService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._elRef = elRef;
     this._fileService = fileService;
-    this._processHandlerService = triggerProcessService;
+    this._processHandlerService = processHandlerService ;
     this._userNotificationService = userNotificationService;
     this._menuService = menuService;
 
