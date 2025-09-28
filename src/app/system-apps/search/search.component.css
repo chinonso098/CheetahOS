@@ -511,8 +511,13 @@
     background-color: #ccc;
 }
 
-.search-result-detail-tail-cntnt{
+.search-result-detail-tail-cntnt, .search-result-detail-mid-cntnt1{
     padding: 4px 0px;
+}
+
+.search-result-detail-mid-cntnt1{
+    position: relative;
+    top: 3px;
 }
 
 .search-result-detail-line-cntnr{

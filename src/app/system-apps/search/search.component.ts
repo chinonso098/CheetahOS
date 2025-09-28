@@ -649,10 +649,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const fileInfo = new FileInfo();
     fileInfo.setFileName = basename(file.name, extname(file.name));
     if(file.type !== this.FOLDERS){
-      fileInfo.setIsFile = true;
+      fileInfo.setIsFile = (intent === this.RUN_APP)?  true : false;
       fileInfo.setOpensWith = (intent === this.RUN_APP)? file.opensWith : Constants.FILE_EXPLORER;
       fileInfo.setCurrentPath = (intent === this.RUN_APP)? file.srcPath : dirname(file.srcPath);
-    }else{
+    }else  if(file.type === this.FOLDERS){
       fileInfo.setIsFile = false;
       fileInfo.setOpensWith = Constants.FILE_EXPLORER;
       fileInfo.setCurrentPath = file.srcPath;
