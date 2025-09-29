@@ -72,6 +72,12 @@
                                 <div class="result-set-option-mid-bm1">
                                     <p class="result-set-option-p-bm1">{{ bestMatch.type }}</p>
                                 </div>
+
+                                @if(bestMatch.type !== APPS){
+                                    <div class="result-set-option-mid-bm2">
+                                        <p class="result-set-option-p-bm1">{{ bestMatch.dateModified | date: 'MM/dd/yyyy, HH:mm a' }}</p>
+                                    </div>
+                                }
                             </li>
                         }
 
@@ -297,7 +303,7 @@
                             <div class="search-result-detail-mid-cntnt">
                                 <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Last modified:</p></div>
                                 <div class="mid-cntnt-mid"></div>
-                                <div class="mid-cntnt-tail"><p class="mid-cntnt-p">{{ selectedResultSetOption.dateModified | date: 'dd/mm/yyyy, HH:mm a' }}</div>
+                                <div class="mid-cntnt-tail"><p class="mid-cntnt-p">{{ selectedResultSetOption.dateModified | date: 'MM/dd/yyyy, HH:mm a' }}</div>
                             </div>
                         </div>
                     }
