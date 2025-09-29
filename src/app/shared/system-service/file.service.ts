@@ -11,7 +11,7 @@ import * as BrowserFS from 'src/osdrive/Cheetah/System/BrowserFS/browserfs'
 import { Buffer} from 'buffer';
 import osDriveFileSystemIndex from '../../../osdrive.json';
 import ini  from 'ini';
-import { FileContent } from "src/app/system-files/file.content";
+import { FileContent } from "src/app/system-files/common.interfaces";
 import { ProcessType } from "src/app/system-files/system.types";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
@@ -22,7 +22,7 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { SessionManagmentService } from "./session.management.service";
 import { FileIndexerService } from "./file.indexer.services";
-import { OpensWith } from "src/app/system-files/opens.with";
+import { OpensWith } from "src/app/system-files/common.interfaces";
 import JSZip from "jszip";
 import { CommonFunctions } from "src/app/system-files/common.functions";
 @Injectable({

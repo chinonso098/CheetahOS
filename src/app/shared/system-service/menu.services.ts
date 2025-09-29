@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { Subject } from "rxjs";
 import { Constants } from "src/app/system-files/constants";
 import { FileInfo } from "src/app/system-files/file.info";
-import { FileTreeNode } from "src/app/system-files/file.tree.node";
+import { FileTreeNode } from "src/app/system-files/common.interfaces";
 import { Process } from "src/app/system-files/process";
 import { ProcessType } from "src/app/system-files/system.types";
 import { ProcessIDService } from "./process.id.service";

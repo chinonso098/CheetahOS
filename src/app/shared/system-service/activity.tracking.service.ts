@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ActivityHistory } from 'src/app/system-files/activity.history';
+import { ActivityHistory } from 'src/app/system-files/common.interfaces';
 import { BaseService } from './base.service.interface';
 import { Constants } from 'src/app/system-files/constants';
 import { ProcessType } from 'src/app/system-files/system.types';

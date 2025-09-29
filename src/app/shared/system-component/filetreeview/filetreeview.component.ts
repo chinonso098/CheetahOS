@@ -2,7 +2,7 @@
 //Option A
 
 import { Component, Input, OnInit, OnChanges, ElementRef, ViewChild } from '@angular/core';
-import { FileTreeNode } from 'src/app/system-files/file.tree.node';
+import { FileTreeNode } from 'src/app/system-files/common.interfaces';
 
 import { Constants } from 'src/app/system-files/constants';
 

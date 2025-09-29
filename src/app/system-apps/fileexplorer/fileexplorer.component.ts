@@ -20,7 +20,7 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { ActivityType, SortBys } from 'src/app/system-files/common.enums';
-import { FileTreeNode } from 'src/app/system-files/file.tree.node';
+import { FileTreeNode } from 'src/app/system-files/common.interfaces';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';

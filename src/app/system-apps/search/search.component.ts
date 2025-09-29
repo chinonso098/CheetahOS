@@ -12,7 +12,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { FileIndexIDs } from "src/app/system-files/common.enums";
-import { FileSearchIndex } from 'src/app/system-files/file.search.index';
+import { FileSearchIndex } from 'src/app/system-files/common.interfaces';
 import { debounceTime, Subscription } from 'rxjs';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
 import {basename, dirname, extname} from 'path';

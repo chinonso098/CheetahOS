@@ -12,7 +12,7 @@ import { ProcessIDService } from "./process.id.service";
 import { fileIndexChangeOperationType, FileIndexIDs } from "src/app/system-files/common.enums";
 
 import {extname} from 'path';
-import { FileSearchIndex } from "src/app/system-files/file.search.index";
+import { FileSearchIndex } from "src/app/system-files/common.interfaces";
 import { Subject } from "rxjs";
 
 @Injectable({
@@ -77,7 +77,7 @@ export class FileIndexerService implements BaseService{
                 const pathToExclude = '/Users/Desktop/Recycle Bin';
 
                 if(pathToExclude !== entryPath && entryToExclude !== entry){
-                    this._Index.push(this.getFileSearchIndex(FileIndexIDs.FOLDERS, entry,  entryPath, this.handleNonAppIcons(entry, isFile), fileInfo.getOpensWith, fileInfo.getDateModified));
+                    this._Index.push(this.getFileSearchIndex(FileIndexIDs.FOLDERS, entry, fileInfo.getCurrentPath, fileInfo.getContentPath, this.handleNonAppIcons(entry, isFile), fileInfo.getOpensWith, fileInfo.getDateModified));
                     queue.push(entryPath);
                 }
             }else{
@@ -87,9 +87,9 @@ export class FileIndexerService implements BaseService{
                 const ext = extname(entry);
                 if(ext !== Constants.URL){
                     if(ext !== Constants.EMPTY_STRING)
-                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry), fileInfo.getOpensWith, fileInfo.getDateModified));
+                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, fileInfo.getCurrentPath, fileInfo.getContentPath, this.handleNonAppIcons(entry), fileInfo.getOpensWith, fileInfo.getDateModified));
                     else
-                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, entryPath, this.handleNonAppIcons(entry, isFile, hasExt), fileInfo.getOpensWith, fileInfo.getDateModified ));
+                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, fileInfo.getCurrentPath, fileInfo.getContentPath, this.handleNonAppIcons(entry, isFile, hasExt), fileInfo.getOpensWith, fileInfo.getDateModified ));
                 }
             }
         }
@@ -102,12 +102,12 @@ export class FileIndexerService implements BaseService{
         const installApps = this._appDirectory.getAppList(); 
         const date = new Date('1970-01-01');
         for(const app of installApps){
-            this._Index.push(this.getFileSearchIndex(FileIndexIDs.APPS, app, entryPath, this._appDirectory.getAppIcon(app), app, date));
+            this._Index.push(this.getFileSearchIndex(FileIndexIDs.APPS, app, entryPath, Constants.EMPTY_STRING, this._appDirectory.getAppIcon(app), app, date));
         }
     }
 
-    private getFileSearchIndex(type:string, name:string, srcPath:string, iconPath:string, opensWith:string, dateModified:Date):FileSearchIndex{
-        return{ type:type, name:name, srcPath:srcPath, iconPath:iconPath, opensWith:opensWith,  dateModified: dateModified}
+    private getFileSearchIndex(type:string, name:string, srcPath:string, contentPath:string, iconPath:string, opensWith:string, dateModified:Date):FileSearchIndex{
+        return{ type:type, name:name, srcPath:srcPath, contentPath:contentPath, iconPath:iconPath, opensWith:opensWith,  dateModified: dateModified}
     }
 
     private handleNonAppIcons(fileName:string, isFile = true, hasExt = true):string{
