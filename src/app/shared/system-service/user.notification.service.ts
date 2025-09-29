@@ -7,7 +7,7 @@ import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { BaseService } from "./base.service.interface";
 import { ComponentReferenceService } from "./component.reference.service";
-import { UserNotificationType } from "src/app/system-files/notification.type";
+import { UserNotificationType } from "src/app/system-files/common.enums";
 import { DialogComponent } from "../system-component/dialog/dialog.component";
 
 

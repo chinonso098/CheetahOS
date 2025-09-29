@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { FileInfo } from "src/app/system-files/file.info";
-import { ShortCut } from "src/app/system-files/shortcut";
+import { ShortCut } from "src/app/system-files/common.interfaces";
 import {extname, basename, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FSModule } from "src/osdrive/Cheetah/System/BrowserFS/node/core/FS";
@@ -487,11 +487,11 @@ export class FileService implements BaseService{
 
         fileInfo.setCurrentPath = path;
         if(shortCut !== undefined){
-            fileInfo.setIconPath = (useImage)? shortCut?.getIconPath || img : img;
-            fileInfo.setContentPath = shortCut?.getContentPath || Constants.EMPTY_STRING;
-            fileInfo.setFileType = shortCut?.getFileType || extname(path);
-            fileInfo.setFileName = shortCut?.geFileName || basename(path, extname(path));
-            fileInfo.setOpensWith = shortCut?.getOpensWith || opensWith;
+            fileInfo.setIconPath = (useImage)? shortCut.iconPath || img : img;
+            fileInfo.setContentPath = shortCut.contentPath || Constants.EMPTY_STRING;
+            fileInfo.setFileType = shortCut.fileType || extname(path);
+            fileInfo.setFileName = shortCut.fileName || basename(path, extname(path));
+            fileInfo.setOpensWith = shortCut.opensWith || opensWith;
         }else{
             fileInfo.setIconPath = (useImage)? fileCntnt?.iconPath || img : img;
             fileInfo.setContentPath = fileCntnt?.contentPath || Constants.EMPTY_STRING;
@@ -565,7 +565,15 @@ export class FileService implements BaseService{
 			iconPath: iconPath, fileName: fileName, fileType: fileType, contentPath: contentPath, opensWith: opensWith
 		}
 	}
+
+
+    private populateShortCut(iconPath = Constants.EMPTY_STRING, fileName = Constants.EMPTY_STRING, fileType = Constants.EMPTY_STRING, contentPath = Constants.EMPTY_STRING, opensWith = Constants.EMPTY_STRING ):ShortCut{
+		return{
+            iconPath:iconPath, fileName:fileName, fileType:fileType, contentPath:contentPath, opensWith:opensWith
+        }
+	}
     
+
     public async getShortCutFromURL(path: string): Promise<ShortCut> {
         return new Promise<ShortCut>((resolve) => {
             this._fileSystem.readFile(path, (err, contents = Buffer.from(Constants.EMPTY_STRING)) => {
@@ -601,7 +609,7 @@ export class FileService implements BaseService{
                     const contentPath = iSCut['ContentPath'] || Constants.EMPTY_STRING;
                     const opensWith = iSCut['OpensWith'] || Constants.EMPTY_STRING;
 
-                    resolve(new ShortCut(iconPath, fileName, fileType, contentPath, opensWith));
+                    resolve(this.populateShortCut(iconPath, fileName, fileType, contentPath, opensWith));
                 } else {
                     resolve(this.createEmptyShortCut());
                 }
@@ -611,7 +619,7 @@ export class FileService implements BaseService{
 
     private createEmptyShortCut(): ShortCut {
         const empty = Constants.EMPTY_STRING;
-        return new ShortCut(empty, empty, empty, empty, empty);
+        return this.populateShortCut(empty, empty, empty, empty, empty);
     }
 
     private async changeFolderIcon(fileName:string, iconPath:string, path:string):Promise<string>{
@@ -972,10 +980,10 @@ export class FileService implements BaseService{
         }
       const shortCutContent = `[InternetShortcut]
 FileName=${fileName} 
-IconPath=${shortCutData.getIconPath}
-FileType=${shortCutData.getFileType}
-ContentPath=${shortCutData.getContentPath}
-OpensWith=${shortCutData.getOpensWith}
+IconPath=${shortCutData.iconPath}
+FileType=${shortCutData.fileType}
+ContentPath=${shortCutData.contentPath}
+OpensWith=${shortCutData.opensWith}
 `;
         const shortCut:FileInfo = new FileInfo();
         shortCut.setContentPath = shortCutContent;
