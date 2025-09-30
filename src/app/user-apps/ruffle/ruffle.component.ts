@@ -141,9 +141,9 @@ export class RuffleComponent implements BaseComponent, OnInit, AfterViewInit {
     const ext = ".swf";
     let res = false;
 
-    if(contentExt != Constants.EMPTY_STRING && contentExt == ext){
+    if(contentExt != Constants.EMPTY_STRING && contentExt === ext){
       res = true;
-    }else if( currentPathExt == ext){
+    }else if( currentPathExt === ext){
       res = false;
     }
     return res;

@@ -19,6 +19,7 @@ import {basename, dirname, extname} from 'path';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 @Component({
   selector: 'cos-search',
@@ -123,7 +124,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly OPTION_PHOTOS = 'Photos';
   private readonly OPTION_VIDEOS = 'Videos';
 
-  private defaultFocus = this.OPTION_ALL;
+  private currentSearchFocus = this.OPTION_ALL;
+  private currentSearchString = Constants.EMPTY_STRING;
 
   hasWindow = false;
   hover = false;
@@ -170,6 +172,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this._searchBoxChangeSub = this.searchBarForm.get('searchBarText')?.valueChanges
       .pipe(debounceTime(delay))
       .subscribe(value => {
+        this.currentSearchString = value;
         this.handleSearch(value);
       });
 
@@ -280,10 +283,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const [icon, searchFocus] = this.menuOptions[id];
     this.defaultsearchIcon = icon;
     this.noMatchImg = (searchFocus === this.OPTION_ALL)? this.cheetahIcon : icon;
-    this.defaultFocus = searchFocus;
+    this.currentSearchFocus = searchFocus;
 
-    this.hideShowSearchSections(searchFocus);
-    this.checkIfSectionIsPresent(searchFocus);
+    this.handleSearch(this.currentSearchString, searchFocus);
+    //this.hideShowSearchSections(searchFocus);
+    //this.checkIfSectionIsPresent(searchFocus);
 
     if (previousId !== id) {
       this.updateOptionStyle(previousId, "rgba(41,41, 41, 0.75)");
@@ -316,7 +320,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  handleSearch(searchString:string):void{
+  handleSearch(searchString:string, searchFocus = this.OPTION_ALL):void{
     if(searchString.length === 0 || searchString.trim() === Constants.EMPTY_STRING){
       this.resetFilteredArray();
       return;
@@ -325,8 +329,13 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     if(!this.showSearchResult)
       this.showSearchResult = true;
 
-    this.filteredFileSearchIndex = this._fileSearchIndex.filter(f => f.name.toLowerCase().includes(searchString.toLowerCase()));
-    //console.log('filteredFileIndex:', this.filteredFileSearchIndex);
+    if(searchFocus === this.OPTION_ALL)
+      this.filteredFileSearchIndex = this._fileSearchIndex.filter(f => f.name.toLowerCase().includes(searchString.toLowerCase()));
+    else
+      this.filteredFileSearchIndex = this._fileSearchIndex.filter(f => f.name.toLowerCase().includes(searchString.toLowerCase()) 
+                                                               && f.type === searchFocus.toUpperCase());
+
+    console.log('filteredFileIndex:', this.filteredFileSearchIndex);
 
     if(this.filteredFileSearchIndex.length === 0){
       const on = false;
@@ -339,9 +348,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }else{
       this.showNoMatchFoundView = false;
       this.showBestMatchView = true;
-      this.checkIfSectionIsPresent(this.defaultFocus);
+
+      this.hideShowSearchSections(searchFocus);
+      this.checkIfSectionIsPresent(this.currentSearchFocus);
       this.getBestMatches(searchString);
-      this.checkIfSectionIsPresent(this.defaultFocus, false);
+      this.checkIfSectionIsPresent(this.currentSearchFocus, false);
     }
   }
 
@@ -441,15 +452,15 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isFilePresent = false;
   }
 
-  handleBestMatchHightLight(toggle:boolean):void{
+  async handleBestMatchHightLight(toggle:boolean): Promise<void>{
     const delay = 25; //25ms
 
-    setTimeout(() => {
-      const bestMatchElmnt = document.getElementById('best-match-option') as HTMLDivElement;
-      if(bestMatchElmnt){
-        bestMatchElmnt.style.backgroundColor = (toggle) ? '#ccc' : '';
-      }
-    }, delay);
+    await CommonFunctions.sleep(delay);
+
+    const bestMatchElmnt = document.getElementById('best-match-option') as HTMLDivElement;
+    if(bestMatchElmnt){
+      bestMatchElmnt.style.backgroundColor = (toggle) ? '#76B9ED' : Constants.EMPTY_STRING;
+    }
   }
 
   getSelectedResultSetOptionType(file:FileSearchIndex):void{
