@@ -63,7 +63,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly NAVIGATE_TO_PATH = 1;
   readonly RUN_APP = 2;
 
-  searchPlaceHolder = ' Search now';
+  searchPlaceHolder = ' Type here to search....';
   openApp = 'Open';
   openSrcPath = 'Open file location';
   copySrcPath = 'Copy path'

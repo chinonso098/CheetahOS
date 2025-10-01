@@ -25,7 +25,7 @@
 
         <div class="search-bar-form-cntnr">
             <form [formGroup]="searchBarForm"  class="search-bar-form">
-                <input
+                 <input
                     appKeyPressCapture
                     class="search-bar-textbox"
                     placeholder="{{searchPlaceHolder}}"
@@ -37,7 +37,7 @@
                     autocapitalize="off"
                     id="searchBarTxtBox"
                 />
-            </form>
+            </form> 
         </div>
     </div>
 
@@ -405,28 +405,28 @@
                 </div>
             </div>
         </div>
-
-        <div class="main-search-options-cntnr" *ngIf="showOptionsMenu">
-            <ol>
-                <li class="li-file-tree-view" *ngFor="let option of menuOptions; let i = index">
-                    <div class="tree-view-cntnr"  
-                        id="dd-option-{{i}}" 
-                        (click)="selectOption($event, i)" 
-                        (mouseenter)="onMouseEnter(i)" 
-                        (mouseleave)="onMouseLeave(i)">
-                        
-                        <div class="search-option-head">
-                            <figure class="search-option-figure">
-                                <img class="search-option-img" [src]="option[0]" />
-                            </figure>
-                        </div>
-
-                        <div class="search-option-tail">
-                            <p class="search-option-p">{{ option[1] }}</p>
-                        </div>
-                    </div>
-                </li>
-            </ol>
-        </div>
     </ng-template>
+
+    <div class="main-search-options-cntnr" *ngIf="showOptionsMenu">
+        <ol>
+            <li class="li-file-tree-view" *ngFor="let option of menuOptions; let i = index">
+                <div class="tree-view-cntnr"  
+                    id="dd-option-{{i}}" 
+                    (click)="selectOption($event, i)" 
+                    (mouseenter)="onMouseEnter(i)" 
+                    (mouseleave)="onMouseLeave(i)">
+                    
+                    <div class="search-option-head">
+                        <figure class="search-option-figure">
+                            <img class="search-option-img" [src]="option[0]" />
+                        </figure>
+                    </div>
+
+                    <div class="search-option-tail">
+                        <p class="search-option-p">{{ option[1] }}</p>
+                    </div>
+                </div>
+            </li>
+        </ol>
+    </div>
 </div>
