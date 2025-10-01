@@ -101,6 +101,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   onlyFilesSearchIndex:FileSearchIndex[] = [];
   onlyFoldersSearchIndex:FileSearchIndex[] = [];
 
+  onlyTopApps:FileSearchIndex[] = [];
+  onlyRecents:FileSearchIndex[] = [];
+  onlyQuickSearches:FileSearchIndex[] = [];
+
   selectedOptionID = 0;
   selectedResultSetOptionId = 0;
   selectedResultSetOptionType = Constants.EMPTY_STRING;
@@ -182,6 +186,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
     this.menuOptions = this.generateOptions();
+    this.onlyTopApps = this.getTopApps();
   }
 
   ngAfterViewInit(): void {
@@ -252,6 +257,27 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
                      [this.searchFileIcon, this.OPTION_DOCUMENTS], [this.searchFolderIcon, this.OPTION_FOLDERS],
                      [this.searchMusicIcon, this.OPTION_MUSIC], [this.searchPictureIcon, this.OPTION_PHOTOS],
                      [this.searchVideoIcon, this.OPTION_VIDEOS]];
+    return options;
+  }
+
+  getTopApps():FileSearchIndex[]{
+    const options:FileSearchIndex[] = [];
+    const date = new Date('1970-01-01');
+
+    options.push({type:'APPS', name:'terminal', srcPath:'None', opensWith:'terminal', 
+                  iconPath:'osdrive/Cheetah/System/Imageres/terminal.png', contentPath:'', dateModified: date});
+
+    options.push({type:'APPS', name:'particleflow', srcPath:'None', opensWith:'particleflow', 
+                  iconPath:'osdrive/Cheetah/System/Imageres/particles.png', contentPath:'', dateModified: date});   
+
+    options.push({type:'APPS', name:'starfield', srcPath:'None', opensWith:'starfield', 
+                  iconPath:'osdrive/Cheetah/System/Imageres/star_field.png', contentPath:'', dateModified: date});  
+
+    options.push({type:'APPS', name:'boids', srcPath:'None', opensWith:'boids', 
+                  iconPath:'osdrive/Cheetah/System/Imageres/bird_oid.png', contentPath:'', dateModified: date});
+
+    options.push({type:'APPS', name:'codeeditor', srcPath:'None', opensWith:'codeeditor', 
+                  iconPath:'osdrive/Cheetah/System/Imageres/vs_code.png', contentPath:'', dateModified: date});
     return options;
   }
 

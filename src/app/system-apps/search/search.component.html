@@ -46,13 +46,45 @@
 
     <ng-template #defaultView>
         <div class="main-search__default-cntnr">
-            <div class="default__recents-apps-cntnr">
+            <div class="main-search__default-cntnr-a">
+                <div class="default__top-apps-cntnr">
+                    <div class="top-apps__heading">
+                        <p class="top-apps__heading-p">Top apps</p>
+                    </div>
+                    <div class="top-apps__items">
+                        <ol class="ol-top-apps__grid">
+                            <li class="li-top-apps" *ngFor="let app of onlyTopApps; let i = index" id="ilElmnt-{{processId}}" >
+                                <div class="top-apps__item" role="button" (dblclick)="handlePath(app, RUN_APP,  $event)"
+                                    (mouseenter)="onMouseEnter(i)" 
+                                    (mouseleave)="onMouseLeave(i)"
+                                    id="btnElmnt-{{processId}}-{{i}}">
 
+                                    <div class="iconview-img-container"  id="figElmnt-{{processId}}-{{i}}">
+                                        <div class="iconview-img-wrapper">
+                                            <img class="iconview-image" [src]="app.iconPath"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="iconview-caption-container">
+                                        <p class="iconview-caption"  id="figCapElmnt-{{processId}}-{{i}}">
+                                            {{app.name}} 
+                                        </p>
+                                    </div> 
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
             </div>
-            <div class="default__top-apps-cntnr">
 
+            <div class="main-search__default-cntnr-b">
+                <div class="default__recents-cntnr">
+
+                </div>
+                <div class="default__quick-search-cntnr">
+
+                </div>
             </div>
-
         </div>
     </ng-template>
 

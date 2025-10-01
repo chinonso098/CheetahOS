@@ -176,7 +176,7 @@
     display: block;
     position: relative;
     width: 260px;
-    height: 398px;
+    height: 399px;
     background-color: rgba(41,41, 41, 0.75);
     overflow-y: scroll;
     overflow-x: hidden;
@@ -402,7 +402,7 @@
 .search-result-detail-cntnr{
     position: relative;
     width: 320px;
-    height: 398px;
+    height: 399px;
     background-color: rgba(46,46, 46, 0.55);
 }
 
@@ -602,26 +602,81 @@
 
  /*SearchBox Default Window Section*/
 .main-search__default-cntnr {
-  display: flex;
+  display: block;
   width: 580px;
   height: 400px;
   backdrop-filter: blur(30px);
   border: 0.5px solid #fff;
 }
 
-
-.default__recents-apps-cntnr{
+.main-search__default-cntnr-a{
     display: block;
-    position: relative;
-    width: 260px;
-    height: 398px;
-    background-color: rgba(41,41, 41, 0.75);
+    width: 579px;
+    height: 140px;
+}
+
+.main-search__default-cntnr-b{
+    display: flex;
+    width: 579px;
+    height: 260px;
 }
 
 .default__top-apps-cntnr{
     display: block;
+    padding: 10px 10px;
+    width: 100%;
+    height: 140px;
+    background-color: rgba(41,41, 41, 0.75);
+}
+
+.top-apps__heading{
+    padding: 5px 0px;
+    width: 100%;
+    height: 20px;
+}
+
+.top-apps__heading-p{
+    color: #fff;
+    font-size:11px;
+    font-weight:bold;
+    text-align: left;
+    width: 100%;
+}
+
+.top-apps__items{
+    padding: 5px 0px;
+    width: 100%;
+    height: 80px;
+}
+
+.ol-top-apps__grid{
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns:  repeat(auto-fill, 100px);
+    grid-template-rows: repeat(auto-fill, 90px);
+    width: 100%;
+    gap: 0px 10px;
+}
+
+.li-top-apps{
+    display: flex;
+    justify-content: center;
+    height: min-content;
+    z-index: 1;
+}
+
+.default__recents-cntnr{
+    display: block;
     position: relative;
-    width: 320px;
-    height: 398px;
+    width: 50%;
+    height: 259px;
+    background-color: rgba(41,41, 41, 0.75);
+}
+
+.default__quick-search-cntnr{
+    display: block;
+    position: relative;
+    width: 50%;
+    height: 259px;
     background-color: rgba(41,41, 41, 0.75);
 }
