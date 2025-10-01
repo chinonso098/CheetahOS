@@ -41,375 +41,392 @@
         </div>
     </div>
 
-    <div class="main-search-result-cntnr" *ngIf="showSearchResult">
-        <div class="search-result-set-cntnr">
+    <ng-container [ngTemplateOutlet]="currentViewOption === DEFAULT_SEARCH_VIEW ? defaultView : resultView">
+    </ng-container>
 
-            <div class="result-set-best-match-section">
-                <div class="result-set-section-heading">
-                    <p class="section-heading-p">Best match</p>
-                </div>
-                <div class="result-set-section-body">
-                    <ol>
-                        @if(showBestMatchView){
-                            <li class="li-result-set-view-bm">
-                                <div class="result-set-cntnr-bm"  
-                                    id="best-match-option" 
-                                    (click)="selectResultSetOption($event, bestMatch, bestMatchId, '')" 
-                                    (mouseenter)="onMouseEnter(bestMatchId)" 
-                                    (mouseleave)="onMouseLeave(bestMatchId)">
-                                    
-                                    <div class="result-set-option-head-bm">
-                                        <figure class="result-set-option-figure">
-                                            <img class="result-set-option-img" [src]="bestMatch.iconPath" />
-                                        </figure>
-                                    </div>
+    <ng-template #defaultView>
+        <div class="main-search__default-cntnr">
+            <div class="default__recents-apps-cntnr">
 
-                                    <div class="result-set-option-mid-bm">
-                                        <p class="result-set-option-1">{{ bestMatch.name }}</p>
-                                    </div>
-                                </div>
-
-                                <div class="result-set-option-mid-bm1">
-                                    <p class="result-set-option-p-bm1">{{ bestMatch.type }}</p>
-                                </div>
-
-                                @if(bestMatch.type !== APPS){
-                                    <div class="result-set-option-mid-bm2">
-                                        <p class="result-set-option-p-bm1">{{ bestMatch.dateModified | date: 'MM/dd/yyyy, HH:mm a' }}</p>
-                                    </div>
-                                }
-                            </li>
-                        }
-
-                        @if(showNoMatchFoundView){
-                            <li class="li-result-set-view-nf">
-                                <div class="result-set-cntnr-nf" id="no-match-found">
-                                    
-                                    <div class="result-set-option-head-nf">
-                                        <figure class="result-set-option-figure-nf">
-                                            <img class="result-set-option-img-nf" [src]="noMatchImg" />
-                                        </figure>
-                                    </div>
-
-                                    <div class="result-set-option-tail-nf">
-                                        <p class="result-set-option-p-nf">{{ noMatchText }}</p>
-                                    </div>
-                                </div>
-                            </li>
-                        }
-                    </ol>
-                </div>
             </div>
+            <div class="default__top-apps-cntnr">
 
-            <div class="result-set-app-section" *ngIf="showApplicationSection && isAppPresent">
-                <div class="result-set-section-heading">
-                    <p class="section-heading-p">Apps</p>
-                </div>
-                <div class="result-set-section-body">
-                    <ol>
-                        <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyAppsSearchIndex; let i = index">
-                            <div class="result-set-cntnr"  
-                                id="app-result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, fileSearchIndex, i, 'app')" 
-                                (mouseenter)="onMouseEnter(i)" 
-                                (mouseleave)="onMouseLeave(i)">
-                                
-                                <div class="result-set-option-head">
-                                    <figure class="result-set-option-figure">
-                                        <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
-                                    </figure>
-                                </div>
-
-                                <div class="result-set-option-mid">
-                                    <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
-                                </div>
-
-                                <div class="result-set-option-tail">
-                                    <figure  class="result-set-arrow-figure">
-                                        <div class="result-set-arrow-img">
-                                            <svg xmlns="http://www.w3.org/2000/svg" 
-                                                height="10" width="10" 
-                                                viewBox="0 0 512 512">
-                                                <path fill="#ffffff" d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L211.7 256 41.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
-                                            </svg>
-                                        </div>
-                                    </figure>
-                                </div>
-                            </div>
-                        </li>
-                    </ol>
-                </div>
-            </div>
-
-            <div class="result-set-files-section" *ngIf="showFilesSection && isFilePresent">
-                <div class="result-set-section-heading">
-                    <p class="section-heading-p">Files</p>
-                </div>
-                <div class="result-set-section-body">
-                    <ol>
-                        <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
-                            <div class="result-set-cntnr"  
-                                id="file-result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, fileSearchIndex, i, 'file')" 
-                                (mouseenter)="onMouseEnter(i)" 
-                                (mouseleave)="onMouseLeave(i)">
-                                
-                                <div class="result-set-option-head">
-                                    <figure class="result-set-option-figure">
-                                        <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
-                                    </figure>
-                                </div>
-
-                                <div class="result-set-option-mid">
-                                    <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
-                                </div>
-
-                                <div class="result-set-option-tail">
-                                    <figure  class="result-set-arrow-figure">
-                                        <div class="result-set-arrow-img">
-                                            <svg xmlns="http://www.w3.org/2000/svg" 
-                                                height="10" width="10" 
-                                                viewBox="0 0 512 512">
-                                                <path fill="#ffffff" d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L211.7 256 41.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
-                                            </svg>
-                                        </div>
-                                    </figure>
-                                </div>
-                            </div>
-                        </li>
-                    </ol>
-                </div>
-            </div>
-
-            <div class="result-set-folders-section" *ngIf="showFoldersSection && isFolderPresent">
-                <div class="result-set-section-heading">
-                    <p class="section-heading-p">Folders</p>
-                </div>
-                <div class="result-set-section-body">
-                    <ol>
-                        <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFoldersSearchIndex; let i = index">
-                            <div class="result-set-cntnr"  
-                                id="folder-result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, fileSearchIndex, i, 'folder')" 
-                                (mouseenter)="onMouseEnter(i)" 
-                                (mouseleave)="onMouseLeave(i)">
-                                
-                                <div class="result-set-option-head">
-                                    <figure class="result-set-option-figure">
-                                        <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
-                                    </figure>
-                                </div>
-
-                                <div class="result-set-option-mid">
-                                    <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
-                                </div>
-
-                                <div class="result-set-option-tail">
-                                    <figure  class="result-set-arrow-figure">
-                                        <div class="result-set-arrow-img">
-                                            <svg xmlns="http://www.w3.org/2000/svg" 
-                                                height="10" width="10" 
-                                                viewBox="0 0 512 512">
-                                                <path fill="#ffffff" d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L211.7 256 41.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
-                                            </svg>
-                                        </div>
-                                    </figure>
-                                </div>
-                            </div>
-                        </li>
-                    </ol>
-                </div>
-            </div>
-
-            <div class="result-set-others-section" *ngIf="showOthersSection && isFilePresent">
-                <div class="result-set-section-heading">
-                    <p class="section-heading-p">{{otherSectionName}}</p>
-                </div>
-                <div class="result-set-section-body">
-                    <ol>
-                        <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
-                            <div class="result-set-cntnr"  
-                                id="other-result-set-option-{{i}}" 
-                                (click)="selectResultSetOption($event, fileSearchIndex, i, 'other')" 
-                                (mouseenter)="onMouseEnter(i)" 
-                                (mouseleave)="onMouseLeave(i)">
-                                
-                                <div class="result-set-option-head">
-                                    <figure class="result-set-option-figure">
-                                        <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
-                                    </figure>
-                                </div>
-
-                                <div class="result-set-option-mid">
-                                    <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
-                                </div>
-
-                                <div class="result-set-option-tail">
-                                    <figure  class="result-set-arrow-figure">
-                                        <div class="result-set-arrow-img">
-                                            <svg xmlns="http://www.w3.org/2000/svg" 
-                                                height="10" width="10" 
-                                                viewBox="0 0 512 512">
-                                                <path fill="#ffffff" d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L211.7 256 41.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
-                                            </svg>
-                                        </div>
-                                    </figure>
-                                </div>
-                            </div>
-                        </li>
-                    </ol>
-                </div>
             </div>
 
         </div>
+    </ng-template>
 
-        <div class="search-result-detail-cntnr">
-            <div class="search-result-detail-cntnt">
-                <div class="search-result-detail-head-section">
+
+    <ng-template #resultView>
+        <div class="main-search-result-cntnr" *ngIf="showSearchResult">
+            <div class="search-result-set-cntnr">
+
+                <div class="result-set-best-match-section">
+                    <div class="result-set-section-heading">
+                        <p class="section-heading-p">Best match</p>
+                    </div>
+                    <div class="result-set-section-body">
+                        <ol>
+                            @if(showBestMatchView){
+                                <li class="li-result-set-view-bm">
+                                    <div class="result-set-cntnr-bm"  
+                                        id="best-match-option" 
+                                        (click)="selectResultSetOption($event, bestMatch, bestMatchId, '')" 
+                                        (mouseenter)="onMouseEnter(bestMatchId)" 
+                                        (mouseleave)="onMouseLeave(bestMatchId)">
+                                        
+                                        <div class="result-set-option-head-bm">
+                                            <figure class="result-set-option-figure">
+                                                <img class="result-set-option-img" [src]="bestMatch.iconPath" />
+                                            </figure>
+                                        </div>
+
+                                        <div class="result-set-option-mid-bm">
+                                            <p class="result-set-option-1">{{ bestMatch.name }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="result-set-option-mid-bm1">
+                                        <p class="result-set-option-p-bm1">{{ bestMatch.type }}</p>
+                                    </div>
+
+                                    @if(bestMatch.type !== APPS){
+                                        <div class="result-set-option-mid-bm2">
+                                            <p class="result-set-option-p-bm1">{{ bestMatch.dateModified | date: 'MM/dd/yyyy, HH:mm a' }}</p>
+                                        </div>
+                                    }
+                                </li>
+                            }
+
+                            @if(showNoMatchFoundView){
+                                <li class="li-result-set-view-nf">
+                                    <div class="result-set-cntnr-nf" id="no-match-found">
+                                        
+                                        <div class="result-set-option-head-nf">
+                                            <figure class="result-set-option-figure-nf">
+                                                <img class="result-set-option-img-nf" [src]="noMatchImg" />
+                                            </figure>
+                                        </div>
+
+                                        <div class="result-set-option-tail-nf">
+                                            <p class="result-set-option-p-nf">{{ noMatchText }}</p>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="result-set-app-section" *ngIf="showApplicationSection && isAppPresent">
+                    <div class="result-set-section-heading">
+                        <p class="section-heading-p">Apps</p>
+                    </div>
+                    <div class="result-set-section-body">
+                        <ol>
+                            <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyAppsSearchIndex; let i = index">
+                                <div class="result-set-cntnr"  
+                                    id="app-result-set-option-{{i}}" 
+                                    (click)="selectResultSetOption($event, fileSearchIndex, i, 'app')" 
+                                    (mouseenter)="onMouseEnter(i)" 
+                                    (mouseleave)="onMouseLeave(i)">
+                                    
+                                    <div class="result-set-option-head">
+                                        <figure class="result-set-option-figure">
+                                            <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
+                                        </figure>
+                                    </div>
+
+                                    <div class="result-set-option-mid">
+                                        <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
+                                    </div>
+
+                                    <div class="result-set-option-tail">
+                                        <figure  class="result-set-arrow-figure">
+                                            <div class="result-set-arrow-img">
+                                                <svg xmlns="http://www.w3.org/2000/svg" 
+                                                    height="10" width="10" 
+                                                    viewBox="0 0 512 512">
+                                                    <path fill="#ffffff" d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L211.7 256 41.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+                                                </svg>
+                                            </div>
+                                        </figure>
+                                    </div>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="result-set-files-section" *ngIf="showFilesSection && isFilePresent">
+                    <div class="result-set-section-heading">
+                        <p class="section-heading-p">Files</p>
+                    </div>
+                    <div class="result-set-section-body">
+                        <ol>
+                            <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
+                                <div class="result-set-cntnr"  
+                                    id="file-result-set-option-{{i}}" 
+                                    (click)="selectResultSetOption($event, fileSearchIndex, i, 'file')" 
+                                    (mouseenter)="onMouseEnter(i)" 
+                                    (mouseleave)="onMouseLeave(i)">
+                                    
+                                    <div class="result-set-option-head">
+                                        <figure class="result-set-option-figure">
+                                            <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
+                                        </figure>
+                                    </div>
+
+                                    <div class="result-set-option-mid">
+                                        <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
+                                    </div>
+
+                                    <div class="result-set-option-tail">
+                                        <figure  class="result-set-arrow-figure">
+                                            <div class="result-set-arrow-img">
+                                                <svg xmlns="http://www.w3.org/2000/svg" 
+                                                    height="10" width="10" 
+                                                    viewBox="0 0 512 512">
+                                                    <path fill="#ffffff" d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L211.7 256 41.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+                                                </svg>
+                                            </div>
+                                        </figure>
+                                    </div>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="result-set-folders-section" *ngIf="showFoldersSection && isFolderPresent">
+                    <div class="result-set-section-heading">
+                        <p class="section-heading-p">Folders</p>
+                    </div>
+                    <div class="result-set-section-body">
+                        <ol>
+                            <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFoldersSearchIndex; let i = index">
+                                <div class="result-set-cntnr"  
+                                    id="folder-result-set-option-{{i}}" 
+                                    (click)="selectResultSetOption($event, fileSearchIndex, i, 'folder')" 
+                                    (mouseenter)="onMouseEnter(i)" 
+                                    (mouseleave)="onMouseLeave(i)">
+                                    
+                                    <div class="result-set-option-head">
+                                        <figure class="result-set-option-figure">
+                                            <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
+                                        </figure>
+                                    </div>
+
+                                    <div class="result-set-option-mid">
+                                        <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
+                                    </div>
+
+                                    <div class="result-set-option-tail">
+                                        <figure  class="result-set-arrow-figure">
+                                            <div class="result-set-arrow-img">
+                                                <svg xmlns="http://www.w3.org/2000/svg" 
+                                                    height="10" width="10" 
+                                                    viewBox="0 0 512 512">
+                                                    <path fill="#ffffff" d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L211.7 256 41.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+                                                </svg>
+                                            </div>
+                                        </figure>
+                                    </div>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="result-set-others-section" *ngIf="showOthersSection && isFilePresent">
+                    <div class="result-set-section-heading">
+                        <p class="section-heading-p">{{otherSectionName}}</p>
+                    </div>
+                    <div class="result-set-section-body">
+                        <ol>
+                            <li class="li-result-set-view" *ngFor="let fileSearchIndex of onlyFilesSearchIndex; let i = index">
+                                <div class="result-set-cntnr"  
+                                    id="other-result-set-option-{{i}}" 
+                                    (click)="selectResultSetOption($event, fileSearchIndex, i, 'other')" 
+                                    (mouseenter)="onMouseEnter(i)" 
+                                    (mouseleave)="onMouseLeave(i)">
+                                    
+                                    <div class="result-set-option-head">
+                                        <figure class="result-set-option-figure">
+                                            <img class="result-set-option-img" [src]="fileSearchIndex.iconPath" />
+                                        </figure>
+                                    </div>
+
+                                    <div class="result-set-option-mid">
+                                        <p class="result-set-option-p">{{ fileSearchIndex.name }}</p>
+                                    </div>
+
+                                    <div class="result-set-option-tail">
+                                        <figure  class="result-set-arrow-figure">
+                                            <div class="result-set-arrow-img">
+                                                <svg xmlns="http://www.w3.org/2000/svg" 
+                                                    height="10" width="10" 
+                                                    viewBox="0 0 512 512">
+                                                    <path fill="#ffffff" d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L211.7 256 41.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+                                                </svg>
+                                            </div>
+                                        </figure>
+                                    </div>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="search-result-detail-cntnr">
+                <div class="search-result-detail-cntnt">
+                    <div class="search-result-detail-head-section">
+
+                        <div class="blank-space-b"></div>
+
+                        <div  class="detail-head-icon-cntnr">
+                            <figure class="detail-head-icon-cntnr-figure">
+                                <img class="detail-head-icon-cntnr-img" [src]="selectedResultSetOption.iconPath" />
+                            </figure>
+                        </div>
+
+                        <div class="blank-space-a"></div>
+
+                        <div class="detail-head-filename-cntnr">
+                            <p class="detail-head-filename-p"> {{selectedResultSetOption.name}} </p>
+                        </div>
+
+                        <div class="blank-space-a"></div>
+
+                        <div class="detail-head-filetype-cntnr">
+                            <p class="detail-head-filetype-p"> {{selectedResultSetOptionType}} </p>
+                        </div>
+                    </div>
 
                     <div class="blank-space-b"></div>
+                    <div class="search-result-detail-line-cntnr"></div>
 
-                    <div  class="detail-head-icon-cntnr">
-                        <figure class="detail-head-icon-cntnr-figure">
-                            <img class="detail-head-icon-cntnr-img" [src]="selectedResultSetOption.iconPath" />
-                        </figure>
+                    <div class="search-result-detail-mid-section">
+                        @if(selectedResultSetOption.type !== APPS){
+                            <div class="search-result-detail-mid-cntnr">
+                                <div class="search-result-detail-mid-cntnt">
+                                    <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Location:</p></div>
+                                    <div class="mid-cntnt-mid"></div>
+                                    <div class="mid-cntnt-tail"><p class="mid-cntnt-p0">{{selectedResultSetOption.srcPath}}</p></div>
+                                </div>
+
+                                <div class="search-result-detail-mid-cntnt">
+                                    <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Last modified:</p></div>
+                                    <div class="mid-cntnt-mid"></div>
+                                    <div class="mid-cntnt-tail"><p class="mid-cntnt-p">{{ selectedResultSetOption.dateModified | date: 'MM/dd/yyyy, HH:mm a' }}</div>
+                                </div>
+                            </div>
+                        }
+
+                        @if(selectedResultSetOption.type === APPS){
+                            <div class="search-result-detail-mid-cntnr">
+                                <div class="search-result-detail-mid-cntnt1" (click)="handlePath(selectedResultSetOption, RUN_APP, $event)">
+                                    <div class="mid-cntnt-head-1">
+                                        <figure class="mid-cntnt-figure">
+                                            <img class="mid-cntnt-img" [src]="searchOpenIcon" />
+                                        </figure>
+                                    </div>
+
+                                    <div class="mid-cntnt-tail-1">
+                                        <p class="mid-cntnt-p1">{{ openApp }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
                     </div>
 
-                    <div class="blank-space-a"></div>
+                    <div class="search-result-detail-line-cntnr"></div>
 
-                    <div class="detail-head-filename-cntnr">
-                        <p class="detail-head-filename-p"> {{selectedResultSetOption.name}} </p>
+                    <div class="search-result-detail-tail-section">
+                        @if(selectedResultSetOption.type !== APPS){
+                            <div class="search-result-detail-tail-cntnr">
+                                <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, RUN_APP, $event)">
+                                    <div class="mid-cntnt-head-1">
+                                        <figure class="mid-cntnt-figure">
+                                            <img class="mid-cntnt-img" [src]="searchOpenIcon" />
+                                        </figure>
+                                    </div>
+
+                                    <div class="mid-cntnt-tail-1">
+                                        <p class="mid-cntnt-p1">{{ openApp }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, NAVIGATE_TO_PATH, $event)">
+                                    <div class="mid-cntnt-head-1">
+                                        <figure class="mid-cntnt-figure">
+                                            <img class="mid-cntnt-img" [src]="searchFolderIcon" />
+                                        </figure>
+                                    </div>
+
+                                    <div class="mid-cntnt-tail-1">
+                                        <p class="mid-cntnt-p1">{{ openSrcPath }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="search-result-detail-tail-cntnt" (click)="copyPath(selectedResultSetOption, $event)">
+                                    <div class="mid-cntnt-head-1">
+                                        <figure class="mid-cntnt-figure">
+                                            <img class="mid-cntnt-img" [src]="searchCopyIcon" />
+                                        </figure>
+                                    </div>
+
+                                    <div class="mid-cntnt-tail-1">
+                                        <p class="mid-cntnt-p1">{{ copySrcPath }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        @if(selectedResultSetOption.type  === 'TBD'){
+                            <div class="search-result-detail-tail-cntnr">
+                                <div class="search-result-detail-tail-cntnt">
+                                    <div class="mid-cntnt-head-1">
+                                        <figure class="mid-cntnt-figure">
+                                            <img class="mid-cntnt-img" [src]="searchOpenIcon" />
+                                        </figure>
+                                    </div>
+
+                                    <div class="mid-cntnt-tail-1">
+                                        <p class="mid-cntnt-p1">{{ openApp }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
                     </div>
-
-                    <div class="blank-space-a"></div>
-
-                    <div class="detail-head-filetype-cntnr">
-                        <p class="detail-head-filetype-p"> {{selectedResultSetOptionType}} </p>
-                    </div>
-                </div>
-
-                <div class="blank-space-b"></div>
-                <div class="search-result-detail-line-cntnr"></div>
-
-                <div class="search-result-detail-mid-section">
-                    @if(selectedResultSetOption.type !== APPS){
-                        <div class="search-result-detail-mid-cntnr">
-                            <div class="search-result-detail-mid-cntnt">
-                                <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Location:</p></div>
-                                <div class="mid-cntnt-mid"></div>
-                                <div class="mid-cntnt-tail"><p class="mid-cntnt-p0">{{selectedResultSetOption.srcPath}}</p></div>
-                            </div>
-
-                            <div class="search-result-detail-mid-cntnt">
-                                <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Last modified:</p></div>
-                                <div class="mid-cntnt-mid"></div>
-                                <div class="mid-cntnt-tail"><p class="mid-cntnt-p">{{ selectedResultSetOption.dateModified | date: 'MM/dd/yyyy, HH:mm a' }}</div>
-                            </div>
-                        </div>
-                    }
-
-                    @if(selectedResultSetOption.type === APPS){
-                        <div class="search-result-detail-mid-cntnr">
-                            <div class="search-result-detail-mid-cntnt1" (click)="handlePath(selectedResultSetOption, RUN_APP, $event)">
-                                <div class="mid-cntnt-head-1">
-                                    <figure class="mid-cntnt-figure">
-                                        <img class="mid-cntnt-img" [src]="searchOpenIcon" />
-                                    </figure>
-                                </div>
-
-                                <div class="mid-cntnt-tail-1">
-                                    <p class="mid-cntnt-p1">{{ openApp }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-
-                <div class="search-result-detail-line-cntnr"></div>
-
-                <div class="search-result-detail-tail-section">
-                    @if(selectedResultSetOption.type !== APPS){
-                        <div class="search-result-detail-tail-cntnr">
-                            <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, RUN_APP, $event)">
-                                <div class="mid-cntnt-head-1">
-                                    <figure class="mid-cntnt-figure">
-                                        <img class="mid-cntnt-img" [src]="searchOpenIcon" />
-                                    </figure>
-                                </div>
-
-                                <div class="mid-cntnt-tail-1">
-                                    <p class="mid-cntnt-p1">{{ openApp }}</p>
-                                </div>
-                            </div>
-
-                            <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, NAVIGATE_TO_PATH, $event)">
-                                <div class="mid-cntnt-head-1">
-                                    <figure class="mid-cntnt-figure">
-                                        <img class="mid-cntnt-img" [src]="searchFolderIcon" />
-                                    </figure>
-                                </div>
-
-                                <div class="mid-cntnt-tail-1">
-                                    <p class="mid-cntnt-p1">{{ openSrcPath }}</p>
-                                </div>
-                            </div>
-
-                            <div class="search-result-detail-tail-cntnt" (click)="copyPath(selectedResultSetOption, $event)">
-                                <div class="mid-cntnt-head-1">
-                                    <figure class="mid-cntnt-figure">
-                                        <img class="mid-cntnt-img" [src]="searchCopyIcon" />
-                                    </figure>
-                                </div>
-
-                                <div class="mid-cntnt-tail-1">
-                                    <p class="mid-cntnt-p1">{{ copySrcPath }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    }
-
-                    @if(selectedResultSetOption.type  === 'TBD'){
-                        <div class="search-result-detail-tail-cntnr">
-                            <div class="search-result-detail-tail-cntnt">
-                                <div class="mid-cntnt-head-1">
-                                    <figure class="mid-cntnt-figure">
-                                        <img class="mid-cntnt-img" [src]="searchOpenIcon" />
-                                    </figure>
-                                </div>
-
-                                <div class="mid-cntnt-tail-1">
-                                    <p class="mid-cntnt-p1">{{ openApp }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    }
-
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="main-search-options-cntnr" *ngIf="showOptionsMenu">
-        <ol>
-            <li class="li-file-tree-view" *ngFor="let option of menuOptions; let i = index">
-                <div class="tree-view-cntnr"  
-                    id="dd-option-{{i}}" 
-                    (click)="selectOption($event, i)" 
-                    (mouseenter)="onMouseEnter(i)" 
-                    (mouseleave)="onMouseLeave(i)">
-                    
-                    <div class="search-option-head">
-                        <figure class="search-option-figure">
-                            <img class="search-option-img" [src]="option[0]" />
-                        </figure>
+        <div class="main-search-options-cntnr" *ngIf="showOptionsMenu">
+            <ol>
+                <li class="li-file-tree-view" *ngFor="let option of menuOptions; let i = index">
+                    <div class="tree-view-cntnr"  
+                        id="dd-option-{{i}}" 
+                        (click)="selectOption($event, i)" 
+                        (mouseenter)="onMouseEnter(i)" 
+                        (mouseleave)="onMouseLeave(i)">
+                        
+                        <div class="search-option-head">
+                            <figure class="search-option-figure">
+                                <img class="search-option-img" [src]="option[0]" />
+                            </figure>
+                        </div>
+
+                        <div class="search-option-tail">
+                            <p class="search-option-p">{{ option[1] }}</p>
+                        </div>
                     </div>
-
-                    <div class="search-option-tail">
-                        <p class="search-option-p">{{ option[1] }}</p>
-                    </div>
-                </div>
-            </li>
-        </ol>
-    </div>
-
+                </li>
+            </ol>
+        </div>
+    </ng-template>
 </div>

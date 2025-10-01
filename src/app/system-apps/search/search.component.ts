@@ -127,6 +127,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private currentSearchFocus = this.OPTION_ALL;
   private currentSearchString = Constants.EMPTY_STRING;
 
+  readonly DEFAULT_SEARCH_VIEW = 'defaultView'
+  readonly RESULT_SEARCH_VIEW = 'resultView';
+
+  currentViewOption = this.DEFAULT_SEARCH_VIEW;
+
   hasWindow = false;
   hover = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -335,7 +340,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.filteredFileSearchIndex = this._fileSearchIndex.filter(f => f.name.toLowerCase().includes(searchString.toLowerCase()) 
                                                                && f.type === searchFocus.toUpperCase());
 
-    console.log('filteredFileIndex:', this.filteredFileSearchIndex);
+    //console.log('filteredFileIndex:', this.filteredFileSearchIndex);
 
     if(this.filteredFileSearchIndex.length === 0){
       const on = false;

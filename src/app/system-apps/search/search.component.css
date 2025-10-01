@@ -600,3 +600,33 @@
     height: fit-content;
     width: fit-content;
 }
+
+
+
+
+
+ /*SearchBox Default Window Section*/
+.main-search__default-cntnr {
+  display: flex;
+  width: 580px;
+  height: 400px;
+  backdrop-filter: blur(30px);
+  border: 1px solid #fff;
+}
+
+
+.default__recents-apps-cntnr{
+    display: block;
+    position: relative;
+    width: 260px;
+    height: 398px;
+    background-color: rgba(41,41, 41, 0.75);
+}
+
+.default__top-apps-cntnr{
+    display: block;
+    position: relative;
+    width: 320px;
+    height: 398px;
+    background-color: rgba(41,41, 41, 0.75);
+}
