@@ -754,6 +754,14 @@
     height: 45px;
 }
 
+.li-recent__line{
+    position:relative;
+    height: 0.5px;
+    background-color: #ccc;
+    color: #ccc;
+    top: 0px;
+}
+
 .recent__item-cntnr, .recommend__item-cntnr{
     display: inline-flex;
     height: 45px;
@@ -768,7 +776,7 @@
     position: relative;
     left: 14px;
     width: 220px;
-    top: 12px;
+    top: 14px;
     overflow: hidden;         
     text-overflow: ellipsis; 
     white-space: nowrap;
@@ -794,13 +802,13 @@
 .recent__item-figure, .recommend__item-figure{
     position: relative;
     align-items: center;
-    height: 35px;
-    width: 35px;
-    top: 3px;
+    height: 34px;
+    width: 34px;
+    top: 6px;
 }
 
 .recent__item-img, .recommend__item-img{
-    height: 35px;
-    width: 35px;
+    height: 34px;
+    width: 34px;
     position: relative;
 }

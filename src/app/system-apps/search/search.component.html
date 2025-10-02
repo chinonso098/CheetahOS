@@ -79,8 +79,12 @@
                     <div class="recent__items">
                         <ol class="ol-recent__grid">
                             <li class="li-recent__item" *ngFor="let recent of onlyRecents; let i = index">
+                                @if (![0, onlyRecents.length].includes(i)) {
+                                <div class="li-recent__line"></div>
+                                }
+
                                 <div class="recent__item-cntnr" 
-                                    (click)="handlePath(recent, RUN_APP,  $event)">
+                                    (click)="handlePath(recent, RUN_APP,  $event)" id="lsls-{{i}}">
                                     
                                     <div class="recent__item-head">
                                         <figure class="recent__item-figure">
@@ -93,7 +97,6 @@
                                     </div>
                                 </div>
                             </li>
-
                         </ol>
                     </div>
                 </div>
