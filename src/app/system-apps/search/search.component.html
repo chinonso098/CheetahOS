@@ -72,15 +72,15 @@
             </div>
 
             <div class="main-search__default-cntnr-b">
-                <div class="default__recents-cntnr">
-                    <div class="recents__heading">
-                        <p class="recents__heading-p">Recent</p>
+                <div class="default__recent-cntnr">
+                    <div class="recent__heading">
+                        <p class="recent__heading-p">Recent</p>
                     </div>
                     <div class="recent__items">
                         <ol class="ol-recent__grid">
                             <li class="li-recent__item" *ngFor="let recent of onlyRecents; let i = index">
                                 @if (![0, onlyRecents.length].includes(i)) {
-                                <div class="li-recent__line"></div>
+                                    <div class="li-recent__line"></div>
                                 }
 
                                 <div class="recent__item-cntnr" 
@@ -101,13 +101,32 @@
                     </div>
                 </div>
                 
-                <div class="default__recommends-cntnr">
-                    <div class="recommends__heading">
-                        <p class="recommends__heading-p">Recommend</p>
+                <div class="default__recommend-cntnr">
+                    <div class="recommend__heading">
+                        <p class="recommend__heading-p">Recommend</p>
                     </div>
+                    <div class="recommend__items">
+                        <ol class="ol-recommend__grid">
+                            <li class="li-recommend__item" *ngFor="let recommend of onlyRecommends; let i = index">
+                                @if (![0, onlyRecommends.length].includes(i)) {
+                                    <div class="li-recommend__line"></div>
+                                }
 
-                    <div>
-                    
+                                <div class="recommend__item-cntnr" 
+                                    (click)="handlePath(recommend, RUN_APP,  $event)" id="lsls-{{i}}">
+                                    
+                                    <div class="recommend__item-head">
+                                        <figure class="recommend__item-figure">
+                                            <img class="recommend__item-img" [src]="recommend.iconPath" />
+                                        </figure>
+                                    </div>
+
+                                    <div class="recommend__item-tail">
+                                        <p class="recommend__item-p">{{ removeExt(recommend.name) }}</p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ol>
                     </div>
                 </div>
             </div>

@@ -204,6 +204,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const  searchDiv = this.cheetahSearchDiv.nativeElement;
     this._renderer.setStyle(searchDiv, 'display', 'flex');
     this._renderer.setStyle(searchDiv, 'z-index', '3');
+
+    if(this.onlyRecommends.length === 0)
+        this.onlyRecommends = this.getRecommendedApps();
   }
 
   hideSearchBox():void{
@@ -280,6 +283,14 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     options.push({type:'APPS', name:'codeeditor', srcPath:'None', opensWith:'codeeditor', 
                   iconPath:'osdrive/Cheetah/System/Imageres/vs_code.png', contentPath:'', dateModified: date});
+    return options;
+  }
+
+  getRecommendedApps():FileSearchIndex[]{
+    const options:FileSearchIndex[] = [];
+    const recommendation:string[] = ['Super Street Fighter 2 Turbo', 'rero', 'starfield', 'watr-fluid'];
+    
+    options.push(...this._fileSearchIndex.filter(x =>  recommendation.some(y => x.name.includes(y))));
     return options;
   }
 
@@ -696,7 +707,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
      * MUSIC, DOCUMENT, VIDEO, PICTURES, all fall under the umbrella of file
      */
     const fileInfo = new FileInfo();
-    fileInfo.setFileName = basename(file.name, extname(file.name));
+    fileInfo.setFileName = this.removeExt(file.name);
     if(file.type !== this.FOLDERS){
       fileInfo.setIsFile = (intent === this.RUN_APP)?  true : false;
       fileInfo.setOpensWith = (intent === this.RUN_APP)? file.opensWith : Constants.FILE_EXPLORER;
@@ -723,6 +734,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this._menuService.setStoreData([path, action]);
 
     this.hideSearchBox();
+  }
+
+  removeExt(name:string):string{
+    return basename(name, extname(name));
   }
 
   desktopIsActive():void{ }

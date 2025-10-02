@@ -699,7 +699,7 @@
     white-space: nowrap;
 }
 
-.default__recents-cntnr{
+.default__recent-cntnr{
     display: block;
     padding: 0px 10px;
     position: relative;
@@ -708,7 +708,7 @@
     background-color: rgba(41,41, 41, 0.75);
 }
 
-.default__recommends-cntnr{
+.default__recommend-cntnr{
     display: block;
     position: relative;
     padding: 0px 10px;
@@ -717,13 +717,13 @@
     background-color: rgba(41,41, 41, 0.75);
 }
 
-.recents__heading, .recommends__heading{
+.recent__heading, .recommend__heading{
     padding: 5px 0px;
     width: 100%;
     height: 20px;
 }
 
-.recents__heading-p, .recommends__heading-p{
+.recent__heading-p, .recommend__heading-p{
     color: #fff;
     font-size:11px;
     font-weight:bold;
@@ -754,7 +754,7 @@
     height: 45px;
 }
 
-.li-recent__line{
+.li-recent__line, .li-recommend__line{
     position:relative;
     height: 0.5px;
     background-color: #ccc;
@@ -802,13 +802,13 @@
 .recent__item-figure, .recommend__item-figure{
     position: relative;
     align-items: center;
-    height: 34px;
-    width: 34px;
-    top: 6px;
+    height: 30px;
+    width: 30px;
+    top: 8px;
 }
 
 .recent__item-img, .recommend__item-img{
-    height: 34px;
-    width: 34px;
+    height: 30px;
+    width: 30px;
     position: relative;
 }
