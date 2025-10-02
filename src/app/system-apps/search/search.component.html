@@ -58,18 +58,12 @@
                                     (mouseenter)="onMouseEnter(i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     id="btnElmnt-{{processId}}-{{i}}">
+                                    
+                                    <figure class="top-apps__figure">
+                                        <img class="top-apps__img" [src]="app.iconPath" />
+                                    </figure>
 
-                                    <div class="iconview-img-container"  id="figElmnt-{{processId}}-{{i}}">
-                                        <div class="iconview-img-wrapper">
-                                            <img class="iconview-image" [src]="app.iconPath"/>
-                                        </div>
-                                    </div>
-
-                                    <div class="iconview-caption-container">
-                                        <p class="iconview-caption"  id="figCapElmnt-{{processId}}-{{i}}">
-                                            {{app.name}} 
-                                        </p>
-                                    </div> 
+                                    <p class="top-apps__p">{{ app.name }}</p>
                                 </div>
                             </li>
                         </ol>

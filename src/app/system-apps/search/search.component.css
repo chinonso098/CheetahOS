@@ -646,23 +646,57 @@
 .top-apps__items{
     padding: 5px 0px;
     width: 100%;
-    height: 80px;
+    height: fit-content;
 }
 
 .ol-top-apps__grid{
     display: grid;
     grid-auto-flow: row;
-    grid-template-columns:  repeat(auto-fill, 100px);
-    grid-template-rows: repeat(auto-fill, 90px);
+    grid-template-columns:  repeat(auto-fill, 105px);
+    grid-template-rows: repeat(auto-fill, 74px);
     width: 100%;
-    gap: 0px 10px;
+    gap: 0px 8px;
 }
 
 .li-top-apps{
-    display: flex;
     justify-content: center;
     height: min-content;
-    z-index: 1;
+}
+
+.top-apps__item{
+    display: block;
+    height: 74px;
+    width: 105px;
+    /* background-color: rgba(72, 72, 75, 0.65); */
+    background-color: rgba(68, 68, 68);
+    border-radius: 3px;
+}
+
+.top-apps__figure{
+    position: relative;
+    align-items: center;
+    height: 30px;
+    width: 105px;
+    top: 8px;
+}
+
+.top-apps__img{
+    position: relative;
+    height: 30px;
+    width: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+
+.top-apps__p{
+    position: relative;
+    color: #fff;
+    font-size:11px;
+    font-weight:normal;
+    text-align: center;
+    width: 100%;
+    top: 12px;
 }
 
 .default__recents-cntnr{
