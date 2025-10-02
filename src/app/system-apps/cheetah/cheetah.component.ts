@@ -34,7 +34,7 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   type = ComponentType.System;
   displayName = 'CheetahOS';
   name = 'cheetah';
-  version = 'Version: 4.09.05';
+  version = 'Version: 4.10.02';
   year = `\u00A9 ${new Date().getFullYear()}`;
   infoMessage = Constants.EMPTY_STRING;
 
@@ -64,7 +64,7 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   getInfoMessage():void{
     this.infoMessage =`
 CheetahOS
-Version 4.09.05
+Version 4.10.02
 Copyright\u00A9 Chinonso098 2022 - ${new Date().getFullYear()}
 
 Windows 10 icons & audio files Microsoft Corporation\u00A9. 
