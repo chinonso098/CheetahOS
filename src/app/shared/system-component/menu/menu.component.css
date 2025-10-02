@@ -200,6 +200,7 @@ span.dm-tail{
     width: 210px;
     box-shadow: 2px 2px rgba(0, 0, 0, 0.3);
     border: 1px solid #9c9898;
+    background-color: #2b2b2b;
     z-index: 2;
 }
 
@@ -213,14 +214,12 @@ span.dm-tail{
     z-index: 2;
 }
 
-.dm-nested-line-container {
-    max-height: 1px;
-    /* background-color: #eee; */
-    background-color: #2b2b2b;
-}
-
-.dm-nested-line{
-    border: 1px solid #9c9898;
+.dm-nested-line {
+    position:relative;
+    height: 0.5px;
+    background-color: #9c9898;
+    color: #9c9898;
+    top: 0px;
     margin: 0 8px;
 }
 
@@ -281,7 +280,6 @@ span.dm-tail{
       transform: translateY(0);
     }
 }
-  
 
 .dm-nested-vertical-menu .dm-nested-vertical-menu-item:hover {
     /* background-color: #ccc; */
