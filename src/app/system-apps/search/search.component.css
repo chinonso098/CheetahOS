@@ -599,7 +599,6 @@
 
 
 
-
  /*SearchBox Default Window Section*/
 .main-search__default-cntnr {
   display: block;
@@ -677,7 +676,7 @@
     align-items: center;
     height: 30px;
     width: 105px;
-    top: 8px;
+    top: 9px;
 }
 
 .top-apps__img{
@@ -696,7 +695,11 @@
     font-weight:normal;
     text-align: center;
     width: 100%;
-    top: 12px;
+    top: 14px;
+
+    overflow: hidden;         
+    text-overflow: ellipsis; 
+    white-space: nowrap;
 }
 
 .default__recents-cntnr{

@@ -358,6 +358,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if(!this.showSearchResult)
+      this.currentViewOption = this.RESULT_SEARCH_VIEW;
       this.showSearchResult = true;
 
     if(searchFocus === this.OPTION_ALL)
@@ -389,7 +390,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   resetFilteredArray():void{
     this.filteredFileSearchIndex = [];
+
     this.showSearchResult = false;
+    this.currentViewOption = this.DEFAULT_SEARCH_VIEW;
   }
 
   focusOnInput(evt:MouseEvent):void{
