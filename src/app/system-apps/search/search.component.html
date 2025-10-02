@@ -54,7 +54,7 @@
                     <div class="top-apps__items">
                         <ol class="ol-top-apps__grid">
                             <li class="li-top-apps" *ngFor="let app of onlyTopApps; let i = index" id="ilElmnt-{{processId}}" >
-                                <div class="top-apps__item" role="button" (dblclick)="handlePath(app, RUN_APP,  $event)"
+                                <div class="top-apps__item" role="button" (click)="handlePath(app, RUN_APP,  $event)"
                                     (mouseenter)="onMouseEnter(i)" 
                                     (mouseleave)="onMouseLeave(i)"
                                     id="btnElmnt-{{processId}}-{{i}}">
@@ -73,15 +73,43 @@
 
             <div class="main-search__default-cntnr-b">
                 <div class="default__recents-cntnr">
+                    <div class="recents__heading">
+                        <p class="recents__heading-p">Recent</p>
+                    </div>
+                    <div class="recent__items">
+                        <ol class="ol-recent__grid">
+                            <li class="li-recent__item" *ngFor="let recent of onlyRecents; let i = index">
+                                <div class="recent__item-cntnr" 
+                                    (click)="handlePath(recent, RUN_APP,  $event)">
+                                    
+                                    <div class="recent__item-head">
+                                        <figure class="recent__item-figure">
+                                            <img class="recent__item-img" [src]="recent.iconPath" />
+                                        </figure>
+                                    </div>
 
+                                    <div class="recent__item-tail">
+                                        <p class="recent__item-p">{{ recent.name }}</p>
+                                    </div>
+                                </div>
+                            </li>
+
+                        </ol>
+                    </div>
                 </div>
-                <div class="default__quick-search-cntnr">
+                
+                <div class="default__recommends-cntnr">
+                    <div class="recommends__heading">
+                        <p class="recommends__heading-p">Recommend</p>
+                    </div>
 
+                    <div>
+                    
+                    </div>
                 </div>
             </div>
         </div>
     </ng-template>
-
 
     <ng-template #resultView>
         <div class="main-search-result-cntnr" *ngIf="showSearchResult">
@@ -303,156 +331,160 @@
                         </ol>
                     </div>
                 </div>
-
             </div>
 
             <div class="search-result-detail-cntnr">
                 <div class="search-result-detail-cntnt">
-                    <div class="search-result-detail-head-section">
+                    @if(!isNotFound){
+                        <div class="search-result-detail-head-section">
+
+                            <div class="blank-space-b"></div>
+
+                            <div  class="detail-head-icon-cntnr">
+                                <figure class="detail-head-icon-cntnr-figure">
+                                    <img class="detail-head-icon-cntnr-img" [src]="selectedResultSetOption.iconPath" />
+                                </figure>
+                            </div>
+
+                            <div class="blank-space-a"></div>
+
+                            <div class="detail-head-filename-cntnr">
+                                <p class="detail-head-filename-p"> {{selectedResultSetOption.name}} </p>
+                            </div>
+
+                            <div class="blank-space-a"></div>
+
+                            <div class="detail-head-filetype-cntnr">
+                                <p class="detail-head-filetype-p"> {{selectedResultSetOptionType}} </p>
+                            </div>
+                        </div>
 
                         <div class="blank-space-b"></div>
+                        <div class="search-result-detail-line-cntnr"></div>
 
-                        <div  class="detail-head-icon-cntnr">
-                            <figure class="detail-head-icon-cntnr-figure">
-                                <img class="detail-head-icon-cntnr-img" [src]="selectedResultSetOption.iconPath" />
-                            </figure>
+                        <div class="search-result-detail-mid-section">
+                            @if(selectedResultSetOption.type !== APPS){
+                                <div class="search-result-detail-mid-cntnr">
+                                    <div class="search-result-detail-mid-cntnt">
+                                        <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Location:</p></div>
+                                        <div class="mid-cntnt-mid"></div>
+                                        <div class="mid-cntnt-tail"><p class="mid-cntnt-p0">{{selectedResultSetOption.srcPath}}</p></div>
+                                    </div>
+
+                                    <div class="search-result-detail-mid-cntnt">
+                                        <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Last modified:</p></div>
+                                        <div class="mid-cntnt-mid"></div>
+                                        <div class="mid-cntnt-tail"><p class="mid-cntnt-p">{{ selectedResultSetOption.dateModified | date: 'MM/dd/yyyy, HH:mm a' }}</div>
+                                    </div>
+                                </div>
+                            }
+
+                            @if(selectedResultSetOption.type === APPS){
+                                <div class="search-result-detail-mid-cntnr">
+                                    <div class="search-result-detail-mid-cntnt1" (click)="handlePath(selectedResultSetOption, RUN_APP, $event)">
+                                        <div class="mid-cntnt-head-1">
+                                            <figure class="mid-cntnt-figure">
+                                                <img class="mid-cntnt-img" [src]="searchOpenIcon" />
+                                            </figure>
+                                        </div>
+
+                                        <div class="mid-cntnt-tail-1">
+                                            <p class="mid-cntnt-p1">{{ openApp }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
                         </div>
 
-                        <div class="blank-space-a"></div>
+                        <div class="search-result-detail-line-cntnr"></div>
 
-                        <div class="detail-head-filename-cntnr">
-                            <p class="detail-head-filename-p"> {{selectedResultSetOption.name}} </p>
+                        <div class="search-result-detail-tail-section">
+                            @if(selectedResultSetOption.type !== APPS){
+                                <div class="search-result-detail-tail-cntnr">
+                                    <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, RUN_APP, $event)">
+                                        <div class="mid-cntnt-head-1">
+                                            <figure class="mid-cntnt-figure">
+                                                <img class="mid-cntnt-img" [src]="searchOpenIcon" />
+                                            </figure>
+                                        </div>
+
+                                        <div class="mid-cntnt-tail-1">
+                                            <p class="mid-cntnt-p1">{{ openApp }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, NAVIGATE_TO_PATH, $event)">
+                                        <div class="mid-cntnt-head-1">
+                                            <figure class="mid-cntnt-figure">
+                                                <img class="mid-cntnt-img" [src]="searchFolderIcon" />
+                                            </figure>
+                                        </div>
+
+                                        <div class="mid-cntnt-tail-1">
+                                            <p class="mid-cntnt-p1">{{ openSrcPath }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="search-result-detail-tail-cntnt" (click)="copyPath(selectedResultSetOption, $event)">
+                                        <div class="mid-cntnt-head-1">
+                                            <figure class="mid-cntnt-figure">
+                                                <img class="mid-cntnt-img" [src]="searchCopyIcon" />
+                                            </figure>
+                                        </div>
+
+                                        <div class="mid-cntnt-tail-1">
+                                            <p class="mid-cntnt-p1">{{ copySrcPath }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            @if(selectedResultSetOption.type  === 'TBD'){
+                                <div class="search-result-detail-tail-cntnr">
+                                    <div class="search-result-detail-tail-cntnt">
+                                        <div class="mid-cntnt-head-1">
+                                            <figure class="mid-cntnt-figure">
+                                                <img class="mid-cntnt-img" [src]="searchOpenIcon" />
+                                            </figure>
+                                        </div>
+
+                                        <div class="mid-cntnt-tail-1">
+                                            <p class="mid-cntnt-p1">{{ openApp }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
                         </div>
-
-                        <div class="blank-space-a"></div>
-
-                        <div class="detail-head-filetype-cntnr">
-                            <p class="detail-head-filetype-p"> {{selectedResultSetOptionType}} </p>
-                        </div>
-                    </div>
-
-                    <div class="blank-space-b"></div>
-                    <div class="search-result-detail-line-cntnr"></div>
-
-                    <div class="search-result-detail-mid-section">
-                        @if(selectedResultSetOption.type !== APPS){
-                            <div class="search-result-detail-mid-cntnr">
-                                <div class="search-result-detail-mid-cntnt">
-                                    <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Location:</p></div>
-                                    <div class="mid-cntnt-mid"></div>
-                                    <div class="mid-cntnt-tail"><p class="mid-cntnt-p0">{{selectedResultSetOption.srcPath}}</p></div>
-                                </div>
-
-                                <div class="search-result-detail-mid-cntnt">
-                                    <div class="mid-cntnt-head"><p class="mid-cntnt-p"> Last modified:</p></div>
-                                    <div class="mid-cntnt-mid"></div>
-                                    <div class="mid-cntnt-tail"><p class="mid-cntnt-p">{{ selectedResultSetOption.dateModified | date: 'MM/dd/yyyy, HH:mm a' }}</div>
-                                </div>
-                            </div>
-                        }
-
-                        @if(selectedResultSetOption.type === APPS){
-                            <div class="search-result-detail-mid-cntnr">
-                                <div class="search-result-detail-mid-cntnt1" (click)="handlePath(selectedResultSetOption, RUN_APP, $event)">
-                                    <div class="mid-cntnt-head-1">
-                                        <figure class="mid-cntnt-figure">
-                                            <img class="mid-cntnt-img" [src]="searchOpenIcon" />
-                                        </figure>
-                                    </div>
-
-                                    <div class="mid-cntnt-tail-1">
-                                        <p class="mid-cntnt-p1">{{ openApp }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    <div class="search-result-detail-line-cntnr"></div>
-
-                    <div class="search-result-detail-tail-section">
-                        @if(selectedResultSetOption.type !== APPS){
-                            <div class="search-result-detail-tail-cntnr">
-                                <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, RUN_APP, $event)">
-                                    <div class="mid-cntnt-head-1">
-                                        <figure class="mid-cntnt-figure">
-                                            <img class="mid-cntnt-img" [src]="searchOpenIcon" />
-                                        </figure>
-                                    </div>
-
-                                    <div class="mid-cntnt-tail-1">
-                                        <p class="mid-cntnt-p1">{{ openApp }}</p>
-                                    </div>
-                                </div>
-
-                                <div class="search-result-detail-tail-cntnt" (click)="handlePath(selectedResultSetOption, NAVIGATE_TO_PATH, $event)">
-                                    <div class="mid-cntnt-head-1">
-                                        <figure class="mid-cntnt-figure">
-                                            <img class="mid-cntnt-img" [src]="searchFolderIcon" />
-                                        </figure>
-                                    </div>
-
-                                    <div class="mid-cntnt-tail-1">
-                                        <p class="mid-cntnt-p1">{{ openSrcPath }}</p>
-                                    </div>
-                                </div>
-
-                                <div class="search-result-detail-tail-cntnt" (click)="copyPath(selectedResultSetOption, $event)">
-                                    <div class="mid-cntnt-head-1">
-                                        <figure class="mid-cntnt-figure">
-                                            <img class="mid-cntnt-img" [src]="searchCopyIcon" />
-                                        </figure>
-                                    </div>
-
-                                    <div class="mid-cntnt-tail-1">
-                                        <p class="mid-cntnt-p1">{{ copySrcPath }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-
-                        @if(selectedResultSetOption.type  === 'TBD'){
-                            <div class="search-result-detail-tail-cntnr">
-                                <div class="search-result-detail-tail-cntnt">
-                                    <div class="mid-cntnt-head-1">
-                                        <figure class="mid-cntnt-figure">
-                                            <img class="mid-cntnt-img" [src]="searchOpenIcon" />
-                                        </figure>
-                                    </div>
-
-                                    <div class="mid-cntnt-tail-1">
-                                        <p class="mid-cntnt-p1">{{ openApp }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-
-                    </div>
+                    }
                 </div>
             </div>
         </div>
     </ng-template>
 
-    <div class="main-search-options-cntnr" *ngIf="showOptionsMenu">
-        <ol>
-            <li class="li-file-tree-view" *ngFor="let option of menuOptions; let i = index">
-                <div class="tree-view-cntnr"  
-                    id="dd-option-{{i}}" 
-                    (click)="selectOption($event, i)" 
-                    (mouseenter)="onMouseEnter(i)" 
-                    (mouseleave)="onMouseLeave(i)">
-                    
-                    <div class="search-option-head">
-                        <figure class="search-option-figure">
-                            <img class="search-option-img" [src]="option[0]" />
-                        </figure>
-                    </div>
+    @if(showOptionsMenu){
+        <div class="main-search-options-cntnr">
+            <ol>
+                <li class="li-file-tree-view" *ngFor="let option of menuOptions; let i = index">
+                    <div class="tree-view-cntnr"  
+                        id="dd-option-{{i}}" 
+                        (click)="selectOption($event, i)" 
+                        (mouseenter)="onMouseEnter(i)" 
+                        (mouseleave)="onMouseLeave(i)">
+                        
+                        <div class="search-option-head">
+                            <figure class="search-option-figure">
+                                <img class="search-option-img" [src]="option[0]" />
+                            </figure>
+                        </div>
 
-                    <div class="search-option-tail">
-                        <p class="search-option-p">{{ option[1] }}</p>
+                        <div class="search-option-tail">
+                            <p class="search-option-p">{{ option[1] }}</p>
+                        </div>
                     </div>
-                </div>
-            </li>
-        </ol>
-    </div>
+                </li>
+            </ol>
+        </div>
+    }
+
 </div>

@@ -84,6 +84,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isAppPresent = false;
   isFilePresent = false;
+  isNotFound = false;
   isFolderPresent = false;
   isSearchWindowVisible = false;
 
@@ -103,7 +104,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onlyTopApps:FileSearchIndex[] = [];
   onlyRecents:FileSearchIndex[] = [];
-  onlyQuickSearches:FileSearchIndex[] = [];
+  onlyRecommends:FileSearchIndex[] = [];
 
   selectedOptionID = 0;
   selectedResultSetOptionId = 0;
@@ -187,6 +188,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.menuOptions = this.generateOptions();
     this.onlyTopApps = this.getTopApps();
+    this.onlyRecents = this.getTopApps().splice(0, 4);
   }
 
   ngAfterViewInit(): void {
@@ -373,6 +375,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       const on = false;
       this.showNoMatchFoundView = true;
       this.showBestMatchView = false;
+      this.isNotFound = true;
       this.noMatchText = `No result found for "${searchString}"`;
 
       this.handleBestMatchHightLight(on);
@@ -380,6 +383,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }else{
       this.showNoMatchFoundView = false;
       this.showBestMatchView = true;
+      this.isNotFound = false;
 
       this.hideShowSearchSections(searchFocus);
       this.checkIfSectionIsPresent(this.currentSearchFocus);
