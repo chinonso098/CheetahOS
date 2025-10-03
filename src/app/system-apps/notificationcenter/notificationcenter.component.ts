@@ -8,13 +8,13 @@ import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'cos-controlpanel',
-  templateUrl: './controlpanel.component.html',
-  styleUrls: ['./controlpanel.component.css'],
+  selector: 'cos-notificationcenter',
+  templateUrl: './notificationcenter.component.html',
+  styleUrls: ['./notificationcenter.component.css'],
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone:false,
 })
-export class ControlPanelComponent implements OnDestroy {
+export class NotificationCenterComponent implements OnDestroy {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _menuService:MenuService;
@@ -25,7 +25,7 @@ export class ControlPanelComponent implements OnDestroy {
   hasWindow = false;
   hover = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
-  name = 'controlpanel';
+  name = 'notificationcenter';
   processId = 0;
   type = ComponentType.System
   displayName = '';

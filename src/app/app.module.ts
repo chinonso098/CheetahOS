@@ -58,6 +58,7 @@ import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.captu
 import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.directives';
 import { ParticaleFlowComponent } from './user-apps/particaleflow/particaleflow.component';
 import { PdfViewerComponent } from './user-apps/pdf-viewer/pdf-viewer.component';
+import { NotificationCenterComponent } from './system-apps/notificationcenter/notificationcenter.component';
 
 
 
@@ -106,6 +107,7 @@ import { PdfViewerComponent } from './user-apps/pdf-viewer/pdf-viewer.component'
     BasicWindowComponent,
     ParticaleFlowComponent,
     PdfViewerComponent,
+    NotificationCenterComponent,
 
     HighlightDirective,
     TaskBarEntryHighlightDirective,
