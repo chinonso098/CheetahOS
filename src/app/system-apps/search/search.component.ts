@@ -188,7 +188,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.menuOptions = this.generateOptions();
     this.onlyTopApps = this.getTopApps();
-    this.onlyRecents = this.getTopApps().splice(0, 4);
+    this.onlyRecents = this.getRecents();
   }
 
   ngAfterViewInit(): void {
@@ -283,6 +283,25 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     options.push({type:'APPS', name:'codeeditor', srcPath:'None', opensWith:'codeeditor', 
                   iconPath:'osdrive/Cheetah/System/Imageres/vs_code.png', contentPath:'', dateModified: date});
+    return options;
+  }
+
+  getRecents():FileSearchIndex[]{
+    const options:FileSearchIndex[] = [];
+    const date = new Date('1970-01-01');
+
+    options.push({type:'DOCUMENTS', name:'Credits.md', srcPath:'/Users/Documents/Credits.md', opensWith:'markdownviewer', 
+                  iconPath:'osdrive/Cheetah/System/Imageres/markdown_file.png', contentPath:'', dateModified: date});
+
+    options.push({type:'APPS', name:'taskmanager', srcPath:'None', opensWith:'taskmanager', 
+                  iconPath:'osdrive/Cheetah/System/Imageres/taskmanager.png', contentPath:'', dateModified: date});   
+
+    options.push({type:'APPS', name:'CyberPower_UM_EC650LCD 2.pdf', srcPath:'/Users/Documents/PDFs/CyberPower_UM_EC650LCD 2.pdf', opensWith:'pdfviewer', 
+                  iconPath:'osdrive/Cheetah/System/Imageres/pdf_file.png', contentPath:'', dateModified: date});  
+
+    options.push({type:'DOCUMENTS', name:'Dynamic Programming.txt', srcPath:'/Users/Documents/Dynamic Programming.txt', opensWith:'texteditor', 
+                  iconPath:'osdrive/Cheetah/System/Imageres/text_editor.png', contentPath:'', dateModified: date});
+
     return options;
   }
 

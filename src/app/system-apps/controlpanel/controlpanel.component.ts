@@ -8,13 +8,13 @@ import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'cos-startbutton',
-  templateUrl: './startbutton.component.html',
-  styleUrls: ['./startbutton.component.css'],
+  selector: 'cos-controlpanel',
+  templateUrl: './controlpanel.component.html',
+  styleUrls: ['./controlpanel.component.css'],
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone:false,
 })
-export class StartButtonComponent implements OnDestroy {
+export class ControlPanelComponent implements OnDestroy {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _menuService:MenuService;

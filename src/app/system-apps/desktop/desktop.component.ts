@@ -2019,7 +2019,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         res = await this._fileService.deleteAsync(file.getCurrentPath, file.getIsFile);
         result.push(res);
       }
-
       const allTrue = result.every(Boolean);
       if(allTrue){
         // do stuff

@@ -752,13 +752,14 @@
 .li-recent__item, .li-recommend__item{
     width: 268px;
     height: 45px;
+    border-radius: 3px;
 }
 
 .li-recent__line, .li-recommend__line{
     position:relative;
     height: 0.5px;
-    background-color: #ccc;
-    color: #ccc;
+    background-color: #6d6d6d;
+    color: #6d6d6d;
     top: 0px;
 }
 
@@ -766,10 +767,11 @@
     display: inline-flex;
     height: 45px;
     width: 268px;
+ 
 }
 
 .li-recent__item:hover, .li-recommend__item:hover{
-    background-color: #ccc;
+    background-color: #6d6d6d;
 }
 
 .recent__item-p, .recommend__item-p{
