@@ -2291,6 +2291,7 @@ OpensWith=${file.getOpensWith}
     const appPath = 'None';
     const shortCut = ` - ${Constants.SHORTCUT}`;
 
+    // handle urls (aka shortcuts)
     if(file.getFileExtension === Constants.URL && file.getIsShortCut){
       if(file.getFileType === Constants.FOLDER && file.getOpensWith === 'fileexplorer'){       
         if(CommonFunctions.isPath(file.getContentPath))
@@ -2298,8 +2299,11 @@ OpensWith=${file.getOpensWith}
       }
       else
         this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
-    }else{
-      this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
+    }else{     // handle non-urls
+      if(!file.getIsFile && file.getFileType === Constants.FOLDER && file.getOpensWith === 'fileexplorer')
+        this.trackActivity(ActivityType.FOLDERS, file.getFileName, file.getContentPath);
+      else
+        this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
     }
 
     this.trackActivity(ActivityType.APPS, file.getOpensWith, appPath);

@@ -93,6 +93,10 @@ export class ActivityHistoryService implements BaseService {
         return activityHistory;
     } 
 
+    getActivitesHistory():ActivityHistory[]{
+        return this._activityHistory;
+    }
+
     removeActivityHistory(entry: ActivityHistory): void {
         if(this._activityHistory.length <= 0) return;
 

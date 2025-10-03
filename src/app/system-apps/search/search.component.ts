@@ -11,7 +11,7 @@ import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
-import { FileIndexIDs } from "src/app/system-files/common.enums";
+import { ActivityType, FileIndexIDs } from "src/app/system-files/common.enums";
 import { FileSearchIndex } from 'src/app/system-files/common.interfaces';
 import { debounceTime, Subscription } from 'rxjs';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
@@ -207,6 +207,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if(this.onlyRecommends.length === 0)
         this.onlyRecommends = this.getRecommendedApps();
+
+    this.onlyRecents = this.getRecents();
   }
 
   hideSearchBox():void{
@@ -288,20 +290,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getRecents():FileSearchIndex[]{
     const options:FileSearchIndex[] = [];
-    const date = new Date('1970-01-01');
+    const activityHistory = this._activityHistoryService.getActivitesHistory().filter(x => x.type !== ActivityType.FOLDERS);
+    const lastFour = activityHistory.slice(-4);
 
-    options.push({type:'DOCUMENTS', name:'Credits.md', srcPath:'/Users/Documents/Credits.md', opensWith:'markdownviewer', 
-                  iconPath:'osdrive/Cheetah/System/Imageres/markdown_file.png', contentPath:'', dateModified: date});
-
-    options.push({type:'APPS', name:'taskmanager', srcPath:'None', opensWith:'taskmanager', 
-                  iconPath:'osdrive/Cheetah/System/Imageres/taskmanager.png', contentPath:'', dateModified: date});   
-
-    options.push({type:'APPS', name:'CyberPower_UM_EC650LCD 2.pdf', srcPath:'/Users/Documents/PDFs/CyberPower_UM_EC650LCD 2.pdf', opensWith:'pdfviewer', 
-                  iconPath:'osdrive/Cheetah/System/Imageres/pdf_file.png', contentPath:'', dateModified: date});  
-
-    options.push({type:'DOCUMENTS', name:'Dynamic Programming.txt', srcPath:'/Users/Documents/Dynamic Programming.txt', opensWith:'texteditor', 
-                  iconPath:'osdrive/Cheetah/System/Imageres/text_editor.png', contentPath:'', dateModified: date});
-
+    options.push(...this._fileSearchIndex.filter(x => lastFour.some(y => x.name.includes(y.name))));
     return options;
   }
 
