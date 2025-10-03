@@ -664,9 +664,12 @@
     display: block;
     height: 74px;
     width: 105px;
-    /* background-color: rgba(72, 72, 75, 0.65); */
     background-color: rgba(68, 68, 68);
     border-radius: 3px;
+}
+
+.top-apps__item:hover{
+    background-color: rgba(109, 109, 109);
 }
 
 .top-apps__figure{
@@ -767,7 +770,6 @@
     display: inline-flex;
     height: 45px;
     width: 268px;
- 
 }
 
 .li-recent__item:hover, .li-recommend__item:hover{
@@ -776,7 +778,7 @@
 
 .recent__item-p, .recommend__item-p{
     position: relative;
-    left: 14px;
+    left: 5px;
     width: 220px;
     top: 14px;
     overflow: hidden;         
