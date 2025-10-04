@@ -715,7 +715,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.populateTraversalList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFiles();
-      this.captureComponentImg();
+      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
+      this.captureComponentImg(); 
     }
   }
 
@@ -824,7 +825,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.populateTraversalList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFiles();
-      this.captureComponentImg();
+      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
+      this.captureComponentImg();   
     }
   }
 
@@ -885,6 +887,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.populateTraversalList();
       this.setNavPathIcon(folderName, this.directory);
       await this.loadFiles();
+      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
       this.captureComponentImg();
     }
   }
@@ -1336,6 +1339,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     else if(path === Constants.ROOT)
       await this.loadFiles(false);
 
+    await CommonFunctions.sleep(this.SECONDS_DELAY[4])
     this.captureComponentImg();
   }
 
@@ -1389,7 +1393,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.storeAppState(file.getCurrentPath);
   
       await this.loadFiles();
-      this.captureComponentImg();
+      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
+      this.captureComponentImg(); 
     }else{
       //APPS opened from the fileexplore do not have their windows in focus,
       // and this is due to the mouse click event that causes fileexplorer to trigger setFocusOnWindow event
