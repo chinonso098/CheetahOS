@@ -530,35 +530,137 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async captureComponentImg(): Promise<void>{
+
+    await this.getProprelyMergedImage();
+    return
+
     const storeImgDelay = 1000; // 1 sec
     const slideOutDelay = 4000; // 4 secs
     const hideDeskopScreenShotDelay = 2000; // 2 secs
 
+    const dsktpCntnr = this.desktopContainer.nativeElement;
     const htmlImg = await htmlToImage.toPng(this.desktopContainer.nativeElement);
     this.showDesktopScreenShotPreview = true;
     this.slideState = 'slideIn';
     this.dsktpPrevImg = htmlImg;
+
+
+    //'#vanta > canvas'
+    const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
+    console.log('canvasElmnt:', canvasElmnt);
+    if (!canvasElmnt){
+      console.log('no canva');
+      return;
+    }
+
+    const vantaImg = new Image();
+    const bkgrndImg =  canvasElmnt.toDataURL('image/png');
+    vantaImg.src = bkgrndImg;
+    await vantaImg.decode();
+
+    var link = document.createElement('a');
+    link.download = 'vanta.jpeg';
+    link.href = bkgrndImg;
+    link.click();   /// Correct image
+
+    const foreGrndImg = new Image();
+    foreGrndImg.src = htmlImg;
+    await foreGrndImg.decode();
+
+    var link1 = document.createElement('a');
+    link1.download = 'fGround.jpeg';
+    link1.href = htmlImg;
+    link1.click();   /// Correct image 
+
+
+    const mergedImg = document.createElement('canvas');
+    mergedImg.width = dsktpCntnr.offsetWidth;
+    mergedImg.height = dsktpCntnr.offsetHeight; 
+
+    const ctx = mergedImg.getContext('2d')!;
+    ctx.drawImage(vantaImg, 0, 0);
+    ctx.drawImage(foreGrndImg, 0, 0);
+
+    const finalImg = mergedImg.toDataURL('image/png');
+    var link3 = document.createElement('a');
+    link3.download = 'my-image-name2.jpeg';
+    link3.href = finalImg;
+    link3.click();   /// Wrong Image
      
-    const screenShot:FileInfo = new FileInfo();
-    screenShot.setFileName = 'screen_shot.png'
-    screenShot.setCurrentPath = `${this.DESKTOP_SCREEN_SHOT_DIRECTORY}/screen_shot.png`;
-    screenShot.setContentPath = htmlImg;
-    screenShot.setIconPath = htmlImg;
+    // const screenShot:FileInfo = new FileInfo();
+    // screenShot.setFileName = 'screen_shot.png'
+    // screenShot.setCurrentPath = `${this.DESKTOP_SCREEN_SHOT_DIRECTORY}/screen_shot.png`;
+    // screenShot.setContentPath = htmlImg;
+    // screenShot.setIconPath = htmlImg;
      
-    await this._audioService.play(this.systemNotificationAudio);
-    await CommonFunctions.sleep(storeImgDelay);
-    this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
-    this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
+    // await this._audioService.play(this.systemNotificationAudio);
+    // await CommonFunctions.sleep(storeImgDelay);
+    // this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
+    // this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
 
-    await CommonFunctions.sleep(storeImgDelay);
-    this._fileService.dirFilesUpdateNotify.next();
+    // await CommonFunctions.sleep(storeImgDelay);
+    // this._fileService.dirFilesUpdateNotify.next();
 
-    await CommonFunctions.sleep(slideOutDelay);
-    this.slideState = 'slideOut';
+    // await CommonFunctions.sleep(slideOutDelay);
+    // this.slideState = 'slideOut';
 
-    await CommonFunctions.sleep(hideDeskopScreenShotDelay);
+    // await CommonFunctions.sleep(hideDeskopScreenShotDelay);
     this.showDesktopScreenShotPreview = false;
   }
+
+  async getProprelyMergedImage(): Promise<void> {
+
+    const dsktpCntnr = this.desktopContainer.nativeElement;
+    const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
+
+    if (!dsktpCntnr || !canvasElmnt) {
+      console.error('Desktop container or Vanta canvas not found.');
+      return;
+    }
+
+    // Use htmlToImage.toPng() on the desktop container, but exclude the vanta canvas
+    // to prevent it from being rendered twice.
+    // The 'filter' option ensures only specific elements are included.
+    const htmlWithoutVanta = await htmlToImage.toPng(this.desktopContainer.nativeElement, {
+      filter: (node) => node !== canvasElmnt
+    });
+
+    // Load the images
+    const vantaImg = new Image();
+    const vantaDataUrl = canvasElmnt.toDataURL('image/png');
+    vantaImg.src = vantaDataUrl;
+    await vantaImg.decode();
+
+    const foreGrndImg = new Image();
+    foreGrndImg.src = htmlWithoutVanta;
+    await foreGrndImg.decode();
+
+    // Create a new canvas to merge the images
+    const mergedCanvas = document.createElement('canvas');
+    mergedCanvas.width = dsktpCntnr.offsetWidth;
+    mergedCanvas.height = dsktpCntnr.offsetHeight;
+    const ctx = mergedCanvas.getContext('2d');
+
+    if (!ctx) {
+      console.error('Failed to get 2D rendering context.');
+      return;
+    }
+
+    // 1. Draw the Vanta background image first.
+    ctx.drawImage(vantaImg, 0, 0, mergedCanvas.width, mergedCanvas.height);
+    
+    // 2. Draw the HTML content on top of the background.
+    ctx.drawImage(foreGrndImg, 0, 0, mergedCanvas.width, mergedCanvas.height);
+
+    // Get the final merged image as a data URL.
+    const finalImgDataUrl = mergedCanvas.toDataURL('image/png');
+
+    const link = document.createElement('a');
+    link.download = 'Themerged.png';
+    link.href = finalImgDataUrl;
+    link.click();
+  }
+
 
   async createFolder():Promise<void>{
     const folderName = Constants.NEW_FOLDER;
