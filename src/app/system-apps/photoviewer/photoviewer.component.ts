@@ -123,7 +123,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
       this.images = signal([this.imageList[0]]);
     else{
       const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
-      this.images = signal([this.picSrc || currentImg]);
+      this.images = signal([this._fileInfo.getContentPath || currentImg]);
     }
 
     const appData = (this.imageList.length > 0)? this.imageList : this.picSrc;
@@ -206,7 +206,6 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     if(this.imageList.length === 0){
       // else, go fetch.
       const dirPath = dirname(this._fileInfo.getCurrentPath);
-      //console.log('dirPath:', dirPath);
       const entries:string[] = await this._fileService.readDirectory(dirPath);
 
       //check for images
@@ -215,8 +214,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
           imgCount = imgCount +  1;
 
           if(`${dirPath}/${entry}` !== this._fileInfo.getCurrentPath){
-            const blobPath = await this._fileService.getFileAsBlobAsync(`${dirPath}/${entry}`);
-            this.imageList.push(blobPath);
+            const file =  await this._fileService.getFileInfo(`${dirPath}/${entry}`);
+            if(file)
+              this.imageList.push(file.getContentPath);
           }
         }
       }

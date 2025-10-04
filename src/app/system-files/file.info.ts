@@ -16,7 +16,6 @@ export class FileInfo {
     private _size!: number;
     private _blkSize!: number;
     private _isFile!: boolean;
-    private _isFileDrop!: boolean;
     private _isShortCut!: boolean;
     private _fileSizeUnit!: string;
     private _mode!: number;
@@ -35,7 +34,6 @@ export class FileInfo {
         this._size = 0;
         this._blkSize = 0;
         this._isFile = true;
-        this._isFileDrop = false;
         this._isShortCut = false;
         this._fileSizeUnit = 'B';
         this._mode = 0;
@@ -158,14 +156,6 @@ export class FileInfo {
 
     set setIsFile(isFile: boolean) {
         this._isFile = isFile;
-    }
-
-    get getIsFileDrop() {
-        return this._isFileDrop;
-    }
-
-    set setIsFileDrop(isFileDrop: boolean) {
-        this._isFileDrop = isFileDrop;
     }
 
     get getIsShortCut() {

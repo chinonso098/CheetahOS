@@ -426,7 +426,12 @@ export class FileService implements BaseService{
 
         }else if(Constants.KNOWN_FILE_EXTENSIONS.includes(extension)){
             const opensWith = this.getOpensWith(extension);
-            this._fileInfo = this.populateFileInfo(path, fileMetaData, isFile, opensWith.appName, opensWith.appIcon);
+
+            let fileContent:FileContent| undefined = undefined;
+			if(opensWith.fileType === 'swf' ||opensWith.fileType === 'pdf')
+                fileContent = await this.getFileContentFromB64DataUrl(path, opensWith.fileType) as FileContent;
+
+            this._fileInfo = this.populateFileInfo(path, fileMetaData, isFile, opensWith.appName, opensWith.appIcon, !useImage, undefined, fileContent);
 		} else{
             this._fileInfo.setIconPath=`${Constants.IMAGE_BASE_PATH}unknown.png`;
             this._fileInfo.setCurrentPath = path;
@@ -439,6 +444,7 @@ export class FileService implements BaseService{
             this._fileInfo.setFileExtension = extension;
         }
         this.addAppAssociaton(this._fileInfo.getOpensWith, this._fileInfo.getIconPath);
+
         return this._fileInfo;
     }
 
@@ -528,6 +534,7 @@ export class FileService implements BaseService{
                 }
 
                 const dataPrefix = utf8Data.substring(0, 10);
+                //const dataPrefix = utf8Data.replace(/^data:.*;base64,/, Constants.EMPTY_STRING);
                 if (this.isDataUrl(utf8Data)) {
                     const base64Data = utf8Data.split(Constants.COMMA)[1];
                     const binaryData = Buffer.from(base64Data, 'base64');
@@ -542,8 +549,8 @@ export class FileService implements BaseService{
     }
 
     private isDataUrl(utf8Data: string):boolean{
-        const dataPrefix = utf8Data.substring(0, 10);
-        const isDataUrl = (dataPrefix === 'data:image') || (dataPrefix === 'data:video') || (dataPrefix === 'data:audio');
+        const dataPrefix = utf8Data.substring(0, 5);
+        const isDataUrl = (dataPrefix === 'data:')
 
         return isDataUrl;
     }
@@ -1433,6 +1440,11 @@ OpensWith=${shortCutData.opensWith}
     setFileDropEventTriggeredFlag(flag:boolean):void{
         this._isFileDropEventTriggered = flag;
     }
+
+    removeExtensionFromName(name:string):string{
+        return basename(name, extname(name));
+    }
+
 
     private addAndUpdateSessionData(key:string, map:Map<string, string>):void{
         this._sessionManagmentService.addFileServiceSession(key, map);
