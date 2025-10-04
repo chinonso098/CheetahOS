@@ -12,6 +12,7 @@ import { Boid } from './boid';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 
 declare const p5:any;
 
@@ -33,9 +34,10 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   private _runningProcessService:RunningProcessService;
   private _sessionManagmentService:SessionManagmentService;
 
-
+  private SECONDS_DELAY = 1000;
   private _appState!:AppState;
   private p5Instance: any;
+  private _intervalId: any;
   flocks: Boid[] = [];
 
   params = {
@@ -90,12 +92,33 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     setTimeout(() => {
       this.p5Instance = new p5(this.sketch.bind(this), this.boidCanvas.nativeElement);
     }, delay);
+
+    this.updateComponentImg();
   }
 
   ngOnDestroy(): void {
     if (this.p5Instance) {
       this.p5Instance.remove();
     }
+
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+    }
+  }
+
+  captureComponentImg():void{
+    const htmlImg =  this.captureCanvasStill();
+
+    const cmpntImg:TaskBarPreviewImage = {
+      pid: this.processId,
+      appName: this.name,
+      displayName: this.name,
+      icon : this.icon,
+      defaultIcon: this.icon,
+      imageData: htmlImg
+    }
+    
+    this._windowService.addProcessPreviewImage(this.name, cmpntImg);
   }
 
   sketch(p: any) {
@@ -124,6 +147,20 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
       p.resizeCanvas(boidCntnr?.offsetWidth, boidCntnr?.offsetHeight);
     };
   }
+
+  public captureCanvasStill(): string  {
+    const canvasElemnt = document.getElementById("defaultCanvas0") as HTMLCanvasElement;
+    if (!canvasElemnt) return Constants.EMPTY_STRING;
+
+    return canvasElemnt.toDataURL("image/png");
+  }
+
+  updateComponentImg():void{
+    this._intervalId = setInterval(() => {
+        this.captureComponentImg()
+    }, this.SECONDS_DELAY);
+  }
+
 
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
