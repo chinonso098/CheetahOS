@@ -86,7 +86,12 @@ export class WindowService implements BaseService{
         }
         else{
             const currImages = this._processPreviewImages.get(appName) || [];
-            currImages.push(data);
+
+            const currImg = currImages.find(x => x.pid === data.pid)
+            if(currImg)
+                currImg.imageData = data.imageData
+            else
+                currImages.push(data);
             this._processPreviewImages.set(appName, currImages);
         }
     }

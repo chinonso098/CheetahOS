@@ -162,7 +162,7 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   updateComponentImg():void{
     this._intervalId = setInterval(async() => {
         await this.captureComponentImg()
-    }, this.SECONDS_DELAY + 10000);
+    }, this.SECONDS_DELAY);
   }
 
   async getGamesSrc(file: FileInfo): Promise<string> {
