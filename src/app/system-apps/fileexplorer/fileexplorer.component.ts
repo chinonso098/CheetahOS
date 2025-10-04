@@ -161,7 +161,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   upPathEntries:string[] = ['/Users/Desktop'];
   _directoryTraversalList:string[] = ['This PC'];
   fileTreeHistory:string[] = [];
-  SECONDS_DELAY:number[] = [100, 1500, 6000, 12000, 250];
+  SECONDS_DELAY:number[] = [100, 1500, 6000, 12000, 500];
   
   defaultviewOption = ViewOptions.MEDIUM_ICON_VIEW;
   currentViewOption = ViewOptions.MEDIUM_ICON_VIEW;
@@ -365,12 +365,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     await this.loadDevciesAndDrives();
     await this.loadFileTreeAsync();
     await this.setProperRecycleBinIcon();
-    await this.loadFiles().then(()=>{
-      setTimeout(()=>{
-        this.captureComponentImg();
-      },this.SECONDS_DELAY[4]) 
+    await this.loadFiles().then(async()=>{
+      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
+      this.captureComponentImg();
     });
-
   }
 
   setIsBtnClickEvt(val: boolean, who:string) {
@@ -717,6 +715,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.populateTraversalList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFiles();
+      this.captureComponentImg();
     }
   }
 
@@ -825,6 +824,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.populateTraversalList();
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFiles();
+      this.captureComponentImg();
     }
   }
 
@@ -885,6 +885,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.populateTraversalList();
       this.setNavPathIcon(folderName, this.directory);
       await this.loadFiles();
+      this.captureComponentImg();
     }
   }
 
@@ -1334,9 +1335,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       await this.loadFiles();
     else if(path === Constants.ROOT)
       await this.loadFiles(false);
+
+    this.captureComponentImg();
   }
 
-  async runApplication(file:FileInfo):Promise<void>{
+  async runApplication(file:FileInfo, evt?:MouseEvent, ):Promise<void>{
+
+    if(evt)
+      evt.stopPropagation();
+
     console.log('fileexplorer-runApplication:',file)
     this.fileTreeNavToPath = Constants.EMPTY_STRING;
 
@@ -1382,6 +1389,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.storeAppState(file.getCurrentPath);
   
       await this.loadFiles();
+      this.captureComponentImg();
     }else{
       //APPS opened from the fileexplore do not have their windows in focus,
       // and this is due to the mouse click event that causes fileexplorer to trigger setFocusOnWindow event

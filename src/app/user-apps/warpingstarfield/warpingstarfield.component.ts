@@ -240,7 +240,6 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
 
     const bkgrndImgData = await htmlToImage.toPng(this.starfield.nativeElement);
 
-
     // Get video stream from canvas
     const stream = canvas.captureStream();
     const track = stream.getVideoTracks()[0];
@@ -254,7 +253,6 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
     tmp.width = bitmap.width;
     tmp.height = bitmap.height;
     const ctx = tmp.getContext("2d")!;
-
 
     // Draw UI image
     const bkGrndImg = new Image();
