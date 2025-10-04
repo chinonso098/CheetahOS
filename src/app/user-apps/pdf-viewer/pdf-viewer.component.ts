@@ -27,7 +27,6 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   styleUrl: './pdf-viewer.component.css'
 })
 export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit {
-  @ViewChild('pdfviewer', {static: true}) pdfviewer!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
   
   private _fileService:FileService;
@@ -53,7 +52,7 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
 
   // Support HiDPI-screens.
   readonly OUTPUT_SCALE = window.devicePixelRatio || 1;
-  readonly SECONDS_DELAY = 450;
+  readonly SECONDS_DELAY = 1000;
   readonly ZOOM_FACTOR = 0.1;
   readonly DEFAULT_SCALE = 1;
 
@@ -141,6 +140,7 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
         const context = this.getCanvasCntxt(canvas, this.OUTPUT_SCALE, viewport);
         const renderContext = this.getRenderCntxt(context, transform, this.OUTPUT_SCALE, viewport);
         const renderTask = page.render(renderContext);
+
         renderTask.promise.then(async() =>{
           this.pageRendering  = false;
           if(this.pageNumPending !== null){
@@ -226,20 +226,27 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
     }
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.pdfviewer.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
-      const cmpntImg:TaskBarPreviewImage = {
-        pid: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+  async captureComponentImg(): Promise<void>{
+    const canvas = document.getElementById(`pdf-canvas-${this.processId}`) as HTMLCanvasElement;
+    const htmlImg = await this.capturePDFStill(canvas);
+
+    const cmpntImg:TaskBarPreviewImage = {
+      pid: this.processId,
+      appName: this.name,
+      displayName: this.name,
+      icon : this.icon,
+      defaultIcon: this.icon,
+      imageData: htmlImg
+    }
+    this._windowService.addProcessPreviewImage(this.name, cmpntImg);
   }
+
+  public async capturePDFStill(canvas: HTMLCanvasElement): Promise<string> {
+    if (!canvas) return Constants.EMPTY_STRING;
+
+    return canvas.toDataURL("image/png");
+  }
+
 
   async onPrevPage():Promise<void>{
     if (this.pageNum <= 1) {
@@ -248,6 +255,7 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
     this.pageNum--;
     //this.resetZoom();
     await this.queueRenderPage(this.pageNum);
+    await this.captureComponentImg();
   }
 
   async onNextPage():Promise<void>{
@@ -257,6 +265,7 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
     this.pageNum++;
     //this.resetZoom();
     await this.queueRenderPage(this.pageNum);
+    await this.captureComponentImg();
   }
 
   resetZoom():void{
