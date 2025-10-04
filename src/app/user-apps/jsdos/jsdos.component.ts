@@ -1,23 +1,24 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, OnInit, AfterViewInit, ViewChild, OnDestroy, Input } from '@angular/core';
-
 import {extname} from 'path';
-import { FileService } from 'src/app/shared/system-service/file.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
-import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
+
 import { Process } from 'src/app/system-files/process';
-import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState} from 'src/app/system-files/state/state.interface';
 
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
-import { ScriptService } from 'src/app/shared/system-service/script.services';
-import * as htmlToImage from 'html-to-image';
-import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
-import { Constants } from "src/app/system-files/constants";
+import { FileService } from 'src/app/shared/system-service/file.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { ScriptService } from 'src/app/shared/system-service/script.services';
+import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
+import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
+import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
+import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+
+import { Constants } from "src/app/system-files/constants";
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 declare let Dos: any;
 @Component({
@@ -42,9 +43,10 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
-  private gameSrc = Constants.EMPTY_STRING;
+  private _gameSrc = Constants.EMPTY_STRING;
+  private _intervalId: any;
 
-  SECONDS_DELAY = 250;
+  SECONDS_DELAY = 5000;
 
   name= 'jsdos';
   hasWindow = true;
@@ -85,41 +87,72 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
       this.dosInstance.exit(); // Clean up js-dos instance
       this.dosInstance = null;
     }
+
+    // Clear the interval to prevent memory leaks
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+      console.log('Timer cleared on destroy.');
+    }
   }
 
-  async ngAfterViewInit() {
-    
-    this.gameSrc = (this.gameSrc !== Constants.EMPTY_STRING)? 
-      this.gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+  async ngAfterViewInit():Promise<void>{
+    this._gameSrc = (this._gameSrc !== Constants.EMPTY_STRING)? 
+      this._gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
     this._scriptService.loadScript("js-dos", "osdrive/Program-Files/jsdos/js-dos.js").then(async() =>{
-      const data = await this._fileService.getFileAsBlobAsync(this.gameSrc);
+      const data = await this._fileService.getFileAsBlobAsync(this._gameSrc);
       this.dosInstance = await Dos(this.dosWindow.nativeElement, this.dosOptions).run(data);
 
-      this.storeAppState(this.gameSrc);
-      URL.revokeObjectURL(this.gameSrc);
+      this.storeAppState(this._gameSrc);
+      URL.revokeObjectURL(this._gameSrc);
 
       this.displayName = this._fileInfo.getFileName;
     })
 
-    setTimeout(()=>{
-      this.captureComponentImg();
-    },this.SECONDS_DELAY) 
+    await CommonFunctions.sleep(this.SECONDS_DELAY);
+    this.updateComponentImg();
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.dosWindow.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
-      const cmpntImg:TaskBarPreviewImage = {
-        pid: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+  async captureComponentImg(): Promise<void>{
+    const htmlImg = await this.captureJSDos();
+
+    const cmpntImg:TaskBarPreviewImage = {
+      pid: this.processId,
+      appName: this.name,
+      displayName: this.name,
+      icon : this.icon,
+      defaultIcon: this.icon,
+      imageData: htmlImg
+    }
+    this._windowService.addProcessPreviewImage(this.name, cmpntImg);
+  }
+
+  async captureJSDos(): Promise<string> {
+    const canvasElemnt = document.getElementsByClassName("emulator-canvas")[0] as HTMLCanvasElement;
+    if (!canvasElemnt) return Constants.EMPTY_STRING;
+
+    // Get video stream from canvas
+    const stream = canvasElemnt.captureStream();
+    const track = stream.getVideoTracks()[0];
+
+    // Use ImageCapture (with TS override)
+    const imageCapture = new (window as any).ImageCapture(track);
+    const bitmap: ImageBitmap = await imageCapture.grabFrame();
+
+    // Draw bitmap onto an offscreen canvas
+    const tmp = document.createElement("canvas");
+    tmp.width = bitmap.width;
+    tmp.height = bitmap.height;
+    const ctx = tmp.getContext("2d")!;
+    ctx.drawImage(bitmap, 0, 0);
+
+    return tmp.toDataURL("image/png");
+  }
+
+  updateComponentImg():void{
+    this._intervalId = setInterval(async() => {
+        await this.captureComponentImg()
+    }, this.SECONDS_DELAY);
   }
 
   focusWindow(evt:MouseEvent):void{
@@ -172,7 +205,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   retrievePastSessionData():void{
     const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
-      this.gameSrc = appSessionData.app_data as string;
+      this._gameSrc = appSessionData.app_data as string;
     }
   }
 

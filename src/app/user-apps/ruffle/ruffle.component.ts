@@ -3,7 +3,6 @@ import { Component, ElementRef, OnInit, OnDestroy, AfterViewInit, ViewChild, Inp
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
-import {extname} from 'path';
 
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
@@ -15,7 +14,6 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 
 import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState } from 'src/app/system-files/state/state.interface';
-import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
 import { CommonFunctions } from 'src/app/system-files/common.functions';
