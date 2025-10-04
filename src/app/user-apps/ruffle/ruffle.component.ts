@@ -93,7 +93,6 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
     // Clear the interval to prevent memory leaks
     if (this._intervalId) {
       clearInterval(this._intervalId);
-      console.log('Timer cleared on destroy.');
     }
   }
 

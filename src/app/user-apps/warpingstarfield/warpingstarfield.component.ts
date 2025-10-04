@@ -34,19 +34,20 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
   private _sessionManagmentService:SessionManagmentService;
 
   private _maximizeWindowSub!: Subscription;
-
   private _appState!:AppState;
    
-  private renderer!: any;
-  private camera!: any
-  private scene!: any
+  private _renderer!: any;
+  private _camera!: any
+  private _scene!: any
+  private _canvas!: any
+  private _intervalId: any;
  
-  private animationId = 0;
-  private PARTICLE_SIZE = 500;
-  private SPREAD_RADIUS = 450;
+  private _animationId = 0;
+  private readonly PARTICLE_SIZE = 500;
+  private readonly SPREAD_RADIUS = 450;
 
   private stars!: any
-  SECONDS_DELAY = 250;
+  SECONDS_DELAY = 1000;
 
 
   hasWindow = true;
@@ -78,39 +79,49 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
     this.initScene();
     this.animate();
     //window.addEventListener('resize', this.onResize);
-    //this.setTitleWindowToFocus(this.processId); 
 
     setTimeout(()=>{
-      this.captureComponentImg();
+      this.updateComponentImg();
     },this.SECONDS_DELAY) 
   }
 
   ngOnDestroy():void{
-    cancelAnimationFrame(this.animationId);
+    cancelAnimationFrame(this._animationId);
     //window.removeEventListener('resize', this.onResize);
+    
+    // Clear the interval to prevent memory leaks
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+      console.log('Timer cleared on destroy.');
+    }
     this._maximizeWindowSub?.unsubscribe();
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.starfield.nativeElement).then(htmlImg =>{
+  updateComponentImg():void{
+    this._intervalId = setInterval(async() => {
+        await this.captureComponentImg()
+    }, this.SECONDS_DELAY);
+  }
 
-      const cmpntImg:TaskBarPreviewImage = {
-        pid: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+  async captureComponentImg(): Promise<void>{
+    const htmlImg = await this.captureCanvasStill();
+
+    const cmpntImg:TaskBarPreviewImage = {
+      pid: this.processId,
+      appName: this.name,
+      displayName: this.name,
+      icon : this.icon,
+      defaultIcon: this.icon,
+      imageData: htmlImg
+    }
+    this._windowService.addProcessPreviewImage(this.name, cmpntImg);
   }
 
   private initScene():void {
-    this.scene = new THREE.Scene();
+    this._scene = new THREE.Scene();
     const starfieldWidow = document.getElementById('starfieldApp');
-    const canvas = this.canvasRef?.nativeElement;
-    if (!canvas) {
+    this._canvas = this.canvasRef?.nativeElement;
+    if (!this._canvas) {
       console.error('Canvas not found!');
       return;
     }
@@ -120,21 +131,21 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
       return;
     }
 
-    this.camera = new THREE.PerspectiveCamera(
+    this._camera = new THREE.PerspectiveCamera(
       75,
       starfieldWidow.offsetWidth / starfieldWidow.offsetHeight,
       0.1,
       1000
     );
-    this.camera.position.z = 100;
+    this._camera.position.z = 100;
 
-    this.renderer = new THREE.WebGLRenderer({
-      canvas: canvas, 
+    this._renderer = new THREE.WebGLRenderer({
+      canvas: this._canvas, 
       antialias: true,
       alpha: true
     });
 
-    this.renderer.setSize(starfieldWidow.offsetWidth, starfieldWidow.offsetHeight);
+    this._renderer.setSize(starfieldWidow.offsetWidth, starfieldWidow.offsetHeight);
 
     const positions: any[] = [];
     const velocity: number[] = [];
@@ -160,11 +171,11 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
 
     const group = new THREE.Group();
     group.add(this.stars);
-    this.scene.add(group);
+    this._scene.add(group);
   }
 
   private animate = () => {
-    this.animationId = requestAnimationFrame(this.animate);
+    this._animationId = requestAnimationFrame(this.animate);
 
     const positions = this.stars.geometry.attributes.position.array as Float32Array;
     const velocity = this.stars.geometry.attributes.velocity.array as Float32Array;
@@ -207,13 +218,13 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
     this.stars.geometry.attributes.position.needsUpdate = true;
     this.stars.geometry.attributes.velocity.needsUpdate = true;
 
-    this.renderer.render(this.scene, this.camera);
+    this._renderer.render(this._scene, this._camera);
   };
 
   private onResize = () => {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this._camera.aspect = window.innerWidth / window.innerHeight;
+    this._camera.updateProjectionMatrix();
+    this._renderer.setSize(window.innerWidth, window.innerHeight);
   };
 
   focusWindow(evt:MouseEvent):void{
@@ -222,6 +233,28 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+  }
+
+  async captureCanvasStill(): Promise<string> {
+    const canvas = this._canvas;
+    if (!canvas) return Constants.EMPTY_STRING;
+
+    // Get video stream from canvas
+    const stream = canvas.captureStream();
+    const track = stream.getVideoTracks()[0];
+
+    // Use ImageCapture (with TS override)
+    const imageCapture = new (window as any).ImageCapture(track);
+    const bitmap: ImageBitmap = await imageCapture.grabFrame();
+
+    // Draw bitmap onto an offscreen canvas
+    const tmp = document.createElement("canvas");
+    tmp.width = bitmap.width;
+    tmp.height = bitmap.height;
+    const ctx = tmp.getContext("2d")!;
+    ctx.drawImage(bitmap, 0, 0);
+
+    return tmp.toDataURL("image/png");
   }
 
   storeAppState(app_data:unknown):void{
