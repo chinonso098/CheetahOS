@@ -96,8 +96,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   }
 
   async ngAfterViewInit():Promise<void>{
-    this._gameSrc = (this._gameSrc !== Constants.EMPTY_STRING)? 
-      this._gameSrc : this.getGamesSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+    this._gameSrc = this.getGamesSrc(this._fileInfo);
 
     this._scriptService.loadScript("js-dos", "osdrive/Program-Files/jsdos/js-dos.js").then(async() =>{
       const data = await this._fileService.getFileAsBlobAsync(this._gameSrc);
@@ -164,17 +163,23 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     this.dosWindow.nativeElement.focus();
   }
 
-  getGamesSrc(pathOne:string, pathTwo:string):string{
-    let gameSrc = Constants.EMPTY_STRING;
+  getGamesSrc(file: FileInfo):string {
+    console.log('getGamesSrc:', file);
 
-    if(this.checkForExt(pathOne,pathTwo)){
-      gameSrc = Constants.ROOT + this._fileInfo.getContentPath;
-    }else{
-      gameSrc =  this._fileInfo.getCurrentPath;
+    const { getCurrentPath, getContentPath } = file;
+
+    if ((getCurrentPath !== Constants.EMPTY_STRING && getContentPath !== Constants.EMPTY_STRING)
+        || (getCurrentPath !== Constants.EMPTY_STRING && getContentPath === Constants.EMPTY_STRING)) {
+      return getCurrentPath;
     }
 
-    return gameSrc;
+    if (getCurrentPath === Constants.EMPTY_STRING && getContentPath === Constants.EMPTY_STRING) {
+      return this._gameSrc;
+    }
+
+    return Constants.EMPTY_STRING;
   }
+
 
   checkForExt(contentPath:string, currentPath:string):boolean{
     const contentExt = extname(contentPath);

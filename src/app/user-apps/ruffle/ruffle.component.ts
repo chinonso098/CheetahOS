@@ -166,7 +166,8 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   async getGamesSrc(file: FileInfo): Promise<string> {
     const { getCurrentPath, getContentPath } = file;
 
-    if (getCurrentPath !== Constants.EMPTY_STRING && getContentPath !== Constants.EMPTY_STRING) {
+    if ((getCurrentPath !== Constants.EMPTY_STRING && getContentPath !== Constants.EMPTY_STRING)
+        || (getCurrentPath !== Constants.EMPTY_STRING && getContentPath === Constants.EMPTY_STRING)) {
       return getCurrentPath;
     }
 
