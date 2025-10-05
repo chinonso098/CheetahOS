@@ -44,15 +44,15 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
   standalone:false,
   animations: [
     trigger('slideStatusAnimation', [
-      state('slideOut', style({ right: '-480px' })),
-      state('slideIn', style({ right: '0px' })),
+      state('slideOut', style({ right: '-488px' })),
+      state('slideIn', style({ right: '8px' })),
 
       transition('* => slideIn', [
         animate('250ms ease-in')
       ]),
-      // transition('slideIn => slideOut', [
-      //   animate('1750ms ease-out')
-      // ]),
+      transition('slideIn => slideOut', [
+        animate('1750ms ease-out')
+      ]),
     ]),
 
     trigger('slideStartMenuAnimation', [
@@ -538,7 +538,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const colorOff = 'transparent';
     const colorOn = '#208c71';
 
-    this.changeColor(colorOff);
+    //this.changeColor(colorOff);
     //'#vanta > canvas'
     const dsktpCntnr = this.desktopContainer.nativeElement;
     const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
@@ -550,8 +550,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     const htmlImg = await htmlToImage.toPng(this.desktopContainer.nativeElement);
     this.showDesktopScreenShotPreview = true;
-    this.slideState = 'slideIn';
-    this.dsktpPrevImg = htmlImg;
+
 
     const vantaImg = new Image();
     const bkgrndImg =  canvasElmnt.toDataURL('image/png');
@@ -579,6 +578,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     ctx.drawImage(foreGrndImg, 0, 0, mergedImg.width, mergedImg.height);
 
     const finalImg = mergedImg.toDataURL('image/png');
+    this.slideState = 'slideIn';
+    this.dsktpPrevImg = finalImg;
 
     const screenShot:FileInfo = new FileInfo();
     screenShot.setFileName = 'screen_shot.png'
@@ -595,11 +596,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._fileService.dirFilesUpdateNotify.next();
 
     await CommonFunctions.sleep(slideOutDelay);
-    //this.slideState = 'slideOut';
+    this.slideState = 'slideOut';
 
     await CommonFunctions.sleep(hideDeskopScreenShotDelay);
     this.showDesktopScreenShotPreview = false;
-    this.changeColor(colorOn);
+    //this.changeColor(colorOn);
   }
 
   private changeColor(color: string): void {
