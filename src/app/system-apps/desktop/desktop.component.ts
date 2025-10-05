@@ -235,6 +235,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   readonly cameraImg = `${Constants.IMAGE_BASE_PATH}camera.png`
   readonly closeImg = `${Constants.IMAGE_BASE_PATH}x_32.png`
 
+  readonly screenShotText = `
+  Screenshots are saved in the screenshots folder.
+  Click on image to open in photos
+  `;
+
   multiSelectElmnt!:HTMLDivElement | null;
   multiSelectStartingPosition!:MouseEvent | null;
 
@@ -532,13 +537,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async captureComponentImg(): Promise<void>{
-    const storeImgDelay = 1000; // 1 sec
+    const storeImgDelay = 500; // .5 sec
     const slideOutDelay = 4000; // 4 secs
-    const hideDeskopScreenShotDelay = 2000; // 2 secs
+    const hideDesktopScreenShotDelay = 2000; // 2 secs
     const colorOff = 'transparent';
-    const colorOn = '#208c71';
+    const colorOn = '#00adef';
 
-    //this.changeColor(colorOff);
+    this.changeMainDkstpBkgrndColor(colorOff);
     //'#vanta > canvas'
     const dsktpCntnr = this.desktopContainer.nativeElement;
     const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
@@ -548,10 +553,39 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       return;
     }
 
-    const htmlImg = await htmlToImage.toPng(this.desktopContainer.nativeElement);
     this.showDesktopScreenShotPreview = true;
+    const finalImg = await this.mergeGeneratedImages(dsktpCntnr, canvasElmnt);
+    this.slideState = 'slideIn';
+    this.dsktpPrevImg = finalImg;
 
+    await this._audioService.play(this.systemNotificationAudio);
+    await CommonFunctions.sleep(storeImgDelay);
+    await this.saveGeneratedImage(finalImg);
 
+    await CommonFunctions.sleep(storeImgDelay);
+    this._fileService.dirFilesUpdateNotify.next();
+
+    await CommonFunctions.sleep(slideOutDelay);
+    this.slideState = 'slideOut';
+
+    await CommonFunctions.sleep(hideDesktopScreenShotDelay);
+    this.showDesktopScreenShotPreview = false;
+    this.changeMainDkstpBkgrndColor(colorOn);
+  }
+
+  private async saveGeneratedImage(finalImg:string): Promise<void>{
+    const screenShot:FileInfo = new FileInfo();
+    screenShot.setFileName = 'screen_shot.png'
+    screenShot.setCurrentPath = `${this.DESKTOP_SCREEN_SHOT_DIRECTORY}/screen_shot.png`;
+    screenShot.setContentPath = finalImg;
+    screenShot.setIconPath = finalImg;
+    await this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
+    this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
+  }
+
+  private async mergeGeneratedImages(dsktpCntnr:HTMLElement, canvasElmnt:HTMLCanvasElement):Promise<string>{
+    //const htmlImg = await htmlToImage.toPng(this.desktopContainer.nativeElement);
+    const htmlImg = await htmlToImage.toPng(dsktpCntnr);
     const vantaImg = new Image();
     const bkgrndImg =  canvasElmnt.toDataURL('image/png');
     vantaImg.src = bkgrndImg;
@@ -568,7 +602,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const ctx = mergedImg.getContext('2d')!;
     if (!ctx) {
       console.error('Failed to get 2D rendering context.');
-      return;
+      return Constants.EMPTY_STRING;
     }
 
     // 1. Draw the Vanta background image first.
@@ -577,33 +611,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     // 2. Draw the HTML content on top of the background.
     ctx.drawImage(foreGrndImg, 0, 0, mergedImg.width, mergedImg.height);
 
-    const finalImg = mergedImg.toDataURL('image/png');
-    this.slideState = 'slideIn';
-    this.dsktpPrevImg = finalImg;
-
-    const screenShot:FileInfo = new FileInfo();
-    screenShot.setFileName = 'screen_shot.png'
-    screenShot.setCurrentPath = `${this.DESKTOP_SCREEN_SHOT_DIRECTORY}/screen_shot.png`;
-    screenShot.setContentPath = finalImg;
-    screenShot.setIconPath = finalImg;
-     
-    await this._audioService.play(this.systemNotificationAudio);
-    await CommonFunctions.sleep(storeImgDelay);
-    this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
-    this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
-
-    await CommonFunctions.sleep(storeImgDelay);
-    this._fileService.dirFilesUpdateNotify.next();
-
-    await CommonFunctions.sleep(slideOutDelay);
-    this.slideState = 'slideOut';
-
-    await CommonFunctions.sleep(hideDeskopScreenShotDelay);
-    this.showDesktopScreenShotPreview = false;
-    //this.changeColor(colorOn);
+    return mergedImg.toDataURL('image/png');
   }
 
-  private changeColor(color: string): void {
+  private changeMainDkstpBkgrndColor(color: string): void {
     const mainElmnt = document.getElementById('vanta') as HTMLElement;
     if (mainElmnt) {
       mainElmnt.style.backgroundColor = color;
@@ -751,21 +762,20 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   sortByNameM():void{
-    this.sortBy(this.sortByName)
+    this.sortBy(this.sortByName);
   }
 
   sortBySizeM():void{
-    this.sortBy(this.sortBySize)
+    this.sortBy(this.sortBySize);
   }
   sortByItemTypeM():void{
-    this.sortBy(this.sortByItemType)
+    this.sortBy(this.sortByItemType);
   }
   sortByDateModifiedM():void{
-    this.sortBy(this.sortByDateModified)
+    this.sortBy(this.sortByDateModified);
   }
 
   sortBy(sortBy:string):void{
-
     if(sortBy === SortBys.DATE_MODIFIED){
       this.isSortByDateModified = true;
       this.isSortByItemType = false;
@@ -799,7 +809,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async autoArrangeIcon():Promise<void>{
-    this.autoArrangeIcons = !this.autoArrangeIcons
+    this.autoArrangeIcons = !this.autoArrangeIcons;
     if(this.autoArrangeIcons){
       // clear (x,y) position of icons in memory
       await this.refresh();

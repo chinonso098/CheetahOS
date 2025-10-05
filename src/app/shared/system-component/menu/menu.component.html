@@ -8,7 +8,7 @@
   <div class="dm-vertical-menu" id="dmfileExplrMngrMenu">
     <div class="dm-empty-line-container"></div>
 
-    <div lass="dm-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
+    <div class="dm-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
         <div class="dm-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
             <span class="span dm-head"> <figure class="dm-fig-cntxt-menu"><img *ngIf="menuItem.icon.length > 0" class="dm-tskbar-img-alt" [src]="menuItem.icon"/></figure></span>
             <span class="span dm-mid"><p class="dm-p">{{menuItem.label}}</p></span>
@@ -17,43 +17,43 @@
 
         <ng-container *ngIf="menuOrder === fileExplrUniqueMenuOrder">
           <div class="dm-empty-line-container" *ngIf="i === 3 || i === 4  || i === 5 || i === 6"></div>
-          <div class="dm-line-container" *ngIf="i  === 3 || i === 4  || i === 5 || i === 6"><div class="dm-line"></div></div>
+          <div class="dm-line" *ngIf="i  === 3 || i === 4  || i === 5 || i === 6"></div>
           <div class="dm-empty-line-container" *ngIf="i  === 3 || i === 4  || i === 5 || i === 6"></div>
         </ng-container>
 
         <ng-container *ngIf="menuOrder === fileExplrFolderMenuOrder">
           <div class="dm-empty-line-container" *ngIf="i === 3 || i === 4 || i === 6 || i === 9"></div>
-          <div class="dm-line-container" *ngIf="i === 3 || i === 4 || i === 6 || i === 9"><div class="dm-line"></div></div>
+          <div class="dm-line" *ngIf="i === 3 || i === 4 || i === 6 || i === 9"></div>
           <div class="dm-empty-line-container" *ngIf="i === 3 || i === 4 || i === 6 || i === 9"></div>
         </ng-container>
 
         <ng-container *ngIf="menuOrder === fileExplrFileMenuOrder">
           <div class="dm-empty-line-container" *ngIf="i === 0 || i === 2 || i === 5"></div>
-          <div class="dm-line-container" *ngIf="i === 0 || i === 2 || i === 5"><div class="dm-line"></div></div>
+          <div class="dm-line" *ngIf="i === 0 || i === 2 || i === 5"></div>
           <div class="dm-empty-line-container" *ngIf="i === 0 || i === 2 || i === 5"></div>
         </ng-container>
 
         <ng-container *ngIf="menuOrder === defaultFileMenuOrder">
           <div class="dm-empty-line-container" *ngIf="i === 2 || i === 4 || i === 6"></div>
-          <div class="dm-line-container" *ngIf="i === 2 || i === 4 || i === 6"><div class="dm-line"></div></div>
+          <div class="dm-line" *ngIf="i === 2 || i === 4 || i === 6"></div>
           <div class="dm-empty-line-container" *ngIf="i === 2 || i === 4 || i === 6"></div>
         </ng-container>
 
         <ng-container *ngIf="menuOrder === defaultFolderMenuOrder">
           <div class="dm-empty-line-container" *ngIf="i === 4 || i === 6 || i === 8"></div>
-          <div class="dm-line-container" *ngIf="i === 4 || i === 6 || i === 8"><div class="dm-line"></div></div>
+          <div class="dm-line" *ngIf="i === 4 || i === 6 || i === 8"></div>
           <div class="dm-empty-line-container" *ngIf="i === 4 || i === 6 || i === 8"></div>
         </ng-container>
 
           <ng-container *ngIf="menuOrder === fileExplrRecycleBinMenuOrder">
           <div class="dm-empty-line-container" *ngIf="i === 0 || i === 1|| i === 2"></div>
-          <div class="dm-line-container" *ngIf="i === 0 || i === 1|| i === 2"><div class="dm-line"></div></div>
+          <div class="dm-line" *ngIf="i === 0 || i === 1|| i === 2"></div>
           <div class="dm-empty-line-container" *ngIf="i === 0 || i === 1|| i === 2"></div>
         </ng-container>
 
         <ng-container *ngIf="menuOrder === recycleBinMenuOrder">
           <div class="dm-empty-line-container" *ngIf="i === 0 || i === 1"></div>
-          <div class="dm-line-container" *ngIf="i === 1"><div class="dm-line"></div></div>
+          <div class="dm-line" *ngIf="i === 1"></div>
           <div class="dm-empty-line-container" *ngIf="i === 0 || i === 1"></div>
         </ng-container>
 
@@ -66,7 +66,7 @@
   <div class="dm-tskbar-vertical-menu">
     <div class="dm-tskbar-empty-line-container"></div>
   
-    <div lass="dm-tskbar-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
+    <div class="dm-tskbar-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
         <div class="dm-tskbar-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
             <div class="dm-tskbar-head"> <figure class="dm-tskbar-fig-cntxt-menu"><img *ngIf="menuItem.icon.length > 0" class="dm-tskbar-img-alt" [src]="menuItem.icon"/></figure></div>
             <div class="dm-tskbar-mid"><p class="dm-p">{{menuItem.label}}</p></div>
@@ -83,7 +83,7 @@
   <div class="dm-tskbar-cntxt-vertical-menu">
     <div class="dm-tskbar-cntxt-empty-line-container"></div>
   
-    <div lass="dm-tskbar-cntxt-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
+    <div class="dm-tskbar-cntxt-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
         <div class="dm-tskbar-cntxt-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
             <div class="dm-tskbar-cntxt-head"> <figure class="dm-tskbar-cntxt-fig-cntxt-menu"><img *ngIf="menuItem.icon.length > 0" class="dm-tskbar-cntxt-img-alt" [src]="menuItem.icon"/></figure></div>
             <div class="dm-tskbar-cntxt-mid"><p class="dm-p">{{menuItem.label}}</p></div>
