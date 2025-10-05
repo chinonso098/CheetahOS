@@ -123,7 +123,6 @@ export class ProcessHandlerService implements BaseService{
         this._menuService = menuService;
         this._userNotificationService = userNotificationService;
 
-
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
@@ -136,8 +135,9 @@ export class ProcessHandlerService implements BaseService{
         let msg = Constants.EMPTY_STRING;
         if(this._appDirectory.appExist(file.getOpensWith)){
 
-            if(!this._runningProcessService.isProcessRunning(file.getOpensWith) || 
-                (this._runningProcessService.isProcessRunning(file.getOpensWith) && !this._onlyOneInstanceAllowed.includes(file.getOpensWith))){
+            if(!this._runningProcessService.isProcessRunning(file.getOpensWith) 
+                ||  (this._runningProcessService.isProcessRunning(file.getOpensWith) 
+                    && !this._onlyOneInstanceAllowed.includes(file.getOpensWith))){
                 this.loadApps(file.getOpensWith);
                 this._TriggerList.push(file);
                 return;

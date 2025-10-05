@@ -157,6 +157,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private readonly MARKDOWN_VIEWER_APP ="markdownviewer";
   private readonly TASK_MANAGER_APP ="taskmanager";
   private readonly CLIPPY_APP = "clippy";
+  private readonly PHOTOS_APP = "photoviewer";
 
   waveBkgrnd:WAVE =  {el:'#vanta'}
   ringsBkgrnd:RINGS =  {el:'#vanta'}
@@ -202,7 +203,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   isRestored = false;
 
   private selectedFile!:FileInfo;
-  private propertiesViewFile!:FileInfo
+  private propertiesViewFile!:FileInfo;
+  private screenShot!:FileInfo;
   private selectedElementId = -1;
   private draggedElementId = -1;
   private prevSelectedElementId = -1; 
@@ -555,6 +557,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.showDesktopScreenShotPreview = true;
     const finalImg = await this.mergeGeneratedImages(dsktpCntnr, canvasElmnt);
+
+    this.changeMainDkstpBkgrndColor(colorOn);
     this.slideState = 'slideIn';
     this.dsktpPrevImg = finalImg;
 
@@ -570,21 +574,43 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     await CommonFunctions.sleep(hideDesktopScreenShotDelay);
     this.showDesktopScreenShotPreview = false;
-    this.changeMainDkstpBkgrndColor(colorOn);
+  }
+
+  closeScreenShotPreview():void{
+    this.showDesktopScreenShotPreview = false;
+    this.screenShot = new FileInfo();
+  }
+
+  getScreenShotTimeStamp():string{
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds();
+    const ampm = (hours >= 12) ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
+    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+
+    return `${formattedHours}_${formattedMinutes}_${seconds}_${ampm}`;
   }
 
   private async saveGeneratedImage(finalImg:string): Promise<void>{
-    const screenShot:FileInfo = new FileInfo();
-    screenShot.setFileName = 'screen_shot.png'
-    screenShot.setCurrentPath = `${this.DESKTOP_SCREEN_SHOT_DIRECTORY}/screen_shot.png`;
-    screenShot.setContentPath = finalImg;
-    screenShot.setIconPath = finalImg;
-    await this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, screenShot);
+    this.screenShot = new FileInfo();
+    const timeStamp = this.getScreenShotTimeStamp();
+    const fileName = `Screenshot ${timeStamp}.png`;
+    this.screenShot.setFileName = fileName;
+    this.screenShot.setCurrentPath = `${this.DESKTOP_SCREEN_SHOT_DIRECTORY}/${fileName}`;
+    this.screenShot.setContentPath = finalImg;
+    this.screenShot.setIconPath = finalImg;
+
+    await this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, this.screenShot);
+
+    this.screenShot.setOpensWith = 'photoviewer';
+
+    //###. if file explr is not running at the time of creation, this may be skipped 
     this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
   }
 
   private async mergeGeneratedImages(dsktpCntnr:HTMLElement, canvasElmnt:HTMLCanvasElement):Promise<string>{
-    //const htmlImg = await htmlToImage.toPng(this.desktopContainer.nativeElement);
     const htmlImg = await htmlToImage.toPng(dsktpCntnr);
     const vantaImg = new Image();
     const bkgrndImg =  canvasElmnt.toDataURL('image/png');
@@ -925,19 +951,29 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.initializeApplication(this.TASK_MANAGER_APP);
   }
 
+  openPhotos():void{
+    this.initializeApplication(this.PHOTOS_APP);
+    this.showDesktopScreenShotPreview = false;
+  }
+
   initializeApplication(arg0:string):void{
-    const file = new FileInfo();
+    let file = new FileInfo();
     const appPath = 'None';
     file.setOpensWith = arg0;
 
-    if(arg0 ==  this.MARKDOWN_VIEWER_APP){
+    if(arg0 ===  this.MARKDOWN_VIEWER_APP){
       file.setCurrentPath = Constants.DESKTOP_PATH;
       file.setContentPath = '/Users/Documents/Credits.md';
     }
 
     if(arg0 !== this.CLIPPY_APP)
       this.trackActivity(ActivityType.APPS, arg0, appPath);
-  
+
+    if(arg0 === this.PHOTOS_APP){
+      file = this.screenShot;
+      this.trackActivity(ActivityType.APPS, arg0, appPath);
+    }
+
     this._processHandlerService.runApplication(file);
   }
 

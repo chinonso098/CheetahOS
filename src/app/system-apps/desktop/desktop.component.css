@@ -99,6 +99,10 @@
     height: 25px;
 }
 
+.other__item-tail:hover{
+    background-color: #ccc;
+}
+
 .other__item-figure{
     position: relative;
     align-items: center;
@@ -112,7 +116,6 @@
     width: 20px;
     position: relative;
 }
-
 
 .ol-desktopIcon-grid{
     /* column-gap: 1px; */

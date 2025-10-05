@@ -71,7 +71,7 @@
         
         @if(showDesktopScreenShotPreview){
             <div [@slideStatusAnimation]="slideState" class="dsktp-screenshot__container" >
-                <div class="dsktp-screenshot__img-container">
+                <div class="dsktp-screenshot__img-container" (click)="openPhotos()">
                     <img [src]="dsktpPrevImg"/>
                 </div>
                 <div class="dsktp-screenshot__other-container">
@@ -83,11 +83,11 @@
                         </div>
 
                         <div class="other__item-mid">
-                            <p class="other__item-p">screen shot</p>
+                            <p class="other__item-p">Screen shot</p>
                         </div>
 
                         <div class="other__item-tail">
-                            <figure class="other__item-figure">
+                            <figure class="other__item-figure" (click)="closeScreenShotPreview()">
                                 <img class="other__item-img" [src]="closeImg" />
                             </figure>
                         </div>

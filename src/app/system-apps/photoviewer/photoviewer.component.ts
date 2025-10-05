@@ -23,6 +23,7 @@ import {
   group,
 } from '@angular/animations';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 
 @Component({
@@ -64,10 +65,12 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _windowService:WindowService;
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
-  private picSrc = Constants.EMPTY_STRING;
+  private _picSrc = Constants.EMPTY_STRING;
+  private _skip = false;
 
+  readonly SECONDS_DELAY = 500;
+   readonly BASE_64_PNG_IMG = 'data:image/png;base64';
 
-  SECONDS_DELAY = 250;
   name= 'photoviewer';
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}photoviewer.png`;
@@ -101,10 +104,14 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
-
   async ngOnInit():Promise<void> {
     this.retrievePastSessionData();
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+
+    if(this.checkIfImgIsBase64(this._fileInfo.getContentPath)){
+      this.images = signal([this._fileInfo.getContentPath]);
+      return;
+    }
 
     if(this.imageList.length > 0)
       this.images = signal([this.imageList[0]]);
@@ -115,26 +122,28 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   } 
 
   async ngAfterViewInit():Promise<void> {
-    this.picSrc = (this.picSrc !== Constants.EMPTY_STRING) ? 
-    this.picSrc : this.getPictureSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+    this._picSrc = this.getPictureSrc(this._fileInfo);
 
-    await this.getCurrentPicturePathAndSearchForOthers();
-    if(this.imageList.length > 0)
-      this.images = signal([this.imageList[0]]);
-    else{
-      const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
-      this.images = signal([this._fileInfo.getContentPath || currentImg]);
+    if(!this._skip){
+      await this.getCurrentPicturePathAndSearchForOthers();
+      if(this.imageList.length > 0)
+        this.images = signal([this.imageList[0]]);
+      else{
+        const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
+        this.images = signal([this._fileInfo.getContentPath || currentImg]);
+      }
+
+      const appData = (this.imageList.length > 0)? this.imageList : this._picSrc;
+      this.storeAppState(appData);
+    }else{
+      this.images = signal([this._picSrc]);
     }
-
-    const appData = (this.imageList.length > 0)? this.imageList : this.picSrc;
-    this.storeAppState(appData);
 
     //tell angular to run additional detection cycle after 
     this.changeDetectorRef.detectChanges();
 
-    setTimeout(()=>{
-      this.captureComponentImg();
-    },this.SECONDS_DELAY) 
+    await CommonFunctions.sleep(this.SECONDS_DELAY);
+    this.captureComponentImg();
   }
 
   ngOnDestroy(): void {
@@ -228,40 +237,37 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   focusWindow(evt?:MouseEvent):void{
-      evt?.stopPropagation();
+    evt?.stopPropagation();
 
-      if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-      this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
-  getPictureSrc(pathOne:string, pathTwo:string):string{
-    let pictureSrc = Constants.EMPTY_STRING;
-    
-    if(pathOne.includes('blob:http')){
-      return pathOne;
-    }else if(this.checkForExt(pathOne,pathTwo)){
-      pictureSrc =  `${Constants.ROOT}${this._fileInfo.getContentPath}`;
-    }else{
-      pictureSrc =  this._fileInfo.getCurrentPath;
-      if(pictureSrc.includes(Constants.URL)){
-        pictureSrc = Constants.EMPTY_STRING
-      }
+  getPictureSrc(file:FileInfo):string{    
+    const { getCurrentPath, getContentPath } = file;
+    if(this.checkIfImgIsBase64(getContentPath)){
+      this._skip = true;
+      return getContentPath;
     }
-    return pictureSrc;
+
+    if ((getCurrentPath !== Constants.EMPTY_STRING && getContentPath !== Constants.EMPTY_STRING)
+        || (getCurrentPath !== Constants.EMPTY_STRING && getContentPath === Constants.EMPTY_STRING)) {
+      return getCurrentPath;
+    }
+
+    if (getCurrentPath === Constants.EMPTY_STRING && getContentPath === Constants.EMPTY_STRING) {
+      return this._picSrc;
+    }
+
+    return Constants.EMPTY_STRING;
   }
 
-  checkForExt(contentPath:string, currentPath:string):boolean{
-    const contentExt = extname(contentPath);
-    const currentPathExt = extname(currentPath);
-    let res = false;
+  checkIfImgIsBase64(getContentPath:string):boolean{
+    if(getContentPath.substring(0, 21) === this.BASE_64_PNG_IMG)
+      return true;
 
-    if(Constants.IMAGE_FILE_EXTENSIONS.includes(contentExt)){
-      res = true;
-    }else if(Constants.IMAGE_FILE_EXTENSIONS.includes(currentPathExt)){
-      res = false;
-    }
-    return res;
+    return false
   }
 
   storeAppState(app_data:unknown):void{
@@ -280,7 +286,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
         if(typeof appSessionData.app_data === 'string')
-          this.picSrc = appSessionData.app_data as string; 
+          this._picSrc = appSessionData.app_data as string; 
         else
           this.imageList = appSessionData.app_data as string[];
     }
