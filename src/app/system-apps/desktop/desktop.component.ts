@@ -951,9 +951,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.initializeApplication(this.TASK_MANAGER_APP);
   }
 
-  openPhotos():void{
-    this.initializeApplication(this.PHOTOS_APP);
+  async openPhotos(): Promise<void>{
+    const delay = 1000;
     this.showDesktopScreenShotPreview = false;
+
+    await CommonFunctions.sleep(delay);
+    this.initializeApplication(this.PHOTOS_APP);
   }
 
   initializeApplication(arg0:string):void{
