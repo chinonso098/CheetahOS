@@ -171,6 +171,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.hideSearchBox()});
     this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+
+    this._fileIndexerService.fileIndexChangeOperation.subscribe(() => {this.fetchIndex()})
   }
 
   ngOnInit(): void {
@@ -196,7 +198,12 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._searchBoxChangeSub?.unsubscribe();
+    this.fetchIndex();
+  }
+
+  fetchIndex(): void {
+    this._fileSearchIndex  = [];
+    this._fileSearchIndex = this._fileIndexerService.getFileIndex();
   }
 
   showSearchBox():void{

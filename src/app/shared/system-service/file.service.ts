@@ -45,6 +45,8 @@ export class FileService implements BaseService{
     private _fileIndexerService!:FileIndexerService;
 
     private _isCalculated = false;
+    private _isDuplicateFile = false;
+    private _generatedFileName = Constants.EMPTY_STRING;
     private _usedStorageSizeInBytes = 0;
     private _isFileDropEventTriggered = false;
 
@@ -206,7 +208,17 @@ export class FileService implements BaseService{
             return false;
         }
 
-        return await this.writeRawHandlerAsync(destinationPath, readResult);
+        const result =  await this.writeRawHandlerAsync(destinationPath, readResult);
+        if(result){
+            const isFile = true;
+            const fPath = (this._isDuplicateFile) ? `${this.pathCorrection(srcPath)}/${this._generatedFileName}` : destPath;
+            await  this._fileIndexerService.addNotify(fPath, isFile);
+
+            this._isDuplicateFile = false;
+            this._generatedFileName = Constants.EMPTY_STRING;
+        }
+
+        return result;
     }
 
     private async copyFolderHandlerAsync(arg0:string, srcPath:string, destPath:string):Promise<boolean>{
@@ -894,6 +906,7 @@ export class FileService implements BaseService{
 
         if(writeResult === 1){
             console.warn('writeFileAsync: file already exists');
+            this._isDuplicateFile = true;
             const newFileName = this.IncrementFileName(destPath);
             const writeResult2 = await this.writeRawAsync(newFileName, cntnt, 'wx');
 
@@ -901,6 +914,7 @@ export class FileService implements BaseService{
                 // console.log('writeFileAsync: file successfully written');
                 this._fileExistsMap.set(newFileName, String(0));
                 this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
+                this._generatedFileName = newFileName;
                 await this.recalculateUsedStorage();
                 return true;
             }else{
@@ -954,7 +968,17 @@ export class FileService implements BaseService{
         const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
         const destPath = `${this.pathCorrection(path)}/${file.getFileName}`;
 
-        return await this.writeRawHandlerAsync(destPath, cntnt);
+        const result =  await this.writeRawHandlerAsync(destPath, cntnt);
+        if(result){
+            const isFile = true;
+            const fPath = (this._isDuplicateFile) ? `${this.pathCorrection(path)}/${this._generatedFileName}` : destPath;
+            await  this._fileIndexerService.addNotify(fPath, isFile);
+
+            this._isDuplicateFile = false;
+            this._generatedFileName = Constants.EMPTY_STRING;
+        }
+
+        return result;
     }
 
     public async renameAsync(path:string, newFileName:string, isFile?:boolean): Promise<boolean> {

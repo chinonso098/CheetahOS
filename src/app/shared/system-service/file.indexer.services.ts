@@ -11,7 +11,7 @@ import { RunningProcessService } from "./running.process.service";
 import { ProcessIDService } from "./process.id.service";
 import { fileIndexChangeOperationType, FileIndexIDs } from "src/app/system-files/common.enums";
 
-import {extname} from 'path';
+import {extname, basename} from 'path';
 import { FileSearchIndex } from "src/app/system-files/common.interfaces";
 import { Subject } from "rxjs";
 
@@ -61,40 +61,44 @@ export class FileIndexerService implements BaseService{
     }
 
     private  async indexDirectoryHelperAsync(queue:string[]): Promise<void> {
-        if(queue.length === 0)
-            return;
+        if(queue.length === 0) return;
 
         const filePath = queue.shift() || Constants.EMPTY_STRING;
 
         const directoryEntries = await this._fileService.readDirectory(filePath);      
         for(const entry of directoryEntries){
             const entryPath = `${filePath}/${entry}`;
-            const isDirectory = await this._fileService.isDirectory(entryPath);
-            const fileInfo = await this._fileService.getFileInfo(entryPath);
-            if(isDirectory){
-                const isFile = false;
-                const entryToExclude = 'Recycle Bin';
-                const pathToExclude = '/Users/Desktop/Recycle Bin';
-
-                if(pathToExclude !== entryPath && entryToExclude !== entry){
-                    this._Index.push(this.getFileSearchIndex(FileIndexIDs.FOLDERS, entry, fileInfo.getCurrentPath, fileInfo.getContentPath, this.handleNonAppIcons(entry, isFile), fileInfo.getOpensWith, fileInfo.getDateModified));
-                    queue.push(entryPath);
-                }
-            }else{
-                const isFile = true;
-                const hasExt = false;
-                //exclude shortcut files(urls)
-                const ext = extname(entry);
-                if(ext !== Constants.URL){
-                    if(ext !== Constants.EMPTY_STRING)
-                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, fileInfo.getCurrentPath, fileInfo.getContentPath, this.handleNonAppIcons(entry), fileInfo.getOpensWith, fileInfo.getDateModified));
-                    else
-                        this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, fileInfo.getCurrentPath, fileInfo.getContentPath, this.handleNonAppIcons(entry, isFile, hasExt), fileInfo.getOpensWith, fileInfo.getDateModified ));
-                }
-            }
+            await this.helperCoreAsync(queue, entryPath, entry);
         }
 
         return this.indexDirectoryHelperAsync(queue);
+    }
+
+    private async helperCoreAsync(queue:string[], path:string, entry:string):Promise<void>{
+        const entryPath =  path;  //`${filePath}/${entry}`;
+        const isDirectory = await this._fileService.isDirectory(entryPath);
+        const fileInfo = await this._fileService.getFileInfo(entryPath);
+        if(isDirectory){
+            const isFile = false;
+            const entryToExclude = 'Recycle Bin';
+            const pathToExclude = '/Users/Desktop/Recycle Bin';
+
+            if(pathToExclude !== entryPath && entryToExclude !== entry){
+                this._Index.push(this.getFileSearchIndex(FileIndexIDs.FOLDERS, entry, fileInfo.getCurrentPath, fileInfo.getContentPath, this.handleNonAppIcons(entry, isFile), fileInfo.getOpensWith, fileInfo.getDateModified));
+                queue.push(entryPath);
+            }
+        }else{
+            const isFile = true;
+            const hasExt = false;
+            //exclude shortcut files(urls)
+            const ext = extname(entry);
+            if(ext !== Constants.URL){
+                if(ext !== Constants.EMPTY_STRING)
+                    this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, fileInfo.getCurrentPath, fileInfo.getContentPath, this.handleNonAppIcons(entry), fileInfo.getOpensWith, fileInfo.getDateModified));
+                else
+                    this._Index.push(this.getFileSearchIndex(this.determinFileType(entryPath), entry, fileInfo.getCurrentPath, fileInfo.getContentPath, this.handleNonAppIcons(entry, isFile, hasExt), fileInfo.getOpensWith, fileInfo.getDateModified ));
+            }
+        }
     }
 
     private indexApps(): void {
@@ -140,16 +144,31 @@ export class FileIndexerService implements BaseService{
         return FileIndexIDs.DOCUMENTS;
     }
 
-    public async fileAddNotify(): Promise<void>{
-        await this.indexDirectoryAsync();
-        this.fileIndexChangeOperation.next(fileIndexChangeOperationType.ADD);
+    //### a better solution is to pass the added file info and update the index store, rather then re-indexing
+    public async addNotify(path:string, isFile:boolean): Promise<void>{
+        const fileName = basename(path);
+        const isPresent = this._Index.some(x => (x.srcPath === path && x.name === fileName));
+
+        if(isPresent)
+            console.info('Duplication avoided, file is already present in the index');
+
+        if(!isPresent){
+            if(isFile){
+                await this.helperCoreAsync([], path, fileName);
+            }else{
+                await this.indexDirectoryAsync(path);
+            }
+
+            //await this.indexDirectoryAsync();
+            this.fileIndexChangeOperation.next(fileIndexChangeOperationType.ADD);
+        }
     }
 
-    public fileDeleteNotify(path:string):void{
+    public deleteNotify(path:string, isFile:boolean):void{
         this.fileIndexChangeOperation.next(fileIndexChangeOperationType.DELETE);
     }
 
-    public fileUpdateNotify(path:string):void{
+    public updateNotify(path:string, oldFileName:string, isFile:boolean):void{
         this.fileIndexChangeOperation.next(fileIndexChangeOperationType.UPDATE);
     }
 
