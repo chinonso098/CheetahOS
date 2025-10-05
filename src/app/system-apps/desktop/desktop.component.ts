@@ -50,9 +50,9 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
       transition('* => slideIn', [
         animate('250ms ease-in')
       ]),
-      transition('slideIn => slideOut', [
-        animate('1750ms ease-out')
-      ]),
+      // transition('slideIn => slideOut', [
+      //   animate('1750ms ease-out')
+      // ]),
     ]),
 
     trigger('slideStartMenuAnimation', [
@@ -228,10 +228,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   deskTopClickCounter = 0;
 
-  cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
-  emptyTrashAudio = `${Constants.AUDIO_BASE_PATH}cheetah_recycle.wav`;
-  systemNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
-  shortCutImg = `${Constants.IMAGE_BASE_PATH}shortcut.png`;
+  readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
+  readonly emptyTrashAudio = `${Constants.AUDIO_BASE_PATH}cheetah_recycle.wav`;
+  readonly systemNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_system_generic.wav`;
+  readonly shortCutImg = `${Constants.IMAGE_BASE_PATH}shortcut.png`;
+  readonly cameraImg = `${Constants.IMAGE_BASE_PATH}camera.png`
+  readonly closeImg = `${Constants.IMAGE_BASE_PATH}x_32.png`
 
   multiSelectElmnt!:HTMLDivElement | null;
   multiSelectStartingPosition!:MouseEvent | null;
@@ -593,7 +595,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._fileService.dirFilesUpdateNotify.next();
 
     await CommonFunctions.sleep(slideOutDelay);
-    this.slideState = 'slideOut';
+    //this.slideState = 'slideOut';
 
     await CommonFunctions.sleep(hideDeskopScreenShotDelay);
     this.showDesktopScreenShotPreview = false;

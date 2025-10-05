@@ -11,20 +11,89 @@
     background-color: #208c71; /*Windows 95 Green*/
 }
 
-.dsktp-screen-preview-container{
+
+.dsktp-screenshot__container{
+    display: block;
     z-index: 2;
     position: absolute;
-    width: 480px;
-    height: 270px;
+    height: fit-content;
+    width: fit-content;
     right: 0;
     bottom: 0;
 }
 
-.dsktp-screen-preview-container img{
+.dsktp-screenshot__img-container{
+    width: 480px;
+    height: 270px;
+}
+
+.dsktp-screenshot__img-container img{
     height: 100%;
     width: 100%;
     object-fit: contain;
 }
+
+.dsktp-screenshot__other-container{
+    padding: 8px;
+    width: 480px;
+    height: 80px;
+    background-color: #2b2b2b;
+}
+
+
+.other__item-cntnr{
+    display: inline-flex;
+    height: 25px;
+    width: 100%;
+}
+
+.other__item-p{
+    position: relative;
+    left: 5px;
+    width: 220px;
+    top: 14px;
+    overflow: hidden;         
+    word-wrap: break-word;
+}
+
+.other__item-head{
+    width: 30px;
+    height: 25px;
+}
+
+.other__item-mid{
+    padding: 0 1px;
+    color: #fff;
+    text-align: left;
+    font-size: 12px;
+    font-weight:normal;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 220px;
+    height: 25px;
+}
+
+.other__item-tail{
+    width: 30px;
+    height: 25px;
+}
+
+.other__item-figure{
+    position: relative;
+    align-items: center;
+    height: 20px;
+    width: 20px;
+    /* top: 8px; */
+}
+
+.other__item-img{
+    height: 20px;
+    width: 20px;
+    position: relative;
+}
+
+
+
+
 
 .ol-desktopIcon-grid{
     /* column-gap: 1px; */

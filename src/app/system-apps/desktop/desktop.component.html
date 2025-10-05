@@ -70,8 +70,29 @@
         }
         
         @if(showDesktopScreenShotPreview){
-            <div [@slideStatusAnimation]="slideState" class="dsktp-screen-preview-container" >
-                <img [src]="dsktpPrevImg"/>
+            <div [@slideStatusAnimation]="slideState" class="dsktp-screenshot__container" >
+                <div class="dsktp-screenshot__img-container">
+                    <img [src]="dsktpPrevImg"/>
+                </div>
+                <div class="dsktp-screenshot__other-container">
+                    <div class="other__item-cntnr">
+                        <div class="other__item-head">
+                            <figure class="other__item-figure">
+                                <img class="other__item-img" [src]="cameraImg" />
+                            </figure>
+                        </div>
+
+                        <div class="other__item-mid">
+                            <p class="other__item-p">screen shot</p>
+                        </div>
+
+                        <div class="other__item-tail">
+                            <figure class="other__item-figure">
+                                <img class="other__item-img" [src]="closeImg" />
+                            </figure>
+                        </div>
+                    </div>
+                </div>
             </div>
         }
 
@@ -95,8 +116,6 @@
         <ng-content> </ng-content>
 
         <cos-taskbar> 
-            <!-- <cos-startbutton></cos-startbutton> 
-            <cos-search></cos-search>-->
             <cos-taskbarentries> </cos-taskbarentries>
             <cos-systemtray></cos-systemtray>
         </cos-taskbar>
