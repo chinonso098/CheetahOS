@@ -21,22 +21,25 @@
     bottom: 8px;
     border: 1px solid #ccc;
     box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
+    background-color: #2b2b2b;
 }
 
 .dsktp-screenshot__img-container{
-    width: 480px;
-    height: 270px;
+  display: inline-block;
+  max-width: 360px;
+  max-height: 270px;
+  overflow: hidden;
 }
 
 .dsktp-screenshot__img-container img{
-    height: 100%;
     width: 100%;
-    object-fit: contain;
+    height: auto;
+    display: block;
 }
 
 .dsktp-screenshot__other-container{
     padding: 12px;
-    width: 480px;
+    width: 360px;
     height: 100px;
     background-color: #2b2b2b;
 }
@@ -56,7 +59,7 @@
 .other__item-p{
     position: relative;
     left: 5px;
-    width: 380px;
+    width: 260px;
     top: 1px;
     overflow: hidden;         
     word-wrap: break-word;
@@ -65,7 +68,7 @@
 .other__text-p{
     position: relative;
     left: 1px;
-    width: 380px;
+    width: 260px;
     top: -12px;
     overflow: hidden;         
     word-wrap: break-word;
@@ -90,7 +93,7 @@
     font-size: 12px;
     font-weight:normal;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    width: 380px;
+    width: 360px;
     height: 25px;
 }
 

@@ -6,11 +6,11 @@
 .markdown-content{
     width: 800px;
     height: 600px;
-    color: #ccc;
+    color: #000;
     white-space: pre;
     text-align: left;
     overflow: auto;
-    background-color: #f9f9f9;
+    background-color: #fff;
     box-sizing: border-box;
     font-size: 16px;
     line-height: 1.5;
@@ -19,7 +19,7 @@
 
 .markdown-content h1,h2{
 
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #000;
     margin: 5px 0;
 }
 

@@ -7,7 +7,7 @@
 
 .settings__options-panel{
     display: block;
-    width: 350px;
+    width: 300px;
     height: 500px;
     background-color: rgba(51,51,51,0.75);
     backdrop-filter: blur(20px);
@@ -16,6 +16,6 @@
 
 .settings__view-panel{
     display: block;
-    width: 550px;
+    width: 600px;
     height: 500px;
 }

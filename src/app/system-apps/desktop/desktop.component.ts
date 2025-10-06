@@ -35,7 +35,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
-
+//  animate('1750ms ease-out')
 @Component({
   selector: 'cos-desktop',
   templateUrl: './desktop.component.html',
@@ -51,7 +51,7 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
         animate('250ms ease-in')
       ]),
       transition('slideIn => slideOut', [
-        animate('1750ms ease-out')
+        animate('550ms ease-out')
       ]),
     ]),
 
@@ -540,40 +540,47 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async captureComponentImg(): Promise<void>{
     const storeImgDelay = 500; // .5 sec
-    const slideOutDelay = 4000; // 4 secs
-    const hideDesktopScreenShotDelay = 2000; // 2 secs
+    const slideOutDelay = 3000; // 3 secs
+    const hideDesktopScreenShotDelay = 1000; // 1 secs
     const colorOff = 'transparent';
     const colorOn = '#00adef';
 
-    this.changeMainDkstpBkgrndColor(colorOff);
-    //'#vanta > canvas'
-    const dsktpCntnr = this.desktopContainer.nativeElement;
-    const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
+    try{
+      this.changeMainDkstpBkgrndColor(colorOff);
+      //'#vanta > canvas'
+      const dsktpCntnr = this.desktopContainer.nativeElement;
+      const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
 
-    if (!dsktpCntnr || !canvasElmnt) {
-      console.error('Desktop container or Vanta canvas not found.');
-      return;
+      if (!dsktpCntnr || !canvasElmnt) {
+        console.error('Desktop container or Vanta canvas not found.');
+        return;
+      }
+
+      this.showDesktopScreenShotPreview = true;
+      const finalImg = await this.mergeGeneratedImages(dsktpCntnr, canvasElmnt);
+      this.changeMainDkstpBkgrndColor(colorOn);
+
+      this.slideState = 'slideIn';
+      this.dsktpPrevImg = finalImg;
+
+      await this._audioService.play(this.systemNotificationAudio);
+      await CommonFunctions.sleep(storeImgDelay);
+      await this.saveGeneratedImage(finalImg);
+
+      await CommonFunctions.sleep(storeImgDelay);
+      this._fileService.dirFilesUpdateNotify.next();
+
+      await CommonFunctions.sleep(slideOutDelay);
+      this.slideState = 'slideOut';
+
+      await CommonFunctions.sleep(hideDesktopScreenShotDelay);
+      this.showDesktopScreenShotPreview = false;
+
+    }catch (err){
+      console.error('Screenshot capture failed:', err);
+      this.changeMainDkstpBkgrndColor(colorOn);
+      this.showDesktopScreenShotPreview = false;
     }
-
-    this.showDesktopScreenShotPreview = true;
-    const finalImg = await this.mergeGeneratedImages(dsktpCntnr, canvasElmnt);
-
-    this.changeMainDkstpBkgrndColor(colorOn);
-    this.slideState = 'slideIn';
-    this.dsktpPrevImg = finalImg;
-
-    await this._audioService.play(this.systemNotificationAudio);
-    await CommonFunctions.sleep(storeImgDelay);
-    await this.saveGeneratedImage(finalImg);
-
-    await CommonFunctions.sleep(storeImgDelay);
-    this._fileService.dirFilesUpdateNotify.next();
-
-    await CommonFunctions.sleep(slideOutDelay);
-    this.slideState = 'slideOut';
-
-    await CommonFunctions.sleep(hideDesktopScreenShotDelay);
-    this.showDesktopScreenShotPreview = false;
   }
 
   closeScreenShotPreview():void{
@@ -589,6 +596,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const ampm = (hours >= 12) ? 'PM' : 'AM';
     const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
     const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+    //const formatted = now.toISOString().replace(/[:T]/g, '-').split('.')[0];
 
     return `${formattedHours}_${formattedMinutes}_${seconds}_${ampm}`;
   }
@@ -636,6 +644,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     
     // 2. Draw the HTML content on top of the background.
     ctx.drawImage(foreGrndImg, 0, 0, mergedImg.width, mergedImg.height);
+    ctx.imageSmoothingEnabled = true;
 
     return mergedImg.toDataURL('image/png');
   }
@@ -2106,42 +2115,77 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async onDelete():Promise<void>{
-    let result: boolean[] = [];
-    let res = false;
-
-    const deleteCount = 1;
+    let result = false;
+    let resultSet: boolean[] = [];
+    let tmpfiles:FileInfo[] = [];
 
     // check for multiple highlighted files
     if(this.areMultipleIconsHighlighted){
       for(const i of this.markedBtnIds){
         const file = this.files[Number(i)];
-        res = await this._fileService.deleteAsync(file.getCurrentPath, file.getIsFile);
-        result.push(res);
+        tmpfiles.push(file);
+        result = await this._fileService.deleteAsync(file.getCurrentPath, file.getIsFile);
+        resultSet.push(result);
       }
-      const allTrue = result.every(Boolean);
+
+      const allTrue = resultSet.every(Boolean);
       if(allTrue){
-        // do stuff
+        this.removeDeletedFiles(tmpfiles);
         this._fileService.removeDragAndDropFile();
       }
-
+      tmpfiles = [];
     }else{
-      //res = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
-
-      res = true;
-      if(res){
-        this._menuService.resetStoreData();
-        console.log('Delete successful');
-        //await this.loadFiles();
-
-        // const idx = this.files.findIndex(x => x.getFileName === this.selectedFile.getFileName 
-        //             && x.getCurrentPath === this.selectedFile.getCurrentPath);
-
-        // console.log('idx:', idx);
-        console.log('selectedElementID:', this.selectedElementId);  
-        //this.files.splice(this.selectedElementId, deleteCount);                             
+      result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
+      if(result){
+        this.removeDeletedFiles([this.selectedFile]);
+        this._menuService.resetStoreData();                           
       }
     }
   }
+
+  removeDeletedFiles(deletedFiles:FileInfo[]):void{
+    const deleteCount = 1;
+    for(const deletedFile of deletedFiles){
+      const idx = this.files.findIndex(x => x.getFileName === deletedFile.getFileName 
+                  && x.getCurrentPath === deletedFile.getCurrentPath);
+
+      this.files.splice(idx, deleteCount);
+    }
+  }
+
+  // async onDelete(): Promise<void> {
+  //   // Early exit if no file(s) selected
+  //   if (!this.selectedFile && !this.areMultipleIconsHighlighted) return;
+
+  //   // Determine which files to delete
+  //   const filesToDelete = this.areMultipleIconsHighlighted
+  //     ? this.markedBtnIds.map(id => this.files[Number(id)])
+  //     : [this.selectedFile];
+
+  //   // Run deletions concurrently
+  //   const results = await Promise.all(
+  //     filesToDelete.map(f => this._fileService.deleteAsync(f.getCurrentPath, f.getIsFile))
+  //   );
+
+  //   // If all deletions succeeded
+  //   if (results.every(Boolean)) {
+  //     this.removeDeletedFiles(filesToDelete);
+
+  //     if (this.areMultipleIconsHighlighted) {
+  //       this._fileService.removeDragAndDropFile();
+  //     } else {
+  //       this._menuService.resetStoreData();
+  //     }
+  //   }
+  // }
+
+  // removeDeletedFiles(deletedFiles: FileInfo[]): void {
+  //   this.files = this.files.filter(file =>
+  //     !deletedFiles.some(
+  //       del => del.getFileName === file.getFileName && del.getCurrentPath === file.getCurrentPath
+  //     )
+  //   );
+  // }
 
   async onEmptyRecyleBin():Promise<void>{
     let result = false;

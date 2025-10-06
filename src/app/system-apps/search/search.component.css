@@ -155,7 +155,7 @@
     color: #000;
     background-color: transparent;
     text-align: left;
-    top: 0.5px;
+    /* top: 0.5px; */
  }
 
  .search-bar-textbox:hover,
