@@ -2114,78 +2114,37 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  async onDelete():Promise<void>{
-    let result = false;
-    let resultSet: boolean[] = [];
-    let tmpfiles:FileInfo[] = [];
+  async onDelete(): Promise<void> {
 
-    // check for multiple highlighted files
-    if(this.areMultipleIconsHighlighted){
-      for(const i of this.markedBtnIds){
-        const file = this.files[Number(i)];
-        tmpfiles.push(file);
-        result = await this._fileService.deleteAsync(file.getCurrentPath, file.getIsFile);
-        resultSet.push(result);
-      }
+    // Determine which files to delete
+    const filesToDelete = (this.areMultipleIconsHighlighted)
+      ? this.markedBtnIds.map(id => this.files[Number(id)])
+      : [this.selectedFile];
 
-      const allTrue = resultSet.every(Boolean);
-      if(allTrue){
-        this.removeDeletedFiles(tmpfiles);
+    // Run deletions concurrently
+    const results = await Promise.all(
+      filesToDelete.map(f => this._fileService.deleteAsync(f.getCurrentPath, f.getIsFile))
+    );
+
+    // If all deletions succeeded
+    if (results.every(Boolean)) {
+      this.removeDeletedFiles(filesToDelete);
+
+      if (this.areMultipleIconsHighlighted) {
         this._fileService.removeDragAndDropFile();
-      }
-      tmpfiles = [];
-    }else{
-      result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
-      if(result){
-        this.removeDeletedFiles([this.selectedFile]);
-        this._menuService.resetStoreData();                           
+      } else {
+        this._menuService.resetStoreData();
       }
     }
   }
 
-  removeDeletedFiles(deletedFiles:FileInfo[]):void{
-    const deleteCount = 1;
-    for(const deletedFile of deletedFiles){
-      const idx = this.files.findIndex(x => x.getFileName === deletedFile.getFileName 
-                  && x.getCurrentPath === deletedFile.getCurrentPath);
-
-      this.files.splice(idx, deleteCount);
-    }
+  removeDeletedFiles(deletedFiles: FileInfo[]): void {
+    this.files = this.files.filter(file =>
+      !deletedFiles.some(
+        del => del.getFileName === file.getFileName && del.getCurrentPath === file.getCurrentPath
+      )
+    );
   }
-
-  // async onDelete(): Promise<void> {
-  //   // Early exit if no file(s) selected
-  //   if (!this.selectedFile && !this.areMultipleIconsHighlighted) return;
-
-  //   // Determine which files to delete
-  //   const filesToDelete = this.areMultipleIconsHighlighted
-  //     ? this.markedBtnIds.map(id => this.files[Number(id)])
-  //     : [this.selectedFile];
-
-  //   // Run deletions concurrently
-  //   const results = await Promise.all(
-  //     filesToDelete.map(f => this._fileService.deleteAsync(f.getCurrentPath, f.getIsFile))
-  //   );
-
-  //   // If all deletions succeeded
-  //   if (results.every(Boolean)) {
-  //     this.removeDeletedFiles(filesToDelete);
-
-  //     if (this.areMultipleIconsHighlighted) {
-  //       this._fileService.removeDragAndDropFile();
-  //     } else {
-  //       this._menuService.resetStoreData();
-  //     }
-  //   }
-  // }
-
-  // removeDeletedFiles(deletedFiles: FileInfo[]): void {
-  //   this.files = this.files.filter(file =>
-  //     !deletedFiles.some(
-  //       del => del.getFileName === file.getFileName && del.getCurrentPath === file.getCurrentPath
-  //     )
-  //   );
-  // }
 
   async onEmptyRecyleBin():Promise<void>{
     let result = false;
