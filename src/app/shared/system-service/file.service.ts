@@ -252,38 +252,69 @@ export class FileService implements BaseService{
 
     public async createFolderAsync(directory: string, folderName: string): Promise<boolean> {
         const folderPath = `${directory}/${folderName}`;
-        return new Promise<boolean>((resolve) => {
-            this._fileSystem.mkdir(folderPath, 0o777, (err)=>{
-                if(!err){
-                    // Folder created successfully
-                    this._fileExistsMap.set(folderPath, String(0));
-                    this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
-                    // console.log(`Folder created: ${folderPath}`);
-                    return resolve(true);
+        return await this.createFolderHandlerAsync(folderPath);
+    }
+
+    /**
+     * Creates a folder and handles duplicate folder names gracefully.
+     * @param folderPath - The target folder path.
+     * @returns true if folder creation succeeded, false otherwise.
+     */
+    private async createFolderHandlerAsync(folderPath: string): Promise<boolean> {
+        const createResult = await this.createFolderRawAsync(folderPath);
+
+        if (createResult === 0) {
+            // Folder created successfully
+            this._fileExistsMap.set(folderPath, String(0));
+            this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
+            return true;
+        }
+
+        if (createResult === 1) {
+            console.warn(`Folder already exists: ${folderPath}`);
+            const uniqueFolderPath = this.IncrementFileName(folderPath);
+            const retryResult = await this.createFolderRawAsync(uniqueFolderPath);
+
+            if (retryResult === 0) {
+                // Folder created successfully after name iteration
+                this._fileExistsMap.set(uniqueFolderPath, String(0));
+                this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
+                return true;
+            } else {
+                console.error(`createFolderAsync Iterate Error`);
+                return false;
+            }
+        }
+
+        // Other errors
+        return false;
+    }
+
+    /**
+     * Attempts to create a folder at the given path.
+     * Returns:
+     * 0 = success
+     * 1 = already exists
+     * 2 = other error
+     */
+    private async createFolderRawAsync(folderPath: string): Promise<number> {
+        return new Promise<number>((resolve) => {
+            this._fileSystem.mkdir(folderPath, 0o777, (err) => {
+                if (!err) {
+                    return resolve(0);
                 }
 
-                if(err.code === 'EEXIST'){
+                if (err.code === 'EEXIST') {
                     console.warn(`Folder already exists: ${folderPath}`);
-                    const uniqueFolderPath = this.IncrementFileName(folderPath);
-
-                    this._fileSystem.mkdir(uniqueFolderPath, 0o777, (retryErr)=>{
-                        if(retryErr){
-                            console.error(`Failed to create folder after name iteration: ${retryErr}`);
-                            return resolve(false);
-                        }
-
-                        // console.log(`Folder created with new name: ${uniqueFolderPath}`);
-                        this._fileExistsMap.set(uniqueFolderPath, String(0));
-                        this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
-                        resolve(true);
-                    });
-                }else{
-                    console.error(`Error creating folder: ${err}`);
-                    resolve(false);
+                    return resolve(1);
                 }
+
+                console.error(`Error creating folder: ${err}`);
+                return resolve(2);
             });
         });
     }
+
 
     public async geFileMetaData(path: string): Promise<FileMetaData> {
         return new Promise((resolve) =>{
