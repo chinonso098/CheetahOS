@@ -29,6 +29,9 @@ export class FileIndexerService implements BaseService{
 
     private _appDirectory:AppDirectory;
     fileIndexChangeOperation: Subject<string> = new Subject<string>();
+
+    private readonly ENTRY_TO_EXCLUDE = 'Recycle Bin';
+    private readonly PATH_TO_EXCLUDE = '/Users/Desktop/Recycle Bin';
     
     name = 'file_indexing_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -71,6 +74,16 @@ export class FileIndexerService implements BaseService{
             await this.helperCoreAsync(queue, entryPath, entry);
         }
 
+        if(directoryEntries.length === 0 && this.PATH_TO_EXCLUDE !== filePath){
+            const opensWith = 'fileexplorer';
+            const isFile = false;
+            const entry = basename(filePath);
+
+            const now = new Date();
+            const date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            this._Index.push(this.getFileSearchIndex(FileIndexIDs.FOLDERS, entry, filePath, Constants.EMPTY_STRING, this.handleNonAppIcons(entry, isFile), opensWith, date));
+        }
+
         return this.indexDirectoryHelperAsync(queue);
     }
 
@@ -80,10 +93,8 @@ export class FileIndexerService implements BaseService{
         const fileInfo = await this._fileService.getFileInfo(entryPath);
         if(isDirectory){
             const isFile = false;
-            const entryToExclude = 'Recycle Bin';
-            const pathToExclude = '/Users/Desktop/Recycle Bin';
 
-            if(pathToExclude !== entryPath && entryToExclude !== entry){
+            if(this.PATH_TO_EXCLUDE !== entryPath && this.ENTRY_TO_EXCLUDE !== entry){
                 this._Index.push(this.getFileSearchIndex(FileIndexIDs.FOLDERS, entry, fileInfo.getCurrentPath, fileInfo.getContentPath, this.handleNonAppIcons(entry, isFile), fileInfo.getOpensWith, fileInfo.getDateModified));
                 queue.push(entryPath);
             }

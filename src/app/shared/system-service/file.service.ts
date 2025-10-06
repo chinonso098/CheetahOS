@@ -45,8 +45,8 @@ export class FileService implements BaseService{
     private _fileIndexerService!:FileIndexerService;
 
     private _isCalculated = false;
-    private _isDuplicateFile = false;
-    private _generatedFileName = Constants.EMPTY_STRING;
+    private _isDuplicate = false;
+    private _generatedName = Constants.EMPTY_STRING;
     private _usedStorageSizeInBytes = 0;
     private _isFileDropEventTriggered = false;
 
@@ -211,11 +211,11 @@ export class FileService implements BaseService{
         const result =  await this.writeRawHandlerAsync(destinationPath, readResult);
         if(result){
             const isFile = true;
-            const fPath = (this._isDuplicateFile) ? `${this.pathCorrection(srcPath)}/${this._generatedFileName}` : destPath;
+            const fPath = (this._isDuplicate) ? `${this.pathCorrection(srcPath)}/${this._generatedName}` : destPath;
             await  this._fileIndexerService.addNotify(fPath, isFile);
 
-            this._isDuplicateFile = false;
-            this._generatedFileName = Constants.EMPTY_STRING;
+            this._isDuplicate = false;
+            this._generatedName = Constants.EMPTY_STRING;
         }
 
         return result;
@@ -252,7 +252,19 @@ export class FileService implements BaseService{
 
     public async createFolderAsync(directory: string, folderName: string): Promise<boolean> {
         const folderPath = `${directory}/${folderName}`;
-        return await this.createFolderHandlerAsync(folderPath);
+        const result =  await this.createFolderHandlerAsync(folderPath);
+
+        if(result){
+            const isFile = false;
+            const dPath = (this._isDuplicate) ? this._generatedName : folderPath;
+
+            await  this._fileIndexerService.addNotify(dPath, isFile);
+
+            this._isDuplicate = false;
+            this._generatedName = Constants.EMPTY_STRING;
+        }
+
+        return result;
     }
 
     /**
@@ -271,11 +283,12 @@ export class FileService implements BaseService{
         }
 
         if (createResult === 1) {
-            console.warn(`Folder already exists: ${folderPath}`);
+            this._isDuplicate = true;
             const uniqueFolderPath = this.IncrementFileName(folderPath);
             const retryResult = await this.createFolderRawAsync(uniqueFolderPath);
 
             if (retryResult === 0) {
+                this._generatedName = uniqueFolderPath;
                 // Folder created successfully after name iteration
                 this._fileExistsMap.set(uniqueFolderPath, String(0));
                 this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
@@ -937,15 +950,15 @@ export class FileService implements BaseService{
 
         if(writeResult === 1){
             console.warn('writeFileAsync: file already exists');
-            this._isDuplicateFile = true;
+            this._isDuplicate = true;
             const newFileName = this.IncrementFileName(destPath);
-            const writeResult2 = await this.writeRawAsync(newFileName, cntnt, 'wx');
+            const writeRetry = await this.writeRawAsync(newFileName, cntnt, 'wx');
 
-            if(writeResult2 === 0){
+            if(writeRetry === 0){
                 // console.log('writeFileAsync: file successfully written');
                 this._fileExistsMap.set(newFileName, String(0));
                 this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
-                this._generatedFileName = newFileName;
+                this._generatedName = newFileName;
                 await this.recalculateUsedStorage();
                 return true;
             }else{
@@ -1002,11 +1015,11 @@ export class FileService implements BaseService{
         const result =  await this.writeRawHandlerAsync(destPath, cntnt);
         if(result){
             const isFile = true;
-            const fPath = (this._isDuplicateFile) ? `${this.pathCorrection(path)}/${this._generatedFileName}` : destPath;
+            const fPath = (this._isDuplicate) ? `${this.pathCorrection(path)}/${this._generatedName}` : destPath;
             await  this._fileIndexerService.addNotify(fPath, isFile);
 
-            this._isDuplicateFile = false;
-            this._generatedFileName = Constants.EMPTY_STRING;
+            this._isDuplicate = false;
+            this._generatedName = Constants.EMPTY_STRING;
         }
 
         return result;
