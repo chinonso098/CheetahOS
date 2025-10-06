@@ -89,10 +89,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   currIteration = 0;
   prevScrollHeight = 0;
 
-
   logonAudio = `${Constants.AUDIO_BASE_PATH}cheetah_logon.wav`;
   newMsgAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_messaging.wav`;
-
 
   chatPrompt = 'Type a message';
   isMaximizable = false;

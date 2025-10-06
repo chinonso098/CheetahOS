@@ -8,7 +8,7 @@
     width: 24px;
     height: 40px;
     position: absolute;
-    right: 117px;
+    right: 122px;
 }
 
 .taskbar-arrow-fig{
@@ -35,7 +35,7 @@
     width: 26px;
     height: 40px;
     position: absolute;
-    right: 91px;
+    right: 96px;
 }
 
 .taskbar-volume-fig{
@@ -66,7 +66,7 @@
     place-content: center;
     place-items: center;
     position: absolute;
-    right: 26px;
+    right: 31px;
 }
 
 .main-taskbar-date-and-time-cntnr:hover{
@@ -94,7 +94,7 @@
     width: 26px;
     height: 40px;
     position: absolute;
-    right: 0px;
+    right: 5px;
 }
 
 .taskbar-notification-fig{

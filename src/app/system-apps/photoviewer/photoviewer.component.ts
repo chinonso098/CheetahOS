@@ -97,10 +97,10 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._processIdService = processIdService;
     this._processHandlerService = triggerProcessService;
     this._sessionManagmentService = sessionManagmentService;
-    this._windowService = windowService;
-    this.processId = this._processIdService.getNewProcessId();
-
     this._runningProcessService = runningProcessService;
+    this._windowService = windowService;
+    
+    this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 

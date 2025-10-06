@@ -75,7 +75,7 @@ export class FileIndexerService implements BaseService{
         }
 
         if(directoryEntries.length === 0 && this.PATH_TO_EXCLUDE !== filePath){
-            const opensWith = 'fileexplorer';
+            const opensWith = Constants.FILE_EXPLORER;
             const isFile = false;
             const entry = basename(filePath);
 

@@ -140,7 +140,7 @@ Other trademarks and logos are property of their respective owners
   }
 
 
-focusWindow(evt?:MouseEvent):void{
+  focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;

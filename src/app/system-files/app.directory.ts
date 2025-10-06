@@ -19,7 +19,7 @@ export class AppDirectory {
 
     private fetchSystemApp(): string[]{
         this._systemProcessList = ["audioplayer","chatter","cheetah","clippy","fileexplorer",
-            "taskmanager","terminal","videoplayer","photoviewer","runsystem","texteditor"];
+            "taskmanager","terminal","videoplayer","photoviewer","runsystem","texteditor", "controlpanel"];
         return this._systemProcessList;
     }
 
@@ -58,6 +58,7 @@ export class AppDirectory {
             ['audioplayer', 'audioplayer.png'],
             ['chatter', 'chatter.png'],
             ['cheetah', 'cheetah.png'],
+            ['controlpanel', 'settings.png'],
             ['fileexplorer', 'file_explorer.png'],
             ['taskmanager', 'taskmanager.png'],
             ['terminal', 'terminal.png'],
@@ -74,7 +75,7 @@ export class AppDirectory {
             ['starfield', 'star_field.png'],
             ['boids', 'bird_oid.png'],
             ['particleflow', 'particles.png'],
-            ['pdfviewer', 'pdf_js.png'],
+            ['pdfviewer', 'pdf_js.png']
         ];
 
         return appIconMap.find(([name]) => name === appName);
