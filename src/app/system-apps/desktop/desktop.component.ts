@@ -239,7 +239,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   readonly screenShotText = `
   Screenshots are saved in the screenshots folder.
-  Click on image to open in photos
+  Click on the image to view it in photos app.
   `;
 
   multiSelectElmnt!:HTMLDivElement | null;
@@ -611,7 +611,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.screenShot.setIconPath = finalImg;
 
     await this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, this.screenShot);
-
     this.screenShot.setOpensWith = 'photoviewer';
 
     //###. if file explr is not running at the time of creation, this may be skipped 
