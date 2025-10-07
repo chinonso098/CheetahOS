@@ -123,7 +123,6 @@ export class TaskbarComponent implements AfterViewInit{
     this.slideState = 'slideDown';
   }
 
-
   showStartMenu(evt:MouseEvent):void{
     if(!this.isStartMenuVisible){
       this._menuService.showStartMenu.next();
@@ -131,6 +130,9 @@ export class TaskbarComponent implements AfterViewInit{
     }else{
       this._menuService.hideStartMenu.next();
     }
+
+    if(this.isSearchWindowVisible)
+      this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
 
     evt.stopPropagation();
   }
@@ -147,6 +149,10 @@ export class TaskbarComponent implements AfterViewInit{
       this.isSearchWindowVisible = true;
       this._menuService.showSearchBox.next();
     }
+
+    if(this.isStartMenuVisible)
+      this._menuService.hideStartMenu.next();
+
     evt.stopPropagation();
   }
 
