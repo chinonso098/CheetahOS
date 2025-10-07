@@ -1056,14 +1056,14 @@ Mandatory argument to long options are mandotory for short options too.
 
         // handle urls (aka shortcuts)
         if(file.getFileExtension === Constants.URL && file.getIsShortCut){
-        if(file.getFileType === Constants.FOLDER && file.getOpensWith === 'fileexplorer'){       
+        if(file.getFileType === Constants.FOLDER && file.getOpensWith === Constants.FILE_EXPLORER){       
             if(CommonFunctions.isPath(file.getContentPath))
             this.trackActivity(ActivityType.FOLDERS, file.getFileName.replace(shortCut, Constants.EMPTY_STRING), file.getContentPath);
         }
         else
             this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
         }else{     // handle non-urls
-        if(!file.getIsFile && file.getFileType === Constants.FOLDER && file.getOpensWith === 'fileexplorer')
+        if(!file.getIsFile && file.getFileType === Constants.FOLDER && file.getOpensWith === Constants.FILE_EXPLORER)
             this.trackActivity(ActivityType.FOLDERS, file.getFileName, file.getContentPath);
         else
             this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);

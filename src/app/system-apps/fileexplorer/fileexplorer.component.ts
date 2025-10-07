@@ -1031,41 +1031,41 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }else{
       this._fileService.addEventOriginator(this.name);
       this._fileService.setFileDropEventTriggeredFlag(true);
-      const fileData = this._fileService.getDragAndDropFile();
+
+      const files = this._fileService.getDragAndDropFile();
+      if (!files?.length) return;
 
       const delay = 50; //50ms
       const destPath = this.directory;
-      const result:boolean[] = [];
+      const moveResults:Promise<boolean>[] = [];
 
-      let srcPath = Constants.EMPTY_STRING;
-      // handle single
-      if(fileData.length === 1){
-        const file = fileData[0];
-        srcPath = file.getCurrentPath;
 
-        const res= await this._fileService.moveAsync(srcPath, destPath);
-        result.push(res);
-      } // multiple files
-      else if(fileData.length > 1){
-        for(const file of fileData){
-          srcPath = file.getCurrentPath;
-          const res = await this._fileService.moveAsync(srcPath, destPath, file.getIsFile);
-          result.push(res);
-        }
+      // Move all files concurrently
+      for (const file of files) {
+        const srcPath = file.getCurrentPath;
+        moveResults.push(
+          this._fileService.moveAsync(srcPath, destPath, file.getIsFile)
+        );
       }
 
-      const allTrue = result.every(value => value === true);
-      if(allTrue){
-        if(srcPath.includes(Constants.DESKTOP_PATH)){
-          this._fileService.addEventOriginator(Constants.DESKTOP);
-          this._fileService.dirFilesUpdateNotify.next();
+      // Wait for all moves to complete
+      const results = await Promise.all(moveResults);
+      //const allSucceeded = moveResults.every(value => value === true);
+      const allSucceeded = results.every(Boolean);
 
-          await CommonFunctions.sleep(delay)
-          await this.refresh();
-        }else{
-          await this.refresh();
-        }
+      if(!allSucceeded){
+        console.error('One or more move operations failed');
+        return;
       }
+
+      const cameFromDesktop = files.some(f => f.getCurrentPath.includes(Constants.DESKTOP_PATH));
+      if(cameFromDesktop){
+        this._fileService.addEventOriginator(Constants.DESKTOP);
+        this._fileService.dirFilesUpdateNotify.next();
+        await CommonFunctions.sleep(delay)
+      }
+
+      await this.refresh();
     }
   }
 
@@ -3041,14 +3041,14 @@ OpensWith=${file.getOpensWith}
 
     // handle urls (aka shortcuts)
     if(file.getFileExtension === Constants.URL && file.getIsShortCut){
-      if(file.getFileType === Constants.FOLDER && file.getOpensWith === 'fileexplorer'){       
+      if(file.getFileType === Constants.FOLDER && file.getOpensWith === Constants.FILE_EXPLORER){       
         if(CommonFunctions.isPath(file.getContentPath))
           this.trackActivity(ActivityType.FOLDERS, file.getFileName.replace(shortCut, Constants.EMPTY_STRING), file.getContentPath);
       }
       else
         this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
     }else{     // handle non-urls
-      if(!file.getIsFile && file.getFileType === Constants.FOLDER && file.getOpensWith === 'fileexplorer')
+      if(!file.getIsFile && file.getFileType === Constants.FOLDER && file.getOpensWith === Constants.FILE_EXPLORER)
         this.trackActivity(ActivityType.FOLDERS, file.getFileName, file.getContentPath);
       else
         this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);

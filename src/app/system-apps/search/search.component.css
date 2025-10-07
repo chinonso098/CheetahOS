@@ -130,15 +130,16 @@
 
 .search-bar-form-cntnr{
     position: relative;
-    height: 43px;
+    height: 44px;
     width: 524px;
     left: 6px;
 }
 
 .search-bar-form {
+    position: relative;
     margin: 0;
     width: 524px;
-    height: 43px;
+    height: 44px;
 }
 
 .search-bar-form{
@@ -146,22 +147,25 @@
 }
 
 .search-bar-textbox{
-    position: relative;
-    margin: 0;
     width: 524px;
-    height: 43px;
+    height: 44px;
     font-size: 13.5px;
     font-weight:normal;
     color: #000;
     background-color: transparent;
     text-align: left;
-    /* top: 0.5px; */
+    transition: background-color 0.2s ease;
  }
 
  .search-bar-textbox:hover,
  .search-bar-textbox:focus{
     background-color: #fff;
  }
+
+ /* Keep background white when it has text */
+.search-bar-textbox:not(:placeholder-shown) {
+  background-color: #fff;
+}
 
  /*SearchBox Result Window Section*/
 .main-search-result-cntnr {
