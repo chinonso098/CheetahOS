@@ -36,6 +36,8 @@ Special thanks to **Dustin Brett** for providing a much-needed how-to guide.
 - [html-to-image](https://github.com/bubkoo/html-to-image)  
 - [angular2-draggable](https://github.com/xieziyu/angular2-draggable)  
 - [Vanta.js](https://github.com/tengbao/vanta)
+- [p5.js](https://p5js.org)
+- [Three.js](https://threejs.org)
 
 ---
 
@@ -52,6 +54,16 @@ Special thanks to **Dustin Brett** for providing a much-needed how-to guide.
 - [Print.js](https://github.com/crabbly/print.js)
 
 ---
+
+## 🏙️ Images & 🔈 Audio Assets
+
+- [icon8](https://icons8.com/icons)
+- [Windows 10 Imageres Folder]
+- [music](https://pixabay.com/music/)
+- [WatR - Fluid](https://pixabay.com/music/beats-watr-fluid-10149/)
+- [Titanium](https://pixabay.com/music/future-bass-titanium-170190/)
+- [The Best Jazz Club In New Orleans](https://pixabay.com/music/traditional-jazz-the-best-jazz-club-in-new-orleans-164472/)
+- [Startup](https://pixabay.com/users/vynadot-36505577/)
 
 ✨ _Thank you to all open-source contributors who make projects like this possible._
 
