@@ -110,8 +110,8 @@
 .settings-btn__toggle {
   position: relative;
   display: inline-block;
-  width: 60px;
-  height: 34px;
+  width: 50px;
+  height: 24px;
 }
 
 /* Hide default checkbox */
@@ -131,17 +131,17 @@
   bottom: 0;
   background-color: #ccc;
   transition: background-color 0.3s, box-shadow 0.3s;
-  border-radius: 34px;
+  border-radius: 24px;
 }
 
 /*slider knob */
 .settings-btn__slider::before {
   position: absolute;
   content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
+  height: 12px;
+  width: 12px;
+  left: 6px;
+  bottom: 6px;
   background-color: white;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 50%;
@@ -156,7 +156,7 @@
 
 /* Knob slides right */
 .settings-btn__toggle input:checked + .settings-btn__slider::before {
-  transform: translateX(26px);
+  transform: translateX(25px);
   box-shadow: 0 0 12px rgba(0, 120, 215, 0.8);
 }
 
@@ -178,6 +178,7 @@
   animation: glow 1.5s ease-in-out;
 }
 
+/*Button CSS End*/
 
 .settings-view__clipboard-container{
     width: 100%;
