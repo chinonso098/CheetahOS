@@ -11,7 +11,7 @@
     height: 500px;
     background-color: rgba(51,51,51,0.75);
     backdrop-filter: blur(20px);
-    padding: 10px 0px;
+    padding: 15px 0px;
 }
 
 .ol-settings-option__grid{
@@ -42,15 +42,26 @@
     position: relative;
     width: 193px;
     top: 7px;
+    left: 5px;
     overflow: hidden;         
     text-overflow: ellipsis; 
     white-space: nowrap;
 }
 
 .settings-option__item-head{
-    padding-left: 10px;
+    display: inline-flex;
     width: 45px;
     height: 30px;
+}
+
+.item-head__indication{
+    width: 3px;
+    height: 30px;
+    margin-right: 15px;
+}
+
+.item-head__indication.active{
+    background-color: #76b9ed;
 }
 
 .settings-option__item-tail{
@@ -82,4 +93,137 @@
     display: block;
     width: 650px;
     height: 500px;
+    padding: 15px;
+}
+
+/*Button CSS*/
+
+/* body {
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+} */
+
+/* toggle container */
+.settings-btn__toggle {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default checkbox */
+.settings-btn__toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* slider background */
+.settings-btn__slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: background-color 0.3s, box-shadow 0.3s;
+  border-radius: 34px;
+}
+
+/*slider knob */
+.settings-btn__slider::before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* ON (checked) state */
+.settings-btn__toggle input:checked + .settings-btn__slider {
+  background-color: #0078d7; /* Windows 10 blue */
+  box-shadow: 0 0 10px rgba(0, 120, 215, 0.6);
+}
+
+/* Knob slides right */
+.settings-btn__toggle input:checked + .settings-btn__slider::before {
+  transform: translateX(26px);
+  box-shadow: 0 0 12px rgba(0, 120, 215, 0.8);
+}
+
+/* Glow pulse animation when turned ON */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 8px rgba(0, 120, 215, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(0, 120, 215, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(0, 120, 215, 0.6);
+  }
+}
+
+/* Apply glow animation only when checked */
+.settings-btn__toggle input:checked + .settings-btn__slider {
+  animation: glow 1.5s ease-in-out;
+}
+
+
+.settings-view__clipboard-container{
+    width: 100%;
+    height: 100%;
+}
+
+.clipboard-block__content, .clipboard-block__heading, .clipboard-block__text{
+    width: 100%;
+    height: fit-content;
+}
+
+.clipboard-block__content{
+    display: flex;
+    flex-direction: column;     /* stack vertically */
+    gap: 20px 0px;
+    padding-top: 15px;
+}
+
+.clipboard-block__heading{
+    height: 52px;
+}
+
+.clipboard-block-heading__p{
+    padding: 0 1px;
+    color: #fff;
+    text-align: left;
+    font-size: 36px;
+    font-weight:200;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    word-wrap: break-word;
+    -webkit-line-clamp:3;
+    white-space: pre;
+    width: 100%;
+    height: 36px;
+}
+
+.clipboard-block-text__p{
+
+    color: #fff;
+    text-align: left;
+    font-size: 15px;
+    font-weight:200;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    word-wrap: break-word;
+    -webkit-line-clamp:2;
+    white-space: pre;
+    width: 100%;
+    height: 30px;
 }

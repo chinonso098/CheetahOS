@@ -3,18 +3,19 @@
         <div class="settings-option__panel">
 
             <ol class="ol-settings-option__grid">
-                <li class="li-settings-option__item" *ngFor="let ooption of settingOptions; let i = index">
+                <li class="li-settings-option__item" *ngFor="let option of settingOptions; let i = index">
                     <div class="settings-option__item-cntnr" 
-                        (click)="handleSelection(ooption[1], $event)" id="lsls-{{i}}">
+                        (click)="handleSelection(option[1], i, $event)">
                         
                         <div class="settings-option__item-head">
+                            <div class="item-head__indication"   [class.active]="i === selectedIdx"   id="{{option[1]}}-{{processId}}"></div>
                             <figure class="settings-option__item-figure">
-                                <img class="settings-option__item-img" [src]="ooption[0]" />
+                                <img class="settings-option__item-img" [src]="option[0]" />
                             </figure>
                         </div>
 
                         <div class="settings-option__item-tail">
-                            <p class="settings-option__item-p">{{ ooption[1] }}</p>
+                            <p class="settings-option__item-p">{{ option[1] }}</p>
                         </div>
                     </div>
                 </li>
@@ -22,7 +23,52 @@
         </div>
 
         <div class="settings-view__panel" >
-     
+            <ng-container [ngTemplateOutlet]="selectedOption === SCREEN ? screenView:
+                                              selectedOption === NOTIFICATION ? notificationView:
+                                              selectedOption === STORAGE ? storageView:
+                                              selectedOption === CLIPBOARD ? clipboardView: aboutView">
+            </ng-container>
+
+            <ng-template #screenView>
+
+            </ng-template>
+
+            <ng-template #notificationView>
+
+            </ng-template>
+
+            <ng-template #storageView>
+
+            </ng-template>
+
+            <ng-template #clipboardView>
+                <div class="settings-view__clipboard-container"> 
+
+                    <div class="clipboard-block__content">
+                        <div class="clipboard-block__heading">
+                            <p class="clipboard-block-heading__p">Clipboard</p>
+                        </div>
+
+                        <div class="clipboard-block__text">
+                            <p class="clipboard-block-text__p"> When you copy or cut something in Cheetah, it's copied to the
+                                clipboad for you to paste.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="clipboard-block__heading">
+                        <label class="settings-btn__toggle">
+                            <input type="checkbox" id="toggleSwitch">
+                            <span class="settings-btn__slider"></span>
+                        </label>
+                    </div>
+
+                </div>
+            </ng-template>
+
+            <ng-template #aboutView>
+
+            </ng-template>
         </div>
     </div>
 </cos-window>

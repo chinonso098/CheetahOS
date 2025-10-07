@@ -38,6 +38,9 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   readonly SCREEN = 'Screen';
   readonly CLIPBOARD = 'Clipboard';
 
+  selectedOption = this.SCREEN;
+  selectedIdx = 0;
+
   settingOptions!:string[][];
   
   isMaximizable = false;
@@ -76,15 +79,16 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   }
 
   generateOptions():string[][]{
-    const options = [[this.aboutImg, this.ABOUT], [this.notificationImg, this.NOTIFICATION], 
-                     [this.storageImg, this.STORAGE], [this.screenImg, this.SCREEN],
-                     [this.clipboardImg, this.CLIPBOARD]];
+    const options = [[this.screenImg, this.SCREEN], [this.notificationImg, this.NOTIFICATION],  
+                     [this.storageImg, this.STORAGE], [this.clipboardImg, this.CLIPBOARD], [this.aboutImg, this.ABOUT]];
     return options;
   }
 
-  handleSelection(selection:string, evt:MouseEvent):void{
+  handleSelection(selection:string, idx:number, evt:MouseEvent):void{
     evt.stopPropagation();
 
+    this.selectedOption = selection;
+    this.selectedIdx = idx;
   }
   
   private getComponentDetail():Process{

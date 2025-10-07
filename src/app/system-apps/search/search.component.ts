@@ -308,7 +308,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const options:FileSearchIndex[] = [];
     const recommendation:string[] = ['Super Street Fighter 2 Turbo', 'rero', 'starfield', 'watr-fluid'];
     
-    options.push(...this._fileSearchIndex.filter(x =>  recommendation.some(y => x.name.includes(y))));
+    options.push(...this._fileSearchIndex.filter(x => recommendation.some(y => x.name.includes(y))));
     return options;
   }
 
