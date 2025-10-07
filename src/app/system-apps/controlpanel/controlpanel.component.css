@@ -96,15 +96,7 @@
     padding: 15px;
 }
 
-/*Button CSS*/
-
-/* body {
-  background-color: #f0f0f0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-} */
+/*Button CSS Start*/
 
 /* toggle container */
 .settings-btn__toggle {
@@ -129,7 +121,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: #ffffff; /* White when OFF */
   transition: background-color 0.3s, box-shadow 0.3s;
   border-radius: 24px;
 }
@@ -142,7 +134,7 @@
   width: 12px;
   left: 6px;
   bottom: 6px;
-  background-color: white;
+  background-color: #000; /* Black when OFF */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -157,6 +149,7 @@
 /* Knob slides right */
 .settings-btn__toggle input:checked + .settings-btn__slider::before {
   transform: translateX(25px);
+  background-color: #ffffff; /* White knob when ON */
   box-shadow: 0 0 12px rgba(0, 120, 215, 0.8);
 }
 
