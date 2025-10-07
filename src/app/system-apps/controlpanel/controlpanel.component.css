@@ -6,32 +6,32 @@
 }
 
 .settings-option__panel{
-    display: block;
-    width: 250px;
-    height: 500px;
-    background-color: rgba(51,51,51,0.75);
-    backdrop-filter: blur(20px);
-    padding: 15px 0px;
+  display: block;
+  width: 250px;
+  height: 500px;
+  background-color: rgba(51,51,51,0.75);
+  backdrop-filter: blur(20px);
+  padding: 15px 0px;
 }
 
 .ol-settings-option__grid{
-    display: grid;
-    grid-auto-flow: row;
-    grid-template-columns:  repeat(auto-fill, 248px);
-    grid-template-rows: repeat(auto-fill, 30px);
-    width: 100%;
-    gap: 15px 0px;
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns:  repeat(auto-fill, 248px);
+  grid-template-rows: repeat(auto-fill, 30px);
+  width: 100%;
+  gap: 15px 0px;
 }
 
 .li-settings-option__item{
-    width: 248px;
-    height: 30px;
+  width: 248px;
+  height: 30px;
 }
 
 .settings-option__item-cntnr{
-    display: inline-flex;
-    height: 30px;
-    width: 248px;
+  display: inline-flex;
+  height: 30px;
+  width: 248px;
 }
 
 .li-settings-option__item:hover{
@@ -39,40 +39,40 @@
 }
 
 .settings-option__item-p{
-    position: relative;
-    width: 193px;
-    top: 7px;
-    left: 5px;
-    overflow: hidden;         
-    text-overflow: ellipsis; 
-    white-space: nowrap;
+  position: relative;
+  width: 193px;
+  top: 7px;
+  left: 5px;
+  overflow: hidden;         
+  text-overflow: ellipsis; 
+  white-space: nowrap;
 }
 
 .settings-option__item-head{
-    display: inline-flex;
-    width: 45px;
-    height: 30px;
+  display: inline-flex;
+  width: 45px;
+  height: 30px;
 }
 
 .item-head__indication{
-    width: 4px;
-    height: 30px;
-    margin-right: 15px;
+  width: 4px;
+  height: 30px;
+  margin-right: 15px;
 }
 
 .item-head__indication.active{
-    background-color: #0078d7;
+  background-color: #0078d7;
 }
 
 .settings-option__item-tail{
-    padding: 0 1px;
-    color: #fff;
-    text-align: left;
-    font-size: 12px;
-    font-weight:normal;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    width: 193px;
-    height: 30px;
+  padding: 0 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 12px;
+  font-weight:200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 193px;
+  height: 30px;
 }
 
 .settings-option__item-figure{
@@ -102,8 +102,8 @@
 .settings-btn__toggle {
   position: relative;
   display: inline-block;
-  width: 50px;
-  height: 23px;
+  width: 40px;
+  height: 18px;
 }
 
 /* Hide default checkbox */
@@ -123,17 +123,17 @@
   bottom: 0;
   background-color: #ffffff; /* White when OFF */
   transition: background-color 0.3s, box-shadow 0.3s;
-  border-radius: 23px;
+  border-radius: 18px;
 }
 
 /*slider knob */
 .settings-btn__slider::before {
   position: absolute;
   content: "";
-  height: 13px;
-  width: 13px;
-  left: 6px;
-  bottom: 5px;
+  height: 10px;
+  width: 10px;
+  left: 4px;
+  bottom: 4px;
   background-color: #000; /* Black when OFF */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 50%;
@@ -148,7 +148,7 @@
 
 /* Knob slides right */
 .settings-btn__toggle input:checked + .settings-btn__slider::before {
-  transform: translateX(24px);
+  transform: translateX(20px);
   background-color: #ffffff; /* White knob when ON */
   box-shadow: 0 0 12px rgba(0, 120, 215, 0.8);
 }
@@ -200,7 +200,7 @@
   padding: 0 1px;
   color: #fff;
   text-align: left;
-  font-size: 36px;
+  font-size: 27px;
   font-weight:200;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   word-wrap: break-word;
@@ -211,12 +211,12 @@
 }
 
 .clipboard-block-heading1__p{
-  font-size: 28px;
+  font-size: 19px;
   height: fit-content;
 }
 
 .clipboard-block-text__p{
-  font-size: 15px;
+  font-size: 13px;
   -webkit-line-clamp:2;
 }
 
@@ -234,7 +234,7 @@
 
 .clipboard-button-text__p{
   position: relative;
-  top: -2px;
-  font-size: 18px;
+  top: -1px;
+  font-size: 13px;
   -webkit-line-clamp:2;
 }
