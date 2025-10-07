@@ -1,21 +1,85 @@
-.settings__main-container{
+.settings-main__container{
     display: flex;
     width: fit-content;
     height: fit-content;
     /* background-color: transparent; */
 }
 
-.settings__options-panel{
+.settings-option__panel{
     display: block;
-    width: 300px;
+    width: 250px;
     height: 500px;
     background-color: rgba(51,51,51,0.75);
     backdrop-filter: blur(20px);
+    padding: 10px 0px;
 }
 
+.ol-settings-option__grid{
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns:  repeat(auto-fill, 248px);
+    grid-template-rows: repeat(auto-fill, 30px);
+    width: 100%;
+    gap: 15px 0px;
+}
 
-.settings__view-panel{
+.li-settings-option__item{
+    width: 248px;
+    height: 30px;
+}
+
+.settings-option__item-cntnr{
+    display: inline-flex;
+    height: 30px;
+    width: 248px;
+}
+
+.li-settings-option__item:hover{
+    background-color: #6d6d6d;
+}
+
+.settings-option__item-p{
+    position: relative;
+    width: 193px;
+    top: 7px;
+    overflow: hidden;         
+    text-overflow: ellipsis; 
+    white-space: nowrap;
+}
+
+.settings-option__item-head{
+    padding-left: 10px;
+    width: 45px;
+    height: 30px;
+}
+
+.settings-option__item-tail{
+    padding: 0 1px;
+    color: #fff;
+    text-align: left;
+    font-size: 12px;
+    font-weight:normal;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 193px;
+    height: 30px;
+}
+
+.settings-option__item-figure{
+    position: relative;
+    align-items: center;
+    height: 20px;
+    width: 20px;
+    top: 5px;
+}
+
+.settings-option__item-img{
+    height: 20px;
+    width: 20px;
+    position: relative;
+}
+
+.settings-view__panel{
     display: block;
-    width: 600px;
+    width: 650px;
     height: 500px;
 }

@@ -14,7 +14,7 @@ export class AppDirectory {
 
     appExist(appName:string):boolean{
         const strString = appName.trim();
-        return (this._systemProcessList.includes(strString) || this._userProcessList.includes(strString))
+        return (this._systemProcessList.includes(strString) || this._userProcessList.includes(strString));
     }
 
     private fetchSystemApp(): string[]{
@@ -33,8 +33,7 @@ export class AppDirectory {
     }
 
     public getAppPosition(appName:string):number{
-        const appPosition = this._processList.indexOf(appName)
-        return appPosition
+        return this._processList.indexOf(appName);
     }
 
     public getAppList():string[]{

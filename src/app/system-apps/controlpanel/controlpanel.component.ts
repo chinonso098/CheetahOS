@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
@@ -16,7 +16,7 @@ import { Subscription } from 'rxjs';
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone:false,
 })
-export class ControlPanelComponent implements OnDestroy {
+export class ControlPanelComponent implements OnInit, OnDestroy {
 
   @Input() priorUId = Constants.EMPTY_STRING;
 
@@ -25,6 +25,20 @@ export class ControlPanelComponent implements OnDestroy {
   private _menuService:MenuService;
   private _windowService:WindowService;
   private _hideStartMenuSub!:Subscription;
+
+  readonly aboutImg = `${Constants.IMAGE_BASE_PATH}cp_info.png`;
+  readonly notificationImg = `${Constants.IMAGE_BASE_PATH}cp_notification.png`;
+  readonly storageImg = `${Constants.IMAGE_BASE_PATH}cp_storage.png`;
+  readonly screenImg = `${Constants.IMAGE_BASE_PATH}cp_screen.png`;
+  readonly clipboardImg = `${Constants.IMAGE_BASE_PATH}cp_clipboard.png`;
+
+  readonly ABOUT = 'About';
+  readonly NOTIFICATION = 'Notifications & actions';
+  readonly STORAGE = 'Storage';
+  readonly SCREEN = 'Screen';
+  readonly CLIPBOARD = 'Clipboard';
+
+  settingOptions!:string[][];
   
   isMaximizable = false;
   hasWindow = true;
@@ -45,6 +59,10 @@ export class ControlPanelComponent implements OnDestroy {
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
+  ngOnInit(): void {
+    this.settingOptions = this.generateOptions();
+  }
+
   ngOnDestroy(): void {
     this._hideStartMenuSub?.unsubscribe();
   }
@@ -55,6 +73,18 @@ export class ControlPanelComponent implements OnDestroy {
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+  }
+
+  generateOptions():string[][]{
+    const options = [[this.aboutImg, this.ABOUT], [this.notificationImg, this.NOTIFICATION], 
+                     [this.storageImg, this.STORAGE], [this.screenImg, this.SCREEN],
+                     [this.clipboardImg, this.CLIPBOARD]];
+    return options;
+  }
+
+  handleSelection(selection:string, evt:MouseEvent):void{
+    evt.stopPropagation();
+
   }
   
   private getComponentDetail():Process{

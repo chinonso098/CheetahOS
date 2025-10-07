@@ -1,10 +1,27 @@
 <cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
-    <div class="settings__main-container"  (click)="focusWindow($event)">
+    <div class="settings-main__container"  (click)="focusWindow($event)">
+        <div class="settings-option__panel">
 
-        <div class="settings__options-panel" >
-     
+            <ol class="ol-settings-option__grid">
+                <li class="li-settings-option__item" *ngFor="let ooption of settingOptions; let i = index">
+                    <div class="settings-option__item-cntnr" 
+                        (click)="handleSelection(ooption[1], $event)" id="lsls-{{i}}">
+                        
+                        <div class="settings-option__item-head">
+                            <figure class="settings-option__item-figure">
+                                <img class="settings-option__item-img" [src]="ooption[0]" />
+                            </figure>
+                        </div>
+
+                        <div class="settings-option__item-tail">
+                            <p class="settings-option__item-p">{{ ooption[1] }}</p>
+                        </div>
+                    </div>
+                </li>
+            </ol>
         </div>
-        <div class="settings__view-panel" >
+
+        <div class="settings-view__panel" >
      
         </div>
     </div>
