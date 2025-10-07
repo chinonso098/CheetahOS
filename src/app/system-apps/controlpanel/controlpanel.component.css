@@ -61,7 +61,7 @@
 }
 
 .item-head__indication.active{
-    background-color: #76b9ed;
+    background-color: #0078d7;
 }
 
 .settings-option__item-tail{
@@ -103,7 +103,7 @@
   position: relative;
   display: inline-block;
   width: 50px;
-  height: 24px;
+  height: 23px;
 }
 
 /* Hide default checkbox */
@@ -123,17 +123,17 @@
   bottom: 0;
   background-color: #ffffff; /* White when OFF */
   transition: background-color 0.3s, box-shadow 0.3s;
-  border-radius: 24px;
+  border-radius: 23px;
 }
 
 /*slider knob */
 .settings-btn__slider::before {
   position: absolute;
   content: "";
-  height: 12px;
-  width: 12px;
+  height: 13px;
+  width: 13px;
   left: 6px;
-  bottom: 6px;
+  bottom: 5px;
   background-color: #000; /* Black when OFF */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 50%;
@@ -148,7 +148,7 @@
 
 /* Knob slides right */
 .settings-btn__toggle input:checked + .settings-btn__slider::before {
-  transform: translateX(25px);
+  transform: translateX(24px);
   background-color: #ffffff; /* White knob when ON */
   box-shadow: 0 0 12px rgba(0, 120, 215, 0.8);
 }
@@ -178,46 +178,63 @@
     height: 100%;
 }
 
-.clipboard-block__content, .clipboard-block__heading, .clipboard-block__text{
+.clipboard-block__content, 
+.clipboard-block__heading, 
+.clipboard-block__text{
     width: 100%;
     height: fit-content;
 }
 
 .clipboard-block__content{
-    display: flex;
-    flex-direction: column;     /* stack vertically */
-    gap: 20px 0px;
-    padding-top: 15px;
+  display: flex;
+  flex-direction: column;     /* stack vertically */
+  gap: 20px 0px;
+  padding-top: 15px;
 }
 
 .clipboard-block__heading{
-    height: 52px;
+  height: fit-content;
 }
 
-.clipboard-block-heading__p{
-    padding: 0 1px;
-    color: #fff;
-    text-align: left;
-    font-size: 36px;
-    font-weight:200;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    word-wrap: break-word;
-    -webkit-line-clamp:3;
-    white-space: pre;
-    width: 100%;
-    height: 36px;
+.clipboard-block-heading__p, .clipboard-block-heading1__p, .clipboard-block-text__p, .clipboard-button-text__p{
+  padding: 0 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 36px;
+  font-weight:200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  word-wrap: break-word;
+  -webkit-line-clamp:3;
+  white-space: pre;
+  width: fit-content;
+  height: fit-content;
+}
+
+.clipboard-block-heading1__p{
+  font-size: 28px;
+  height: fit-content;
 }
 
 .clipboard-block-text__p{
+  font-size: 15px;
+  -webkit-line-clamp:2;
+}
 
-    color: #fff;
-    text-align: left;
-    font-size: 15px;
-    font-weight:200;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    word-wrap: break-word;
-    -webkit-line-clamp:2;
-    white-space: pre;
-    width: 100%;
-    height: 30px;
+.clipboard-block__button{
+  display: flex;
+  width: 100%;
+  height: fit-content;
+}
+
+.clipboard-button__text{
+  position: relative;
+  left: 10px;
+  height: fit-content;
+}
+
+.clipboard-button-text__p{
+  position: relative;
+  top: -2px;
+  font-size: 18px;
+  -webkit-line-clamp:2;
 }

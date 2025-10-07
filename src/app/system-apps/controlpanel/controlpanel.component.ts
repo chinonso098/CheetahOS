@@ -37,6 +37,20 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   readonly STORAGE = 'Storage';
   readonly SCREEN = 'Screen';
   readonly CLIPBOARD = 'Clipboard';
+  readonly ON = 'On';
+  readonly OFF = 'Off';
+
+  readonly clipboardText =
+`When you copy or cut something in Cheetah, it's copied to the
+ clipboad for you to paste.`;
+
+  readonly clipboardHisotryText = 
+`Save multiple items to the clipboard to use later. Press the
+ Cheetah logo key + V to view your clipboard history and paste
+ from it.`;
+
+ isSaveClipboardHistory = true;
+ clipboardSaveStateText = this.ON;
 
   selectedOption = this.SCREEN;
   selectedIdx = 0;
@@ -70,8 +84,8 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
     this._hideStartMenuSub?.unsubscribe();
   }
 
-  focusWindow(evt?:MouseEvent):void{
-    evt?.stopPropagation();
+  focusWindow(evt:MouseEvent):void{
+    evt.stopPropagation();
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
@@ -89,6 +103,14 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
 
     this.selectedOption = selection;
     this.selectedIdx = idx;
+  }
+
+  saveUnSaveClipBoardHisotry():void{
+
+
+    //this.isSaveClipboardHistory = !this.isSaveClipboardHistory;
+
+    this.clipboardSaveStateText = (this.isSaveClipboardHistory)? this.ON : this.OFF;
   }
   
   private getComponentDetail():Process{
