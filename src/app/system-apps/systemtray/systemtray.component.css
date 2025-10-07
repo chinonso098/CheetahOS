@@ -54,6 +54,8 @@
     width: 18px;
 }
 
+
+.main-taskbar-volume-div.active,
 .main-taskbar-volume-div:hover{
     background-color:hsla(0,0%,30%,60%);
 }

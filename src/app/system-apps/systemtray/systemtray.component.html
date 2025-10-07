@@ -6,7 +6,7 @@
         </figure>
     </div>
 
-    <div class="main-taskbar-volume-div"> 
+    <div class="main-taskbar-volume-div" [class.active]="isShowVolumeControl"> 
         <figure  class="taskbar-volume-fig" (click)="showVolumeControl()" id="taskBarVolumeFig">
             <img class="taskbar-volume-img" [src]="audioIcon" [alt]="name"  [title]="currentVolumeTxt">
         </figure>

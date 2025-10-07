@@ -24,6 +24,8 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   private _audioService!:AudioService;
   private currentVolume = 0;
 
+  isShowVolumeControl = false;
+
   taskBarArrowIcon = `${Constants.IMAGE_BASE_PATH}taskbar_arrow_up.png`;
   taskBarNotificationIcon = `${Constants.IMAGE_BASE_PATH}taskbar_no_notification.png`;
   audioIcon = `${Constants.IMAGE_BASE_PATH}no_volume.png`;
@@ -47,7 +49,6 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
-
 
     // these are subs, but since this cmpnt will not be closed, it doesn't need to be destoryed
     this._audioService.changeVolumeNotify.subscribe(() => { this.upadateVolume()}); 
@@ -121,9 +122,9 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   }
 
   showVolumeControl():void{
+    this.isShowVolumeControl = !this.isShowVolumeControl;
     this._audioService.hideShowVolumeControlNotify.next();
   }
-
 
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
