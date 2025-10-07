@@ -51,8 +51,8 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
     this._runningProcessService.addProcess(this.getComponentDetail());
 
     // these are subs, but since this cmpnt will not be closed, it doesn't need to be destoryed
-    this._audioService.changeVolumeNotify.subscribe(() => { this.upadateVolume()}); 
-    this._systemNotificationServices.showDesktopNotify.subscribe(async () =>{this.upadateVolume()})
+    this._audioService.changeVolumeNotify.subscribe(async() => { this.upadateVolume()}); 
+    this._systemNotificationServices.showDesktopNotify.subscribe(async() =>{this.upadateVolume()})
   }
 
   ngOnInit():void {
@@ -91,7 +91,6 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
 
   setVolumeIcon():void{
     const tskBarVolumeElmnt = document.getElementById('taskBarVolumeFig') as HTMLImageElement;
-
     if(tskBarVolumeElmnt){
       if(this.currentVolume === -1){
         this.audioIcon =  `${Constants.IMAGE_BASE_PATH}volume_error.png`;
@@ -115,8 +114,8 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   }
 
   async upadateVolume():Promise<void>{
-    const delay = 250;
-    await CommonFunctions.sleep(delay)
+    const delay = 500;
+    await CommonFunctions.sleep(delay);
     this.currentVolume = this._audioService.getVolume();
     this.setVolumeIcon();
   }
