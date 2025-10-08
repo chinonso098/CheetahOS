@@ -85,7 +85,7 @@ export class WindowService implements BaseService{
             this._processPreviewImages.set(appName, tmpArr);
         }
         else{
-            const currImages = this._processPreviewImages.get(appName) || [];
+            const currImages = this._processPreviewImages.get(appName) ?? [];
 
             const currImg = currImages.find(x => x.pid === data.pid)
             if(currImg)
@@ -103,7 +103,7 @@ export class WindowService implements BaseService{
             this._processWindows.set(appName, [uid]);
         }
         else{
-            const currUids = this._processWindows.get(appName) || [];
+            const currUids = this._processWindows.get(appName) ?? [];
             currUids.push(uid);
             this._processWindows.set(appName, currUids);
         }
@@ -145,7 +145,7 @@ export class WindowService implements BaseService{
         const appName = uid.split(Constants.DASH)[0];
 
         if(this._processWindows.has(appName)){
-            const currUids = this._processWindows.get(appName) || [];
+            const currUids = this._processWindows.get(appName) ?? [];
 
             const deleteCount = 1;
             const uidIndex = currUids.indexOf(uid)
@@ -177,7 +177,7 @@ export class WindowService implements BaseService{
     removeProcessPreviewImage(appName:string, pid:number):void{
         const deleteCount = 1;
         if(this._processPreviewImages.has(appName)){
-            const currImages = this._processPreviewImages.get(appName) || [];
+            const currImages = this._processPreviewImages.get(appName) ?? [];
             const dataIndex = currImages.findIndex(d => d.pid  === pid);
     
             if(dataIndex != -1){
@@ -276,7 +276,7 @@ export class WindowService implements BaseService{
         this.removeProcessWindowFromWindows(uid);
 
         // only remove window bound information when there is no more windows for the given app
-        const currUids = this._processWindows.get(appName) || [];
+        const currUids = this._processWindows.get(appName) ?? [];
         if(currUids.length === 0){
             this.removeProcessWindowBounds(uid);
         }

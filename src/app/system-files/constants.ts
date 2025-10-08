@@ -65,8 +65,13 @@ export namespace Constants{
 
     export const CHEETAH_PWR_KEY = 'cheetahPwrKey';
     export const CHEETAH_LOGON_KEY = 'cheetahLogonKey';
+    export const CHEETAH_DEFAULT_SETTINGS_KEY = 'cheetahDefaultSettingsKey';
     export const FILE_SVC_RESTORE_KEY = 'fileServiceRestoreKey';
     export const FILE_SVC_FILE_ITERATE_KEY = 'fileServiceFileIterateKey';
+
+    export const DFLT_LOCK_SCREEN_TIMEOUT = 'LOCK_SCREEN_TIMEOUT';
+    export const DFLT_LOCK_SCREEN_BACKGROUND = 'LOCK_SCREEN_BACKGROUND';
+    export const DFLT_DESKTOP_BACKGROUND = 'DESKTOP_BACKGROUND';
 
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';

@@ -1364,7 +1364,7 @@ OpensWith=${shortCutData.opensWith}
 
     public getFolderOrigin(path:string):string{
         if(this._restorePoint.has(path)){
-            return this._restorePoint.get(path) || Constants.EMPTY_STRING;
+            return this._restorePoint.get(path) ?? Constants.EMPTY_STRING;
         }
         return Constants.EMPTY_STRING;
     }
@@ -1515,20 +1515,20 @@ OpensWith=${shortCutData.opensWith}
 
 
     private addAndUpdateSessionData(key:string, map:Map<string, string>):void{
-        this._sessionManagmentService.addFileServiceSession(key, map);
+        this._sessionManagmentService.addMapBasedSession(key, map);
     }
 
     private removeAndUpdateSessionData(key:string, path:string, map:Map<string, string>):void{
         if(key === this.fileServiceRestoreKey && map.has(path)){
             map.delete(path);
-            this._sessionManagmentService.addFileServiceSession(key, map);
+            this._sessionManagmentService.addMapBasedSession(key, map);
         }else{
-            this._sessionManagmentService.addFileServiceSession(key, map);
+            this._sessionManagmentService.addMapBasedSession(key, map);
         }
     }
 
     private retrievePastSessionData(key:string):void{
-        const sessionData = this._sessionManagmentService.getFileServiceSession(key) as Map<string, string>;
+        const sessionData = this._sessionManagmentService.getMapBasedSession(key) as Map<string, string>;
         console.log(`${key} sessionData:`, sessionData);
         if(sessionData){
             if(key === this.fileServiceRestoreKey)
