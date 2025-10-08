@@ -8,6 +8,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { Subscription } from 'rxjs';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'cos-controlpanel',
@@ -38,8 +39,11 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
 
   readonly LANDING_VIEW = 'Landing';
   readonly SYSTEM_VIEW = 'System';
+  readonly SYSTEM_VIEW_EXTRA = 'Screen, sound, notification'
   readonly APPS_VIEW = 'Apps';
+  readonly APPS_VIEW_EXTRA = 'Uninstall, default, optional features';
   readonly PERSONALIZATION_VIEW = 'Personalize';
+  readonly PERSONALIZATION_VIEW_EXTRA = 'Background, lock screen, colors';
 
   DEFAULT_VIEW = this.LANDING_VIEW;
 
@@ -50,6 +54,12 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   readonly SYSTEM_CLIPBOARD = 'Clipboard';
   readonly ON = 'On';
   readonly OFF = 'Off';
+
+
+  private _formBuilder:FormBuilder;
+  searchBarForm!: FormGroup;
+
+  searchPlaceHolder = 'FInd a seeting';
 
   readonly clipboardText =
 `When you copy or cut something in Cheetah, it's copied to the
@@ -78,17 +88,32 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   displayName = '';
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService, 
-               windowService:WindowService) { 
+               windowService:WindowService, formBuilder:FormBuilder) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._menuService = menuService;
     this._windowService = windowService;
+
+    this._formBuilder = formBuilder;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
   ngOnInit(): void {
+
+    this.searchBarForm = this._formBuilder.nonNullable.group({
+      searchBarText: Constants.EMPTY_STRING,
+    });
+
+    // this._searchBoxChangeSub = this.searchBarForm.get('searchBarText')?.valueChanges
+    //   .pipe(debounceTime(delay))
+    //   .subscribe(value => {
+    //     this.currentSearchString = value;
+    //     this.handleSearch(value);
+    //   });
+
+
     this.controlPanelOptions = this.generateControlPanelOptions();
     this.systemOptions = this.generateSystemOptions();
   }
@@ -106,8 +131,8 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   }
 
   generateControlPanelOptions():string[][]{
-    const options = [[this.systemImg, this.SYSTEM_VIEW], [this.appsImg, this.APPS_VIEW],  
-                     [this.personalizationImg, this.PERSONALIZATION_VIEW]];
+    const options = [[this.systemImg, this.SYSTEM_VIEW, this.SYSTEM_VIEW_EXTRA], [this.appsImg, this.APPS_VIEW,  this.APPS_VIEW_EXTRA],  
+                     [this.personalizationImg, this.PERSONALIZATION_VIEW, this.PERSONALIZATION_VIEW_EXTRA]];
     return options;
   }
 

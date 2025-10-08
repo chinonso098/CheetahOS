@@ -15,18 +15,50 @@
 
         <ng-template #landingView>
             <div class="landing-main__container">
-                <ol class="ol-landing-view__grid">
-                    <li class="li-landing-view" *ngFor="let cpOption of controlPanelOptions; let i = index" id="ilElmnt-{{processId}}" >
-                        <div class="landing-view__item" role="button" (click)="handleControlPanelSelection(cpOption[1], i, $event)" >
-                            
-                            <figure class="landing-view__figure">
-                                <img class="landing-view__img" [src]="cpOption[0]" />
-                            </figure>
+                <div class="landing-main__heading-container">
+                    <p class="landing-main__heading-p">Cheetah Settings</p>
+                </div>
+                <div class="landing-search__container">
+                    <div class="search-bar__form-cntnr">
+                        <form [formGroup]="searchBarForm"  class="search-bar__form">
+                             <input
+                                appKeyPressCapture
+                                class="search-bar__textbox"
+                                placeholder="{{searchPlaceHolder}}"
+                                formControlName="searchBarText"
+                             
+                                autofocus ="false" 
+                                spellcheck="false"
+                                autocomplete="off"
+                                autocapitalize="off"
+                                id="searchBarTxtBox"
+                            />
+                        </form> 
+                    </div>
+                </div>
+                <div class="landing-search__empty-container"></div>
+                <div class="landing-view__items">
+                    <ol class="ol-landing-view__grid">
+                        <li class="li-landing-view" *ngFor="let cpOption of controlPanelOptions; let i = index" id="ilElmnt-{{processId}}" >
+                            <div class="landing-view__item" role="button" (click)="handleControlPanelSelection(cpOption[1], i, $event)" >
+                                <div class="landing-view__item-img">
+                                    <figure class="landing-view__figure">
+                                        <img class="landing-view__img" [src]="cpOption[0]" />
+                                    </figure>
+                                </div>
+                                <div class="landing-view__item-text">
+                                    <div>
+                                        <p class="landing-view__heading-p">{{ cpOption[1] }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="landing-view__sub-heading-p">{{ cpOption[2] }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
 
-                            <p class="landing-view__p">{{ cpOption[1] }}</p>
-                        </div>
-                    </li>
-                </ol>
             </div>
         </ng-template>
 

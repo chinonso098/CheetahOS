@@ -1,27 +1,108 @@
 .settings-main__container{
-    display: flex;
-    width: fit-content;
-    height: fit-content;
-    /* background-color: transparent; */
+  display: flex;
+  width: fit-content;
+  height: fit-content;
+  /* background-color: transparent; */
 }
 
-
 /*Landing View Start*/
-
 .landing-main__container{
   display: flex;
+  flex-direction: column;
+  gap: 20px 0px;
+  padding: 15px;
   width: 900px;
   height: 500px;
   background-color: #000;
 }
 
+.landing-main__heading-container{
+  display: flex;
+  justify-content: center; /* Horizontally centers the child */
+  align-items: center;
+  width: 900px;
+  height: 60px;
+}
+
+.landing-main__heading-p{
+  padding: 0 1px;
+  color: #fff;
+  text-align: center;
+  font-size: 27px;
+  font-weight:200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
+  height: fit-content;
+}
+
+.landing-search__container{
+  display: flex;
+  justify-content: center; /* Horizontally centers the child */
+  width: 870px;
+  height: 20px;
+}
+
+.landing-search__empty-container{
+  width: 870px;
+  height: 30px;
+}
+
+/*SearchBox Form Section*/
+.search-bar__form-cntnr{
+  display: flex;
+  position: relative;
+  height: 35px;
+  width: 350px;
+}
+
+.search-bar__form {
+  position: relative;
+  margin: 0;
+  height: 35px;
+  width: 350px;
+}
+
+.search-bar__form{
+  background-color: transparent;
+}
+
+.search-bar__textbox{
+  height: 35px;
+  width: 350px;
+  font-size: 13.5px;
+  font-weight:normal;
+  color: #000;
+  background-color: #fff;
+  border: 2px solid #ccc;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+
+.search-bar__textbox:focus{
+  background-color: #fff;
+  border: 2px solid #0078d7;
+}
+
+/* Keep background white when it has text */
+.search-bar__textbox:not(:placeholder-shown) {
+  background-color: #fff;
+}
+
+
+.landing-view__items{
+  padding: 0px 20px;
+  width: 100%;
+  height: fit-content;
+}
+
 .ol-landing-view__grid{
   display: grid;
   grid-auto-flow: row;
-  grid-template-columns:  repeat(auto-fill, 105px);
-  grid-template-rows: repeat(auto-fill, 74px);
+  grid-template-columns:  repeat(auto-fill, 262px);
+  grid-template-rows: repeat(auto-fill, 80px);
   width: 100%;
-  gap: 0px 8px;
+  gap: 0px 20px;
 }
 
 .li-landing-view{
@@ -30,54 +111,60 @@
 }
 
 .landing-view__item{
-  display: block;
-  height: 74px;
-  width: 105px;
-  background-color: rgba(68, 68, 68);
-  border-radius: 3px;
+  display: flex;
+  height: 80px;
+  width: 262px;
+  /* background-color: rgba(68, 68, 68); */
+  border: 2px solid transparent;
+  padding: 8px 6px;
+}
+
+.landing-view__item-text{
+  display: flex;
+  flex-direction: column;
+  padding-left:6px;
 }
 
 .landing-view__item:hover{
-  background-color: rgba(109, 109, 109);
+  border: 2px solid #0078d7;
+}
+
+.landing-view__item-img{
+  width: 40px;
+  height: 80px;
 }
 
 .landing-view__figure{
   position: relative;
   align-items: center;
-  height: 30px;
-  width: 105px;
-  top: 9px;
+  height: 32px;
+  width: 32px;
+  top: 0px;
 }
 
 .landing-view__img{
   position: relative;
-  height: 30px;
-  width: 30px;
-  left: 50%;
-  transform: translateX(-50%);
+  height: 32px;
+  width: 32px;
 }
 
-.landing-view__p{
+.landing-view__heading-p, .landing-view__sub-heading-p{
   position: relative;
   color: #fff;
-  font-size:11px;
+  font-size:15px;
   font-weight:normal;
-  text-align: center;
+  text-align: left;
   width: 100%;
-  top: 14px;
-
-  overflow: hidden;         
-  text-overflow: ellipsis; 
-  white-space: nowrap;
+  word-wrap: break-word;
 }
 
-
-
-
-
+.landing-view__sub-heading-p{
+  font-size:12px;
+  font-weight:200;
+  top: 4px
+}
 
 /*Landing View End*/
-
 .system-option__panel{
   display: block;
   width: 250px;
@@ -149,24 +236,17 @@
 }
 
 .system-option__item-figure{
-    position: relative;
-    align-items: center;
-    height: 20px;
-    width: 20px;
-    top: 5px;
+  position: relative;
+  align-items: center;
+  height: 20px;
+  width: 20px;
+  top: 5px;
 }
 
 .system-option__item-img{
-    height: 20px;
-    width: 20px;
-    position: relative;
-}
-
-.system-view__panel{
-    display: block;
-    width: 650px;
-    height: 500px;
-    padding: 15px;
+  height: 20px;
+  width: 20px;
+  position: relative;
 }
 
 /*Button CSS Start*/
@@ -310,4 +390,12 @@
   top: -1px;
   font-size: 13px;
   -webkit-line-clamp:2;
+}
+
+.system-view__panel{
+  display: block;
+  width: 650px;
+  height: 500px;
+  padding: 15px;
+  background-color: #000;
 }
