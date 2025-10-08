@@ -1,87 +1,128 @@
 <cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
     <div class="settings-main__container" (contextmenu)="focusWindow($event)" (click)="focusWindow($event)">
-        <div class="settings-option__panel">
 
-            <ol class="ol-settings-option__grid">
-                <li class="li-settings-option__item" *ngFor="let option of settingOptions; let i = index">
-                    <div class="settings-option__item-cntnr" 
-                        (click)="handleSelection(option[1], i, $event)">
-                        
-                        <div class="settings-option__item-head">
-                            <div class="item-head__indication"   [class.active]="i === selectedIdx"   id="{{option[1]}}-{{processId}}"></div>
-                            <figure class="settings-option__item-figure">
-                                <img class="settings-option__item-img" [src]="option[0]" />
+
+        <ng-container [ngTemplateOutlet]="  DEFAULT_VIEW === LANDING_VIEW ? landingView:
+                                            DEFAULT_VIEW === SYSTEM_VIEW ? systemView:
+                                            DEFAULT_VIEW === APPS_VIEW ? applicationView: personalizationView">
+        </ng-container>
+
+
+        <!-- (click)="handlePath(app, RUN_APP,  $event)"
+                            (mouseenter)="onMouseEnter(i)" 
+                            (mouseleave)="onMouseLeave(i)"
+                            id="btnElmnt-{{processId}}-{{i}}" -->
+
+        <ng-template #landingView>
+            <div class="landing-main__container">
+                <ol class="ol-landing-view__grid">
+                    <li class="li-landing-view" *ngFor="let cpOption of controlPanelOptions; let i = index" id="ilElmnt-{{processId}}" >
+                        <div class="landing-view__item" role="button" (click)="handleControlPanelSelection(cpOption[1], i, $event)" >
+                            
+                            <figure class="landing-view__figure">
+                                <img class="landing-view__img" [src]="cpOption[0]" />
                             </figure>
+
+                            <p class="landing-view__p">{{ cpOption[1] }}</p>
                         </div>
+                    </li>
+                </ol>
+            </div>
+        </ng-template>
 
-                        <div class="settings-option__item-tail">
-                            <p class="settings-option__item-p">{{ option[1] }}</p>
+        <ng-template #systemView>
+            <div class="system-option__panel">
+                <ol class="ol-system-option__grid">
+                    <li class="li-system-option__item" *ngFor="let option of systemOptions; let i = index">
+                        <div class="system-option__item-cntnr" 
+                            (click)="handleSystemSelection(option[1], i, $event)">
+                            
+                            <div class="system-option__item-head">
+                                <div class="item-head__indication"   [class.active]="i === selectedIdx"   id="{{option[1]}}-{{processId}}"></div>
+                                <figure class="system-option__item-figure">
+                                    <img class="system-option__item-img" [src]="option[0]" />
+                                </figure>
+                            </div>
+    
+                            <div class="system-option__item-tail">
+                                <p class="system-option__item-p">{{ option[1] }}</p>
+                            </div>
                         </div>
-                    </div>
-                </li>
-            </ol>
-        </div>
-
-        <div class="settings-view__panel" >
-            <ng-container [ngTemplateOutlet]="selectedOption === SCREEN ? screenView:
-                                              selectedOption === NOTIFICATION ? notificationView:
-                                              selectedOption === STORAGE ? storageView:
-                                              selectedOption === CLIPBOARD ? clipboardView: aboutView">
-            </ng-container>
-
-            <ng-template #screenView>
-
-            </ng-template>
-
-            <ng-template #notificationView>
-
-            </ng-template>
-
-            <ng-template #storageView>
-
-            </ng-template>
-
-            <ng-template #clipboardView>
-                <div class="settings-view__clipboard-container"> 
-
-                    <div class="clipboard-block__content">
-                        <div class="clipboard-block__heading">
-                            <p class="clipboard-block-heading__p">Clipboard</p>
+                    </li>
+                </ol>
+            </div>
+    
+            <div class="system-view__panel" >
+                <ng-container [ngTemplateOutlet]="selectedOption === SYSTEM_SCREEN ? screenView:
+                                                  selectedOption === SYSTEM_NOTIFICATION ? notificationView:
+                                                  selectedOption === SYSTEM_STORAGE ? storageView:
+                                                  selectedOption === SYSTEM_CLIPBOARD ? clipboardView: aboutView">
+                </ng-container>
+    
+                <ng-template #screenView>
+    
+                </ng-template>
+    
+                <ng-template #notificationView>
+    
+                </ng-template>
+    
+                <ng-template #storageView>
+    
+                </ng-template>
+    
+                <ng-template #clipboardView>
+                    <div class="system-view__clipboard-container"> 
+    
+                        <div class="clipboard-block__content">
+                            <div class="clipboard-block__heading">
+                                <p class="clipboard-block-heading__p">Clipboard</p>
+                            </div>
+    
+                            <div class="clipboard-block__text">
+                                <p class="clipboard-block-text__p"> {{clipboardText}} </p>
+                            </div>
                         </div>
-
-                        <div class="clipboard-block__text">
-                            <p class="clipboard-block-text__p"> {{clipboardText}} </p>
+    
+                        <div class="clipboard-block__content">
+                            <div class="clipboard-block__heading">
+                                <p class="clipboard-block-heading1__p">Clipboard history</p>
+                            </div>
+    
+                            <div class="clipboard-block__text">
+                                <p class="clipboard-block-text__p"> {{clipboardHisotryText}} </p>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="clipboard-block__content">
-                        <div class="clipboard-block__heading">
-                            <p class="clipboard-block-heading1__p">Clipboard history</p>
-                        </div>
-
-                        <div class="clipboard-block__text">
-                            <p class="clipboard-block-text__p"> {{clipboardHisotryText}} </p>
-                        </div>
-                    </div>
-
-                    <div class="clipboard-block__content">
-                        <div class="clipboard-block__button">
-                            <label class="settings-btn__toggle">
-                                <input type="checkbox" [(ngModel)]="isSaveClipboardHistory" (change)="saveUnSaveClipBoardHisotry()">
-                                <span class="settings-btn__slider"></span>
-                            </label>
-
-                            <div class="clipboard-button__text">
-                                <p class="clipboard-button-text__p"> {{clipboardSaveStateText}} </p>
+    
+                        <div class="clipboard-block__content">
+                            <div class="clipboard-block__button">
+                                <label class="system-btn__toggle">
+                                    <input type="checkbox" [(ngModel)]="isSaveClipboardHistory" (change)="saveUnSaveClipBoardHisotry()">
+                                    <span class="system-btn__slider"></span>
+                                </label>
+    
+                                <div class="clipboard-button__text">
+                                    <p class="clipboard-button-text__p"> {{clipboardSaveStateText}} </p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </ng-template>
+                </ng-template>
+    
+                <ng-template #aboutView>
+    
+                </ng-template>
+            </div>
+        </ng-template>
 
-            <ng-template #aboutView>
+        <ng-template #personalizationView>
 
-            </ng-template>
-        </div>
+        </ng-template>
+
+        <ng-template #applicationView>
+
+        </ng-template>
+
+
     </div>
 </cos-window>

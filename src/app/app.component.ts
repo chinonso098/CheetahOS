@@ -10,6 +10,8 @@ import { ComponentReferenceService } from './shared/system-service/component.ref
 import { AudioService } from './shared/system-service/audio.services';
 import { SessionManagmentService } from './shared/system-service/session.management.service';
 import { FileIndexerService } from './shared/system-service/file.indexer.services';
+import { DefaultService } from './shared/system-service/defaults.services';
+
 import { CommonFunctions } from './system-files/common.functions';
 
 @Component({
@@ -51,7 +53,8 @@ export class AppComponent implements AfterViewInit {
   //a number of these servies are injected here (like fileIndexerService), even though it isn't utiized hear. This is to get around 
   //circular reference error, should it be injected in the fileService
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
-              componentReferenceService:ComponentReferenceService, fileIndexerService: FileIndexerService, sessionManagmentService:SessionManagmentService){
+              componentReferenceService:ComponentReferenceService, fileIndexerService: FileIndexerService, sessionManagmentService:SessionManagmentService,
+              defaultService:DefaultService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 

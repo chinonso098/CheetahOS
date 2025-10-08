@@ -5,7 +5,80 @@
     /* background-color: transparent; */
 }
 
-.settings-option__panel{
+
+/*Landing View Start*/
+
+.landing-main__container{
+  display: flex;
+  width: 900px;
+  height: 500px;
+  background-color: #000;
+}
+
+.ol-landing-view__grid{
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns:  repeat(auto-fill, 105px);
+  grid-template-rows: repeat(auto-fill, 74px);
+  width: 100%;
+  gap: 0px 8px;
+}
+
+.li-landing-view{
+  justify-content: center;
+  height: min-content;
+}
+
+.landing-view__item{
+  display: block;
+  height: 74px;
+  width: 105px;
+  background-color: rgba(68, 68, 68);
+  border-radius: 3px;
+}
+
+.landing-view__item:hover{
+  background-color: rgba(109, 109, 109);
+}
+
+.landing-view__figure{
+  position: relative;
+  align-items: center;
+  height: 30px;
+  width: 105px;
+  top: 9px;
+}
+
+.landing-view__img{
+  position: relative;
+  height: 30px;
+  width: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.landing-view__p{
+  position: relative;
+  color: #fff;
+  font-size:11px;
+  font-weight:normal;
+  text-align: center;
+  width: 100%;
+  top: 14px;
+
+  overflow: hidden;         
+  text-overflow: ellipsis; 
+  white-space: nowrap;
+}
+
+
+
+
+
+
+/*Landing View End*/
+
+.system-option__panel{
   display: block;
   width: 250px;
   height: 500px;
@@ -14,7 +87,7 @@
   padding: 15px 0px;
 }
 
-.ol-settings-option__grid{
+.ol-system-option__grid{
   display: grid;
   grid-auto-flow: row;
   grid-template-columns:  repeat(auto-fill, 248px);
@@ -23,22 +96,22 @@
   gap: 15px 0px;
 }
 
-.li-settings-option__item{
+.li-system-option__item{
   width: 248px;
   height: 30px;
 }
 
-.settings-option__item-cntnr{
+.system-option__item-cntnr{
   display: inline-flex;
   height: 30px;
   width: 248px;
 }
 
-.li-settings-option__item:hover{
+.li-system-option__item:hover{
     background-color: #6d6d6d;
 }
 
-.settings-option__item-p{
+.system-option__item-p{
   position: relative;
   width: 193px;
   top: 7px;
@@ -48,7 +121,7 @@
   white-space: nowrap;
 }
 
-.settings-option__item-head{
+.system-option__item-head{
   display: inline-flex;
   width: 45px;
   height: 30px;
@@ -64,7 +137,7 @@
   background-color: #0078d7;
 }
 
-.settings-option__item-tail{
+.system-option__item-tail{
   padding: 0 1px;
   color: #fff;
   text-align: left;
@@ -75,7 +148,7 @@
   height: 30px;
 }
 
-.settings-option__item-figure{
+.system-option__item-figure{
     position: relative;
     align-items: center;
     height: 20px;
@@ -83,13 +156,13 @@
     top: 5px;
 }
 
-.settings-option__item-img{
+.system-option__item-img{
     height: 20px;
     width: 20px;
     position: relative;
 }
 
-.settings-view__panel{
+.system-view__panel{
     display: block;
     width: 650px;
     height: 500px;
@@ -99,7 +172,7 @@
 /*Button CSS Start*/
 
 /* toggle container */
-.settings-btn__toggle {
+.system-btn__toggle {
   position: relative;
   display: inline-block;
   width: 40px;
@@ -107,14 +180,14 @@
 }
 
 /* Hide default checkbox */
-.settings-btn__toggle input {
+.system-btn__toggle input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
 /* slider background */
-.settings-btn__slider {
+.system-btn__slider {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -127,7 +200,7 @@
 }
 
 /*slider knob */
-.settings-btn__slider::before {
+.system-btn__slider::before {
   position: absolute;
   content: "";
   height: 10px;
@@ -141,13 +214,13 @@
 }
 
 /* ON (checked) state */
-.settings-btn__toggle input:checked + .settings-btn__slider {
+.system-btn__toggle input:checked + .system-btn__slider {
   background-color: #0078d7; /* Windows 10 blue */
   box-shadow: 0 0 10px rgba(0, 120, 215, 0.6);
 }
 
 /* Knob slides right */
-.settings-btn__toggle input:checked + .settings-btn__slider::before {
+.system-btn__toggle input:checked + .system-btn__slider::before {
   transform: translateX(20px);
   background-color: #ffffff; /* White knob when ON */
   box-shadow: 0 0 12px rgba(0, 120, 215, 0.8);
@@ -167,13 +240,13 @@
 }
 
 /* Apply glow animation only when checked */
-.settings-btn__toggle input:checked + .settings-btn__slider {
+.system-btn__toggle input:checked + .system-btn__slider {
   animation: glow 1.5s ease-in-out;
 }
 
 /*Button CSS End*/
 
-.settings-view__clipboard-container{
+.system-view__clipboard-container{
     width: 100%;
     height: 100%;
 }

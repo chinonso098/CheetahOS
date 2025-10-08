@@ -47,11 +47,14 @@ export class DefaultService implements BaseService{
     }
 
     private initializeDefaultSettings(): void {
-        this._defaultSettingsMap = new Map<string, string>();
-        
-        this._defaultSettingsMap.set(Constants.DFLT_LOCK_SCREEN_TIMEOUT, '1000');
-        this._defaultSettingsMap.set(Constants.DFLT_LOCK_SCREEN_BACKGROUND, '');
-        this._defaultSettingsMap.set(Constants.DFLT_DESKTOP_BACKGROUND, '');
+
+        this._defaultSettingsMap = new Map<string, string>([
+            [Constants.DFLT_LOCK_SCREEN_TIMEOUT, "1000"],
+            [Constants.DFLT_LOCK_SCREEN_BACKGROUND, ''],
+            [Constants.DFLT_DESKTOP_BACKGROUND, '']
+          ]);
+
+        this._sessionManagmentService.addMapBasedSession(this._defaultSettingServiceKey, this._defaultSettingsMap);
     }
 
     getDefaultSetting(key:string):string{

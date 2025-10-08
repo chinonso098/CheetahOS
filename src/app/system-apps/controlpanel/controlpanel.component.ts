@@ -32,11 +32,22 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   readonly screenImg = `${Constants.IMAGE_BASE_PATH}cp_screen.png`;
   readonly clipboardImg = `${Constants.IMAGE_BASE_PATH}cp_clipboard.png`;
 
-  readonly ABOUT = 'About';
-  readonly NOTIFICATION = 'Notifications & actions';
-  readonly STORAGE = 'Storage';
-  readonly SCREEN = 'Screen';
-  readonly CLIPBOARD = 'Clipboard';
+  readonly systemImg = `${Constants.IMAGE_BASE_PATH}cp_system.png`;
+  readonly appsImg = `${Constants.IMAGE_BASE_PATH}cp_apps.png`;
+  readonly personalizationImg = `${Constants.IMAGE_BASE_PATH}cp_personalization.png`;
+
+  readonly LANDING_VIEW = 'Landing';
+  readonly SYSTEM_VIEW = 'System';
+  readonly APPS_VIEW = 'Apps';
+  readonly PERSONALIZATION_VIEW = 'Personalize';
+
+  DEFAULT_VIEW = this.LANDING_VIEW;
+
+  readonly SYSTEM_ABOUT = 'About';
+  readonly SYSTEM_NOTIFICATION = 'Notifications & actions';
+  readonly SYSTEM_STORAGE = 'Storage';
+  readonly SYSTEM_SCREEN = 'Screen';
+  readonly SYSTEM_CLIPBOARD = 'Clipboard';
   readonly ON = 'On';
   readonly OFF = 'Off';
 
@@ -52,10 +63,11 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
  isSaveClipboardHistory = true;
  clipboardSaveStateText = this.ON;
 
-  selectedOption = this.SCREEN;
+  selectedOption = this.SYSTEM_SCREEN;
   selectedIdx = 0;
 
-  settingOptions!:string[][];
+  controlPanelOptions!:string[][];
+  systemOptions!:string[][];
   
   isMaximizable = false;
   hasWindow = true;
@@ -77,7 +89,8 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.settingOptions = this.generateOptions();
+    this.controlPanelOptions = this.generateControlPanelOptions();
+    this.systemOptions = this.generateSystemOptions();
   }
 
   ngOnDestroy(): void {
@@ -92,13 +105,26 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
-  generateOptions():string[][]{
-    const options = [[this.screenImg, this.SCREEN], [this.notificationImg, this.NOTIFICATION],  
-                     [this.storageImg, this.STORAGE], [this.clipboardImg, this.CLIPBOARD], [this.aboutImg, this.ABOUT]];
+  generateControlPanelOptions():string[][]{
+    const options = [[this.systemImg, this.SYSTEM_VIEW], [this.appsImg, this.APPS_VIEW],  
+                     [this.personalizationImg, this.PERSONALIZATION_VIEW]];
     return options;
   }
 
-  handleSelection(selection:string, idx:number, evt:MouseEvent):void{
+  generateSystemOptions():string[][]{
+    const options = [[this.screenImg, this.SYSTEM_SCREEN], [this.notificationImg, this.SYSTEM_NOTIFICATION],  
+                     [this.storageImg, this.SYSTEM_STORAGE], [this.clipboardImg, this.SYSTEM_CLIPBOARD], [this.aboutImg, this.SYSTEM_ABOUT]];
+    return options;
+  }
+
+  handleControlPanelSelection(selection:string, idx:number, evt:MouseEvent):void{
+    evt.stopPropagation();
+
+    this.DEFAULT_VIEW = selection;
+    //this.selectedIdx = idx;
+  }
+
+  handleSystemSelection(selection:string, idx:number, evt:MouseEvent):void{
     evt.stopPropagation();
 
     this.selectedOption = selection;
