@@ -1,17 +1,10 @@
 <cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
     <div class="settings-main__container" (contextmenu)="focusWindow($event)" (click)="focusWindow($event)">
 
-
         <ng-container [ngTemplateOutlet]="  DEFAULT_VIEW === LANDING_VIEW ? landingView:
                                             DEFAULT_VIEW === SYSTEM_VIEW ? systemView:
                                             DEFAULT_VIEW === APPS_VIEW ? applicationView: personalizationView">
         </ng-container>
-
-
-        <!-- (click)="handlePath(app, RUN_APP,  $event)"
-                            (mouseenter)="onMouseEnter(i)" 
-                            (mouseleave)="onMouseLeave(i)"
-                            id="btnElmnt-{{processId}}-{{i}}" -->
 
         <ng-template #landingView>
             <div class="landing-main__container">
@@ -39,8 +32,8 @@
                 <div class="landing-search__empty-container"></div>
                 <div class="landing-view__items">
                     <ol class="ol-landing-view__grid">
-                        <li class="li-landing-view" *ngFor="let cpOption of settingsOptions; let i = index" id="ilElmnt-{{processId}}" >
-                            <div class="landing-view__item" role="button" (click)="handleSettingsPanelSelection(cpOption[1], i, $event)" >
+                        <li class="li-landing-view" *ngFor="let cpOption of settingsOptions; let i = index">
+                            <div class="landing-view__item" role="button" (click)="handleSettingsPanelSelection(cpOption[1], $event)" >
                                 <div class="landing-view__item-img">
                                     <figure class="landing-view__figure">
                                         <img class="landing-view__img" [src]="cpOption[0]" />
@@ -64,13 +57,52 @@
 
         <ng-template #systemView>
             <div class="system-option__panel">
+                <div class="system-option__first">
+                    <div class="secondary-search__empty-container"></div>
+                    <div class="system-option__item-cntnr" 
+                        (click)="handleMenuSelection(HOME, -1, $event)">
+                        <div class="system-option__item-head">
+                            <div class="item-head__indication" ></div>
+                            <figure class="system-option__item-figure">
+                                <img class="system-option__item-img" [src]="homeImg" />
+                            </figure>
+                        </div>
+                        <div class="system-option__item-tail">
+                            <p class="system-option__item-p">{{ HOME }}</p>
+                        </div>
+                    </div>
+        
+                    <div class="secondary-search__container">
+                        <div class="secondary-search-bar__form-cntnr">
+                            <form [formGroup]="searchBarForm"  class="secondary-search-bar__form">
+                                    <input
+                                    appKeyPressCapture
+                                    class="secondary-search-bar__textbox"
+                                    placeholder="{{searchPlaceHolder}}"
+                                    formControlName="searchBarText"
+                                    
+                                    autofocus ="false" 
+                                    spellcheck="false"
+                                    autocomplete="off"
+                                    autocapitalize="off"
+                                    id="searchBarTxtBox"
+                                />
+                            </form> 
+                        </div>
+                    </div>
+
+                    <div class="system-option__first-text">  
+                        <p class="system-option__first-p"> System </p>
+                    </div>
+                    <div class="secondary-search__empty-container"></div>
+                </div>
                 <ol class="ol-system-option__grid">
                     <li class="li-system-option__item" *ngFor="let option of systemOptions; let i = index">
                         <div class="system-option__item-cntnr" 
-                            (click)="handleSystemSelection(option[1], i, $event)">
+                            (click)="handleMenuSelection(option[1], i, $event)">
                             
                             <div class="system-option__item-head">
-                                <div class="item-head__indication"   [class.active]="i === selectedIdx"   id="{{option[1]}}-{{processId}}"></div>
+                                <div class="item-head__indication"   [class.active]="i === selectedIdx"></div>
                                 <figure class="system-option__item-figure">
                                     <img class="system-option__item-img" [src]="option[0]" />
                                 </figure>
@@ -148,7 +180,85 @@
         </ng-template>
 
         <ng-template #personalizationView>
+            <div class="personalization-option__panel">
+                <div class="personalization-option__first">
+                    <div class="secondary-search__empty-container"></div>
+                    <div class="personalization-option__item-cntnr" 
+                        (click)="handleMenuSelection(HOME, -1, $event)">
+                        <div class="personalization-option__item-head">
+                            <div class="item-head__indication" ></div>
+                            <figure class="personalization-option__item-figure">
+                                <img class="personalization-option__item-img" [src]="homeImg" />
+                            </figure>
+                        </div>
+                        <div class="personalization-option__item-tail">
+                            <p class="personalization-option__item-p">{{ HOME }}</p>
+                        </div>
+                    </div>
+        
+                    <div class="secondary-search__container">
+                        <div class="secondary-search-bar__form-cntnr">
+                            <form [formGroup]="searchBarForm"  class="secondary-search-bar__form">
+                                    <input
+                                    appKeyPressCapture
+                                    class="secondary-search-bar__textbox"
+                                    placeholder="{{searchPlaceHolder}}"
+                                    formControlName="searchBarText"
+                                    
+                                    autofocus ="false" 
+                                    spellcheck="false"
+                                    autocomplete="off"
+                                    autocapitalize="off"
+                                    id="searchBarTxtBox"
+                                />
+                            </form> 
+                        </div>
+                    </div>
 
+                    <div class="personalization-option__first-text">  
+                        <p class="personalization-option__first-p"> Personalization </p>
+                    </div>
+                    <div class="secondary-search__empty-container"></div>
+                </div>
+                <ol class="ol-personalization-option__grid">
+                    <li class="li-personalization-option__item" *ngFor="let option of personalizationOptions; let i = index">
+                        <div class="personalization-option__item-cntnr" 
+                            (click)="handleMenuSelection(option[1], i, $event)">
+                            
+                            <div class="personalization-option__item-head">
+                                <div class="item-head__indication"   [class.active]="i === selectedIdx"></div>
+                                <figure class="personalization-option__item-figure">
+                                    <img class="personalization-option__item-img" [src]="option[0]" />
+                                </figure>
+                            </div>
+    
+                            <div class="personalization-option__item-tail">
+                                <p class="personalization-option__item-p">{{ option[1] }}</p>
+                            </div>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+    
+            <div class="personalization-view__panel" >
+                <ng-container [ngTemplateOutlet]="selectedOption === PERSONALIZATION_DESKTOP_BACKGROUND ? dsktpBackgrounView:
+                                                  selectedOption === PERSONALIZATION_LOCKSCREEN ? lockScreenView: taskBarView">
+                </ng-container>
+    
+                <ng-template #dsktpBackgrounView>
+    
+                </ng-template>
+    
+                <ng-template #lockScreenView>
+                    <div class="personalization-view__locsckreen-container">
+
+                    </div>
+                </ng-template>
+    
+                <ng-template #taskBarView>
+    
+                </ng-template>
+            </div>
         </ng-template>
 
         <ng-template #applicationView>

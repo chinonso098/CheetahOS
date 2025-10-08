@@ -35,11 +35,18 @@
   height: fit-content;
 }
 
-.landing-search__container{
+
+/*SearchBox Section Start*/
+
+.landing-search__container, .secondary-search__container{
   display: flex;
   justify-content: center; /* Horizontally centers the child */
   width: 870px;
-  height: 20px;
+  height: 30px;
+}
+
+.secondary-search__container{
+  width: 250px;
 }
 
 .landing-search__empty-container{
@@ -47,27 +54,39 @@
   height: 30px;
 }
 
-/*SearchBox Form Section*/
-.search-bar__form-cntnr{
+.secondary-search__empty-container{
+  width: 250px;
+  height: 1px;
+}
+
+.search-bar__form-cntnr, .secondary-search-bar__form-cntnr{
   display: flex;
   position: relative;
-  height: 35px;
+  height: 30px;
   width: 350px;
 }
 
-.search-bar__form {
+.secondary-search-bar__form-cntnr{
+  width: 215px;
+}
+
+.search-bar__form, .secondary-search-bar__form {
   position: relative;
   margin: 0;
-  height: 35px;
+  height: 30px;
   width: 350px;
 }
 
-.search-bar__form{
+.secondary-search-bar__form{
+  width: 215px;
+}
+
+.search-bar__form, .secondary-search-bar__form{
   background-color: transparent;
 }
 
-.search-bar__textbox{
-  height: 35px;
+.search-bar__textbox, .secondary-search-bar__textbox{
+  height: 30px;
   width: 350px;
   font-size: 13.5px;
   font-weight:normal;
@@ -78,17 +97,21 @@
   transition: background-color 0.2s ease;
 }
 
+.secondary-search-bar__textbox{
+  width: 215px;
+}
 
-.search-bar__textbox:focus{
+.search-bar__textbox:focus, .secondary-search-bar__textbox:focus{
   background-color: #fff;
   border: 2px solid #0078d7;
 }
 
 /* Keep background white when it has text */
-.search-bar__textbox:not(:placeholder-shown) {
+.search-bar__textbox:not(:placeholder-shown), .secondary-search-bar__textbox:not(:placeholder-shown) {
   background-color: #fff;
 }
 
+/*SearchBox Section End*/
 
 .landing-view__items{
   padding: 0px 20px;
@@ -165,7 +188,9 @@
 }
 
 /*Landing View End*/
-.system-option__panel{
+
+
+.system-option__panel, .personalization-option__panel{
   display: block;
   width: 250px;
   height: 500px;
@@ -174,7 +199,30 @@
   padding: 15px 0px;
 }
 
-.ol-system-option__grid{
+.system-option__first, .personalization-option__first{
+  display: flex;
+  flex-direction: column;
+  gap: 20px 0px;
+  width: 250px;
+}
+
+.system-option__first-text, .personalization-option__first-text{
+  position: relative;
+  width: 100%;
+  height: fit-content;
+}
+
+.system-option__first-p, .personalization-option__first-p{
+  position: relative;
+  color: #fff;
+  font-size:13px;
+  font-weight:normal;
+  text-align: left;
+  left: 20px;
+  width: 100%;
+}
+
+.ol-system-option__grid, .ol-personalization-option__grid{
   display: grid;
   grid-auto-flow: row;
   grid-template-columns:  repeat(auto-fill, 248px);
@@ -183,22 +231,22 @@
   gap: 15px 0px;
 }
 
-.li-system-option__item{
+.li-system-option__item, .li-personalization-option__item{
   width: 248px;
   height: 30px;
 }
 
-.system-option__item-cntnr{
+.system-option__item-cntnr, .personalization-option__item-cntnr{
   display: inline-flex;
   height: 30px;
   width: 248px;
 }
 
-.li-system-option__item:hover{
+.li-system-option__item:hover, .li-personalization-option__item:hover{
     background-color: #6d6d6d;
 }
 
-.system-option__item-p{
+.system-option__item-p, .personalization-option__item-p{
   position: relative;
   width: 193px;
   top: 7px;
@@ -208,7 +256,7 @@
   white-space: nowrap;
 }
 
-.system-option__item-head{
+.system-option__item-head, .personalization-option__item-head{
   display: inline-flex;
   width: 45px;
   height: 30px;
@@ -224,7 +272,7 @@
   background-color: #0078d7;
 }
 
-.system-option__item-tail{
+.system-option__item-tail, .personalization-option__item-tail{
   padding: 0 1px;
   color: #fff;
   text-align: left;
@@ -235,7 +283,7 @@
   height: 30px;
 }
 
-.system-option__item-figure{
+.system-option__item-figure, .personalization-option__item-figure{
   position: relative;
   align-items: center;
   height: 20px;
@@ -243,10 +291,18 @@
   top: 5px;
 }
 
-.system-option__item-img{
+.system-option__item-img, .personalization-option__item-img{
   height: 20px;
   width: 20px;
   position: relative;
+}
+
+.system-view__panel, .personalization-view__panel{
+  display: block;
+  width: 650px;
+  height: 500px;
+  padding: 15px;
+  background-color: #000;
 }
 
 /*Button CSS Start*/
@@ -326,16 +382,19 @@
 
 /*Button CSS End*/
 
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ SYSTEM  START @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+/*System Clipboard Start*/
+
 .system-view__clipboard-container{
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 .clipboard-block__content, 
 .clipboard-block__heading, 
 .clipboard-block__text{
-    width: 100%;
-    height: fit-content;
+  width: 100%;
+  height: fit-content;
 }
 
 .clipboard-block__content{
@@ -392,10 +451,19 @@
   -webkit-line-clamp:2;
 }
 
-.system-view__panel{
-  display: block;
-  width: 650px;
-  height: 500px;
-  padding: 15px;
-  background-color: #000;
+/*System Clipboard End*/
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ SYSTEM  END @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ PERSONALIZATION  START @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+/*Personalization Lockscreen Start*/
+
+.personalization-view__locsckreen-container{
+  width: 100%;
+  height: 100%;
 }
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ PERSONALIZATION  END @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/

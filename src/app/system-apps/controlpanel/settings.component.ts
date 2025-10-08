@@ -27,6 +27,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private _windowService:WindowService;
   private _hideStartMenuSub!:Subscription;
 
+  readonly homeImg = `${Constants.IMAGE_BASE_PATH}cp_home.png`;
+  readonly HOME = 'home';
+  
   readonly aboutImg = `${Constants.IMAGE_BASE_PATH}cp_info.png`;
   readonly notificationImg = `${Constants.IMAGE_BASE_PATH}cp_notification.png`;
   readonly storageImg = `${Constants.IMAGE_BASE_PATH}cp_storage.png`;
@@ -36,6 +39,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly systemImg = `${Constants.IMAGE_BASE_PATH}cp_system.png`;
   readonly appsImg = `${Constants.IMAGE_BASE_PATH}cp_apps.png`;
   readonly personalizationImg = `${Constants.IMAGE_BASE_PATH}cp_personalization.png`;
+
+  readonly desktopBackgrounImg = `${Constants.IMAGE_BASE_PATH}cp_background.png`;
+  readonly taskbarImg = `${Constants.IMAGE_BASE_PATH}cp_taskbar.png`;
+  readonly lockScreenImg = `${Constants.IMAGE_BASE_PATH}cp_lockscreen.png`;
+  readonly colorImg = `${Constants.IMAGE_BASE_PATH}cp_color.png`;
 
   readonly LANDING_VIEW = 'Landing';
   readonly SYSTEM_VIEW = 'System';
@@ -52,6 +60,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly SYSTEM_STORAGE = 'Storage';
   readonly SYSTEM_SCREEN = 'Screen';
   readonly SYSTEM_CLIPBOARD = 'Clipboard';
+
+  readonly PERSONALIZATION_DESKTOP_BACKGROUND = 'Background';
+  readonly PERSONALIZATION_LOCKSCREEN = 'Lock screen';
+  readonly PERSONALIZATION_TASKBAR = 'Taskbar';
+  //readonly PERSONALIZATION_COLOR = 'Color';
+
   readonly ON = 'On';
   readonly OFF = 'Off';
 
@@ -78,6 +92,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   settingsOptions!:string[][];
   systemOptions!:string[][];
+  personalizationOptions!:string[][];
   
   isMaximizable = false;
   hasWindow = true;
@@ -116,6 +131,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     this.settingsOptions = this.generateControlPanelOptions();
     this.systemOptions = this.generateSystemOptions();
+    this.personalizationOptions = this.generatePersonalizationOptions();
   }
 
   ngOnDestroy(): void {
@@ -142,14 +158,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return options;
   }
 
-  handleSettingsPanelSelection(selection:string, idx:number, evt:MouseEvent):void{
-    evt.stopPropagation();
-
-    this.DEFAULT_VIEW = selection;
-    //this.selectedIdx = idx;
+  generatePersonalizationOptions():string[][]{
+    const options = [[this.desktopBackgrounImg, this.PERSONALIZATION_DESKTOP_BACKGROUND], [this.lockScreenImg, this.PERSONALIZATION_LOCKSCREEN],  
+                     [this.taskbarImg, this.PERSONALIZATION_TASKBAR]];
+    return options;
   }
 
-  handleSystemSelection(selection:string, idx:number, evt:MouseEvent):void{
+  handleSettingsPanelSelection(selection:string, evt:MouseEvent):void{
+    evt.stopPropagation();
+    this.DEFAULT_VIEW = selection;
+  }
+
+  handleMenuSelection(selection:string, idx:number, evt:MouseEvent):void{
     evt.stopPropagation();
 
     this.selectedOption = selection;
