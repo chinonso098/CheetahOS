@@ -28,8 +28,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private _hideStartMenuSub!:Subscription;
 
   readonly homeImg = `${Constants.IMAGE_BASE_PATH}cp_home.png`;
-  readonly HOME = 'home';
-  
   readonly aboutImg = `${Constants.IMAGE_BASE_PATH}cp_info.png`;
   readonly notificationImg = `${Constants.IMAGE_BASE_PATH}cp_notification.png`;
   readonly storageImg = `${Constants.IMAGE_BASE_PATH}cp_storage.png`;
@@ -45,15 +43,16 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly lockScreenImg = `${Constants.IMAGE_BASE_PATH}cp_lockscreen.png`;
   readonly colorImg = `${Constants.IMAGE_BASE_PATH}cp_color.png`;
 
-  readonly LANDING_VIEW = 'Landing';
+  readonly HOME_VIEW = 'Home';
   readonly SYSTEM_VIEW = 'System';
   readonly SYSTEM_VIEW_EXTRA = 'Screen, sound, notification'
   readonly APPS_VIEW = 'Apps';
   readonly APPS_VIEW_EXTRA = 'Uninstall, default, optional features';
   readonly PERSONALIZATION_VIEW = 'Personalize';
   readonly PERSONALIZATION_VIEW_EXTRA = 'Background, lock screen, colors';
+  DEFAULT_VIEW = this.HOME_VIEW;
 
-  DEFAULT_VIEW = this.LANDING_VIEW;
+  readonly HOME_HOME = 'Home';
 
   readonly SYSTEM_ABOUT = 'About';
   readonly SYSTEM_NOTIFICATION = 'Notifications & actions';
@@ -87,7 +86,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
  isSaveClipboardHistory = true;
  clipboardSaveStateText = this.ON;
 
-  selectedOption = this.SYSTEM_SCREEN;
+  selectedSystemOption = this.SYSTEM_SCREEN;
+  selectedPersonalizationOption = this.PERSONALIZATION_DESKTOP_BACKGROUND;
+  selectedApplicationOption = Constants.EMPTY_STRING;
   selectedIdx = 0;
 
   settingsOptions!:string[][];
@@ -169,11 +170,25 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.DEFAULT_VIEW = selection;
   }
 
-  handleMenuSelection(selection:string, idx:number, evt:MouseEvent):void{
+  handleMenuSelection(selection:string, idx:number, evt:MouseEvent, view:string):void{
     evt.stopPropagation();
 
-    this.selectedOption = selection;
-    this.selectedIdx = idx;
+    if(idx === -1 && view === this.HOME_VIEW){
+      this.DEFAULT_VIEW = this.HOME_VIEW;
+      return;
+    }
+
+    if(view === this.SYSTEM_VIEW){
+      this.selectedSystemOption = selection;
+      this.selectedIdx = idx;
+      return;
+    }
+
+    if(view === this.PERSONALIZATION_VIEW){
+      this.selectedPersonalizationOption = selection;
+      this.selectedIdx = idx;
+      return;
+    }
   }
 
   saveUnSaveClipBoardHisotry():void{

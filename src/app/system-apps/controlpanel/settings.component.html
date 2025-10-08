@@ -1,17 +1,17 @@
 <cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
     <div class="settings-main__container" (contextmenu)="focusWindow($event)" (click)="focusWindow($event)">
 
-        <ng-container [ngTemplateOutlet]="  DEFAULT_VIEW === LANDING_VIEW ? landingView:
+        <ng-container [ngTemplateOutlet]="  DEFAULT_VIEW === HOME_VIEW ? homeView:
                                             DEFAULT_VIEW === SYSTEM_VIEW ? systemView:
                                             DEFAULT_VIEW === APPS_VIEW ? applicationView: personalizationView">
         </ng-container>
 
-        <ng-template #landingView>
-            <div class="landing-main__container">
-                <div class="landing-main__heading-container">
-                    <p class="landing-main__heading-p">Cheetah Settings</p>
+        <ng-template #homeView>
+            <div class="home-main__container">
+                <div class="home-main__heading-container">
+                    <p class="home-main__heading-p">Cheetah Settings</p>
                 </div>
-                <div class="landing-search__container">
+                <div class="home-search__container">
                     <div class="search-bar__form-cntnr">
                         <form [formGroup]="searchBarForm"  class="search-bar__form">
                              <input
@@ -29,22 +29,22 @@
                         </form> 
                     </div>
                 </div>
-                <div class="landing-search__empty-container"></div>
-                <div class="landing-view__items">
-                    <ol class="ol-landing-view__grid">
-                        <li class="li-landing-view" *ngFor="let cpOption of settingsOptions; let i = index">
-                            <div class="landing-view__item" role="button" (click)="handleSettingsPanelSelection(cpOption[1], $event)" >
-                                <div class="landing-view__item-img">
-                                    <figure class="landing-view__figure">
-                                        <img class="landing-view__img" [src]="cpOption[0]" />
+                <div class="home-search__empty-container"></div>
+                <div class="home-view__items">
+                    <ol class="ol-home-view__grid">
+                        <li class="li-home-view" *ngFor="let cpOption of settingsOptions; let i = index">
+                            <div class="home-view__item" role="button" (click)="handleSettingsPanelSelection(cpOption[1], $event)" >
+                                <div class="home-view__item-img">
+                                    <figure class="home-view__figure">
+                                        <img class="home-view__img" [src]="cpOption[0]" />
                                     </figure>
                                 </div>
-                                <div class="landing-view__item-text">
+                                <div class="home-view__item-text">
                                     <div>
-                                        <p class="landing-view__heading-p">{{ cpOption[1] }}</p>
+                                        <p class="home-view__heading-p">{{ cpOption[1] }}</p>
                                     </div>
                                     <div>
-                                        <p class="landing-view__sub-heading-p">{{ cpOption[2] }}</p>
+                                        <p class="home-view__sub-heading-p">{{ cpOption[2] }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -60,7 +60,7 @@
                 <div class="system-option__first">
                     <div class="secondary-search__empty-container"></div>
                     <div class="system-option__item-cntnr" 
-                        (click)="handleMenuSelection(HOME, -1, $event)">
+                        (click)="handleMenuSelection(HOME_HOME, -1, $event, HOME_VIEW)">
                         <div class="system-option__item-head">
                             <div class="item-head__indication" ></div>
                             <figure class="system-option__item-figure">
@@ -68,7 +68,7 @@
                             </figure>
                         </div>
                         <div class="system-option__item-tail">
-                            <p class="system-option__item-p">{{ HOME }}</p>
+                            <p class="system-option__item-p">{{ HOME_HOME }}</p>
                         </div>
                     </div>
         
@@ -99,7 +99,7 @@
                 <ol class="ol-system-option__grid">
                     <li class="li-system-option__item" *ngFor="let option of systemOptions; let i = index">
                         <div class="system-option__item-cntnr" 
-                            (click)="handleMenuSelection(option[1], i, $event)">
+                            (click)="handleMenuSelection(option[1], i, $event, SYSTEM_VIEW)">
                             
                             <div class="system-option__item-head">
                                 <div class="item-head__indication"   [class.active]="i === selectedIdx"></div>
@@ -117,10 +117,10 @@
             </div>
     
             <div class="system-view__panel" >
-                <ng-container [ngTemplateOutlet]="selectedOption === SYSTEM_SCREEN ? screenView:
-                                                  selectedOption === SYSTEM_NOTIFICATION ? notificationView:
-                                                  selectedOption === SYSTEM_STORAGE ? storageView:
-                                                  selectedOption === SYSTEM_CLIPBOARD ? clipboardView: aboutView">
+                <ng-container [ngTemplateOutlet]="selectedSystemOption === SYSTEM_SCREEN ? screenView:
+                                                  selectedSystemOption === SYSTEM_NOTIFICATION ? notificationView:
+                                                  selectedSystemOption === SYSTEM_STORAGE ? storageView:
+                                                  selectedSystemOption === SYSTEM_CLIPBOARD ? clipboardView: aboutView">
                 </ng-container>
     
                 <ng-template #screenView>
@@ -184,7 +184,7 @@
                 <div class="personalization-option__first">
                     <div class="secondary-search__empty-container"></div>
                     <div class="personalization-option__item-cntnr" 
-                        (click)="handleMenuSelection(HOME, -1, $event)">
+                        (click)="handleMenuSelection(HOME_HOME, -1, $event, HOME_VIEW)">
                         <div class="personalization-option__item-head">
                             <div class="item-head__indication" ></div>
                             <figure class="personalization-option__item-figure">
@@ -192,7 +192,7 @@
                             </figure>
                         </div>
                         <div class="personalization-option__item-tail">
-                            <p class="personalization-option__item-p">{{ HOME }}</p>
+                            <p class="personalization-option__item-p">{{ HOME_HOME }}</p>
                         </div>
                     </div>
         
@@ -223,7 +223,7 @@
                 <ol class="ol-personalization-option__grid">
                     <li class="li-personalization-option__item" *ngFor="let option of personalizationOptions; let i = index">
                         <div class="personalization-option__item-cntnr" 
-                            (click)="handleMenuSelection(option[1], i, $event)">
+                            (click)="handleMenuSelection(option[1], i, $event, PERSONALIZATION_VIEW)">
                             
                             <div class="personalization-option__item-head">
                                 <div class="item-head__indication"   [class.active]="i === selectedIdx"></div>
@@ -241,8 +241,8 @@
             </div>
     
             <div class="personalization-view__panel" >
-                <ng-container [ngTemplateOutlet]="selectedOption === PERSONALIZATION_DESKTOP_BACKGROUND ? dsktpBackgrounView:
-                                                  selectedOption === PERSONALIZATION_LOCKSCREEN ? lockScreenView: taskBarView">
+                <ng-container [ngTemplateOutlet]="selectedPersonalizationOption === PERSONALIZATION_DESKTOP_BACKGROUND ? dsktpBackgrounView:
+                                                  selectedPersonalizationOption === PERSONALIZATION_LOCKSCREEN ? lockScreenView: taskBarView">
                 </ng-container>
     
                 <ng-template #dsktpBackgrounView>

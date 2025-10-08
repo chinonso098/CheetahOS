@@ -5,8 +5,8 @@
   /* background-color: transparent; */
 }
 
-/*Landing View Start*/
-.landing-main__container{
+/*home View Start*/
+.home-main__container{
   display: flex;
   flex-direction: column;
   gap: 20px 0px;
@@ -16,7 +16,7 @@
   background-color: #000;
 }
 
-.landing-main__heading-container{
+.home-main__heading-container{
   display: flex;
   justify-content: center; /* Horizontally centers the child */
   align-items: center;
@@ -24,7 +24,7 @@
   height: 60px;
 }
 
-.landing-main__heading-p{
+.home-main__heading-p{
   padding: 0 1px;
   color: #fff;
   text-align: center;
@@ -38,7 +38,7 @@
 
 /*SearchBox Section Start*/
 
-.landing-search__container, .secondary-search__container{
+.home-search__container, .secondary-search__container{
   display: flex;
   justify-content: center; /* Horizontally centers the child */
   width: 870px;
@@ -49,7 +49,7 @@
   width: 250px;
 }
 
-.landing-search__empty-container{
+.home-search__empty-container{
   width: 870px;
   height: 30px;
 }
@@ -113,13 +113,13 @@
 
 /*SearchBox Section End*/
 
-.landing-view__items{
+.home-view__items{
   padding: 0px 20px;
   width: 100%;
   height: fit-content;
 }
 
-.ol-landing-view__grid{
+.ol-home-view__grid{
   display: grid;
   grid-auto-flow: row;
   grid-template-columns:  repeat(auto-fill, 262px);
@@ -128,12 +128,12 @@
   gap: 0px 20px;
 }
 
-.li-landing-view{
+.li-home-view{
   justify-content: center;
   height: min-content;
 }
 
-.landing-view__item{
+.home-view__item{
   display: flex;
   height: 80px;
   width: 262px;
@@ -142,22 +142,22 @@
   padding: 8px 6px;
 }
 
-.landing-view__item-text{
+.home-view__item-text{
   display: flex;
   flex-direction: column;
   padding-left:6px;
 }
 
-.landing-view__item:hover{
+.home-view__item:hover{
   border: 2px solid #0078d7;
 }
 
-.landing-view__item-img{
+.home-view__item-img{
   width: 40px;
   height: 80px;
 }
 
-.landing-view__figure{
+.home-view__figure{
   position: relative;
   align-items: center;
   height: 32px;
@@ -165,13 +165,13 @@
   top: 0px;
 }
 
-.landing-view__img{
+.home-view__img{
   position: relative;
   height: 32px;
   width: 32px;
 }
 
-.landing-view__heading-p, .landing-view__sub-heading-p{
+.home-view__heading-p, .home-view__sub-heading-p{
   position: relative;
   color: #fff;
   font-size:15px;
@@ -181,13 +181,13 @@
   word-wrap: break-word;
 }
 
-.landing-view__sub-heading-p{
+.home-view__sub-heading-p{
   font-size:12px;
   font-weight:200;
   top: 4px
 }
 
-/*Landing View End*/
+/*home View End*/
 
 
 .system-option__panel, .personalization-option__panel{
