@@ -10,7 +10,7 @@ import { AppComponent } from './app.component';
 import { TitleComponent } from './user-apps/title/title.component';
 import { DesktopComponent } from './system-apps/desktop/desktop.component';
 import { TaskbarComponent } from './system-apps/taskbar/taskbar.component';
-import { ControlPanelComponent } from './system-apps/controlpanel/controlpanel.component';
+import { SettingsComponent } from './system-apps/controlpanel/settings.component';
 import { StartMenuComponent } from './system-apps/startmenu/startmenu.component';
 import { TaskBarPreviewComponent } from './system-apps/taskbarpreview/taskbarpreview.component';
 import { TaskBarEntriesComponent } from './system-apps/taskbarentries/taskbarentries.component';
@@ -70,7 +70,7 @@ import { NotificationCenterComponent } from './system-apps/notificationcenter/no
     AppComponent,
     DesktopComponent,
     TaskbarComponent,
-    ControlPanelComponent,
+    SettingsComponent,
     StartMenuComponent,
     TaskBarPreviewComponent,
     TaskBarEntriesComponent,

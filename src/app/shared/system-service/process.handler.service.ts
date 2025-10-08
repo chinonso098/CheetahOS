@@ -39,7 +39,7 @@ import { TitleComponent } from "src/app/user-apps/title/title.component";
 import { WarpingstarfieldComponent } from "src/app/user-apps/warpingstarfield/warpingstarfield.component";
 import { ParticaleFlowComponent } from "src/app/user-apps/particaleflow/particaleflow.component";
 import { PdfViewerComponent } from "src/app/user-apps/pdf-viewer/pdf-viewer.component";
-import { ControlPanelComponent } from "src/app/system-apps/controlpanel/controlpanel.component";
+import { SettingsComponent } from "src/app/system-apps/controlpanel/settings.component";
 
 
 @Injectable({
@@ -60,7 +60,7 @@ export class ProcessHandlerService implements BaseService{
     private _TriggerList:FileInfo[];
 
     private _onlyOneInstanceAllowed:string[] = ["audioplayer", "chatter", "cheetah", "jsdos", "photoviewer", 
-        "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow", "controlpanel"];
+        "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow", "settings"];
 
     private userOpenedAppsList:string[] = [];
     private openedAppInstanceUID:string[] = [];
@@ -97,7 +97,7 @@ export class ProcessHandlerService implements BaseService{
         {type: PhotoViewerComponent},
         {type: RunSystemComponent},
         {type: TextEditorComponent},
-        {type: ControlPanelComponent},
+        {type: SettingsComponent},
         {type: TitleComponent},
         {type: GreetingComponent},
         {type: JSdosComponent},

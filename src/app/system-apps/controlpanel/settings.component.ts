@@ -11,13 +11,13 @@ import { Subscription } from 'rxjs';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
 @Component({
-  selector: 'cos-controlpanel',
-  templateUrl: './controlpanel.component.html',
-  styleUrls: ['./controlpanel.component.css'],
+  selector: 'cos-settings',
+  templateUrl: './settings.component.html',
+  styleUrls: ['./settings.component.css'],
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone:false,
 })
-export class ControlPanelComponent implements OnInit, OnDestroy {
+export class SettingsComponent implements OnInit, OnDestroy {
 
   @Input() priorUId = Constants.EMPTY_STRING;
 
@@ -76,13 +76,13 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   selectedOption = this.SYSTEM_SCREEN;
   selectedIdx = 0;
 
-  controlPanelOptions!:string[][];
+  settingsOptions!:string[][];
   systemOptions!:string[][];
   
   isMaximizable = false;
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}settings.png`;
-  name = 'controlpanel';
+  name = 'settings';
   processId = 0;
   type = ComponentType.System
   displayName = '';
@@ -114,7 +114,7 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
     //   });
 
 
-    this.controlPanelOptions = this.generateControlPanelOptions();
+    this.settingsOptions = this.generateControlPanelOptions();
     this.systemOptions = this.generateSystemOptions();
   }
 

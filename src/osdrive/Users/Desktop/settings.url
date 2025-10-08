@@ -1,6 +1,6 @@
 [InternetShortcut]
-FileName=Controlpanel
+FileName=Settings
 IconPath=osdrive/Cheetah/System/Imageres/settings.png
 FileType=.url
-ContentPath=Controlpanel
-OpensWith=controlpanel
+ContentPath=Settings
+OpensWith=settings
