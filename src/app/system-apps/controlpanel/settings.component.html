@@ -40,7 +40,7 @@
                 <div class="landing-view__items">
                     <ol class="ol-landing-view__grid">
                         <li class="li-landing-view" *ngFor="let cpOption of settingsOptions; let i = index" id="ilElmnt-{{processId}}" >
-                            <div class="landing-view__item" role="button" (click)="handleControlPanelSelection(cpOption[1], i, $event)" >
+                            <div class="landing-view__item" role="button" (click)="handleSettingsPanelSelection(cpOption[1], i, $event)" >
                                 <div class="landing-view__item-img">
                                     <figure class="landing-view__figure">
                                         <img class="landing-view__img" [src]="cpOption[0]" />

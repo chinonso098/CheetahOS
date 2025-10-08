@@ -142,7 +142,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return options;
   }
 
-  handleControlPanelSelection(selection:string, idx:number, evt:MouseEvent):void{
+  handleSettingsPanelSelection(selection:string, idx:number, evt:MouseEvent):void{
     evt.stopPropagation();
 
     this.DEFAULT_VIEW = selection;
