@@ -84,6 +84,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   isShowPreviewImage = true;
   lockScreenPrevImg = this.lckScrImg1;
   lockScreenBkgrndOption = 'Mirror';
+  lockScreenTimeoutOption = '1 Minute';
 
 
   private _formBuilder:FormBuilder;
@@ -115,13 +116,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
   systemOptions!:string[][];
   personalizationOptions!:string[][];
 
-  readonly LOCK_SCREEN_PICTURE = 0;
-  readonly LOCK_SCREEN_SOLID_COLOR = 1;
-  readonly LOCK_SCREEN_MIRROR = 2;
+
   lockScreenBackgroundOptions = [
-    { value: this.LOCK_SCREEN_PICTURE, label: 'Picture' },
-    { value: this.LOCK_SCREEN_SOLID_COLOR, label: 'Solid color'},
-    { value: this.LOCK_SCREEN_MIRROR, label: 'Mirror' }
+    { value: 0, label: 'Picture' },
+    { value: 1, label: 'Solid color'},
+    { value: 2, label: 'Mirror' }
+  ];
+
+  lockScreenTimeOutOptions = [
+    { value: 60000, label: '1 Minute' },
+    { value: 120000, label: '3 Minutes'},
+    { value: 300000, label: '5 Minutes' },
+    { value: 600000, label: '10 Minutes' }
   ];
   
   isMaximizable = false;
@@ -269,6 +275,16 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
   }
 
+  onLockScreenTimeoutSelect(event: any):void{
+    const selectedValue = event.target.value;
+    this.lockScreenTimeoutOption = selectedValue;
+
+    const timeOutValue = this.lockScreenTimeOutOptions.find(x => x.label === this.lockScreenTimeoutOption)?.value;
+
+    const defaultLockScreenBackgrounValue = `${this.lockScreenTimeoutOption}-${timeOutValue}`;
+    this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, defaultLockScreenBackgrounValue);
+  }
+
 
   handleLockScreenSelection(selection:string, evt:MouseEvent):void{
     evt.stopPropagation();
@@ -287,7 +303,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
 
     const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}-${selection}`;
-    this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue)
+    this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
   }
   
   private getComponentDetail():Process{

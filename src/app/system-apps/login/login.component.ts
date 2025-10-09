@@ -3,6 +3,7 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { GeneralMenu } from 'src/app/shared/system-component/menu/menu.types';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
+import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
@@ -25,6 +26,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private _systemNotificationServices:SystemNotificationService;
   private _sessionManagmentService:SessionManagmentService
   private _audioService:AudioService;
+  private _defaultService:DefaultService;
 
 
   loginForm!: FormGroup;
@@ -81,17 +83,25 @@ export class LoginComponent implements OnInit, AfterViewInit {
   menuData:GeneralMenu[] = [];
 
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
-              formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, systemNotificationServices:SystemNotificationService){
+              formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, systemNotificationServices:SystemNotificationService,
+              defaultService:DefaultService){
     this._processIdService = processIdService;
     this.processId = this._processIdService.getNewProcessId();
     this._audioService = audioService;
     this._formBuilder = formBuilder;
     this._systemNotificationServices = systemNotificationServices;
     this._sessionManagmentService = sessionManagmentService;
+    this._defaultService = defaultService;
 
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._systemNotificationServices.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
+
+    this._defaultService.defaultSettingsChangeNotify.subscribe((p) => {
+      if(p === Constants.DEFAULT_LOCK_SCREEN_TIMEOUT){
+        this.resetLockScreenTimeOut();
+      }
+    })
 
     this._systemNotificationServices.shutDownSystemNotify.subscribe(() => { this.shutDownOSFromDesktop()});
     this._systemNotificationServices.restartSystemNotify.subscribe((p) => { 
@@ -128,7 +138,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   firstToDo():void{
     this.loginForm = this._formBuilder.nonNullable.group({
-      loginInput: '',
+      loginInput: Constants.EMPTY_STRING,
     });
 
     this.viewOptions =  this.currentDateTime;
@@ -272,7 +282,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   startLockScreenTimeOut():void{
     if(!this.isScreenLocked){
-      const secondsDelay = 240000; //wait 4 mins;
+      const defaultTimeOut = Number(this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT).split(Constants.DASH)[1]);
+      const secondsDelay = defaultTimeOut; //wait 4 mins;
       this.lockScreenTimeoutId = setTimeout(() => {
         this.showLockScreen();
       }, secondsDelay);

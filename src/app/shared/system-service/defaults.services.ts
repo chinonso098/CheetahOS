@@ -49,8 +49,8 @@ export class DefaultService implements BaseService{
     private initializeDefaultSettings(): void {
 
         this._defaultSettingsMap = new Map<string, string>([
-            [Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, "1000"],
-            [Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, ''],
+            [Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, "1 Minute-60000"],
+            [Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, 'Mirror-Mirror'],
             [Constants.DEFAULT_DESKTOP_BACKGROUND, '']
           ]);
 
