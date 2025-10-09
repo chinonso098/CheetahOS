@@ -3,12 +3,14 @@ import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { Subscription } from 'rxjs';
 import { FormBuilder, FormGroup } from '@angular/forms';
+
 
 @Component({
   selector: 'cos-settings',
@@ -23,6 +25,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
+  private _defaultService:DefaultService;
   private _menuService:MenuService;
   private _windowService:WindowService;
   private _hideStartMenuSub!:Subscription;
@@ -33,6 +36,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly storageImg = `${Constants.IMAGE_BASE_PATH}cp_storage.png`;
   readonly screenImg = `${Constants.IMAGE_BASE_PATH}cp_screen.png`;
   readonly clipboardImg = `${Constants.IMAGE_BASE_PATH}cp_clipboard.png`;
+
+  readonly lckScrImg1 = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}duck_lake.png`;
+  readonly lckScrImg2 = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}above_the_ocean.png`;
+  readonly lckScrImg3 = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}highlands.png`;
+  readonly lckScrImg4 = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}leafs.png`;
+  readonly lckScrImg5 = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}cafe.png`;
 
   readonly systemImg = `${Constants.IMAGE_BASE_PATH}cp_system.png`;
   readonly appsImg = `${Constants.IMAGE_BASE_PATH}cp_apps.png`;
@@ -73,7 +82,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly OFF = 'Off';
 
   isShowPreviewImage = true;
-  lockScreenPrevImg = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}duck_lake.png`;
+  lockScreenPrevImg = this.lckScrImg1;
   lockScreenBkgrndOption = 'Mirror';
 
 
@@ -99,8 +108,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   selectedApplicationOption = Constants.EMPTY_STRING;
   selectedIdx = 0;
 
-  
 
+  lockScreenPictureOptions!:string[];
   colorOptions!:string[];
   settingsOptions!:string[][];
   systemOptions!:string[][];
@@ -124,12 +133,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
   displayName = '';
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService, 
-               windowService:WindowService, formBuilder:FormBuilder) { 
+               windowService:WindowService, defaultService:DefaultService, formBuilder:FormBuilder) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._menuService = menuService;
     this._windowService = windowService;
-
+    this._defaultService = defaultService
     this._formBuilder = formBuilder;
 
     this.processId = this._processIdService.getNewProcessId();
@@ -192,6 +201,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return options;
   }
 
+  generateLockScreenPictureOptions():string[]{
+    const options = [this.lckScrImg1, this.lckScrImg2, this.lckScrImg3, this.lckScrImg4, this.lckScrImg5];
+    return options;
+  }
+
   handleSettingsPanelSelection(selection:string, evt:MouseEvent):void{
     evt.stopPropagation();
     this.DEFAULT_VIEW = selection;
@@ -231,16 +245,49 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.lockScreenBkgrndOption = selectedValue;
 
     if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR){
+      this.isShowPreviewImage = false;
+
+      const lockScreenPrevDiv = document.getElementById(`lockScreenPrev-${this.processId}`) as HTMLDivElement;
+      if(lockScreenPrevDiv){
+        lockScreenPrevDiv.style.backgroundColor = '#fe8d00';
+        lockScreenPrevDiv.style.width = '320px';
+        lockScreenPrevDiv.style.minHeight = '180px';
+      }
+
       this.colorOptions = this.generateColorOptions();
     }
 
-    console.log('lockScreenBkgrndOption:', this.lockScreenBkgrndOption);
+    if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_PICTURE){
+      this.isShowPreviewImage = true;
+      this.lockScreenPrevImg = this.lckScrImg1;
+      this.lockScreenPictureOptions = this.generateLockScreenPictureOptions();
+    }
+
+    if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_MIRROR){
+      const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}-${this.lockScreenBkgrndOption}`;
+      this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue)
+    }
   }
 
 
   handleLockScreenSelection(selection:string, evt:MouseEvent):void{
     evt.stopPropagation();
 
+    if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR){
+      const lockScreenPrevDiv = document.getElementById(`lockScreenPrev-${this.processId}`) as HTMLDivElement;
+      if(lockScreenPrevDiv){
+        lockScreenPrevDiv.style.backgroundColor = selection;
+        lockScreenPrevDiv.style.width = '320px';
+        lockScreenPrevDiv.style.minHeight = '180px';
+      }
+    }
+
+    if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_PICTURE){
+      this.lockScreenPrevImg = selection;
+    }
+
+    const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}-${selection}`;
+    this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue)
   }
   
   private getComponentDetail():Process{

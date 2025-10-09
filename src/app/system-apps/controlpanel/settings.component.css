@@ -12,7 +12,7 @@
   gap: 20px 0px;
   padding: 15px;
   width: 900px;
-  height: 500px;
+  height: 600px;
   background-color: #000;
 }
 
@@ -193,7 +193,7 @@
 .system-option__panel, .personalization-option__panel{
   display: block;
   width: 250px;
-  height: 500px;
+  height: 600px;
   background-color: rgba(51,51,51,0.75);
   backdrop-filter: blur(20px);
   padding: 15px 0px;
@@ -300,7 +300,7 @@
 .system-view__panel, .personalization-view__panel{
   display: block;
   width: 650px;
-  height: 500px;
+  height: 600px;
   padding: 15px;
   background-color: #000;
 }
@@ -544,6 +544,8 @@
   object-fit: contain; */
 }
 
+/*LOCK SCREEN BACKGROUNG DROP DOWN OPTION START*/
+
 .lockscreen__select {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -603,12 +605,14 @@
   border-radius: 0%;
 }
 
-.solid-color__block{
+/*LOCK SCREEN BACKGROUNG DROP DOWN OPTION END*/
+
+.lockscreen-solid-color__block{
   width: 418px;
   height: 158px;
 }
 
-.ol-solid-color__grid{
+.ol-lockscreen-solid-color__grid{
   display: grid;
   grid-auto-flow: row;
   grid-template-columns:  repeat(auto-fill, 50px);
@@ -617,8 +621,33 @@
   gap: 2px 2px;
 }
 
-.li-solid-color, .solid-color__item{
+.li-lockscreen-solid-color, .lockscreen-solid-color__item{
   width: 50px;
   height: 50px;
+}
+
+.lockscreen-picture__block{
+  width: 520;
+  height: 102px;
+}
+
+.ol-lockscreen-picture__grid{
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns:  repeat(auto-fill, 108px);
+  grid-template-rows: repeat(auto-fill, 61px);
+  width: 100%;
+  gap: 2px 4px;
+}
+
+.li-lockscreen-picture, .lockscreen-picture__item{
+  width: 108px;
+  height: 61px;
+}
+
+.lockscreen-picture__item img{
+  height: 100%;
+  height: auto;
+  display: block;
 }
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ PERSONALIZATION  END @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/

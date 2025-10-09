@@ -65,7 +65,7 @@ export class DefaultService implements BaseService{
         return Constants.EMPTY_STRING;
     }
 
-    private addOrUpdateDefultData(key:string, val:string):void{
+    setDefultData(key:string, val:string):void{
         this._defaultSettingsMap.set(key, val);
         this._sessionManagmentService.addMapBasedSession(this._defaultSettingServiceKey, this._defaultSettingsMap);
         this.defaultSettingsChangeNotify.next(key);

@@ -259,7 +259,7 @@
                             <p class="locksreen-block-subheading__p"> Preview</p>
                         </div>
 
-                        <div class="lockscreen-preview__container">
+                        <div class="lockscreen-preview__container" id="lockScreenPrev-{{processId}}">
                             @if(isShowPreviewImage){
                                 <img [src]="lockScreenPrevImg"/>
                             }
@@ -298,19 +298,36 @@
 
 
                         <ng-template #lockScreenPictureView>
-    
+                            <div class="locksreen-block-content">
+                                <div class="locksreen-block__text">
+                                    <p class="locksreen-block-miniheading__p"> Choose your picture</p>
+                                </div>
+                                
+                                <div class="lockscreen-picture__block">
+                                    <ol class="ol-lockscreen-picture__grid">
+                                        <li class="li-lockscreen-picture-color" *ngFor="let option of lockScreenPictureOptions; let i = index">
+                                            <div class="lockscreen-picture__item" 
+                                                role="button" 
+                                                (click)="handleLockScreenSelection(option, $event)" >
+                                                <img [src]="option"/>
+
+                                            </div>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
                         </ng-template>
 
                         <ng-template #lockScreenSolidColorView>
                             <div class="locksreen-block-content">
                                 <div class="locksreen-block__text">
-                                    <p class="locksreen-block-miniheading__p"> Change you background color</p>
+                                    <p class="locksreen-block-miniheading__p"> Choose you background color</p>
                                 </div>
                                 
-                                <div class="solid-color__block">
-                                    <ol class="ol-solid-color__grid">
-                                        <li class="li-solid-color" *ngFor="let option of colorOptions; let i = index">
-                                            <div class="solid-color__item" 
+                                <div class="lockscreen-solid-color__block">
+                                    <ol class="ol-lockscreen-solid-color__grid">
+                                        <li class="li-lockscreen-solid-color" *ngFor="let option of colorOptions; let i = index">
+                                            <div class="lockscreen-solid-color__item" 
                                                 role="button" 
                                                 [style]="{'background-color': option}" 
                                                 (click)="handleLockScreenSelection(option, $event)" >
@@ -321,9 +338,7 @@
                             </div>
                         </ng-template>
 
-                        <ng-template #lockScreenMirrorView>
-    
-                        </ng-template>
+                        <ng-template #lockScreenMirrorView> </ng-template>
 
 
                     </div>
