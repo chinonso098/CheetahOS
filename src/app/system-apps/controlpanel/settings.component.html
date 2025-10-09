@@ -265,6 +265,22 @@
                             }
                         </div>
 
+                        <div class="lockscreen-preview-overlay__container"  (click)="shhhh($event)"> 
+                            <!-- New Additional Container -->
+                            <div class="lockscreen-preview-overlay__datetime-container">
+                        
+                                <div class="lockscreen-preview-overlay__space"></div>
+                        
+                                <div class="lockscreen-preview-overlay__time-section">
+                                    <p class="lockscreen-preview-overlay__time-p">{{ currentTime }}</p>
+                                </div>
+                        
+                                <div class="lockscreen-preview-overlay__date-section">
+                                    <p class="lockscreen-preview-overlay__date-p">{{ currentDate }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="lockscreen-block-content">
                             <div class="lockscreen-block__text">
                                 <p class="lockscreen-block-miniheading__p"> Background</p>

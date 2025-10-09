@@ -129,6 +129,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     { value: 300000, label: '5 Minutes' },
     { value: 600000, label: '10 Minutes' }
   ];
+
+  currentTime = Constants.EMPTY_STRING;
+  currentDate = Constants.EMPTY_STRING;
   
   isMaximizable = false;
   hasWindow = true;
@@ -234,15 +237,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if(view === this.PERSONALIZATION_VIEW){
       this.selectedPersonalizationOption = selection;
       this.selectedIdx = idx;
+
+      if(selection ===  this.PERSONALIZATION_LOCKSCREEN){
+        this.updateTime();
+        this.getDate();
+      }
+      
       return;
     }
   }
 
   saveUnSaveClipBoardHisotry():void{
-
-
     //this.isSaveClipboardHistory = !this.isSaveClipboardHistory;
-
     this.clipboardSaveStateText = (this.isSaveClipboardHistory)? this.ON : this.OFF;
   }
 
@@ -308,6 +314,27 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selection}`;
     this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
+  }
+
+  updateTime():void {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    //const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
+    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+
+    this.currentTime = `${formattedHours}:${formattedMinutes}`;
+  }
+
+
+  getDate():void{
+    const now = new Date();
+    this.currentDate = now.toLocaleString('en-US', {
+      weekday: 'long', // Full day name (e.g., "Tuesday")
+      month:'long',
+      day:'numeric'
+    });
   }
   
   private getComponentDetail():Process{
