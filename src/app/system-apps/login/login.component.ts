@@ -282,8 +282,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   startLockScreenTimeOut():void{
     if(!this.isScreenLocked){
-      const defaultTimeOut = Number(this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT).split(Constants.DASH)[1]);
-      const secondsDelay = defaultTimeOut; //wait 4 mins;
+      const defaultTimeOut = Number(this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT).split(Constants.COLON)[1]);
+      const secondsDelay = defaultTimeOut; 
       this.lockScreenTimeoutId = setTimeout(() => {
         this.showLockScreen();
       }, secondsDelay);
@@ -353,7 +353,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   onPowerBtnMouseLeave():void{
     const powerBtnElmt = document.getElementById('powerBtnCntnr') as HTMLDivElement; 
     if(powerBtnElmt){
-      powerBtnElmt.style.backgroundColor = '';
+      powerBtnElmt.style.backgroundColor = Constants.EMPTY_STRING;
     }
   }
 

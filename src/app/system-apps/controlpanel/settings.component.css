@@ -20,7 +20,7 @@
   display: flex;
   justify-content: center; /* Horizontally centers the child */
   align-items: center;
-  width: 900px;
+  width: 870px;
   height: 60px;
 }
 
@@ -63,7 +63,7 @@
   display: flex;
   position: relative;
   height: 30px;
-  width: 350px;
+  width: 330px;
 }
 
 .secondary-search-bar__form-cntnr{
@@ -74,7 +74,7 @@
   position: relative;
   margin: 0;
   height: 30px;
-  width: 350px;
+  width: 330px;
 }
 
 .secondary-search-bar__form{
@@ -87,12 +87,12 @@
 
 .search-bar__textbox, .secondary-search-bar__textbox{
   height: 30px;
-  width: 350px;
+  width: 330px;
   font-size: 13.5px;
   font-weight:normal;
   color: #000;
   background-color: #fff;
-  border: 2px solid #ccc;
+  border: 2px solid #666666;
   text-align: left;
   transition: background-color 0.2s ease;
 }
@@ -461,7 +461,7 @@
 
 /*Personalization Lockscreen Start*/
 
-.personalization-view__locksreen-container{
+.personalization-view__lockscreen-container{
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -481,20 +481,21 @@
   scrollbar-width: none; /* hides scrollbar */
 }
 
-.locksreen-block-content,
-.locksreen-block-heading,
-.locksreen-block-text{
+.lockscreen-block-content,
+.lockscreen-block-heading,
+.lockscreen-block-text{
   width: 100%;
   height: fit-content;
 }
 
-.locksreen-heading-fixed{
+.lockscreen-heading-fixed{
   position: sticky;
   top: 0;
   z-index: 1;
+  background-color: #000;
 }
 
-.locksreen-block-content{
+.lockscreen-block-content{
   display: flex;
   flex-direction: column;
   gap: 10px 0px;
@@ -505,7 +506,7 @@
   height: 10px;
 }
 
-.locksreen-block-heading__p, .locksreen-block-subheading__p, .locksreen-block-miniheading__p{
+.lockscreen-block-heading__p, .lockscreen-block-subheading__p, .lockscreen-block-miniheading__p{
   padding: 0 1px;
   color: #fff;
   text-align: left;
@@ -517,15 +518,15 @@
 }
 
 
-.locksreen-block__text{
+.lockscreen-block__text{
   height: fit-content;
 }
 
-.locksreen-block-subheading__p{
+.lockscreen-block-subheading__p{
   font-size: 18px;
 }
 
-.locksreen-block-miniheading__p{
+.lockscreen-block-miniheading__p{
   font-size: 13px;
 }
 
@@ -538,79 +539,73 @@
   width: 100%;
   height: auto;
   display: block;
-
-  /* height: 100%;
-  width: 100%;
-  object-fit: contain; */
 }
 
 /*LOCK SCREEN BACKGROUNG DROP DOWN OPTION START*/
 
-.lockscreen__select, .lockscreen__timeout-select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none; /* Remove default appearance */
-  outline: none;  /* Remove outline on focus */
-  background-color: #e5e5e5; /* Set background color */
-  border: 2px solid #ccc; /* Add a border */
-  border-radius: 0%;
-  padding: 1px; /* Add padding */
-  padding-left: 5px;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: 200;
-  font-size: 14px; /* Set font size */
-  color: #333; /* Set text color */
-  width: 260px;
-  height: 30px;
-}
-
-.lockscreen__timeout-select{
-  width: 160px;
-}
-
-.lockscreen__select:hover, .lockscreen__timeout-select:hover {
-  border-color: #aaa; /* Change border color on hover */
-}
-
-.lockscreen__select:focus, .lockscreen__timeout-select:focus {
-  border-color: #777; /* Change border color on focus */
-}
-
-.lockscreen__bkgrnd-select, .lockscreen__timeout-container {
+/* ===== Base Dropdown Styles ===== */
+.lockscreen-background-dropdown, .lockscreen-timeout-dropdown {
   position: relative;
   display: inline-block;
   width: 260px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.lockscreen__timeout-container{
+.lockscreen-timeout-dropdown{
   width: 160px;
 }
 
-.lockscreen__bkgrnd-select select {
+/* ===== Select ===== */
+.lockscreen-background-dropdown__select, .lockscreen-timeout-dropdown__select {
   width: 100%;
-  /* padding: 5px 30px 5px 10px; extra space for the arrow */
+  height: 32px;
+  padding: 4px 36px 4px 8px; /* space for icon on right */
+  font-size: 14px;
+  font-weight: 300;
+  color: #333;
+  background-color: #e5e5e5;
+  border: 2px solid #666;
+  border-radius: 0px;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.lockscreen__bkgrnd-select-img-cntnr, .lockscreen__timeout-container-img-cntnr{
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  pointer-events: none;
+.lockscreen-background-dropdown__select:hover, .lockscreen-timeout-dropdown__select:hover {
+  border-color: #999;
+  background-color: #f0f0f0;
 }
 
-.lockscreen__bkgrnd-select-img, .lockscreen__timeout-container-img{
-  width: 16px;
-  height: 16px;
-  position: relative;
-  left: 6px;
-  top: 2px;
+.lockscreen-background-dropdown__select:focus, .lockscreen-timeout-dropdown__select:focus {
+  border-color: #777;
 }
 
-.lockscreen__option{
+/* ===== Options ===== */
+.lockscreen-background-dropdown__option, .lockscreen-timeout-dropdown__option {
   background-color: #fff;
   color: #000;
   border-radius: 0%;
+}
+
+/* ===== Icon ===== */
+.lockscreen-background-dropdown__icon, .lockscreen-timeout-dropdown__icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 12px;
+  height: 12px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lockscreen-background-dropdown__icon svg, .lockscreen-timeout-dropdown__icon svg {
+  width: 12px;
+  height: 12px;
+  fill: #333;
 }
 
 /*LOCK SCREEN BACKGROUNG DROP DOWN OPTION END*/
@@ -636,7 +631,7 @@
 
 .lockscreen-picture__block{
   width: 520;
-  height: 102px;
+  height: 61px;
 }
 
 .ol-lockscreen-picture__grid{

@@ -11,6 +11,7 @@ export namespace Constants{
     export const BACK_TICK= '`';
     export const TILDE= '~';
     export const DASH= '-';
+    export const HASH= '#';
     export const BACK_SLASH= '\\';
     export const DOUBLE_SLASH = '//';
     export const NEW_LINE = '\n';
@@ -23,6 +24,7 @@ export namespace Constants{
     export const IMAGE_BASE_PATH = 'osdrive/Cheetah/System/Imageres/';
     export const LOCK_SCREEN_IMAGE_BASE_PATH = 'osdrive/Cheetah/Themes/LockScreen/';
     export const DESKTOP_IMAGE_BASE_PATH = 'osdrive/Cheetah/Themes/Desktop/';
+    export const DYNAMIC_DESKTOP_BACKGROUND_PATH = "osdrive/Program-Files/Backgrounds/";
     export const ACCT_IMAGE_BASE_PATH = 'osdrive/Cheetah/System/Acct/';
     export const GIF_BASE_PATH = 'osdrive/Cheetah/System/Gifres/';
     export const AUDIO_BASE_PATH = 'osdrive/Cheetah/System/Media/';
@@ -74,6 +76,10 @@ export namespace Constants{
     export const DEFAULT_LOCK_SCREEN_TIMEOUT = 'LOCK_SCREEN_TIMEOUT';
     export const DEFAULT_LOCK_SCREEN_BACKGROUND = 'LOCK_SCREEN_BACKGROUND';
     export const DEFAULT_DESKTOP_BACKGROUND = 'DESKTOP_BACKGROUND';
+
+    export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:60000';
+    export const DEFAULT_LOCK_SCREEN_BACKGROUND_VALUE = 'Mirror:Mirror';
+    export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Dynamic:osdrive/Program-Files/Backgrounds/vanta.waves.min.js:vanta-waves';
 
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';

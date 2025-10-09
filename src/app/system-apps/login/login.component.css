@@ -56,12 +56,12 @@
     align-items: center;
     width: 100%;
     max-width: 300px;
-    border: 1.5px solid #b8b6b6;
+    border: 2px solid #b8b6b6;
     overflow: hidden;
 }
 
 .lockscreen-password-section:hover{
-    border: 1.5px solid #fff;
+    border: 2px solid #fff;
 }
   
 .lockscreen-icon-container {

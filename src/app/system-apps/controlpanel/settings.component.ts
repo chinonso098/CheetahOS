@@ -90,7 +90,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private _formBuilder:FormBuilder;
   searchBarForm!: FormGroup;
 
-  searchPlaceHolder = 'FInd a seeting';
+  searchPlaceHolder = 'Find a setting';
 
   readonly clipboardText =
 `When you copy or cut something in Cheetah, it's copied to the
@@ -275,6 +275,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
   }
 
+  shhhh(evt:MouseEvent):void{
+    evt.stopPropagation();
+  }
+
   onLockScreenTimeoutSelect(event: any):void{
     const selectedValue = event.target.value;
     this.lockScreenTimeoutOption = selectedValue;
@@ -302,7 +306,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.lockScreenPrevImg = selection;
     }
 
-    const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}-${selection}`;
+    const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selection}`;
     this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
   }
   
