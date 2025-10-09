@@ -68,6 +68,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly ON = 'On';
   readonly OFF = 'Off';
 
+  isShowPreviewImage = true;
+  lockScreenPrevImg = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}duck_lake.png`;
+  lockScreenBkgrndOption = 'Mirror';
+
 
   private _formBuilder:FormBuilder;
   searchBarForm!: FormGroup;
@@ -94,6 +98,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
   settingsOptions!:string[][];
   systemOptions!:string[][];
   personalizationOptions!:string[][];
+
+  readonly LOCK_SCREEN_PICTURE = 0;
+  readonly LOCK_SCREEN_COLOR = 1;
+  readonly LOCK_SCREEN_MIRROR = 2;
+  lockScreenBackgroundOptions = [
+    { value: this.LOCK_SCREEN_PICTURE, label: 'Picture' },
+    { value: this.LOCK_SCREEN_COLOR, label: 'Solid color'},
+    { value: this.LOCK_SCREEN_MIRROR, label: 'Mirror' }
+  ];
   
   isMaximizable = false;
   hasWindow = true;
@@ -197,6 +210,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     //this.isSaveClipboardHistory = !this.isSaveClipboardHistory;
 
     this.clipboardSaveStateText = (this.isSaveClipboardHistory)? this.ON : this.OFF;
+  }
+
+  onLockScreenBkgrndSelect(event: any):void{
+    const selectedValue = event.target.value;
+    this.lockScreenBkgrndOption = selectedValue;
   }
   
   private getComponentDetail():Process{

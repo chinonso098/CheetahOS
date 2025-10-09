@@ -461,9 +461,135 @@
 
 /*Personalization Lockscreen Start*/
 
-.personalization-view__locsckreen-container{
+.personalization-view__locksreen-container{
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
+  gap: 20px 0px;
+  overflow: hidden;
+  overflow-y:scroll
+}
+
+/* For Chrome, Safari, Edge */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: none; /* hides scrollbar */
+}
+
+.locksreen-block-content,
+.locksreen-block-heading,
+.locksreen-block-text{
+  width: 100%;
+  height: fit-content;
+}
+
+.locksreen-block-content{
+  display: flex;
+  flex-direction: column;
+  gap: 10px 0px;
+}
+
+.locksreen-block-heading__p, .locksreen-block-subheading__p, .locksreen-block-miniheading__p{
+  padding: 0 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 27px;
+  font-weight:200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
+  height: fit-content;
+}
+
+
+.locksreen-block__text{
+  height: fit-content;
+}
+
+.locksreen-block-subheading__p{
+  font-size: 18px;
+}
+
+.locksreen-block-miniheading__p{
+  font-size: 13px;
+}
+
+.lockscreen-preview__container{
+  width: 320px;
+  height: 180px;
+}
+
+.lockscreen-preview__container img {
+  width: 100%;
+  height: auto;
+  display: block;
+
+  /* height: 100%;
+  width: 100%;
+  object-fit: contain; */
+}
+
+.lockscreen__select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none; /* Remove default appearance */
+  outline: none;  /* Remove outline on focus */
+  background-color: #e5e5e5; /* Set background color */
+  border: 2px solid #ccc; /* Add a border */
+  border-radius: 0%;
+  padding: 1px; /* Add padding */
+  padding-left: 5px;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 200;
+  font-size: 14px; /* Set font size */
+  color: #333; /* Set text color */
+  width: 260px;
+  height: 30px;
+}
+
+.lockscreen__select:hover {
+  border-color: #aaa; /* Change border color on hover */
+}
+
+.lockscreen__select:focus {
+  border-color: #777; /* Change border color on focus */
+}
+
+.lockscreen__bkgrnd-select {
+  position: relative;
+  display: inline-block;
+  width: 260px;
+}
+
+.lockscreen__bkgrnd-select select {
+  width: 100%;
+  /* padding: 5px 30px 5px 10px; extra space for the arrow */
+}
+
+.lockscreen__bkgrnd-select-img-cntnr{
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.lockscreen__bkgrnd-select-img{
+  width: 16px;
+  height: 16px;
+  position: relative;
+  left: 6px;
+  top: 2px;
+}
+
+.lockscreen__option{
+  background-color: #fff;
+  color: #000;
+  border-radius: 0%;
 }
 
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ PERSONALIZATION  END @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
