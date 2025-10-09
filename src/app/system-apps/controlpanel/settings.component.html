@@ -241,17 +241,17 @@
             </div>
     
             <div class="personalization-view__panel" >
-                <ng-container [ngTemplateOutlet]="selectedPersonalizationOption === PERSONALIZATION_DESKTOP_BACKGROUND ? dsktpBackgrounView:
+                <ng-container [ngTemplateOutlet]="selectedPersonalizationOption === PERSONALIZATION_DESKTOP_BACKGROUND ? dsktpBackgroundView:
                                                   selectedPersonalizationOption === PERSONALIZATION_LOCKSCREEN ? lockScreenView: taskBarView">
                 </ng-container>
     
-                <ng-template #dsktpBackgrounView>
+                <ng-template #dsktpBackgroundView>
     
                 </ng-template>
     
                 <ng-template #lockScreenView>
                     <div class="personalization-view__locksreen-container">
-                        <div class="locksreen-block-heading">
+                        <div class="locksreen-block-heading locksreen-heading-fixed">
                             <p class="locksreen-block-heading__p"> Lock screen</p>
                         </div>
 
@@ -289,6 +289,41 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="lockscreen-empty-container"></div>
+
+                        <ng-container [ngTemplateOutlet]="lockScreenBkgrndOption === LOCKSCREEN_BACKGROUND_PICTURE ? lockScreenPictureView:
+                                                          lockScreenBkgrndOption === LOCKSCREEN_BACKGROUND_SOLID_COLOR ? lockScreenSolidColorView: lockScreenMirrorView">
+                        </ng-container>
+
+
+                        <ng-template #lockScreenPictureView>
+    
+                        </ng-template>
+
+                        <ng-template #lockScreenSolidColorView>
+                            <div class="locksreen-block-content">
+                                <div class="locksreen-block__text">
+                                    <p class="locksreen-block-miniheading__p"> Change you background color</p>
+                                </div>
+                                
+                                <div class="solid-color__block">
+                                    <ol class="ol-solid-color__grid">
+                                        <li class="li-solid-color" *ngFor="let option of colorOptions; let i = index">
+                                            <div class="solid-color__item" 
+                                                role="button" 
+                                                [style]="{'background-color': option}" 
+                                                (click)="handleLockScreenSelection(option, $event)" >
+                                            </div>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </ng-template>
+
+                        <ng-template #lockScreenMirrorView>
+    
+                        </ng-template>
 
 
                     </div>

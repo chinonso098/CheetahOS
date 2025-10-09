@@ -65,6 +65,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly PERSONALIZATION_TASKBAR = 'Taskbar';
   //readonly PERSONALIZATION_COLOR = 'Color';
 
+  readonly LOCKSCREEN_BACKGROUND_PICTURE = 'Picture';
+  readonly LOCKSCREEN_BACKGROUND_SOLID_COLOR = 'Solid color';
+  readonly LOCKSCREEN_BACKGROUND_MIRROR = 'Mirror';
+
   readonly ON = 'On';
   readonly OFF = 'Off';
 
@@ -95,16 +99,19 @@ export class SettingsComponent implements OnInit, OnDestroy {
   selectedApplicationOption = Constants.EMPTY_STRING;
   selectedIdx = 0;
 
+  
+
+  colorOptions!:string[];
   settingsOptions!:string[][];
   systemOptions!:string[][];
   personalizationOptions!:string[][];
 
   readonly LOCK_SCREEN_PICTURE = 0;
-  readonly LOCK_SCREEN_COLOR = 1;
+  readonly LOCK_SCREEN_SOLID_COLOR = 1;
   readonly LOCK_SCREEN_MIRROR = 2;
   lockScreenBackgroundOptions = [
     { value: this.LOCK_SCREEN_PICTURE, label: 'Picture' },
-    { value: this.LOCK_SCREEN_COLOR, label: 'Solid color'},
+    { value: this.LOCK_SCREEN_SOLID_COLOR, label: 'Solid color'},
     { value: this.LOCK_SCREEN_MIRROR, label: 'Mirror' }
   ];
   
@@ -178,6 +185,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return options;
   }
 
+  generateColorOptions():string[]{
+    const options = ['#fe8d00', '#e91022', '#d13337', '#c30052', '#bf0077', '#9a0088', '#871499', '#754caa',
+                    '#0f893e', '#0c7d10', '#008473', '#2b7d9a', '#0063b1', '#6a68d6', '#8f8cd6', '#8664ba',
+                    '#008386', '#45695f', '#525f54', '#7e7360', '#4c4a48', '#4f5d6b', '#4a545a', '#000203'];
+    return options;
+  }
+
   handleSettingsPanelSelection(selection:string, evt:MouseEvent):void{
     evt.stopPropagation();
     this.DEFAULT_VIEW = selection;
@@ -215,6 +229,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
   onLockScreenBkgrndSelect(event: any):void{
     const selectedValue = event.target.value;
     this.lockScreenBkgrndOption = selectedValue;
+
+    if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR){
+      this.colorOptions = this.generateColorOptions();
+    }
+
+    console.log('lockScreenBkgrndOption:', this.lockScreenBkgrndOption);
+  }
+
+
+  handleLockScreenSelection(selection:string, evt:MouseEvent):void{
+    evt.stopPropagation();
+
   }
   
   private getComponentDetail():Process{

@@ -488,10 +488,21 @@
   height: fit-content;
 }
 
+.locksreen-heading-fixed{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
 .locksreen-block-content{
   display: flex;
   flex-direction: column;
   gap: 10px 0px;
+}
+
+.lockscreen-empty-container{
+  width: 100%;
+  height: 10px;
 }
 
 .locksreen-block-heading__p, .locksreen-block-subheading__p, .locksreen-block-miniheading__p{
@@ -592,4 +603,22 @@
   border-radius: 0%;
 }
 
+.solid-color__block{
+  width: 418px;
+  height: 158px;
+}
+
+.ol-solid-color__grid{
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns:  repeat(auto-fill, 50px);
+  grid-template-rows: repeat(auto-fill, 50px);
+  width: 100%;
+  gap: 2px 2px;
+}
+
+.li-solid-color, .solid-color__item{
+  width: 50px;
+  height: 50px;
+}
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ PERSONALIZATION  END @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
