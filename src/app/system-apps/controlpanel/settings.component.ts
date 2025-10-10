@@ -79,8 +79,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly ON = 'On';
   readonly OFF = 'Off';
 
-  isShowPreviewImage = true;
-  lockScreenPrevImg = this.lckScrImg1;
   lockScreenBkgrndOption = 'Mirror';
   lockScreenTimeoutOption = '1 Minute';
 
@@ -245,6 +243,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.selectedIdx = idx;
 
       if(selection ===  this.PERSONALIZATION_LOCKSCREEN){
+        this.getLockScreenBackgroundData();
         this.updateTime();
         this.getDate();
       }
@@ -258,30 +257,46 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.clipboardSaveStateText = (this.isSaveClipboardHistory)? this.ON : this.OFF;
   }
 
-  onLockScreenBkgrndSelect(event: any):void{
+  onLockScreenBkgrndDropDownSelect(event: any):void{
     const selectedValue = event.target.value;
     this.lockScreenBkgrndOption = selectedValue;
 
     if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR){
-      this.isShowPreviewImage = false;
-
-      const lockScreenPrevDiv = document.getElementById(`lockScreenPrev-${this.processId}`) as HTMLDivElement;
-      if(lockScreenPrevDiv){
-        lockScreenPrevDiv.style.backgroundColor = '#fe8d00';
-        lockScreenPrevDiv.style.width = '320px';
-        lockScreenPrevDiv.style.minHeight = '180px';
+      const lockScreenPrevElmnt = document.getElementById(`lockScreenPrev-${this.processId}`) as HTMLDivElement;
+      if(lockScreenPrevElmnt){
+        lockScreenPrevElmnt.style.backgroundColor = this.lockScreenBackgroundValue;
+        lockScreenPrevElmnt.style.width = '320px';
+        lockScreenPrevElmnt.style.minHeight = '180px';
+        lockScreenPrevElmnt.style.backgroundImage = 'none';
+        lockScreenPrevElmnt.style.backdropFilter = 'none';
       }
 
       this.colorOptions = this.generateColorOptions();
     }
 
     if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_PICTURE){
-      this.isShowPreviewImage = true;
-      this.lockScreenPrevImg = this.lckScrImg1;
+      const lockScreenPrevElmnt = document.getElementById(`lockScreenPrev-${this.processId}`) as HTMLDivElement;
+      if(lockScreenPrevElmnt){
+        lockScreenPrevElmnt.style.backgroundImage = `url(${this.lockScreenBackgroundValue})`;
+        lockScreenPrevElmnt.style.backdropFilter = 'none';
+        lockScreenPrevElmnt.style.backgroundColor = 'transparent';
+        /* cover or 'contain', 'auto', or specific dimensions */
+        lockScreenPrevElmnt.style.backgroundSize = 'cover';
+        lockScreenPrevElmnt.style.backgroundRepeat = 'no-repeat';
+      }
+
       this.lockScreenPictureOptions = this.generateLockScreenPictureOptions();
     }
 
     if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_MIRROR){
+
+      const lockScreenPrevElmnt = document.getElementById(`lockScreenPrev-${this.processId}`)  as HTMLDivElement;
+      if(lockScreenPrevElmnt){
+        lockScreenPrevElmnt.style.backgroundImage = 'none';
+        lockScreenPrevElmnt.style.backdropFilter = 'none';
+        lockScreenPrevElmnt.style.backgroundColor = 'transparent';
+      }
+
       const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${this.lockScreenBkgrndOption}`;
       this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue)
     }
@@ -297,25 +312,35 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     const timeOutValue = this.lockScreenTimeOutOptions.find(x => x.label === this.lockScreenTimeoutOption)?.value;
 
-    const defaultLockScreenBackgrounValue = `${this.lockScreenTimeoutOption}-${timeOutValue}`;
+    const defaultLockScreenBackgrounValue = `${this.lockScreenTimeoutOption}:${timeOutValue}`;
     this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, defaultLockScreenBackgrounValue);
   }
 
 
-  handleLockScreenSelection(selection:string, evt:MouseEvent):void{
+  handleLockScreenPictureAndColorSelection(selection:string, evt:MouseEvent):void{
     evt.stopPropagation();
 
     if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR){
-      const lockScreenPrevDiv = document.getElementById(`lockScreenPrev-${this.processId}`) as HTMLDivElement;
-      if(lockScreenPrevDiv){
-        lockScreenPrevDiv.style.backgroundColor = selection;
-        lockScreenPrevDiv.style.width = '320px';
-        lockScreenPrevDiv.style.minHeight = '180px';
+      const lockScreenPrevElmnt = document.getElementById(`lockScreenPrev-${this.processId}`) as HTMLDivElement;
+      if(lockScreenPrevElmnt){
+        lockScreenPrevElmnt.style.backgroundColor = selection;
+        lockScreenPrevElmnt.style.width = '320px';
+        lockScreenPrevElmnt.style.minHeight = '180px';
+        lockScreenPrevElmnt.style.backgroundImage = 'none';
+        lockScreenPrevElmnt.style.backdropFilter = 'none';
       }
     }
 
     if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_PICTURE){
-      this.lockScreenPrevImg = selection;
+      const lockScreenPrevElmnt = document.getElementById(`lockScreenPrev-${this.processId}`)  as HTMLDivElement;
+      if(lockScreenPrevElmnt){
+        lockScreenPrevElmnt.style.backgroundImage = `url(${selection})`;
+        lockScreenPrevElmnt.style.backdropFilter = 'none';
+        lockScreenPrevElmnt.style.backgroundColor = 'transparent';
+        /* cover or 'contain', 'auto', or specific dimensions */
+        lockScreenPrevElmnt.style.backgroundSize = 'cover';
+        lockScreenPrevElmnt.style.backgroundRepeat = 'no-repeat';
+      }
     }
 
     const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selection}`;

@@ -259,24 +259,18 @@
                             <p class="lockscreen-block-subheading__p"> Preview</p>
                         </div>
 
-                        <div class="lockscreen-preview__container" id="lockScreenPrev-{{processId}}">
-                            @if(isShowPreviewImage){
-                                <img [src]="lockScreenPrevImg"/>
-                            }
-                        </div>
-
-                        <div class="lockscreen-preview-overlay__container"  (click)="shhhh($event)"> 
+                        <div class="lockscreen-preview__container"  (click)="shhhh($event)"  id="lockScreenPrev-{{processId}}"> 
                             <!-- New Additional Container -->
-                            <div class="lockscreen-preview-overlay__datetime-container">
+                            <div class="lockscreen-preview__datetime-container">
                         
-                                <div class="lockscreen-preview-overlay__space"></div>
+                                <div class="lockscreen-preview__space"></div>
                         
-                                <div class="lockscreen-preview-overlay__time-section">
-                                    <p class="lockscreen-preview-overlay__time-p">{{ currentTime }}</p>
+                                <div class="lockscreen-preview__time-section">
+                                    <p class="lockscreen-preview__time-p">{{ currentTime }}</p>
                                 </div>
                         
-                                <div class="lockscreen-preview-overlay__date-section">
-                                    <p class="lockscreen-preview-overlay__date-p">{{ currentDate }}</p>
+                                <div class="lockscreen-preview__date-section">
+                                    <p class="lockscreen-preview__date-p">{{ currentDate }}</p>
                                 </div>
                             </div>
                         </div>
@@ -288,7 +282,7 @@
 
                             <div class="lockscreen-block-content">
                                 <div class="lockscreen-background-dropdown" (click)="shhhh($event)">
-                                    <select  class="lockscreen-background-dropdown__select"  [(ngModel)]="lockScreenBkgrndOption" (change)="onLockScreenBkgrndSelect($event)">
+                                    <select  class="lockscreen-background-dropdown__select"  [(ngModel)]="lockScreenBkgrndOption" (change)="onLockScreenBkgrndDropDownSelect($event)">
                                         <option class="lockscreen-background-dropdown__option"  *ngFor="let option of lockScreenBackgroundOptions"  [value]="option.label">
                                             {{ option.label }}
                                         </option>
@@ -324,7 +318,7 @@
                                         <li class="li-lockscreen-picture-color" *ngFor="let option of lockScreenPictureOptions; let i = index">
                                             <div class="lockscreen-picture__item" 
                                                 role="button" 
-                                                (click)="handleLockScreenSelection(option, $event)" >
+                                                (click)="handleLockScreenPictureAndColorSelection(option, $event)" >
                                                 <img [src]="option"/>
 
                                             </div>
@@ -346,7 +340,7 @@
                                             <div class="lockscreen-solid-color__item" 
                                                 role="button" 
                                                 [style]="{'background-color': option}" 
-                                                (click)="handleLockScreenSelection(option, $event)" >
+                                                (click)="handleLockScreenPictureAndColorSelection(option, $event)" >
                                             </div>
                                         </li>
                                     </ol>

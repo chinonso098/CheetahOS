@@ -524,54 +524,39 @@
   font-size: 13px;
 }
 
+/*DATE AND TIME OVERLAY START*/
+
 .lockscreen-preview__container{
   width: 320px;
   height: 180px;
 }
 
-.lockscreen-preview__container img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-
-/*DATE AND TIME OVERLAY START*/
-
-.lockscreen-preview-overlay__container{
-  width: 320px;
-  height: 180px;
-  z-index: 1;
-  position: absolute;
-  top: 88px;
-}
-
-.lockscreen-preview-overlay__datetime-container {
+.lockscreen-preview__datetime-container {
   display: block;
   position: relative;
-  top: 133px;
+  top: 90px;
   margin-left: 5px;
 }
 
-.lockscreen-preview-overlay__time-section, .lockscreen-preview-overlay__date-section {
-    width: fit-content;
-    height: fit-content;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.lockscreen-preview__time-section, .lockscreen-preview__date-section {
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.lockscreen-preview-overlay__space{
+.lockscreen-preview__space{
   height: 5px;
 }
 
-.lockscreen-preview-overlay__time-p {
+.lockscreen-preview__time-p {
   font-size: 28px;
   font-weight:200;
   color: #fff;
 }
 
-.lockscreen-preview-overlay__date-p{
+.lockscreen-preview__date-p{
   position: relative;
   left: 1px;
   font-size: 12px;
