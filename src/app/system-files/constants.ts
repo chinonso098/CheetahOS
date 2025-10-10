@@ -78,10 +78,13 @@ export namespace Constants{
     export const DEFAULT_DESKTOP_BACKGROUND = 'DESKTOP_BACKGROUND';
 
     /**⚠️ WARNING: Do not reference directly.*/
-    export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:60000';
+    //export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:60000';
+    export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:115000';
 
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_LOCK_SCREEN_BACKGROUND_VALUE = 'Mirror:Mirror';
+    // export const DEFAULT_LOCK_SCREEN_BACKGROUND_VALUE = 'Solid color:#8f8cd6';
+    //export const DEFAULT_LOCK_SCREEN_BACKGROUND_VALUE = 'Picture:osdrive/Cheetah/Themes/LockScreen/cafe.png';
 
     export const LOCKSCREEN_BACKGROUND_PICTURE = 'Picture';
     export const LOCKSCREEN_BACKGROUND_SOLID_COLOR = 'Solid color';

@@ -564,6 +564,19 @@
   color: #fff;
 }
 
+.lockscreen_preview_background_mirror_and_picture{
+  backdrop-filter: none;
+  background-color: transparent;
+  background-size:contain;
+  background-repeat: no-repeat;
+}
+
+.lockscreen_preview_background_solid_color{
+  background-image: none;
+  backdrop-filter: none;
+  min-height: 180px;
+}
+
 /*DATE AND TIME OVERLAY END*/
 
 

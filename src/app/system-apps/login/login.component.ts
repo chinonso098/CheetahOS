@@ -186,20 +186,22 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   setLockScreenBackground():void{
+    const styleClasses = ['lockscreen_background_mirror', 'lockscreen_background_solid_color', 'lockscreen_background_picture'];
+    let activeClass = Constants.EMPTY_STRING;
+
     if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_MIRROR){
       const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
       if(lockScreenElmnt){
-        lockScreenElmnt.style.backgroundImage = 'none';
-        lockScreenElmnt.style.backdropFilter = 'none';
-        lockScreenElmnt.style.backgroundColor = 'transparent';
+        activeClass = styleClasses[0];
+        this.setStyle(lockScreenElmnt, styleClasses, activeClass);
       }
     }
 
     if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_SOLID_COLOR){
       const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
       if(lockScreenElmnt){
-        lockScreenElmnt.style.backgroundImage = 'none';
-        lockScreenElmnt.style.backdropFilter = 'none';
+        activeClass = styleClasses[1];
+        this.setStyle(lockScreenElmnt, styleClasses, activeClass);
         lockScreenElmnt.style.backgroundColor = this.lockScreenBackgroundValue;
       }
     }
@@ -207,14 +209,26 @@ export class LoginComponent implements OnInit, AfterViewInit {
     if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_PICTURE){
       const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
       if(lockScreenElmnt){
+        activeClass = styleClasses[2];
+        this.setStyle(lockScreenElmnt, styleClasses, activeClass);
         lockScreenElmnt.style.backgroundImage = `url(${this.lockScreenBackgroundValue})`;
-        lockScreenElmnt.style.backdropFilter = 'none';
-        lockScreenElmnt.style.backgroundColor = 'transparent';
-        /* cover or 'contain', 'auto', or specific dimensions */
-        lockScreenElmnt.style.backgroundSize = 'cover';
-        lockScreenElmnt.style.backgroundRepeat = 'no-repeat';
       }
     }
+  }
+
+  setStyle(lockScreenElmnt: HTMLDivElement, styleClasses:string[], activeClass:string) {
+    // 🧹 Reset previous inline styles
+    this.resetInlineStyles(lockScreenElmnt);
+    lockScreenElmnt.classList.remove(...styleClasses);
+    lockScreenElmnt.classList.add(activeClass);
+  }
+  
+  resetInlineStyles(lockScreenElmnt: HTMLDivElement) {
+    lockScreenElmnt.style.backgroundImage = Constants.EMPTY_STRING;
+    lockScreenElmnt.style.backgroundColor = Constants.EMPTY_STRING;
+    lockScreenElmnt.style.backdropFilter = Constants.EMPTY_STRING;
+    lockScreenElmnt.style.backgroundSize = Constants.EMPTY_STRING;
+    lockScreenElmnt.style.backgroundRepeat = Constants.EMPTY_STRING;
   }
 
   onKeyDown(evt:KeyboardEvent):void{

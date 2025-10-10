@@ -267,3 +267,21 @@
     color: #fff;
     margin-bottom: 1px; /* Space between text and button */
 }
+
+.lockscreen_background_mirror{
+    background-image: none;
+    backdrop-filter: none;
+    background-color: transparent;
+}
+
+.lockscreen_background_solid_color{
+    background-image: none;
+    backdrop-filter: none;
+}
+
+.lockscreen_background_picture{
+    backdrop-filter: none;
+    background-color: transparent;
+    background-size:cover;
+    background-repeat: no-repeat;
+}

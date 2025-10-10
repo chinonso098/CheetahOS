@@ -259,7 +259,7 @@
                             <p class="lockscreen-block-subheading__p"> Preview</p>
                         </div>
 
-                        <div class="lockscreen-preview__container"  (click)="shhhh($event)"  id="lockScreenPrev-{{processId}}"> 
+                        <div class="lockscreen-preview__container"  (click)="shhhh($event)"  id="lockScreen_Preview"> 
                             <!-- New Additional Container -->
                             <div class="lockscreen-preview__datetime-container">
                         
@@ -282,7 +282,7 @@
 
                             <div class="lockscreen-block-content">
                                 <div class="lockscreen-background-dropdown" (click)="shhhh($event)">
-                                    <select  class="lockscreen-background-dropdown__select"  [(ngModel)]="lockScreenBkgrndOption" (change)="onLockScreenBkgrndDropDownSelect($event)">
+                                    <select  class="lockscreen-background-dropdown__select"  [(ngModel)]="lockScreenBkgrndOption" (change)="handleDropDownChoiceAndSetLockScreenBkgrnd($event)">
                                         <option class="lockscreen-background-dropdown__option"  *ngFor="let option of lockScreenBackgroundOptions"  [value]="option.label">
                                             {{ option.label }}
                                         </option>
