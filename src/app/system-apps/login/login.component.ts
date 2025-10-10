@@ -72,6 +72,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   readonly defaultPassWord = "1234";
 
+  lockScreenBackgroundType = Constants.EMPTY_STRING;
+  lockScreenBackgroundValue = Constants.EMPTY_STRING;
+  menuData:GeneralMenu[] = [];
+
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'cheetah_authentication';
@@ -79,8 +83,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   
-
-  menuData:GeneralMenu[] = [];
 
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
               formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, systemNotificationServices:SystemNotificationService,
@@ -103,6 +105,13 @@ export class LoginComponent implements OnInit, AfterViewInit {
       }
     })
 
+    this._defaultService.defaultSettingsChangeNotify.subscribe((p) => {
+      if(p === Constants.DEFAULT_LOCK_SCREEN_BACKGROUND){
+        this.getLockScreenBackgroundData();
+        this.setLockScreenBackground();
+      }
+    })
+
     this._systemNotificationServices.shutDownSystemNotify.subscribe(() => { this.shutDownOSFromDesktop()});
     this._systemNotificationServices.restartSystemNotify.subscribe((p) => { 
       if(p === Constants.RSTRT_ORDER_LOCK_SCREEN){
@@ -112,17 +121,19 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit():void {
+    this.getLockScreenBackgroundData();
     this.firstToDo();
     this.retrievePastSessionData();
 
-
-    if(this.isUserLogedIn){
+    if(this.isUserLogedIn)
       this.showDesktop();
-    }else{this.showLockScreen()}
+    else
+      this.showLockScreen();
   }
 
   ngAfterViewInit(): void {
-    1//this._runningProcessService.showLockScreenNotify.next();
+    //this._runningProcessService.showLockScreenNotify.next();
+    this.setLockScreenBackground();
   }
 
   updateTime():void {
@@ -168,6 +179,44 @@ export class LoginComponent implements OnInit, AfterViewInit {
     });
   }
 
+  getLockScreenBackgroundData():void{
+    const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
+    this.lockScreenBackgroundType = defaultBkgrnd[0];
+    this.lockScreenBackgroundValue = defaultBkgrnd[1];
+  }
+
+  setLockScreenBackground():void{
+    if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_MIRROR){
+      const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+      if(lockScreenElmnt){
+        lockScreenElmnt.style.backgroundImage = 'none';
+        lockScreenElmnt.style.backdropFilter = 'none';
+        lockScreenElmnt.style.backgroundColor = 'transparent';
+      }
+    }
+
+    if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_SOLID_COLOR){
+      const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+      if(lockScreenElmnt){
+        lockScreenElmnt.style.backgroundImage = 'none';
+        lockScreenElmnt.style.backdropFilter = 'none';
+        lockScreenElmnt.style.backgroundColor = this.lockScreenBackgroundValue;
+      }
+    }
+
+    if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_PICTURE){
+      const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+      if(lockScreenElmnt){
+        lockScreenElmnt.style.backgroundImage = `url(${this.lockScreenBackgroundValue})`;
+        lockScreenElmnt.style.backdropFilter = 'none';
+        lockScreenElmnt.style.backgroundColor = 'transparent';
+        /* cover or 'contain', 'auto', or specific dimensions */
+        lockScreenElmnt.style.backgroundSize = 'cover';
+        lockScreenElmnt.style.backgroundRepeat = 'no-repeat';
+      }
+    }
+  }
+
   onKeyDown(evt:KeyboardEvent):void{
     if(evt.key === Constants.BLANK_SPACE){
       this.showAuthForm();
@@ -183,8 +232,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.viewOptions = this.authForm;
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
-      lockScreenElmnt.style.backdropFilter = 'blur(40px)';
-      lockScreenElmnt.style.transition = 'backdrop-filter 0.4s ease';
+
+      if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_MIRROR){
+        lockScreenElmnt.style.backdropFilter = 'blur(40px)';
+        lockScreenElmnt.style.transition = 'backdrop-filter 0.4s ease';
+      }
 
       this.startAuthFormTimeOut();
     }
@@ -214,12 +266,12 @@ export class LoginComponent implements OnInit, AfterViewInit {
         this.isUserLogedIn = true;
         this.showPasswordEntry = false;
         this.showLoading = true;
-        setTimeout(() => {
-          this.showDesktop();
-        }, secondsDelays[0]);
+
+        setTimeout(() => { this.showDesktop(); }, secondsDelays[0]);
       }else{
         this.showPasswordEntry = false;
         this.showLoading = true;
+
         setTimeout(() => {
           this.showLoading = false;
           this.showFailedEntry = true

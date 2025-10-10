@@ -77,8 +77,17 @@ export namespace Constants{
     export const DEFAULT_LOCK_SCREEN_BACKGROUND = 'LOCK_SCREEN_BACKGROUND';
     export const DEFAULT_DESKTOP_BACKGROUND = 'DESKTOP_BACKGROUND';
 
+    /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:60000';
+
+    /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_LOCK_SCREEN_BACKGROUND_VALUE = 'Mirror:Mirror';
+
+    export const LOCKSCREEN_BACKGROUND_PICTURE = 'Picture';
+    export const LOCKSCREEN_BACKGROUND_SOLID_COLOR = 'Solid color';
+    export const LOCKSCREEN_BACKGROUND_MIRROR = 'Mirror';
+
+    /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Dynamic:osdrive/Program-Files/Backgrounds/vanta.waves.min.js:vanta-waves';
 
     export const USER_OPENED_APPS = 'usrOpenedApps'; 

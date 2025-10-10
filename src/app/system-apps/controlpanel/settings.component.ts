@@ -1,5 +1,4 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -26,7 +25,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private _processIdService:ProcessIDService;
   private _runningProcessService:RunningProcessService;
   private _defaultService:DefaultService;
-  private _menuService:MenuService;
   private _windowService:WindowService;
   private _hideStartMenuSub!:Subscription;
 
@@ -74,9 +72,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly PERSONALIZATION_TASKBAR = 'Taskbar';
   //readonly PERSONALIZATION_COLOR = 'Color';
 
-  readonly LOCKSCREEN_BACKGROUND_PICTURE = 'Picture';
-  readonly LOCKSCREEN_BACKGROUND_SOLID_COLOR = 'Solid color';
-  readonly LOCKSCREEN_BACKGROUND_MIRROR = 'Mirror';
+  readonly LOCKSCREEN_BACKGROUND_PICTURE = Constants.LOCKSCREEN_BACKGROUND_PICTURE;
+  readonly LOCKSCREEN_BACKGROUND_SOLID_COLOR = Constants.LOCKSCREEN_BACKGROUND_SOLID_COLOR;
+  readonly LOCKSCREEN_BACKGROUND_MIRROR = Constants.LOCKSCREEN_BACKGROUND_MIRROR;
 
   readonly ON = 'On';
   readonly OFF = 'Off';
@@ -118,9 +116,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
 
   lockScreenBackgroundOptions = [
-    { value: 0, label: 'Picture' },
-    { value: 1, label: 'Solid color'},
-    { value: 2, label: 'Mirror' }
+    { value: 0, label: this.LOCKSCREEN_BACKGROUND_PICTURE },
+    { value: 1, label: this.LOCKSCREEN_BACKGROUND_SOLID_COLOR},
+    { value: 2, label: this.LOCKSCREEN_BACKGROUND_MIRROR }
   ];
 
   lockScreenTimeOutOptions = [
@@ -132,6 +130,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   currentTime = Constants.EMPTY_STRING;
   currentDate = Constants.EMPTY_STRING;
+
+  lockScreenBackgroundType = Constants.EMPTY_STRING;
+  lockScreenBackgroundValue = Constants.EMPTY_STRING;
   
   isMaximizable = false;
   hasWindow = true;
@@ -139,13 +140,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
   name = 'settings';
   processId = 0;
   type = ComponentType.System
-  displayName = '';
+  displayName = Constants.EMPTY_STRING;
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService, 
-               windowService:WindowService, defaultService:DefaultService, formBuilder:FormBuilder) { 
+  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService,  windowService:WindowService, 
+               defaultService:DefaultService, formBuilder:FormBuilder) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
-    this._menuService = menuService;
     this._windowService = windowService;
     this._defaultService = defaultService
     this._formBuilder = formBuilder;
@@ -175,6 +175,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this._hideStartMenuSub?.unsubscribe();
+  }
+
+  getLockScreenBackgroundData():void{
+    const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
+    this.lockScreenBackgroundType = defaultBkgrnd[0];
+    this.lockScreenBackgroundValue = defaultBkgrnd[1];
   }
 
   focusWindow(evt:MouseEvent):void{
@@ -276,7 +282,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
 
     if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_MIRROR){
-      const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}-${this.lockScreenBkgrndOption}`;
+      const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${this.lockScreenBkgrndOption}`;
       this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue)
     }
   }
