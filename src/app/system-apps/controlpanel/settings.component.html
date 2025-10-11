@@ -281,7 +281,7 @@
                             </div>
 
                             <div class="lockscreen-block-content">
-                                <div class="lockscreen-background-dropdown" (click)="toggleLockScreenBkgrndDropdown()" [class.open]="isLockScreenBkgrndDropDownOpen">
+                                <div class="lockscreen-background-dropdown" (click)="toggleLockScreenBkgrndDropdown($event)" [class.open]="isLockScreenBkgrndDropDownOpen">
                                     <div class="lockscreen-background-dropdown__selected">
                                       {{ lockScreenBkgrndOption|| 'Select background' }}
                                     </div>
@@ -361,7 +361,7 @@
                             </div>
 
                             <div class="lockscreen-block-content">
-                                <div class="lockscreen-timeout-dropdown" (click)="toggleLockScreenTimeOutDropdown()" [class.open]="isLockScreenTimeoutDropDownOpen">
+                                <div class="lockscreen-timeout-dropdown" (click)="toggleLockScreenTimeOutDropdown($event)" [class.open]="isLockScreenTimeoutDropDownOpen">
                                     <div class="lockscreen-timeout-dropdown__selected">
                                       {{ lockScreenTimeoutOption || 'Select background' }}
                                     </div>

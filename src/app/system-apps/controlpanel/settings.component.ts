@@ -129,8 +129,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   retrievedLockScreenBackgroundValue = Constants.EMPTY_STRING;
 
 
-  //-------------------
-
   isLockScreenBkgrndDropDownOpen = false;
   isLockScreenTimeoutDropDownOpen = false;
   
@@ -176,11 +174,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     // a wired bug. I shouldn't have to do this.
   }
 
-  toggleLockScreenBkgrndDropdown(): void {
+  toggleLockScreenBkgrndDropdown(evt:MouseEvent): void {
+    evt.stopPropagation();
     this.isLockScreenBkgrndDropDownOpen = !this.isLockScreenBkgrndDropDownOpen;
   }
 
-  toggleLockScreenTimeOutDropdown(): void {
+  toggleLockScreenTimeOutDropdown(evt:MouseEvent): void {
+    evt.stopPropagation();
     this.isLockScreenTimeoutDropDownOpen = !this.isLockScreenTimeoutDropDownOpen;
   }
 
@@ -190,8 +190,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.isLockScreenBkgrndDropDownOpen = false;
     this.isLockScreenTimeoutDropDownOpen = false;
   }
-
-
 
   getLockScreenBackgroundData():void{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
@@ -207,6 +205,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   focusWindow(evt:MouseEvent):void{
     evt.stopPropagation();
+
+    this.onOutsideClick();
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
@@ -300,10 +300,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     let isMirror = false;
     let isChanged = false;  
 
-
-    console.log('option is :', option)
-    console.log('event is :', evt)
-
     if(option){
       const selectedValue = option.label
       this.lockScreenBkgrndOption = selectedValue;
@@ -383,7 +379,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     evt.stopPropagation();
 
     this.isLockScreenTimeoutDropDownOpen = false;
-    
+
     const selectedValue = option.label;
     this.lockScreenTimeoutOption = selectedValue;
 
@@ -442,8 +438,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     evt.stopPropagation();
   }
 
-
-
   updateTime():void {
     const now = new Date();
     const hours = now.getHours();
@@ -454,7 +448,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     this.currentTime = `${formattedHours}:${formattedMinutes}`;
   }
-
 
   getDate():void{
     const now = new Date();
