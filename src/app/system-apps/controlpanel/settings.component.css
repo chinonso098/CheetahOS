@@ -220,14 +220,15 @@
   display: grid;
   grid-auto-flow: row;
   grid-template-columns:  repeat(auto-fill, 248px);
-  grid-template-rows: repeat(auto-fill, 30px);
+  grid-template-rows: repeat(auto-fill, 40px);
   width: 100%;
-  gap: 15px 0px;
+  gap: 10px 0px;
 }
 
 .li-system-option__item, .li-personalization-option__item{
   width: 248px;
-  height: 30px;
+  height: 40px;
+  padding: 5px 0px;
 }
 
 .system-option__item-cntnr, .personalization-option__item-cntnr{
