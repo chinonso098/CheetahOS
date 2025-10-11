@@ -39,12 +39,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly screenImg = `${Constants.IMAGE_BASE_PATH}cp_screen.png`;
   readonly clipboardImg = `${Constants.IMAGE_BASE_PATH}cp_clipboard.png`;
 
-  readonly lckScrImg1 = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}duck_lake.png`;
-  readonly lckScrImg2 = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}above_the_ocean.png`;
-  readonly lckScrImg3 = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}highlands.png`;
-  readonly lckScrImg4 = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}leafs.png`;
-  readonly lckScrImg5 = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}cafe.png`;
-
   readonly systemImg = `${Constants.IMAGE_BASE_PATH}cp_system.png`;
   readonly appsImg = `${Constants.IMAGE_BASE_PATH}cp_apps.png`;
   readonly personalizationImg = `${Constants.IMAGE_BASE_PATH}cp_personalization.png`;
@@ -219,7 +213,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   generateLockScreenPictureOptions():string[]{
-    const options = [this.lckScrImg1, this.lckScrImg2, this.lckScrImg3, this.lckScrImg4, this.lckScrImg5];
+    const options:string[] = [];
+    const lockScreenImgPath = Constants.LOCK_SCREEN_IMAGE_BASE_PATH;
+    const lockScreenImages = ['bamboo_moon.jpg', 'duck_lake.jpeg', 'forza_5.jpeg', 'highland_view.jpg',
+                              'leaf_colors.jpg', 'lofi_coffee.jpeg', 'mountain_babel.jpg', 'mystic_isle.jpg', 
+                              'over_the_ocean.jpg', 'paradise_island.jpg', 'purple_reign.jpg', 'win_xp_bliss.jpeg'];
+
+    lockScreenImages.forEach( imgName =>{ options.push(`${lockScreenImgPath}${imgName}`) });
     return options;
   }
 

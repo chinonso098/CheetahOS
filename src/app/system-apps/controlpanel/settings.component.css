@@ -297,6 +297,12 @@
   height: 600px;
   padding: 15px;
   background-color: #000;
+  /* background-clip: padding-box; */
+}
+
+.personalization-view__panel{
+  overflow-y: auto;
+  padding: 0px;
 }
 
 /*Button CSS Start*/
@@ -459,10 +465,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
-  gap: 20px 0px;
-  overflow: hidden;
-  overflow-y:scroll
+  row-gap: 20px;
+  padding: 15px;
 }
 
 /* For Chrome, Safari, Edge */
@@ -472,7 +476,7 @@
 
 /* For Firefox */
 * {
-  scrollbar-width: none; /* hides scrollbar */
+  scrollbar-width: none; 
 }
 
 .lockscreen-block-content,
@@ -525,7 +529,6 @@
 }
 
 /*DATE AND TIME OVERLAY START*/
-
 .lockscreen-preview__container{
   width: 320px;
   height: 180px;
@@ -567,7 +570,7 @@
 .lockscreen_preview_background_mirror_and_picture{
   backdrop-filter: none;
   background-color: transparent;
-  background-size:contain;
+  background-size:cover;
   background-repeat: no-repeat;
 }
 
@@ -669,8 +672,8 @@
 }
 
 .lockscreen-picture__block{
-  width: 520;
-  height: 61px;
+  width: 448px;
+  height: 189px;
 }
 
 .ol-lockscreen-picture__grid{
