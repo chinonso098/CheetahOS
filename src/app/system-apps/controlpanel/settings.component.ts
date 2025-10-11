@@ -361,14 +361,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
     let isChanged = false;  
 
     if(option){
-      const selectedValue = option.label
+      const selectedValue = option.label;
+      isChanged = true;
+      
       if(!isDesktopView){
         this.lockScreenBkgrndOption = selectedValue;
-        isMirror = (selectedValue === this.LOCKSCREEN_BACKGROUND_MIRROR)
+        isMirror = (selectedValue === this.LOCKSCREEN_BACKGROUND_MIRROR);
       }else{
         this.desktopBkgrndOption = selectedValue;
       }
-      isChanged = true;
     }
 
     this.isLockScreenBkgrndDropDownOpen = false;
@@ -385,10 +386,21 @@ export class SettingsComponent implements OnInit, OnDestroy {
       : document.getElementById('lockScreen_Preview') as HTMLDivElement;
     }
 
+
+    this.handlePictureBkgrnd(screenPrevElmnt, activeClass, styleClasses, isChanged, isDesktopView);
+
+    await this.handleMirrorAndDynamicBkgrnd(screenPrevElmnt, activeClass, styleClasses, isMirror, isChanged, isDesktopView)
+
+    this.handleSolidColorBkrgnd(screenPrevElmnt, activeClass, styleClasses, isChanged);
+
+    this.handleSlideShowBkgrnd(screenPrevElmnt, activeClass, styleClasses, isChanged, isDesktopView);
+  }
+
+  handlePictureBkgrnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isChanged:boolean, isDesktopView:boolean):void{
     if((this.retrievedBackgroundType === this.LOCKSCREEN_BACKGROUND_PICTURE  && !isChanged)
-        || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_PICTURE && isChanged)
-        || (this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_PICTURE  && !isChanged)
-        || (this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE && isChanged)){
+      || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_PICTURE && isChanged)
+      || (this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_PICTURE  && !isChanged)
+      || (this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE && isChanged)){
 
       if(screenPrevElmnt){
         activeClass = styleClasses[0];
@@ -410,8 +422,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
       else
         this.desktopPictureOptions = this.generateDesktopPictureOptions();
     }
+  }
 
-
+  async handleMirrorAndDynamicBkgrnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isMirror:boolean, isChanged:boolean, isDesktopView:boolean): Promise<void>{
     if((this.retrievedBackgroundType === this.LOCKSCREEN_BACKGROUND_MIRROR  && !isChanged)
       || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_MIRROR && isChanged)
       || (this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_DYNAMIC  && !isChanged)
@@ -435,7 +448,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
       }
     }
+  }
 
+  handleSolidColorBkrgnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isChanged:boolean):void{
     if((this.retrievedBackgroundType === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR  && !isChanged)
       || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR  && isChanged)
       || (this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_SOLID_COLOR  && !isChanged)
@@ -449,7 +464,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
       
       this.colorOptions = this.generateColorOptions();
     }
+  }
 
+  handleSlideShowBkgrnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isChanged:boolean, isDesktopView:boolean):void{
     if((this.retrievedBackgroundType === this.LOCKSCREEN_SLIDE_SHOW  && !isChanged)
       || (this.lockScreenBkgrndOption === this.LOCKSCREEN_SLIDE_SHOW  && isChanged)
       || (this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_SLIDE_SHOW  && !isChanged)
@@ -470,6 +487,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
     }
   }
+
   startPictureSlideShow(screenPrevElmnt: HTMLDivElement) {
     throw new Error('Method not implemented.');
     screenPrevElmnt.style.backgroundColor =  '#0c0c0c';
@@ -565,24 +583,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
     vantaImg.src = bkgrndImg;
     await vantaImg.decode();
 
-    // var link = document.createElement('a');
-    // link.download = 'vanta_img.png';
-    // link.href = bkgrndImg;
-    // link.click();
-
     if(onlyCanvas)
       return bkgrndImg;
 
- 
     const foreGrndImg = new Image();
     foreGrndImg.src = htmlImg;
     await foreGrndImg.decode();
-
-    // var link1 = document.createElement('a');
-    // link1.download = 'foregrnd_img.png';
-    // link1.href = htmlImg;
-    // link1.click();
-
 
     this.changeMainDkstpBkgrndColor(colorOn);
     const mergedImg = document.createElement('canvas');
