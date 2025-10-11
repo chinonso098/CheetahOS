@@ -526,7 +526,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
 
     if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_PICTURE
-      || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE){
+      || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE
+      || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC){
       const screenPrevElmnt = (isDesktopView)
       ? document.getElementById('desktop_Preview') as HTMLDivElement 
       : document.getElementById('lockScreen_Preview') as HTMLDivElement;
