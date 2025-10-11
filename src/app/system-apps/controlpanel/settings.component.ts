@@ -107,7 +107,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   settingsOptions!:string[][];
   systemOptions!:string[][];
   personalizationOptions!:string[][];
-  islockScreenPreviewLoaded = false;
 
   lockScreenBackgroundOptions = [
     { value: 0, label: this.LOCKSCREEN_BACKGROUND_PICTURE },
@@ -167,7 +166,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._hideStartMenuSub?.unsubscribe();
+    // a wired bug. I shouldn't have to do this.
   }
 
   getLockScreenBackgroundData():void{
@@ -267,44 +266,47 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   async handleDropDownChoiceAndSetLockScreenBkgrnd(event?: any): Promise<void>{
-    const delay = 50; //50 ms
-    const styleClasses = ['ockscreen_preview_background_mirror_and_picture', 'lockscreen_preview_background_solid_color'];
+    const delay = 100; //100 ms
+    const styleClasses = ['lockscreen_preview_background_mirror_and_picture', 'lockscreen_preview_background_solid_color'];
     let activeClass = Constants.EMPTY_STRING;
     let lockScreenPrevElmnt!:HTMLDivElement;
-    let isMirror = false;  
+    let isMirror = false;
+    let isChanged = false;  
 
     if(event){
       const selectedValue = event.target.value;
       this.lockScreenBkgrndOption = selectedValue;
       isMirror = (selectedValue === this.LOCKSCREEN_BACKGROUND_MIRROR)
-      // console.log('lockScreenBackgroundType:', this.retrievedLockScreenBackgroundType )
-      // console.log('lockScreenBackgroundValue:', this.retrievedLockScreenBackgroundValue )
+      isChanged = true;
     }
 
-    if(!this.islockScreenPreviewLoaded){
+ 
+    lockScreenPrevElmnt = document.getElementById('lockScreen_Preview') as HTMLDivElement;
+    if(!lockScreenPrevElmnt){
       await CommonFunctions.sleep(delay);
       lockScreenPrevElmnt = document.getElementById('lockScreen_Preview') as HTMLDivElement;
-      this.islockScreenPreviewLoaded = true;
     }
 
-    if(this.retrievedLockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_PICTURE 
-      || this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_PICTURE){
+    if((this.retrievedLockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_PICTURE  && !isChanged)
+      || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_PICTURE && isChanged)){
 
       if(lockScreenPrevElmnt){
         activeClass = styleClasses[0];
         this.setStyle(lockScreenPrevElmnt, styleClasses, activeClass);
-        lockScreenPrevElmnt.style.backgroundImage = `url(${this.retrievedLockScreenBackgroundValue})`;
+        lockScreenPrevElmnt.style.backgroundImage = (isChanged) 
+        ? 'url(osdrive/Cheetah/Themes/LockScreen/bamboo_moon.jpg)' 
+        : `url(${this.retrievedLockScreenBackgroundValue})`;
       }
 
       this.lockScreenPictureOptions = this.generateLockScreenPictureOptions();
     }
 
-    if(this.retrievedLockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_MIRROR
-      || this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_MIRROR){
+
+    if((this.retrievedLockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_MIRROR  && !isChanged)
+      || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_MIRROR && isChanged)){
 
       if(lockScreenPrevElmnt){
         const desktopBkgrndImg = await this.getDesktopScreenShot();
-
         activeClass = styleClasses[0];
         this.setStyle(lockScreenPrevElmnt, styleClasses, activeClass);
         lockScreenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
@@ -316,13 +318,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
     }
 
-    if(this.retrievedLockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR 
-      || this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR){
+
+    if((this.retrievedLockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR  && !isChanged)
+      || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR  && isChanged)){
       
       if(lockScreenPrevElmnt){
         activeClass = styleClasses[1];
         this.setStyle(lockScreenPrevElmnt, styleClasses, activeClass);
-        lockScreenPrevElmnt.style.backgroundColor = this.retrievedLockScreenBackgroundValue;
+        lockScreenPrevElmnt.style.backgroundColor = (isChanged) ?  '#0c0c0c' : this.retrievedLockScreenBackgroundValue ;
       }
 
       this.colorOptions = this.generateColorOptions();
@@ -344,25 +347,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     lockScreenPrevElmnt.style.backgroundRepeat = Constants.EMPTY_STRING;
   }
 
-
- async getDesktopScreenShot():Promise<string>{
-  const dsktpCntnrElmnt = document.getElementById('vanta') as HTMLElement;
-  const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
-
-    const htmlImg = await htmlToImage.toPng(dsktpCntnrElmnt);
-    const vantaImg = new Image();
-    const bkgrndImg =  canvasElmnt.toDataURL('image/png');
-    vantaImg.src = bkgrndImg;
-
-    return bkgrndImg
-    //await vantaImg.decode();
-
- }
-
-  shhhh(evt:MouseEvent):void{
-    evt.stopPropagation();
-  }
-
   onLockScreenTimeoutSelect(event: any):void{
     const selectedValue = event.target.value;
     this.lockScreenTimeoutOption = selectedValue;
@@ -372,7 +356,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const defaultLockScreenBackgrounValue = `${this.lockScreenTimeoutOption}:${timeOutValue}`;
     this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, defaultLockScreenBackgrounValue);
   }
-
 
   handleLockScreenPictureAndColorSelection(selection:string, evt:MouseEvent):void{
     evt.stopPropagation();
@@ -403,6 +386,27 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selection}`;
     this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
   }
+
+
+  async getDesktopScreenShot():Promise<string>{
+    const dsktpCntnrElmnt = document.getElementById('vanta') as HTMLElement;
+    const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
+
+      const htmlImg = await htmlToImage.toPng(dsktpCntnrElmnt);
+      const vantaImg = new Image();
+      const bkgrndImg =  canvasElmnt.toDataURL('image/png');
+      vantaImg.src = bkgrndImg;
+
+      return bkgrndImg
+      //await vantaImg.decode();
+
+  }
+
+  shhhh(evt:MouseEvent):void{
+    evt.stopPropagation();
+  }
+
+
 
   updateTime():void {
     const now = new Date();

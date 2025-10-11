@@ -572,11 +572,14 @@
   background-color: transparent;
   background-size:cover;
   background-repeat: no-repeat;
+  width: 320px;
+  min-height: 180px;
 }
 
 .lockscreen_preview_background_solid_color{
   background-image: none;
   backdrop-filter: none;
+  width: 320px;
   min-height: 180px;
 }
 
