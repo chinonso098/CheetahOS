@@ -64,6 +64,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   viewOptions = Constants.EMPTY_STRING;
 
   cheetahUnlockAudio = `${Constants.AUDIO_BASE_PATH}cheetah_unlock.wav`;
+  cheetahlockAudio = `${Constants.AUDIO_BASE_PATH}cheetah_lock.mp3`;
   cheetahRestarAndShutDownAudio = `${Constants.AUDIO_BASE_PATH}cheetah_shutdown.wav`;
 
   userIcon = `${Constants.ACCT_IMAGE_BASE_PATH}default_user.png`;
@@ -246,20 +247,21 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.viewOptions = this.authForm;
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
-
       if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_MIRROR){
         lockScreenElmnt.style.backdropFilter = 'blur(40px)';
         lockScreenElmnt.style.transition = 'backdrop-filter 0.4s ease';
       }
-
       this.startAuthFormTimeOut();
     }
   }
 
   startAuthFormTimeOut():void{
     const secondsDelay = 60000; //wait 1 min
+    this.resetAuthFormTimeOutOnly();
+
     this.authFormTimeoutId = setTimeout(() => {
       this.loginForm.controls[this.formCntrlName].setValue(null);
+      //console.log('startAuthFormTimeOut fired at:', new Date().toISOString());
       this.showDateTime();
     }, secondsDelay);
   }
@@ -273,7 +275,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   onEnteringPassword(evt?:KeyboardEvent):void{
-    const secondsDelays = [2500,3000]; //2.5 & 3 seconds
+    const secondsDelays = [2500, 3000]; //2.5 & 3 seconds
     if(evt?.key === "Enter"){
       const loginTxt = this.loginForm.value.loginInput as string;
       if(loginTxt === this.defaultPassWord){
@@ -281,7 +283,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
         this.showPasswordEntry = false;
         this.showLoading = true;
 
-        setTimeout(() => { this.showDesktop(); }, secondsDelays[0]);
+        setTimeout(async() => { await this.showDesktop(); }, secondsDelays[0]);
       }else{
         this.showPasswordEntry = false;
         this.showLoading = true;
@@ -307,10 +309,13 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   resetAuthFormTimeOutOnly():void{
-    clearTimeout(this.authFormTimeoutId);
+    // prevent overlapping timeouts
+    if (this.authFormTimeoutId) {
+      clearTimeout(this.authFormTimeoutId);
+    }
   }
 
-  showDesktop():void{ 
+  async showDesktop(): Promise<void>{ 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
       lockScreenElmnt.style.zIndex = '-1';
@@ -318,24 +323,27 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
       this.isScreenLocked = false;
       this._systemNotificationServices.showDesktopNotify.next();
-      this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked );
+      this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked);
       this.startLockScreenTimeOut();
 
       if(this.isUserLogedIn && this.isFirstLogIn)
-          this._audioService.play(this.cheetahUnlockAudio);
+        await this._audioService.play(this.cheetahUnlockAudio);
 
       this.resetAuthFormState();
       this.storeState(Constants.SIGNED_IN);
     }
   }
 
-  showLockScreen(isShtDwnOrRstrt?:boolean):void{
+  async showLockScreen(isShtDwnOrRstrt?:boolean):Promise<void>{
     this.viewOptions = (isShtDwnOrRstrt === undefined)? this.currentDateTime : this.authForm;
 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
       lockScreenElmnt.style.zIndex = '6';
       lockScreenElmnt.style.backdropFilter = 'none';
+
+      if(!this.isScreenLocked)
+        await this._audioService.play(this.cheetahlockAudio);
 
       this.isScreenLocked = true;
       this.isFirstLogIn = true;
@@ -350,9 +358,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     if(!this.isScreenLocked){
       const defaultTimeOut = Number(this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT).split(Constants.COLON)[1]);
       const secondsDelay = defaultTimeOut; 
-      this.lockScreenTimeoutId = setTimeout(() => {
-        this.showLockScreen();
-      }, secondsDelay);
+      this.lockScreenTimeoutId = setTimeout(async () => { await this.showLockScreen(); }, secondsDelay);
     }
   }
 
