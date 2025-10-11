@@ -31,6 +31,7 @@ import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { VantaDefaults } from './vanta-object/vanta.defaults';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 
 
 
@@ -76,6 +77,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private _audioService:AudioService;
   private _windowService:WindowService;
   private _scriptService: ScriptService;
+  private _defaultService: DefaultService;
   private _processIdService:ProcessIDService;
   private _processHandlerService:ProcessHandlerService;
   private _runningProcessService:RunningProcessService;
@@ -268,6 +270,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
   dsktpMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
 
+  desktopBackgroundType = Constants.EMPTY_STRING;
+  desktopBackgroundValue = Constants.EMPTY_STRING;
+
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'desktop';
@@ -280,7 +285,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService, 
               scriptService:ScriptService, audioService:AudioService, menuService:MenuService, 
               fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
-              userNotificationService:UserNotificationService, activityHistoryService:ActivityHistoryService, formBuilder:FormBuilder, elRef:ElementRef) { 
+              userNotificationService:UserNotificationService, activityHistoryService:ActivityHistoryService, formBuilder:FormBuilder,
+              defaultService: DefaultService, elRef:ElementRef) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -294,6 +300,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._systemNotificationServices = systemNotificationServices;
     this._userNotificationService = userNotificationService;
     this._activityHistoryService = activityHistoryService;
+    this._defaultService = defaultService;
     this._formBuilder = formBuilder;
     this._elRef = elRef;
 
@@ -329,6 +336,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._systemNotificationServices.showTaskBarToolTipNotify.subscribe((p)=>{this.showTaskBarToolTip(p)});
     this._systemNotificationServices.hideTaskBarToolTipNotify.subscribe(() => {this.hideTaskBarToolTip()});
 
+    this._defaultService.defaultSettingsChangeNotify.subscribe((p) =>{
+      if(p === Constants.DEFAULT_DESKTOP_BACKGROUND){
+        this.getDesktopBackgroundData();
+        this.setDesktopBackgroundData();
+      }
+    });
+
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._numSequence = this.getRandomInt(this.MIN_NUM_COLOR_RANGE, this.MAX_NUM_COLOR_RANGE);
@@ -345,7 +359,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   loadDefaultBackground():void{
-    this._scriptService.loadScript("vanta-waves", "osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
+    this._scriptService.loadScript("vanta_waves", "osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
       this._vantaEffect = VANTA.WAVES(VantaDefaults.getDefaultWave(this.DEFAULT_COLOR));
     })
   }
@@ -367,6 +381,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   onDragOver(event:DragEvent):void{
     event.stopPropagation();
     event.preventDefault();
+  }
+
+
+  getDesktopBackgroundData():void{
+    const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND).split(Constants.COLON);
+    this.desktopBackgroundType = defaultBkgrnd[0];
+    this.desktopBackgroundValue = defaultBkgrnd[1];
+  }
+
+  setDesktopBackgroundData():void{
+
   }
 
  /** Generates the next color dynamically */
