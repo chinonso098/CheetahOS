@@ -191,7 +191,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     const styleClasses = ['lockscreen_background_mirror', 'lockscreen_background_solid_color', 'lockscreen_background_picture'];
     let activeClass = Constants.EMPTY_STRING;
 
-    if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_MIRROR){
+    if(this.lockScreenBackgroundType === Constants.BACKGROUND_MIRROR){
       const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
       if(lockScreenElmnt){
         activeClass = styleClasses[0];
@@ -199,7 +199,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       }
     }
 
-    if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_SOLID_COLOR){
+    if(this.lockScreenBackgroundType === Constants.BACKGROUND_SOLID_COLOR){
       const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
       if(lockScreenElmnt){
         activeClass = styleClasses[1];
@@ -208,7 +208,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       }
     }
 
-    if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_PICTURE){
+    if(this.lockScreenBackgroundType === Constants.BACKGROUND_PICTURE){
       const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
       if(lockScreenElmnt){
         activeClass = styleClasses[2];
@@ -248,7 +248,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.viewOptions = this.authForm;
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
-      if(this.lockScreenBackgroundType === Constants.LOCKSCREEN_BACKGROUND_MIRROR){
+      if(this.lockScreenBackgroundType === Constants.BACKGROUND_MIRROR){
         lockScreenElmnt.style.backdropFilter = 'blur(40px)';
         lockScreenElmnt.style.transition = 'backdrop-filter 0.4s ease';
       }

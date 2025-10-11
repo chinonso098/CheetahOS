@@ -70,15 +70,22 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly PERSONALIZATION_TASKBAR = 'Taskbar';
   //readonly PERSONALIZATION_COLOR = 'Color';
 
-  readonly LOCKSCREEN_BACKGROUND_PICTURE = Constants.LOCKSCREEN_BACKGROUND_PICTURE;
-  readonly LOCKSCREEN_BACKGROUND_SOLID_COLOR = Constants.LOCKSCREEN_BACKGROUND_SOLID_COLOR;
-  readonly LOCKSCREEN_BACKGROUND_MIRROR = Constants.LOCKSCREEN_BACKGROUND_MIRROR;
+  readonly LOCKSCREEN_BACKGROUND_PICTURE = Constants.BACKGROUND_PICTURE;
+  readonly LOCKSCREEN_BACKGROUND_SOLID_COLOR = Constants.BACKGROUND_SOLID_COLOR;
+  readonly LOCKSCREEN_BACKGROUND_MIRROR = Constants.BACKGROUND_MIRROR;
+  readonly LOCKSCREEN_SLIDE_SHOW = Constants.BACKGROUND_SLIDE_SHOW;
+
+  readonly DESKTOP_BACKGROUND_PICTURE = Constants.BACKGROUND_PICTURE;
+  readonly DESKTOP_BACKGROUND_SOLID_COLOR = Constants.BACKGROUND_SOLID_COLOR;
+  readonly DESKTOP_BACKGROUND_SLIDE_SHOW = Constants.BACKGROUND_SLIDE_SHOW;
+  readonly DESKTOP_BACKGROUND_DYNAMIC = Constants.BACKGROUND_DYNAMIC;
 
   readonly ON = 'On';
   readonly OFF = 'Off';
 
   lockScreenBkgrndOption = Constants.EMPTY_STRING;
   lockScreenTimeoutOption = Constants.EMPTY_STRING;
+  desktopBkgrndOption = Constants.EMPTY_STRING;
 
   private _formBuilder:FormBuilder;
   searchBarForm!: FormGroup;
@@ -111,7 +118,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   lockScreenBackgroundOptions = [
     { value: 0, label: this.LOCKSCREEN_BACKGROUND_PICTURE },
     { value: 1, label: this.LOCKSCREEN_BACKGROUND_SOLID_COLOR},
-    { value: 2, label: this.LOCKSCREEN_BACKGROUND_MIRROR }
+    { value: 2, label: this.LOCKSCREEN_BACKGROUND_MIRROR },
+    { value: 3, label: this.LOCKSCREEN_SLIDE_SHOW }
   ];
 
   lockScreenTimeOutOptions = [
@@ -120,6 +128,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     { value: 120000, label: '2 Minutes'},
     { value: 240000, label: '4 Minutes'},
     { value: 480000, label: '8 Minutes'}
+  ];
+
+  desktopBackgroundOptions = [
+    { value: 0, label: this.LOCKSCREEN_BACKGROUND_PICTURE },
+    { value: 1, label: this.LOCKSCREEN_BACKGROUND_SOLID_COLOR},
+    { value: 2, label: this.DESKTOP_BACKGROUND_DYNAMIC },
+    { value: 3, label: this.DESKTOP_BACKGROUND_SLIDE_SHOW }
   ];
 
   currentTime = Constants.EMPTY_STRING;
@@ -131,6 +146,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   isLockScreenBkgrndDropDownOpen = false;
   isLockScreenTimeoutDropDownOpen = false;
+  isDesktopBkgrndDropDownOpen = false;
   
   isMaximizable = false;
   hasWindow = true;
@@ -184,11 +200,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.isLockScreenTimeoutDropDownOpen = !this.isLockScreenTimeoutDropDownOpen;
   }
 
+  toggleDesktopBkgrndDropdown(evt:MouseEvent): void {
+    evt.stopPropagation();
+    this.isDesktopBkgrndDropDownOpen = !this.isDesktopBkgrndDropDownOpen;
+  }
+
 
   @HostListener('document:click')
   onOutsideClick(): void {
     this.isLockScreenBkgrndDropDownOpen = false;
     this.isLockScreenTimeoutDropDownOpen = false;
+    this.isDesktopBkgrndDropDownOpen = false;
   }
 
   getLockScreenBackgroundData():void{
@@ -246,6 +268,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
                               'over_the_ocean.jpg', 'paradise_island.jpg', 'purple_reign.jpg', 'win_xp_bliss.jpeg'];
 
     lockScreenImages.forEach( imgName =>{ options.push(`${lockScreenImgPath}${imgName}`) });
+    return options;
+  }
+
+
+  generateDesktopPictureOptions():string[]{
+    const options:string[] = [];
+    const desktopImgPath = Constants.DESKTOP_IMAGE_BASE_PATH;
+    const desktopImages = ['crown_station.jpg', 'cyber_city.jpg', 'fractal_design.jpeg', 'landscape.jpg',
+                            'mineral_heart.jpg', 'summer_vibe.jpg', 'sun_set.jpg', 'win_seven.jpg'];
+
+    desktopImages.forEach( imgName =>{ options.push(`${desktopImgPath}${imgName}`) });
     return options;
   }
 

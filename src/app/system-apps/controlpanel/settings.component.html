@@ -246,7 +246,100 @@
                 </ng-container>
     
                 <ng-template #dsktpBackgroundView>
-    
+                    <div class="personalization-view__desktop-container">
+                        <div class="desktop-block-heading desktop-heading-fixed">
+                            <p class="desktop-block-heading__p"> Background</p>
+                        </div>
+
+                        <!-- <div class="desktop-block-heading">
+                            <p class="desktop-block-subheading__p"> Preview</p>
+                        </div> -->
+
+                        <div class="desktop-preview__container"  (click)="shhhh($event)"  id="desktop_Preview"> 
+                            <!-- Desktop Img comes here -->
+                        </div>
+
+                        <div class="desktop-block-content">
+                            <div class="desktop-block__text">
+                                <p class="desktop-block-miniheading__p"> Background</p>
+                            </div>
+
+                            <div class="desktop-block-content">
+                                <div class="desktop-background-dropdown" (click)="toggleLockScreenBkgrndDropdown($event)" [class.open]="isDesktopBkgrndDropDownOpen">
+                                    <div class="desktop-background-dropdown__selected">
+                                      {{ desktopBkgrndOption|| 'Select background' }}
+                                    </div>
+                                  
+                                    <span class="desktop-background-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+                                  
+                                    <ul class="desktop-background-dropdown__menu" *ngIf="isDesktopBkgrndDropDownOpen">
+                                      <li  *ngFor="let option of lockScreenBackgroundOptions"  (click)="handleDropDownChoiceAndSetLockScreenBkgrnd(option, $event)"
+                                        [class.selected]="option.label === desktopBkgrndOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                            </div>
+                        </div>
+
+                        <!-- <div class="lockscreen-empty-container"></div> -->
+
+                        <ng-container [ngTemplateOutlet]="desktopBkgrndOption === DESKTOP_BACKGROUND_PICTURE || desktopBkgrndOption === DESKTOP_BACKGROUND_DYNAMIC ? desktopPictureView:
+                                                          desktopBkgrndOption === DESKTOP_BACKGROUND_SOLID_COLOR ? desktopSolidColorView: desktopSlideShow">
+                        </ng-container>
+
+                        <ng-template #desktopPictureView>
+                            <div class="lockscreen-block-content">
+                                <div class="lockscreen-block__text">
+                                    <p class="lockscreen-block-miniheading__p"> Choose your picture</p>
+                                </div>
+                                
+                                <div class="lockscreen-picture__block">
+                                    <ol class="ol-lockscreen-picture__grid">
+                                        <li class="li-lockscreen-picture-color" *ngFor="let option of lockScreenPictureOptions; let i = index">
+                                            <div class="lockscreen-picture__item" 
+                                                role="button" 
+                                                (click)="handleLockScreenPictureAndColorSelection(option, $event)" >
+                                                <img [src]="option"/>
+
+                                            </div>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </ng-template>
+
+                        <ng-template #desktopSolidColorView>
+                            <div class="lockscreen-block-content">
+                                <div class="lockscreen-block__text">
+                                    <p class="lockscreen-block-miniheading__p"> Choose you background color</p>
+                                </div>
+                                
+                                <div class="lockscreen-solid-color__block">
+                                    <ol class="ol-lockscreen-solid-color__grid">
+                                        <li class="li-lockscreen-solid-color" *ngFor="let option of colorOptions; let i = index">
+                                            <div class="lockscreen-solid-color__item" 
+                                                role="button" 
+                                                [style]="{'background-color': option}" 
+                                                (click)="handleLockScreenPictureAndColorSelection(option, $event)" >
+                                            </div>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </ng-template>
+
+                        <ng-template #desktopSlideShow></ng-template>
+
+                    </div>
                 </ng-template>
     
                 <ng-template #lockScreenView>
