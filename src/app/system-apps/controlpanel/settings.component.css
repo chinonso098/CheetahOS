@@ -589,7 +589,6 @@
 /*LOCK SCREEN BACKGROUNG DROP DOWN OPTION START*/
 
 /* ===== Base Dropdown Styles ===== */
-/* ===== Base Dropdown ===== */
 .lockscreen-background-dropdown, .lockscreen-timeout-dropdown {
   position: relative;
   display: inline-block;
@@ -676,12 +675,12 @@
 
 .lockscreen-background-dropdown__menu li.selected, .lockscreen-timeout-dropdown__menu li.selected  {
   background-color: #115992;
-  font-weight: 500;
+  font-weight: 200;
 }
 
 .lockscreen-background-dropdown__menu li.selected:hover, .lockscreen-timeout-dropdown__menu li.selected:hover  {
   background-color: #0969b5;
-  font-weight: 500;
+  font-weight: 200;
 }
 
 /* ===== Animation ===== */
