@@ -363,7 +363,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if(option){
       const selectedValue = option.label;
       isChanged = true;
-      
+
       if(!isDesktopView){
         this.lockScreenBkgrndOption = selectedValue;
         isMirror = (selectedValue === this.LOCKSCREEN_BACKGROUND_MIRROR);
@@ -433,7 +433,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       if(screenPrevElmnt){
         const captureOnlyCanvas = false;
         const desktopBkgrndImg = (isDesktopView)
-        ? await this.getDesktopScreenShot(captureOnlyCanvas) 
+        ? await this.getDesktopScreenShot(Constants.EMPTY_STRING, captureOnlyCanvas) 
         : await this.getDesktopScreenShot();
 
         activeClass = styleClasses[0];
@@ -522,7 +522,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, defaultLockScreenBackgrounValue);
   }
 
-  handleScreenPictureAndColorSelection(selection:string, evt:MouseEvent):void{
+  async handleScreenPictureAndColorSelection(selection:string, evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
 
     const isDesktopView = (this.selectedPersonalizationOption === this.PERSONALIZATION_DESKTOP_BACKGROUND )? true: false;
@@ -551,7 +551,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       : document.getElementById('lockScreen_Preview') as HTMLDivElement;
 
       if(screenPrevElmnt){
-        screenPrevElmnt.style.backgroundImage = `url(${selection})`;
+        let img = Constants.EMPTY_STRING;
+        if(isDesktopView){ 
+          const captureOnlyCanvas = false;
+          img = await this.getDesktopScreenShot(selection, captureOnlyCanvas);
+        }
+
+        screenPrevElmnt.style.backgroundImage = (isDesktopView)? `url(${img})` : `url(${selection})`;
         screenPrevElmnt.style.backdropFilter = 'none';
         screenPrevElmnt.style.backgroundColor = 'transparent';
         /* cover or 'contain', 'auto', or specific dimensions */
@@ -569,7 +575,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
   }
 
-  async getDesktopScreenShot(onlyCanvas = true):Promise<string>{
+  async getDesktopScreenShot(imgPath = Constants.EMPTY_STRING, onlyCanvas = true):Promise<string>{
     const colorOn = '#00adef';
     const colorOff = 'transparent';
 
@@ -579,7 +585,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
 
     const vantaImg = new Image();
-    const bkgrndImg =  canvasElmnt.toDataURL('image/png');
+    const bkgrndImg = (imgPath === Constants.EMPTY_STRING)? canvasElmnt.toDataURL('image/png') : imgPath;
     vantaImg.src = bkgrndImg;
     await vantaImg.decode();
 
