@@ -57,7 +57,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
   readonly cheetahLogonKey = Constants.CHEETAH_LOGON_KEY;
   readonly cheetahPwrKey = Constants.CHEETAH_PWR_KEY;
 
-  incorrectPassword = 'The password is incorrect. Try again.';
+ // incorrectPassword = 'The password is incorrect. Try again.';
+  incorrectPassword = 'The password is incorrect. Try 1234.';
   exitMessage = Constants.EMPTY_STRING;
   authForm = 'AuthenticationForm';
   currentDateTime = 'DateTime'; 
