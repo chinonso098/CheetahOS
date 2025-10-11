@@ -231,17 +231,26 @@
   padding: 5px 0px;
 }
 
-.system-option__item-cntnr, .personalization-option__item-cntnr{
+.system-option__item-cntnr, .personalization-option__item-cntnr, .fixed-home-option__item-cntnr{
   display: inline-flex;
   height: 30px;
   width: 248px;
 }
 
-.li-system-option__item:hover, .li-personalization-option__item:hover{
-    background-color: #6d6d6d;
+.fixed-home-option__item-cntnr{
+  height: 40px;
+  padding: 5px 0px;
 }
 
-.system-option__item-p, .personalization-option__item-p{
+.fixed-home-option__item-cntnr:hover{
+  background-color: #6d6d6d;
+}
+
+.li-system-option__item:hover, .li-personalization-option__item:hover{
+  background-color: #6d6d6d;
+}
+
+.system-option__item-p, .personalization-option__item-p, .fixed-home-option__item-p{
   position: relative;
   width: 193px;
   top: 7px;
@@ -251,7 +260,7 @@
   white-space: nowrap;
 }
 
-.system-option__item-head, .personalization-option__item-head{
+.system-option__item-head, .personalization-option__item-head, .fixed-home-option__item-head{
   display: inline-flex;
   width: 45px;
   height: 30px;
@@ -267,7 +276,7 @@
   background-color: #0078d7;
 }
 
-.system-option__item-tail, .personalization-option__item-tail{
+.system-option__item-tail, .personalization-option__item-tail, .fixed-home-option__item-tail{
   padding: 0 1px;
   color: #fff;
   text-align: left;
@@ -278,7 +287,7 @@
   height: 30px;
 }
 
-.system-option__item-figure, .personalization-option__item-figure{
+.system-option__item-figure, .personalization-option__item-figure, .fixed-home-option__item-figure{
   position: relative;
   align-items: center;
   height: 20px;
@@ -286,7 +295,7 @@
   top: 5px;
 }
 
-.system-option__item-img, .personalization-option__item-img{
+.system-option__item-img, .personalization-option__item-img, .fixed-home-option__item-img{
   height: 20px;
   width: 20px;
   position: relative;
