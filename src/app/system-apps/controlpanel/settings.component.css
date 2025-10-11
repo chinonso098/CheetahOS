@@ -544,7 +544,7 @@
 }
 
 /*DATE AND TIME OVERLAY START*/
-.lockscreen-preview__container{
+.lockscreen-preview__container, .desktop-preview__container{
   width: 320px;
   height: 180px;
 }
@@ -582,7 +582,8 @@
   color: #fff;
 }
 
-.lockscreen_preview_background_mirror_and_picture{
+.lockscreen-preview__background-mirror-and-picture,
+.desktop-preview__background-mirror-and-picture{
   backdrop-filter: none;
   background-color: transparent;
   background-size:cover;
@@ -591,7 +592,7 @@
   min-height: 180px;
 }
 
-.lockscreen_preview_background_solid_color{
+.lockscreen-preview__background-solid-color, .desktop-preview__background-solid-color{
   background-image: none;
   backdrop-filter: none;
   width: 320px;

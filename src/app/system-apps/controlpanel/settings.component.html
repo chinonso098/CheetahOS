@@ -265,7 +265,7 @@
                             </div>
 
                             <div class="desktop-block-content">
-                                <div class="desktop-background-dropdown" (click)="toggleLockScreenBkgrndDropdown($event)" [class.open]="isDesktopBkgrndDropDownOpen">
+                                <div class="desktop-background-dropdown" (click)="toggleDesktopBkgrndDropdown($event)" [class.open]="isDesktopBkgrndDropDownOpen">
                                     <div class="desktop-background-dropdown__selected">
                                       {{ desktopBkgrndOption|| 'Select background' }}
                                     </div>
@@ -281,7 +281,7 @@
                                     </span>
                                   
                                     <ul class="desktop-background-dropdown__menu" *ngIf="isDesktopBkgrndDropDownOpen">
-                                      <li  *ngFor="let option of lockScreenBackgroundOptions"  (click)="handleDropDownChoiceAndSetLockScreenBkgrnd(option, $event)"
+                                      <li  *ngFor="let option of desktopBackgroundOptions"  (click)="handleDropDownChoiceAndSetBkgrnd(option, $event)"
                                         [class.selected]="option.label === desktopBkgrndOption">
                                         {{ option.label }}
                                       </li>
@@ -297,17 +297,17 @@
                         </ng-container>
 
                         <ng-template #desktopPictureView>
-                            <div class="lockscreen-block-content">
-                                <div class="lockscreen-block__text">
-                                    <p class="lockscreen-block-miniheading__p"> Choose your picture</p>
+                            <div class="desktop-block-content">
+                                <div class="desktop-block__text">
+                                    <p class="desktop-block-miniheading__p"> Choose your picture</p>
                                 </div>
                                 
-                                <div class="lockscreen-picture__block">
-                                    <ol class="ol-lockscreen-picture__grid">
-                                        <li class="li-lockscreen-picture-color" *ngFor="let option of lockScreenPictureOptions; let i = index">
-                                            <div class="lockscreen-picture__item" 
+                                <div class="desktop-picture__block">
+                                    <ol class="ol-desktop-picture__grid">
+                                        <li class="li-desktop-picture-color" *ngFor="let option of desktopPictureOptions; let i = index">
+                                            <div class="desktop-picture__item" 
                                                 role="button" 
-                                                (click)="handleLockScreenPictureAndColorSelection(option, $event)" >
+                                                (click)="handleScreenPictureAndColorSelection(option, $event)" >
                                                 <img [src]="option"/>
 
                                             </div>
@@ -318,18 +318,18 @@
                         </ng-template>
 
                         <ng-template #desktopSolidColorView>
-                            <div class="lockscreen-block-content">
-                                <div class="lockscreen-block__text">
-                                    <p class="lockscreen-block-miniheading__p"> Choose you background color</p>
+                            <div class="desktop-block-content">
+                                <div class="desktop-block__text">
+                                    <p class="desktop-block-miniheading__p"> Choose you background color</p>
                                 </div>
                                 
-                                <div class="lockscreen-solid-color__block">
-                                    <ol class="ol-lockscreen-solid-color__grid">
-                                        <li class="li-lockscreen-solid-color" *ngFor="let option of colorOptions; let i = index">
-                                            <div class="lockscreen-solid-color__item" 
+                                <div class="desktop-solid-color__block">
+                                    <ol class="ol-desktop-solid-color__grid">
+                                        <li class="li-desktop-solid-color" *ngFor="let option of colorOptions; let i = index">
+                                            <div class="desktop-solid-color__item" 
                                                 role="button" 
                                                 [style]="{'background-color': option}" 
-                                                (click)="handleLockScreenPictureAndColorSelection(option, $event)" >
+                                                (click)="handleScreenPictureAndColorSelection(option, $event)" >
                                             </div>
                                         </li>
                                     </ol>
@@ -390,7 +390,7 @@
                                     </span>
                                   
                                     <ul class="lockscreen-background-dropdown__menu" *ngIf="isLockScreenBkgrndDropDownOpen">
-                                      <li  *ngFor="let option of lockScreenBackgroundOptions"  (click)="handleDropDownChoiceAndSetLockScreenBkgrnd(option, $event)"
+                                      <li  *ngFor="let option of lockScreenBackgroundOptions"  (click)="handleDropDownChoiceAndSetBkgrnd(option, $event)"
                                         [class.selected]="option.label === lockScreenBkgrndOption">
                                         {{ option.label }}
                                       </li>
@@ -416,7 +416,7 @@
                                         <li class="li-lockscreen-picture-color" *ngFor="let option of lockScreenPictureOptions; let i = index">
                                             <div class="lockscreen-picture__item" 
                                                 role="button" 
-                                                (click)="handleLockScreenPictureAndColorSelection(option, $event)" >
+                                                (click)="handleScreenPictureAndColorSelection(option, $event)" >
                                                 <img [src]="option"/>
 
                                             </div>
@@ -438,7 +438,7 @@
                                             <div class="lockscreen-solid-color__item" 
                                                 role="button" 
                                                 [style]="{'background-color': option}" 
-                                                (click)="handleLockScreenPictureAndColorSelection(option, $event)" >
+                                                (click)="handleScreenPictureAndColorSelection(option, $event)" >
                                             </div>
                                         </li>
                                     </ol>
