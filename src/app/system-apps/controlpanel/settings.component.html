@@ -274,30 +274,35 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="lockscreen-block-content">
                             <div class="lockscreen-block__text">
                                 <p class="lockscreen-block-miniheading__p"> Background</p>
                             </div>
 
                             <div class="lockscreen-block-content">
-                                <div class="lockscreen-background-dropdown" (click)="shhhh($event)">
-                                    <select  class="lockscreen-background-dropdown__select"  [(ngModel)]="lockScreenBkgrndOption" (change)="handleDropDownChoiceAndSetLockScreenBkgrnd($event)">
-                                        <option class="lockscreen-background-dropdown__option"  *ngFor="let option of lockScreenBackgroundOptions"  [value]="option.label">
-                                            {{ option.label }}
-                                        </option>
-                                    </select>
-
+                                <div class="lockscreen-background-dropdown" (click)="toggleLockScreenBkgrndDropdown()" [class.open]="isLockScreenBkgrndDropDownOpen">
+                                    <div class="lockscreen-background-dropdown__selected">
+                                      {{ lockScreenBkgrndOption|| 'Select background' }}
+                                    </div>
+                                  
                                     <span class="lockscreen-background-dropdown__icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                                         <path 
-                                            d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 
-                                            12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 
-                                            86.6 169.4c-12.5-12.5-32.8-12.5-45.3 
-                                            0s-12.5 32.8 0 45.3l192 192z" />
-                                        </svg>
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
                                     </span>
-                                </div>
+                                  
+                                    <ul class="lockscreen-background-dropdown__menu" *ngIf="isLockScreenBkgrndDropDownOpen">
+                                      <li  *ngFor="let option of lockScreenBackgroundOptions"  (click)="handleDropDownChoiceAndSetLockScreenBkgrnd(option, $event)"
+                                        [class.selected]="option.label === lockScreenBkgrndOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
                             </div>
                         </div>
 
@@ -356,21 +361,29 @@
                             </div>
 
                             <div class="lockscreen-block-content">
-                                <div class="lockscreen-timeout-dropdown" (click)="shhhh($event)">
-                                    <select class="lockscreen-timeout-dropdown__select" [(ngModel)]="lockScreenTimeoutOption" (change)="onLockScreenTimeoutSelect($event)">
-                                        <option class="lockscreen-timeout-dropdown__option" *ngFor="let option of lockScreenTimeOutOptions" [value]="option.label">
-                                            {{ option.label }}
-                                        </option>
-                                    </select>
-                                    
-                                    <span class="lockscreen-timeout-dropdown__icon"> 
-                                        <svg xmlns="http://www.w3.org/2000/svg" 
-                                            height="10" width="10" 
-                                            viewBox="0 0 512 512" style="fill: #333;">
-                                            <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
-                                        </svg>
+                                <div class="lockscreen-timeout-dropdown" (click)="toggleLockScreenTimeOutDropdown()" [class.open]="isLockScreenTimeoutDropDownOpen">
+                                    <div class="lockscreen-timeout-dropdown__selected">
+                                      {{ lockScreenTimeoutOption || 'Select background' }}
+                                    </div>
+                                  
+                                    <span class="lockscreen-timeout-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
                                     </span>
-                                </div>
+                                  
+                                    <ul class="lockscreen-timeout-dropdown__menu" *ngIf="isLockScreenTimeoutDropDownOpen">
+                                      <li  *ngFor="let option of lockScreenTimeOutOptions" (click)="onLockScreenTimeoutSelect(option, $event)" 
+                                        [class.selected]="option.label === lockScreenTimeoutOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                                  
                             </div>
                         </div>
                     </div>

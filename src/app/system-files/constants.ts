@@ -48,7 +48,6 @@ export namespace Constants{
     export const FILE_EXPLORER_RECYCLE_BIN_MENU_ORDER = 'FileExplorerRecycleBinMenuOrder';
     export const RECYCLE_BIN_MENU_ORDER = 'RecycleBinMenuOrder';
     
-
     export const TASK_BAR_APP_ICON_MENU_OPTION =  'taskbar-app-icon-menu';
     export const TASK_BAR_CONTEXT_MENU_OPTION =  'taskbar-context-menu';
     export const NESTED_MENU_OPTION =  'nested-menu';
@@ -79,12 +78,9 @@ export namespace Constants{
 
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:60000';
-    //export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:30000';
 
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_LOCK_SCREEN_BACKGROUND_VALUE = 'Mirror:Mirror';
-    // export const DEFAULT_LOCK_SCREEN_BACKGROUND_VALUE = 'Solid color:#8f8cd6';
-    //export const DEFAULT_LOCK_SCREEN_BACKGROUND_VALUE = 'Picture:osdrive/Cheetah/Themes/LockScreen/cafe.png';
 
     export const LOCKSCREEN_BACKGROUND_PICTURE = 'Picture';
     export const LOCKSCREEN_BACKGROUND_SOLID_COLOR = 'Solid color';

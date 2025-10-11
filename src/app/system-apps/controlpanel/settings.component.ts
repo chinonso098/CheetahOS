@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -127,6 +127,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   retrievedLockScreenBackgroundType = Constants.EMPTY_STRING;
   retrievedLockScreenBackgroundValue = Constants.EMPTY_STRING;
+
+
+  //-------------------
+
+  isLockScreenBkgrndDropDownOpen = false;
+  isLockScreenTimeoutDropDownOpen = false;
   
   isMaximizable = false;
   hasWindow = true;
@@ -135,6 +141,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   processId = 0;
   type = ComponentType.System
   displayName = Constants.EMPTY_STRING;
+
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService,  windowService:WindowService, 
                defaultService:DefaultService, formBuilder:FormBuilder) { 
@@ -168,6 +175,23 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // a wired bug. I shouldn't have to do this.
   }
+
+  toggleLockScreenBkgrndDropdown(): void {
+    this.isLockScreenBkgrndDropDownOpen = !this.isLockScreenBkgrndDropDownOpen;
+  }
+
+  toggleLockScreenTimeOutDropdown(): void {
+    this.isLockScreenTimeoutDropDownOpen = !this.isLockScreenTimeoutDropDownOpen;
+  }
+
+
+  @HostListener('document:click')
+  onOutsideClick(): void {
+    this.isLockScreenBkgrndDropDownOpen = false;
+    this.isLockScreenTimeoutDropDownOpen = false;
+  }
+
+
 
   getLockScreenBackgroundData():void{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
@@ -265,7 +289,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.clipboardSaveStateText = (this.isSaveClipboardHistory)? this.ON : this.OFF;
   }
 
-  async handleDropDownChoiceAndSetLockScreenBkgrnd(event?: any): Promise<void>{
+  async handleDropDownChoiceAndSetLockScreenBkgrnd(option?: { value: number, label: string },   evt?: any): Promise<void>{
+    if(evt)
+      evt.stopPropagation();
+
     const delay = 100; //100 ms
     const styleClasses = ['lockscreen_preview_background_mirror_and_picture', 'lockscreen_preview_background_solid_color'];
     let activeClass = Constants.EMPTY_STRING;
@@ -273,12 +300,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
     let isMirror = false;
     let isChanged = false;  
 
-    if(event){
-      const selectedValue = event.target.value;
+
+    console.log('option is :', option)
+    console.log('event is :', evt)
+
+    if(option){
+      const selectedValue = option.label
       this.lockScreenBkgrndOption = selectedValue;
       isMirror = (selectedValue === this.LOCKSCREEN_BACKGROUND_MIRROR)
       isChanged = true;
     }
+    this.isLockScreenBkgrndDropDownOpen = false;
 
  
     lockScreenPrevElmnt = document.getElementById('lockScreen_Preview') as HTMLDivElement;
@@ -347,8 +379,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
     lockScreenPrevElmnt.style.backgroundRepeat = Constants.EMPTY_STRING;
   }
 
-  onLockScreenTimeoutSelect(event: any):void{
-    const selectedValue = event.target.value;
+  onLockScreenTimeoutSelect(option:{value: number, label: string }, evt: MouseEvent):void{
+    evt.stopPropagation();
+
+    this.isLockScreenTimeoutDropDownOpen = false;
+    
+    const selectedValue = option.label;
     this.lockScreenTimeoutOption = selectedValue;
 
     const timeOutValue = this.lockScreenTimeOutOptions.find(x => x.label === this.lockScreenTimeoutOption)?.value;

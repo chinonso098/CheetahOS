@@ -589,48 +589,36 @@
 /*LOCK SCREEN BACKGROUNG DROP DOWN OPTION START*/
 
 /* ===== Base Dropdown Styles ===== */
+/* ===== Base Dropdown ===== */
 .lockscreen-background-dropdown, .lockscreen-timeout-dropdown {
   position: relative;
   display: inline-block;
   width: 260px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  user-select: none;
+  cursor: pointer;
 }
 
 .lockscreen-timeout-dropdown{
   width: 160px;
 }
 
-/* ===== Select ===== */
-.lockscreen-background-dropdown__select, .lockscreen-timeout-dropdown__select {
-  width: 100%;
-  height: 32px;
-  padding: 4px 36px 4px 8px; /* space for icon on right */
-  font-size: 14px;
-  font-weight: 300;
-  color: #333;
-  background-color: #e5e5e5;
+/* ===== Selected area ===== */
+.lockscreen-background-dropdown__selected, .lockscreen-timeout-dropdown__selected  {
+  padding: 6px 36px 6px 10px;
+  background-color: #fff;
   border: 2px solid #666;
   border-radius: 0px;
-  appearance: none;
-  outline: none;
-  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  text-align: left;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.lockscreen-background-dropdown__select:hover, .lockscreen-timeout-dropdown__select:hover {
+.lockscreen-background-dropdown__selected:hover, .lockscreen-timeout-dropdown__selected:hover  {
   border-color: #999;
   background-color: #f0f0f0;
-}
-
-.lockscreen-background-dropdown__select:focus, .lockscreen-timeout-dropdown__select:focus {
-  border-color: #777;
-}
-
-/* ===== Options ===== */
-.lockscreen-background-dropdown__option, .lockscreen-timeout-dropdown__option {
-  background-color: #fff;
-  color: #000;
-  border-radius: 0%;
+  text-align: left;
 }
 
 /* ===== Icon ===== */
@@ -638,19 +626,68 @@
   position: absolute;
   top: 50%;
   right: 10px;
-  width: 12px;
-  height: 12px;
   transform: translateY(-50%);
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 12px;
+  height: 12px;
 }
 
 .lockscreen-background-dropdown__icon svg, .lockscreen-timeout-dropdown__icon svg {
   width: 12px;
   height: 12px;
   fill: #333;
+  transition: transform 0.2s ease;
+}
+
+.lockscreen-background-dropdown.open .lockscreen-background-dropdown__icon svg, .lockscreen-timeout-dropdown.open .lockscreen-timeout-dropdown__icon svg {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+/* ===== lockscreen-background-dropdown Menu ===== */
+.lockscreen-background-dropdown__menu, .lockscreen-timeout-dropdown__menu {
+  position: absolute;
+  top: -4px; /* 👈 lifts the lockscreen-background-dropdown slightly higher */
+  left: 0;
+  text-align: left;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 0px;
+  margin-top: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 0px 0;
+  list-style: none;
+  z-index: 1;
+  animation: fadeIn 0.15s ease;
+}
+
+/* ===== Option Item ===== */
+.lockscreen-background-dropdown__menu li, .lockscreen-timeout-dropdown__menu li  {
+  padding: 6px 10px;
+  font-size: 14px;
+  color: #333;
+  transition: background-color 0.15s ease;
+}
+
+.lockscreen-background-dropdown__menu li:hover, .lockscreen-timeout-dropdown__menu li:hover  {
+  background-color: #f0f0f0;
+}
+
+.lockscreen-background-dropdown__menu li.selected, .lockscreen-timeout-dropdown__menu li.selected  {
+  background-color: #ccc;
+  font-weight: 500;
+}
+
+/* ===== Animation ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /*LOCK SCREEN BACKGROUNG DROP DOWN OPTION END*/
