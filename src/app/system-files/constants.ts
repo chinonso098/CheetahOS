@@ -89,7 +89,7 @@ export namespace Constants{
     export const BACKGROUND_SOLID_COLOR = 'Solid color';
 
     /**⚠️ WARNING: Do not reference directly.*/
-    export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Dynamic:osdrive/Program-Files/Backgrounds/vanta.waves.min.js:vanta-waves';
+    export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Dynamic:vanta_wave';
 
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';

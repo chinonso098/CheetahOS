@@ -169,7 +169,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private readonly MIN_NUMS_OF_DESKTOPS = 0;
 
   // i didn't subtract 1 because there is a particles flows bkgrnd in the names array
-  private readonly MAX_NUMS_OF_DESKTOPS = this.VANTAS.length;
+  private readonly MAX_NUMS_OF_DESKTOPS = this.VANTAS.length-1;
   private readonly CLIPPY_INIT_DELAY = 300000; // 5mins
   private readonly COLOR_CHANGE_DELAY = 30000; // 30secs
   private readonly COLOR_TRANSITION_DURATION = 1500; // 1.5sec
@@ -902,16 +902,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   loadOtherBackgrounds(i:number):void{
     this.removeOldCanvas();
 
-    const names:string[] = ["vanta-waves","vanta-rings","vanta-halo", "vanta-globe", "vanta-birds", "particle-flow"];
+    const names:string[] = ["vanta_wave","vanta_ring","vanta_halo", "vanta_globe", "vanta_bird"];
     const bkgrounds:string[] = ["osdrive/Program-Files/Backgrounds/vanta.waves.min.js", "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
-                                "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js", "osdrive/Program-Files/Backgrounds/ParticleFlow/index.js"];
+                                "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
         
     this._scriptService.loadScript(names[i], bkgrounds[i]).then(() =>{
 
-      if(names[i] !== "particle-flow")
-        this.buildVantaEffect(i);
-
-      if(names[i] === "vanta-waves"){
+      this.buildVantaEffect(i);
+      if(names[i] === "vanta_wave"){
         this.startVantaWaveColorChange();
       }else{
         this.stopVantaWaveColorChange();

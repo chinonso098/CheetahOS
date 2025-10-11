@@ -529,20 +529,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     ? ['desktop-preview__background-mirror-and-picture', 'desktop-preview__background-solid-color'] 
     : ['lockscreen-preview__background-mirror-and-picture', 'lockscreen-preview__background-solid-color'];
 
-    if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR
-      || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR ){
-        
-      const screenPrevElmnt = (isDesktopView)
-      ? document.getElementById('desktop_Preview') as HTMLDivElement 
-      : document.getElementById('lockScreen_Preview') as HTMLDivElement;
-
-      if(screenPrevElmnt){
-        activeClass = styleClasses[1];
-        this.setStyle(screenPrevElmnt, styleClasses, activeClass);
-        screenPrevElmnt.style.backgroundColor = selection;
-      }
-    }
-
     if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_PICTURE
       || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE
       || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC){
@@ -560,6 +546,20 @@ export class SettingsComponent implements OnInit, OnDestroy {
         activeClass = styleClasses[0];
         this.setStyle(screenPrevElmnt, styleClasses, activeClass);
         screenPrevElmnt.style.backgroundImage = (isDesktopView)? `url(${img})` : `url(${selection})`;
+      }
+    }
+
+    if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR
+      || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR ){
+        
+      const screenPrevElmnt = (isDesktopView)
+      ? document.getElementById('desktop_Preview') as HTMLDivElement 
+      : document.getElementById('lockScreen_Preview') as HTMLDivElement;
+
+      if(screenPrevElmnt){
+        activeClass = styleClasses[1];
+        this.setStyle(screenPrevElmnt, styleClasses, activeClass);
+        screenPrevElmnt.style.backgroundColor = selection;
       }
     }
 
