@@ -347,8 +347,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if(evt)
       evt.stopPropagation();
 
-    console.log('What view Am I Looking at:', this.selectedPersonalizationOption);
-
     const delay = 100; //100 ms
     const isDesktopView = (this.selectedPersonalizationOption === this.PERSONALIZATION_DESKTOP_BACKGROUND )? true: false;
     const styleClasses = (isDesktopView)
@@ -526,6 +524,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     evt.stopPropagation();
 
     const isDesktopView = (this.selectedPersonalizationOption === this.PERSONALIZATION_DESKTOP_BACKGROUND )? true: false;
+    let activeClass = Constants.EMPTY_STRING;
+    const styleClasses = (isDesktopView)
+    ? ['desktop-preview__background-mirror-and-picture', 'desktop-preview__background-solid-color'] 
+    : ['lockscreen-preview__background-mirror-and-picture', 'lockscreen-preview__background-solid-color'];
 
     if(this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR
       || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR ){
@@ -535,11 +537,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
       : document.getElementById('lockScreen_Preview') as HTMLDivElement;
 
       if(screenPrevElmnt){
+        activeClass = styleClasses[1];
+        this.setStyle(screenPrevElmnt, styleClasses, activeClass);
         screenPrevElmnt.style.backgroundColor = selection;
-        screenPrevElmnt.style.width = '320px';
-        screenPrevElmnt.style.minHeight = '180px';
-        screenPrevElmnt.style.backgroundImage = 'none';
-        screenPrevElmnt.style.backdropFilter = 'none';
       }
     }
 
@@ -557,12 +557,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
           img = await this.getDesktopScreenShot(selection, captureOnlyCanvas);
         }
 
+        activeClass = styleClasses[0];
+        this.setStyle(screenPrevElmnt, styleClasses, activeClass);
         screenPrevElmnt.style.backgroundImage = (isDesktopView)? `url(${img})` : `url(${selection})`;
-        screenPrevElmnt.style.backdropFilter = 'none';
-        screenPrevElmnt.style.backgroundColor = 'transparent';
-        /* cover or 'contain', 'auto', or specific dimensions */
-        screenPrevElmnt.style.backgroundSize = 'cover';
-        screenPrevElmnt.style.backgroundRepeat = 'no-repeat';
       }
     }
 

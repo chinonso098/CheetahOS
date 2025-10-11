@@ -251,10 +251,6 @@
                             <p class="desktop-block-heading__p"> Desktop</p>
                         </div>
 
-                        <!-- <div class="desktop-block-heading">
-                            <p class="desktop-block-subheading__p"> Preview</p>
-                        </div> -->
-
                         <div class="desktop-preview__container"  (click)="shhhh($event)"  id="desktop_Preview"> 
                             <!-- Desktop Img comes here -->
                         </div>
@@ -289,8 +285,6 @@
                                   </div>
                             </div>
                         </div>
-
-                        <!-- <div class="lockscreen-empty-container"></div> -->
 
                         <ng-container [ngTemplateOutlet]="desktopBkgrndOption === DESKTOP_BACKGROUND_PICTURE || desktopBkgrndOption === DESKTOP_BACKGROUND_DYNAMIC ? desktopPictureView:
                                                           desktopBkgrndOption === DESKTOP_BACKGROUND_SOLID_COLOR ? desktopSolidColorView: desktopSlideShow">
