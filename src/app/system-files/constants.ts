@@ -78,8 +78,8 @@ export namespace Constants{
     export const DEFAULT_DESKTOP_BACKGROUND = 'DESKTOP_BACKGROUND';
 
     /**⚠️ WARNING: Do not reference directly.*/
-    //export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:60000';
-    export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:30000';
+    export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:60000';
+    //export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:30000';
 
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_LOCK_SCREEN_BACKGROUND_VALUE = 'Mirror:Mirror';

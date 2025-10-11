@@ -77,9 +77,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly ON = 'On';
   readonly OFF = 'Off';
 
-  lockScreenBkgrndOption = 'Mirror';
-  lockScreenTimeoutOption = '1 Minute';
-
+  lockScreenBkgrndOption = Constants.EMPTY_STRING;
+  lockScreenTimeoutOption = Constants.EMPTY_STRING;
 
   private _formBuilder:FormBuilder;
   searchBarForm!: FormGroup;
@@ -103,7 +102,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   selectedApplicationOption = Constants.EMPTY_STRING;
   selectedIdx = 0;
 
-
   lockScreenPictureOptions!:string[];
   colorOptions!:string[];
   settingsOptions!:string[][];
@@ -118,17 +116,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ];
 
   lockScreenTimeOutOptions = [
-    { value: 60000, label: '1 Minute' },
-    { value: 120000, label: '3 Minutes'},
-    { value: 300000, label: '5 Minutes' },
-    { value: 600000, label: '10 Minutes' }
+    { value: 30000, label: '30 Seconds'},
+    { value: 60000, label: '1 Minute'},
+    { value: 120000, label: '2 Minutes'},
+    { value: 240000, label: '4 Minutes'},
+    { value: 480000, label: '8 Minutes'}
   ];
 
   currentTime = Constants.EMPTY_STRING;
   currentDate = Constants.EMPTY_STRING;
 
-  lockScreenBackgroundType = Constants.EMPTY_STRING;
-  lockScreenBackgroundValue = Constants.EMPTY_STRING;
+  retrievedLockScreenBackgroundType = Constants.EMPTY_STRING;
+  retrievedLockScreenBackgroundValue = Constants.EMPTY_STRING;
   
   isMaximizable = false;
   hasWindow = true;
@@ -151,7 +150,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-
     this.searchBarForm = this._formBuilder.nonNullable.group({
       searchBarText: Constants.EMPTY_STRING,
     });
@@ -162,7 +160,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     //     this.currentSearchString = value;
     //     this.handleSearch(value);
     //   });
-
 
     this.settingsOptions = this.generateControlPanelOptions();
     this.systemOptions = this.generateSystemOptions();
@@ -175,8 +172,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   getLockScreenBackgroundData():void{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
-    this.lockScreenBackgroundType = defaultBkgrnd[0];
-    this.lockScreenBackgroundValue = defaultBkgrnd[1];
+    this.retrievedLockScreenBackgroundType = defaultBkgrnd[0];
+    this.retrievedLockScreenBackgroundValue = defaultBkgrnd[1];
+    this.lockScreenBkgrndOption  = defaultBkgrnd[0];
+  }
+
+  getLockScreenTimeOutData():void{
+    const defaultTimeOut = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT).split(Constants.COLON);
+    this.lockScreenTimeoutOption = defaultTimeOut[0];
   }
 
   focusWindow(evt:MouseEvent):void{
@@ -248,6 +251,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
       if(selection ===  this.PERSONALIZATION_LOCKSCREEN){
         this.getLockScreenBackgroundData();
+        this.getLockScreenTimeOutData();
         this.updateTime();
         this.getDate();
         await this.handleDropDownChoiceAndSetLockScreenBkgrnd();
@@ -273,8 +277,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
       const selectedValue = event.target.value;
       this.lockScreenBkgrndOption = selectedValue;
       isMirror = (selectedValue === this.LOCKSCREEN_BACKGROUND_MIRROR)
-      console.log('lockScreenBackgroundType:', this.lockScreenBackgroundType )
-      console.log('lockScreenBackgroundValue:', this.lockScreenBackgroundValue )
+      // console.log('lockScreenBackgroundType:', this.retrievedLockScreenBackgroundType )
+      // console.log('lockScreenBackgroundValue:', this.retrievedLockScreenBackgroundValue )
     }
 
     if(!this.islockScreenPreviewLoaded){
@@ -283,19 +287,19 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.islockScreenPreviewLoaded = true;
     }
 
-    if(this.lockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_PICTURE 
+    if(this.retrievedLockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_PICTURE 
       || this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_PICTURE){
 
       if(lockScreenPrevElmnt){
         activeClass = styleClasses[0];
         this.setStyle(lockScreenPrevElmnt, styleClasses, activeClass);
-        lockScreenPrevElmnt.style.backgroundImage = `url(${this.lockScreenBackgroundValue})`;
+        lockScreenPrevElmnt.style.backgroundImage = `url(${this.retrievedLockScreenBackgroundValue})`;
       }
 
       this.lockScreenPictureOptions = this.generateLockScreenPictureOptions();
     }
 
-    if(this.lockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_MIRROR
+    if(this.retrievedLockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_MIRROR
       || this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_MIRROR){
 
       if(lockScreenPrevElmnt){
@@ -312,13 +316,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
     }
 
-    if(this.lockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR 
+    if(this.retrievedLockScreenBackgroundType === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR 
       || this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR){
       
       if(lockScreenPrevElmnt){
         activeClass = styleClasses[1];
         this.setStyle(lockScreenPrevElmnt, styleClasses, activeClass);
-        lockScreenPrevElmnt.style.backgroundColor = this.lockScreenBackgroundValue;
+        lockScreenPrevElmnt.style.backgroundColor = this.retrievedLockScreenBackgroundValue;
       }
 
       this.colorOptions = this.generateColorOptions();
