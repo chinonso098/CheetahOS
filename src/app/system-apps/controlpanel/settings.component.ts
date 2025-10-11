@@ -554,23 +554,35 @@ export class SettingsComponent implements OnInit, OnDestroy {
   async getDesktopScreenShot(onlyCanvas = true):Promise<string>{
     const colorOn = '#00adef';
     const colorOff = 'transparent';
+
+    this.changeMainDkstpBkgrndColor(colorOff);
     const dsktpCntnrElmnt = document.getElementById('vanta') as HTMLElement;
+    const htmlImg = await htmlToImage.toPng(dsktpCntnrElmnt);
     const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
 
     const vantaImg = new Image();
     const bkgrndImg =  canvasElmnt.toDataURL('image/png');
     vantaImg.src = bkgrndImg;
+    await vantaImg.decode();
+
+    // var link = document.createElement('a');
+    // link.download = 'vanta_img.png';
+    // link.href = bkgrndImg;
+    // link.click();
 
     if(onlyCanvas)
       return bkgrndImg;
 
-    this.changeMainDkstpBkgrndColor(colorOff);
-    const htmlImg = await htmlToImage.toPng(dsktpCntnrElmnt);
+ 
     const foreGrndImg = new Image();
     foreGrndImg.src = htmlImg;
-
-    await vantaImg.decode();
     await foreGrndImg.decode();
+
+    // var link1 = document.createElement('a');
+    // link1.download = 'foregrnd_img.png';
+    // link1.href = htmlImg;
+    // link1.click();
+
 
     this.changeMainDkstpBkgrndColor(colorOn);
     const mergedImg = document.createElement('canvas');
