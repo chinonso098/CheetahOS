@@ -323,3 +323,22 @@
     background-color: #F5F5DC;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+.desktop_background_solid_color{
+    background-image: none;
+    backdrop-filter: none;
+} 
+
+.destop_background_picture{
+    backdrop-filter: none;
+    background-color: transparent;
+    background-size:cover;
+    background-repeat: no-repeat;
+} 
+
+.destop_background_dynamic{
+    background-image: none;
+    backdrop-filter: none;
+    /* Windows 10 Blue */
+    background-color: #00adef;
+}

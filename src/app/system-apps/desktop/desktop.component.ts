@@ -126,6 +126,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   dsktpPrevImg = Constants.EMPTY_STRING;
   slideState = 'slideOut'
 
+  startVantaWaveColorChg = true;
+
   dskTopCntxtMenuStyle:Record<string, unknown> = {};
   tskBarAppIconMenuStyle:Record<string, unknown> = {};
   tskBarCntxtMenuStyle:Record<string, unknown> = {};
@@ -370,7 +372,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async ngAfterViewInit():Promise<void>{
-    this.startVantaWaveColorChange();
+    if(this.startVantaWaveColorChg)
+      this.startVantaWaveColorChange();
+
     this.hideDesktopContextMenuAndOthers();
     this.initClippy();
 
@@ -392,6 +396,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND).split(Constants.COLON);
     this.desktopBackgroundType = defaultBkgrnd[0];
     this.desktopBackgroundValue = defaultBkgrnd[1];
+
+    console.log('desktopBackgroundType:', this.desktopBackgroundType);
+    console.log('desktopBackgroundValue:', this.desktopBackgroundValue);
   }
 
   setDesktopBackgroundData():void{
@@ -399,28 +406,50 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     let activeClass = Constants.EMPTY_STRING;
 
     if(this.desktopBackgroundType === Constants.BACKGROUND_SOLID_COLOR){
+      this.startVantaWaveColorChg = false;
+      this.removeOldCanvas();
+      this.stopVantaWaveColorChange();
+
       const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
       if(desktopElmnt){
-        activeClass = styleClasses[1];
+        activeClass = styleClasses[0];
         this.setStyle(desktopElmnt, styleClasses, activeClass);
         desktopElmnt.style.backgroundColor = this.desktopBackgroundValue;
       }
     }
 
-    if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE){
+    if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE 
+      || this.desktopBackgroundType === Constants.BACKGROUND_SLIDE_SHOW){
+      this.startVantaWaveColorChg = false;
+      this.removeOldCanvas();
+      this.stopVantaWaveColorChange()
+
       const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
       if(desktopElmnt){
-        activeClass = styleClasses[2];
+        activeClass = styleClasses[1];
         this.setStyle(desktopElmnt, styleClasses, activeClass);
-        desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
+
+        if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE)
+          desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
+        else
+        1
+        // start slideshow
       }
     }
 
-    if(this.desktopBackgroundType === Constants.BACKGROUND_MIRROR){
+    if(this.desktopBackgroundType === Constants.BACKGROUND_DYNAMIC){
       const lockScreenElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
       if(lockScreenElmnt){
-        activeClass = styleClasses[0];
+        activeClass = styleClasses[2];
         this.setStyle(lockScreenElmnt, styleClasses, activeClass);
+
+        const bkgrndIdx = this.vantaBackgroundName.findIndex(x => x === this.desktopBackgroundValue);
+        this.loadOtherBackgrounds(bkgrndIdx);
+
+        if(this.desktopBackgroundValue === 'vanta_wave'){
+          this.startVantaWaveColorChg = true;
+          this.startVantaWaveColorChange();
+        }
       }
     }
   }
@@ -998,7 +1027,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(!vantaDiv) return;
 
     const canvas = vantaDiv.querySelector('.vanta-canvas');
-    if (canvas){
+    if(canvas){
       vantaDiv.removeChild(canvas);
     }
   }

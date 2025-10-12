@@ -9,8 +9,8 @@ import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { Subscription } from 'rxjs';
 import { FormBuilder, FormGroup } from '@angular/forms';
-
 import * as htmlToImage from 'html-to-image';
+import {basename, extname} from 'path';
 
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 
@@ -564,12 +564,22 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
 
     if(isDesktopView){
-      const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${selection}`;
+      const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
       this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
     }else{
       const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selection}`;
       this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
     }
+  }
+
+  checkAndVantaCase(path:string):string{
+    const prefix = 'vanta';
+    const fileName = basename(path);
+
+    if(fileName.includes(prefix)){
+      return basename(fileName, extname(fileName));
+    }
+     return path;
   }
 
   async getDesktopScreenShot(imgPath = Constants.EMPTY_STRING, onlyCanvas = true):Promise<string>{
