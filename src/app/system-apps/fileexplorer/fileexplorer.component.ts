@@ -2705,7 +2705,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vanta');
+      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
 
       //window title and button bar, and windows taskbar height, fileExplr headerTab container, 
       //empty line container, fileExplr header container, empty line container 2, footer container

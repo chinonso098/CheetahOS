@@ -624,7 +624,7 @@ import { Constants } from 'src/app/system-files/constants';
 
       // Ensure they don’t go out of bounds
       const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
-      const mainWindow = document.getElementById('vanta')?.getBoundingClientRect();
+      const mainWindow = document.getElementById('vantaCntnr')?.getBoundingClientRect();
       const winCmpnt = document.getElementById(winCmpntId)?.getBoundingClientRect();
 
       if(mainWindow && winCmpnt){
@@ -689,7 +689,7 @@ import { Constants } from 'src/app/system-files/constants';
       let newTop = 0;
 
       const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
-      const mainWindow = document.getElementById('vanta')?.getBoundingClientRect();
+      const mainWindow = document.getElementById('vantaCntnr')?.getBoundingClientRect();
       const winCmpnt = document.getElementById(winCmpntId)?.getBoundingClientRect();
       const currentBound = this._windowService.getProcessWindowBounds(this.uniqueId);
 

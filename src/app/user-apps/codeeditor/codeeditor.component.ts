@@ -113,7 +113,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
     if(uid === evtOriginator){
 
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vanta');
+      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
       //window title and button bar, and windows taskbar height
       const pixelTosubtract = 30 + 40;
       this.monacoContent.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;

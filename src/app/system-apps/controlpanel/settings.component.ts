@@ -577,7 +577,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const colorOff = 'transparent';
 
     this.changeMainDkstpBkgrndColor(colorOff);
-    const dsktpCntnrElmnt = document.getElementById('vanta') as HTMLElement;
+    const dsktpCntnrElmnt = document.getElementById('vantaCntnr') as HTMLElement;
     const htmlImg = await htmlToImage.toPng(dsktpCntnrElmnt);
     const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
 
@@ -614,7 +614,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   private changeMainDkstpBkgrndColor(color: string): void {
-    const mainElmnt = document.getElementById('vanta') as HTMLElement;
+    const mainElmnt = document.getElementById('vantaCntnr') as HTMLElement;
     if (mainElmnt) {
       mainElmnt.style.backgroundColor = color;
     }

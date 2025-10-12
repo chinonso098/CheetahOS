@@ -280,7 +280,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vanta'); //1920 x 1080
+      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement; //1920 x 1080
 
       //window title and button bar, and windows taskbar height, video top menu bar
       const pixelTosubtract = 30 + 40;

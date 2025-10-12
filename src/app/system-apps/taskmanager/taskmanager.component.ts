@@ -1075,7 +1075,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vanta'); 
+      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
       //const tskmgrCardBody = this.tskmgrCardBody.nativeElement;
       //const tbodyWidth = tskmgrCardBody.getBoundingClientRect().width;
       // console.log('mainWindow?.offsetHeight:',mainWindow?.offsetHeight);

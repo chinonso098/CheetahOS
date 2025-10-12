@@ -1032,7 +1032,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
     if(uid === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vanta');
+      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
       //window title and button bar, terminal input section, windows taskbar height 
       let pixelTosubtract = 30 + 25 + 40;
       this.terminalOutputCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;

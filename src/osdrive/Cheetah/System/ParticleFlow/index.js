@@ -1,6 +1,6 @@
 import { getCurl } from "./curl.js";
 
-const vantaDiv = document.getElementById('vanta');
+const vantaDiv = document.getElementById('vantaCntnr');
 const width = vantaDiv.offsetWidth;
 const height = vantaDiv.offsetHeight;
 const SCREEN_WIDTH = width; //window.innerWidth;

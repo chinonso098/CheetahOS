@@ -5,7 +5,7 @@ export namespace VantaDefaults {
 
     export const getDefaultWave = (color:number):any => {
         const defaultWaveConfig = {
-            el: '#vanta',
+            el: '#vantaCntnr',
             color: color,
             waveHeight: 30,
             shininess: 40,
@@ -19,7 +19,7 @@ export namespace VantaDefaults {
 
     export const getDefaultGlobe = (bkgrndColor:number, color:number, color2:number):any => {
         const defaultGlobeConfig = {
-            el: '#vanta',
+            el: '#vantaCntnr',
             backgroundColor: bkgrndColor,
             color: color,
             color2: color2,
@@ -30,7 +30,7 @@ export namespace VantaDefaults {
 
     export const getDefaultBird = (bkgrndColor:number, bkgAlpha:number, color:number, color2:number, colorMode:string):any => {
         const defaultBirdConfig = {
-            el: '#vanta',
+            el: '#vantaCntnr',
             backgroundColor: bkgrndColor,
             backgroundAlpha : bkgAlpha,
             color: color,
@@ -42,7 +42,7 @@ export namespace VantaDefaults {
 
     export const getDefaultRings = (bkgrndColor:number = 0x4072a7, bkgAlpha:number, color:number):any => {
         const defaultRingsConfig = {
-            el: '#vanta',
+            el: '#vantaCntnr',
             backgroundColor: bkgrndColor,
             backgroundAlpha : bkgAlpha,
             color: color,
@@ -52,7 +52,7 @@ export namespace VantaDefaults {
 
     export const getDefaultHalo = (bkgrndColor:number, baseColor:number):any => {
         const defaultHaloConfig = {
-            el: '#vanta',
+            el: '#vantaCntnr',
             backgroundColor: bkgrndColor,
             baseColor : baseColor,
         }

@@ -161,14 +161,20 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private readonly CLIPPY_APP = "clippy";
   private readonly PHOTOS_APP = "photoviewer";
 
-  waveBkgrnd:WAVE =  {el:'#vanta'}
-  ringsBkgrnd:RINGS =  {el:'#vanta'}
-  haloBkgrnd:HALO =  {el:'#vanta'}
-  globeBkgrnd:GLOBE =  {el:'#vanta'}
-  birdBkgrnd:BIRDS =  {el:'#vanta'}
+  waveBkgrnd:WAVE =  {el:'#vantaCntnr'}
+  ringsBkgrnd:RINGS =  {el:'#vantaCntnr'}
+  haloBkgrnd:HALO =  {el:'#vantaCntnr'}
+  globeBkgrnd:GLOBE =  {el:'#vantaCntnr'}
+  birdBkgrnd:BIRDS =  {el:'#vantaCntnr'}
 
   VANTAS:any = [this.waveBkgrnd, this.ringsBkgrnd, this.haloBkgrnd, this.globeBkgrnd, this.birdBkgrnd ];
   private readonly MIN_NUMS_OF_DESKTOPS = 0;
+  private readonly vantaBackgroundName:string[] = ["vanta_wave","vanta_ring","vanta_halo", "vanta_globe", "vanta_bird"];
+  private readonly vantaBackGroundPath:string[] = ["osdrive/Program-Files/Backgrounds/vanta.waves.min.js",  
+                                          "osdrive/Program-Files/Backgrounds/vanta.rings.min.js",
+                                          "osdrive/Program-Files/Backgrounds/vanta.halo.min.js", 
+                                          "osdrive/Program-Files/Backgrounds/vanta.globe.min.js",
+                                          "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
 
   // i didn't subtract 1 because there is a particles flows bkgrnd in the names array
   private readonly MAX_NUMS_OF_DESKTOPS = this.VANTAS.length-1;
@@ -184,7 +190,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   readonly cheetahDsktpIconSortKey = 'cheetahDsktpIconSortKey';
   readonly cheetahDsktpIconSizeKey = 'cheetahDsktpIconSizeKey';
   readonly cheetahDsktpHideTaskBarKey = 'cheetahDsktpHideTaskBarKey';
-
 
   deskTopMenu:NestedMenu[] = [];
   taskBarContextMenuData:GeneralMenu[] = [];
@@ -383,7 +388,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     event.preventDefault();
   }
 
-
   getDesktopBackgroundData():void{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND).split(Constants.COLON);
     this.desktopBackgroundType = defaultBkgrnd[0];
@@ -391,7 +395,49 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   setDesktopBackgroundData():void{
+    const styleClasses = ['desktop_background_solid_color', 'destop_background_picture', 'destop_background_dynamic'];
+    let activeClass = Constants.EMPTY_STRING;
 
+    if(this.desktopBackgroundType === Constants.BACKGROUND_SOLID_COLOR){
+      const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
+      if(desktopElmnt){
+        activeClass = styleClasses[1];
+        this.setStyle(desktopElmnt, styleClasses, activeClass);
+        desktopElmnt.style.backgroundColor = this.desktopBackgroundValue;
+      }
+    }
+
+    if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE){
+      const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
+      if(desktopElmnt){
+        activeClass = styleClasses[2];
+        this.setStyle(desktopElmnt, styleClasses, activeClass);
+        desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
+      }
+    }
+
+    if(this.desktopBackgroundType === Constants.BACKGROUND_MIRROR){
+      const lockScreenElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
+      if(lockScreenElmnt){
+        activeClass = styleClasses[0];
+        this.setStyle(lockScreenElmnt, styleClasses, activeClass);
+      }
+    }
+  }
+
+  setStyle(desktopElmnt: HTMLDivElement, styleClasses:string[], activeClass:string) {
+    // 🧹 Reset previous inline styles
+    this.resetInlineStyles(desktopElmnt);
+    desktopElmnt.classList.remove(...styleClasses);
+    desktopElmnt.classList.add(activeClass);
+  }
+  
+  resetInlineStyles(desktopElmnt: HTMLDivElement) {
+    desktopElmnt.style.backgroundImage = Constants.EMPTY_STRING;
+    desktopElmnt.style.backgroundColor = Constants.EMPTY_STRING;
+    desktopElmnt.style.backdropFilter = Constants.EMPTY_STRING;
+    desktopElmnt.style.backgroundSize = Constants.EMPTY_STRING;
+    desktopElmnt.style.backgroundRepeat = Constants.EMPTY_STRING;
   }
 
  /** Generates the next color dynamically */
@@ -519,7 +565,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const subMenuWidth = 205;
     const taskBarHeight = 40;
 
-    const mainWindow = document.getElementById('vanta');
+    const mainWindow = document.getElementById('vantaCntnr');
     const windowWidth =  mainWindow?.offsetWidth || 0;
     const windowHeight =  mainWindow?.offsetHeight || 0;
 
@@ -674,7 +720,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   private changeMainDkstpBkgrndColor(color: string): void {
-    const mainElmnt = document.getElementById('vanta') as HTMLElement;
+    const mainElmnt = document.getElementById('vantaCntnr') as HTMLElement;
     if (mainElmnt) {
       mainElmnt.style.backgroundColor = color;
     }
@@ -745,7 +791,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   showTaskBarTemporarily(evt:MouseEvent):void{
-    const mainWindow = document.getElementById('vanta');
+    const mainWindow = document.getElementById('vantaCntnr');
     if(mainWindow){
       const maxHeight = mainWindow.offsetHeight;
       const clientY = evt.clientY;
@@ -926,15 +972,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   loadOtherBackgrounds(i:number):void{
     this.removeOldCanvas();
-
-    const names:string[] = ["vanta_wave","vanta_ring","vanta_halo", "vanta_globe", "vanta_bird"];
-    const bkgrounds:string[] = ["osdrive/Program-Files/Backgrounds/vanta.waves.min.js", "osdrive/Program-Files/Backgrounds/vanta.rings.min.js","osdrive/Program-Files/Backgrounds/vanta.halo.min.js",
-                                "osdrive/Program-Files/Backgrounds/vanta.globe.min.js", "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
-        
-    this._scriptService.loadScript(names[i], bkgrounds[i]).then(() =>{
+    this._scriptService.loadScript(this.vantaBackgroundName[i], this.vantaBackGroundPath[i]).then(() =>{
 
       this.buildVantaEffect(i);
-      if(names[i] === "vanta_wave"){
+      if(this.vantaBackgroundName[i] === "vanta_wave"){
         this.startVantaWaveColorChange();
       }else{
         this.stopVantaWaveColorChange();
@@ -953,7 +994,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   removeOldCanvas():void{
-    const vantaDiv = document.getElementById('vanta') as HTMLElement;
+    const vantaDiv = document.getElementById('vantaCntnr') as HTMLElement;
     if(!vantaDiv) return;
 
     const canvas = vantaDiv.querySelector('.vanta-canvas');
@@ -1505,7 +1546,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     const xAxis = 0;
     const taskBarHeight = 40;
-    const mainWindow = document.getElementById('vanta');
+    const mainWindow = document.getElementById('vantaCntnr');
     const windowHeight =  mainWindow?.offsetHeight || 0;
     const verticalSum = evt.clientY + menuHeight;
 
