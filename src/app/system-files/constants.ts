@@ -89,7 +89,9 @@ export namespace Constants{
     export const BACKGROUND_SOLID_COLOR = 'Solid color';
 
     /**⚠️ WARNING: Do not reference directly.*/
-    export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Dynamic:vanta_wave';
+    //export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Dynamic:vanta_wave';
+    //export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Picture:osdrive/Cheetah/Themes/Desktop/crown_station.jpg';
+    export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Solid color:#8f8cd6';
 
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';

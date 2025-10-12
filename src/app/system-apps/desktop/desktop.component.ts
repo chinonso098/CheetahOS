@@ -360,7 +360,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       renameInput: Constants.EMPTY_STRING,
     });
 
-    this.loadDefaultBackground();
+    this.getDesktopBackgroundData();
+    this.setDesktopBackgroundData();
+
+    if(this.desktopBackgroundType === Constants.BACKGROUND_DYNAMIC)
+      this.loadDefaultBackground();
+    
     this.getDesktopMenuData();
     this.getTaskBarContextData();
   }
