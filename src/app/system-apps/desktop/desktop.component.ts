@@ -361,8 +361,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.getDesktopBackgroundData();
     this.setDesktopBackgroundData();
 
-    if(this.desktopBackgroundType === Constants.BACKGROUND_DYNAMIC)
-      this.loadDefaultBackground();
+    //for quic dbg.
+    //this.loadDefaultBackground();
     
     this.getDesktopMenuData();
     this.getTaskBarContextData();
@@ -401,7 +401,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.desktopBackgroundValue = defaultBkgrnd[1];
   }
 
-  setDesktopBackgroundData():void{
+  async setDesktopBackgroundData():Promise<void>{
     const styleClasses = ['desktop_background_solid_color', 'destop_background_picture', 'destop_background_dynamic'];
     let activeClass = Constants.EMPTY_STRING;
 
@@ -429,9 +429,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         activeClass = styleClasses[1];
         this.setStyle(desktopElmnt, styleClasses, activeClass);
 
-        if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE)
+        if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE){
+          console.log ('a little sleep was not the answer')
           desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
-        else
+        } else
         1
         // start slideshow
       }
@@ -1026,10 +1027,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const vantaDiv = document.getElementById('vantaCntnr') as HTMLElement;
     if(!vantaDiv) return;
 
-    const canvas = vantaDiv.querySelector('.vanta-canvas');
-    if(canvas){
-      vantaDiv.removeChild(canvas);
-    }
+    const canvases = vantaDiv.querySelectorAll('.vanta-canvas');
+    canvases.forEach(canvas => vantaDiv.removeChild(canvas));
+
+    // document.querySelectorAll('#vantaCntnr .vanta-canvas')
+    // .forEach(el => el.remove());
   }
 
   openTerminal():void{
