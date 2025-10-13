@@ -77,7 +77,7 @@ export class DefaultService implements BaseService{
 
     private retrievePastSessionData(key:string):void{
         const sessionData = this._sessionManagmentService.getMapBasedSession(key) as Map<string, string>;
-        console.log(`${key} sessionData:`, sessionData);
+        //console.log(`${key} sessionData:`, sessionData);
         if(sessionData){
             if(key === this._defaultSettingServiceKey)
                 this._defaultSettingsMap = sessionData;

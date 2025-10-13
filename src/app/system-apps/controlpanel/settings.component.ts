@@ -265,7 +265,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   getTaskbarData():void{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_TASKBAR_COMBINATION);
-    this.taskBarCombinationOption  = defaultBkgrnd[0];
+    this.taskBarCombinationOption  = defaultBkgrnd;
   }
 
   getLockScreenTimeOutData():void{
