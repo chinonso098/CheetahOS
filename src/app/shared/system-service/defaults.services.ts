@@ -54,7 +54,8 @@ export class DefaultService implements BaseService{
             [Constants.DEFAULT_DESKTOP_BACKGROUND, Constants.DEFAULT_DESKTOP_BACKGROUND_VALUE],
             [Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE, Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE_VALUE],
             [Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR, Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR_VALUE],
-            [Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG, Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG_VALUE]
+            [Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG, Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG_VALUE],
+            [Constants.DEFAULT_TASKBAR_COMBINATION, Constants.DEFAULT_TASKBAR_COMBINATION_VALUE]
           ]);
 
         this._sessionManagmentService.addMapBasedSession(this._defaultSettingServiceKey, this._defaultSettingsMap);

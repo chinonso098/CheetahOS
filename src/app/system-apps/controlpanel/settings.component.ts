@@ -81,6 +81,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly DESKTOP_BACKGROUND_SLIDE_SHOW = Constants.BACKGROUND_SLIDE_SHOW;
   readonly DESKTOP_BACKGROUND_DYNAMIC = Constants.BACKGROUND_DYNAMIC;
 
+  readonly TASKBAR_COMBINATION_NEVER = Constants.TASKBAR_COMBINATION_NEVER;
+  readonly TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS = Constants.TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS;
+
   readonly CAPTURE_VANTA_BACKGROUND_ONLY = 1;
   readonly CAPTURE_COLOR_BACKGROUND_ONLY = 2;
   readonly CAPTURE_FOREGROUND_ONLY = 3;
@@ -92,6 +95,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   lockScreenBkgrndOption = Constants.EMPTY_STRING;
   lockScreenTimeoutOption = Constants.EMPTY_STRING;
   desktopBkgrndOption = Constants.EMPTY_STRING;
+  taskBarPostionOption = 'Bottom';
+  taskBarCombinationOption = Constants.EMPTY_STRING;
 
   private _formBuilder:FormBuilder;
   searchBarForm!: FormGroup;
@@ -148,6 +153,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
     { value: 3, label: this.DESKTOP_BACKGROUND_SLIDE_SHOW }
   ];
 
+  taskbarPositionOptions = [
+    { value: 0, label: 'Bottom' }
+  ];
+
+  taskbarCombinationOptions = [
+    { value: 0, label: this.TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS },
+    { value: 1, label: this.TASKBAR_COMBINATION_NEVER}
+  ];
+
   currentTime = Constants.EMPTY_STRING;
   currentDate = Constants.EMPTY_STRING;
 
@@ -158,6 +172,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   isLockScreenBkgrndDropDownOpen = false;
   isLockScreenTimeoutDropDownOpen = false;
   isDesktopBkgrndDropDownOpen = false;
+  isTaskbarPostionDropDownOpen = false;
+  isTaskbarCombinationDropDownOpen = false;
   
   isMaximizable = false;
   hasWindow = true;
@@ -216,6 +232,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.isDesktopBkgrndDropDownOpen = !this.isDesktopBkgrndDropDownOpen;
   }
 
+  toggleTaskBarPostionDropdown(evt:MouseEvent): void {
+    evt.stopPropagation();
+    this.isTaskbarPostionDropDownOpen = !this.isTaskbarPostionDropDownOpen;
+  }
+
+  toggleTaskBarCombinationDropdown(evt:MouseEvent): void {
+    evt.stopPropagation();
+    this.isTaskbarCombinationDropDownOpen = !this.isTaskbarCombinationDropDownOpen;
+  }
 
   @HostListener('document:click')
   onOutsideClick(): void {
@@ -236,6 +261,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.retrievedBackgroundType = defaultBkgrnd[0];
     this.retrievedBackgroundValue = defaultBkgrnd[1];
     this.desktopBkgrndOption  = defaultBkgrnd[0];
+  }
+
+  getTaskbarData():void{
+    const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_TASKBAR_COMBINATION);
+    this.taskBarCombinationOption  = defaultBkgrnd[0];
   }
 
   getLockScreenTimeOutData():void{
@@ -343,6 +373,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
       if(selection ===  this.PERSONALIZATION_DESKTOP_BACKGROUND){
         this.getDesktopBackgroundData();
         await this.handleDropDownChoiceAndSetBkgrnd();
+      }
+
+      if(selection ===  this.PERSONALIZATION_TASKBAR){
+        this.getTaskbarData();
+        this.handleTaskbarChoice();
       }
       return;
     }
@@ -852,6 +887,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   shhhh(evt:MouseEvent):void{
     evt.stopPropagation();
+  }
+
+  handleTaskbarChoice(option?: { value: number, label: string },   evt?:MouseEvent):void{
+
   }
 
   updateTime():void {

@@ -486,7 +486,7 @@
                                 <p class="taskbar-block-miniheading__p"> Automatically hide the taskbar in desktop mode</p>
                             </div>
 
-                            <div class="clipboard-block__button">
+                            <div class="taskbar-block__button">
                                 <label class="system-btn__toggle">
                                     <input type="checkbox" [(ngModel)]="isAutoHideTaskBar" (change)="saveUnSaveAutoHideTaskBar()">
                                     <span class="system-btn__slider"></span>
@@ -495,6 +495,68 @@
                                 <div class="taskbar-button__text">
                                     <p class="taskbar"> {{autoHideTaskBarText}} </p>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="taskbar-block-content">
+                            <div class="taskbar-block__text">
+                                <p class="taskbar-block-miniheading__p"> Taskbar location on screen</p>
+                            </div>
+
+                            <div class="taskbar-block-content">
+                                <div class="taskbar-background-dropdown" (click)="toggleTaskBarPostionDropdown($event)" [class.open]="isTaskbarPostionDropDownOpen">
+                                    <div class="taskbar-background-dropdown__selected">
+                                      {{ taskBarPostionOption|| 'Select background' }}
+                                    </div>
+                                  
+                                    <span class="taskbar-background-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+                                  
+                                    <ul class="taskbar-background-dropdown__menu" *ngIf="isTaskbarPostionDropDownOpen">
+                                      <li  *ngFor="let option of taskbarPositionOptions" 
+                                        [class.selected]="option.label === taskBarPostionOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                            </div>
+                        </div>
+
+                        <div class="taskbar-block-content">
+                            <div class="taskbar-block__text">
+                                <p class="taskbar-block-miniheading__p"> Combine taskbar buttons</p>
+                            </div>
+
+                            <div class="taskbar-block-content">
+                                <div class="taskbar-background-dropdown" (click)="toggleTaskBarCombinationDropdown($event)" [class.open]="isTaskbarCombinationDropDownOpen">
+                                    <div class="taskbar-background-dropdown__selected">
+                                      {{ taskBarCombinationOption|| 'Select background' }}
+                                    </div>
+                                  
+                                    <span class="taskbar-background-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+                                  
+                                    <ul class="taskbar-background-dropdown__menu" *ngIf="isTaskbarCombinationDropDownOpen">
+                                      <li  *ngFor="let option of taskbarCombinationOptions" 
+                                        [class.selected]="option.label === taskBarCombinationOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
                             </div>
                         </div>
                     </div>

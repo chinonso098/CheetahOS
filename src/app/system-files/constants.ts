@@ -101,6 +101,14 @@ export namespace Constants{
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG_VALUE = 'osdrive/Cheetah/Themes/Desktop/vanta_wave.jpg';
 
+    export const DEFAULT_TASKBAR_COMBINATION = 'TASKBAR_COMBINATION';
+    export const TASKBAR_COMBINATION_NEVER = 'Never';
+    export const TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS = 'Always_Hide_Labels';
+
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_TASKBAR_COMBINATION_VALUE = 'Never';
+  
+
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';
 
