@@ -244,6 +244,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.isLockScreenBkgrndDropDownOpen = false;
     this.isLockScreenTimeoutDropDownOpen = false;
     this.isDesktopBkgrndDropDownOpen = false;
+    this.isTaskbarCombinationDropDownOpen = false;
+    this.isTaskbarPostionDropDownOpen = false;
   }
 
   getLockScreenBackgroundData():void{

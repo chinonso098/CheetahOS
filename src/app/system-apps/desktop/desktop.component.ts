@@ -346,11 +346,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         this.getDesktopBackgroundData();
         this.setDesktopBackgroundData();
       }
-    });
 
-    this._defaultService.defaultSettingsChangeNotify.subscribe((p) =>{
       if(p === Constants.DEFAULT_AUTO_HIDE_TASKBAR){
         this.setTaskBarVisibilityState();
+      }
+
+      if(p === Constants.DEFAULT_TASKBAR_COMBINATION){
+        this.setTaskBarCombinationState();
       }
     });
 
@@ -372,19 +374,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     
     this.getDesktopMenuData();
     this.getTaskBarContextData();
-    this.setTaskBarVisibilityState()
-  }
-
-  setTaskBarVisibilityState():void{
-    const taskbarState = this._defaultService.getDefaultSetting(Constants.DEFAULT_AUTO_HIDE_TASKBAR);
-    console.log('taskbar hide State:', taskbarState);
-    if(taskbarState === Constants.FALSE){
-      //this.isTaskBarHidden = false;
-      this.showTheTaskBar();
-    }else{
-      //this.isTaskBarHidden = true;
-      this.hideTheTaskBar();
-    }
+    this.setTaskBarVisibilityState();
+    this.setTaskBarCombinationState();
   }
 
   loadDefaultBackground():void{
@@ -2480,8 +2471,9 @@ OpensWith=${file.getOpensWith}
 
     if(this.desktopBackgroundType === Constants.BACKGROUND_SOLID_COLOR){
       this.startVantaWaveColorChg = false;
-      this.removeOldCanvas();
       this.destoryVanta()
+      this.removeOldCanvas();
+
       this.stopVantaWaveColorChange();
 
       const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
@@ -2495,8 +2487,8 @@ OpensWith=${file.getOpensWith}
     if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE 
       || this.desktopBackgroundType === Constants.BACKGROUND_SLIDE_SHOW){
       this.startVantaWaveColorChg = false;
-      this.removeOldCanvas();
       this.destoryVanta()
+      this.removeOldCanvas();
       this.stopVantaWaveColorChange();
 
       const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
@@ -2526,6 +2518,24 @@ OpensWith=${file.getOpensWith}
           this.startVantaWaveColorChange();
         }
       }
+    }
+  }
+
+  setTaskBarVisibilityState():void{
+    const taskbarVisiblityState = this._defaultService.getDefaultSetting(Constants.DEFAULT_AUTO_HIDE_TASKBAR);
+    if(taskbarVisiblityState === Constants.FALSE){
+      this.showTheTaskBar();
+    }else if(taskbarVisiblityState === Constants.TRUE){
+      this.hideTheTaskBar();
+    }
+  }
+
+  setTaskBarCombinationState():void{
+    const taskbarCombinationState = this._defaultService.getDefaultSetting(Constants.DEFAULT_TASKBAR_COMBINATION);
+    if(taskbarCombinationState === Constants.TASKBAR_COMBINATION_NEVER){
+      this.unMergeTaskBarButton();
+    }else if (taskbarCombinationState === Constants.TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS){
+      this.mergeTaskBarButton();
     }
   }
 
