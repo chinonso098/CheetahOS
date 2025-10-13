@@ -410,18 +410,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.handleSlideShowBkgrnd(screenPrevElmnt, activeClass, styleClasses, isChanged, isDesktopView);
   }
 
-  // determineIfIsChanged(isDesktopView:boolean, selectedValue:string):boolean{
-
-  //   let isChanged = false;
-
-  //   (this.prevSelectedPersonalizationOption === this.selectedPersonalizationOption){
-  //     if(this.retrievedBackgroundType !== selectedValue)
-
-  //   }
-
-  //   return isChanged;
-  // }
-
   async handlePictureBkgrnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isChanged:boolean, isDesktopView:boolean): Promise<void>{
   
     if((this.retrievedBackgroundType === this.LOCKSCREEN_BACKGROUND_PICTURE  && !isChanged)
@@ -515,11 +503,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
         console.log('handleSolidColorBkrgnd - dsktp')
         if(screenPrevElmnt){
           activeClass = styleClasses[0];
+          const tmpColor = '#0c0c0c';
           this.setStyle(screenPrevElmnt, styleClasses, activeClass);
 
           const color =(isChanged) ? '#0c0c0c' : this.retrievedBackgroundValue ;
           const desktopBkgrndImg = await this.getDesktopScreenShot(color);
           screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
+
+          if(isChanged){
+            //auto apply
+            const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${tmpColor}`;
+            this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+          }
         }
       }
     }else{
@@ -666,14 +661,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   async getDesktopScreenShot(imgPath = Constants.EMPTY_STRING, colorValue = Constants.EMPTY_STRING):Promise<string>{
 
-    console.log('this.selectedPersonalizationOption:', this.selectedPersonalizationOption);
-    console.log('LockScreen State:', this.lockScreenBkgrndOption)
-    console.log('Desktop State:', this.desktopBkgrndOption)
+    // console.log('this.selectedPersonalizationOption:', this.selectedPersonalizationOption);
+    // console.log('LockScreen State:', this.lockScreenBkgrndOption)
+    // console.log('Desktop State:', this.desktopBkgrndOption)
 
     const setting = this.getDefaultScreenShot();
-
-    let onlyBkGrnd = true, onlyForeGrnd = false, useVantaCanvas = false, imgResult = Constants.EMPTY_STRING;
-
+    let imgResult = Constants.EMPTY_STRING;
 
     // LOCKSCREEN SCREEENSHOT CASE, MIRROR DESKTOP
     /*
@@ -724,14 +717,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
         imgResult = await this.getDesktopScreenShotHelper(setting, this.MERGE_BACKGROUND_AND_FOREGROUND);
       }
 
-      // if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC){
-      //   //make sure vanta is present
-      //   setting.onlyBackGround = false;
-      //   setting.isImage = true;
-      //   setting.changeBackGrndColor = true;
-      //   imgResult = await this.getDesktopScreenShotHelper(setting, this.MERGE_BACKGROUND_AND_FOREGROUND);
-      // }
-
       if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR){
         setting.onlyForeGround = true;
         setting.colorValue = colorValue;
@@ -750,14 +735,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
       bkGrndImg = await this.getVantaBkgrndScreenShot();
 
       if(setting.onlyBackGround)
-        return bkGrndImg
+        return bkGrndImg;
     }
 
     if(setting.isColor && intent === this.CAPTURE_COLOR_BACKGROUND_ONLY){
-      bkGrndImg =  this.getFalseForeGrndScreenShot(setting.colorValue);
+      bkGrndImg =  this.getFalseForeGroundScreenShot(setting.colorValue);
 
       if(setting.onlyBackGround)
-        return bkGrndImg
+        return bkGrndImg;
     }
 
     if(setting.isImage && intent === this.MERGE_BACKGROUND_AND_FOREGROUND){
@@ -767,7 +752,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       await backGroungImgCntnr.decode();
 
       const foreGroundImg = new Image();
-      foreGroundImg.src =  await this.getForeGrndScreenShot(defaultColor , setting.changeBackGrndColor);
+      foreGroundImg.src =  await this.getForeGroundScreenShot(defaultColor , setting.changeBackGrndColor);
       await foreGroundImg.decode();
 
       const mergedImg = document.createElement('canvas');
@@ -790,11 +775,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
 
     if(setting.isColor && intent === this.CAPTURE_FOREGROUND_ONLY){
-      const foreGrndDataUrl = await this.getForeGrndScreenShot(setting.colorValue);
+      const foreGrndDataUrl = await this.getForeGroundScreenShot(setting.colorValue);
       return foreGrndDataUrl;
     }
 
-    return ''
+    console.error('none of image generation cases matched');
+    return Constants.EMPTY_STRING;
   }
 
   async getVantaBkgrndScreenShot(): Promise<string>{ 
@@ -806,7 +792,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return bkGrndImg;
   }
 
-  async getForeGrndScreenShot(currentColor:string, changeBkgrndColor = false):Promise<string>{
+  async getForeGroundScreenShot(currentColor:string, changeBkgrndColor = false):Promise<string>{
     const colorOn = currentColor;
     const colorOff = 'transparent';
 
@@ -822,7 +808,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return htmlImg;
   }
 
-   getFalseForeGrndScreenShot(color: string): string {
+   getFalseForeGroundScreenShot(color: string): string {
     const dsktpCntnrElmnt = document.getElementById('vantaCntnr') as HTMLElement;
 
     const canvas = document.createElement('canvas');
@@ -836,10 +822,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const dataUrl = canvas.toDataURL('image/png');
     ctx.clearRect(0, 0, canvas.width, canvas.height); 
 
-    const link = document.createElement('a');
-    link.download = 'test-img.png';
-    link.href = dataUrl;
-    link.click();
+    // const link = document.createElement('a');
+    // link.download = 'test-img.png';
+    // link.href = dataUrl;
+    // link.click();
   
     return dataUrl;
   }
@@ -851,8 +837,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
             isColor:false,
             onlyBackGround:true, 
             onlyForeGround:false,
-            useVantaCanvas: false,
-            mergeImage:false, changeBackGrndColor: false}
+            useVantaCanvas:false,
+            mergeImage:false,
+            changeBackGrndColor:false}
   }
   
   private changeMainDkstpBkgrndColor(color: string): void {
