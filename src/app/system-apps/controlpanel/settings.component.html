@@ -395,7 +395,8 @@
                         <!-- <div class="lockscreen-empty-container"></div> -->
 
                         <ng-container [ngTemplateOutlet]="lockScreenBkgrndOption === LOCKSCREEN_BACKGROUND_PICTURE ? lockScreenPictureView:
-                                                          lockScreenBkgrndOption === LOCKSCREEN_BACKGROUND_SOLID_COLOR ? lockScreenSolidColorView: lockScreenMirrorView">
+                                                          lockScreenBkgrndOption === LOCKSCREEN_BACKGROUND_SOLID_COLOR ? lockScreenSolidColorView:
+                                                          lockScreenBkgrndOption === LOCKSCREEN_SLIDE_SHOW ? lockScreenSlideShowView: lockScreenMirrorView">
                         </ng-container>
 
                         <ng-template #lockScreenPictureView>
@@ -436,6 +437,33 @@
                                         </li>
                                     </ol>
                                 </div>
+                            </div>
+                        </ng-template>
+
+                        <ng-template #lockScreenSlideShowView> 
+                            <div class="lockscreen-block-content">
+                                <div class="lockscreen-background-dropdown" (click)="toggleLockScreenSlideShowDropdown($event)" [class.open]="isLockScreenSlideShowDropDownOpen">
+                                    <div class="lockscreen-background-dropdown__selected">
+                                      {{ lockScreenSlideShowOption|| 'Select background' }}
+                                    </div>
+                                  
+                                    <span class="lockscreen-background-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+                                  
+                                    <ul class="lockscreen-background-dropdown__menu" *ngIf="isLockScreenSlideShowDropDownOpen">
+                                      <li  *ngFor="let option of slideShowOptions"  (click)="handleDropDownChoiceAndSetBkgrnd(option, $event)"
+                                        [class.selected]="option.label === lockScreenSlideShowOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
                             </div>
                         </ng-template>
 

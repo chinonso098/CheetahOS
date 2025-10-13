@@ -93,6 +93,8 @@ export namespace Constants{
     export const BACKGROUND_PICTURE = 'Picture';
     export const BACKGROUND_SLIDE_SHOW = 'Slide show';
     export const BACKGROUND_SOLID_COLOR = 'Solid color';
+    export const BACKGROUND_SLIDE_SHOW_PICTURE = BACKGROUND_PICTURE;
+    export const BACKGROUND_SLIDE_SHOW_SOLID_COLOR = BACKGROUND_SOLID_COLOR;
 
     export const DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR = 'DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR';
     export const DEFAULT_PREVIOUS_DESKTOP_PICTURE = 'DEFAULT_PREVIOUS_DESKTOP_PICTURE';
@@ -129,6 +131,7 @@ export namespace Constants{
     export const DISTINCT_TASKBAR_ENTRIES = 'Distinct Entries Icon';
 
     export const CHEETAH_TASKBAR_ENTRY_OPTION_KEY = 'cheetahTskBarEntryOptKey';
+    export const COLOR_AND_PICTURE_SLIDE_DELAY = 15000; //15 secs
 
     export const RSTRT_ORDER_LOCK_SCREEN = 0;
     export const RSTRT_ORDER_PWR_ON_OFF_SCREEN = 1;

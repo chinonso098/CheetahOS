@@ -14,6 +14,7 @@ import {basename, extname} from 'path';
 
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { ScreenshotSetting } from './settings.interface';
+import { interval } from 'rxjs';
 
 
 @Component({
@@ -81,6 +82,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly DESKTOP_BACKGROUND_SLIDE_SHOW = Constants.BACKGROUND_SLIDE_SHOW;
   readonly DESKTOP_BACKGROUND_DYNAMIC = Constants.BACKGROUND_DYNAMIC;
 
+  readonly SLIDE_SHOW_COLOR = Constants.BACKGROUND_SLIDE_SHOW_SOLID_COLOR;
+  readonly SLIDE_SHOW_PICTURE = Constants.BACKGROUND_SLIDE_SHOW_PICTURE;
+
   readonly TASKBAR_COMBINATION_NEVER = Constants.TASKBAR_COMBINATION_NEVER;
   readonly TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS = Constants.TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS;
 
@@ -90,6 +94,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly MERGE_BACKGROUND_AND_FOREGROUND = 4;
 
   lockScreenBkgrndOption = Constants.EMPTY_STRING;
+  lockScreenSlideShowOption = Constants.EMPTY_STRING;
   lockScreenTimeoutOption = Constants.EMPTY_STRING;
   desktopBkgrndOption = Constants.EMPTY_STRING;
   taskBarPostionOption = 'Bottom';
@@ -150,6 +155,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     { value: 3, label: this.DESKTOP_BACKGROUND_SLIDE_SHOW }
   ];
 
+  slideShowOptions = [
+    { value: 0, label: this.SLIDE_SHOW_PICTURE },
+    { value: 1, label: this.SLIDE_SHOW_COLOR}
+  ];
+
   taskbarPositionOptions = [
     { value: 0, label: 'Bottom' }
   ];
@@ -167,10 +177,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
 
   isLockScreenBkgrndDropDownOpen = false;
+  isLockScreenSlideShowDropDownOpen = false;
   isLockScreenTimeoutDropDownOpen = false;
   isDesktopBkgrndDropDownOpen = false;
   isTaskbarPostionDropDownOpen = false;
   isTaskbarCombinationDropDownOpen = false;
+
+  SlideShowIntervalId!: NodeJS.Timeout;
   
   isMaximizable = false;
   hasWindow = true;
@@ -219,6 +232,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.isLockScreenBkgrndDropDownOpen = !this.isLockScreenBkgrndDropDownOpen;
   }
 
+  toggleLockScreenSlideShowDropdown(evt:MouseEvent): void {
+    evt.stopPropagation();
+    this.isLockScreenSlideShowDropDownOpen = !this.isLockScreenSlideShowDropDownOpen;
+  }
+
   toggleLockScreenTimeOutDropdown(evt:MouseEvent): void {
     evt.stopPropagation();
     this.isLockScreenTimeoutDropDownOpen = !this.isLockScreenTimeoutDropDownOpen;
@@ -242,6 +260,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   @HostListener('document:click')
   onOutsideClick(): void {
     this.isLockScreenBkgrndDropDownOpen = false;
+    this.isLockScreenSlideShowDropDownOpen = false;
     this.isLockScreenTimeoutDropDownOpen = false;
     this.isDesktopBkgrndDropDownOpen = false;
     this.isTaskbarCombinationDropDownOpen = false;
@@ -253,6 +272,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.retrievedBackgroundType = defaultBkgrnd[0];
     this.retrievedBackgroundValue = defaultBkgrnd[1];
     this.lockScreenBkgrndOption  = defaultBkgrnd[0];
+
+    if(defaultBkgrnd[0] === this.LOCKSCREEN_SLIDE_SHOW){
+      this.lockScreenSlideShowOption =  this.SLIDE_SHOW_COLOR; // defaultBkgrnd[1];
+    }
   }
 
   getDesktopBackgroundData():void{
@@ -443,7 +466,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if(selectedValue === Constants.BACKGROUND_SOLID_COLOR  || this.retrievedBackgroundType === Constants.BACKGROUND_SOLID_COLOR)
       await this.handleSolidColorBkrgnd(screenPrevElmnt, activeClass, styleClasses, isChanged, isDesktopView);
 
-    this.handleSlideShowBkgrnd(screenPrevElmnt, activeClass, styleClasses, isChanged, isDesktopView);
+    if(selectedValue === Constants.BACKGROUND_SLIDE_SHOW  || this.retrievedBackgroundType === Constants.BACKGROUND_SLIDE_SHOW)
+      this.handleSlideShowBkgrnd(screenPrevElmnt, activeClass, styleClasses, isDesktopView, this.retrievedBackgroundValue);
   }
 
   async handlePictureBkgrnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isChanged:boolean, isDesktopView:boolean): Promise<void>{
@@ -527,7 +551,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   async handleSolidColorBkrgnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isChanged:boolean, isDesktopView:boolean): Promise<void>{
-   
     if(isDesktopView){
       if((this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_SOLID_COLOR  && !isChanged)
         || (this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR  && isChanged)){
@@ -563,34 +586,70 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.colorOptions = this.generateColorOptions();
   }
 
-  handleSlideShowBkgrnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isChanged:boolean, isDesktopView:boolean):void{
-    if((this.retrievedBackgroundType === this.LOCKSCREEN_SLIDE_SHOW  && !isChanged)
-      || (this.lockScreenBkgrndOption === this.LOCKSCREEN_SLIDE_SHOW  && isChanged)
-      || (this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_SLIDE_SHOW  && !isChanged)
-      || (this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SLIDE_SHOW  && isChanged)){
+  handleSlideShowBkgrnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isDesktopView:boolean, type:string):void{
+    if((this.retrievedBackgroundType === this.LOCKSCREEN_SLIDE_SHOW)
+      || (this.lockScreenBkgrndOption === this.LOCKSCREEN_SLIDE_SHOW)
+      || (this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_SLIDE_SHOW)
+      || (this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SLIDE_SHOW)){
+      const images:string[] = [];
 
       if(isDesktopView){
-        const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.desktopBkgrndOption}`;
+        const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${type}`;
         this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+        images.push(...this.generateDesktopPictureOptions());
       }else{
-        const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${this.lockScreenBkgrndOption}`;
+        const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${type}`;
         this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
+        images.push(...this.generateLockScreenPictureOptions());
       }
-
-      
       if(screenPrevElmnt){
-        activeClass = styleClasses[0];
+        activeClass = (type === Constants.BACKGROUND_SLIDE_SHOW_PICTURE) ? styleClasses[0] : styleClasses[1];
         this.setStyle(screenPrevElmnt, styleClasses, activeClass);
-        this.startPictureSlideShow(screenPrevElmnt)
+
+        if(type === Constants.BACKGROUND_SLIDE_SHOW_PICTURE)
+          this.startPictureSlideShow(screenPrevElmnt, images);
+        else
+          this.startColorSlideShow(screenPrevElmnt);
       }
-
-
     }
   }
 
-  startPictureSlideShow(screenPrevElmnt: HTMLDivElement) {
-    throw new Error('Method not implemented.');
-    screenPrevElmnt.style.backgroundColor =  '#0c0c0c';
+  startPictureSlideShow(screenPrevElmnt: HTMLDivElement, contentSet:string[]) {
+    const type = Constants.BACKGROUND_SLIDE_SHOW_PICTURE;
+    this.startSlideShow(screenPrevElmnt, contentSet, type);
+  }
+
+  startColorSlideShow(screenPrevElmnt: HTMLDivElement) {
+    const type = Constants.BACKGROUND_SLIDE_SHOW_SOLID_COLOR;
+    const contentSet = this.generateColorOptions();
+    this.startSlideShow(screenPrevElmnt, contentSet, type);
+  }
+
+  startSlideShow(screenPrevElmnt: HTMLDivElement, contentSet:string[], setType:string) {
+    let counter = 0;
+    let currentContent = contentSet[counter];
+
+    if(setType === Constants.BACKGROUND_SLIDE_SHOW_SOLID_COLOR){
+      screenPrevElmnt.style.backgroundColor =  currentContent;
+      screenPrevElmnt.style.transition = 'background-color 2s ease-in-out';
+    }else{
+      screenPrevElmnt.style.backgroundImage = `url(${currentContent})`;
+      screenPrevElmnt.style.transition = 'background-image 2s ease-in-out';
+    }
+
+    this.SlideShowIntervalId = setInterval(() => {
+      if(counter < contentSet.length - 1 ){
+        counter = counter + 1;
+        currentContent = contentSet[counter];
+
+        if(setType === Constants.BACKGROUND_SLIDE_SHOW_SOLID_COLOR)
+          screenPrevElmnt.style.backgroundColor =  currentContent;
+        else
+        screenPrevElmnt.style.backgroundImage = `url(${currentContent})`;
+      }
+      if(counter === contentSet.length - 1) counter = 0;
+
+    }, Constants.COLOR_AND_PICTURE_SLIDE_DELAY); //15 secs
   }
 
   setStyle(screenPrevElmnt: HTMLDivElement, styleClasses:string[], activeClass:string) {
