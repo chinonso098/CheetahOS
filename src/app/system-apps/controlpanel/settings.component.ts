@@ -432,8 +432,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
             this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
           }
         }else{
+          const defaultImg = 'osdrive/Cheetah/Themes/LockScreen/bamboo_moon.jpg';
           screenPrevElmnt.style.backgroundImage = (isChanged) 
-          ? 'url(osdrive/Cheetah/Themes/LockScreen/bamboo_moon.jpg)' 
+          ? `url(${defaultImg})` 
           : `url(${this.retrievedBackgroundValue})`;
         }
       }
@@ -446,7 +447,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   async handleMirrorAndDynamicBkgrnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isMirror:boolean, isChanged:boolean, isDesktopView:boolean): Promise<void>{
-    
     activeClass = styleClasses[0];
     if(isDesktopView){
       if((this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_DYNAMIC  && !isChanged)
@@ -454,7 +454,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
    
         if(screenPrevElmnt){  
           const prevDynamicImg = this._defaultService.getDefaultSetting(Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG);
-          const selection = (isChanged) ? prevDynamicImg : `${this.retrievedBackgroundValue}`;
+          const correctedPath = `${Constants.DESKTOP_IMAGE_BASE_PATH}${this.retrievedBackgroundValue}.jpg`;
+          const selection = (isChanged) ? prevDynamicImg : correctedPath;
 
           const desktopBkgrndImg = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);  
           this.setStyle(screenPrevElmnt, styleClasses, activeClass);
@@ -471,7 +472,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }else{
       if((this.retrievedBackgroundType === this.LOCKSCREEN_BACKGROUND_MIRROR  && !isChanged)
         || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_MIRROR && isChanged)){
-        console.log('handleMirrorAndDynamicBkgrnd - lockscreen')
 
         if(isMirror){
           const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${this.lockScreenBkgrndOption}`;
@@ -511,12 +511,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }else{
       if((this.retrievedBackgroundType === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR  && !isChanged)
         || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_SOLID_COLOR  && isChanged)){
-  
-        console.log('handleSolidColorBkrgnd - lckscrn')
         if(screenPrevElmnt){
+          const defaultColor = '#0c0c0c';
           activeClass = styleClasses[1];
           this.setStyle(screenPrevElmnt, styleClasses, activeClass);
-          screenPrevElmnt.style.backgroundColor = (isChanged)? '#0c0c0c' : this.retrievedBackgroundValue ;
+          screenPrevElmnt.style.backgroundColor = (isChanged)? defaultColor : this.retrievedBackgroundValue ;
         }
       }
     }

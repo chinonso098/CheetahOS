@@ -545,8 +545,8 @@
 
 /*DATE AND TIME OVERLAY START*/
 .lockscreen-preview__container, .desktop-preview__container{
-  width: 320px;
-  height: 180px;
+  width: 360px;
+  height: 240px;
 }
 
 .lockscreen-preview__datetime-container, .lockscreen-preview__datetime-container {
@@ -588,15 +588,15 @@
   background-color: transparent;
   background-size:cover;
   background-repeat: no-repeat;
-  width: 320px;
-  min-height: 180px;
+  width: 360px;
+  min-height: 240px;
 }
 
 .lockscreen-preview__background-solid-color, .desktop-preview__background-solid-color{
   background-image: none;
   backdrop-filter: none;
-  width: 320px;
-  min-height: 180px;
+  width: 360px;
+  min-height: 240px;
 }
 /*DATE AND TIME OVERLAY END*/
 
