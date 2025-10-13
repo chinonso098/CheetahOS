@@ -367,7 +367,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     let isMirror = false;
     let isChanged = false;  
 
-
     if(option){
       selectedValue = option.label;
       isChanged = true;
@@ -394,7 +393,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
       : document.getElementById('lockScreen_Preview') as HTMLDivElement;
     }
 
-
     if(selectedValue === Constants.BACKGROUND_PICTURE  || this.retrievedBackgroundType === Constants.BACKGROUND_PICTURE)
       await this.handlePictureBkgrnd(screenPrevElmnt, activeClass, styleClasses, isChanged, isDesktopView);
 
@@ -417,16 +415,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       || (this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_PICTURE  && !isChanged)
       || (this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE && isChanged)){
 
-        console.log('handlePictureBkgrnd')
-
       if(screenPrevElmnt){
         activeClass = styleClasses[0];
         this.setStyle(screenPrevElmnt, styleClasses, activeClass);
 
         if(isDesktopView){
-          const selection = (isChanged) 
-          ? 'osdrive/Cheetah/Themes/Desktop/crown_station.jpg' 
-          : `${this.retrievedBackgroundValue}`;
+          const prevDefaultPic = this._defaultService.getDefaultSetting(Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE);
+          const selection = (isChanged) ? prevDefaultPic  : `${this.retrievedBackgroundValue}`;
 
           const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
           screenPrevElmnt.style.backgroundImage = `url(${img})`;
@@ -456,13 +451,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if(isDesktopView){
       if((this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_DYNAMIC  && !isChanged)
         || (this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC && isChanged)){
-  
-          console.log('handleMirrorAndDynamicBkgrnd -- desktop')  
+   
         if(screenPrevElmnt){  
-
-          const selection = (isChanged) 
-          ? 'osdrive/Cheetah/Themes/Desktop/vanta_wave.jpg' 
-          : `${this.retrievedBackgroundValue}`;
+          const prevDynamicImg = this._defaultService.getDefaultSetting(Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG);
+          const selection = (isChanged) ? prevDynamicImg : `${this.retrievedBackgroundValue}`;
 
           const desktopBkgrndImg = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);  
           this.setStyle(screenPrevElmnt, styleClasses, activeClass);
@@ -500,19 +492,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
       if((this.retrievedBackgroundType === this.DESKTOP_BACKGROUND_SOLID_COLOR  && !isChanged)
         || (this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR  && isChanged)){
   
-        console.log('handleSolidColorBkrgnd - dsktp')
         if(screenPrevElmnt){
           activeClass = styleClasses[0];
-          const tmpColor = '#0c0c0c';
+          const prevSolidColor = this._defaultService.getDefaultSetting(Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR);
           this.setStyle(screenPrevElmnt, styleClasses, activeClass);
 
-          const color =(isChanged) ? '#0c0c0c' : this.retrievedBackgroundValue ;
+          const color =(isChanged) ? prevSolidColor: this.retrievedBackgroundValue ;
           const desktopBkgrndImg = await this.getDesktopScreenShot(color);
           screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
 
           if(isChanged){
             //auto apply
-            const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${tmpColor}`;
+            const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${prevSolidColor}`;
             this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
           }
         }
@@ -601,6 +592,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if(isDesktopView){
       const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
       this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+
+      if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC)
+        this._defaultService.setDefultData(Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG, selection);
+
+      if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE)
+        this._defaultService.setDefultData(Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE, selection);
+
+      if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR)
+        this._defaultService.setDefultData(Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR, selection);
     }else{
       const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selection}`;
       this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);

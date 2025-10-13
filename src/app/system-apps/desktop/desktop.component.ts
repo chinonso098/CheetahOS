@@ -272,11 +272,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     {icon:'', label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
     {icon:'', label: 'Properties', action: this.showPropertiesWindow.bind(this) }
   ];
-
   menuData:GeneralMenu[] =[];
-  
-  dsktpMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
 
+  dsktpMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
   desktopBackgroundType = Constants.EMPTY_STRING;
   desktopBackgroundValue = Constants.EMPTY_STRING;
 
@@ -401,9 +399,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND).split(Constants.COLON);
     this.desktopBackgroundType = defaultBkgrnd[0];
     this.desktopBackgroundValue = defaultBkgrnd[1];
-
-    console.log('desktopBackgroundType:', this.desktopBackgroundType);
-    console.log('desktopBackgroundValue:', this.desktopBackgroundValue);
   }
 
   setDesktopBackgroundData():void{
@@ -427,7 +422,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       || this.desktopBackgroundType === Constants.BACKGROUND_SLIDE_SHOW){
       this.startVantaWaveColorChg = false;
       this.removeOldCanvas();
-      this.stopVantaWaveColorChange()
+      this.stopVantaWaveColorChange();
 
       const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
       if(desktopElmnt){

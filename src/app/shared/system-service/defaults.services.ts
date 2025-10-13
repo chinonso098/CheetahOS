@@ -51,7 +51,10 @@ export class DefaultService implements BaseService{
         this._defaultSettingsMap = new Map<string, string>([
             [Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, Constants.DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE],
             [Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, Constants.DEFAULT_LOCK_SCREEN_BACKGROUND_VALUE],
-            [Constants.DEFAULT_DESKTOP_BACKGROUND, Constants.DEFAULT_DESKTOP_BACKGROUND_VALUE]
+            [Constants.DEFAULT_DESKTOP_BACKGROUND, Constants.DEFAULT_DESKTOP_BACKGROUND_VALUE],
+            [Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE, Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE_VALUE],
+            [Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR, Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR_VALUE],
+            [Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG, Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG_VALUE]
           ]);
 
         this._sessionManagmentService.addMapBasedSession(this._defaultSettingServiceKey, this._defaultSettingsMap);

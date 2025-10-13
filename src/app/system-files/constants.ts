@@ -88,10 +88,18 @@ export namespace Constants{
     export const BACKGROUND_SLIDE_SHOW = 'Slide show';
     export const BACKGROUND_SOLID_COLOR = 'Solid color';
 
+    export const DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR = 'DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR';
+    export const DEFAULT_PREVIOUS_DESKTOP_PICTURE = 'DEFAULT_PREVIOUS_DESKTOP_PICTURE';
+    export const DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG = 'DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG';
+
     /**⚠️ WARNING: Do not reference directly.*/
-    //export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Dynamic:vanta_wave';
-    //export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Picture:osdrive/Cheetah/Themes/Desktop/crown_station.jpg';
-    export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Solid color:#8f8cd6';
+    export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Dynamic:vanta_wave';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR_VALUE = '#8f8cd6';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_PREVIOUS_DESKTOP_PICTURE_VALUE = 'osdrive/Cheetah/Themes/Desktop/crown_station.jpg';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG_VALUE = 'osdrive/Cheetah/Themes/Desktop/vanta_wave.jpg';
 
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';
