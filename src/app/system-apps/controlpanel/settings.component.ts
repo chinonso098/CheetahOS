@@ -108,7 +108,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
  from it.`;
 
  isSaveClipboardHistory = true;
+ isAutoHideTaskBar = false;
  clipboardSaveStateText = this.ON;
+ autoHideTaskBarText = this.OFF;
 
   selectedSystemOption = this.SYSTEM_SCREEN;
   selectedPersonalizationOption = this.PERSONALIZATION_DESKTOP_BACKGROUND;
@@ -355,7 +357,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if(evt)
       evt.stopPropagation();
 
-    const delay = 100; //100 ms
+    const delay = 50; //50 ms
     const isDesktopView = (this.selectedPersonalizationOption === this.PERSONALIZATION_DESKTOP_BACKGROUND)? true: false;
     const styleClasses = (isDesktopView)
     ? ['desktop-preview__background-mirror-and-picture', 'desktop-preview__background-solid-color'] 
@@ -423,14 +425,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
           const prevDefaultPic = this._defaultService.getDefaultSetting(Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE);
           const selection = (isChanged) ? prevDefaultPic  : `${this.retrievedBackgroundValue}`;
 
-          const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
-          screenPrevElmnt.style.backgroundImage = `url(${img})`;
-
           if(isChanged){
             //auto apply
-            const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
+            const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${selection}`;
             this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
           }
+
+          const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
+          screenPrevElmnt.style.backgroundImage = `url(${img})`;
         }else{
           const defaultImg = 'osdrive/Cheetah/Themes/LockScreen/bamboo_moon.jpg';
           screenPrevElmnt.style.backgroundImage = (isChanged) 
@@ -872,6 +874,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
   
+
+  saveUnSaveAutoHideTaskBar():void{
+    this.clipboardSaveStateText = (this.isAutoHideTaskBar)? this.ON : this.OFF;
+  }
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }

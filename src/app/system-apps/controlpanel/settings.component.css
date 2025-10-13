@@ -301,7 +301,7 @@
   position: relative;
 }
 
-.system-view__panel, .personalization-view__panel{
+.system-view__panel, .personalization-view__panel, .taskbar-view__panel{
   display: block;
   width: 650px;
   height: 600px;
@@ -442,19 +442,19 @@
   -webkit-line-clamp:2;
 }
 
-.clipboard-block__button{
+.clipboard-block__button, .taskbar-block__button{
   display: flex;
   width: 100%;
   height: fit-content;
 }
 
-.clipboard-button__text{
+.clipboard-button__text, .taskbar-button__text{
   position: relative;
   left: 10px;
   height: fit-content;
 }
 
-.clipboard-button-text__p{
+.clipboard-button-text__p, .taskbar-button-text__p{
   position: relative;
   top: -1px;
   font-size: 13px;
@@ -471,7 +471,9 @@
 
 /*Personalization Lockscreen, Desktop Start*/
 
-.personalization-view__lockscreen-container, .personalization-view__desktop-container{
+.personalization-view__lockscreen-container, 
+.personalization-view__desktop-container, 
+.personalization-view__taskbar-container{
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -489,14 +491,16 @@
   scrollbar-width: none; 
 }
 
-.lockscreen-block-content, .desktop-block-content,
-.lockscreen-block-heading, .desktop-block-heading,
-.lockscreen-block-text, .desktop-block-text{
+.lockscreen-block-content, .desktop-block-content, .taskbar-block-content,
+.lockscreen-block-heading, .desktop-block-heading, .taskbar-block-heading,
+.lockscreen-block-text, .desktop-block-text, .taskbar-block-text{
   width: 100%;
   height: fit-content;
 }
 
-.lockscreen-heading-fixed, .desktop-heading-fixed{
+.lockscreen-heading-fixed, 
+.desktop-heading-fixed, 
+.taskbar-heading-fixed{
   position: sticky;
   top: 0;
   z-index: 1;
@@ -504,20 +508,23 @@
 }
 
 .lockscreen-block-content, 
-.desktop-block-content{
+.desktop-block-content,
+.taskbar-block-content{
   display: flex;
   flex-direction: column;
   gap: 10px 0px;
 }
 
 .lockscreen-empty-container, 
-.desktop-empty-container{
+.desktop-empty-container,
+.taskbar-empty-container{
   width: 100%;
   height: 10px;
 }
 
 .lockscreen-block-heading__p, .lockscreen-block-subheading__p, .lockscreen-block-miniheading__p,
-.desktop-block-heading__p, .desktop-block-subheading__p, .desktop-block-miniheading__p{
+.desktop-block-heading__p, .desktop-block-subheading__p, .desktop-block-miniheading__p,
+.taskbar-block-heading__p, .taskbar-block-subheading__p, .taskbar-block-miniheading__p{
   padding: 0 1px;
   color: #fff;
   text-align: left;
@@ -529,17 +536,20 @@
 }
 
 .lockscreen-block__text, 
-.desktop-block__text{
+.desktop-block__text
+.taskbar-block__text{
   height: fit-content;
 }
 
 .lockscreen-block-subheading__p, 
-.desktop-block-subheading__p{
+.desktop-block-subheading__p,
+.taskbar-block-subheading__p{
   font-size: 18px;
 }
 
 .lockscreen-block-miniheading__p, 
-.desktop-block-miniheading__p{
+.desktop-block-miniheading__p,
+.taskbar-block-miniheading__p{
   font-size: 13px;
 }
 
@@ -604,7 +614,8 @@
 /* ===== Base Dropdown Styles ===== */
 .lockscreen-background-dropdown, 
 .lockscreen-timeout-dropdown, 
-.desktop-background-dropdown {
+.desktop-background-dropdown,
+.taskbar-background-dropdown  {
   position: relative;
   display: inline-block;
   width: 260px;
@@ -620,7 +631,8 @@
 /* ===== Selected area ===== */
 .lockscreen-background-dropdown__selected, 
 .lockscreen-timeout-dropdown__selected, 
-.desktop-background-dropdown__selected  {
+.desktop-background-dropdown__selected,
+.taskbar-background-dropdown__selected   {
   padding: 6px 36px 6px 10px;
   background-color: #2b2b2b;
   border: 2px solid #666;
@@ -633,7 +645,8 @@
 
 .lockscreen-background-dropdown__selected:hover, 
 .lockscreen-timeout-dropdown__selected:hover, 
-.desktop-background-dropdown__selected:hover  {
+.desktop-background-dropdown__selected:hover,
+.taskbar-background-dropdown__selected:hover  {
   border-color: #f0f0f0;
   /* background-color: #ccc; */
   text-align: left;
@@ -642,7 +655,8 @@
 /* ===== Icon ===== */
 .lockscreen-background-dropdown__icon, 
 .lockscreen-timeout-dropdown__icon, 
-.desktop-background-dropdown__icon {
+.desktop-background-dropdown__icon,
+.taskbar-background-dropdown__icon {
   position: absolute;
   top: 50%;
   right: 10px;
@@ -654,7 +668,8 @@
 
 .lockscreen-background-dropdown__icon svg, 
 .lockscreen-timeout-dropdown__icon svg, 
-.desktop-background-dropdown__icon svg {
+.desktop-background-dropdown__icon svg,
+.taskbar-background-dropdown__icon svg {
   width: 12px;
   height: 12px;
   fill: #fff;
@@ -663,14 +678,16 @@
 
 .lockscreen-background-dropdown.open .lockscreen-background-dropdown__icon svg, 
 .lockscreen-timeout-dropdown.open .lockscreen-timeout-dropdown__icon svg,
-.desktop-background-dropdown.open .desktop-background-dropdown__icon svg {
+.desktop-background-dropdown.open .desktop-background-dropdown__icon svg
+.taskbar-background-dropdown.open .taskbar-background-dropdown__icon svg {
   transform: translateY(-50%) rotate(180deg);
 }
 
 /* ===== lockscreen-background-dropdown Menu ===== */
 .lockscreen-background-dropdown__menu, 
 .lockscreen-timeout-dropdown__menu, 
-.desktop-background-dropdown__menu {
+.desktop-background-dropdown__menu,
+.taskbar-background-dropdown__menu {
   position: absolute;
   top: -4px; /* 👈 lifts the lockscreen-background-dropdown slightly higher */
   left: 0;
@@ -691,7 +708,8 @@
 /* ===== Option Item ===== */
 .lockscreen-background-dropdown__menu li, 
 .lockscreen-timeout-dropdown__menu li, 
-.desktop-background-dropdown__menu li  {
+.desktop-background-dropdown__menu li,
+.taskbar-background-dropdown__menu li   {
   padding: 6px 10px;
   font-size: 14px;
   color: #fff;
@@ -700,20 +718,23 @@
 
 .lockscreen-background-dropdown__menu li:hover, 
 .lockscreen-timeout-dropdown__menu li:hover,
-.desktop-background-dropdown__menu li:hover  {
+.desktop-background-dropdown__menu li:hover,
+.taskbar-background-dropdown__menu li:hover  {
   background-color: #6d6d6d; /*#404040;*/
 }
 
 .lockscreen-background-dropdown__menu li.selected, 
 .lockscreen-timeout-dropdown__menu li.selected,
-.desktop-background-dropdown__menu li.selected  {
+.desktop-background-dropdown__menu li.selected,
+.taskbar-background-dropdown__menu li.selected  {
   background-color: #115992;
   font-weight: 200;
 }
 
 .lockscreen-background-dropdown__menu li.selected:hover, 
 .lockscreen-timeout-dropdown__menu li.selected:hover,
-.desktop-background-dropdown__menu li.selected:hover {
+.desktop-background-dropdown__menu li.selected:hover,
+.taskbar-background-dropdown__menu li.selected:hover  {
   background-color: #0969b5;
   font-weight: 200;
 }

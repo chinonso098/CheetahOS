@@ -303,7 +303,6 @@
                                                 role="button" 
                                                 (click)="handleScreenPictureAndColorSelection(option, $event)" >
                                                 <img [src]="option"/>
-
                                             </div>
                                         </li>
                                     </ol>
@@ -477,7 +476,28 @@
                 </ng-template>
     
                 <ng-template #taskBarView>
+                    <div class="personalization-view__taskbar-container">
+                        <div class="taskbar-block-heading">
+                            <p class="taskbar-block-heading__p"> Taskbar</p>
+                        </div>
+
+                        <div class="taskbar-block-content">
+                            <div class="taskbar-block__text">
+                                <p class="taskbar-block-miniheading__p"> Automatically hide the taskbar in desktop mode</p>
+                            </div>
+
+                            <div class="clipboard-block__button">
+                                <label class="system-btn__toggle">
+                                    <input type="checkbox" [(ngModel)]="isAutoHideTaskBar" (change)="saveUnSaveAutoHideTaskBar()">
+                                    <span class="system-btn__slider"></span>
+                                </label>
     
+                                <div class="taskbar-button__text">
+                                    <p class="taskbar"> {{autoHideTaskBarText}} </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </ng-template>
             </div>
         </ng-template>
