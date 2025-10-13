@@ -559,10 +559,10 @@
   height: 240px;
 }
 
-.lockscreen-preview__datetime-container, .lockscreen-preview__datetime-container {
+.lockscreen-preview__datetime-container{
   display: block;
   position: relative;
-  top: 90px;
+  top: 140px;
   margin-left: 5px;
 }
 
