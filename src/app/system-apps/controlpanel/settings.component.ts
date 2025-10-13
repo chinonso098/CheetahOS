@@ -112,6 +112,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   selectedSystemOption = this.SYSTEM_SCREEN;
   selectedPersonalizationOption = this.PERSONALIZATION_DESKTOP_BACKGROUND;
+  prevSelectedPersonalizationOption = this.PERSONALIZATION_DESKTOP_BACKGROUND;
+
   selectedApplicationOption = Constants.EMPTY_STRING;
   selectedIdx = 0;
 
@@ -324,6 +326,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
 
     if(view === this.PERSONALIZATION_VIEW){
+      this.prevSelectedPersonalizationOption =  this.selectedPersonalizationOption;
       this.selectedPersonalizationOption = selection;
       this.selectedIdx = idx;
 
@@ -407,6 +410,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.handleSlideShowBkgrnd(screenPrevElmnt, activeClass, styleClasses, isChanged, isDesktopView);
   }
 
+  // determineIfIsChanged(isDesktopView:boolean, selectedValue:string):boolean{
+
+  //   let isChanged = false;
+
+  //   (this.prevSelectedPersonalizationOption === this.selectedPersonalizationOption){
+  //     if(this.retrievedBackgroundType !== selectedValue)
+
+  //   }
+
+  //   return isChanged;
+  // }
+
   async handlePictureBkgrnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isChanged:boolean, isDesktopView:boolean): Promise<void>{
   
     if((this.retrievedBackgroundType === this.LOCKSCREEN_BACKGROUND_PICTURE  && !isChanged)
@@ -424,9 +439,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
           const selection = (isChanged) 
           ? 'osdrive/Cheetah/Themes/Desktop/crown_station.jpg' 
           : `${this.retrievedBackgroundValue}`;
-          
-          const img = await this.getDesktopScreenShot(selection);
+
+          const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
           screenPrevElmnt.style.backgroundImage = `url(${img})`;
+
+          if(isChanged){
+            //auto apply
+            const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
+            this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+          }
         }else{
           screenPrevElmnt.style.backgroundImage = (isChanged) 
           ? 'url(osdrive/Cheetah/Themes/LockScreen/bamboo_moon.jpg)' 
@@ -450,9 +471,20 @@ export class SettingsComponent implements OnInit, OnDestroy {
   
           console.log('handleMirrorAndDynamicBkgrnd -- desktop')  
         if(screenPrevElmnt){  
-          const desktopBkgrndImg = await this.getDesktopScreenShot();  
+
+          const selection = (isChanged) 
+          ? 'osdrive/Cheetah/Themes/Desktop/vanta_wave.jpg' 
+          : `${this.retrievedBackgroundValue}`;
+
+          const desktopBkgrndImg = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);  
           this.setStyle(screenPrevElmnt, styleClasses, activeClass);
           screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
+
+          if(isChanged){
+            //auto apply
+            const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
+            this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+          }
         }
       }
       this.desktopPictureOptions = this.generateDesktopPictureOptions();
@@ -612,10 +644,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.setStyle(screenPrevElmnt, styleClasses, activeClass)
 
         if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC){;
-          const img = await this.getDesktopScreenShot(selection, 'NONE');
+          const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
           screenPrevElmnt.style.backgroundImage =`url(${img})`;
         }else{
-          const img = await this.getDesktopScreenShot('NONE', selection);
+          const img = await this.getDesktopScreenShot(Constants.EMPTY_STRING, selection);
           screenPrevElmnt.style.backgroundImage =`url(${img})`;
         }
       }
