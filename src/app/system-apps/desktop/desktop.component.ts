@@ -126,7 +126,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   dsktpPrevImg = Constants.EMPTY_STRING;
   slideState = 'slideOut'
 
-  startVantaWaveColorChg = true;
+  startVantaWaveColorChg = false;
 
   dskTopCntxtMenuStyle:Record<string, unknown> = {};
   tskBarAppIconMenuStyle:Record<string, unknown> = {};
@@ -348,6 +348,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
     });
 
+    this._defaultService.defaultSettingsChangeNotify.subscribe((p) =>{
+      if(p === Constants.DEFAULT_AUTO_HIDE_TASKBAR){
+        this.setTaskBarVisibilityState();
+      }
+    });
+
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._numSequence = this.getRandomInt(this.MIN_NUM_COLOR_RANGE, this.MAX_NUM_COLOR_RANGE);
@@ -366,6 +372,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     
     this.getDesktopMenuData();
     this.getTaskBarContextData();
+    this.setTaskBarVisibilityState()
+  }
+
+  setTaskBarVisibilityState():void{
+    const taskbarState = this._defaultService.getDefaultSetting(Constants.DEFAULT_AUTO_HIDE_TASKBAR);
+    console.log('taskbar hide State:', taskbarState);
+    if(taskbarState === Constants.FALSE){
+      //this.isTaskBarHidden = false;
+      this.showTheTaskBar();
+    }else{
+      //this.isTaskBarHidden = true;
+      this.hideTheTaskBar();
+    }
   }
 
   loadDefaultBackground():void{
@@ -390,6 +409,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._vantaEffect?.destroy();
   }
 
+  destoryVanta():void{
+    this._vantaEffect?.destroy();
+  }
+
   onDragOver(event:DragEvent):void{
     event.stopPropagation();
     event.preventDefault();
@@ -399,60 +422,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND).split(Constants.COLON);
     this.desktopBackgroundType = defaultBkgrnd[0];
     this.desktopBackgroundValue = defaultBkgrnd[1];
-  }
-
-  async setDesktopBackgroundData():Promise<void>{
-    const styleClasses = ['desktop_background_solid_color', 'destop_background_picture', 'destop_background_dynamic'];
-    let activeClass = Constants.EMPTY_STRING;
-
-    if(this.desktopBackgroundType === Constants.BACKGROUND_SOLID_COLOR){
-      this.startVantaWaveColorChg = false;
-      this.removeOldCanvas();
-      this.stopVantaWaveColorChange();
-
-      const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
-      if(desktopElmnt){
-        activeClass = styleClasses[0];
-        this.setStyle(desktopElmnt, styleClasses, activeClass);
-        desktopElmnt.style.backgroundColor = this.desktopBackgroundValue;
-      }
-    }
-
-    if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE 
-      || this.desktopBackgroundType === Constants.BACKGROUND_SLIDE_SHOW){
-      this.startVantaWaveColorChg = false;
-      this.removeOldCanvas();
-      this.stopVantaWaveColorChange();
-
-      const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
-      if(desktopElmnt){
-        activeClass = styleClasses[1];
-        this.setStyle(desktopElmnt, styleClasses, activeClass);
-
-        if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE){
-          console.log ('a little sleep was not the answer')
-          desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
-        } else
-        1
-        // start slideshow
-      }
-    }
-
-    if(this.desktopBackgroundType === Constants.BACKGROUND_DYNAMIC){
-      const lockScreenElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
-      if(lockScreenElmnt){
-        activeClass = styleClasses[2];
-        this.setStyle(lockScreenElmnt, styleClasses, activeClass);
-
-        const bkgrndIdx = this.vantaBackgroundName.findIndex(x => x === this.desktopBackgroundValue);
-        this.loadOtherBackgrounds(bkgrndIdx);
-
-        if(this.desktopBackgroundValue === 'vanta_wave'){
-          this.startVantaWaveColorChg = true;
-          this.startVantaWaveColorChange();
-        }
-      }
-    }
   }
 
   setStyle(desktopElmnt: HTMLDivElement, styleClasses:string[], activeClass:string) {
@@ -2503,6 +2472,61 @@ OpensWith=${file.getOpensWith}
     }
 
     this.trackActivity(ActivityType.APPS, file.getOpensWith, appPath);
+  }
+
+  async setDesktopBackgroundData():Promise<void>{
+    const styleClasses = ['desktop_background_solid_color', 'destop_background_picture', 'destop_background_dynamic'];
+    let activeClass = Constants.EMPTY_STRING;
+
+    if(this.desktopBackgroundType === Constants.BACKGROUND_SOLID_COLOR){
+      this.startVantaWaveColorChg = false;
+      this.removeOldCanvas();
+      this.destoryVanta()
+      this.stopVantaWaveColorChange();
+
+      const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
+      if(desktopElmnt){
+        activeClass = styleClasses[0];
+        this.setStyle(desktopElmnt, styleClasses, activeClass);
+        desktopElmnt.style.backgroundColor = this.desktopBackgroundValue;
+      }
+    }
+
+    if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE 
+      || this.desktopBackgroundType === Constants.BACKGROUND_SLIDE_SHOW){
+      this.startVantaWaveColorChg = false;
+      this.removeOldCanvas();
+      this.destoryVanta()
+      this.stopVantaWaveColorChange();
+
+      const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
+      if(desktopElmnt){
+        activeClass = styleClasses[1];
+        this.setStyle(desktopElmnt, styleClasses, activeClass);
+
+        if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE){
+          desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
+        } else
+        1
+        // start slideshow
+      }
+    }
+
+    if(this.desktopBackgroundType === Constants.BACKGROUND_DYNAMIC){
+      const lockScreenElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
+      if(lockScreenElmnt){
+        activeClass = styleClasses[2];
+        this.setStyle(lockScreenElmnt, styleClasses, activeClass);
+
+        const bkgrndIdx = this.vantaBackgroundName.findIndex(x => x === this.desktopBackgroundValue);
+        this.loadOtherBackgrounds(bkgrndIdx);
+
+        if(this.desktopBackgroundValue === 'vanta_wave'){
+          this.startVantaWaveColorChg = true;
+          this.startVantaWaveColorChange();
+        }
+      }
+    }
   }
 
   private getComponentDetail():Process{

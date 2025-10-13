@@ -89,9 +89,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly CAPTURE_FOREGROUND_ONLY = 3;
   readonly MERGE_BACKGROUND_AND_FOREGROUND = 4;
 
-  readonly ON = 'On';
-  readonly OFF = 'Off';
-
   lockScreenBkgrndOption = Constants.EMPTY_STRING;
   lockScreenTimeoutOption = Constants.EMPTY_STRING;
   desktopBkgrndOption = Constants.EMPTY_STRING;
@@ -114,8 +111,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
  isSaveClipboardHistory = true;
  isAutoHideTaskBar = false;
- clipboardSaveStateText = this.ON;
- autoHideTaskBarText = this.OFF;
+ clipboardSaveStateText = Constants.ON;
+ autoHideTaskBarText = Constants.OFF;
 
   selectedSystemOption = this.SYSTEM_SCREEN;
   selectedPersonalizationOption = this.PERSONALIZATION_DESKTOP_BACKGROUND;
@@ -264,8 +261,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   getTaskbarData():void{
-    const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_TASKBAR_COMBINATION);
-    this.taskBarCombinationOption  = defaultBkgrnd;
+    const defaultTaskBarComb = this._defaultService.getDefaultSetting(Constants.DEFAULT_TASKBAR_COMBINATION);
+    const defaultAutoHideTaskBar = this._defaultService.getDefaultSetting(Constants.DEFAULT_AUTO_HIDE_TASKBAR);
+    this.taskBarCombinationOption  = defaultTaskBarComb;
+    this.isAutoHideTaskBar = (defaultAutoHideTaskBar === Constants.TRUE)? true : false;
   }
 
   getLockScreenTimeOutData():void{
@@ -385,7 +384,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   saveUnSaveClipBoardHisotry():void{
     //this.isSaveClipboardHistory = !this.isSaveClipboardHistory;
-    this.clipboardSaveStateText = (this.isSaveClipboardHistory)? this.ON : this.OFF;
+    this.clipboardSaveStateText = (this.isSaveClipboardHistory)? Constants.ON : Constants.OFF;
   }
 
   async handleDropDownChoiceAndSetBkgrnd(option?: { value: number, label: string },   evt?: any): Promise<void>{
@@ -493,16 +492,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
           const prevDynamicImg = this._defaultService.getDefaultSetting(Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG);
           const correctedPath = `${Constants.DESKTOP_IMAGE_BASE_PATH}${this.retrievedBackgroundValue}.jpg`;
           const selection = (isChanged) ? prevDynamicImg : correctedPath;
-
-          const desktopBkgrndImg = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);  
-          this.setStyle(screenPrevElmnt, styleClasses, activeClass);
-          screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
+          const delay = 25; //25ms
 
           if(isChanged){
             //auto apply
             const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
             this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
           }
+
+          await CommonFunctions.sleep(delay);
+          const desktopBkgrndImg = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);  
+          this.setStyle(screenPrevElmnt, styleClasses, activeClass);
+          screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
         }
       }
       this.desktopPictureOptions = this.generateDesktopPictureOptions();
@@ -614,7 +615,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.lockScreenTimeoutOption = selectedValue;
 
     const timeOutValue = this.lockScreenTimeOutOptions.find(x => x.label === this.lockScreenTimeoutOption)?.value;
-
     const defaultLockScreenBackgrounValue = `${this.lockScreenTimeoutOption}:${timeOutValue}`;
     this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, defaultLockScreenBackgrounValue);
   }
@@ -913,9 +913,19 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
   
+  async handleTaskBarCombinationSelection(option: { value: number, label: string },  evt: any): Promise<void>{
+    evt.stopPropagation();
+
+    const selectedValue = option.label;
+    this.taskBarCombinationOption = selectedValue;
+    this._defaultService.setDefultData(Constants.DEFAULT_TASKBAR_COMBINATION, selectedValue);
+  }
 
   saveUnSaveAutoHideTaskBar():void{
-    this.clipboardSaveStateText = (this.isAutoHideTaskBar)? this.ON : this.OFF;
+    this.autoHideTaskBarText = (this.isAutoHideTaskBar)? Constants.ON : Constants.OFF;
+    const autoHideValue = (this.isAutoHideTaskBar)? Constants.TRUE : Constants.FALSE;
+    const defaultAutoHideValue = `${autoHideValue}`;
+    this._defaultService.setDefultData(Constants.DEFAULT_AUTO_HIDE_TASKBAR, defaultAutoHideValue);
   }
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)

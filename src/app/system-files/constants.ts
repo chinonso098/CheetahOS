@@ -55,13 +55,19 @@ export namespace Constants{
     export const POWER_MENU_OPTION = 'power-menu';
 
     export const RESERVED_ID_RUNNING_PROCESS_SERVICE = 4;
+
+    export const ON = 'On';
+    export const OFF = 'Off'
+    export const TRUE = 'true';
+    export const FALSE = 'false';
+    export const NEVER = 'Never';
     
     export const SERVICES_STATE_RUNNING = 'Running';
     export const SERVICES_STATE_STOPPED = 'Stopped';
 
     export const SYSTEM_RESTART = 'Restart';
     export const SYSTEM_SHUT_DOWN = 'Shutdown';
-    export const SYSTEM_ON = 'On';
+    export const SYSTEM_ON = ON;
 
     export const SIGNED_OUT = 'sOut';
     export const SIGNED_IN = 'sIn';
@@ -93,7 +99,7 @@ export namespace Constants{
     export const DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG = 'DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG';
 
     /**⚠️ WARNING: Do not reference directly.*/
-    export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Dynamic:vanta_wave';
+    export const DEFAULT_DESKTOP_BACKGROUND_VALUE = 'Picture:osdrive/Cheetah/Themes/Desktop/crown_station.jpg';
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR_VALUE = '#8f8cd6';
     /**⚠️ WARNING: Do not reference directly.*/
@@ -101,13 +107,20 @@ export namespace Constants{
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG_VALUE = 'osdrive/Cheetah/Themes/Desktop/vanta_wave.jpg';
 
+    export const DEFAULT_AUTO_HIDE_TASKBAR = 'DEFAULT_AUTO_HIDE_TASKBAR';
     export const DEFAULT_TASKBAR_COMBINATION = 'DEFAULT_TASKBAR_COMBINATION';
-    export const TASKBAR_COMBINATION_NEVER = 'Never';
-    export const TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS = 'Always_Hide_Labels';
+    export const TASKBAR_COMBINATION_NEVER = NEVER;
+    export const TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS = 'Always Hide Labels';
 
     /**⚠️ WARNING: Do not reference directly.*/
-    export const DEFAULT_TASKBAR_COMBINATION_VALUE = 'Never';
+    export const DEFAULT_TASKBAR_COMBINATION_VALUE = NEVER;
+      /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_AUTO_HIDE_TASKBAR_VALUE = FALSE;
   
+
+    export const DEFAULT_CLIP_BOARD_STATE = 'DEFAULT_CLIP_BOARD_STATE';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_CLIP_BOARD_STATE_VALUE = TRUE;
 
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';

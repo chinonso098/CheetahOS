@@ -552,7 +552,7 @@
                                   
                                     <ul class="taskbar-background-dropdown__menu" *ngIf="isTaskbarCombinationDropDownOpen">
                                       <li  *ngFor="let option of taskbarCombinationOptions" 
-                                        [class.selected]="option.label === taskBarCombinationOption">
+                                        [class.selected]="option.label === taskBarCombinationOption" (click)="handleTaskBarCombinationSelection(option, $event)">
                                         {{ option.label }}
                                       </li>
                                     </ul>
