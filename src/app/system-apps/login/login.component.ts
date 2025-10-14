@@ -8,6 +8,7 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -220,18 +221,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   setStyle(lockScreenElmnt: HTMLDivElement, styleClasses:string[], activeClass:string) {
     // 🧹 Reset previous inline styles
-    this.resetInlineStyles(lockScreenElmnt);
+    CommonFunctions.resetInlineStyles(lockScreenElmnt);
     lockScreenElmnt.classList.remove(...styleClasses);
     lockScreenElmnt.classList.add(activeClass);
   }
   
-  resetInlineStyles(lockScreenElmnt: HTMLDivElement) {
-    lockScreenElmnt.style.backgroundImage = Constants.EMPTY_STRING;
-    lockScreenElmnt.style.backgroundColor = Constants.EMPTY_STRING;
-    lockScreenElmnt.style.backdropFilter = Constants.EMPTY_STRING;
-    lockScreenElmnt.style.backgroundSize = Constants.EMPTY_STRING;
-    lockScreenElmnt.style.backgroundRepeat = Constants.EMPTY_STRING;
-  }
 
   onKeyDown(evt:KeyboardEvent):void{
     if(evt.key === Constants.BLANK_SPACE){

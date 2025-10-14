@@ -225,6 +225,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     // a wired bug. I shouldn't have to do this.
+    this.stopSlideShow();
   }
 
   toggleLockScreenBkgrndDropdown(evt:MouseEvent): void {
@@ -625,47 +626,21 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.startSlideShow(screenPrevElmnt, contentSet, type);
   }
 
-  startSlideShow(screenPrevElmnt: HTMLDivElement, contentSet:string[], setType:string) {
-    let counter = 0;
-    let currentContent = contentSet[counter];
+  startSlideShow(screenPrevElmnt: HTMLDivElement, contentSet:string[], setType:string):void {
+    this.SlideShowIntervalId = CommonFunctions.startSlideShow(screenPrevElmnt, contentSet, setType);
+  }
 
-    if(setType === Constants.BACKGROUND_SLIDE_SHOW_SOLID_COLOR){
-      screenPrevElmnt.style.backgroundColor =  currentContent;
-      screenPrevElmnt.style.transition = 'background-color 2s ease-in-out';
-    }else{
-      screenPrevElmnt.style.backgroundImage = `url(${currentContent})`;
-      screenPrevElmnt.style.transition = 'background-image 2s ease-in-out';
-    }
-
-    this.SlideShowIntervalId = setInterval(() => {
-      if(counter < contentSet.length - 1 ){
-        counter = counter + 1;
-        currentContent = contentSet[counter];
-
-        if(setType === Constants.BACKGROUND_SLIDE_SHOW_SOLID_COLOR)
-          screenPrevElmnt.style.backgroundColor =  currentContent;
-        else
-        screenPrevElmnt.style.backgroundImage = `url(${currentContent})`;
-      }
-      if(counter === contentSet.length - 1) counter = 0;
-
-    }, Constants.COLOR_AND_PICTURE_SLIDE_DELAY); //15 secs
+  stopSlideShow():void{
+    CommonFunctions.stopSlideShow(this.SlideShowIntervalId);
   }
 
   setStyle(screenPrevElmnt: HTMLDivElement, styleClasses:string[], activeClass:string) {
     // 🧹 Reset previous inline styles
-    this.resetInlineStyles(screenPrevElmnt);
+    CommonFunctions.resetInlineStyles(screenPrevElmnt);
     screenPrevElmnt.classList.remove(...styleClasses);
     screenPrevElmnt.classList.add(activeClass);
   }
   
-  resetInlineStyles(screenPrevElmnt: HTMLDivElement) {
-    screenPrevElmnt.style.backgroundImage = Constants.EMPTY_STRING;
-    screenPrevElmnt.style.backgroundColor = Constants.EMPTY_STRING;
-    screenPrevElmnt.style.backdropFilter = Constants.EMPTY_STRING;
-    screenPrevElmnt.style.backgroundSize = Constants.EMPTY_STRING;
-    screenPrevElmnt.style.backgroundRepeat = Constants.EMPTY_STRING;
-  }
 
   onLockScreenTimeoutSelect(option:{value: number, label: string }, evt: MouseEvent):void{
     evt.stopPropagation();

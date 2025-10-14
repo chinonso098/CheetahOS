@@ -14,6 +14,14 @@ export interface ActivityHistory{
     lastInteractionTS:number
 }
 
+export interface Activity{
+    type:string, 
+    name:string, 
+    path:string, 
+    oldFileName:string, 
+    isRename?:boolean
+}
+
 export interface FileTreeNode{
     name: string;
     path:string;

@@ -32,6 +32,7 @@ import { UserNotificationService } from 'src/app/shared/system-service/user.noti
 import { VantaDefaults } from './vanta-object/vanta.defaults';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
+import { Activity } from 'src/app/system-files/common.interfaces';
 
 
 
@@ -417,19 +418,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   setStyle(desktopElmnt: HTMLDivElement, styleClasses:string[], activeClass:string) {
     // 🧹 Reset previous inline styles
-    this.resetInlineStyles(desktopElmnt);
+    CommonFunctions.resetInlineStyles(desktopElmnt);
     desktopElmnt.classList.remove(...styleClasses);
     desktopElmnt.classList.add(activeClass);
   }
   
-  resetInlineStyles(desktopElmnt: HTMLDivElement) {
-    desktopElmnt.style.backgroundImage = Constants.EMPTY_STRING;
-    desktopElmnt.style.backgroundColor = Constants.EMPTY_STRING;
-    desktopElmnt.style.backdropFilter = Constants.EMPTY_STRING;
-    desktopElmnt.style.backgroundSize = Constants.EMPTY_STRING;
-    desktopElmnt.style.backgroundRepeat = Constants.EMPTY_STRING;
-  }
-
  /** Generates the next color dynamically */
   getNextColor(): number {
     const charSet = ['a', 'b', 'c', 'd', 'e', 'f'];
@@ -1032,12 +1025,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       file.setContentPath = '/Users/Documents/Credits.md';
     }
 
-    if(arg0 !== this.CLIPPY_APP)
-      this.trackActivity(ActivityType.APPS, arg0, appPath);
+    if(arg0 !== this.CLIPPY_APP){
+      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
+      CommonFunctions.trackActivity(this._activityHistoryService, activity);
+    }
 
     if(arg0 === this.PHOTOS_APP){
       file = this.screenShot;
-      this.trackActivity(ActivityType.APPS, arg0, appPath);
+      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
+      CommonFunctions.trackActivity(this._activityHistoryService, activity);
     }
 
     this._processHandlerService.runApplication(file);
@@ -1463,7 +1459,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     await this._audioService.play(this.cheetahNavAudio);
 
-    this.handleTracking(file);
+    CommonFunctions.handleTracking(this._activityHistoryService, file);
     this._processHandlerService.runApplication(file);
     this.btnStyleAndValuesReset();
   }
@@ -2361,8 +2357,8 @@ OpensWith=${file.getOpensWith}
         this.renameForm.reset();
         this._menuService.resetStoreData();
         //await this.loadFiles();
-
-        this.trackActivity(ActivityType.FILE, renameText, this.selectedFile.getCurrentPath, oldFileName, isRename);
+        const activity = CommonFunctions.getTrackingActivity(ActivityType.FILE, renameText, this.selectedFile.getCurrentPath, oldFileName, isRename);
+        CommonFunctions.trackActivity(this._activityHistoryService, activity);
       }
     }else{
       this.renameForm.reset();
@@ -2421,48 +2417,6 @@ OpensWith=${file.getOpensWith}
     this.showDesktopIcon();
     this.restorPriorOpenApps();
     //this.startClippy();
-  }
-
-  trackActivity(type:string, name:string, path:string, oldFileName = Constants.EMPTY_STRING, isRename?:boolean):void{
-    //check for exisiting activity
-    if(isRename){
-      const activityHistory = this._activityHistoryService.getActivityHistory(oldFileName, path, type); 
-      if(activityHistory){
-        const isNameChanged = true;
-        this._activityHistoryService.updateActivityHistory(activityHistory, isNameChanged, oldFileName);
-      }else{
-        this._activityHistoryService.addActivityHistory(type, name, path);
-      }
-    }else{
-      const activityHistory = this._activityHistoryService.getActivityHistory(name, path, type);
-      if(activityHistory){
-        this._activityHistoryService.updateActivityHistory(activityHistory);
-      }else{
-        this._activityHistoryService.addActivityHistory(type, name, path);
-      }
-    }
-  }
-
-  handleTracking(file:FileInfo):void{
-    const appPath = 'None';
-    const shortCut = ` - ${Constants.SHORTCUT}`;
-
-    // handle urls (aka shortcuts)
-    if(file.getFileExtension === Constants.URL && file.getIsShortCut){
-      if(file.getFileType === Constants.FOLDER && file.getOpensWith === Constants.FILE_EXPLORER){       
-        if(CommonFunctions.isPath(file.getContentPath))
-          this.trackActivity(ActivityType.FOLDERS, file.getFileName.replace(shortCut, Constants.EMPTY_STRING), file.getContentPath);
-      }
-      else
-        this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
-    }else{     // handle non-urls
-      if(!file.getIsFile && file.getFileType === Constants.FOLDER && file.getOpensWith === Constants.FILE_EXPLORER)
-        this.trackActivity(ActivityType.FOLDERS, file.getFileName, file.getContentPath);
-      else
-        this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
-    }
-
-    this.trackActivity(ActivityType.APPS, file.getOpensWith, appPath);
   }
 
   async setDesktopBackgroundData():Promise<void>{

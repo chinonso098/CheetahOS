@@ -1352,7 +1352,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.fileTreeNavToPath = Constants.EMPTY_STRING;
 
     this.hideFileExplorerToolTip();
-    this.handleTracking(file);
+    CommonFunctions.handleTracking(this._activityHistoryService, file);
     await this._audioService.play(this.cheetahNavAudio);
 
     if(this.isRecycleBinFolder){
@@ -2601,8 +2601,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this.renameForm.reset();
         this._menuService.resetStoreData();
         //await this.loadFiles();
-
-        this.trackActivity(ActivityType.FILE, renameText, this.selectedFile.getCurrentPath, oldFileName, isRename);
+        const activity = CommonFunctions.getTrackingActivity(ActivityType.FILE, renameText, this.selectedFile.getCurrentPath, oldFileName, isRename);
+        CommonFunctions.trackActivity(this._activityHistoryService, activity);
       }
     }else{
       this.renameForm.reset();
@@ -3013,48 +3013,6 @@ OpensWith=${file.getOpensWith}
       this._fileService.addEventOriginator(Constants.DESKTOP);
       this._fileService.dirFilesUpdateNotify.next();
     }
-  }
-
-  trackActivity(type:string, name:string, path:string, oldFileName = Constants.EMPTY_STRING, isRename?:boolean):void{
-    //check for exisiting activity
-    if(isRename){
-      const activityHistory = this._activityHistoryService.getActivityHistory(oldFileName, path, type); 
-      if(activityHistory){
-        const isNameChanged = true;
-        this._activityHistoryService.updateActivityHistory(activityHistory, isNameChanged, oldFileName);
-      }else{
-        this._activityHistoryService.addActivityHistory(type, name, path);
-      }
-    }else{
-      const activityHistory = this._activityHistoryService.getActivityHistory(name, path, type);
-      if(activityHistory){
-        this._activityHistoryService.updateActivityHistory(activityHistory);
-      }else{
-        this._activityHistoryService.addActivityHistory(type, name, path);
-      }
-    }
-  }
-
-  handleTracking(file:FileInfo):void{
-    const appPath = 'None';
-    const shortCut = ` - ${Constants.SHORTCUT}`;
-
-    // handle urls (aka shortcuts)
-    if(file.getFileExtension === Constants.URL && file.getIsShortCut){
-      if(file.getFileType === Constants.FOLDER && file.getOpensWith === Constants.FILE_EXPLORER){       
-        if(CommonFunctions.isPath(file.getContentPath))
-          this.trackActivity(ActivityType.FOLDERS, file.getFileName.replace(shortCut, Constants.EMPTY_STRING), file.getContentPath);
-      }
-      else
-        this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
-    }else{     // handle non-urls
-      if(!file.getIsFile && file.getFileType === Constants.FOLDER && file.getOpensWith === Constants.FILE_EXPLORER)
-        this.trackActivity(ActivityType.FOLDERS, file.getFileName, file.getContentPath);
-      else
-        this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
-    }
-
-    this.trackActivity(ActivityType.APPS, file.getOpensWith, appPath);
   }
 
   private getComponentDetail():Process{
