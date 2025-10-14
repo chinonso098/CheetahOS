@@ -6,12 +6,15 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { ComponentType } from 'src/app/system-files/system.types';
+
+declare const WebScreensaver:any;
 
 @Component({
   selector: 'cos-login',
@@ -28,7 +31,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private _sessionManagmentService:SessionManagmentService
   private _audioService:AudioService;
   private _defaultService:DefaultService;
+  private _scriptService:ScriptService;
 
+
+  private _wss:any;
 
   loginForm!: FormGroup;
   _formBuilder!:FormBuilder
@@ -70,6 +76,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
   cheetahlockAudio = `${Constants.AUDIO_BASE_PATH}cheetah_lock.mp3`;
   cheetahRestarAndShutDownAudio = `${Constants.AUDIO_BASE_PATH}cheetah_shutdown.wav`;
 
+  video1 = `${Constants.SCREEN_SAVER_BASE_PATH}falling_leaves.mp4`;
+  video2 = `${Constants.SCREEN_SAVER_BASE_PATH}gentle_moments.mp4`;
+  video3 = `${Constants.SCREEN_SAVER_BASE_PATH}moon_light_ride.mp4`;
+
   userIcon = `${Constants.ACCT_IMAGE_BASE_PATH}default_user.png`;
   pwrBtnIcon = `${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`;
   loadingGif = `${Constants.GIF_BASE_PATH}cheetah_loading.gif`;
@@ -90,7 +100,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
               formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, systemNotificationServices:SystemNotificationService,
-              defaultService:DefaultService){
+              defaultService:DefaultService, scriptService:ScriptService){
     this._processIdService = processIdService;
     this.processId = this._processIdService.getNewProcessId();
     this._audioService = audioService;
@@ -98,6 +108,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this._systemNotificationServices = systemNotificationServices;
     this._sessionManagmentService = sessionManagmentService;
     this._defaultService = defaultService;
+    this._scriptService = scriptService;
 
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -138,6 +149,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     //this._runningProcessService.showLockScreenNotify.next();
     this.setLockScreenBackground();
+
+    //this.loadScreenSaver();
   }
 
   updateTime():void {
@@ -149,6 +162,17 @@ export class LoginComponent implements OnInit, AfterViewInit {
     const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
 
     this.currentTime = `${formattedHours}:${formattedMinutes}`;
+  }
+
+  loadScreenSaver():void{
+    this._scriptService.loadScript("screen_saver", "osdrive/Program-Files/WebScreenSaver/webscrsvr.js").then(() =>{
+      this._wss = new WebScreensaver({
+        target: document.getElementById('lockscreenCmpnt'),
+        stagnantDelay: 10000, // 10  secs
+        interval: 12000, //12 secs
+        videos: [{ mp4: this.video1},{ mp4: this.video2}, {mp4: this.video3 }],
+      });
+    })
   }
 
   firstToDo():void{

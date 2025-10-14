@@ -28,6 +28,7 @@ export namespace Constants{
     export const ACCT_IMAGE_BASE_PATH = 'osdrive/Cheetah/System/Acct/';
     export const GIF_BASE_PATH = 'osdrive/Cheetah/System/Gifres/';
     export const AUDIO_BASE_PATH = 'osdrive/Cheetah/System/Media/';
+    export const SCREEN_SAVER_BASE_PATH = 'osdrive/Cheetah/Themes/ScreenSavers/';
     export const RECYCLE_BIN_PATH = '/Users/Desktop/Recycle Bin';
     export const DESKTOP_PATH = '/Users/Desktop';
     export const USER_BASE_PATH = '/Users';
