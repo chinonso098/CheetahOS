@@ -1,41 +1,47 @@
 import { Constants } from "src/app/system-files/constants";
 import { PreloadType, VideoScreenSaver } from "./login.types";
+import { config } from "rxjs";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace LoginHelpers {
-    let initDelayTimeoutId!:NodeJS.Timeout;
-    let vidRef:HTMLVideoElement | null;
-    let wssRef:VideoScreenSaver | null;
+    let initDelayTimeoutId!:NodeJS.Timeout | null;
+    let videoRef:HTMLVideoElement | null;
+    let screenSaverConfig:VideoScreenSaver | null;
 
-    export const startWebScreenSaver =(wss:VideoScreenSaver | null):HTMLVideoElement | undefined =>{
-        if(!wss){
-            console.log('WebScreen Saver Object is null');
+    export const startWebScreenSaver =(config:VideoScreenSaver | null):HTMLVideoElement | undefined =>{
+        if(!config){
+            console.warn("LoginHelpers: WebScreenSaver config is null.");
             return;
         }
 
-        wssRef = wss;
+        screenSaverConfig = config;
         const video = document.createElement("video");
-        video.src = wss.videoSrc;
-        video.autoplay = wss.autoPlay;
-        video.muted = wss.muted;
-        video.loop = wss.loop;
-        video.playsInline = wss.playsInline;
-        video.preload = wss.preload;
-        video.style.width = wss.width;
-        video.style.height = wss.height;
+        video.src = config.videoSrc;
+        video.autoplay = config.autoPlay;
+        video.muted = config.muted;
+        video.loop = config.loop;
+        video.playsInline = config.playsInline;
+        video.preload = config.preload;
+        video.style.width = config.width;
+        video.style.height = config.height;
 
-        const container =  wss.elRef;
-        if(container){
-            initDelayTimeoutId = setTimeout(() => {
-                container.appendChild(video);
-                listenForWindowEvents(wss.elRef);
-                vidRef = video;
-            }, Constants.SCREEN_SAVER_DELAY);
-        }
+        const container =  config.elRef;
+        if (!container) {
+            console.warn("LoginHelpers: No container element found for screensaver.");
+            return;
+          }
+
+
+        initDelayTimeoutId = setTimeout(() => {
+            container.appendChild(video);
+            attachDeactivationListeners(config.elRef);
+            videoRef = video;
+        }, Constants.SCREEN_SAVER_DELAY);
+
         return video;
     }
 
-    const pauseWebScreenSaver =(video:HTMLVideoElement | null):void =>{
+    const cleanupVideo =(video:HTMLVideoElement | null):void =>{
         if(video){
             video.pause();           // stop playback
             video.src = "";          // release source
@@ -45,14 +51,26 @@ export namespace LoginHelpers {
     }
 
     export const stopWebSceenSaver = ():void =>{
-        pauseWebScreenSaver(vidRef);
-        vidRef = null;
-        wssRef = null;
-        if(initDelayTimeoutId)
-            clearTimeout(initDelayTimeoutId);
+        cleanupVideo(videoRef);
+        cleanupTimeout();
+        removeDeactivationListeners(screenSaverConfig?.elRef);
+        
+        videoRef = null;
+        screenSaverConfig = null;
     }
 
-    export const getVideoScreenSaver = (
+    /**
+     * Clears any pending timeout.
+     */
+    const cleanupTimeout = (): void => {
+        if (initDelayTimeoutId) {
+            clearTimeout(initDelayTimeoutId);
+
+            initDelayTimeoutId = null;
+        }
+    };
+
+    export const createVideoScreenSaver = (
         elRef:HTMLDivElement, 
         videoSrc:string, 
         autoPlay = true, 
@@ -75,21 +93,31 @@ export namespace LoginHelpers {
         }
     }
 
-    const listenForWindowEvents = (elRef: HTMLDivElement):void=>{
-        elRef.addEventListener('click', deactivate);
-        elRef.addEventListener('mousemove', deactivate);
-        elRef.addEventListener('mousedown', deactivate);
-        elRef.addEventListener('keydown',  deactivate);
+    const attachDeactivationListeners = (elRef: HTMLDivElement):void=>{
+        if (!elRef) return;
+
+        const events = ["click", "mousemove", "mousedown", "keydown"];
+        for (const evt of events) 
+            elRef.addEventListener(evt, deactivate);
     }
 
-    const deactivate = ():void=>{
-        if(initDelayTimeoutId)
-            clearTimeout(initDelayTimeoutId);
+      /**
+   * Removes event listeners from the container element.
+   */
+  const removeDeactivationListeners = (elRef?: HTMLDivElement): void => {
+    if (!elRef) return;
 
-        pauseWebScreenSaver(vidRef);
+    const events = ["click", "mousemove", "mousedown", "keydown"];
+    for (const evt of events) 
+        elRef.removeEventListener(evt, deactivate);
+  };
+
+    const deactivate = ():void=>{
+        cleanupTimeout();
+        cleanupVideo(videoRef);
 
         initDelayTimeoutId = setTimeout(()=>{
-            startWebScreenSaver(wssRef)
+            startWebScreenSaver(screenSaverConfig)
         }, Constants.SCREEN_SAVER_DELAY);
     };
 
