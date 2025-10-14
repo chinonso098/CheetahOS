@@ -404,6 +404,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.storeState(Constants.SIGNED_OUT);
 
       this.setLockScreenBackground();
+
+      if(this.isScreenSaverActive)
+        this.showScreenSaver();
     }
   }
 

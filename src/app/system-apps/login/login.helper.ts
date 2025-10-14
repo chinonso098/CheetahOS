@@ -57,6 +57,26 @@ export namespace LoginHelpers {
         screenSaverConfig = null;
     }
 
+      /**
+     * Pause playback (without removing video from DOM).
+     */
+    export const pauseWebScreenSaver = (): void => {
+        if(videoRef && !videoRef.paused){
+            videoRef.pause();
+        }
+    }
+
+    /**
+     * Resume playback (if video exists and is paused).
+     */
+    export const resumeWebScreenSaver = (): void => {
+        if (videoRef && videoRef.paused) {
+            void videoRef.play().catch((err) => {
+                console.warn("LoginHelpers: Unable to resume video playback:", err);
+            });
+        }
+    };
+
     /**
      * Clears any pending timeout.
      */

@@ -138,8 +138,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   lockScreenBackgroundOptions = [
     { value: 0, label: this.LOCKSCREEN_BACKGROUND_PICTURE },
     { value: 1, label: this.LOCKSCREEN_BACKGROUND_SOLID_COLOR},
-    { value: 2, label: this.LOCKSCREEN_BACKGROUND_MIRROR },
-    { value: 3, label: this.LOCKSCREEN_SLIDE_SHOW }
+    { value: 2, label: this.LOCKSCREEN_BACKGROUND_MIRROR }
+    //{ value: 3, label: this.LOCKSCREEN_SLIDE_SHOW }
   ];
 
   lockScreenTimeOutOptions = [
@@ -153,8 +153,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   desktopBackgroundOptions = [
     { value: 0, label: this.LOCKSCREEN_BACKGROUND_PICTURE },
     { value: 1, label: this.LOCKSCREEN_BACKGROUND_SOLID_COLOR},
-    { value: 2, label: this.DESKTOP_BACKGROUND_DYNAMIC },
-    { value: 3, label: this.DESKTOP_BACKGROUND_SLIDE_SHOW }
+    { value: 2, label: this.DESKTOP_BACKGROUND_DYNAMIC }
+    //{ value: 3, label: this.DESKTOP_BACKGROUND_SLIDE_SHOW }
   ];
 
   slideShowOptions = [
