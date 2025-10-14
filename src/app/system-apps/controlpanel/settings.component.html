@@ -369,7 +369,7 @@
                             <div class="lockscreen-block-content">
                                 <div class="lockscreen-background-dropdown" (click)="toggleLockScreenBkgrndDropdown($event)" [class.open]="isLockScreenBkgrndDropDownOpen">
                                     <div class="lockscreen-background-dropdown__selected">
-                                      {{ lockScreenBkgrndOption|| 'Select background' }}
+                                      {{ lockScreenBkgrndOption}}
                                     </div>
                                   
                                     <span class="lockscreen-background-dropdown__icon">
@@ -444,7 +444,7 @@
                             <div class="lockscreen-block-content">
                                 <div class="lockscreen-background-dropdown" (click)="toggleLockScreenSlideShowDropdown($event)" [class.open]="isLockScreenSlideShowDropDownOpen">
                                     <div class="lockscreen-background-dropdown__selected">
-                                      {{ lockScreenSlideShowOption|| 'Select background' }}
+                                      {{ lockScreenSlideShowOption }}
                                     </div>
                                   
                                     <span class="lockscreen-background-dropdown__icon">
@@ -458,7 +458,7 @@
                                     </span>
                                   
                                     <ul class="lockscreen-background-dropdown__menu" *ngIf="isLockScreenSlideShowDropDownOpen">
-                                      <li  *ngFor="let option of slideShowOptions"  (click)="handleDropDownChoiceAndSetBkgrnd(option, $event)"
+                                      <li  *ngFor="let option of slideShowOptions"  (click)="handleLockScreenSlideShowChoice(option, $event)"
                                         [class.selected]="option.label === lockScreenSlideShowOption">
                                         {{ option.label }}
                                       </li>

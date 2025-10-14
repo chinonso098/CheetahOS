@@ -40,6 +40,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   authFormTimeoutId!: NodeJS.Timeout;
   lockScreenTimeoutId!: NodeJS.Timeout;
+  slideShowIntervalId!: NodeJS.Timeout;
 
   showUserInfo = true;
   showPasswordEntry = true;
@@ -195,6 +196,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     if(this.lockScreenBackgroundType === Constants.BACKGROUND_MIRROR){
       const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
       if(lockScreenElmnt){
+        this.stopSlideShow();
         activeClass = styleClasses[0];
         this.setStyle(lockScreenElmnt, styleClasses, activeClass);
       }
@@ -203,6 +205,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     if(this.lockScreenBackgroundType === Constants.BACKGROUND_SOLID_COLOR){
       const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
       if(lockScreenElmnt){
+        this.stopSlideShow();
         activeClass = styleClasses[1];
         this.setStyle(lockScreenElmnt, styleClasses, activeClass);
         lockScreenElmnt.style.backgroundColor = this.lockScreenBackgroundValue;
@@ -212,9 +215,28 @@ export class LoginComponent implements OnInit, AfterViewInit {
     if(this.lockScreenBackgroundType === Constants.BACKGROUND_PICTURE){
       const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
       if(lockScreenElmnt){
+        this.stopSlideShow();
         activeClass = styleClasses[2];
         this.setStyle(lockScreenElmnt, styleClasses, activeClass);
         lockScreenElmnt.style.backgroundImage = `url(${this.lockScreenBackgroundValue})`;
+      }
+    }
+
+    if(this.lockScreenBackgroundType === Constants.BACKGROUND_SLIDE_SHOW){
+      const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+      if(lockScreenElmnt){
+        if(this.lockScreenBackgroundValue === Constants.BACKGROUND_SLIDE_SHOW_SOLID_COLOR){
+          activeClass = styleClasses[1];
+          this.setStyle(lockScreenElmnt, styleClasses, activeClass);
+          //lockScreenElmnt.style.backgroundColor = this.lockScreenBackgroundValue;
+          this.startColorSlideShow(lockScreenElmnt)
+        }else{
+          activeClass = styleClasses[2];
+          this.setStyle(lockScreenElmnt, styleClasses, activeClass);
+          //lockScreenElmnt.style.backgroundImage = `url(${this.lockScreenBackgroundValue})`;
+          const contentSet = this.generateLockScreenPictureOptions();
+          this.startPictureSlideShow(lockScreenElmnt, contentSet);
+        }
       }
     }
   }
@@ -225,7 +247,25 @@ export class LoginComponent implements OnInit, AfterViewInit {
     lockScreenElmnt.classList.remove(...styleClasses);
     lockScreenElmnt.classList.add(activeClass);
   }
-  
+
+  startPictureSlideShow(lockScreenElmnt: HTMLDivElement, contentSet:string[]) {
+    const type = Constants.BACKGROUND_SLIDE_SHOW_PICTURE;
+    this.startSlideShow(lockScreenElmnt, contentSet, type);
+  }
+
+  startColorSlideShow(lockScreenElmnt: HTMLDivElement) {
+    const type = Constants.BACKGROUND_SLIDE_SHOW_SOLID_COLOR;
+    const contentSet = this.generateColorOptions();
+    this.startSlideShow(lockScreenElmnt, contentSet, type);
+  }
+
+  startSlideShow(lockScreenElmnt: HTMLDivElement, contentSet:string[], setType:string):void {
+    this.slideShowIntervalId = CommonFunctions.startSlideShow(lockScreenElmnt, contentSet, setType);
+  }
+
+  stopSlideShow():void{
+    CommonFunctions.stopSlideShow(this.slideShowIntervalId);
+  }
 
   onKeyDown(evt:KeyboardEvent):void{
     if(evt.key === Constants.BLANK_SPACE){
@@ -539,6 +579,19 @@ export class LoginComponent implements OnInit, AfterViewInit {
       lockScreenPwdElmnt.blur();
     }
   }
+
+  generateColorOptions():string[]{
+    return Constants.LOCKSCREEN_DESKTOP_COLORS;
+  }
+
+  generateLockScreenPictureOptions():string[]{ 
+    const options:string[] = [];
+    const lockScreenImgPath = Constants.LOCK_SCREEN_IMAGE_BASE_PATH;
+    const lockScreenImages = Constants.LOCKSCREEN_PICTURE_SET;
+
+    lockScreenImages.forEach( imgName =>{ options.push(`${lockScreenImgPath}${imgName}`) });
+    return options;
+}
 
   storeState(state:string):void{
     this._sessionManagmentService.addSession(this.cheetahLogonKey, state);

@@ -14,7 +14,7 @@ import {basename, extname} from 'path';
 
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { ScreenshotSetting } from './settings.interface';
-import { interval } from 'rxjs';
+import { SettingHelpers } from './settings.helpers';
 
 
 @Component({
@@ -183,7 +183,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   isTaskbarPostionDropDownOpen = false;
   isTaskbarCombinationDropDownOpen = false;
 
-  SlideShowIntervalId!: NodeJS.Timeout;
+  slideShowIntervalId!: NodeJS.Timeout;
   
   isMaximizable = false;
   hasWindow = true;
@@ -270,12 +270,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   getLockScreenBackgroundData():void{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
+    console.log('retrieved defaultBkgrnd:', defaultBkgrnd);
+    
     this.retrievedBackgroundType = defaultBkgrnd[0];
     this.retrievedBackgroundValue = defaultBkgrnd[1];
     this.lockScreenBkgrndOption  = defaultBkgrnd[0];
 
     if(defaultBkgrnd[0] === this.LOCKSCREEN_SLIDE_SHOW){
-      this.lockScreenSlideShowOption =  this.SLIDE_SHOW_COLOR; // defaultBkgrnd[1];
+      this.lockScreenSlideShowOption =  defaultBkgrnd[1];
     }
   }
 
@@ -300,11 +302,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   focusWindow(evt:MouseEvent):void{
     evt.stopPropagation();
-
     this.onOutsideClick();
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
-
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
@@ -327,35 +327,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   generateColorOptions():string[]{
-    const options = ['#fe8d00', '#e91022', '#d13337', '#c30052', '#bf0077', '#9a0088', '#871499', '#754caa',
-                    '#0f893e', '#0c7d10', '#008473', '#2b7d9a', '#0063b1', '#6a68d6', '#8f8cd6', '#8664ba',
-                    '#008386', '#45695f', '#525f54', '#7e7360', '#4c4a48', '#4f5d6b', '#4a545a', '#000203'];
-    return options;
-  }
-
-  generateLockScreenPictureOptions():string[]{
-    const options:string[] = [];
-    const lockScreenImgPath = Constants.LOCK_SCREEN_IMAGE_BASE_PATH;
-    const lockScreenImages = ['bamboo_moon.jpg', 'duck_lake.jpeg', 'forza_5.jpeg', 'highland_view.jpg',
-                              'leaf_colors.jpg', 'lofi_coffee.jpeg', 'mountain_babel.jpg', 'mystic_isle.jpg', 
-                              'over_the_ocean.jpg', 'paradise_island.jpg', 'purple_reign.jpg', 'win_xp_bliss.jpeg'];
-
-    lockScreenImages.forEach( imgName =>{ options.push(`${lockScreenImgPath}${imgName}`) });
-    return options;
-  }
-
-  generateDesktopPictureOptions():string[]{
-    const options:string[] = [];
-    const desktopImgPath = Constants.DESKTOP_IMAGE_BASE_PATH;
-    const isDyanmicBkgrnd = (this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC )? true: false;
-
-    const desktopImages = (isDyanmicBkgrnd)
-    ?['vanta_wave.jpg', 'vanta_halo.jpg', 'vanta_ring.jpg', 'vanta_globe.jpg', 'vanta_bird.jpg']
-    :['crown_station.jpg', 'cyber_city.jpg', 'fractal_design.jpeg', 'landscape.jpg',
-    'mineral_heart.jpg', 'summer_vibe.jpg', 'sun_set.jpg', 'win_seven.jpg'];
-
-    desktopImages.forEach( imgName =>{ options.push(`${desktopImgPath}${imgName}`) });
-    return options;
+    return Constants.LOCKSCREEN_DESKTOP_COLORS;
   }
 
   async handleSettingsPanelSelection(selection:string, evt:MouseEvent): Promise<void>{
@@ -390,8 +362,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
       if(selection ===  this.PERSONALIZATION_LOCKSCREEN){
         this.getLockScreenBackgroundData();
         this.getLockScreenTimeOutData();
-        this.updateTime();
-        this.getDate();
+        this.currentTime = SettingHelpers.updateTime();
+        this.currentDate = SettingHelpers.getDate();
         await this.handleDropDownChoiceAndSetBkgrnd();
       }
 
@@ -468,7 +440,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       await this.handleSolidColorBkrgnd(screenPrevElmnt, activeClass, styleClasses, isChanged, isDesktopView);
 
     if(selectedValue === Constants.BACKGROUND_SLIDE_SHOW  || this.retrievedBackgroundType === Constants.BACKGROUND_SLIDE_SHOW)
-      this.handleSlideShowBkgrnd(screenPrevElmnt, activeClass, styleClasses, isDesktopView, this.retrievedBackgroundValue);
+      this.handleSlideShowBkgrnd(screenPrevElmnt, activeClass, styleClasses, isDesktopView, this.lockScreenSlideShowOption);
   }
 
   async handlePictureBkgrnd(screenPrevElmnt:HTMLDivElement, activeClass:string, styleClasses:string[], isChanged:boolean, isDesktopView:boolean): Promise<void>{
@@ -503,9 +475,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
 
       if(!isDesktopView)
-        this.lockScreenPictureOptions = this.generateLockScreenPictureOptions();
+        this.lockScreenPictureOptions = SettingHelpers.generateLockScreenPictureOptions();
       else
-        this.desktopPictureOptions = this.generateDesktopPictureOptions();
+        this.desktopPictureOptions = SettingHelpers.generateDesktopPictureOptions(this.desktopBkgrndOption);
     }
   }
 
@@ -533,7 +505,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
         }
       }
-      this.desktopPictureOptions = this.generateDesktopPictureOptions();
+      this.desktopPictureOptions = SettingHelpers.generateDesktopPictureOptions(this.desktopBkgrndOption);
     }else{
       if((this.retrievedBackgroundType === this.LOCKSCREEN_BACKGROUND_MIRROR  && !isChanged)
         || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_MIRROR && isChanged)){
@@ -595,13 +567,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
       const images:string[] = [];
 
       if(isDesktopView){
-        const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${type}`;
-        this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
-        images.push(...this.generateDesktopPictureOptions());
+        images.push(...SettingHelpers.generateDesktopPictureOptions(this.desktopBkgrndOption));
       }else{
-        const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${type}`;
-        this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
-        images.push(...this.generateLockScreenPictureOptions());
+        images.push(...SettingHelpers.generateLockScreenPictureOptions());
       }
       if(screenPrevElmnt){
         activeClass = (type === Constants.BACKGROUND_SLIDE_SHOW_PICTURE) ? styleClasses[0] : styleClasses[1];
@@ -627,11 +595,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   startSlideShow(screenPrevElmnt: HTMLDivElement, contentSet:string[], setType:string):void {
-    this.SlideShowIntervalId = CommonFunctions.startSlideShow(screenPrevElmnt, contentSet, setType);
+    this.slideShowIntervalId = CommonFunctions.startSlideShow(screenPrevElmnt, contentSet, setType);
   }
 
   stopSlideShow():void{
-    CommonFunctions.stopSlideShow(this.SlideShowIntervalId);
+    CommonFunctions.stopSlideShow(this.slideShowIntervalId);
   }
 
   setStyle(screenPrevElmnt: HTMLDivElement, styleClasses:string[], activeClass:string) {
@@ -640,7 +608,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     screenPrevElmnt.classList.remove(...styleClasses);
     screenPrevElmnt.classList.add(activeClass);
   }
-  
 
   onLockScreenTimeoutSelect(option:{value: number, label: string }, evt: MouseEvent):void{
     evt.stopPropagation();
@@ -737,7 +704,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     // console.log('LockScreen State:', this.lockScreenBkgrndOption)
     // console.log('Desktop State:', this.desktopBkgrndOption)
 
-    const setting = this.getDefaultScreenShot();
+    const setting = SettingHelpers.getDefaultScreenShot();
     let imgResult = Constants.EMPTY_STRING;
 
     // LOCKSCREEN SCREEENSHOT CASE, MIRROR DESKTOP
@@ -811,7 +778,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
 
     if(setting.isColor && intent === this.CAPTURE_COLOR_BACKGROUND_ONLY){
-      bkGrndImg =  this.getFalseForeGroundScreenShot(setting.colorValue);
+      bkGrndImg =  SettingHelpers.getFalseForeGroundScreenShot(setting.colorValue);
 
       if(setting.onlyBackGround)
         return bkGrndImg;
@@ -869,84 +836,43 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const colorOff = 'transparent';
 
     if(changeBkgrndColor)
-      this.changeMainDkstpBkgrndColor(colorOff);
+      SettingHelpers.changeMainDkstpBkgrndColor(colorOff);
 
     const dsktpCntnrElmnt = document.getElementById('vantaCntnr') as HTMLElement;
     const htmlImg = await htmlToImage.toPng(dsktpCntnrElmnt);
 
     if(changeBkgrndColor)
-      this.changeMainDkstpBkgrndColor(colorOn);
+      SettingHelpers.changeMainDkstpBkgrndColor(colorOn);
 
     return htmlImg;
-  }
-
-   getFalseForeGroundScreenShot(color: string): string {
-    const dsktpCntnrElmnt = document.getElementById('vantaCntnr') as HTMLElement;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = dsktpCntnrElmnt.offsetWidth;
-    canvas.height = dsktpCntnrElmnt.offsetHeight;
-
-    const ctx = canvas.getContext('2d')!;
-    ctx.fillStyle = color;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-    const dataUrl = canvas.toDataURL('image/png');
-    ctx.clearRect(0, 0, canvas.width, canvas.height); 
-
-    // const link = document.createElement('a');
-    // link.download = 'test-img.png';
-    // link.href = dataUrl;
-    // link.click();
-  
-    return dataUrl;
-  }
-
-  private getDefaultScreenShot():ScreenshotSetting{
-    return{ imgPath: Constants.EMPTY_STRING, 
-            isImage:false,
-            colorValue:Constants.EMPTY_STRING,
-            isColor:false,
-            onlyBackGround:true, 
-            onlyForeGround:false,
-            useVantaCanvas:false,
-            mergeImage:false,
-            changeBackGrndColor:false}
-  }
-  
-  private changeMainDkstpBkgrndColor(color: string): void {
-    const mainElmnt = document.getElementById('vantaCntnr') as HTMLElement;
-    if (mainElmnt) {
-      mainElmnt.style.backgroundColor = color;
-    }
   }
 
   shhhh(evt:MouseEvent):void{
     evt.stopPropagation();
   }
 
+  handleLockScreenSlideShowChoice(option: { value: number, label: string },   evt:MouseEvent):void{
+    evt.stopPropagation();
+    this.isLockScreenSlideShowDropDownOpen = false;
+    
+    const selectedValue = option.label;
+    this.lockScreenSlideShowOption = selectedValue;
+
+
+    const isDesktopView = (this.selectedPersonalizationOption === this.PERSONALIZATION_DESKTOP_BACKGROUND)? true: false;
+    if(isDesktopView){
+      const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${selectedValue}`;
+      this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+
+    }else{
+      const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selectedValue}`;
+      console.log('handleLockScreenSlideShowChoice - defaultLockScreenBackgrounValue:', defaultLockScreenBackgrounValue);
+      this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
+    }
+  }
+
   handleTaskbarChoice(option?: { value: number, label: string },   evt?:MouseEvent):void{
 
-  }
-
-  updateTime():void {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    //const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
-    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-
-    this.currentTime = `${formattedHours}:${formattedMinutes}`;
-  }
-
-  getDate():void{
-    const now = new Date();
-    this.currentDate = now.toLocaleString('en-US', {
-      weekday: 'long', // Full day name (e.g., "Tuesday")
-      month:'long',
-      day:'numeric'
-    });
   }
   
   async handleTaskBarCombinationSelection(option: { value: number, label: string },  evt: any): Promise<void>{
