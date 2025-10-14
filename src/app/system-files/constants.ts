@@ -109,7 +109,7 @@ export namespace Constants{
     export const DEFAULT_PREVIOUS_DESKTOP_PICTURE_VALUE = 'osdrive/Cheetah/Themes/Desktop/crown_station.jpg';
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG_VALUE = 'osdrive/Cheetah/Themes/Desktop/vanta_wave.jpg';
-
+    
     export const COLOR_AND_PICTURE_SLIDE_DELAY = 28000; //28 secs
 
 
@@ -125,7 +125,7 @@ export namespace Constants{
 
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_TASKBAR_COMBINATION_VALUE = NEVER;
-      /**⚠️ WARNING: Do not reference directly.*/
+    /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_AUTO_HIDE_TASKBAR_VALUE = FALSE;
   
 

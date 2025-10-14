@@ -161,7 +161,7 @@
                         <div class="clipboard-block__content">
                             <div class="clipboard-block__button">
                                 <label class="system-btn__toggle">
-                                    <input type="checkbox" [(ngModel)]="isSaveClipboardHistory" (change)="saveUnSaveClipBoardHisotry()">
+                                    <input type="checkbox" [(ngModel)]="isSaveClipboardHistory" (change)="changeSaveClipBoardHisotryState()">
                                     <span class="system-btn__slider"></span>
                                 </label>
     
@@ -500,6 +500,23 @@
                                   
                             </div>
                         </div>
+
+                        <div class="lockscreen-block-content">
+                            <div class="lockscreen-block__text">
+                                <p class="lockscreen-block-miniheading__p"> Turn on screen saver</p>
+                            </div>
+
+                            <div class="lockscreen-block__button">
+                                <label class="system-btn__toggle">
+                                    <input type="checkbox" [(ngModel)]="isScreenSaverActive" (change)="changeScreenSaverState()">
+                                    <span class="system-btn__slider"></span>
+                                </label>
+    
+                                <div class="lockscreen-button__text">
+                                    <p class="lockscreen-button-text__p"> {{isScreenSaverActiveText}} </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </ng-template>
     
@@ -516,12 +533,12 @@
 
                             <div class="taskbar-block__button">
                                 <label class="system-btn__toggle">
-                                    <input type="checkbox" [(ngModel)]="isAutoHideTaskBar" (change)="saveUnSaveAutoHideTaskBar()">
+                                    <input type="checkbox" [(ngModel)]="isAutoHideTaskBar" (change)="changeAutoHideTaskBarState()">
                                     <span class="system-btn__slider"></span>
                                 </label>
     
                                 <div class="taskbar-button__text">
-                                    <p class="taskbar"> {{autoHideTaskBarText}} </p>
+                                    <p class="taskbar-button-text__p"> {{autoHideTaskBarText}} </p>
                                 </div>
                             </div>
                         </div>

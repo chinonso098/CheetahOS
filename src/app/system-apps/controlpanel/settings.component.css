@@ -442,19 +442,19 @@
   -webkit-line-clamp:2;
 }
 
-.clipboard-block__button, .taskbar-block__button{
+.clipboard-block__button, .lockscreen-block__button, .taskbar-block__button{
   display: flex;
   width: 100%;
   height: fit-content;
 }
 
-.clipboard-button__text, .taskbar-button__text{
+.clipboard-button__text, .lockscreen-button__text .taskbar-button__text{
   position: relative;
   left: 10px;
   height: fit-content;
 }
 
-.clipboard-button-text__p, .taskbar-button-text__p{
+.clipboard-button-text__p, .lockscreen-button-text__p, .taskbar-button-text__p{
   position: relative;
   top: -1px;
   font-size: 13px;

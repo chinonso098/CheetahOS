@@ -116,8 +116,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
  isSaveClipboardHistory = true;
  isAutoHideTaskBar = false;
+ isScreenSaverActive = false;
  clipboardSaveStateText = Constants.ON;
  autoHideTaskBarText = Constants.OFF;
+ isScreenSaverActiveText = Constants.OFF;
 
   selectedSystemOption = this.SYSTEM_SCREEN;
   selectedPersonalizationOption = this.PERSONALIZATION_DESKTOP_BACKGROUND;
@@ -379,7 +381,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
   }
 
-  saveUnSaveClipBoardHisotry():void{
+  changeSaveClipBoardHisotryState():void{
     //this.isSaveClipboardHistory = !this.isSaveClipboardHistory;
     this.clipboardSaveStateText = (this.isSaveClipboardHistory)? Constants.ON : Constants.OFF;
   }
@@ -865,7 +867,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     }else{
       const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selectedValue}`;
-      console.log('handleLockScreenSlideShowChoice - defaultLockScreenBackgrounValue:', defaultLockScreenBackgrounValue);
       this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
     }
   }
@@ -878,11 +879,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this._defaultService.setDefultData(Constants.DEFAULT_TASKBAR_COMBINATION, selectedValue);
   }
 
-  saveUnSaveAutoHideTaskBar():void{
+  changeAutoHideTaskBarState():void{
     this.autoHideTaskBarText = (this.isAutoHideTaskBar)? Constants.ON : Constants.OFF;
     const autoHideValue = (this.isAutoHideTaskBar)? Constants.TRUE : Constants.FALSE;
     const defaultAutoHideValue = `${autoHideValue}`;
     this._defaultService.setDefultData(Constants.DEFAULT_AUTO_HIDE_TASKBAR, defaultAutoHideValue);
+  }
+
+  changeScreenSaverState():void{
+    this.isScreenSaverActiveText = (this.isScreenSaverActive)? Constants.ON : Constants.OFF;
+    const screenSaverState = (this.isScreenSaverActive)? Constants.TRUE : Constants.FALSE;
+    const defaultScreenSaverState = `${screenSaverState}`;
+    this._defaultService.setDefultData(Constants.DEFAULT_SCREEN_SAVER_STATE, defaultScreenSaverState);
   }
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
