@@ -105,7 +105,7 @@ export namespace CommonFunctions {
    * @param intervalId The interval ID returned from startSlideShow().
    */
   export const stopSlideShow = (intervalId: NodeJS.Timeout): void => {
-    if (intervalId) {
+    if(intervalId){
       clearInterval(intervalId);
     }
   };

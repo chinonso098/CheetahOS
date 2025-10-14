@@ -13,8 +13,9 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { ComponentType } from 'src/app/system-files/system.types';
+import { LoginHelpers } from './login.helper';
 
-declare const WebScreensaver:any;
+//declare const WebScreensaver:any;
 
 @Component({
   selector: 'cos-login',
@@ -34,7 +35,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private _scriptService:ScriptService;
 
 
-  private _wss:any;
+  private _wss:HTMLVideoElement | undefined;
 
   loginForm!: FormGroup;
   _formBuilder!:FormBuilder
@@ -150,7 +151,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
     //this._runningProcessService.showLockScreenNotify.next();
     this.setLockScreenBackground();
 
-    //this.loadScreenSaver();
+    this.loadScreenSaver();
+    // setTimeout(() => {
+    //   this.stopScreenSaver();
+    // }, 20000);
   }
 
   updateTime():void {
@@ -164,15 +168,29 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.currentTime = `${formattedHours}:${formattedMinutes}`;
   }
 
+  // loadScreenSaver():void{
+  //   this._scriptService.loadScript("screen_saver", "osdrive/Program-Files/WebScreenSaver/webscrsvr.js").then(() =>{
+  //     this._wss = new WebScreensaver({
+  //       target: document.getElementById('lockscreenCmpnt'),
+  //       stagnantDelay: 15000, // 10  secs
+  //       // interval: 12000, //12 secs
+  //       //videos: [{ mp4: this.video1},{ mp4: this.video2}, {mp4: this.video3 }],
+  //       videos: [{ mp4: this.video1}],
+  //     });
+  //   })
+  // }
+
+
   loadScreenSaver():void{
-    this._scriptService.loadScript("screen_saver", "osdrive/Program-Files/WebScreenSaver/webscrsvr.js").then(() =>{
-      this._wss = new WebScreensaver({
-        target: document.getElementById('lockscreenCmpnt'),
-        stagnantDelay: 10000, // 10  secs
-        interval: 12000, //12 secs
-        videos: [{ mp4: this.video1},{ mp4: this.video2}, {mp4: this.video3 }],
-      });
-    })
+    const delay = 15000; 
+    const elRef = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    const videoScreenSaver = LoginHelpers.getVideoScreenSaver(elRef, this.video1)
+    this._wss = LoginHelpers.startWebScreenSaver(videoScreenSaver);
+  }
+
+  stopScreenSaver():void{
+   if(this._wss)
+      LoginHelpers.stopWebSceenSaver()
   }
 
   firstToDo():void{
