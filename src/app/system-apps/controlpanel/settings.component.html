@@ -369,7 +369,7 @@
                             <div class="lockscreen-block-content">
                                 <div class="lockscreen-background-dropdown" (click)="toggleLockScreenBkgrndDropdown($event)" [class.open]="isLockScreenBkgrndDropDownOpen">
                                     <div class="lockscreen-background-dropdown__selected">
-                                      {{ lockScreenBkgrndOption}}
+                                      {{ lockScreenBkgrndOption|| 'Select Background ' }}
                                     </div>
                                   
                                     <span class="lockscreen-background-dropdown__icon">
@@ -444,7 +444,7 @@
                             <div class="lockscreen-block-content">
                                 <div class="lockscreen-background-dropdown" (click)="toggleLockScreenSlideShowDropdown($event)" [class.open]="isLockScreenSlideShowDropDownOpen">
                                     <div class="lockscreen-background-dropdown__selected">
-                                      {{ lockScreenSlideShowOption }}
+                                      {{ lockScreenSlideShowOption|| 'Select' }}
                                     </div>
                                   
                                     <span class="lockscreen-background-dropdown__icon">
@@ -534,7 +534,7 @@
                             <div class="taskbar-block-content">
                                 <div class="taskbar-background-dropdown" (click)="toggleTaskBarPostionDropdown($event)" [class.open]="isTaskbarPostionDropDownOpen">
                                     <div class="taskbar-background-dropdown__selected">
-                                      {{ taskBarPostionOption|| 'Select background' }}
+                                      {{ taskBarPostionOption|| 'Select' }}
                                     </div>
                                   
                                     <span class="taskbar-background-dropdown__icon">
@@ -565,7 +565,7 @@
                             <div class="taskbar-block-content">
                                 <div class="taskbar-background-dropdown" (click)="toggleTaskBarCombinationDropdown($event)" [class.open]="isTaskbarCombinationDropDownOpen">
                                     <div class="taskbar-background-dropdown__selected">
-                                      {{ taskBarCombinationOption|| 'Select background' }}
+                                      {{ taskBarCombinationOption|| 'Select' }}
                                     </div>
                                   
                                     <span class="taskbar-background-dropdown__icon">

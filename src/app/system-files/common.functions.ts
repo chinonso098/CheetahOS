@@ -95,7 +95,7 @@ export namespace CommonFunctions {
       }
       if(counter === contentSet.length - 1) counter = 0;
 
-    }, Constants.COLOR_AND_PICTURE_SLIDE_DELAY); //15 secs
+    }, Constants.COLOR_AND_PICTURE_SLIDE_DELAY); //1 secs
 
     return slideShowIntervalId;
   }

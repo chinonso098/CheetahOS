@@ -112,7 +112,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this._defaultService.defaultSettingsChangeNotify.subscribe((p) => {
       if(p === Constants.DEFAULT_LOCK_SCREEN_BACKGROUND){
         this.getLockScreenBackgroundData();
-        this.setLockScreenBackground();
+        //this.setLockScreenBackground();
       }
     })
 
@@ -228,12 +228,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
         if(this.lockScreenBackgroundValue === Constants.BACKGROUND_SLIDE_SHOW_SOLID_COLOR){
           activeClass = styleClasses[1];
           this.setStyle(lockScreenElmnt, styleClasses, activeClass);
-          //lockScreenElmnt.style.backgroundColor = this.lockScreenBackgroundValue;
           this.startColorSlideShow(lockScreenElmnt)
         }else{
           activeClass = styleClasses[2];
           this.setStyle(lockScreenElmnt, styleClasses, activeClass);
-          //lockScreenElmnt.style.backgroundImage = `url(${this.lockScreenBackgroundValue})`;
           const contentSet = this.generateLockScreenPictureOptions();
           this.startPictureSlideShow(lockScreenElmnt, contentSet);
         }
@@ -366,6 +364,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
       this.resetAuthFormState();
       this.storeState(Constants.SIGNED_IN);
+      this.stopSlideShow();
     }
   }
 
@@ -386,6 +385,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this._systemNotificationServices.showLockScreenNotify.next();
       this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked);
       this.storeState(Constants.SIGNED_OUT);
+
+      this.setLockScreenBackground();
     }
   }
 

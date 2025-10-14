@@ -131,7 +131,7 @@ export namespace Constants{
     export const DISTINCT_TASKBAR_ENTRIES = 'Distinct Entries Icon';
 
     export const CHEETAH_TASKBAR_ENTRY_OPTION_KEY = 'cheetahTskBarEntryOptKey';
-    export const COLOR_AND_PICTURE_SLIDE_DELAY = 15000; //15 secs
+    export const COLOR_AND_PICTURE_SLIDE_DELAY = 28000; //28 secs
 
     export const RSTRT_ORDER_LOCK_SCREEN = 0;
     export const RSTRT_ORDER_PWR_ON_OFF_SCREEN = 1;

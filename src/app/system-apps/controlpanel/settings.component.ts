@@ -141,11 +141,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ];
 
   lockScreenTimeOutOptions = [
-    { value: 30000, label: '30 Seconds'},
     { value: 60000, label: '1 Minute'},
-    { value: 120000, label: '2 Minutes'},
-    { value: 240000, label: '4 Minutes'},
-    { value: 480000, label: '8 Minutes'}
+    { value: 180000, label: '3 Minutes'},
+    { value: 300000, label: '5 Minutes'},
+    { value: 600000, label: '10 Minutes'},
+    { value: 1200000, label: '20 Minutes'},
   ];
 
   desktopBackgroundOptions = [
@@ -374,7 +374,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
       if(selection ===  this.PERSONALIZATION_TASKBAR){
         this.getTaskbarData();
-        this.handleTaskbarChoice();
       }
       return;
     }
@@ -415,6 +414,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     this.isLockScreenBkgrndDropDownOpen = false;
     this.isDesktopBkgrndDropDownOpen = false;
+    this.stopSlideShow();
 
     screenPrevElmnt = (isDesktopView)
     ? document.getElementById('desktop_Preview') as HTMLDivElement 
@@ -854,10 +854,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
   handleLockScreenSlideShowChoice(option: { value: number, label: string },   evt:MouseEvent):void{
     evt.stopPropagation();
     this.isLockScreenSlideShowDropDownOpen = false;
-    
+
     const selectedValue = option.label;
     this.lockScreenSlideShowOption = selectedValue;
-
 
     const isDesktopView = (this.selectedPersonalizationOption === this.PERSONALIZATION_DESKTOP_BACKGROUND)? true: false;
     if(isDesktopView){
@@ -869,10 +868,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
       console.log('handleLockScreenSlideShowChoice - defaultLockScreenBackgrounValue:', defaultLockScreenBackgrounValue);
       this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
     }
-  }
-
-  handleTaskbarChoice(option?: { value: number, label: string },   evt?:MouseEvent):void{
-
   }
   
   async handleTaskBarCombinationSelection(option: { value: number, label: string },  evt: any): Promise<void>{
