@@ -6,7 +6,6 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
@@ -32,9 +31,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private _sessionManagmentService:SessionManagmentService
   private _audioService:AudioService;
   private _defaultService:DefaultService;
-  private _scriptService:ScriptService;
-
-
   private _wss:HTMLVideoElement | undefined;
 
   loginForm!: FormGroup;
@@ -59,6 +55,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   isScreenLocked = true;
   isUserLogedIn = false;
   isFirstLogIn = false;
+  isScreenSaverActive = false;
 
   powerMenuStyle:Record<string, unknown> = {};
   powerMenuOption = Constants.POWER_MENU_OPTION;
@@ -101,7 +98,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
               formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, systemNotificationServices:SystemNotificationService,
-              defaultService:DefaultService, scriptService:ScriptService){
+              defaultService:DefaultService){
     this._processIdService = processIdService;
     this.processId = this._processIdService.getNewProcessId();
     this._audioService = audioService;
@@ -109,7 +106,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this._systemNotificationServices = systemNotificationServices;
     this._sessionManagmentService = sessionManagmentService;
     this._defaultService = defaultService;
-    this._scriptService = scriptService;
 
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -119,12 +115,14 @@ export class LoginComponent implements OnInit, AfterViewInit {
       if(p === Constants.DEFAULT_LOCK_SCREEN_TIMEOUT){
         this.resetLockScreenTimeOut();
       }
-    })
 
-    this._defaultService.defaultSettingsChangeNotify.subscribe((p) => {
       if(p === Constants.DEFAULT_LOCK_SCREEN_BACKGROUND){
         this.getLockScreenBackgroundData();
-        //this.setLockScreenBackground();
+      }
+
+      if(p === Constants.DEFAULT_SCREEN_SAVER_STATE){
+        this.isScreenSaverActive = true;
+        this.showScreenSaver();
       }
     })
 
@@ -148,28 +146,17 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    //this._runningProcessService.showLockScreenNotify.next();
     this.setLockScreenBackground();
 
-    this.loadScreenSaver();
-    // setTimeout(() => {
-    //   this.stopScreenSaver();
-    // }, 20000);
+    if(this.isScreenSaverActive)
+      this.showScreenSaver();
   }
 
-  updateTime():void {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    //const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
-    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-
-    this.currentTime = `${formattedHours}:${formattedMinutes}`;
+  getTime():void {
+    this.currentTime = LoginHelpers.updateTime();
   }
 
-
-  loadScreenSaver():void{
+  showScreenSaver():void{
     const elRef = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     const videoScreenSaver = LoginHelpers.createVideoScreenSaver(elRef, this.video1)
     this._wss = LoginHelpers.startWebScreenSaver(videoScreenSaver);
@@ -177,7 +164,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   stopScreenSaver():void{
    if(this._wss)
-      LoginHelpers.stopWebSceenSaver()
+    LoginHelpers.stopWebSceenSaver();
   }
 
   firstToDo():void{
@@ -187,16 +174,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
     this.viewOptions =  this.currentDateTime;
     const secondsDelay = [1000, 360000];  // Update time every second
-    this.updateTime(); // Set initial time
-    this.getDate();
+    this.getTime(); // Set initial time
+    this.getDate(); // Set initial Date
 
-    setInterval(() => {
-      this.updateTime();
-    }, secondsDelay[0]); 
-
-    setInterval(() => {
-      this.getDate();
-    }, secondsDelay[1]); 
+    setInterval(() => { this.getTime(); }, secondsDelay[0]); 
+    setInterval(() => { this.getDate();  }, secondsDelay[1]); 
 
     this._systemNotificationServices.showLockScreenNotify.next();
     this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked);
@@ -204,18 +186,24 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   getDate():void{
-    const now = new Date();
-    this.currentDate = now.toLocaleString('en-US', {
-      weekday: 'long', // Full day name (e.g., "Tuesday")
-      month:'long',
-      day:'numeric'
-    });
+    this.currentDate = LoginHelpers.getDate()
   }
 
   getLockScreenBackgroundData():void{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
     this.lockScreenBackgroundType = defaultBkgrnd[0];
     this.lockScreenBackgroundValue = defaultBkgrnd[1];
+  }
+
+  getLockScreenScreenSaverdData():void{
+    const defaultScreenSaver = this._defaultService.getDefaultSetting(Constants.DEFAULT_SCREEN_SAVER_STATE);
+    if(defaultScreenSaver === Constants.OFF){
+      this.isScreenSaverActive = false;
+      this.stopScreenSaver();
+    }else if(defaultScreenSaver === Constants.ON){
+      this.isScreenSaverActive = true;
+      this.showScreenSaver();
+    }
   }
 
   setLockScreenBackground():void{
@@ -450,19 +438,22 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   onPowerBtnClick(evt:MouseEvent):void{
+    evt.preventDefault();
+
     //The onLockScreenViewClick also listens for a click event. hence, i have to delay the response of onPowerBtnClick
+    const delay = 10;
     setTimeout(() => {
       if(!this.showPowerMenu && !this.isPowerMenuVisible){
         this.showPowerMenu = true;
 
         const powerBtnElmt = document.getElementById('powerBtnCntnr'); 
         if(powerBtnElmt){
-          const pbRect = powerBtnElmt.getBoundingClientRect();
+          const pwrBtnRect = powerBtnElmt.getBoundingClientRect();
           powerBtnElmt.style.backgroundColor = Constants.EMPTY_STRING;
   
           this.powerMenuStyle = {
             'position':'absolute',
-            'transform':`translate(${String(pbRect.x - 50)}px, ${String(pbRect.y - 352)}px)`,
+            'transform':`translate(${String(pwrBtnRect.x - 50)}px, ${String(pwrBtnRect.y - 352)}px)`,
             'z-index': 6,
           }
           this.isPowerMenuVisible = true;
@@ -471,11 +462,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
       }else{
         this.showPowerMenu = false;
         this.isPowerMenuVisible = false;
-      }
-
-      evt.preventDefault();
-      
-    }, 10);
+      }      
+    }, delay);
   }
 
   onPowerBtnMouseEnter():void{

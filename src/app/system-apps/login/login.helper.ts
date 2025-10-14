@@ -1,12 +1,11 @@
 import { Constants } from "src/app/system-files/constants";
 import { PreloadType, VideoScreenSaver } from "./login.types";
-import { config } from "rxjs";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace LoginHelpers {
-    let initDelayTimeoutId!:NodeJS.Timeout | null;
-    let videoRef:HTMLVideoElement | null;
-    let screenSaverConfig:VideoScreenSaver | null;
+    let initDelayTimeoutId:NodeJS.Timeout | null = null;
+    let videoRef:HTMLVideoElement | null = null;
+    let screenSaverConfig:VideoScreenSaver | null = null;
 
     export const startWebScreenSaver =(config:VideoScreenSaver | null):HTMLVideoElement | undefined =>{
         if(!config){
@@ -29,8 +28,7 @@ export namespace LoginHelpers {
         if (!container) {
             console.warn("LoginHelpers: No container element found for screensaver.");
             return;
-          }
-
+        }
 
         initDelayTimeoutId = setTimeout(() => {
             container.appendChild(video);
@@ -44,7 +42,7 @@ export namespace LoginHelpers {
     const cleanupVideo =(video:HTMLVideoElement | null):void =>{
         if(video){
             video.pause();           // stop playback
-            video.src = "";          // release source
+            video.src = Constants.EMPTY_STRING;          // release source
             video.load();            // force browser to unload
             video.remove();          // remove from DOM
         }
@@ -54,7 +52,7 @@ export namespace LoginHelpers {
         cleanupVideo(videoRef);
         cleanupTimeout();
         removeDeactivationListeners(screenSaverConfig?.elRef);
-        
+
         videoRef = null;
         screenSaverConfig = null;
     }
@@ -102,15 +100,15 @@ export namespace LoginHelpers {
     }
 
       /**
-   * Removes event listeners from the container element.
-   */
-  const removeDeactivationListeners = (elRef?: HTMLDivElement): void => {
-    if (!elRef) return;
+     * Removes event listeners from the container element.
+     */
+    const removeDeactivationListeners = (elRef?: HTMLDivElement): void => {
+        if (!elRef) return;
 
-    const events = ["click", "mousemove", "mousedown", "keydown"];
-    for (const evt of events) 
-        elRef.removeEventListener(evt, deactivate);
-  };
+        const events = ["click", "mousemove", "mousedown", "keydown"];
+        for (const evt of events) 
+            elRef.removeEventListener(evt, deactivate);
+    };
 
     const deactivate = ():void=>{
         cleanupTimeout();
@@ -120,5 +118,24 @@ export namespace LoginHelpers {
             startWebScreenSaver(screenSaverConfig)
         }, Constants.SCREEN_SAVER_DELAY);
     };
+
+    export const updateTime=(): string=>{
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        //const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
+        const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+        return`${formattedHours}:${formattedMinutes}`;
+    }
+
+    export const getDate =():string =>{
+        const now = new Date();
+        return now.toLocaleString('en-US', {
+          weekday: 'long', // Full day name (e.g., "Tuesday")
+          month:'long',
+          day:'numeric'
+        });
+    }
 
 }
