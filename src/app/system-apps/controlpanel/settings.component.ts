@@ -271,9 +271,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   getLockScreenBackgroundData():void{
-    const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
-    console.log('retrieved defaultBkgrnd:', defaultBkgrnd);
-    
+    const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);    
     this.retrievedBackgroundType = defaultBkgrnd[0];
     this.retrievedBackgroundValue = defaultBkgrnd[1];
     this.lockScreenBkgrndOption  = defaultBkgrnd[0];
@@ -300,6 +298,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   getLockScreenTimeOutData():void{
     const defaultTimeOut = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT).split(Constants.COLON);
     this.lockScreenTimeoutOption = defaultTimeOut[0];
+  }
+
+  geScreenSaverData():void{
+    const scrSvrState = this._defaultService.getDefaultSetting(Constants.DEFAULT_SCREEN_SAVER_STATE);
+    this.isScreenSaverActive = (scrSvrState === Constants.TRUE)? true : false;
   }
 
   focusWindow(evt:MouseEvent):void{
@@ -364,6 +367,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       if(selection ===  this.PERSONALIZATION_LOCKSCREEN){
         this.getLockScreenBackgroundData();
         this.getLockScreenTimeOutData();
+        this.geScreenSaverData();
         this.currentTime = SettingHelpers.updateTime();
         this.currentDate = SettingHelpers.getDate();
         await this.handleDropDownChoiceAndSetBkgrnd();
