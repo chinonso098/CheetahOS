@@ -14,7 +14,7 @@ import {basename, extname} from 'path';
 
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { ScreenshotSetting } from './settings.interface';
-import { SettingHelpers } from './settings.helpers';
+import { SettingsHelper } from './settings.helper';
 
 
 @Component({
@@ -368,8 +368,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.getLockScreenBackgroundData();
         this.getLockScreenTimeOutData();
         this.geScreenSaverData();
-        this.currentTime = SettingHelpers.updateTime();
-        this.currentDate = SettingHelpers.getDate();
+        this.currentTime = SettingsHelper.updateTime();
+        this.currentDate = SettingsHelper.getDate();
         await this.handleDropDownChoiceAndSetBkgrnd();
       }
 
@@ -481,9 +481,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
 
       if(!isDesktopView)
-        this.lockScreenPictureOptions = SettingHelpers.generateLockScreenPictureOptions();
+        this.lockScreenPictureOptions = SettingsHelper.generateLockScreenPictureOptions();
       else
-        this.desktopPictureOptions = SettingHelpers.generateDesktopPictureOptions(this.desktopBkgrndOption);
+        this.desktopPictureOptions = SettingsHelper.generateDesktopPictureOptions(this.desktopBkgrndOption);
     }
   }
 
@@ -511,7 +511,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
         }
       }
-      this.desktopPictureOptions = SettingHelpers.generateDesktopPictureOptions(this.desktopBkgrndOption);
+      this.desktopPictureOptions = SettingsHelper.generateDesktopPictureOptions(this.desktopBkgrndOption);
     }else{
       if((this.retrievedBackgroundType === this.LOCKSCREEN_BACKGROUND_MIRROR  && !isChanged)
         || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_MIRROR && isChanged)){
@@ -535,19 +535,21 @@ export class SettingsComponent implements OnInit, OnDestroy {
         || (this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR  && isChanged)){
   
         if(screenPrevElmnt){
+          const delay = 25; //25ms
           activeClass = styleClasses[0];
           const prevSolidColor = this._defaultService.getDefaultSetting(Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR);
           this.setStyle(screenPrevElmnt, styleClasses, activeClass);
-
-          const color =(isChanged) ? prevSolidColor: this.retrievedBackgroundValue ;
-          const desktopBkgrndImg = await this.getDesktopScreenShot(color);
-          screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
 
           if(isChanged){
             //auto apply
             const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${prevSolidColor}`;
             this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
           }
+
+          await CommonFunctions.sleep(delay);
+          const color =(isChanged) ? prevSolidColor: this.retrievedBackgroundValue ;
+          const desktopBkgrndImg = await this.getDesktopScreenShot(color);
+          screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
         }
       }
     }else{
@@ -573,9 +575,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
       const images:string[] = [];
 
       if(isDesktopView){
-        images.push(...SettingHelpers.generateDesktopPictureOptions(this.desktopBkgrndOption));
+        images.push(...SettingsHelper.generateDesktopPictureOptions(this.desktopBkgrndOption));
       }else{
-        images.push(...SettingHelpers.generateLockScreenPictureOptions());
+        images.push(...SettingsHelper.generateLockScreenPictureOptions());
       }
       if(screenPrevElmnt){
         activeClass = (type === Constants.BACKGROUND_SLIDE_SHOW_PICTURE) ? styleClasses[0] : styleClasses[1];
@@ -710,7 +712,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     // console.log('LockScreen State:', this.lockScreenBkgrndOption)
     // console.log('Desktop State:', this.desktopBkgrndOption)
 
-    const setting = SettingHelpers.getDefaultScreenShot();
+    const setting = SettingsHelper.getDefaultScreenShot();
     let imgResult = Constants.EMPTY_STRING;
 
     // LOCKSCREEN SCREEENSHOT CASE, MIRROR DESKTOP
@@ -784,7 +786,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
 
     if(setting.isColor && intent === this.CAPTURE_COLOR_BACKGROUND_ONLY){
-      bkGrndImg =  SettingHelpers.getFalseForeGroundScreenShot(setting.colorValue);
+      bkGrndImg =  SettingsHelper.getFalseForeGroundScreenShot(setting.colorValue);
 
       if(setting.onlyBackGround)
         return bkGrndImg;
@@ -842,13 +844,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const colorOff = 'transparent';
 
     if(changeBkgrndColor)
-      SettingHelpers.changeMainDkstpBkgrndColor(colorOff);
+      SettingsHelper.changeMainDkstpBkgrndColor(colorOff);
 
     const dsktpCntnrElmnt = document.getElementById('vantaCntnr') as HTMLElement;
     const htmlImg = await htmlToImage.toPng(dsktpCntnrElmnt);
 
     if(changeBkgrndColor)
-      SettingHelpers.changeMainDkstpBkgrndColor(colorOn);
+      SettingsHelper.changeMainDkstpBkgrndColor(colorOn);
 
     return htmlImg;
   }

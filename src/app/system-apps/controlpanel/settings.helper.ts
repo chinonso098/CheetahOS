@@ -2,7 +2,7 @@ import { Constants } from "src/app/system-files/constants";
 import { ScreenshotSetting } from "./settings.interface";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace SettingHelpers {
+export namespace SettingsHelper {
 
     export const generateDesktopPictureOptions =(desktopBkgrndOption:string):string[] =>{
         const options:string[] = [];
