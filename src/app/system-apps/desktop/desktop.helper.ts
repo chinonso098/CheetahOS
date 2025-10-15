@@ -1,4 +1,3 @@
-import { GeneralMenu, MenuPosition, NestedMenuItem } from "src/app/shared/system-component/menu/menu.types";
 import { ActivityHistoryService } from "src/app/shared/system-service/activity.tracking.service";
 import { ProcessHandlerService } from "src/app/shared/system-service/process.handler.service";
 import { ActivityType } from "src/app/system-files/common.enums";
@@ -10,9 +9,9 @@ import { FileInfo } from "src/app/system-files/file.info";
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DesktopHelper {
 
-    let MARKDOWN_VIEWER_APP ="markdownviewer";
-    let CLIPPY_APP = "clippy";
-    let PHOTOS_APP = "photoviewer";
+    const MARKDOWN_VIEWER_APP ="markdownviewer";
+    const CLIPPY_APP = "clippy";
+    const PHOTOS_APP = "photoviewer";
 
     export const removeBtnStyle =(id:number):void =>{
         const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
@@ -114,58 +113,53 @@ export namespace DesktopHelper {
        }
     }
 
-
    export const  highlightSelectedItems= (initX: number, initY: number, width: number, height: number): void=>{
-    const selectionRect = {
-        left: initX,
-        top: initY,
-        right: initX + width,
-        bottom: initY + height
-    };
+        const selectionRect = {
+            left: initX,
+            top: initY,
+            right: initX + width,
+            bottom: initY + height
+        };
 
-    const btnIcons = document.querySelectorAll('.desktopIcon-btn');
-    btnIcons.forEach((btnIcon) => {
-        const btnIconRect = btnIcon.getBoundingClientRect();
+        const btnIcons = document.querySelectorAll('.desktopIcon-btn');
+        btnIcons.forEach((btnIcon) => {
+            const btnIconRect = btnIcon.getBoundingClientRect();
 
-        // Check if the item is inside the selection area
-        if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
-            btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
-            btnIcon.classList.add('desktopIcon-multi-select-highlight'); 
-        } else {
-            btnIcon.classList.remove('desktopIcon-multi-select-highlight');
-        }
-    });
-  }
-
-
+            // Check if the item is inside the selection area
+            if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
+                btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
+                btnIcon.classList.add('desktopIcon-multi-select-highlight'); 
+            } else {
+                btnIcon.classList.remove('desktopIcon-multi-select-highlight');
+            }
+        });
+    }
 
    export const  initializeApplication =(arg0:string, 
-    processHandlerService:ProcessHandlerService, 
-    activityHistoryService:ActivityHistoryService, screenShot?: FileInfo):void=>{
+        processHandlerService:ProcessHandlerService, 
+        activityHistoryService:ActivityHistoryService, screenShot?: FileInfo):void=>{
 
-    let file = new FileInfo();
-    const appPath = 'None';
-    file.setOpensWith = arg0;
+        let file = new FileInfo();
+        const appPath = 'None';
+        file.setOpensWith = arg0;
 
-    if(arg0 ===  MARKDOWN_VIEWER_APP){
-      file.setCurrentPath = Constants.DESKTOP_PATH;
-      file.setContentPath = '/Users/Documents/Credits.md';
+        if(arg0 ===  MARKDOWN_VIEWER_APP){
+        file.setCurrentPath = Constants.DESKTOP_PATH;
+        file.setContentPath = '/Users/Documents/Credits.md';
+        }
+
+        if(arg0 !== CLIPPY_APP){
+        const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
+        CommonFunctions.trackActivity(activityHistoryService, activity);
+        }
+
+        if(arg0 === PHOTOS_APP){
+        file = (screenShot)? screenShot : new FileInfo();
+        const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
+        CommonFunctions.trackActivity(activityHistoryService, activity);
+        }
+
+        processHandlerService.runApplication(file);
     }
-
-    if(arg0 !== CLIPPY_APP){
-      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
-      CommonFunctions.trackActivity(activityHistoryService, activity);
-    }
-
-    if(arg0 === PHOTOS_APP){
-      file = (screenShot)? screenShot : new FileInfo();
-      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
-      CommonFunctions.trackActivity(activityHistoryService, activity);
-    }
-
-    processHandlerService.runApplication(file);
-  }
-
-
 
 }

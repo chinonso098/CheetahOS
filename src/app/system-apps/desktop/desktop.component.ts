@@ -35,6 +35,7 @@ import { DefaultService } from 'src/app/shared/system-service/defaults.services'
 
 import { DesktopHelper } from './desktop.helper';
 import { DesktopContextMenuHelper } from './desktop.context.menu.helper';
+import { DesktopIconAlignmentHelper } from './desktop.icon.alignment.helper';
 
 
 
@@ -878,7 +879,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   autoAlignIcon():void{
     this.autoAlignIcons = !this.autoAlignIcons
     if(this.autoAlignIcons){
-      this.correctMisalignedIcons();
+
+      DesktopIconAlignmentHelper.correctMisalignedIcons(this.movedBtnIds,
+        this.GRID_SIZE, this.ROW_GAP);
     }
     this.getDesktopMenuData();
   }
@@ -1751,181 +1754,38 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
   
   onDragStart(evt:DragEvent, i: number): void {
-  
+
     // Get the cloneIcon container
     const elementId = 'desktopIcon_clone_cntnr';
     const cloneIcon = document.getElementById(elementId);
     const countOfMarkedBtns = this.getCountOfAllTheMarkedButtons();
     let counter = 0;
 
-    if(cloneIcon){
-      //Clear any previous content in the clone container
-      cloneIcon.innerHTML = Constants.EMPTY_STRING;
-      if(countOfMarkedBtns <= 1){
-        this.draggedElementId = i;
-        const srcIconElmnt = document.getElementById(`iconBtn${i}`) as HTMLElement;
-        cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
-
-        // Move it out of view initially
-        cloneIcon.style.left = '-9999px';  
-        cloneIcon.style.opacity = '0.2';
-
-        const file = this.files[i];
-        if(file)
-          this._fileService.addDragAndDropFile(file);
-    
-        // Set the cloned icon as the drag image
-        if (evt.dataTransfer) {
-          evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
-        }
-      }else{
-        this.markedBtnIds.forEach(id =>{
-          const srcIconElmnt = document.getElementById(`iconBtn${id}`) as HTMLElement;
-          const spaceDiv = document.createElement('div');
-
-          // Add create an empty div that will be used for spacing between each cloned icon
-          spaceDiv.setAttribute('id', `spacediv${id}`);
-          spaceDiv.style.transform =  'translate(0, 0)';
-          spaceDiv.style.width =  'fit-content';
-          spaceDiv.style.height =  '20px';
-
-          cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
-          if(counter !== countOfMarkedBtns - 1)
-            cloneIcon.appendChild(spaceDiv);
-
-          counter++;
-
-          const file = this.files[Number(id)];
-          if(file)
-            this._fileService.addDragAndDropFile(file);
-        });
-
-        cloneIcon.style.left = '-9999px';  // Move it out of view initially
-        cloneIcon.style.opacity = '0.2';
-
-        // Set the cloned icon as the drag image
-        if (evt.dataTransfer) {
-          evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
-        }
-      }
-    }
+    const draggedElmtId = DesktopIconAlignmentHelper.handleDragStart(evt, i, countOfMarkedBtns, this.markedBtnIds,
+       this.files, this._fileService);
+       
+    this.draggedElementId = draggedElmtId;
   }
   
   moveBtnIconsToNewPositionAlignOff(mPos:mousePosition):void{
-    let counter = 0;
-    let justAdded = false;
 
-    if(this.markedBtnIds.length === 0){
-      justAdded = true;
-      this.markedBtnIds.push(String(this.draggedElementId));
-    }
-
-    this.markedBtnIds.forEach(id =>{
-      const btnIconElmnt = document.getElementById(`desktopIcon_li${id}`) as HTMLElement;
-
-      this.movedBtnIds.push(id);
-      if(btnIconElmnt){
-        const btnIconRect = btnIconElmnt.getBoundingClientRect();
-        const xDiff = mPos.x - btnIconRect.left;
-        const newX = btnIconRect.left + xDiff;
-
-        let newY = 0;
-        if(counter === 0)
-            newY = mPos.y;
-        else{
-          const yDiff = btnIconRect.top - mPos.y;
-          const product = (this.GRID_SIZE * counter);
-          newY = btnIconRect.top - yDiff + product;
-        }
-
-        btnIconElmnt.style.position = 'absolute';
-        btnIconElmnt.style.transform = `translate(${Math.abs(newX)}px, ${Math.abs(newY)}px)`;
-      }
-      counter++;
-    });
-
-    if(justAdded){
-      this.markedBtnIds.pop();
-    }
+    this.markedBtnIds = DesktopIconAlignmentHelper.handleMoveBtnIconsToNewPositionAlignOff(mPos, 
+      this.movedBtnIds,
+      this.markedBtnIds,
+      this.draggedElementId,
+      this.GRID_SIZE
+    );
   }
 
   moveBtnIconsToNewPositionAlignOn(mPos: mousePosition): void {
-    const gridEl = document.getElementById('desktopIcon_ol') as HTMLElement;
-    const heightAdjustment = 20;
-    const iconWidth = this.GRID_SIZE; 
-    const iconHeight = this.GRID_SIZE - heightAdjustment;  
 
-    if (!gridEl) return;
-
-    const rect = gridEl.getBoundingClientRect();
-    const relativeX = mPos.x - rect.left;
-    const relativeY = mPos.y - rect.top;
-
-    const effectiveRowHeight = iconHeight + this.ROW_GAP;
-
-    let counter = 0;
-    let justAdded = false;
-
-    if (this.markedBtnIds.length === 0) {
-      justAdded = true;
-      this.markedBtnIds.push(String(this.draggedElementId));
-    }
-
-    this.markedBtnIds.forEach(id => {
-      const btnIconElmnt = document.getElementById(`desktopIcon_li${id}`) as HTMLElement;
-      this.movedBtnIds.push(id);
-
-      if (btnIconElmnt) {
-        // Calculate grid position (1-based index for CSS Grid)
-        const col = Math.floor(relativeX / iconWidth) + 1;
-        const row = Math.floor(relativeY / effectiveRowHeight) + 1 + counter;
-
-        btnIconElmnt.style.removeProperty('position');
-        btnIconElmnt.style.removeProperty('transform');
-        btnIconElmnt.style.setProperty('--grid-col', col.toString());
-        btnIconElmnt.style.setProperty('--grid-row', row.toString());
-        btnIconElmnt.style.gridColumn = `var(--grid-col)`;
-        btnIconElmnt.style.gridRow = `var(--grid-row)`;
-      }
-
-      counter++;
-    });
-
-    if (justAdded) 
-      this.markedBtnIds.pop();
-  }
-
-  correctMisalignedIcons(): void {
-    const heightAdjustment = 20;
-    const iconWidth = this.GRID_SIZE;
-    const iconHeight = this.GRID_SIZE - heightAdjustment
-    const rowGap = this.ROW_GAP; 
-    const effectiveRowHeight = iconHeight + rowGap; 
-    const offsetY = 5;
-
-    const grid = document.getElementById('desktopIcon_ol');
-    if (!grid) return;
-
-    const gridRect = grid.getBoundingClientRect();
-
-    this.movedBtnIds.forEach((id) => {
-      const btnIcon = document.getElementById(`desktopIcon_li${id}`);
-      if (!btnIcon) return;
-
-      const iconRect = btnIcon.getBoundingClientRect();
-
-      // Convert to coordinates relative to the grid container
-      const relativeLeft = iconRect.left - gridRect.left;
-      const relativeTop = iconRect.top - gridRect.top;
-
-      // Snap to nearest column and row
-      const correctedX = Math.round(relativeLeft / iconWidth) * iconWidth;
-      const correctedY = Math.round(relativeTop / effectiveRowHeight) * effectiveRowHeight;
-
-      // Apply corrected transform (positioning within grid)
-      btnIcon.style.position = 'absolute';
-      btnIcon.style.transform = `translate(${correctedX}px, ${correctedY + offsetY}px)`;
-    });
+    this.markedBtnIds = DesktopIconAlignmentHelper.handleMoveBtnIconsToNewPositionAlignOn(mPos,
+      this.movedBtnIds,
+      this.markedBtnIds,
+      this.draggedElementId,
+      this.GRID_SIZE,
+      this.ROW_GAP
+    )
   }
 
   sortIcons(sortBy:string):void {

@@ -2,7 +2,6 @@ import { MenuPosition, GeneralMenu } from "src/app/shared/system-component/menu/
 import { Constants } from "src/app/system-files/constants";
 import { FileInfo } from "src/app/system-files/file.info";
 
-
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DesktopContextMenuHelper {
     export const checkAndHandleDesktopCntxtMenuBounds =(evt:MouseEvent, menuHeightInput:number, menuWidthInput:number):[MenuPosition, boolean] =>{
@@ -47,7 +46,6 @@ export namespace DesktopContextMenuHelper {
      
         return [{xAxis, yAxis}, isShiftSubMenuLeft];
     }
-    
 
     export const adjustIconContextMenuData =(file:FileInfo, sourceData: GeneralMenu[]): [GeneralMenu[], string]=>{
         let menuData = [];
@@ -77,7 +75,6 @@ export namespace DesktopContextMenuHelper {
 
         return [menuData, menuOrder]
     }
-      
 
     export const  checkAndHandleDesktopIconCntxtMenuBounds =(evt:MouseEvent, menuHeight:number):MenuPosition =>{
         let yAxis = 0;
