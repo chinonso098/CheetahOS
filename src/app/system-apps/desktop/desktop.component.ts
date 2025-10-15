@@ -33,6 +33,7 @@ import { VantaDefaults } from './vanta-object/vanta.defaults';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 import { Activity } from 'src/app/system-files/common.interfaces';
+import { DesktopHelper } from './desktop.helper';
 
 
 
@@ -503,7 +504,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
       this._menuService.hideContextMenus.next();
       this.showDesktopCntxtMenu = true;
-      const axis = this.checkAndHandleDesktopCntxtMenuBounds(evt, menuHeight, menuWidth);
+      const result = DesktopHelper.checkAndHandleDesktopCntxtMenuBounds(evt, menuHeight, menuWidth);
+      const axis = result[0];
+      this.isShiftSubMenuLeft = result[1];
 
       this.dskTopCntxtMenuStyle = {
         'position':'absolute',
@@ -539,46 +542,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  checkAndHandleDesktopCntxtMenuBounds(evt:MouseEvent, menuHeightInput:number, menuWidthInput:number):MenuPosition{
 
-    let xAxis = 0;
-    let yAxis = 0;
-    const menuWidth = menuWidthInput;
-    const menuHeight = menuHeightInput;
-    const subMenuWidth = 205;
-    const taskBarHeight = 40;
-
-    const mainWindow = document.getElementById('vantaCntnr');
-    const windowWidth =  mainWindow?.offsetWidth || 0;
-    const windowHeight =  mainWindow?.offsetHeight || 0;
-
-    const horizontalDiff =  windowWidth - evt.clientX;
-    const verticalDiff = windowHeight - evt.clientY;
-
-    let horizontalShift = false;
-    let verticalShift = false;
-
-    if((horizontalDiff) < menuWidth){
-      horizontalShift = true;
-      const diff = menuWidth - horizontalDiff;
-      xAxis = evt.clientX - diff;
-    }
-
-    if((horizontalDiff) < (menuWidth + subMenuWidth)){
-      this.isShiftSubMenuLeft = true;
-    }
-
-    if((verticalDiff) >= taskBarHeight && (verticalDiff) <= menuHeight){
-      const shifMenuUpBy = menuHeight - verticalDiff;
-      verticalShift = true;
-      yAxis = evt.clientY - shifMenuUpBy - taskBarHeight;
-    }
-    
-    xAxis = (horizontalShift)? xAxis : evt.clientX;
-    yAxis = (verticalShift)? yAxis : evt.clientY;
- 
-    return {xAxis, yAxis};
-  }
 
   showTheStartMenu():void{
     // I'm not sure why the delay is needed for the start menu to be displayed
@@ -1241,7 +1205,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const taskBarHeight = 40;
     this.showTskBarCntxtMenu = true;
 
-    const axis = this.checkAndHandleDesktopCntxtMenuBounds(evt, menuHeight, menuWidth);    
+    const result = DesktopHelper.checkAndHandleDesktopCntxtMenuBounds(evt, menuHeight, menuWidth);  
+    const axis = result[0];
+    this.isShiftSubMenuLeft = result[1];
+    
     this.tskBarCntxtMenuStyle = {
       'position':'absolute',
       'transform':`translate(${axis.xAxis + 2}px, ${evt.y - menuHeight - taskBarHeight}px)`,
@@ -1466,7 +1433,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   onBtnClick(evt:MouseEvent, id:number):void{
     this.doBtnClickThings(id);
-    this.setBtnStyle(id, true);
+    DesktopHelper.setBtnStyle(id, true, this.selectedElementId, this.isIconInFocusDueToPriorAction);
   }
 
   onTriggerRunApplication():void{
@@ -1479,7 +1446,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._runningProcessService.addEventOriginator(uid);
     this._menuService.hideContextMenus.next();
 
-    this.adjustIconContextMenuData(file);
+    const result = DesktopHelper.adjustIconContextMenuData(file ,this.sourceData);
+    this.menuData = result[0];
+    this.menuOrder = result[1];
+
     this.selectedFile = file;
     this.propertiesViewFile = file;
     this.showDesktopIconCntxtMenu = true;
@@ -1487,7 +1457,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     // show IconContexMenu is still a btn click, just a different type
     this.doBtnClickThings(id);
 
-    const axis = this.checkAndHandleDesktopIconCntxtMenuBounds(evt, menuHeight);
+    const axis = DesktopHelper.checkAndHandleDesktopIconCntxtMenuBounds(evt, menuHeight);
     this.iconCntxtMenuStyle = {
       'position':'absolute',
       'transform':`translate(${String(evt.clientX + 2)}px, ${String(axis.yAxis)}px)`,
@@ -1500,57 +1470,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showPropertiesWindow():void{
     this._menuService.showPropertiesView.next(this.propertiesViewFile);
   }
-
-  adjustIconContextMenuData(file:FileInfo):void{
-    this.menuData = [];
-    if(file.getIsFile){
-        //files can not be opened in terminal, pinned to start, opened in new window, or pin to Quick access
-        this.menuOrder = Constants.DEFAULT_FILE_MENU_ORDER;
-        for(const x of this.sourceData) {
-          if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Pin to Start' || x.label === 'Empty Recycle Bin'){ /*nothing*/}
-          else{
-            this.menuData.push(x);
-          }
-        }
-    }else{
-      if(file.getCurrentPath === Constants.RECYCLE_BIN_PATH){ 
-        this.menuOrder = Constants.RECYCLE_BIN_MENU_ORDER;
-        for(const x of this.sourceData){
-          if(x.label === 'Open' || x.label === 'Empty Recycle Bin' || x.label === 'Create shortcut'){ 
-            this.menuData.push(x);
-          }
-        }
-      }else{
-        this.menuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
-        this.menuData = this.sourceData.filter(x => x.label !== 'Empty Recycle Bin');
-      }
-    }
-  }
   
-  checkAndHandleDesktopIconCntxtMenuBounds(evt:MouseEvent, menuHeight:number):MenuPosition{
-    let yAxis = 0;
-    let verticalShift = false;
-
-    const xAxis = 0;
-    const taskBarHeight = 40;
-    const mainWindow = document.getElementById('vantaCntnr');
-    const windowHeight =  mainWindow?.offsetHeight || 0;
-    const verticalSum = evt.clientY + menuHeight;
-
-    console.log('verticalSum:', verticalSum);
-
-    if(verticalSum >= windowHeight || (windowHeight - verticalSum) <= 40){
-      verticalShift = true;
-      const shifMenuUpBy = verticalSum - windowHeight;
-      yAxis = evt.clientY - (shifMenuUpBy + taskBarHeight);
-    }
-
-    if(!verticalShift){
-      yAxis = evt.clientY;
-    }
-
-    return {xAxis, yAxis};
-  }
 
   doNothing():void{
     console.log('do nothing called');
@@ -1612,7 +1532,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(this.markedBtnIds.includes(String(id))){
         this.setMultiSelectStyleOnBtn(id, true);
       } else{
-        this.setBtnStyle(id, true);
+        DesktopHelper.setBtnStyle(id, true, this.selectedElementId, this.isIconInFocusDueToPriorAction);
       }
     }
   }
@@ -1625,11 +1545,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         if(this.markedBtnIds.includes(String(id))){
           this.setMultiSelectStyleOnBtn(id, false);
         } else{
-          this.removeBtnStyle(id);
+          DesktopHelper.removeBtnStyle(id);
         }
       }
       else if((id === this.selectedElementId) && !this.isIconInFocusDueToPriorAction){
-        this.setBtnStyle(id,false);
+        DesktopHelper.setBtnStyle(id, false, this.selectedElementId, this.isIconInFocusDueToPriorAction);
       }
     }
   }
@@ -1637,58 +1557,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   btnStyleAndValuesReset():void{
     this.isBtnClickEvt = false;
     this.btnClickCnt = 0;
-    this.removeBtnStyle(this.selectedElementId);
-    this.removeBtnStyle(this.prevSelectedElementId);
+    DesktopHelper.removeBtnStyle(this.selectedElementId);
+    DesktopHelper.removeBtnStyle(this.prevSelectedElementId);
     this.selectedElementId = -1;
     this.prevSelectedElementId = -1;
     this.btnClickCnt = 0;
     this.isIconInFocusDueToPriorAction = false;
   }
 
-  removeBtnStyle(id:number):void{
-    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
-    const figCapElement = document.getElementById(`figCap${id}`) as HTMLElement;
-    if(btnElement){
-      btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-      btnElement.style.borderColor = Constants.EMPTY_STRING;
-    }
 
-    if(figCapElement){
-      figCapElement.style.overflow = 'hidden'; 
-      figCapElement.style.overflowWrap = 'unset'
-      figCapElement.style.webkitLineClamp = '2';
-      figCapElement.style.zIndex = 'unset';
-    }
-  }
-
-  setBtnStyle(id:number, isMouseHover:boolean):void{
-    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
-    const figCapElement = document.getElementById(`figCap${id}`) as HTMLElement;
-    if(btnElement){
-      btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
-      btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
-
-
-      if(this.selectedElementId === id){
-        (isMouseHover)? btnElement.style.backgroundColor ='#607c9c' : 
-          btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
-      }
-
-      if(!isMouseHover && this.isIconInFocusDueToPriorAction){
-        btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-        btnElement.style.border = '1px solid white'
-      }
-    }
-
-    if(figCapElement){
-      if(this.selectedElementId === id){
-        figCapElement.style.overflow = 'unset'; 
-        figCapElement.style.overflowWrap = 'break-word';
-        figCapElement.style.webkitLineClamp = 'unset'
-        figCapElement.style.zIndex = '1';
-      }
-    }
-  }
   
   setMultiSelectStyleOnBtn(id:number,  isMouseHover:boolean):void{
     const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
@@ -1724,7 +1601,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(btnIcon){
         btnIcon.classList.remove('desktopIcon-multi-select-highlight');
       }
-      this.removeBtnStyle(Number(id));
+      DesktopHelper.removeBtnStyle(Number(id));
     })
   }
 
@@ -1738,7 +1615,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.hideCntxtMenuEvtCnt = 0;
 
     if(this.prevSelectedElementId != id){
-      this.removeBtnStyle(this.prevSelectedElementId);
+      DesktopHelper.removeBtnStyle(this.prevSelectedElementId);
     }
   }
   
@@ -1759,7 +1636,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
       if(this.isIconInFocusDueToPriorAction){
         if(this.hideCntxtMenuEvtCnt >= 0)
-          this.setBtnStyle(this.selectedElementId,false);
+          DesktopHelper.setBtnStyle(this.selectedElementId, false, this.selectedElementId, this.isIconInFocusDueToPriorAction);
 
         this.isIconInFocusDueToPriorAction = false;
       }
@@ -2316,7 +2193,7 @@ OpensWith=${file.getOpensWith}
     const figCapElement= document.getElementById(`figCap${this.selectedElementId}`) as HTMLElement;
     const renameContainerElement= document.getElementById(`renameContainer${this.selectedElementId}`) as HTMLElement;
     const renameTxtBoxElement= document.getElementById(`renameTxtBox${this.selectedElementId}`) as HTMLInputElement;
-    this.removeBtnStyle(this.selectedElementId);
+    DesktopHelper.removeBtnStyle(this.selectedElementId);
 
 
     if((figCapElement && renameContainerElement && renameTxtBoxElement)) {
@@ -2364,7 +2241,7 @@ OpensWith=${file.getOpensWith}
       this.renameForm.reset();
     }
 
-    this.setBtnStyle(this.selectedElementId, false);
+    DesktopHelper.setBtnStyle(this.selectedElementId, false, this.selectedElementId, this.isIconInFocusDueToPriorAction);
     this.renameFileTriggerCnt = 0;
     
     if(figCapElement){
