@@ -1510,6 +1510,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(!this.isMultiSelectActive){
       this.isMultiSelectEnabled = false;
 
+      DesktopIconAlignmentHelper.preCloneDesktopIcon(id);
       if(this.markedBtnIds.includes(String(id))){
         this.setMultiSelectStyleOnBtn(id, true);
       } else{
@@ -1522,11 +1523,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.isMultiSelectEnabled = true;
 
     if(!this.isMultiSelectActive){
+
+      DesktopIconAlignmentHelper.clearPreClonedIcons();
       if(id != this.selectedElementId){
         if(this.markedBtnIds.includes(String(id))){
           this.setMultiSelectStyleOnBtn(id, false);
         } else{
           DesktopHelper.removeBtnStyle(id);
+          DesktopIconAlignmentHelper.clearPreClonedIconById(id);
         }
       }
       else if((id === this.selectedElementId) && !this.isIconInFocusDueToPriorAction){
@@ -1570,8 +1574,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const btnIcons = document.querySelectorAll('.desktopIcon-multi-select-highlight');
     btnIcons.forEach(btnIcon => {
       const btnId = btnIcon.id.replace('iconBtn', Constants.EMPTY_STRING);
-      if(!this.markedBtnIds.includes(btnId))
+      if(!this.markedBtnIds.includes(btnId)){
         this.markedBtnIds.push(btnId);
+        DesktopIconAlignmentHelper.preCloneDesktopIcon(Number(btnId))
+      }
     });
     console.log('this.markedBtnIds:', this.markedBtnIds);
   }
@@ -1583,6 +1589,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         btnIcon.classList.remove('desktopIcon-multi-select-highlight');
       }
       DesktopHelper.removeBtnStyle(Number(id));
+      DesktopIconAlignmentHelper.clearPreClonedIconById(Number(id));
     })
   }
 
@@ -1748,7 +1755,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       cloneIcon.innerHTML = Constants.EMPTY_STRING;
   }
   
-  onDragStart(evt:DragEvent, i: number): void {
+  async onDragStart(evt:DragEvent, i: number): Promise<void> {
 
     // Get the cloneIcon container
     const elementId = 'desktopIcon_clone_cntnr';
@@ -1759,7 +1766,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const draggedElmtId = DesktopIconAlignmentHelper.handleDragStart(evt, i, countOfMarkedBtns, this.markedBtnIds,
        this.files, this._fileService);
        
-    this.draggedElementId = draggedElmtId;
+    this.draggedElementId = await draggedElmtId;
   }
   
   moveBtnIconsToNewPositionAlignOff(mPos:mousePosition):void{

@@ -8,6 +8,7 @@
         (mousedown)="activateMultiSelect($event)"
         (mouseup)="deActivateMultiSelect()"
         (mousemove)="updateDivWithAndSize($event)" id="desktopIcon_ol"> 
+        
         <li class="li-desktopIcon-container" *ngFor="let file of files; let i = index" id="desktopIcon_li{{i}}">
             <div role="button" tabindex="0" class="desktopIcon-btn" 
             (dblclick)="runApplication(file)" 

@@ -105,12 +105,12 @@ export namespace DesktopHelper {
        divElmnt.style.border = '1px solid #047cd4';
        divElmnt.style.backdropFilter = 'blur(5px)';
        if(isShow){
-         divElmnt.style.zIndex = '2';
-         divElmnt.style.display =  'block';
-       }else{
-         divElmnt.style.zIndex = '0';
-         divElmnt.style.display =  'none';
-       }
+            divElmnt.style.zIndex = '2';
+            divElmnt.style.display =  'block';
+        }else{
+            divElmnt.style.zIndex = '0';
+            divElmnt.style.display =  'none';
+        }
     }
 
    export const  highlightSelectedItems= (initX: number, initY: number, width: number, height: number): void=>{

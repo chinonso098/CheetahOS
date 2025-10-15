@@ -11,6 +11,8 @@
     background-color: #00adef;
 }
 
+/*Screen shot start*/
+
 .dsktp-screenshot__container{
     display: block;
     z-index: 2;
@@ -120,6 +122,9 @@
     position: relative;
 }
 
+/*Screen shot end*/
+
+/*Desktop Icon Start*/
 .ol-desktopIcon-grid{
     /* column-gap: 1px; */
     position: relative;
@@ -228,7 +233,6 @@
     width: 90px;
 }
 
-
 .desktopIcon-rename-form, .desktopIcon-rename-textbox{
     position: relative;
     display: none;
@@ -248,7 +252,28 @@
     border: 1px solid #ccc;
     overflow:hidden;
     resize: none;
- }
+}
+
+
+.desktopIcon-clone-container{
+    width: fit-content;
+    height: fit-content;
+    z-index:  3;
+    position: absolute;
+}
+
+
+.desktopIcon-multi-select-highlight {
+    background-color: rgba(0, 150, 255, 0.3);
+    border: 1px solid hsla(0,0%,50%,25%);
+}
+
+.li-desktop-container, .desktopIcon-btn, .dsktp-figure {
+    margin: 0;
+    padding: 0;
+}
+
+/*Desktop Icon End*/
 
 .tool-tip-container{
     position: absolute;
@@ -288,23 +313,6 @@
     border-color: #FFFFFF transparent transparent transparent; 
     left: 20px;
     transform: rotate(180deg);
-}
-
-.desktopIcon-clone-container{
-    width: fit-content;
-    height: fit-content;
-    z-index:  3;
-    position: absolute;
-}
-
-.desktopIcon-multi-select-highlight {
-    background-color: rgba(0, 150, 255, 0.3);
-    border: 1px solid hsla(0,0%,50%,25%);
-}
-
-.li-desktop-container, .desktopIcon-btn, .dsktp-figure {
-    margin: 0;
-    padding: 0;
 }
 
 .tskbar-tooltip-container{
