@@ -798,26 +798,26 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   viewBy(viewBy:string):void{
     if(viewBy === IconsSizes.LARGE_ICONS){
-      this.isLargeIcon = true;
-      this.isMediumIcon = false;
-      this.isSmallIcon = false;
+      this.setViewBy(true, false, false);
     }
 
     if(viewBy === IconsSizes.MEDIUM_ICONS){
-      this.isMediumIcon = true;
-      this.isLargeIcon = false;
-      this.isSmallIcon = false;
+      this.setViewBy(false, true, false);
     }
 
     if(viewBy === IconsSizes.SMALL_ICONS){
-      this.isSmallIcon = true;
-      this.isMediumIcon = false;
-      this.isLargeIcon = false;
+      this.setViewBy(false, false, true);
     }
 
     this.changeIconsSize(viewBy);
     this.changeGridRowColSize();
     this.getDesktopMenuData();
+  }
+
+  setViewBy(isLargeIcon:boolean, isMediumIcon:boolean, isSmallIcon:boolean):void{
+    this.isLargeIcon = isLargeIcon;
+    this.isMediumIcon = isMediumIcon;
+    this.isSmallIcon = isSmallIcon;
   }
 
   sortByNameM():void{
@@ -836,35 +836,30 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   sortBy(sortBy:string):void{
     if(sortBy === SortBys.DATE_MODIFIED){
-      this.isSortByDateModified = true;
-      this.isSortByItemType = false;
-      this.isSortByName = false;
-      this.isSortBySize = false;
+      this.setSortBy(true, false, false, false);
     }
 
     if(sortBy === SortBys.ITEM_TYPE){
-      this.isSortByItemType = true;
-      this.isSortByDateModified = false;
-      this.isSortByName = false;
-      this.isSortBySize = false;
-    }
-
-    if(sortBy === SortBys.SIZE){
-      this.isSortBySize  = true;
-      this.isSortByItemType = false;
-      this.isSortByName = false;
-      this.isSortByDateModified = false;
+      this.setSortBy(false, true, false, false);
     }
 
     if(sortBy === SortBys.NAME){
-      this.isSortByName  = true;
-      this.isSortByItemType = false;
-      this.isSortByDateModified = false;
-      this.isSortBySize = false;
+      this.setSortBy(false, false, true, false);
+    }
+
+    if(sortBy === SortBys.SIZE){
+      this.setSortBy(false, false, false, true);
     }
 
     this.sortIcons(sortBy);
     this.getDesktopMenuData();
+  }
+
+  setSortBy(isSortByDateModified:boolean, isSortByItemType:boolean, isSortByName:boolean, isSortBySize:boolean):void{
+    this.isSortByDateModified = isSortByDateModified;
+    this.isSortByItemType = isSortByItemType;
+    this.isSortByName = isSortByName;
+    this.isSortBySize = isSortBySize;
   }
 
   async autoArrangeIcon():Promise<void>{
