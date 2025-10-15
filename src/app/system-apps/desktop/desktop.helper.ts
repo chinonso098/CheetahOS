@@ -1,4 +1,8 @@
-import { GeneralMenu, MenuPosition } from "src/app/shared/system-component/menu/menu.types";
+import { GeneralMenu, MenuPosition, NestedMenuItem } from "src/app/shared/system-component/menu/menu.types";
+import { ActivityHistoryService } from "src/app/shared/system-service/activity.tracking.service";
+import { ProcessHandlerService } from "src/app/shared/system-service/process.handler.service";
+import { ActivityType } from "src/app/system-files/common.enums";
+import { CommonFunctions } from "src/app/system-files/common.functions";
 import { Constants } from "src/app/system-files/constants";
 import { FileInfo } from "src/app/system-files/file.info";
 
@@ -6,106 +10,9 @@ import { FileInfo } from "src/app/system-files/file.info";
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DesktopHelper {
 
-
-    export const checkAndHandleDesktopCntxtMenuBounds =(evt:MouseEvent, menuHeightInput:number, menuWidthInput:number):[MenuPosition, boolean] =>{
-
-        let xAxis = 0;
-        let yAxis = 0;
-        const menuWidth = menuWidthInput;
-        const menuHeight = menuHeightInput;
-        const subMenuWidth = 205;
-        const taskBarHeight = 40;
-
-        let isShiftSubMenuLeft = false;
-    
-        const mainWindow = document.getElementById('vantaCntnr');
-        const windowWidth =  mainWindow?.offsetWidth || 0;
-        const windowHeight =  mainWindow?.offsetHeight || 0;
-    
-        const horizontalDiff =  windowWidth - evt.clientX;
-        const verticalDiff = windowHeight - evt.clientY;
-    
-        let horizontalShift = false;
-        let verticalShift = false;
-    
-        if((horizontalDiff) < menuWidth){
-          horizontalShift = true;
-          const diff = menuWidth - horizontalDiff;
-          xAxis = evt.clientX - diff;
-        }
-    
-        if((horizontalDiff) < (menuWidth + subMenuWidth)){
-          //this.isShiftSubMenuLeft = true;
-          isShiftSubMenuLeft = true;
-        }
-    
-        if((verticalDiff) >= taskBarHeight && (verticalDiff) <= menuHeight){
-          const shifMenuUpBy = menuHeight - verticalDiff;
-          verticalShift = true;
-          yAxis = evt.clientY - shifMenuUpBy - taskBarHeight;
-        }
-        
-        xAxis = (horizontalShift)? xAxis : evt.clientX;
-        yAxis = (verticalShift)? yAxis : evt.clientY;
-     
-        return [{xAxis, yAxis}, isShiftSubMenuLeft];
-    }
-    
-
-    export const adjustIconContextMenuData =(file:FileInfo, sourceData: GeneralMenu[]): [GeneralMenu[], string]=>{
-        let menuData = [];
-        let menuOrder = Constants.EMPTY_STRING;
-        if(file.getIsFile){
-            //files can not be opened in terminal, pinned to start, opened in new window, or pin to Quick access
-            menuOrder = Constants.DEFAULT_FILE_MENU_ORDER;
-            for(const x of sourceData) {
-              if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Pin to Start' || x.label === 'Empty Recycle Bin'){ /*nothing*/}
-              else{
-                menuData.push(x);
-              }
-            }
-        }else{
-          if(file.getCurrentPath === Constants.RECYCLE_BIN_PATH){ 
-            menuOrder = Constants.RECYCLE_BIN_MENU_ORDER;
-            for(const x of sourceData){
-              if(x.label === 'Open' || x.label === 'Empty Recycle Bin' || x.label === 'Create shortcut'){ 
-                menuData.push(x);
-              }
-            }
-          }else{
-            menuOrder = Constants.DEFAULT_FOLDER_MENU_ORDER;
-            menuData = sourceData.filter(x => x.label !== 'Empty Recycle Bin');
-          }
-        }
-
-        return [menuData, menuOrder]
-    }
-      
-
-    export const  checkAndHandleDesktopIconCntxtMenuBounds =(evt:MouseEvent, menuHeight:number):MenuPosition =>{
-        let yAxis = 0;
-        let verticalShift = false;
-    
-        const xAxis = 0;
-        const taskBarHeight = 40;
-        const mainWindow = document.getElementById('vantaCntnr');
-        const windowHeight =  mainWindow?.offsetHeight || 0;
-        const verticalSum = evt.clientY + menuHeight;
-    
-        console.log('verticalSum:', verticalSum);
-    
-        if(verticalSum >= windowHeight || (windowHeight - verticalSum) <= 40){
-          verticalShift = true;
-          const shifMenuUpBy = verticalSum - windowHeight;
-          yAxis = evt.clientY - (shifMenuUpBy + taskBarHeight);
-        }
-    
-        if(!verticalShift){
-          yAxis = evt.clientY;
-        }
-    
-        return {xAxis, yAxis};
-    }
+    let MARKDOWN_VIEWER_APP ="markdownviewer";
+    let CLIPPY_APP = "clippy";
+    let PHOTOS_APP = "photoviewer";
 
     export const removeBtnStyle =(id:number):void =>{
         const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
@@ -151,5 +58,114 @@ export namespace DesktopHelper {
           }
         }
     }
+
+    export const autoResize=(selectedElementId:number):void=> { //##
+        const renameTxtBoxElmt = document.getElementById(`renameTxtBox${selectedElementId}`) as HTMLTextAreaElement;
+        if(renameTxtBoxElmt){
+        renameTxtBoxElmt.style.height = 'auto'; // Reset the height
+        renameTxtBoxElmt.style.height = renameTxtBoxElmt.scrollHeight + 'px'; // Set new height
+        }
+    }
+
+    export const showInvalidCharsToolTip=(selectedElementId:number):void=>{
+        // get the position of the textbox
+        const toolTipID = 'invalidChars';
+        const invalidCharToolTipElement = document.getElementById(toolTipID) as HTMLElement;
+        const renameContainerElement= document.getElementById(`renameContainer${selectedElementId}`) as HTMLElement;
+
+        const rect = renameContainerElement.getBoundingClientRect();
+
+        if(invalidCharToolTipElement){
+            invalidCharToolTipElement.style.transform =`translate(${rect.x + 2}px, ${rect.y + 2}px)`;
+            invalidCharToolTipElement.style.zIndex = '3';
+            invalidCharToolTipElement.style.opacity = '1';
+            invalidCharToolTipElement.style.transition = 'opacity 0.5s ease';
+        }
+    }
+
+    export const hideInvalidCharsToolTip=():void=>{
+        const toolTipID = 'invalidChars';
+        const invalidCharToolTipElement = document.getElementById(toolTipID) as HTMLElement;
+
+        if(invalidCharToolTipElement){
+            invalidCharToolTipElement.style.transform =`translate(${-100000}px, ${100000}px)`;
+            invalidCharToolTipElement.style.zIndex = '-1';
+            invalidCharToolTipElement.style.opacity = '0';
+            invalidCharToolTipElement.style.transition = 'opacity 0.5s ease 1';
+        }
+   }
+
+    export const  setDivWithAndSize = (divElmnt:HTMLDivElement, initX:number, initY:number, width:number, height:number, isShow:boolean):void=>{
+   
+       divElmnt.style.position = 'absolute';
+       divElmnt.style.transform =  `translate(${initX}px , ${initY}px)`;
+       divElmnt.style.height =  `${height}px`;
+       divElmnt.style.width =  `${width}px`;
+   
+       divElmnt.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+       divElmnt.style.border = '1px solid #047cd4';
+       divElmnt.style.backdropFilter = 'blur(5px)';
+       if(isShow){
+         divElmnt.style.zIndex = '2';
+         divElmnt.style.display =  'block';
+       }else{
+         divElmnt.style.zIndex = '0';
+         divElmnt.style.display =  'none';
+       }
+    }
+
+
+   export const  highlightSelectedItems= (initX: number, initY: number, width: number, height: number): void=>{
+    const selectionRect = {
+        left: initX,
+        top: initY,
+        right: initX + width,
+        bottom: initY + height
+    };
+
+    const btnIcons = document.querySelectorAll('.desktopIcon-btn');
+    btnIcons.forEach((btnIcon) => {
+        const btnIconRect = btnIcon.getBoundingClientRect();
+
+        // Check if the item is inside the selection area
+        if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
+            btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
+            btnIcon.classList.add('desktopIcon-multi-select-highlight'); 
+        } else {
+            btnIcon.classList.remove('desktopIcon-multi-select-highlight');
+        }
+    });
+  }
+
+
+
+   export const  initializeApplication =(arg0:string, 
+    processHandlerService:ProcessHandlerService, 
+    activityHistoryService:ActivityHistoryService, screenShot?: FileInfo):void=>{
+
+    let file = new FileInfo();
+    const appPath = 'None';
+    file.setOpensWith = arg0;
+
+    if(arg0 ===  MARKDOWN_VIEWER_APP){
+      file.setCurrentPath = Constants.DESKTOP_PATH;
+      file.setContentPath = '/Users/Documents/Credits.md';
+    }
+
+    if(arg0 !== CLIPPY_APP){
+      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
+      CommonFunctions.trackActivity(activityHistoryService, activity);
+    }
+
+    if(arg0 === PHOTOS_APP){
+      file = (screenShot)? screenShot : new FileInfo();
+      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
+      CommonFunctions.trackActivity(activityHistoryService, activity);
+    }
+
+    processHandlerService.runApplication(file);
+  }
+
+
 
 }

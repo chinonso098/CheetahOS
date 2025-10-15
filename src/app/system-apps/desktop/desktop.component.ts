@@ -18,7 +18,7 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
 
-import { GeneralMenu, MenuPosition, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
+import { GeneralMenu, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import * as htmlToImage from 'html-to-image';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { dirname} from 'path';
@@ -32,8 +32,9 @@ import { UserNotificationService } from 'src/app/shared/system-service/user.noti
 import { VantaDefaults } from './vanta-object/vanta.defaults';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
-import { Activity } from 'src/app/system-files/common.interfaces';
+
 import { DesktopHelper } from './desktop.helper';
+import { DesktopContextMenuHelper } from './desktop.context.menu.helper';
 
 
 
@@ -155,6 +156,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showTskBarToolTipTimeoutId!: NodeJS.Timeout;
   clippyIntervalId!: NodeJS.Timeout;
   colorChgIntervalId!: NodeJS.Timeout;
+  invalidCharTimeOutId!: NodeJS.Timeout;
+  taskbarHideDelayTimeOutId !: NodeJS.Timeout;
 
   private readonly DESKTOP_SCREEN_SHOT_DIRECTORY ='/Users/Documents/Screen-Shots';
   private readonly TERMINAL_APP ="terminal";
@@ -462,7 +465,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   initClippy():void{
     if(this.showClippy){
       this.clippyIntervalId = setInterval(() =>{
-        this.initializeApplication(this.CLIPPY_APP);
+
+        DesktopHelper.initializeApplication(this.CLIPPY_APP, 
+          this._processHandlerService, this._activityHistoryService);
+
       }, this.CLIPPY_INIT_DELAY);
     }
   }
@@ -504,7 +510,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
       this._menuService.hideContextMenus.next();
       this.showDesktopCntxtMenu = true;
-      const result = DesktopHelper.checkAndHandleDesktopCntxtMenuBounds(evt, menuHeight, menuWidth);
+      const result = DesktopContextMenuHelper.checkAndHandleDesktopCntxtMenuBounds(evt, menuHeight, menuWidth);
       const axis = result[0];
       this.isShiftSubMenuLeft = result[1];
 
@@ -952,55 +958,30 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   openTerminal():void{
-    this.initializeApplication(this.TERMINAL_APP);
+    DesktopHelper.initializeApplication(this.TERMINAL_APP, this._processHandlerService, this._activityHistoryService);
   }
 
   openTextEditor():void{
-    this.initializeApplication(this.TEXT_EDITOR_APP);
+    DesktopHelper.initializeApplication(this.TEXT_EDITOR_APP, this._processHandlerService, this._activityHistoryService);
   }
 
   openCodeEditor():void{
-    this.initializeApplication(this.CODE_EDITOR_APP);
+    DesktopHelper.initializeApplication(this.CODE_EDITOR_APP, this._processHandlerService, this._activityHistoryService);
   }
 
   openMarkDownViewer():void{
-    this.initializeApplication(this.MARKDOWN_VIEWER_APP);
+    DesktopHelper.initializeApplication(this.MARKDOWN_VIEWER_APP, this._processHandlerService, this._activityHistoryService);
   }
 
   openTaskManager():void{
-    this.initializeApplication(this.TASK_MANAGER_APP);
+    DesktopHelper.initializeApplication(this.TASK_MANAGER_APP, this._processHandlerService, this._activityHistoryService);
   }
 
   async openPhotos(): Promise<void>{
     const delay = 1000;
     this.showDesktopScreenShotPreview = false;
-
     await CommonFunctions.sleep(delay);
-    this.initializeApplication(this.PHOTOS_APP);
-  }
-
-  initializeApplication(arg0:string):void{
-    let file = new FileInfo();
-    const appPath = 'None';
-    file.setOpensWith = arg0;
-
-    if(arg0 ===  this.MARKDOWN_VIEWER_APP){
-      file.setCurrentPath = Constants.DESKTOP_PATH;
-      file.setContentPath = '/Users/Documents/Credits.md';
-    }
-
-    if(arg0 !== this.CLIPPY_APP){
-      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
-      CommonFunctions.trackActivity(this._activityHistoryService, activity);
-    }
-
-    if(arg0 === this.PHOTOS_APP){
-      file = this.screenShot;
-      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
-      CommonFunctions.trackActivity(this._activityHistoryService, activity);
-    }
-
-    this._processHandlerService.runApplication(file);
+    DesktopHelper.initializeApplication(this.PHOTOS_APP, this._processHandlerService, this._activityHistoryService, this.screenShot);
   }
 
   buildViewByMenu():NestedMenuItem[]{
@@ -1205,7 +1186,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const taskBarHeight = 40;
     this.showTskBarCntxtMenu = true;
 
-    const result = DesktopHelper.checkAndHandleDesktopCntxtMenuBounds(evt, menuHeight, menuWidth);  
+    const result = DesktopContextMenuHelper.checkAndHandleDesktopCntxtMenuBounds(evt, menuHeight, menuWidth);  
     const axis = result[0];
     this.isShiftSubMenuLeft = result[1];
     
@@ -1316,10 +1297,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.hideTaskBarAppIconMenu();
 
     if(this.previousDisplayedTaskbarPreview !== appName){
+      if(this.taskbarHideDelayTimeOutId){
+        clearTimeout(this.taskbarHideDelayTimeOutId);
+      }
       this.showTskBarPreviewWindow = false;
       this.previousDisplayedTaskbarPreview = appName;
 
-      setTimeout(()=>{
+      this.taskbarHideDelayTimeOutId =  setTimeout(()=>{
         this.showTskBarPreviewWindow = true;
         this.tskBarPreviewWindowState = 'in';
       },taskbarHideDelay);
@@ -1446,7 +1430,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._runningProcessService.addEventOriginator(uid);
     this._menuService.hideContextMenus.next();
 
-    const result = DesktopHelper.adjustIconContextMenuData(file ,this.sourceData);
+    const result = DesktopContextMenuHelper.adjustIconContextMenuData(file ,this.sourceData);
     this.menuData = result[0];
     this.menuOrder = result[1];
 
@@ -1457,7 +1441,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     // show IconContexMenu is still a btn click, just a different type
     this.doBtnClickThings(id);
 
-    const axis = DesktopHelper.checkAndHandleDesktopIconCntxtMenuBounds(evt, menuHeight);
+    const axis = DesktopContextMenuHelper.checkAndHandleDesktopIconCntxtMenuBounds(evt, menuHeight);
     this.iconCntxtMenuStyle = {
       'position':'absolute',
       'transform':`translate(${String(evt.clientX + 2)}px, ${String(axis.yAxis)}px)`,
@@ -1471,7 +1455,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.showPropertiesView.next(this.propertiesViewFile);
   }
   
-
   doNothing():void{
     console.log('do nothing called');
   }
@@ -1700,7 +1683,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
   deActivateMultiSelect():void{ 
     if(this.multiSelectElmnt){
-      this.setDivWithAndSize(this.multiSelectElmnt, 0, 0, 0, 0, false);
+      DesktopHelper.setDivWithAndSize(this.multiSelectElmnt, 0, 0, 0, 0, false);
     }
 
     this.multiSelectElmnt = null;
@@ -1729,52 +1712,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       const divWidth = Math.abs(startingXPoint - currentXPoint);
       const divHeight = Math.abs(startingYPoint - currentYPoint);
 
-      this.setDivWithAndSize(this.multiSelectElmnt, startX, startY, divWidth, divHeight, true);
+      DesktopHelper.setDivWithAndSize(this.multiSelectElmnt, startX, startY, divWidth, divHeight, true);
 
       // Call function to check and highlight selected items
-      this.highlightSelectedItems(startX, startY, divWidth, divHeight);
+      DesktopHelper.highlightSelectedItems(startX, startY, divWidth, divHeight);
     }
-  }
-
-  setDivWithAndSize(divElmnt:HTMLDivElement, initX:number, initY:number, width:number, height:number, isShow:boolean):void{
-
-    divElmnt.style.position = 'absolute';
-    divElmnt.style.transform =  `translate(${initX}px , ${initY}px)`;
-    divElmnt.style.height =  `${height}px`;
-    divElmnt.style.width =  `${width}px`;
-
-    divElmnt.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
-    divElmnt.style.border = '1px solid #047cd4';
-    divElmnt.style.backdropFilter = 'blur(5px)';
-    if(isShow){
-      divElmnt.style.zIndex = '2';
-      divElmnt.style.display =  'block';
-    }else{
-      divElmnt.style.zIndex = '0';
-      divElmnt.style.display =  'none';
-    }
-  }
-  
-  highlightSelectedItems(initX: number, initY: number, width: number, height: number): void {
-    const selectionRect = {
-        left: initX,
-        top: initY,
-        right: initX + width,
-        bottom: initY + height
-    };
-
-    const btnIcons = document.querySelectorAll('.desktopIcon-btn');
-    btnIcons.forEach((btnIcon) => {
-        const btnIconRect = btnIcon.getBoundingClientRect();
-
-        // Check if the item is inside the selection area
-        if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
-            btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
-            btnIcon.classList.add('desktopIcon-multi-select-highlight'); 
-        } else {
-            btnIcon.classList.remove('desktopIcon-multi-select-highlight');
-        }
-    });
   }
 
   onDragEnd(evt:DragEvent):void{
@@ -2117,6 +2059,10 @@ OpensWith=${file.getOpensWith}
     const regexStr = '^[a-zA-Z0-9_.\\s-]+$';
     const key = evt.key;
 
+    if(this.invalidCharTimeOutId){
+      clearTimeout(this.invalidCharTimeOutId);
+    }
+
     // Block enter
     if (key === 'Enter') {
       evt.preventDefault();
@@ -2127,53 +2073,17 @@ OpensWith=${file.getOpensWith}
     }
 
     const isValid = new RegExp(regexStr).test(key);
-
     if (isValid) {
-      this.hideInvalidCharsToolTip();
-      this.autoResize();
+      DesktopHelper.hideInvalidCharsToolTip();
+      DesktopHelper.autoResize(this.selectedElementId);
       return true;
     } else {
-      this.showInvalidCharsToolTip();
-      setTimeout(() => this.hideInvalidCharsToolTip(), this.SECONDS_DELAY[0]);
+      DesktopHelper.showInvalidCharsToolTip(this.selectedElementId);
+      this.invalidCharTimeOutId = setTimeout(() => DesktopHelper.hideInvalidCharsToolTip(), this.SECONDS_DELAY[0]);
       return false;
     }
   }
 
-  autoResize() { //##
-    const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.selectedElementId}`) as HTMLTextAreaElement;
-    if(renameTxtBoxElmt){
-      renameTxtBoxElmt.style.height = 'auto'; // Reset the height
-      renameTxtBoxElmt.style.height = renameTxtBoxElmt.scrollHeight + 'px'; // Set new height
-    }
-  }
-
-  showInvalidCharsToolTip():void{
-    // get the position of the textbox
-    const toolTipID = 'invalidChars';
-    const invalidCharToolTipElement = document.getElementById(toolTipID) as HTMLElement;
-    const renameContainerElement= document.getElementById(`renameContainer${this.selectedElementId}`) as HTMLElement;
-
-    const rect = renameContainerElement.getBoundingClientRect();
-
-    if(invalidCharToolTipElement){
-      invalidCharToolTipElement.style.transform =`translate(${rect.x + 2}px, ${rect.y + 2}px)`;
-      invalidCharToolTipElement.style.zIndex = '3';
-      invalidCharToolTipElement.style.opacity = '1';
-      invalidCharToolTipElement.style.transition = 'opacity 0.5s ease';
-    }
-  }
-
-  hideInvalidCharsToolTip():void{
-    const toolTipID = 'invalidChars';
-    const invalidCharToolTipElement = document.getElementById(toolTipID) as HTMLElement;
-
-    if(invalidCharToolTipElement){
-      invalidCharToolTipElement.style.transform =`translate(${-100000}px, ${100000}px)`;
-      invalidCharToolTipElement.style.zIndex = '-1';
-      invalidCharToolTipElement.style.opacity = '0';
-      invalidCharToolTipElement.style.transition = 'opacity 0.5s ease 1';
-    }
-  }
   
   isFormDirty():void{
     if (this.renameForm.dirty){
