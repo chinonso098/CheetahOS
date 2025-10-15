@@ -1523,8 +1523,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.isMultiSelectEnabled = true;
 
     if(!this.isMultiSelectActive){
-
-      DesktopIconAlignmentHelper.clearPreClonedIcons();
       if(id != this.selectedElementId){
         if(this.markedBtnIds.includes(String(id))){
           this.setMultiSelectStyleOnBtn(id, false);

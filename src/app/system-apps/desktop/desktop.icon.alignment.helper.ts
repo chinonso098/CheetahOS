@@ -33,17 +33,17 @@ export namespace DesktopIconAlignmentHelper {
     }
   }
 
-  export const clearPreClonedIcons = ():void=>{  cloneList = []}
+  //export const clearPreClonedIcons = ():void=>{  cloneList = []}
 
   export const clearPreClonedIconById = (id:number):void=>{
 
-
+    console.log('What is in cloneList Before:', cloneList);
     //const deleteCount = 1;
     const idx = cloneIdList.findIndex(x => x === id);
     cloneIdList = cloneIdList.filter((_, index) => index !== idx);
     cloneList = cloneList.filter((_, index) => index !== idx);
 
-    console.log('What is in cloneList:', cloneList);
+    console.log('What is in cloneList After:', cloneList);
 
     // if(idx !== -1){
     //   cloneIdList = cloneIdList.splice(idx, deleteCount);
@@ -61,8 +61,6 @@ export namespace DesktopIconAlignmentHelper {
       // Get the cloneIcon container
       const elementId = 'desktopIcon_clone_cntnr';
       const cloneIcon = document.getElementById(elementId);
-
-      let counter = 0;
       let draggedElementId = -1;
   
       if(cloneIcon){
@@ -70,57 +68,40 @@ export namespace DesktopIconAlignmentHelper {
         cloneIcon.innerHTML = Constants.EMPTY_STRING;
         if(countOfMarkedBtns <= 1){
           draggedElementId = i;
-
-          // const srcIconElmnt = document.getElementById(`iconBtn${i}`) as HTMLElement;
-          // cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
   
           cloneList.forEach(clone =>{
             cloneIcon.appendChild(clone);
           });
 
-          // Move it out of view initially
-          cloneIcon.style.left = '-9999px';  
-          cloneIcon.style.opacity = '0.2';
-  
           const file = files[i];
           if(file)
             fileService.addDragAndDropFile(file);
-      
-          // Set the cloned icon as the drag image
-          if (evt.dataTransfer) {
-            evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
-          }
         }else{
-          markedBtnIds.forEach(id =>{
-            const srcIconElmnt = document.getElementById(`iconBtn${id}`) as HTMLElement;
-            const spaceDiv = document.createElement('div');
-  
-            // Add create an empty div that will be used for spacing between each cloned icon
-            spaceDiv.setAttribute('id', `spacediv${id}`);
-            spaceDiv.style.transform =  'translate(0, 0)';
-            spaceDiv.style.width =  'fit-content';
-            spaceDiv.style.height =  '20px';
-  
-            //cloneIcon.appendChild(srcIconElmnt.cloneNode(true));
-            console.log('What is in cloneList:', cloneList);
-            cloneIcon.appendChild(cloneList[Number(id)])
-            if(counter !== countOfMarkedBtns - 1)
-              cloneIcon.appendChild(spaceDiv);
-  
-            counter++;
-  
-            const file = files[Number(id)];
+
+          cloneIdList.forEach(id =>{
+            const file = files[id];
             if(file)
               fileService.addDragAndDropFile(file);
           });
-  
-          cloneIcon.style.left = '-9999px';  // Move it out of view initially
-          cloneIcon.style.opacity = '0.2';
-  
-          // Set the cloned icon as the drag image
-          if (evt.dataTransfer) {
-            evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
-          }
+
+          cloneList.forEach((clone, idx) =>{
+            cloneIcon.appendChild(clone);
+
+            if(idx !== countOfMarkedBtns - 1){
+              const spacer = document.createElement('div');
+              spacer.style.height = '20px';
+              cloneIcon.appendChild(spacer);
+            }
+          });
+        }
+
+        // Move it out of view initially
+        cloneIcon.style.left = '-9999px';  
+        cloneIcon.style.opacity = '0.2';
+
+        // Set the cloned icon as the drag image
+        if (evt.dataTransfer) {
+          evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
         }
       }
 
