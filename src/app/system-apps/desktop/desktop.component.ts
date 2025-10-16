@@ -850,24 +850,41 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.autoArrangeIcons = !this.autoArrangeIcons;
     if(this.autoArrangeIcons){
       // clear (x,y) position of icons in memory
-      await this.refresh();
+      const trueRefresh = false;
+      await this.refresh(trueRefresh);
     }
     this.getDesktopMenuData();
   }
 
-  autoAlignIcon():void{
+  async autoAlignIcon():Promise<void>{
     this.autoAlignIcons = !this.autoAlignIcons
     if(this.autoAlignIcons){
-
       DesktopIconAlignmentHelper.correctMisalignedIcons(this.movedBtnIds,
         this.GRID_SIZE, this.ROW_GAP);
+
+      const trueRefresh = false;
+      await this.refresh(trueRefresh);
     }
     this.getDesktopMenuData();
   }
 
-  async refresh():Promise<void>{
+  async refresh(trueRefresh = true):Promise<void>{
     this.isIconInFocusDueToPriorAction = false;
-    await this.loadFiles();
+
+
+    if(trueRefresh)
+      await this.loadFiles();
+    else{
+      const delay = 25;
+      let tmpFiles:FileInfo[] = [];
+
+      tmpFiles.push(...this.files);
+      this.files = [];
+
+      await CommonFunctions.sleep(delay);
+      this.files.push(...tmpFiles);
+      tmpFiles = [];
+    }
   }
 
   hideDesktopIcon():void{
@@ -878,7 +895,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   showDesktopIcon():void{
     this.showDesktopIcons = true;
-      this.btnStyle ={'display': 'block',  }
+    this.btnStyle ={'display': 'block', }
     this.getDesktopMenuData();
   }
 
@@ -956,7 +973,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async openPhotos(): Promise<void>{
-    const delay = 1000;
+    const delay = 1000; //1 sec
     this.showDesktopScreenShotPreview = false;
     await CommonFunctions.sleep(delay);
     DesktopGeneralHelper.initializeApplication(this.PHOTOS_APP, this._processHandlerService, this._activityHistoryService, this.screenShot);
@@ -964,44 +981,21 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   buildViewByMenu():NestedMenuItem[]{
 
-    const smallIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Small icons',  action: this.viewBySmallIcon.bind(this),  variables:this.isSmallIcon, 
-      emptyline:false, styleOption:'A' }
-
-    const mediumIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Medium icons',  action: this.viewByMediumIcon.bind(this),  variables:this.isMediumIcon, 
-      emptyline:false, styleOption:'A' }
-
-    const largeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Large icons', action: this.viewByLargeIcon.bind(this), variables:this.isLargeIcon,
-      emptyline:true, styleOption:'A' }
-
-    const autoArrageIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Auto arrange icons',  action: this.autoArrangeIcon.bind(this),  variables:this.autoArrangeIcons, 
-      emptyline:false, styleOption:'B' }
-
-    const autoAlign:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Align icons to grid',  action: this.autoAlignIcon.bind(this),  variables:this.autoAlignIcons, 
-      emptyline:true, styleOption:'B' }
-
-    const showDesktopIcons:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Show desktop icons',  action: this.showDesktopIcon.bind(this), variables:this.showDesktopIcons,
-      emptyline:false,  styleOption:'B' }
-
-    const viewByMenu = [smallIcon,mediumIcon,largeIcon, autoArrageIcon, autoAlign,showDesktopIcons];
+    const funct = (this.showDesktopIcons) ? this.hideDesktopIcon.bind(this) : this.showDesktopIcon.bind(this);
+    const viewByMenu = DesktopGeneralHelper.handleBuildViewByMenu(this.viewBySmallIcon.bind(this), this.isSmallIcon,
+    this.viewByMediumIcon.bind(this), this.isMediumIcon, this.viewByLargeIcon.bind(this),  this.isLargeIcon,
+    this.autoArrangeIcon.bind(this),  this.autoArrangeIcons, this.autoAlignIcon.bind(this), this.autoAlignIcons,
+    funct, this.showDesktopIcons);
 
     return viewByMenu;
   }
 
   buildSortByMenu(): NestedMenuItem[]{
 
-    const sortByName:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Name',  action: this.sortByNameM.bind(this),  variables:this.isSortByName , 
-      emptyline:false, styleOption:'A' }
-
-    const sortBySize:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Size',  action: this.sortBySizeM.bind(this),  variables:this.isSortBySize , 
-      emptyline:false, styleOption:'A' }
-
-    const sortByItemType:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Item type',  action: this.sortByItemTypeM.bind(this),  variables:this.isSortByItemType, 
-      emptyline:false, styleOption:'A' }
-
-    const sortByDateModified:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Date modified',  action: this.sortByDateModifiedM.bind(this),  variables:this.isSortByDateModified, 
-      emptyline:false, styleOption:'A' }
-
-    const sortByMenu = [sortByName, sortBySize, sortByItemType, sortByDateModified];
+    const sortByMenu = DesktopGeneralHelper.hanldeBuildSortByMenu(this.sortByNameM.bind(this),  this.isSortByName,
+    this.sortBySizeM.bind(this), this.isSortBySize,
+    this.sortByItemTypeM.bind(this),  this.isSortByItemType,
+    this.sortByDateModifiedM.bind(this), this.isSortByDateModified);
 
     return sortByMenu
   }
