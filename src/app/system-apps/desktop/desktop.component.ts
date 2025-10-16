@@ -37,6 +37,7 @@ import { DesktopGeneralHelper } from './desktop.general.helper';
 import { DesktopContextMenuHelper } from './desktop.context.menu.helper';
 import { DesktopIconAlignmentHelper } from './desktop.icon.alignment.helper';
 import { DesktopStyleHelper } from './desktop.style.helper';
+import { DragEventInfo } from 'src/app/system-files/common.interfaces';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 //  animate('1750ms ease-out')
@@ -116,6 +117,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   isShiftSubMenuLeft = false;
   isTaskBarHidden = false;
   isTaskBarTemporarilyVisible = false;
+  isDragFromDesktopActive = false;
 
   autoAlignIcons = true;
   autoArrangeIcons = true;
@@ -287,6 +289,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'desktop';
   processId = 0;
+  uniqueId = Constants.EMPTY_STRING;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   directory = Constants.DESKTOP_PATH;
@@ -367,6 +370,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   ngOnInit():void{
+    this.uniqueId = `${this.name}-${this.processId}`;
     this.renameForm = this._formBuilder.nonNullable.group({
       renameInput: Constants.EMPTY_STRING,
     });
@@ -1346,17 +1350,66 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async onDrop(event:DragEvent):Promise<void>{
     event.preventDefault();
+    event.stopPropagation();
+  
+    const dragInfo = this._systemNotificationServices.getDragEventInfo();
+    if(dragInfo && dragInfo.Origin.includes(Constants.FILE_EXPLORER)){
 
-    const droppedFiles:File[] = [];
-    if(event?.dataTransfer?.files){
-      // eslint-disable-next-line no-unsafe-optional-chaining
-      droppedFiles.push(...event?.dataTransfer?.files);
+      this._fileService.addEventOriginator(this.name);
+      this._fileService.setFileDropEventTriggeredFlag(true);
+      const files = this._fileService.getDragAndDropFile();
+      if (!files?.length) return;
+
+      const delay = 50; //50ms
+      const destPath = this.directory;
+      const moveResults:Promise<boolean>[] = [];
+
+      // Move all files concurrently
+      for (const file of files) {
+        const srcPath = file.getCurrentPath;
+        moveResults.push(
+          this._fileService.moveAsync(srcPath, destPath, file.getIsFile)
+        );
+      }
+
+      // Wait for all moves to complete
+      const results = await Promise.all(moveResults);
+      //const allSucceeded = moveResults.every(value => value === true);
+      const allSucceeded = results.every(Boolean);
+
+      if(!allSucceeded){
+        console.error('One or more move operations failed');
+        return;
+      }
+
+      const cameFromFileExplr = files.some(f => !f.getCurrentPath.includes(Constants.DESKTOP_PATH));
+      if(cameFromFileExplr){
+        this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
+        this._fileService.dirFilesUpdateNotify.next();
+        await CommonFunctions.sleep(delay)
+      }
+
+      this._systemNotificationServices.removeDragEventInfo();
+      await this.refresh();
+      return;
     }
-    
-    if(droppedFiles.length >= 1){
-      const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
-      if(result){
-        await this.refresh();
+
+
+    if (!DesktopGeneralHelper.conditionalDrop(event)  && this.isDragFromDesktopActive) {
+      console.warn('Drop failed due to condition.');
+      return;
+    }else{
+      const droppedFiles:File[] = [];
+      if(event?.dataTransfer?.files){
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        droppedFiles.push(...event?.dataTransfer?.files);
+      }
+      
+      if(droppedFiles.length >= 1){
+        const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
+        if(result){
+          await this.refresh();
+        }
       }
     }
   }
@@ -1694,6 +1747,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   onDragEnd(evt:DragEvent):void{
+
+    console.log('onDrgaEnd -- DragEnd:', evt);
+    this.isDragFromDesktopActive = false;
+
     const elementId = 'desktopIcon_clone_cntnr'; // Get the cloneIcon container
     const mPos:mousePosition = {
       clientX: evt.clientX,
@@ -1725,6 +1782,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
   
   onDragStart(evt:DragEvent, i: number):void {
+    this.isDragFromDesktopActive = true;
+    const dragEvtInfo:DragEventInfo={Origin:this.uniqueId, CurrentLocation:Constants.EMPTY_STRING, isDragActive: this.isDragFromDesktopActive};
+    this._systemNotificationServices.setDropEventInfo(dragEvtInfo);
 
     const countOfMarkedBtns = this.getCountOfAllTheMarkedButtons();
     const draggedElmtId = DesktopIconAlignmentHelper.handleDragStart(evt, i, countOfMarkedBtns,

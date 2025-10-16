@@ -7,6 +7,7 @@
         (click)="handleIconHighLightState()"
         (mousedown)="activateMultiSelect($event)"
         (mouseup)="deActivateMultiSelect()"
+        (dragover)="onDragOver($event)" 
         (mousemove)="updateDivWithAndSize($event)" id="desktopIcon_ol"> 
         
         <li class="li-desktopIcon-container" *ngFor="let file of files; let i = index" id="desktopIcon_li{{i}}">
@@ -18,7 +19,6 @@
             (click)="onBtnClick($event, i)"
             (dragstart)="onDragStart($event, i)"
             (dragend)="onDragEnd($event)"
-            (dragover)="onDragOver($event)" 
             (mousedown)="onMouseDown($event, i)"
             id="iconBtn{{i}}"  [style]="btnStyle">
                 <div class="desktopIcon-img-section"  id="desktopIcon_fig{{i}}">

@@ -52,3 +52,9 @@ export interface ShortCut{
     contentPath:string;
     opensWith:string;
 }
+
+export interface DragEventInfo{
+    Origin:string;
+    CurrentLocation:string; /**When and where this information is retrieved,  */
+    isDragActive:boolean;
+}

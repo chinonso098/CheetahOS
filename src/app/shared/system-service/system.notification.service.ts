@@ -7,6 +7,7 @@ import { RunningProcessService } from "./running.process.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { BaseService } from "./base.service.interface";
+import { DragEventInfo } from "src/app/system-files/common.interfaces";
 
 
 @Injectable({
@@ -19,6 +20,7 @@ export class SystemNotificationService implements BaseService{
     private _processIdService:ProcessIDService;
     private _systemMessage = Constants.EMPTY_STRING;
     private _appIconNotificationStore:Map<number, string[]>; 
+    private _dragEventInfo:DragEventInfo | undefined = undefined;
     private _isScreenLocked = true;
     private _pwrDialogPID = 0;
 
@@ -71,6 +73,10 @@ export class SystemNotificationService implements BaseService{
         this._appIconNotificationStore.set(msgKey, msgValue);
     }
 
+    setDropEventInfo(dragInfo:DragEventInfo){
+        this._dragEventInfo = dragInfo;
+    }
+
     getAppIconNotication(msgKey:number):string[]{
         if(this._appIconNotificationStore.has(msgKey)){
             return this._appIconNotificationStore.get(msgKey) || [];
@@ -98,10 +104,18 @@ export class SystemNotificationService implements BaseService{
         return tmp;
     }
 
+    getDragEventInfo():DragEventInfo | undefined{
+        return this._dragEventInfo;
+    }
+
     removeAppIconNotication(msgKey:number):void{
         if(this._appIconNotificationStore.has(msgKey)){
             this._appIconNotificationStore.delete(msgKey);
         }
+    }
+
+    removeDragEventInfo():void{
+        this._dragEventInfo = undefined;
     }
 
     private getProcessDetail():Process{
