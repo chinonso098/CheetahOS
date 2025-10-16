@@ -25,6 +25,14 @@ export namespace DesktopIconAlignmentHelper {
   //   });
   // }
 
+  // export const clearPreClonedIconById = (id:number):void=>{
+  //   //const deleteCount = 1;
+  //   // if(idx !== -1){
+  //   //   cloneIdList = cloneIdList.splice(idx, deleteCount);
+  //   //   cloneList = cloneList.splice(idx, deleteCount);
+  //   // }
+  // }
+
   export const preCloneDesktopIcon = (btnId: number):void=>{
     if(!cloneIdList.includes(btnId)){
       const btnClone = cloneDesktopIcon(btnId);
@@ -36,25 +44,14 @@ export namespace DesktopIconAlignmentHelper {
   //export const clearPreClonedIcons = ():void=>{  cloneList = []}
 
   export const clearPreClonedIconById = (id:number):void=>{
-
-    console.log('What is in cloneList Before:', cloneList);
-    //const deleteCount = 1;
     const idx = cloneIdList.findIndex(x => x === id);
     cloneIdList = cloneIdList.filter((_, index) => index !== idx);
     cloneList = cloneList.filter((_, index) => index !== idx);
-
-    console.log('What is in cloneList After:', cloneList);
-
-    // if(idx !== -1){
-    //   cloneIdList = cloneIdList.splice(idx, deleteCount);
-    //   cloneList = cloneList.splice(idx, deleteCount);
-    // }
   }
   
   export const  handleDragStart = (evt:DragEvent, 
       i: number, 
       countOfMarkedBtns: number, 
-      markedBtnIds: string[],
       files:FileInfo[],
       fileService: FileService ): number =>{
     
@@ -69,13 +66,11 @@ export namespace DesktopIconAlignmentHelper {
         if(countOfMarkedBtns <= 1){
           draggedElementId = i;
   
-          cloneList.forEach(clone =>{
-            cloneIcon.appendChild(clone);
-          });
-
+          cloneList.forEach(clone =>{ cloneIcon.appendChild(clone);  });
           const file = files[i];
           if(file)
             fileService.addDragAndDropFile(file);
+          
         }else{
 
           cloneIdList.forEach(id =>{

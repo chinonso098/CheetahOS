@@ -33,11 +33,10 @@ import { VantaDefaults } from './vanta-object/vanta.defaults';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 
-import { DesktopHelper } from './desktop.helper';
+import { DesktopGeneralHelper } from './desktop.general.helper';
 import { DesktopContextMenuHelper } from './desktop.context.menu.helper';
 import { DesktopIconAlignmentHelper } from './desktop.icon.alignment.helper';
-
-
+import { DesktopStyleHelper } from './desktop.style.helper';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 //  animate('1750ms ease-out')
@@ -410,15 +409,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._vantaEffect?.destroy();
   }
 
-  onDragOver(event:DragEvent):void{
-    event.stopPropagation();
-    event.preventDefault();
-  }
-
   getDesktopBackgroundData():void{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND).split(Constants.COLON);
     this.desktopBackgroundType = defaultBkgrnd[0];
     this.desktopBackgroundValue = defaultBkgrnd[1];
+  }
+
+  loadPictureBackgrounds():void{
+
   }
 
   setStyle(desktopElmnt: HTMLDivElement, styleClasses:string[], activeClass:string) {
@@ -467,7 +465,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(this.showClippy){
       this.clippyIntervalId = setInterval(() =>{
 
-        DesktopHelper.initializeApplication(this.CLIPPY_APP, 
+        DesktopGeneralHelper.initializeApplication(this.CLIPPY_APP, 
           this._processHandlerService, this._activityHistoryService);
 
       }, this.CLIPPY_INIT_DELAY);
@@ -549,14 +547,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-
-
   showTheStartMenu():void{
     // I'm not sure why the delay is needed for the start menu to be displayed
     const Delay = 40;
-    setTimeout(()=>{
-      this.showStartMenu = true;
-    },Delay)
+    setTimeout(()=>{ this.showStartMenu = true; }, Delay);
   }
 
   hideTheStartMenu():void{
@@ -571,19 +565,24 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const colorOn = '#00adef';
 
     try{
-      this.changeMainDkstpBkgrndColor(colorOff);
+      DesktopStyleHelper.changeMainDkstpBkgrndColor(colorOff);
       //'#vanta > canvas'
       const dsktpCntnr = this.desktopContainer.nativeElement;
       const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
 
-      if (!dsktpCntnr || !canvasElmnt) {
+      if (!dsktpCntnr) {
         console.error('Desktop container or Vanta canvas not found.');
         return;
       }
 
+      console.log('canvasElmnt:', canvasElmnt);
+      if (!canvasElmnt) {
+        console.warn('Vanta canvas not found. Skipping Vanta');
+      }
+
       this.showDesktopScreenShotPreview = true;
       const finalImg = await this.mergeGeneratedImages(dsktpCntnr, canvasElmnt);
-      this.changeMainDkstpBkgrndColor(colorOn);
+      DesktopStyleHelper.changeMainDkstpBkgrndColor(colorOn);
 
       this.slideState = 'slideIn';
       this.dsktpPrevImg = finalImg;
@@ -603,7 +602,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     }catch (err){
       console.error('Screenshot capture failed:', err);
-      this.changeMainDkstpBkgrndColor(colorOn);
+      DesktopStyleHelper.changeMainDkstpBkgrndColor(colorOn);
       this.showDesktopScreenShotPreview = false;
     }
   }
@@ -613,22 +612,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.screenShot = new FileInfo();
   }
 
-  getScreenShotTimeStamp():string{
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    const seconds = now.getSeconds();
-    const ampm = (hours >= 12) ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
-    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-    //const formatted = now.toISOString().replace(/[:T]/g, '-').split('.')[0];
-
-    return `${formattedHours}_${formattedMinutes}_${seconds}_${ampm}`;
-  }
-
   private async saveGeneratedImage(finalImg:string): Promise<void>{
     this.screenShot = new FileInfo();
-    const timeStamp = this.getScreenShotTimeStamp();
+    const timeStamp = DesktopGeneralHelper.getScreenShotTimeStamp();
     const fileName = `Screenshot ${timeStamp}.png`;
     this.screenShot.setFileName = fileName;
     this.screenShot.setCurrentPath = `${this.DESKTOP_SCREEN_SHOT_DIRECTORY}/${fileName}`;
@@ -644,11 +630,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   private async mergeGeneratedImages(dsktpCntnr:HTMLElement, canvasElmnt:HTMLCanvasElement):Promise<string>{
     const htmlImg = await htmlToImage.toPng(dsktpCntnr);
-    const vantaImg = new Image();
-    const bkgrndImg =  canvasElmnt.toDataURL('image/png');
-    vantaImg.src = bkgrndImg;
-    await vantaImg.decode();
 
+    const vantaImg = new Image();
+    if(canvasElmnt){
+      const bkgrndImg =  canvasElmnt.toDataURL('image/png');
+      vantaImg.src = bkgrndImg;
+      await vantaImg.decode();
+    }
+  
     const foreGrndImg = new Image();
     foreGrndImg.src = htmlImg;
     await foreGrndImg.decode();
@@ -664,7 +653,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
 
     // 1. Draw the Vanta background image first.
-    ctx.drawImage(vantaImg, 0, 0, mergedImg.width, mergedImg.height);
+    if(canvasElmnt)
+      ctx.drawImage(vantaImg, 0, 0, mergedImg.width, mergedImg.height);
     
     // 2. Draw the HTML content on top of the background.
     ctx.drawImage(foreGrndImg, 0, 0, mergedImg.width, mergedImg.height);
@@ -673,12 +663,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     return mergedImg.toDataURL('image/png');
   }
 
-  private changeMainDkstpBkgrndColor(color: string): void {
-    const mainElmnt = document.getElementById('vantaCntnr') as HTMLElement;
-    if (mainElmnt) {
-      mainElmnt.style.backgroundColor = color;
-    }
-  }
 
   async createFolder():Promise<void>{
     const folderName = Constants.NEW_FOLDER;
@@ -888,17 +872,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   hideDesktopIcon():void{
     this.showDesktopIcons = false;
-    this.btnStyle ={
-        'display': 'none',
-    }
+    this.btnStyle ={ 'display': 'none', }
     this.getDesktopMenuData();
   }
 
   showDesktopIcon():void{
     this.showDesktopIcons = true;
-      this.btnStyle ={
-        'display': 'block',
-      }
+      this.btnStyle ={'display': 'block',  }
     this.getDesktopMenuData();
   }
 
@@ -906,7 +886,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(this.currentDesktopNum > this.MIN_NUMS_OF_DESKTOPS){
       this.currentDesktopNum--;
       const curNum = this.currentDesktopNum;
-      this.loadOtherBackgrounds(curNum);
+      this.loadOtherVantaBackgrounds(curNum);
     }
     this.hideDesktopContextMenuAndOthers();
   }
@@ -915,13 +895,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(this.currentDesktopNum < this.MAX_NUMS_OF_DESKTOPS){
       this.currentDesktopNum++;
       const curNum = this.currentDesktopNum;
-      this.loadOtherBackgrounds(curNum);
+      this.loadOtherVantaBackgrounds(curNum);
     }
     
     this.hideDesktopContextMenuAndOthers();
   }
 
-  loadOtherBackgrounds(i:number):void{
+  loadOtherVantaBackgrounds(i:number):void{
     this.removeOldCanvas();
     this._scriptService.loadScript(this.vantaBackgroundName[i], this.vantaBackGroundPath[i]).then(() =>{
 
@@ -956,30 +936,30 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   openTerminal():void{
-    DesktopHelper.initializeApplication(this.TERMINAL_APP, this._processHandlerService, this._activityHistoryService);
+    DesktopGeneralHelper.initializeApplication(this.TERMINAL_APP, this._processHandlerService, this._activityHistoryService);
   }
 
   openTextEditor():void{
-    DesktopHelper.initializeApplication(this.TEXT_EDITOR_APP, this._processHandlerService, this._activityHistoryService);
+    DesktopGeneralHelper.initializeApplication(this.TEXT_EDITOR_APP, this._processHandlerService, this._activityHistoryService);
   }
 
   openCodeEditor():void{
-    DesktopHelper.initializeApplication(this.CODE_EDITOR_APP, this._processHandlerService, this._activityHistoryService);
+    DesktopGeneralHelper.initializeApplication(this.CODE_EDITOR_APP, this._processHandlerService, this._activityHistoryService);
   }
 
   openMarkDownViewer():void{
-    DesktopHelper.initializeApplication(this.MARKDOWN_VIEWER_APP, this._processHandlerService, this._activityHistoryService);
+    DesktopGeneralHelper.initializeApplication(this.MARKDOWN_VIEWER_APP, this._processHandlerService, this._activityHistoryService);
   }
 
   openTaskManager():void{
-    DesktopHelper.initializeApplication(this.TASK_MANAGER_APP, this._processHandlerService, this._activityHistoryService);
+    DesktopGeneralHelper.initializeApplication(this.TASK_MANAGER_APP, this._processHandlerService, this._activityHistoryService);
   }
 
   async openPhotos(): Promise<void>{
     const delay = 1000;
     this.showDesktopScreenShotPreview = false;
     await CommonFunctions.sleep(delay);
-    DesktopHelper.initializeApplication(this.PHOTOS_APP, this._processHandlerService, this._activityHistoryService, this.screenShot);
+    DesktopGeneralHelper.initializeApplication(this.PHOTOS_APP, this._processHandlerService, this._activityHistoryService, this.screenShot);
   }
 
   buildViewByMenu():NestedMenuItem[]{
@@ -1249,8 +1229,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         const menuEntry = {icon:`${Constants.IMAGE_BASE_PATH}x_32.png`, label: 'Close all windows', action:this.closeApplicationFromTaskBar.bind(this)};
         this.taskBarAppIconMenuData.push(menuEntry);
       }else{
-      rowTwo.label = 'Close all windows';
-      this.taskBarAppIconMenuData[2] = rowTwo;
+        rowTwo.label = 'Close all windows';
+        this.taskBarAppIconMenuData[2] = rowTwo;
       }
     }
 
@@ -1415,7 +1395,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   onBtnClick(evt:MouseEvent, id:number):void{
     this.doBtnClickThings(id);
-    DesktopHelper.setBtnStyle(id, true, this.selectedElementId, this.isIconInFocusDueToPriorAction);
+    DesktopStyleHelper.setBtnStyle(id, true, this.selectedElementId, this.isIconInFocusDueToPriorAction);
   }
 
   onTriggerRunApplication():void{
@@ -1512,9 +1492,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
       DesktopIconAlignmentHelper.preCloneDesktopIcon(id);
       if(this.markedBtnIds.includes(String(id))){
-        this.setMultiSelectStyleOnBtn(id, true);
+        DesktopStyleHelper.setMultiSelectStyleOnBtn(id, true);
       } else{
-        DesktopHelper.setBtnStyle(id, true, this.selectedElementId, this.isIconInFocusDueToPriorAction);
+        DesktopStyleHelper.setBtnStyle(id, true, this.selectedElementId, this.isIconInFocusDueToPriorAction);
       }
     }
   }
@@ -1525,14 +1505,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(!this.isMultiSelectActive){
       if(id != this.selectedElementId){
         if(this.markedBtnIds.includes(String(id))){
-          this.setMultiSelectStyleOnBtn(id, false);
+          DesktopStyleHelper.setMultiSelectStyleOnBtn(id, false);
         } else{
-          DesktopHelper.removeBtnStyle(id);
+          DesktopStyleHelper.removeBtnStyle(id);
           DesktopIconAlignmentHelper.clearPreClonedIconById(id);
         }
       }
       else if((id === this.selectedElementId) && !this.isIconInFocusDueToPriorAction){
-        DesktopHelper.setBtnStyle(id, false, this.selectedElementId, this.isIconInFocusDueToPriorAction);
+        DesktopStyleHelper.setBtnStyle(id, false, this.selectedElementId, this.isIconInFocusDueToPriorAction);
       }
     }
   }
@@ -1540,27 +1520,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   btnStyleAndValuesReset():void{
     this.isBtnClickEvt = false;
     this.btnClickCnt = 0;
-    DesktopHelper.removeBtnStyle(this.selectedElementId);
-    DesktopHelper.removeBtnStyle(this.prevSelectedElementId);
+    DesktopStyleHelper.removeBtnStyle(this.selectedElementId);
+    DesktopStyleHelper.removeBtnStyle(this.prevSelectedElementId);
     this.selectedElementId = -1;
     this.prevSelectedElementId = -1;
     this.btnClickCnt = 0;
     this.isIconInFocusDueToPriorAction = false;
-  }
-
-
-  
-  setMultiSelectStyleOnBtn(id:number,  isMouseHover:boolean):void{
-    const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
-    if(btnElement){
-      if(!isMouseHover){
-        btnElement.style.backgroundColor = 'rgba(0, 150, 255, 0.3)';
-        btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
-      }else{
-        btnElement.style.backgroundColor = '#607c9c';
-        btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
-      }
-    }
   }
 
   getCountOfAllTheMarkedButtons():number{
@@ -1586,7 +1551,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(btnIcon){
         btnIcon.classList.remove('desktopIcon-multi-select-highlight');
       }
-      DesktopHelper.removeBtnStyle(Number(id));
+      DesktopStyleHelper.removeBtnStyle(Number(id));
       DesktopIconAlignmentHelper.clearPreClonedIconById(Number(id));
     })
   }
@@ -1601,7 +1566,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.hideCntxtMenuEvtCnt = 0;
 
     if(this.prevSelectedElementId != id){
-      DesktopHelper.removeBtnStyle(this.prevSelectedElementId);
+      DesktopStyleHelper.removeBtnStyle(this.prevSelectedElementId);
     }
   }
   
@@ -1622,7 +1587,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
       if(this.isIconInFocusDueToPriorAction){
         if(this.hideCntxtMenuEvtCnt >= 0)
-          DesktopHelper.setBtnStyle(this.selectedElementId, false, this.selectedElementId, this.isIconInFocusDueToPriorAction);
+          DesktopStyleHelper.setBtnStyle(this.selectedElementId, false, this.selectedElementId, this.isIconInFocusDueToPriorAction);
 
         this.isIconInFocusDueToPriorAction = false;
       }
@@ -1631,7 +1596,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         this.btnClickCnt = 0;
       }
       console.log('turn off - areMultipleIconsHighlighted')
-      this.clearThese(1);
+      this.clearStates(1);
     }else{
       this.hideCntxtMenuEvtCnt++;
       this.isHideCntxtMenuEvt = true;
@@ -1646,7 +1611,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           //this.removeClassAndStyleFromBtn();
         }else if(this.deskTopClickCounter >= 2){
           console.log('turn off - areMultipleIconsHighlighted-1');
-          this.clearThese(2);
+          this.clearStates(2);
           // this.areMultipleIconsHighlighted = false;
           // this._fileService.removeDragAndDropFile();
           // this.removeClassAndStyleFromBtn();
@@ -1663,7 +1628,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     console.log('deskTopClickCounter:', this.deskTopClickCounter);
   }
 
-  clearThese(cnd:number):void{
+  clearStates(cnd:number):void{
     this.areMultipleIconsHighlighted = false;
     this._fileService.removeDragAndDropFile();
     this.removeClassAndStyleFromBtn();
@@ -1686,7 +1651,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
   deActivateMultiSelect():void{ 
     if(this.multiSelectElmnt){
-      DesktopHelper.setDivWithAndSize(this.multiSelectElmnt, 0, 0, 0, 0, false);
+      DesktopStyleHelper.setDivWithAndSize(this.multiSelectElmnt, 0, 0, 0, 0, false);
     }
 
     this.multiSelectElmnt = null;
@@ -1715,10 +1680,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       const divWidth = Math.abs(startingXPoint - currentXPoint);
       const divHeight = Math.abs(startingYPoint - currentYPoint);
 
-      DesktopHelper.setDivWithAndSize(this.multiSelectElmnt, startX, startY, divWidth, divHeight, true);
+      DesktopStyleHelper.setDivWithAndSize(this.multiSelectElmnt, startX, startY, divWidth, divHeight, true);
 
       // Call function to check and highlight selected items
-      DesktopHelper.highlightSelectedItems(startX, startY, divWidth, divHeight);
+      DesktopStyleHelper.highlightSelectedItems(startX, startY, divWidth, divHeight);
+    }
+  }
+
+  onDragOver(event:DragEvent):void{
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  onMouseDown(evt:MouseEvent, i: number):void{
+    if(this.areMultipleIconsHighlighted && !this.markedBtnIds.includes(String(i))){
+      const choice = 2
+      this.clearStates(choice);
     }
   }
 
@@ -1753,18 +1730,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       cloneIcon.innerHTML = Constants.EMPTY_STRING;
   }
   
-  async onDragStart(evt:DragEvent, i: number): Promise<void> {
+  onDragStart(evt:DragEvent, i: number):void {
 
-    // Get the cloneIcon container
-    const elementId = 'desktopIcon_clone_cntnr';
-    const cloneIcon = document.getElementById(elementId);
     const countOfMarkedBtns = this.getCountOfAllTheMarkedButtons();
-    let counter = 0;
-
-    const draggedElmtId = DesktopIconAlignmentHelper.handleDragStart(evt, i, countOfMarkedBtns, this.markedBtnIds,
+    const draggedElmtId = DesktopIconAlignmentHelper.handleDragStart(evt, i, countOfMarkedBtns,
        this.files, this._fileService);
        
-    this.draggedElementId = await draggedElmtId;
+    this.draggedElementId = draggedElmtId;
   }
   
   moveBtnIconsToNewPositionAlignOff(mPos:mousePosition):void{
@@ -1793,54 +1765,20 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   changeIconsSize(iconSize:string):void{
-    const iconsSizes:number[][] = [[IconsSizesPX.SMALL_ICONS, ShortCutIconsSizes.SMALL_ICONS, ShortCutIconsBottom.SMALL_ICONS], 
-                                   [IconsSizesPX.MEDIUM_ICONS, ShortCutIconsSizes.MEDIUM_ICONS, ShortCutIconsBottom.MEDIUM_ICONS], 
-                                   [IconsSizesPX.LARGE_ICONS, ShortCutIconsSizes.LARGE_ICONS, ShortCutIconsBottom.LARGE_ICONS]];
 
-    const size = (iconSize === IconsSizes.SMALL_ICONS) ? iconsSizes[0] :
-                 (iconSize === IconsSizes.MEDIUM_ICONS) ? iconsSizes[1] :
-                 iconsSizes[2];
+    const result = DesktopStyleHelper.handleChangeIconsSize(iconSize, this.GRID_SIZE, 
+      this.MIN_GRID_SIZE, this.MID_GRID_SIZE, this.MAX_GRID_SIZE);
 
-    this.GRID_SIZE = (iconSize === IconsSizes.SMALL_ICONS) ? this.MIN_GRID_SIZE :
-                     (iconSize === IconsSizes.MEDIUM_ICONS) ? this.MID_GRID_SIZE :
-                     this.MAX_GRID_SIZE;
-
-    this.iconSizeStyle = {
-      'width': `${size[0]}px`, 
-      'height': `${size[0]}px`,
-    }
-    this.shortCutIconSizeStyle = {
-      'width': `${size[1]}px`, 
-      'height': `${size[1]}px`,
-      'bottom': `${size[2]}px`
-    }
-    this.figCapIconSizeStyle ={
-      'width': `${this.GRID_SIZE}px`, 
-    }
+    this.iconSizeStyle = result[0];
+    this.shortCutIconSizeStyle = result[1];
+    this.figCapIconSizeStyle = result[2]
+    
   }
 
   changeGridRowColSize():void{
-    const rowSpace  = this.ROW_GAP; //row space of 25px between each icons
-
-    const colSize = (this.GRID_SIZE === this.MAX_GRID_SIZE) ? this.MAX_GRID_SIZE :
-                    (this.GRID_SIZE === this.MID_GRID_SIZE) ? this.MID_GRID_SIZE :
-                    this.MIN_GRID_SIZE;
-
-    const rowSize = (this.GRID_SIZE === this.MAX_GRID_SIZE)? (this.MAX_GRID_SIZE - rowSpace) :
-                    (this.GRID_SIZE === this.MID_GRID_SIZE)? (this.MID_GRID_SIZE - rowSpace) :
-                    (this.MIN_GRID_SIZE - rowSpace);
-
-    const dsktpmngrOlElmnt = document.getElementById('desktopIcon_ol') as HTMLElement;
-    if(dsktpmngrOlElmnt){
-      dsktpmngrOlElmnt.style.gridTemplateColumns = `repeat(auto-fill, ${colSize}px)`;
-      dsktpmngrOlElmnt.style.gridTemplateRows = `repeat(auto-fill,${rowSize}px)`;
-    }
-
-    this.btnStyle = {
-      'width': `${colSize}px`, 
-      'height': 'min-content',
-      // 'height': `${rowSize}px`,
-    }
+    const result = DesktopStyleHelper.handleChangeGridRowColSize(this.GRID_SIZE,  this.ROW_GAP,
+      this.MIN_GRID_SIZE, this.MID_GRID_SIZE, this.MAX_GRID_SIZE);
+    this.btnStyle =  result;
   }
 
   async onDelete(): Promise<void> {
@@ -1934,12 +1872,12 @@ OpensWith=${file.getOpensWith}
 
     const isValid = new RegExp(regexStr).test(key);
     if (isValid) {
-      DesktopHelper.hideInvalidCharsToolTip();
-      DesktopHelper.autoResize(this.selectedElementId);
+      DesktopStyleHelper.hideInvalidCharsToolTip();
+      DesktopGeneralHelper.autoResize(this.selectedElementId);
       return true;
     } else {
-      DesktopHelper.showInvalidCharsToolTip(this.selectedElementId);
-      this.invalidCharTimeOutId = setTimeout(() => DesktopHelper.hideInvalidCharsToolTip(), this.SECONDS_DELAY[0]);
+      DesktopStyleHelper.showInvalidCharsToolTip(this.selectedElementId);
+      this.invalidCharTimeOutId = setTimeout(() => DesktopStyleHelper.hideInvalidCharsToolTip(), this.SECONDS_DELAY[0]);
       return false;
     }
   }
@@ -1963,7 +1901,7 @@ OpensWith=${file.getOpensWith}
     const figCapElement= document.getElementById(`figCap${this.selectedElementId}`) as HTMLElement;
     const renameContainerElement= document.getElementById(`renameContainer${this.selectedElementId}`) as HTMLElement;
     const renameTxtBoxElement= document.getElementById(`renameTxtBox${this.selectedElementId}`) as HTMLInputElement;
-    DesktopHelper.removeBtnStyle(this.selectedElementId);
+    DesktopStyleHelper.removeBtnStyle(this.selectedElementId);
 
 
     if((figCapElement && renameContainerElement && renameTxtBoxElement)) {
@@ -2011,7 +1949,7 @@ OpensWith=${file.getOpensWith}
       this.renameForm.reset();
     }
 
-    DesktopHelper.setBtnStyle(this.selectedElementId, false, this.selectedElementId, this.isIconInFocusDueToPriorAction);
+    DesktopStyleHelper.setBtnStyle(this.selectedElementId, false, this.selectedElementId, this.isIconInFocusDueToPriorAction);
     this.renameFileTriggerCnt = 0;
     
     if(figCapElement){
@@ -2066,7 +2004,7 @@ OpensWith=${file.getOpensWith}
     //this.startClippy();
   }
 
-  async setDesktopBackgroundData():Promise<void>{
+  setDesktopBackgroundData():void{
     const styleClasses = ['desktop_background_solid_color', 'destop_background_picture', 'destop_background_dynamic'];
     let activeClass = Constants.EMPTY_STRING;
 
@@ -2112,7 +2050,7 @@ OpensWith=${file.getOpensWith}
         this.setStyle(lockScreenElmnt, styleClasses, activeClass);
 
         const bkgrndIdx = this.vantaBackgroundName.findIndex(x => x === this.desktopBackgroundValue);
-        this.loadOtherBackgrounds(bkgrndIdx);
+        this.loadOtherVantaBackgrounds(bkgrndIdx);
 
         if(this.desktopBackgroundValue === 'vanta_wave'){
           this.startVantaWaveColorChg = true;

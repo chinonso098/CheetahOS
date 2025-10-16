@@ -18,6 +18,8 @@
             (click)="onBtnClick($event, i)"
             (dragstart)="onDragStart($event, i)"
             (dragend)="onDragEnd($event)"
+            (dragover)="onDragOver($event)" 
+            (mousedown)="onMouseDown($event, i)"
             id="iconBtn{{i}}"  [style]="btnStyle">
                 <div class="desktopIcon-img-section"  id="desktopIcon_fig{{i}}">
                     <div class="desktopIcon-img-container">
