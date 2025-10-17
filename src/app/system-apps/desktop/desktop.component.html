@@ -1,25 +1,31 @@
- <main class="main-desktop" id="vantaCntnr"  
-    (contextmenu)="showDesktopContextMenu($event)" 
-    (click)="hideDesktopContextMenuAndOthers(name)"
-    (mousemove)="performTasks($event)"  #desktopContainer> 
-
-    <ol class="ol-desktopIcon-grid" (dragover)="onDragOver($event)" (drop)="onDrop($event)" 
+ <main class="main-desktop" id="vantaCntnr" #desktopContainer> 
+    <ol class="ol-desktopIcon-grid" 
+        (contextmenu)="showDesktopContextMenu($event)" 
         (click)="handleIconHighLightState()"
+ 
+        (dragover)="onDragOver($event)" 
+        (drop)="onDrop($event)" 
+
         (mousedown)="activateMultiSelect($event)"
         (mouseup)="deActivateMultiSelect()"
-        (dragover)="onDragOver($event)" 
-        (mousemove)="updateDivWithAndSize($event)" id="desktopIcon_ol"> 
+        (mousemove)="updateDivWithAndSize($event)" 
+        (mousemove)="performTasks($event)"
+        id="desktopIcon_ol"> 
         
         <li class="li-desktopIcon-container" *ngFor="let file of files; let i = index" id="desktopIcon_li{{i}}">
             <div role="button" tabindex="0" class="desktopIcon-btn" 
-            (dblclick)="runApplication(file)" 
-            (mouseenter)="onMouseEnter(i)" 
-            (mouseleave)="onMouseLeave(i)"  
+
             (contextmenu)="onShowDesktopIconCntxtMenu($event, file, i)" 
-            (click)="onBtnClick($event, i)"
+            (click)="onDesktopIconClick($event, i)"
+
+            (dblclick)="runApplication(file)" 
             (dragstart)="onDragStart($event, i)"
             (dragend)="onDragEnd($event)"
+            
             (mousedown)="onMouseDown($event, i)"
+            (mouseenter)="onMouseEnter(i)" 
+            (mouseleave)="onMouseLeave(i)"  
+
             id="iconBtn{{i}}"  [style]="btnStyle">
                 <div class="desktopIcon-img-section"  id="desktopIcon_fig{{i}}">
                     <div class="desktopIcon-img-container">
@@ -60,7 +66,7 @@
             <cos-taskbarpreview  [fadeState]="tskBarPreviewWindowState" [name]="appToPreview" [icon]="appToPreviewIcon"  [style]="tskBarPrevWindowStyle">  </cos-taskbarpreview>
         </ng-container>
 
-        <ng-container  *ngIf="showTskBarAppIconMenu" >
+        <ng-container  *ngIf="showTskBarAppIconCntxtMenu" >
             <cos-menu [generalMenu]="taskBarAppIconMenuData" [style]="tskBarAppIconMenuStyle" [menuType]="tskBarAppIconMenuOption"> </cos-menu>
         </ng-container>
 
