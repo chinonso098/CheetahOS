@@ -248,7 +248,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   SECONDS_DELAY:number[] = [6000, 250, 4000, 350];
   renameForm!: FormGroup;
 
-  deskTopClickCounter = 0;
+  desktopClickCounter = 0;
 
   readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
   readonly emptyTrashAudio = `${Constants.AUDIO_BASE_PATH}cheetah_recycle.wav`;
@@ -1657,8 +1657,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     console.log('handleIconHighLightState - isRenameActive:', this.isRenameActive);
 
     if(!this.isRenameActive){
-      if((this.isIconBtnClickEvt && this.iconBtnClickCnt >= 1)){
-        this.btnStyleAndValuesReset();
+      // if((this.isIconBtnClickEvt && this.iconBtnClickCnt >= 0)){
+      // }
+
+      this.btnStyleAndValuesReset();
+
+      console.log('areMultipleIconsHighlighted', this.areMultipleIconsHighlighted)
+      if(this.areMultipleIconsHighlighted &&  this.desktopClickCounter === 0){
+
+        this.desktopClickCounter++;
+        return;
+      }
+
+      if(this.areMultipleIconsHighlighted &&  this.desktopClickCounter === 1){
+
+        console.log('turn off - areMultipleIconsHighlighted')
+        this.clearStates(2);
       }
     }
 
@@ -1700,14 +1714,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.isHideCntxtMenuEvt = true;
       //Second case - I was only clicking on the desktop
       if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= 1) && (!this.isIconBtnClickEvt && this.iconBtnClickCnt === 0)){
-        this.deskTopClickCounter++;
+        this.desktopClickCounter++;
         this.btnStyleAndValuesReset();
 
         //reset after clicking on the desktop 2wice
-        if(this.deskTopClickCounter >= 1 && !this.areMultipleIconsHighlighted){
-          this.deskTopClickCounter = 0;
+        if(this.desktopClickCounter >= 1 && !this.areMultipleIconsHighlighted){
+          this.desktopClickCounter = 0;
           //this.removeClassAndStyleFromBtn();
-        }else if(this.deskTopClickCounter >= 2){
+        }else if(this.desktopClickCounter >= 2){
           console.log('turn off - areMultipleIconsHighlighted-1');
           this.clearStates(2);
           // this.areMultipleIconsHighlighted = false;
@@ -1723,7 +1737,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         this.btnStyleAndValuesReset();
     }
 
-    console.log('deskTopClickCounter:', this.deskTopClickCounter);
+    console.log('deskTopClickCounter:', this.desktopClickCounter);
   }
 
   clearStates(cnd:number):void{
@@ -1732,7 +1746,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.removeClassAndStyleFromBtn();
 
     if(cnd === 2)
-      this.deskTopClickCounter = 0;
+      this.desktopClickCounter = 0;
 
     this.markedBtnIds = [];
   }
