@@ -113,23 +113,4 @@ export namespace DesktopGeneralHelper {
     return sortByMenu
   }
 
-
-
-  export const conditionalDrop = (event: DragEvent): boolean=>{
-    const target = event.target as HTMLElement | null;
-    const current = event.currentTarget as HTMLElement | null;
-  
-    console.debug('conditionalDrop:', {
-      targetId: target?.id ?? '(none)',
-      currentId: current?.id ?? '(none)'
-    });
-  
-    const differentTarget = target && current && target.id !== current.id;
-    if (!differentTarget) {
-      console.log('Same element detected — ignoring drop.');
-    }
-    return !!differentTarget;
-  }
-  
-
 }

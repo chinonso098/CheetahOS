@@ -1501,13 +1501,13 @@ OpensWith=${shortCutData.opensWith}
         this._fileDragAndDrop = [];
     }
 
-    checkIfFileDropEventTriggered():boolean{
-        return this._isFileDropEventTriggered;
-    }
+    // checkIfFileDropEventTriggered():boolean{
+    //     return this._isFileDropEventTriggered;
+    // }
 
-    setFileDropEventTriggeredFlag(flag:boolean):void{
-        this._isFileDropEventTriggered = flag;
-    }
+    // setFileDropEventTriggeredFlag(flag:boolean):void{
+    //     this._isFileDropEventTriggered = flag;
+    // }
 
     removeExtensionFromName(name:string):string{
         return basename(name, extname(name));

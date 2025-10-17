@@ -20,7 +20,7 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { ActivityType, SortBys } from 'src/app/system-files/common.enums';
-import { FileTreeNode } from 'src/app/system-files/common.interfaces';
+import { DragEventInfo, FileTreeNode } from 'src/app/system-files/common.interfaces';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
@@ -85,6 +85,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isHideCntxtMenuEvt= false;
   private isShiftSubMenuLeft = false;
   private isRecycleBinFolder = false;
+  private isDragFromFileExplorerActive = false;
 
   private isActive = false;
   private isFocus = false;
@@ -1016,29 +1017,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   async onDrop(event:DragEvent):Promise<void>{
     event.preventDefault();
     event.stopPropagation();
-
-    const droppedFiles:File[] = [];
-    if(event?.dataTransfer?.files){
-      // eslint-disable-next-line no-unsafe-optional-chaining
-      droppedFiles.push(...event?.dataTransfer?.files);
-    }
-    
-    if(droppedFiles.length >= 1){
-      const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
-      if(result){
-        await this.loadFiles();
-      }
-    }else{
-      this._fileService.addEventOriginator(this.name);
-      this._fileService.setFileDropEventTriggeredFlag(true);
-
+  
+    const dragInfo = this._systemNotificationService.getDragEventInfo();
+    if(dragInfo){ //&& (dragInfo.Origin.includes(Constants.FILE_EXPLORER) || dragInfo.Origin.includes(Constants.DESKTOP_PATH))
       const files = this._fileService.getDragAndDropFile();
       if (!files?.length) return;
 
       const delay = 50; //50ms
       const destPath = this.directory;
       const moveResults:Promise<boolean>[] = [];
-
 
       // Move all files concurrently
       for (const file of files) {
@@ -1058,14 +1045,34 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         return;
       }
 
-      const cameFromDesktop = files.some(f => f.getCurrentPath.includes(Constants.DESKTOP_PATH));
-      if(cameFromDesktop){
-        this._fileService.addEventOriginator(Constants.DESKTOP);
+      const cameFromFileExplr = files.some(f => !f.getCurrentPath.includes(Constants.DESKTOP_PATH));
+      if(cameFromFileExplr){
+        this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
         this._fileService.dirFilesUpdateNotify.next();
         await CommonFunctions.sleep(delay)
       }
 
+      this._systemNotificationService.removeDragEventInfo();
       await this.refresh();
+      return;
+    }
+
+    if (!CommonFunctions.conditionalDrop(event)  && this.isDragFromFileExplorerActive) {
+      console.warn('Drop failed due to condition.');
+      return;
+    }else{
+      const droppedFiles:File[] = [];
+      const files = event.dataTransfer?.files;
+      if (files && files.length > 0) {
+        droppedFiles.push(...files);
+      }
+      
+      if(droppedFiles.length >= 1){
+        const result =  await this._fileService.writeFilesAsync(this.directory, droppedFiles);
+        if(result){
+          await this.refresh();
+        }
+      }
     }
   }
 
@@ -2093,9 +2100,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     })
   }
 
-  onDragStart(evt:any):void{1 }
+  onDragStart(evt:any):void{
+    this.isDragFromFileExplorerActive = true;
+    const uid = `${this.name}-${this.processId}`;
 
-  onDragEnd(evt:any):void{1 }
+    const dragEvtInfo:DragEventInfo={Origin:uid, CurrentLocation:Constants.EMPTY_STRING, isDragActive: this.isDragFromFileExplorerActive};
+    this._systemNotificationService.setDropEventInfo(dragEvtInfo);
+  }
+
+  onDragEnd(evt:any):void{
+
+    this.isDragFromFileExplorerActive = false;
+  }
 
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();

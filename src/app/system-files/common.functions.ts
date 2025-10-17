@@ -122,6 +122,25 @@ export namespace CommonFunctions {
     displayElmnt.style.backgroundRepeat = Constants.EMPTY_STRING;
   }
 
+  export const conditionalDrop = (event: DragEvent): boolean=>{
+    const targetElement = event.target as HTMLElement | null;
+    const currentElement = event.currentTarget as HTMLElement | null;
+
+    console.log('conditionalDrop:', {
+      targetId: targetElement?.id ?? '(none)',
+      currentId: currentElement?.id ?? '(none)'
+    });
+  
+    if (!targetElement || !currentElement) return false;
+  
+    if (targetElement.id === currentElement.id) {
+      console.log('Icon moved within the same element — ignoring file write.');
+      return false;
+    }
+  
+    return true;
+  }
+
   export const trackActivity = (activityHistoryService: ActivityHistoryService, activity:Activity):void =>{
     //check for exisiting activity
     if(activity.isRename){

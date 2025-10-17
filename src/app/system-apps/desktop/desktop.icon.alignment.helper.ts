@@ -103,6 +103,14 @@ export namespace DesktopIconAlignmentHelper {
     return draggedElementId;
   }
 
+  export const clearCloneConainter = (): void =>{
+
+    const elementId = 'desktopIcon_clone_cntnr'; // Get the cloneIcon container
+    const cloneIcon = document.getElementById(elementId);
+    if(cloneIcon) 
+      cloneIcon.innerHTML = Constants.EMPTY_STRING;
+  }
+
   export const  handleMoveBtnIconsToNewPositionAlignOff = (mPos:mousePosition, 
       movedBtnIds: string[],  
       markedBtnIds: string[], 

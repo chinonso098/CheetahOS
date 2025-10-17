@@ -1354,9 +1354,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
     const dragInfo = this._systemNotificationServices.getDragEventInfo();
     if(dragInfo && dragInfo.Origin.includes(Constants.FILE_EXPLORER)){
-
-      this._fileService.addEventOriginator(this.name);
-      this._fileService.setFileDropEventTriggeredFlag(true);
       const files = this._fileService.getDragAndDropFile();
       if (!files?.length) return;
 
@@ -1382,6 +1379,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         return;
       }
 
+      //I am using the ! to denote anything not containing /user/Desktop in its path, is from the file explr
       const cameFromFileExplr = files.some(f => !f.getCurrentPath.includes(Constants.DESKTOP_PATH));
       if(cameFromFileExplr){
         this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
@@ -1394,15 +1392,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       return;
     }
 
-
-    if (!DesktopGeneralHelper.conditionalDrop(event)  && this.isDragFromDesktopActive) {
+    if (!CommonFunctions.conditionalDrop(event)  && this.isDragFromDesktopActive) {
       console.warn('Drop failed due to condition.');
       return;
     }else{
       const droppedFiles:File[] = [];
-      if(event?.dataTransfer?.files){
-        // eslint-disable-next-line no-unsafe-optional-chaining
-        droppedFiles.push(...event?.dataTransfer?.files);
+      const files = event.dataTransfer?.files;
+      if (files && files.length > 0) {
+        droppedFiles.push(...files);
       }
       
       if(droppedFiles.length >= 1){
@@ -1748,10 +1745,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   onDragEnd(evt:DragEvent):void{
 
-    console.log('onDrgaEnd -- DragEnd:', evt);
     this.isDragFromDesktopActive = false;
-
-    const elementId = 'desktopIcon_clone_cntnr'; // Get the cloneIcon container
     const mPos:mousePosition = {
       clientX: evt.clientX,
       clientY: evt.clientY,
@@ -1761,24 +1755,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       y: evt.y,
     }
 
-    if(this._fileService.checkIfFileDropEventTriggered()
-      && (this._fileService.getEventOriginator() === 'terminal' 
-      || this._fileService.getEventOriginator() === 'fileexplorer')){
-
-      //this._fileService.removeEventOriginator();
-      this._fileService.setFileDropEventTriggeredFlag(false);
-      return;
-    }
-
     if(this.autoAlignIcons && this.markedBtnIds.length >= 0){
       this.moveBtnIconsToNewPositionAlignOn(mPos);
     }else if (!this.autoAlignIcons && this.markedBtnIds.length >= 0){
       this.moveBtnIconsToNewPositionAlignOff(mPos);
     }
 
-    const cloneIcon = document.getElementById(elementId);
-    if(cloneIcon) 
-      cloneIcon.innerHTML = Constants.EMPTY_STRING;
+    DesktopIconAlignmentHelper.clearCloneConainter();
   }
   
   onDragStart(evt:DragEvent, i: number):void {

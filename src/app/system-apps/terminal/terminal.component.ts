@@ -1094,8 +1094,6 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     event.preventDefault();
     event.stopPropagation();
 
-    this._fileService.addEventOriginator(this.name);
-    this._fileService.setFileDropEventTriggeredFlag(true);
     const fileData = this._fileService.getDragAndDropFile();
 
     if(fileData.length === 1){
