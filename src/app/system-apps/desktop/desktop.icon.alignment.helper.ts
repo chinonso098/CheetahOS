@@ -44,9 +44,18 @@ export namespace DesktopIconAlignmentHelper {
   //export const clearPreClonedIcons = ():void=>{  cloneList = []}
 
   export const clearPreClonedIconById = (id:number):void=>{
+    console.log('id to clear:', id);
     const idx = cloneIdList.findIndex(x => x === id);
+
+    console.log('idx:', idx);
+
+    console.log('cloneIdList before:', cloneIdList);
     cloneIdList = cloneIdList.filter((_, index) => index !== idx);
+    console.log('cloneIdList after:', cloneIdList);
+
+    console.log('cloneList before:', cloneList);
     cloneList = cloneList.filter((_, index) => index !== idx);
+    console.log('cloneList after:', cloneList);
   }
   
   export const  handleDragStart = (evt:DragEvent, 

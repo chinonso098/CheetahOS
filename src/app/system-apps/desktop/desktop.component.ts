@@ -1464,7 +1464,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   onDesktopIconClick(evt:MouseEvent, id:number):void{
     evt.stopPropagation();
-
     this.executeIconClickTasks(id);
     DesktopStyleHelper.setBtnStyle(id, true, this.currIconId, this.isIconInFocusDueToPriorAction);
   }
@@ -1473,12 +1472,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.runApplication(this.selectedFile);
   }
   
-  onShowDesktopIconCntxtMenu(evt:MouseEvent, file:FileInfo, id:number):void{
+  async onShowDesktopIconCntxtMenu(evt:MouseEvent, file:FileInfo, id:number): Promise<void>{
     evt.stopPropagation();
     evt.preventDefault();
 
     // show IconContexMenu is still a btn click, just a different type
     this.executeIconClickTasks(id);
+    await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
 
     const menuHeight = (file.getIsFile)? 253 : 337; //this is not ideal.. menu height should be gotten dynmically
     const result = DesktopContextMenuHelper.adjustIconContextMenuData(file ,this.sourceData);
@@ -1554,16 +1554,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.pinToTaskBar.next(this.selectedFile);
   }
 
+  onMouseDown(evt:MouseEvent, i: number):void{
+    if(this.areMultipleIconsHighlighted && !this.markedBtnIds.includes(String(i))){
+      this.clearStates();
+    }
+
+    if(this.prevIconId !== i){
+      DesktopIconAlignmentHelper.clearPreClonedIconById(this.prevIconId);
+    }
+  }
+
   onMouseEnter(id:number):void{
     if(!this.isMultiSelectActive){
       this.isMultiSelectEnabled = false;
 
-      DesktopIconAlignmentHelper.preCloneDesktopIcon(id);
-      if(this.markedBtnIds.includes(String(id))){
-        DesktopStyleHelper.setMultiSelectStyleOnBtn(id, true);
-      } else{
-        DesktopStyleHelper.setBtnStyle(id, true, this.currIconId, this.isIconInFocusDueToPriorAction);
-      }
+      DesktopIconAlignmentHelper.preCloneDesktopIcon(id);      
+      DesktopStyleHelper.setBtnStyle(id, true, this.currIconId, this.isIconInFocusDueToPriorAction);
     }
   }
   
@@ -1573,7 +1579,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(!this.isMultiSelectActive){
       if(id != this.currIconId){
         if(this.markedBtnIds.includes(String(id))){
-          DesktopStyleHelper.setMultiSelectStyleOnBtn(id, false);
+          return;
         } else{
           DesktopStyleHelper.removeBtnStyle(id);
           DesktopIconAlignmentHelper.clearPreClonedIconById(id);
@@ -1588,12 +1594,24 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   btnStyleAndValuesReset():void{
     this.isIconBtnClickEvt = false;
     this.iconBtnClickCnt = 0;
+    this.removeIdFromMarked(this.currIconId);
     DesktopStyleHelper.removeBtnStyle(this.currIconId);
     DesktopStyleHelper.removeBtnStyle(this.prevIconId);
     this.currIconId = -1;
     this.prevIconId = -1;
     this.iconBtnClickCnt = 0;
     this.isIconInFocusDueToPriorAction = false;
+  }
+
+  removeIdFromMarked(id:number):void{
+    console.log('removeIdFromMarked id to clear:', id);
+    const idx = this.markedBtnIds.findIndex(x => x === String(id));
+    console.log('removeIdFromMarked idx:', idx);
+
+    console.log('markedBtnIds before:', this.markedBtnIds);
+    this.markedBtnIds = this.markedBtnIds.filter((_, index) => index !== idx);
+    console.log('markedBtnIds after:', this.markedBtnIds);
+    DesktopIconAlignmentHelper.clearPreClonedIconById(id);
   }
 
   getCountOfAllTheMarkedButtons():number{
@@ -1627,13 +1645,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   executeIconClickTasks(id:number):void{  //##
     this.prevIconId = this.currIconId 
     this.currIconId = id;
-
     this.isIconBtnClickEvt = true;
     this.iconBtnClickCnt++;
     this.hideDesktopContextMenuAndOthers(this.name);
 
+    if(!this.markedBtnIds.includes(String(id)))
+        this.markedBtnIds.push(String(id));
+
     if(this.prevIconId != id){
       DesktopStyleHelper.removeBtnStyle(this.prevIconId);
+      //DesktopIconAlignmentHelper.clearPreClonedIconById(this.prevIconId);
     }
   }
   resetIconBtnClick():void{
@@ -1728,12 +1749,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   onDragOver(event:DragEvent):void{
     event.stopPropagation();
     event.preventDefault();
-  }
-
-  onMouseDown(evt:MouseEvent, i: number):void{
-    if(this.areMultipleIconsHighlighted && !this.markedBtnIds.includes(String(i))){
-      this.clearStates();
-    }
   }
 
   onDragEnd(evt:DragEvent):void{

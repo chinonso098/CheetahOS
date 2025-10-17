@@ -10,6 +10,9 @@ export namespace DesktopStyleHelper {
         if(btnElement){
             btnElement.style.backgroundColor = Constants.EMPTY_STRING;
             btnElement.style.borderColor = Constants.EMPTY_STRING;
+
+            if(btnElement.classList.contains('desktopIcon-multi-select-highlight'))
+                btnElement.classList.remove('desktopIcon-multi-select-highlight');
         }
     
         if(figCapElement){
@@ -26,16 +29,19 @@ export namespace DesktopStyleHelper {
         if(btnElement){
             btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
             btnElement.style.borderColor = 'hsla(0,0%,50%,25%)';
-    
+
+            if(!btnElement.classList.contains('desktopIcon-multi-select-highlight'))
+                btnElement.classList.add('desktopIcon-multi-select-highlight'); 
     
             if(selectedElementId === id){
-            (isMouseHover)? btnElement.style.backgroundColor ='#607c9c' : 
-                btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+                (isMouseHover)
+                ? btnElement.style.backgroundColor ='#607c9c' 
+                : btnElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
             }
     
             if(!isMouseHover && isIconInFocusDueToPriorAction){
-            btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-            btnElement.style.border = '1px solid white'
+                btnElement.style.backgroundColor = Constants.EMPTY_STRING;
+                btnElement.style.border = '1px solid white'
             }
         }
     

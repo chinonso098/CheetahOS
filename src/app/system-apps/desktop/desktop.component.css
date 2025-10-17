@@ -264,7 +264,7 @@
 
 
 .desktopIcon-multi-select-highlight {
-    background-color: rgba(0, 150, 255, 0.3);
+    background-color: hsl(206deg 77% 70%/20%);
     border: 1px solid hsla(0,0%,50%,25%);
 }
 
