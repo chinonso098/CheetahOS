@@ -214,7 +214,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private isRenameActive = false;
   private isIconInFocusDueToPriorAction = false;
   private isIconBtnClickEvt= false;
-  private isHideCntxtMenuEvt= false;
 
   isWindowDragActive = false;
   isMultiSelectEnabled = true;
@@ -228,7 +227,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private currIconId = -1;
   private draggedElementId = -1;
   private prevIconId = -1; 
-  private hideCntxtMenuEvtCnt = 0;
   private iconBtnClickCnt = 0;
   private renameFileTriggerCnt = 0; 
   private currentIconName = Constants.EMPTY_STRING;
@@ -690,8 +688,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
      * If there is a count of 2 or more(highly unlikely) reponses for a given event, then, ignore the desktop's response
      */
 
-    this.hideAllContextMenus();
-    this.resetHideContextMenu();
+    this.showDesktopCntxtMenu = false;
+    this.showDesktopIconCntxtMenu = false;
+    this.showTskBarAppIconCntxtMenu = false;
+    this.showTskBarCntxtMenu = false;
+
     this.isShiftSubMenuLeft = false;
 
     // to prevent an endless loop of calls,
@@ -708,6 +709,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this._menuService.hideStartMenu.next();
     }
 
+    if(this.showVolumeControl){
+      this.showVolumeControl = false;
+      this._audioService.hideShowVolumeControlNotify.next();
+    }
+
     this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
     this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
 
@@ -722,13 +728,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   getIsContextMenuVisible():boolean{  //##
     return (this.showDesktopIconCntxtMenu || this.showDesktopCntxtMenu
             || this.showTskBarAppIconCntxtMenu  || this.showTskBarCntxtMenu);
-  }
-
-  hideAllContextMenus():void{
-    this.showDesktopCntxtMenu = false;
-    this.showDesktopIconCntxtMenu = false;
-    this.showTskBarAppIconCntxtMenu = false;
-    this.showTskBarCntxtMenu = false;
   }
 
   performTasks(evt:MouseEvent):void{
@@ -1622,9 +1621,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.isIconBtnClickEvt = true;
     this.iconBtnClickCnt++;
-
-    console.log('iconBtnClickCnt:', this.iconBtnClickCnt);
-    this.resetHideContextMenu();
     this.hideDesktopContextMenuAndOthers(this.name);
 
     if(this.prevIconId != id){
@@ -1632,10 +1628,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  resetHideContextMenu():void{
-    this.isHideCntxtMenuEvt = false;
-    this.hideCntxtMenuEvtCnt = 0;
-  }
 
   resetIconBtnClick():void{
     this.isIconBtnClickEvt = false;
@@ -1653,32 +1645,21 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   handleIconHighLightState():void{
     this.hideDesktopContextMenuAndOthers(this.name);
 
-    console.log('handleIconHighLightState - iconBtnClickCnt:', this.iconBtnClickCnt);
-    console.log('handleIconHighLightState - isRenameActive:', this.isRenameActive);
-
     if(!this.isRenameActive){
-      // if((this.isIconBtnClickEvt && this.iconBtnClickCnt >= 0)){
-      // }
-
       this.btnStyleAndValuesReset();
 
-      console.log('areMultipleIconsHighlighted', this.areMultipleIconsHighlighted)
       if(this.areMultipleIconsHighlighted &&  this.desktopClickCounter === 0){
-
         this.desktopClickCounter++;
         return;
       }
 
       if(this.areMultipleIconsHighlighted &&  this.desktopClickCounter === 1){
-
-        console.log('turn off - areMultipleIconsHighlighted')
-        this.clearStates(2);
+        this.clearStates();
       }
     }
 
     if(this.isRenameActive){
       if((this.isIconBtnClickEvt && this.iconBtnClickCnt >= 1)){ 
-
         //case 1a - I was only clicking on the desktop icons, initiated a rename, then clicked on the desktop empty space
         if(this.isRenameActive)
           this.isFormDirty();
@@ -1689,65 +1670,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-
-  handleIconHighLightState_tbd():void{   //##--
-
-    //First case - I'm clicking only on the desktop icons
-    if((this.isIconBtnClickEvt && this.iconBtnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === 0)){  
-      if(this.isRenameActive){
-        this.isFormDirty();
-      }
-      if(this.isIconInFocusDueToPriorAction){
-        if(this.hideCntxtMenuEvtCnt >= 0)
-          DesktopStyleHelper.setBtnStyle(this.currIconId, false, this.currIconId, this.isIconInFocusDueToPriorAction);
-
-        this.isIconInFocusDueToPriorAction = false;
-      }
-      if(!this.isRenameActive){
-        this.isIconBtnClickEvt = false;
-        this.iconBtnClickCnt = 0;
-      }
-      console.log('turn off - areMultipleIconsHighlighted')
-      this.clearStates(1);
-    }else{
-      this.hideCntxtMenuEvtCnt++;
-      this.isHideCntxtMenuEvt = true;
-      //Second case - I was only clicking on the desktop
-      if((this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt >= 1) && (!this.isIconBtnClickEvt && this.iconBtnClickCnt === 0)){
-        this.desktopClickCounter++;
-        this.btnStyleAndValuesReset();
-
-        //reset after clicking on the desktop 2wice
-        if(this.desktopClickCounter >= 1 && !this.areMultipleIconsHighlighted){
-          this.desktopClickCounter = 0;
-          //this.removeClassAndStyleFromBtn();
-        }else if(this.desktopClickCounter >= 2){
-          console.log('turn off - areMultipleIconsHighlighted-1');
-          this.clearStates(2);
-          // this.areMultipleIconsHighlighted = false;
-          // this._fileService.removeDragAndDropFile();
-          // this.removeClassAndStyleFromBtn();
-          // this.deskTopClickCounter = 0;
-          // this.markedBtnIds = [];
-        }
-      }
-      //Third case - I was clicking on the desktop icons, then i click on the desktop.
-      //clicking on the desktop triggers a hideContextMenuEvt
-      if((this.isIconBtnClickEvt && this.iconBtnClickCnt >= 1) && (this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt > 1))
-        this.btnStyleAndValuesReset();
-    }
-
-    console.log('deskTopClickCounter:', this.desktopClickCounter);
-  }
-
-  clearStates(cnd:number):void{
+  clearStates():void{
     this.areMultipleIconsHighlighted = false;
     this._fileService.removeDragAndDropFile();
     this.removeClassAndStyleFromBtn();
-
-    if(cnd === 2)
-      this.desktopClickCounter = 0;
-
+    this.desktopClickCounter = 0;
     this.markedBtnIds = [];
   }
 
@@ -1806,8 +1733,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   onMouseDown(evt:MouseEvent, i: number):void{
     if(this.areMultipleIconsHighlighted && !this.markedBtnIds.includes(String(i))){
-      const choice = 2
-      this.clearStates(choice);
+      this.clearStates();
     }
   }
 
