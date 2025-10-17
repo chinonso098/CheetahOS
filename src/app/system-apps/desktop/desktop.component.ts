@@ -38,6 +38,7 @@ import { DesktopContextMenuHelper } from './desktop.context.menu.helper';
 import { DesktopIconAlignmentHelper } from './desktop.icon.alignment.helper';
 import { DesktopStyleHelper } from './desktop.style.helper';
 import { DragEventInfo } from 'src/app/system-files/common.interfaces';
+import { concatMap } from 'rxjs';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 //  animate('1750ms ease-out')
@@ -156,7 +157,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showTskBarCntxtMenu = false;
   showStartMenu = false;
 
-
   removeTskBarPrevWindowFromDOMTimeoutId!: NodeJS.Timeout;
   hideTskBarPrevWindowTimeoutId!: NodeJS.Timeout;
   showTskBarToolTipTimeoutId!: NodeJS.Timeout;
@@ -165,7 +165,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   invalidCharTimeOutId!: NodeJS.Timeout;
   taskbarHideDelayTimeOutId !: NodeJS.Timeout;
 
-  private readonly DESKTOP_SCREEN_SHOT_DIRECTORY ='/Users/Documents/Screen-Shots';
+  private readonly DESKTOP_SCREEN_SHOT_DIRECTORY ='/Users/Pictures/Screen-Shots';
   private readonly TERMINAL_APP ="terminal";
   private readonly TEXT_EDITOR_APP ="texteditor";
   private readonly CODE_EDITOR_APP ="codeeditor";
@@ -197,6 +197,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private readonly MIN_NUM_COLOR_RANGE = 200;
   private readonly MAX_NUM_COLOR_RANGE = 99999;
   private readonly DEFAULT_COLOR = 0x274c;
+  private readonly DESKTOP_MENU_DELAY = 250; //250ms
 
   private currentDesktopNum = 0;
 
@@ -320,17 +321,21 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._elRef = elRef;
 
     // these are subs, but the desktop cmpnt is not going to be destoryed
-    this._menuService.showTaskBarAppIconMenu.subscribe((p) => { this.onShowTaskBarAppIconMenu(p)});
-    this._menuService.showTaskBarConextMenu.subscribe((p) => { this.onShowTaskBarContextMenu(p)});
-    this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
+    this._menuService.showTaskBarAppIconMenu.pipe(concatMap((p) =>this.onShowTaskBarAppIconMenu(p))).subscribe();
+    this._menuService.showTaskBarConextMenu.pipe(concatMap((p) =>this.onShowTaskBarContextMenu(p))).subscribe();
+    this._audioService.hideShowVolumeControlNotify.pipe(concatMap(() => this.hideShowVolumeControl())).subscribe();
+    this._menuService.showStartMenu.pipe(concatMap(() =>this.showTheStartMenu())).subscribe();
+
     this._menuService.hideContextMenus.subscribe(() => { this.hideDesktopContextMenuAndOthers()});
     this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
     this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
     this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;});
     this._windowService.windowDragIsInActive.subscribe(() => {this.isWindowDragActive = false;}); 
-    this._menuService.showStartMenu.subscribe(() => { this.showTheStartMenu()});
+
     this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
-    this._audioService.hideShowVolumeControlNotify.subscribe(() => { this.hideShowVolumeControl()});
+
+
+    this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
 
     this._fileService.dirFilesUpdateNotify.subscribe(async () =>{
       if(this._fileService.getEventOriginator() === this.name){
@@ -470,10 +475,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   initClippy():void{
     if(this.showClippy){
       this.clippyIntervalId = setInterval(() =>{
-
         DesktopGeneralHelper.initializeApplication(this.CLIPPY_APP, 
           this._processHandlerService, this._activityHistoryService);
-
       }, this.CLIPPY_INIT_DELAY);
     }
   }
@@ -497,21 +500,23 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     return Math.floor(Math.random() * (max - min) + min);
   }
 
-  showDesktopContextMenu(evt:MouseEvent):void{
+  async showDesktopContextMenu(evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
-    this.hideDesktopContextMenuAndOthers(this.name);
+    evt.preventDefault();
+
     /**
      * There is a doubling of responses to certain events that exist on the 
      * desktop compoonent and any other component running at the time the event was triggered.
      * The desktop will always respond to the event, but other components will only respond when they are in focus.
      * If there is a count of 2 or more(highly unlikely) reponses for a given event, then, ignore the desktop's response
      */
-
-    console.log('showDesktopContextMenu:',evt);
     const evtOriginator = this._runningProcessService.getEventOriginator();
-    console.log('evtOriginator:',evtOriginator);
-   
+    console.log('showDesktopContextMenu - evtOriginator:',evtOriginator);
+
     if(evtOriginator === Constants.EMPTY_STRING){
+      this.resetIconBtnsAndContextMenus();
+      await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
+
       const menuHeight = 306; //this is not ideal.. menu height should be gotten dynmically
       const menuWidth = 210;
   
@@ -528,7 +533,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         'z-index': 4,
         'opacity': 1
       }
-      evt.preventDefault();
+
     }
     else{
       this._runningProcessService.removeEventOriginator();
@@ -555,10 +560,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  showTheStartMenu():void{
-    // I'm not sure why the delay is needed for the start menu to be displayed
-    const Delay = 40;
-    setTimeout(()=>{ this.showStartMenu = true; }, Delay);
+  async showTheStartMenu(): Promise<void>{
+    this.resetIconBtnsAndContextMenus();
+    await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
+    this.showStartMenu = true; 
   }
 
   hideTheStartMenu():void{
@@ -716,18 +721,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
     this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
-
     this.closePwrDialogBox();
-  }
-
-
-  getIsAnyMenuOnTheDesktopVisible():boolean{  //##
-    return (this.showStartMenu || this.getIsContextMenuVisible());
-  }
-
-  getIsContextMenuVisible():boolean{  //##
-    return (this.showDesktopIconCntxtMenu || this.showDesktopCntxtMenu
-            || this.showTskBarAppIconCntxtMenu  || this.showTskBarCntxtMenu);
   }
 
   performTasks(evt:MouseEvent):void{
@@ -781,7 +775,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }, 10); //10ms
   }
 
-  hideShowVolumeControl():void{
+  async hideShowVolumeControl(): Promise<void>{
+    this.resetIconBtnsAndContextMenus();
+    await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
     this.showVolumeControl = !this.showVolumeControl;
   }
 
@@ -1130,7 +1126,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  onShowTaskBarAppIconMenu(data:unknown[]):void{
+  resetIconBtnsAndContextMenus():void{
+    //only one cntxt menu at a time
+    this.hideDesktopContextMenuAndOthers(this.name);
+    this.btnStyleAndValuesReset();
+  }
+
+  async onShowTaskBarAppIconMenu(data:unknown[]): Promise<void>{
+    //--------------------
+    this.resetIconBtnsAndContextMenus();
+    await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY)
+
     const rect = data[0] as DOMRect;
     const tskBarIcon = data[1] as TaskBarIconInfo; 
    
@@ -1172,7 +1178,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.showTskBarAppIconCntxtMenu = true;
   }
 
-  onShowTaskBarContextMenu(evt:MouseEvent):void{
+  async onShowTaskBarContextMenu(evt:MouseEvent):Promise<void>{
+    this.resetIconBtnsAndContextMenus();
+    await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
+
     const menuHeight = 116;
     const menuWidth = 203;
     const taskBarHeight = 40;
@@ -1226,7 +1235,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     if(processCount === 0){
       if(this.taskBarAppIconMenuData.length === 3){
-        this.taskBarAppIconMenuData.pop()
+        this.taskBarAppIconMenuData.pop();
       }
     }else if(processCount === 1){
       if(this.taskBarAppIconMenuData.length === 2){
@@ -1627,20 +1636,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       DesktopStyleHelper.removeBtnStyle(this.prevIconId);
     }
   }
-
-
   resetIconBtnClick():void{
     this.isIconBtnClickEvt = false;
     this.iconBtnClickCnt = 0;
   }
-  
-  // hideIconContextMenu(caller?:string):void{
-  //   this.showDesktopIconCntxtMenu = false;
-  //   // to prevent an endless loop of calls,
-  //   if(caller !== undefined && caller === this.name){
-  //     this._menuService.hideContextMenus.next();
-  //   }
-  // }
 
   handleIconHighLightState():void{
     this.hideDesktopContextMenuAndOthers(this.name);
