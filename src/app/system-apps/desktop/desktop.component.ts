@@ -1559,9 +1559,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this.clearStates();
     }
 
-    if(this.prevIconId !== i){
-      DesktopIconAlignmentHelper.clearPreClonedIconById(this.prevIconId);
-    }
+    // if(this.prevIconId !== i){
+    //   DesktopIconAlignmentHelper.clearPreClonedIconById(this.prevIconId);
+    // }
   }
 
   onMouseEnter(id:number):void{
