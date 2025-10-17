@@ -1654,27 +1654,25 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.hideDesktopContextMenuAndOthers(this.name);
 
     console.log('handleIconHighLightState - iconBtnClickCnt:', this.iconBtnClickCnt);
+    console.log('handleIconHighLightState - isRenameActive:', this.isRenameActive);
 
-    //case 1 - I was only clicking on the desktop icons, then i click on the desktop empty space.
-    if((this.isIconBtnClickEvt && this.iconBtnClickCnt >= 1)){ 
-
-      //case 1a - I was only clicking on the desktop icons, initiated a rename, then clicked on the desktop empty space
-      if(this.isRenameActive)
-        this.isFormDirty();
-
-      if(!this.isRenameActive)
-        this.resetIconBtnClick();
-
-      //if(this.isIconInFocusDueToPriorAction) return;
-
-      // if(!this.isIconInFocusDueToPriorAction)
-      //   this.btnStyleAndValuesReset();
-      
-    }else{
-      //this.btnStyleAndValuesReset();
+    if(!this.isRenameActive){
+      if((this.isIconBtnClickEvt && this.iconBtnClickCnt >= 1)){
+        this.btnStyleAndValuesReset();
+      }
     }
 
+    if(this.isRenameActive){
+      if((this.isIconBtnClickEvt && this.iconBtnClickCnt >= 1)){ 
 
+        //case 1a - I was only clicking on the desktop icons, initiated a rename, then clicked on the desktop empty space
+        if(this.isRenameActive)
+          this.isFormDirty();
+  
+        if(!this.isRenameActive)
+          this.resetIconBtnClick();
+      }
+    }
   }
 
 
