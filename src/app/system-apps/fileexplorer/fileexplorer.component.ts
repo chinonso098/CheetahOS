@@ -1057,13 +1057,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       return;
     }
 
-    if (!CommonFunctions.conditionalDrop(event)  && this.isDragFromFileExplorerActive) {
+    if(!CommonFunctions.conditionalDrop(event) && this.isDragFromFileExplorerActive) {
       console.warn('Drop failed due to condition.');
       return;
     }else{
       const droppedFiles:File[] = [];
       const files = event.dataTransfer?.files;
-      if (files && files.length > 0) {
+      if(files && files.length > 0){
         droppedFiles.push(...files);
       }
       

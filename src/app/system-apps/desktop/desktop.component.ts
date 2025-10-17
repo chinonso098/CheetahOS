@@ -1392,7 +1392,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       return;
     }
 
-    if (!CommonFunctions.conditionalDrop(event)  && this.isDragFromDesktopActive) {
+    if(!CommonFunctions.conditionalDrop(event) && this.isDragFromDesktopActive){
       console.warn('Drop failed due to condition.');
       return;
     }else{
