@@ -1,9 +1,16 @@
 .start-menu-main-container, .start-menu-main-overlay-container{
     position: absolute;
     display: block;
-    z-index: 4;
-    bottom: 0px;
+    bottom: 540px;
     left: 0;
+}
+
+.start-menu-main-container{
+    z-index: -1;
+}
+
+.start-menu-main-overlay-container{
+    z-index: 3;
 }
 
 .start-menu-main-overlay-container{

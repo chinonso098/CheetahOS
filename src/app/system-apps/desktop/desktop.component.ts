@@ -59,16 +59,6 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
       transition('slideIn => slideOut', [
         animate('550ms ease-out')
       ]),
-    ]),
-
-    trigger('slideStartMenuAnimation', [
-      transition(':enter', [
-        style({ transform: 'translateY(200%)', opacity: 0 }),
-        animate('300ms ease-out', style({ transform: 'translateY(0%)', opacity: 1 })),
-      ]),
-      transition(':leave', [
-        animate('300ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 })),
-      ]),
     ])
   ]
 })
@@ -154,7 +144,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showDesktopCntxtMenu = false;
   showTskBarAppIconCntxtMenu = false;
   showTskBarCntxtMenu = false;
-  showStartMenu = false;
 
   removeTskBarPrevWindowFromDOMTimeoutId!: NodeJS.Timeout;
   hideTskBarPrevWindowTimeoutId!: NodeJS.Timeout;
@@ -324,7 +313,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.showTaskBarAppIconMenu.pipe(concatMap((p) =>this.onShowTaskBarAppIconMenu(p))).subscribe();
     this._menuService.showTaskBarConextMenu.pipe(concatMap((p) =>this.onShowTaskBarContextMenu(p))).subscribe();
     this._audioService.showVolumeControlNotify.pipe(concatMap(() => this.showVolumeControl())).subscribe();
-    this._menuService.showStartMenu.pipe(concatMap(() =>this.showTheStartMenu())).subscribe();
 
     this._menuService.hideContextMenus.subscribe(() => { this.resetIconBtnsAndContextMenus(this.EXTERNAL_CALL)});
     this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
@@ -333,7 +321,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._windowService.windowDragIsInActive.subscribe(() => {this.isWindowDragActive = false;}); 
     this._audioService.hideVolumeControlNotify.subscribe(() => { this.hideVolumeControl()});
 
-    this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
+ 
     this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
 
     this._fileService.dirFilesUpdateNotify.subscribe(async () =>{
@@ -559,16 +547,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  async showTheStartMenu(): Promise<void>{
-    this.resetIconBtnsAndContextMenus(this.INTERNAL_CALL);
-    await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
-    this.showStartMenu = true; 
-  }
-
-  hideTheStartMenu():void{
-    this.showStartMenu = false;
-  }
-
   async captureComponentImg(): Promise<void>{
     const storeImgDelay = 500; // .5 sec
     const slideOutDelay = 3000; // 3 secs
@@ -703,15 +681,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this._menuService.hideContextMenus.next();
     }
 
-    //only if start menu is visible
-    if(this.showStartMenu){
-      this.showStartMenu = false;
-
-      const uid = `${this.name}-${this.processId}`;
-      this._runningProcessService.addEventOriginator(uid);
-      this._menuService.hideStartMenu.next();
-    }
-
     if(this.showVolumeCntrl){
       this.showVolumeCntrl = false;
       this._audioService.hideVolumeControlNotify.next(Constants.EMPTY_STRING);
@@ -719,6 +688,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
     this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
+    this._menuService.hideStartMenu.next();
+
     this.closePwrDialogBox();
   }
 

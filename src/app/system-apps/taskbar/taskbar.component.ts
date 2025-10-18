@@ -70,7 +70,8 @@ export class TaskbarComponent implements AfterViewInit{
     this._systemNotificationServices.showTaskBarNotify.subscribe(() => {this.showTaskBar()});
     this._systemNotificationServices.hideTaskBarNotify.subscribe(() => {this.hideTaskBar()});
 
-    this._menuService.hideStartMenu.subscribe(() => { this.changeStartMenuFlag()});
+    this._menuService.hideStartMenu.subscribe(() => { this.changeStartMenuFlag()}
+    );
     this._menuService.hideSearchBox.subscribe(() => { this.changeSearchFlag()});
   }
 
@@ -125,14 +126,18 @@ export class TaskbarComponent implements AfterViewInit{
 
   async showStartMenu(evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
-  
-    this._menuService.hideContextMenus.next();
-    await CommonFunctions.sleep(this.SECONDS_DELAY);
+    const delay = 100;
+
 
     if(!this.isStartMenuVisible){
+      this._menuService.hideContextMenus.next();
+      await CommonFunctions.sleep(delay);
+
+
       this._menuService.showStartMenu.next();
       this.isStartMenuVisible = true;
     }else{
+      this.isStartMenuVisible = false;
       this._menuService.hideStartMenu.next();
     }
 
@@ -146,21 +151,22 @@ export class TaskbarComponent implements AfterViewInit{
 
   async hideShowSearch(evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
-    
+
     this._menuService.hideContextMenus.next();
     await CommonFunctions.sleep(this.SECONDS_DELAY);
 
     if(this.isSearchWindowVisible){
-      this.isSearchWindowVisible = false;
+      this.isSearchWindowVisible = true;
       this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
     }else{
       this.isSearchWindowVisible = true;
       this._menuService.showSearchBox.next();
     }
 
-    if(this.isStartMenuVisible)
+    if(this.isStartMenuVisible){
+      this.isStartMenuVisible = false;
       this._menuService.hideStartMenu.next();
-
+    }
   }
 
   changeSearchFlag():void{

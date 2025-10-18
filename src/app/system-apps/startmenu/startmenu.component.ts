@@ -1,21 +1,22 @@
 import { Component, ElementRef, OnInit, AfterViewInit } from '@angular/core';
 //import { animate, style, transition, trigger } from '@angular/animations';
 
-import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
-import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { FileService } from 'src/app/shared/system-service/file.service';
 
+import { FileService } from 'src/app/shared/system-service/file.service';
+import { MenuService } from 'src/app/shared/system-service/menu.services';
+import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
+import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
+import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 
 import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
-import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
-import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { MenuService } from 'src/app/shared/system-service/menu.services';
-
+import { trigger, transition, style, animate, state, keyframes } from '@angular/animations';
 
 @Component({
   selector: 'cos-startmenu',
@@ -23,6 +24,50 @@ import { MenuService } from 'src/app/shared/system-service/menu.services';
   styleUrls: ['./startmenu.component.css'],
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone:false,
+  animations: [
+    trigger('slideStartMenuAnimation', [
+      // Hidden (default)
+      state('slideDown', style({
+        bottom: '-540px',
+        zIndex: -1,
+      })),
+  
+      // Visible (open)
+      state('slideUp', style({
+        bottom: '0px',
+        zIndex: 3,
+      })),
+  
+      // --- Slide Up (Open) ---
+      transition('* => slideUp', [
+        // Prepare visible state first
+        style({ zIndex: 3, bottom: '-540px' }),
+  
+        // Keyframe-based bounce animation
+        animate(
+          '550ms cubic-bezier(0.25, 1.25, 0.5, 1)',
+          keyframes([
+            style({ bottom: '-540px', offset: 0 }),
+            style({ bottom: '5px', offset: 0.8 }),  // slight overshoot
+            style({ bottom: '0px', offset: 1.0 })   // settle into place
+          ])
+        )
+      ]),
+  
+      // --- Slide Down (Close) ---
+      transition('slideUp => slideDown', [
+        animate(
+          '420ms cubic-bezier(0.4, 0, 0.2, 1)',
+          keyframes([
+            style({ bottom: '0px', offset: 0 }),
+            style({ bottom: '-20px', offset: 0.8 }),
+            style({ bottom: '-540px', offset: 1.0 })
+          ])
+        ),
+        style({ zIndex: -1 })
+      ]),
+    ])
+  ]
 })
 
 export class StartMenuComponent implements OnInit, AfterViewInit {
@@ -30,9 +75,12 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   private _runningProcessService:RunningProcessService;
   private _processHandlerService:ProcessHandlerService;
   private _userNotificationService:UserNotificationService;
+  private _systemNotificationService:SystemNotificationService;
   private _menuService:MenuService;
   private _fileService:FileService;
   private _elRef:ElementRef;
+
+  slideState = 'slideDown';
 
   txtOverlayMenuStyle:Record<string, unknown> = {};
   delayStartMenuOverlayHideTimeoutId!: NodeJS.Timeout;
@@ -55,19 +103,26 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, processHandlerService:ProcessHandlerService,
                elRef: ElementRef, fileService:FileService, userNotificationService:UserNotificationService,
-               menuService:MenuService) { 
+               menuService:MenuService, systemNotificationService:SystemNotificationService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._elRef = elRef;
     this._fileService = fileService;
     this._processHandlerService = processHandlerService ;
     this._userNotificationService = userNotificationService;
+    this._systemNotificationService = systemNotificationService;
     this._menuService = menuService;
 
-    this.processId = this._processIdService.getNewProcessId()
+    this.processId = this._processIdService.getNewProcessId();
     if(this._runningProcessService.getProcesses().findIndex(x => x.getProcessName === this.name) === -1){
       this._runningProcessService.addProcess(this.getComponentDetail());
     }
+
+    this._menuService.showStartMenu.subscribe(() => {this.showStartMenu()});
+    this._menuService.hideStartMenu.subscribe(() => {this.hideStartMenu()});
+
+    this._systemNotificationService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._systemNotificationService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
   ngOnInit(): void {
@@ -75,8 +130,8 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   }
   
   async ngAfterViewInit():Promise<void>{
-
-    await CommonFunctions.sleep(this.SECONDS_DELAY * 2)
+    const delay = 1500; //1.5secs
+    await CommonFunctions.sleep(delay);
     await this.loadFilesInfoAsync();
     this.removeVantaJSSideEffect();
   }
@@ -93,6 +148,14 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
         elfRef.style.zIndex = Constants.EMPTY_STRING;
       }
     }, this.SECONDS_DELAY);
+  }
+
+  showStartMenu():void{
+    this.slideState = 'slideUp';
+  }
+
+  hideStartMenu():void{
+    this.slideState = 'slideDown';
   }
 
   // Store listener for removal
@@ -124,7 +187,23 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     }, 500);
   }
 
+  lockScreenIsActive():void{
+    const startMenuElmnt = document.getElementById('the-window-startmenu') as HTMLDivElement;
+    if(startMenuElmnt){
+      startMenuElmnt.style.opacity = '0';
+    }
 
+    this.hideStartMenu();
+  }
+
+  desktopIsActive():void{
+    const startMenuElmnt = document.getElementById('the-window-startmenu') as HTMLDivElement;
+    if(startMenuElmnt){
+      startMenuElmnt.style.opacity = '1';
+    }
+  }
+
+  
   // Hide Overlay Function
   startMenuOverlaySlideIn(): void {
     clearTimeout(this.delayStartMenuOverlayShowTimeoutId);
@@ -198,13 +277,11 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   }
 
   runProcess(file:FileInfo, evt:MouseEvent):void{
+    evt.stopPropagation();
     console.log('startmanager-runProcess:',file);
 
-    this._menuService.hideStartMenu.next();
-  
+    this.hideStartMenu();
     this._processHandlerService.runApplication(file);
-
-    evt.stopPropagation();
   }
 
 
@@ -221,11 +298,11 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   }
 
   power(evt:MouseEvent):void{
-    const msg = 'Shut Down Cheetah';
-    this._menuService.hideStartMenu.next();
-    this._userNotificationService.showPowerOnOffNotification(msg);
-
     evt.stopPropagation();
+
+    this.hideStartMenu();
+    const msg = 'Shut Down Cheetah';
+    this._userNotificationService.showPowerOnOffNotification(msg);
   }
 
   private getComponentDetail():Process{
