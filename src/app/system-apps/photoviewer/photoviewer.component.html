@@ -5,10 +5,13 @@
         
         <ng-template #galleryView> 
             <div class="main-gallery__container" (contextmenu)="focusHere($event)" (click)="focusHere($event)" >
-                <div class="gallery-container">
-                    <ol class="ol-gallery-container__grid">
-                        <li class="li-gallery-container" *ngFor="let option of tst_imageList; let i = index">
-                            <div class="gallery-container__img" 
+                <div class="gallery-sidepanel">
+
+                </div>
+                <div class="gallery-content">
+                    <ol class="ol-gallery-content__grid">
+                        <li class="li-gallery-content" *ngFor="let option of tst_imageList; let i = index">
+                            <div class="gallery-content__img" 
                                 (click)="handlePictureSelection(option, $event)" >
                                 <img [src]="option"/>
                             </div>
