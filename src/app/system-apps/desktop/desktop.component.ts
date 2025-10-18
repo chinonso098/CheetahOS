@@ -21,7 +21,7 @@ import { ActivityHistoryService } from 'src/app/shared/system-service/activity.t
 import { GeneralMenu, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import * as htmlToImage from 'html-to-image';
 import { trigger, state, style, transition, animate } from '@angular/animations';
-import { dirname} from 'path';
+import { basename, dirname} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 
 import { TaskBarIconInfo } from '../taskbarentries/taskbar.entries.type';
@@ -41,7 +41,6 @@ import { DragEventInfo } from 'src/app/system-files/common.interfaces';
 import { concatMap } from 'rxjs';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
-//  animate('1750ms ease-out')
 @Component({
   selector: 'cos-desktop',
   templateUrl: './desktop.component.html',
@@ -169,16 +168,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   birdBkgrnd:BIRDS =  {el:'#vantaCntnr'}
 
   VANTAS:any = [this.waveBkgrnd, this.ringsBkgrnd, this.haloBkgrnd, this.globeBkgrnd, this.birdBkgrnd ];
-  private readonly MIN_NUMS_OF_DESKTOPS = 0;
   private readonly vantaBackgroundName:string[] = ["vanta_wave","vanta_ring","vanta_halo", "vanta_globe", "vanta_bird"];
   private readonly vantaBackGroundPath:string[] = ["osdrive/Program-Files/Backgrounds/vanta.waves.min.js",  
                                           "osdrive/Program-Files/Backgrounds/vanta.rings.min.js",
                                           "osdrive/Program-Files/Backgrounds/vanta.halo.min.js", 
                                           "osdrive/Program-Files/Backgrounds/vanta.globe.min.js",
                                           "osdrive/Program-Files/Backgrounds/vanta.birds.min.js"];
+  DESKTOP_PICTURES:string[] = [];
 
+  private readonly MIN_NUMS_OF_DESKTOPS = 0;
   // i didn't subtract 1 because there is a particles flows bkgrnd in the names array
-  private readonly MAX_NUMS_OF_DESKTOPS = this.VANTAS.length-1;
+  private  maxNumberOfDesktopsBkgrnd = this.VANTAS.length-1;
   private readonly CLIPPY_INIT_DELAY = 300000; // 5mins
   private readonly COLOR_CHANGE_DELAY = 30000; // 30secs
   private readonly COLOR_TRANSITION_DURATION = 1500; // 1.5sec
@@ -381,10 +381,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.setTaskBarCombinationState();
   }
 
-  loadDefaultBackground():void{
+  loadDefaultVantaBackground():void{
     this._scriptService.loadScript("vanta_waves", "osdrive/Program-Files/Backgrounds/vanta.waves.min.js").then(() =>{
       this._vantaEffect = VANTA.WAVES(VantaDefaults.getDefaultWave(this.DEFAULT_COLOR));
     })
+  }
+
+  loadPictureBackgrounds():void{
+    if(this.DESKTOP_PICTURES.length >= 7)
+        return;
+
+    const desktopImgPath = Constants.DESKTOP_IMAGE_BASE_PATH;
+    const desktopImages =  Constants.DESKTOP_PICTURE_SET;
+    desktopImages.forEach( imgName =>{ this.DESKTOP_PICTURES.push(`${desktopImgPath}${imgName}`)});
   }
 
   async ngAfterViewInit():Promise<void>{
@@ -411,10 +420,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND).split(Constants.COLON);
     this.desktopBackgroundType = defaultBkgrnd[0];
     this.desktopBackgroundValue = defaultBkgrnd[1];
-  }
 
-  loadPictureBackgrounds():void{
-
+    if(this.desktopBackgroundType === Constants.BACKGROUND_DYNAMIC){
+      this.currentDesktopNum = 0;
+      this.maxNumberOfDesktopsBkgrnd = this.VANTAS.length - 1; 
+    }else if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE){
+      this.currentDesktopNum = 0;
+      this.loadPictureBackgrounds();
+      this.maxNumberOfDesktopsBkgrnd = Constants.DESKTOP_PICTURE_SET.length - 1;
+    }
   }
 
   setStyle(desktopElmnt: HTMLDivElement, styleClasses:string[], activeClass:string) {
@@ -653,7 +667,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     return mergedImg.toDataURL('image/png');
   }
 
-
   async createFolder():Promise<void>{
     const folderName = Constants.NEW_FOLDER;
     const result =  await this._fileService.createFolderAsync(Constants.DESKTOP_PATH, folderName);
@@ -888,16 +901,24 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(this.currentDesktopNum > this.MIN_NUMS_OF_DESKTOPS){
       this.currentDesktopNum--;
       const curNum = this.currentDesktopNum;
-      this.loadOtherVantaBackgrounds(curNum);
+
+      if(this.desktopBackgroundType === Constants.BACKGROUND_DYNAMIC)
+        this.loadOtherVantaBackgrounds(curNum);
+      else  if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE)
+        this.loadOtherPictureBackgrounds(curNum);
     }
     this.hideDesktopContextMenuAndOthers();
   }
 
   nextBackground():void{
-    if(this.currentDesktopNum < this.MAX_NUMS_OF_DESKTOPS){
+    if(this.currentDesktopNum < this.maxNumberOfDesktopsBkgrnd){
       this.currentDesktopNum++;
       const curNum = this.currentDesktopNum;
-      this.loadOtherVantaBackgrounds(curNum);
+
+      if(this.desktopBackgroundType === Constants.BACKGROUND_DYNAMIC)
+        this.loadOtherVantaBackgrounds(curNum);
+      else  if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE)
+        this.loadOtherPictureBackgrounds(curNum);
     }
     
     this.hideDesktopContextMenuAndOthers();
@@ -913,7 +934,21 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }else{
         this.stopVantaWaveColorChange();
       }
+
+      const defaultDesktopBackgrounValue = `${this.desktopBackgroundType}:${this.vantaBackgroundName[i]}`;
+      this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
     })
+  }
+
+  loadOtherPictureBackgrounds(i:number):void{
+    const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
+    if(desktopElmnt){
+      this.desktopBackgroundValue = this.DESKTOP_PICTURES[i];
+      desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
+      
+      const defaultDesktopBackgrounValue = `${this.desktopBackgroundType}:${this.desktopBackgroundValue}`;
+      this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+    }
   }
 
   stopVantaWaveColorChange():void{
@@ -2040,6 +2075,8 @@ OpensWith=${file.getOpensWith}
         this.setStyle(desktopElmnt, styleClasses, activeClass);
 
         if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE){
+          const bkgrndIdx = this.DESKTOP_PICTURES.findIndex(x => x === this.desktopBackgroundValue);
+          this.currentDesktopNum = bkgrndIdx;
           desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
         } else
         1
@@ -2054,6 +2091,7 @@ OpensWith=${file.getOpensWith}
         this.setStyle(lockScreenElmnt, styleClasses, activeClass);
 
         const bkgrndIdx = this.vantaBackgroundName.findIndex(x => x === this.desktopBackgroundValue);
+        this.currentDesktopNum = bkgrndIdx;
         this.loadOtherVantaBackgrounds(bkgrndIdx);
 
         if(this.desktopBackgroundValue === 'vanta_wave'){
