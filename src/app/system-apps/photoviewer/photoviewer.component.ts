@@ -14,14 +14,6 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
-import {
-  style,
-  trigger,
-  transition,
-  animate,
-  query,
-  group,
-} from '@angular/animations';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 
@@ -30,27 +22,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   selector: 'cos-photoviewer',
   templateUrl: './photoviewer.component.html',
   styleUrls: ['./photoviewer.component.css'],
-  standalone:false,
-  animations: [
-    trigger('slideToggle', [
-      transition( '* => *', [
-          group([ query( ':enter', style({ transform: 'translateX({{ enterStart }}) scale(0.25)' }),
-              { optional: true }),
-            query( ':leave',[
-                animate( '750ms ease-in-out', style({ transform: 'translateX({{ leaveEnd }}) scale(0.25)' })),
-              ],
-              { optional: true }
-            ),
-            query(':enter', [ animate( '750ms ease-in-out', style({ transform: 'translateX(0) scale(1)' }) ),
-              ],
-              { optional: true }
-            ),
-          ]),
-        ],
-        { params: { leaveEnd: '', enterStart: '', }, }
-      ),
-    ]),
-  ],
+  standalone:false
 })
 export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
 
@@ -69,7 +41,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _skip = false;
 
   readonly SECONDS_DELAY = 500;
-   readonly BASE_64_PNG_IMG = 'data:image/png;base64';
+  readonly BASE_64_PNG_IMG = 'data:image/png;base64';
 
   name= 'photoviewer';
   hasWindow = true;
@@ -84,10 +56,10 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
                         '/Users/Pictures/Samples/Sparkling Water.jpg', '/Users/Pictures/Samples/Sunset Car.jpg', '/Users/Pictures/Samples/Sunset.jpg']
                       
   imageList:string[] = [];
-  protected images: WritableSignal<string[]> =  signal([this.imageList[0]]);
-  protected selectedIndex = signal(1);
-  protected animationDirection = signal<'right' | 'left'>('right');
   disableAnimations = true;
+
+  currentImg = '';
+  private currentImgIndex = 0;
   
 
   constructor(fileService:FileService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
@@ -109,15 +81,15 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
 
     if(this.checkIfImgIsBase64(this._fileInfo.getContentPath)){
-      this.images = signal([this._fileInfo.getContentPath]);
+      this.currentImg = this._fileInfo.getContentPath;
       return;
     }
 
     if(this.imageList.length > 0)
-      this.images = signal([this.imageList[0]]);
+      this.currentImg =  this.imageList[0];
     else{
       const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
-      this.images = signal([currentImg]);
+      this.currentImg = currentImg;
     }
   } 
 
@@ -127,16 +99,16 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     if(!this._skip){
       await this.getCurrentPicturePathAndSearchForOthers();
       if(this.imageList.length > 0)
-        this.images = signal([this.imageList[0]]);
+        this.currentImg = this.imageList[0];
       else{
         const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
-        this.images = signal([this._fileInfo.getContentPath || currentImg]);
+        this.currentImg = this._fileInfo.getContentPath || currentImg;
       }
 
       const appData = (this.imageList.length > 0)? this.imageList : this._picSrc;
       this.storeAppState(appData);
     }else{
-      this.images = signal([this._picSrc]);
+      this.currentImg = this._picSrc;
     }
 
     //tell angular to run additional detection cycle after 
@@ -167,32 +139,35 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   onKeyDown(evt:KeyboardEvent):void{
-    if(evt.key === "ArrowLeft"){
-      if (this.selectedIndex() > 0) {
-        this.animationDirection.set('left');
-        this.selectedIndex.set(this.selectedIndex() - 1);
-        this.images.set([this.imageList[this.selectedIndex()]]);
-      }
+    if(evt.key == "ArrowLeft"){
+      if((this.currentImgIndex >= 0)){
+        this.currentImg = this.imageList[this.currentImgIndex--];
+
+        if(this.currentImgIndex < 0){
+          this.currentImgIndex = this.imageList.length - 1;
+        }
+      }      
     }
 
-    if(evt.key === "ArrowRight"){
-      if (this.selectedIndex() < this.imageList.length - 1) {
-        this.animationDirection.set('right');
-        this.selectedIndex.set(this.selectedIndex() + 1);
-        this.images.set([this.imageList[this.selectedIndex()]]);
+    if(evt.key == "ArrowRight"){
+      if(this.currentImgIndex <= this.imageList.length - 1){
+        this.currentImg = this.imageList[this.currentImgIndex++];
+
+        if(this.currentImgIndex > this.imageList.length -1){
+          this.currentImgIndex = 0;
+        }
       }
     }
   }
 
   onClick(id?:number):void{
-
     if(id !== undefined){
-      this.images.set([this.imageList[id]]);
+      this.currentImg = this.imageList[id];
+      this.currentImgIndex = id;
     }else{
-      if (this.selectedIndex() < this.imageList.length - 1) {
-        this.animationDirection.set('right');
-        this.selectedIndex.set(this.selectedIndex() + 1);
-        this.images.set([this.imageList[this.selectedIndex()]]);
+      this.currentImgIndex = this.currentImgIndex + 1;
+      if(this.currentImgIndex <= this.imageList.length - 1){
+        this.currentImg = this.imageList[this.currentImgIndex];
       }
     }
   }

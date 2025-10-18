@@ -1,20 +1,8 @@
 <cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
     <div class="main-container" (contextmenu)="focusHere($event)" (click)="focusHere($event)" #photoContainer>
-        <div   class="photo-viewer-container"> 
-            <div [@.disabled]="disableAnimations"
-                [@slideToggle]="{
-                    value: selectedIndex(),
-                    params: {
-                    leaveEnd: animationDirection() === 'right' ? '100%' : '-100%',
-                    enterStart: animationDirection() === 'right' ? '-100%' : '100%'
-                    }
-                }"
-                tabindex="0" id="photoCntnr" 
-                class="photo-viewer"  (keydown)="onKeyDown($event)" (click)="onClick()">
-
-                @for (image of images(); track image) {
-                    <img [src]="image" />
-                }
+        <div  class="photo-viewer-container"> 
+            <div tabindex="0" id="photoCntnr" class="photo-viewer"  (keydown)="onKeyDown($event)" (click)="onClick()">
+                <img [src]="currentImg"/>
             </div>
         </div> 
         <div class="photo-slider">
