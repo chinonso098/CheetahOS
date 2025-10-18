@@ -125,7 +125,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showDesktopIcons = true;
   showDesktopScreenShotPreview = false;
   showTaskBarIconToolTip = false;
-  showVolumeControl = false;
+  showVolumeCntrl = false;
   
   showClippy = false;
   dsktpPrevImg = Constants.EMPTY_STRING;
@@ -297,7 +297,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   displayName = Constants.EMPTY_STRING;
   directory = Constants.DESKTOP_PATH;
 
-
   constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService, 
               scriptService:ScriptService, audioService:AudioService, menuService:MenuService, 
               fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
@@ -323,7 +322,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     // these are subs, but the desktop cmpnt is not going to be destoryed
     this._menuService.showTaskBarAppIconMenu.pipe(concatMap((p) =>this.onShowTaskBarAppIconMenu(p))).subscribe();
     this._menuService.showTaskBarConextMenu.pipe(concatMap((p) =>this.onShowTaskBarContextMenu(p))).subscribe();
-    this._audioService.hideShowVolumeControlNotify.pipe(concatMap(() => this.hideShowVolumeControl())).subscribe();
+    this._audioService.showVolumeControlNotify.pipe(concatMap(() => this.showVolumeControl())).subscribe();
     this._menuService.showStartMenu.pipe(concatMap(() =>this.showTheStartMenu())).subscribe();
 
     this._menuService.hideContextMenus.subscribe(() => { this.hideDesktopContextMenuAndOthers()});
@@ -331,10 +330,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
     this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;});
     this._windowService.windowDragIsInActive.subscribe(() => {this.isWindowDragActive = false;}); 
+    this._audioService.hideVolumeControlNotify.subscribe(() => { this.hideVolumeControl()});
 
     this._menuService.hideStartMenu.subscribe(() => { this.hideTheStartMenu()});
-
-
     this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
 
     this._fileService.dirFilesUpdateNotify.subscribe(async () =>{
@@ -697,7 +695,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.showDesktopIconCntxtMenu = false;
     this.showTskBarAppIconCntxtMenu = false;
     this.showTskBarCntxtMenu = false;
-
     this.isShiftSubMenuLeft = false;
 
     // to prevent an endless loop of calls,
@@ -714,9 +711,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this._menuService.hideStartMenu.next();
     }
 
-    if(this.showVolumeControl){
-      this.showVolumeControl = false;
-      this._audioService.hideShowVolumeControlNotify.next();
+    if(this.showVolumeCntrl){
+      this.showVolumeCntrl = false;
+      this._audioService.hideVolumeControlNotify.next(Constants.EMPTY_STRING);
     }
 
     this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
@@ -775,14 +772,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }, 10); //10ms
   }
 
-  async hideShowVolumeControl(): Promise<void>{
+  async showVolumeControl(): Promise<void>{
     this.resetIconBtnsAndContextMenus();
     await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
-    this.showVolumeControl = !this.showVolumeControl;
+    this.showVolumeCntrl = true;
   }
 
   hideVolumeControl():void{
-    this.showVolumeControl = false;
+    this.showVolumeCntrl = false;
   }
 
   viewByLargeIcon():void{

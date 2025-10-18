@@ -84,7 +84,6 @@ export namespace DesktopIconAlignmentHelper {
   }
 
   export const clearCloneConainter = (): void =>{
-
     const elementId = 'desktopIcon_clone_cntnr'; // Get the cloneIcon container
     const cloneIcon = document.getElementById(elementId);
     if(cloneIcon) 

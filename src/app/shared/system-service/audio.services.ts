@@ -25,7 +25,8 @@ export class AudioService implements BaseService {
   private _externalAudioSrc: Map<string, any>;
 
   changeVolumeNotify: Subject<void> = new Subject<void>();
-  hideShowVolumeControlNotify: Subject<void> = new Subject<void>();
+  hideVolumeControlNotify: Subject<string> = new Subject<string>();
+  showVolumeControlNotify: Subject<void> = new Subject<void>();
 
   isExternalAudioSrcPresent = false;
   isAudioScriptLoaded = false;

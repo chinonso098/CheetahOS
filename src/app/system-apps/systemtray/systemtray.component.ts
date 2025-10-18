@@ -8,6 +8,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { concatMap } from 'rxjs';
 
 @Component({
   selector: 'cos-systemtray',
@@ -51,8 +52,14 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
     this._runningProcessService.addProcess(this.getComponentDetail());
 
     // these are subs, but since this cmpnt will not be closed, it doesn't need to be destoryed
-    this._audioService.changeVolumeNotify.subscribe(async() => { this.upadateVolume()}); 
-    this._systemNotificationServices.showDesktopNotify.subscribe(async() =>{this.upadateVolume()})
+    this._audioService.changeVolumeNotify.pipe(concatMap(() =>  this.upadateVolume())).subscribe(); 
+    this._systemNotificationServices.showDesktopNotify.pipe(concatMap(() =>  this.upadateVolume())).subscribe();
+    
+    this._audioService.hideVolumeControlNotify.subscribe((p) => {
+      if(p === Constants.EMPTY_STRING){
+        this.hideVolumeControl();
+      }
+    });
   }
 
   ngOnInit():void {
@@ -60,18 +67,14 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
     this.updateTime();
     this.getDate();
 
-    setInterval(() => {
-      this.updateTime();
-    }, secondsDelay[0]); 
+    setInterval(() => { this.updateTime();  }, secondsDelay[0]); 
 
     setInterval(() => {
       this.getDate();
     }, secondsDelay[1]); 
   }
 
-  ngAfterViewInit(): void {
-    
-  }
+  ngAfterViewInit(): void {}
 
   updateTime():void {
     const now = new Date();
@@ -114,15 +117,24 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   }
 
   async upadateVolume():Promise<void>{
-    const delay = 500;
+    const delay = 100; //100ms
     await CommonFunctions.sleep(delay);
     this.currentVolume = this._audioService.getVolume();
     this.setVolumeIcon();
   }
 
   showVolumeControl():void{
-    this.isShowVolumeControl = !this.isShowVolumeControl;
-    this._audioService.hideShowVolumeControlNotify.next();
+    if(!this.isShowVolumeControl){
+      this.isShowVolumeControl = true
+      this._audioService.showVolumeControlNotify.next();
+    }else{
+      this.hideVolumeControl();
+    }
+  }
+
+  hideVolumeControl():void{
+    this.isShowVolumeControl = false;
+    this._audioService.hideVolumeControlNotify.next(this.name);
   }
 
   private getComponentDetail():Process{
