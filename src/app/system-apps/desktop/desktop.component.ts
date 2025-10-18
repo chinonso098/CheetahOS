@@ -74,7 +74,6 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
 })
 
 export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
-
   @ViewChild('desktopContainer', {static: true}) desktopContainer!: ElementRef; 
   
   private _fileService:FileService
@@ -198,6 +197,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private readonly MAX_NUM_COLOR_RANGE = 99999;
   private readonly DEFAULT_COLOR = 0x274c;
   private readonly DESKTOP_MENU_DELAY = 250; //250ms
+  private readonly INTERNAL_CALL = 1;
+  private readonly EXTERNAL_CALL = 2;
 
   private currentDesktopNum = 0;
 
@@ -325,7 +326,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._audioService.showVolumeControlNotify.pipe(concatMap(() => this.showVolumeControl())).subscribe();
     this._menuService.showStartMenu.pipe(concatMap(() =>this.showTheStartMenu())).subscribe();
 
-    this._menuService.hideContextMenus.subscribe(() => { this.hideDesktopContextMenuAndOthers()});
+    this._menuService.hideContextMenus.subscribe(() => { this.resetIconBtnsAndContextMenus(this.EXTERNAL_CALL)});
     this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
     this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
     this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;});
@@ -512,7 +513,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     console.log('showDesktopContextMenu - evtOriginator:',evtOriginator);
 
     if(evtOriginator === Constants.EMPTY_STRING){
-      this.resetIconBtnsAndContextMenus();
+      this.resetIconBtnsAndContextMenus(this.INTERNAL_CALL);
       await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
 
       const menuHeight = 306; //this is not ideal.. menu height should be gotten dynmically
@@ -559,7 +560,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async showTheStartMenu(): Promise<void>{
-    this.resetIconBtnsAndContextMenus();
+    this.resetIconBtnsAndContextMenus(this.INTERNAL_CALL);
     await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
     this.showStartMenu = true; 
   }
@@ -773,7 +774,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async showVolumeControl(): Promise<void>{
-    this.resetIconBtnsAndContextMenus();
+    this.resetIconBtnsAndContextMenus(this.INTERNAL_CALL);
     await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
     this.showVolumeCntrl = true;
   }
@@ -1123,15 +1124,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  resetIconBtnsAndContextMenus():void{
+  resetIconBtnsAndContextMenus(callType:number):void{
     //only one cntxt menu at a time
-    this.hideDesktopContextMenuAndOthers(this.name);
+    if(callType === this.INTERNAL_CALL)
+      this.hideDesktopContextMenuAndOthers(this.name);
+    else
+      this.hideDesktopContextMenuAndOthers();
+
     this.btnStyleAndValuesReset();
   }
 
   async onShowTaskBarAppIconMenu(data:unknown[]): Promise<void>{
     //--------------------
-    this.resetIconBtnsAndContextMenus();
+    this.resetIconBtnsAndContextMenus(this.INTERNAL_CALL);
     await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY)
 
     const rect = data[0] as DOMRect;
@@ -1176,7 +1181,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async onShowTaskBarContextMenu(evt:MouseEvent):Promise<void>{
-    this.resetIconBtnsAndContextMenus();
+    this.resetIconBtnsAndContextMenus(this.INTERNAL_CALL);
     await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
 
     const menuHeight = 116;
@@ -1450,10 +1455,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async runApplication(file:FileInfo):Promise<void>{
-    console.log('desktopmanager-runApplication:',file)
-
     await this._audioService.play(this.cheetahNavAudio);
-
     CommonFunctions.handleTracking(this._activityHistoryService, file);
     this._processHandlerService.runApplication(file);
     this.btnStyleAndValuesReset();
@@ -1616,7 +1618,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         DesktopIconAlignmentHelper.preCloneDesktopIcon(Number(btnId))
       }
     });
-    console.log('this.markedBtnIds:', this.markedBtnIds);
+    //console.log('this.markedBtnIds:', this.markedBtnIds);
   }
   
   removeClassAndStyleFromBtn():void{
@@ -1739,7 +1741,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   onDragEnd(evt:DragEvent):void{
-
     this.isDragFromDesktopActive = false;
     const mPos:mousePosition = {
       clientX: evt.clientX,
@@ -1814,7 +1815,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async onDelete(): Promise<void> {
-
     // Determine which files to delete
     const filesToDelete = (this.areMultipleIconsHighlighted)
       ? this.markedBtnIds.map(id => this.files[Number(id)])
