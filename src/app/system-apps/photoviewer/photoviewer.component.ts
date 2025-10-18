@@ -17,7 +17,6 @@ import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 
-
 @Component({
   selector: 'cos-photoviewer',
   templateUrl: './photoviewer.component.html',
@@ -42,6 +41,13 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   readonly SECONDS_DELAY = 500;
   readonly BASE_64_PNG_IMG = 'data:image/png;base64';
+  imageList:string[] = [];
+  currentImg = Constants.EMPTY_STRING;
+  private currentImgIndex = 0;
+
+  readonly GALLERY_VIEW = 'gallery view';
+  readonly PHOTO_VIEW = 'photo view'
+  defaultView = this.GALLERY_VIEW;
 
   name= 'photoviewer';
   hasWindow = true;
@@ -52,14 +58,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   displayName = 'PhotoViewer';
   private defaultPath = '/Users/Pictures/';
   private defaultImg = '/Users/Pictures/Samples/no_img.jpeg';
-  private tst_imageList:string[] = ['/Users/Pictures/Samples/Chill on the Moon.jpg', '/Users/Pictures/Samples/mystical.jpg',
-                        '/Users/Pictures/Samples/Sparkling Water.jpg', '/Users/Pictures/Samples/Sunset Car.jpg', '/Users/Pictures/Samples/Sunset.jpg']
-                      
-  imageList:string[] = [];
-  disableAnimations = true;
-
-  currentImg = '';
-  private currentImgIndex = 0;
+  tst_imageList:string[] = ['osdrive/Users/Pictures/Samples/Chill on the Moon.jpg', 'osdrive/Users/Pictures/Samples/mystical.jpg',
+                        'osdrive/Users/Pictures/Samples/Sparkling Water.jpg', 'osdrive/Users/Pictures/Samples/Sunset Car.jpg',
+                         'osdrive/Users/Pictures/Samples/Sunset.jpg']
   
 
   constructor(fileService:FileService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
@@ -210,6 +211,12 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
       }
     }
   }
+
+
+  handlePictureSelection(img:string, evt:MouseEvent):void{
+    evt.stopPropagation();
+  }
+
 
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();

@@ -1,16 +1,39 @@
 <cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
-    <div class="main-container" (contextmenu)="focusHere($event)" (click)="focusHere($event)" #photoContainer>
-        <div  class="photo-viewer-container"> 
-            <div tabindex="0" id="photoCntnr" class="photo-viewer"  (keydown)="onKeyDown($event)" (click)="onClick()">
-                <img [src]="currentImg"/>
-            </div>
-        </div> 
-        <div class="photo-slider">
-            <div class="photo-storage" *ngFor="let img of imageList; let i = index"  (click)="onClick(i)">
-                <div class="photo-slider-img">
-                    <img [src]="img"/>
+    <div class="main-photos__container" #photoContainer>
+        <ng-container [ngTemplateOutlet]="defaultView === GALLERY_VIEW ? galleryView : photoView ">
+        </ng-container>
+        
+        <ng-template #galleryView> 
+            <div class="main-gallery__container" (contextmenu)="focusHere($event)" (click)="focusHere($event)" >
+                <div class="gallery-container">
+                    <ol class="ol-gallery-container__grid">
+                        <li class="li-gallery-container" *ngFor="let option of tst_imageList; let i = index">
+                            <div class="gallery-container__img" 
+                                (click)="handlePictureSelection(option, $event)" >
+                                <img [src]="option"/>
+                            </div>
+                        </li>
+                    </ol>
                 </div>
             </div>
-        </div>
+            
+        </ng-template>
+    
+        <ng-template #photoView>
+            <div class="main-photo-viewer__container" (contextmenu)="focusHere($event)" (click)="focusHere($event)" >
+                <div  class="photo-viewer-container"> 
+                    <div tabindex="0" id="photoCntnr" class="photo-viewer"  (keydown)="onKeyDown($event)" (click)="onClick()">
+                        <img [src]="currentImg"/>
+                    </div>
+                </div> 
+                <div class="photo-slider">
+                    <div class="photo-storage" *ngFor="let img of imageList; let i = index"  (click)="onClick(i)">
+                        <div class="photo-slider-img">
+                            <img [src]="img"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
     </div>
 </cos-window>
