@@ -1318,12 +1318,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.tskBarToolTipText = appName;
 
+    if(this.showTskBarToolTipTimeoutId)
+      clearTimeout(this.showTskBarToolTipTimeoutId);
+    
+
    this.showTskBarToolTipTimeoutId = setTimeout(() => {
       this.showTaskBarIconToolTip = true
       this.tskBarToolTipStyle = {
         'position':'absolute',
         'z-index': 5,
-        'transform': `translate(${xAxis- 6}px, ${yAxis - 20}px)`
+        'transform': `translate(${xAxis}px, ${yAxis - 20}px)`
       }
     }, delay);
   }
