@@ -26,7 +26,7 @@ import { Constants } from 'src/app/system-files/constants';
 
 import { TaskBarIconInfo } from '../taskbarentries/taskbar.entries.type';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { mousePosition, IconsSizes, IconsSizesPX, ShortCutIconsSizes, ShortCutIconsBottom} from './desktop.types';
+import { mousePosition, IconsSizes} from './desktop.types';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { VantaDefaults } from './vanta-object/vanta.defaults';
@@ -905,13 +905,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   hideDesktopIcon():void{
     this.showDesktopIcons = false;
-    this.btnStyle ={ 'display': 'none', }
+    this.btnStyle ={ 'display': 'none' }
     this.getDesktopMenuData();
   }
 
   showDesktopIcon():void{
     this.showDesktopIcons = true;
-    this.btnStyle ={'display': 'block', }
+    this.btnStyle ={'display': 'block' }
     this.getDesktopMenuData();
   }
 
@@ -1558,10 +1558,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(this.areMultipleIconsHighlighted && !this.markedBtnIds.includes(String(i))){
       this.clearStates();
     }
-
-    // if(this.prevIconId !== i){
-    //   DesktopIconAlignmentHelper.clearPreClonedIconById(this.prevIconId);
-    // }
   }
 
   onMouseEnter(id:number):void{
@@ -1604,13 +1600,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   removeIdFromMarked(id:number):void{
-    console.log('removeIdFromMarked id to clear:', id);
     const idx = this.markedBtnIds.findIndex(x => x === String(id));
-    console.log('removeIdFromMarked idx:', idx);
-
-    console.log('markedBtnIds before:', this.markedBtnIds);
     this.markedBtnIds = this.markedBtnIds.filter((_, index) => index !== idx);
-    console.log('markedBtnIds after:', this.markedBtnIds);
     DesktopIconAlignmentHelper.clearPreClonedIconById(id);
   }
 
@@ -1635,10 +1626,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.markedBtnIds.forEach(id =>{
       const btnIcon = document.getElementById(`iconBtn${id}`);
       if(btnIcon){
-        btnIcon.classList.remove('desktopIcon-multi-select-highlight');
+        DesktopStyleHelper.removeBtnStyle(Number(id));
+        DesktopIconAlignmentHelper.clearPreClonedIconById(Number(id));
       }
-      DesktopStyleHelper.removeBtnStyle(Number(id));
-      DesktopIconAlignmentHelper.clearPreClonedIconById(Number(id));
     })
   }
 
@@ -1910,7 +1900,6 @@ OpensWith=${file.getOpensWith}
     if (key === 'Enter') {
       evt.preventDefault();
       evt.stopPropagation();
-      console.log('llasdlaldlasd')
       this.isFormDirty();
       return true;
     }
@@ -1927,7 +1916,6 @@ OpensWith=${file.getOpensWith}
     }
   }
 
-  
   isFormDirty():void{
     if (this.renameForm.dirty){
         this.onRenameFileTxtBoxDataSave();
@@ -1947,7 +1935,6 @@ OpensWith=${file.getOpensWith}
     const renameContainerElement= document.getElementById(`renameContainer${this.currIconId}`) as HTMLElement;
     const renameTxtBoxElement= document.getElementById(`renameTxtBox${this.currIconId}`) as HTMLInputElement;
     DesktopStyleHelper.removeBtnStyle(this.currIconId);
-
 
     if((figCapElement && renameContainerElement && renameTxtBoxElement)) {
       figCapElement.style.display = 'none';

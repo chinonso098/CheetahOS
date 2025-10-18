@@ -15,24 +15,6 @@ export namespace DesktopIconAlignmentHelper {
     return srcIconElmnt.cloneNode(true) as HTMLElement;
   }
 
-  // export const preCloneDesktopIcons = (btnIds: number[]):void=>{
-  //   btnIds.forEach(btnId =>{
-  //     if(!cloneIdList.includes(btnId)){
-  //       const btnClone = cloneDesktopIcon(btnId);
-  //       cloneList.push(btnClone);
-  //       cloneIdList.push(btnId);
-  //     }
-  //   });
-  // }
-
-  // export const clearPreClonedIconById = (id:number):void=>{
-  //   //const deleteCount = 1;
-  //   // if(idx !== -1){
-  //   //   cloneIdList = cloneIdList.splice(idx, deleteCount);
-  //   //   cloneList = cloneList.splice(idx, deleteCount);
-  //   // }
-  // }
-
   export const preCloneDesktopIcon = (btnId: number):void=>{
     if(!cloneIdList.includes(btnId)){
       const btnClone = cloneDesktopIcon(btnId);
@@ -44,18 +26,9 @@ export namespace DesktopIconAlignmentHelper {
   //export const clearPreClonedIcons = ():void=>{  cloneList = []}
 
   export const clearPreClonedIconById = (id:number):void=>{
-    console.log('id to clear:', id);
     const idx = cloneIdList.findIndex(x => x === id);
-
-    console.log('idx:', idx);
-
-    console.log('cloneIdList before:', cloneIdList);
     cloneIdList = cloneIdList.filter((_, index) => index !== idx);
-    console.log('cloneIdList after:', cloneIdList);
-
-    console.log('cloneList before:', cloneList);
     cloneList = cloneList.filter((_, index) => index !== idx);
-    console.log('cloneList after:', cloneList);
   }
   
   export const  handleDragStart = (evt:DragEvent, 
@@ -81,7 +54,6 @@ export namespace DesktopIconAlignmentHelper {
             fileService.addDragAndDropFile(file);
           
         }else{
-
           cloneIdList.forEach(id =>{
             const file = files[id];
             if(file)
@@ -90,7 +62,6 @@ export namespace DesktopIconAlignmentHelper {
 
           cloneList.forEach((clone, idx) =>{
             cloneIcon.appendChild(clone);
-
             if(idx !== countOfMarkedBtns - 1){
               const spacer = document.createElement('div');
               spacer.style.height = '20px';
@@ -104,7 +75,7 @@ export namespace DesktopIconAlignmentHelper {
         cloneIcon.style.opacity = '0.2';
 
         // Set the cloned icon as the drag image
-        if (evt.dataTransfer) {
+        if(evt.dataTransfer){
           evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
         }
       }
