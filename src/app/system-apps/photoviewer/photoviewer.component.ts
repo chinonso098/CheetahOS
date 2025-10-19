@@ -39,6 +39,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _picSrc = Constants.EMPTY_STRING;
   private _skip = false;
 
+  private readonly PATH_TO_IGNORE = '/AppData/StartMenu/photoviewer.url';
   readonly SECONDS_DELAY = 500;
   readonly BASE_64_PNG_IMG = 'data:image/png;base64';
   imageList:string[] = [];
@@ -59,8 +60,8 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   processId = 0;
   type = ComponentType.System;
   displayName = 'PhotoViewer';
-  private defaultPath = '/Users/Pictures/';
-  private defaultImg = '/Users/Pictures/Samples/no_img.jpeg';
+  private readonly defaultPath = '/Users/Pictures';
+  private readonly defaultImg = '/Users/Pictures/Samples/no_img.jpeg';
   tst_imageList:string[] = ['osdrive/Users/Pictures/Samples/Chill on the Moon.jpg', 'osdrive/Users/Pictures/Samples/mystical.jpg',
                         'osdrive/Users/Pictures/Samples/Sparkling Water.jpg', 'osdrive/Users/Pictures/Samples/Sunset Car.jpg',
                          'osdrive/Users/Pictures/Samples/Sunset.jpg']
@@ -83,31 +84,35 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   async ngOnInit():Promise<void> {
     this.retrievePastSessionData();
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    console.log('this._fileInfo:', this._fileInfo);
 
     if(this.checkIfImgIsBase64(this._fileInfo.getContentPath)){
       this.currentImg = this._fileInfo.getContentPath;
       return;
-    }
-
-    if(this.imageList.length > 0)
-      this.currentImg =  this.imageList[0];
-    else{
+    }else{
       const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
       this.currentImg = currentImg;
     }
   } 
 
   async ngAfterViewInit():Promise<void> {
+
     this._picSrc = this.getPictureSrc(this._fileInfo);
+    if(this._picSrc === Constants.EMPTY_STRING){
+      await this.getAllPicturesInthePicturesFolder(this.defaultPath);
+      console.log('this.imageList:', this.imageList);
+      return
+    }
 
     if(!this._skip){
-      await this.getCurrentPicturePathAndSearchForOthers();
+      await this.getAllPicturesIntheCurrentPath();
+
       if(this.imageList.length > 0)
         this.currentImg = this.imageList[0];
-      else{
-        const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
-        this.currentImg = this._fileInfo.getContentPath || currentImg;
-      }
+      // else{
+      //   const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
+      //   this.currentImg = this._fileInfo.getContentPath || currentImg;
+      // }
 
       const appData = (this.imageList.length > 0)? this.imageList : this._picSrc;
       this.storeAppState(appData);
@@ -187,31 +192,53 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.focusWindow();
   }
 
-  async getCurrentPicturePathAndSearchForOthers():Promise<void>{
+  async getAllPicturesIntheCurrentPath():Promise<void>{
     let imgCount = 0;
 
     // if stuff was reutrned from session, then use it.
-    if(this.imageList.length === 0){
-      // else, go fetch.
-      const dirPath = dirname(this._fileInfo.getCurrentPath);
-      const entries:string[] = await this._fileService.readDirectory(dirPath);
+    // if(this.imageList.length === 0){
+    //   // else, go fetch.
+    //   const dirPath = dirname(this._fileInfo.getCurrentPath);
+    //   const entries:string[] = await this._fileService.readDirectory(dirPath);
 
-      //check for images
-      for(const entry of entries){
-        if(Constants.IMAGE_FILE_EXTENSIONS.includes(extname(entry)) ){
-          imgCount = imgCount +  1;
+    //   //check for images
+    //   for(const entry of entries){
+    //     if(Constants.IMAGE_FILE_EXTENSIONS.includes(extname(entry)) ){
+    //       imgCount = imgCount +  1;
 
-          if(`${dirPath}/${entry}` !== this._fileInfo.getCurrentPath){
-            const file =  await this._fileService.getFileInfo(`${dirPath}/${entry}`);
-            if(file)
-              this.imageList.push(file.getContentPath);
-          }
-        }
+    //       if(`${dirPath}/${entry}` !== this._fileInfo.getCurrentPath){
+    //         const file =  await this._fileService.getFileInfo(`${dirPath}/${entry}`);
+    //         if(file)
+    //           this.imageList.push(file.getContentPath);
+    //       }
+    //     }
+    //   }
+
+    //   if(imgCount > 1){
+    //     this.imageList.unshift(this._fileInfo.getContentPath);
+    //   }
+    // }
+  }
+
+  async getAllPicturesInthePicturesFolder(path:string):Promise<void>{
+    // else, go fetch.
+    const entries:string[] = await this._fileService.readDirectory(path);
+
+    //check for images
+    for(const entry of entries){
+      const entryPath = `${this.defaultPath}/${entry}`;
+      console.log('entryPath:',entryPath);
+
+      const isDirectory = await this._fileService.isDirectory(entryPath);
+
+      if(isDirectory){
+        await this.getAllPicturesInthePicturesFolder(entryPath);
+      }else{
+        const file =  await this._fileService.getFileInfo(entryPath);
+        if(file && Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileExtension))
+          this.imageList.push(file.getContentPath);
       }
 
-      if(imgCount > 1){
-        this.imageList.unshift(this._fileInfo.getContentPath);
-      }
     }
   }
 
@@ -236,8 +263,12 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
       return getContentPath;
     }
 
-    if ((getCurrentPath !== Constants.EMPTY_STRING && getContentPath !== Constants.EMPTY_STRING)
-        || (getCurrentPath !== Constants.EMPTY_STRING && getContentPath === Constants.EMPTY_STRING)) {
+    if (getCurrentPath === this.PATH_TO_IGNORE && getContentPath === Constants.EMPTY_STRING) {
+      return Constants.EMPTY_STRING;
+    }
+
+    if((getCurrentPath !== Constants.EMPTY_STRING && getContentPath !== Constants.EMPTY_STRING)
+      || (getCurrentPath !== Constants.EMPTY_STRING && getContentPath === Constants.EMPTY_STRING)){
       return getCurrentPath;
     }
 
