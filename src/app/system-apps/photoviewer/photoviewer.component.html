@@ -5,15 +5,31 @@
         
         <ng-template #galleryView> 
             <div class="main-gallery__container" (contextmenu)="focusHere($event)" (click)="focusHere($event)" >
-                <div class="gallery-sidepanel">
-
+                
+                <div class="gallery-option__panel">
+                    <ol class="ol-gallery-option__grid">
+                        <li class="li-gallery-option__item" *ngFor="let option of galleryOptions; let i = index">
+                            <div class="gallery-option__item-cntnr" 
+                                (click)="handleMenuSelection(option[1], i, $event, GALLERY_VIEW)">
+                                
+                                <div class="gallery-option__item-head">
+                                    <div class="item-head__indication"   [class.active]="i === selectedIdx"></div>
+                                    <figure class="gallery-option__item-figure">
+                                        <img class="gallery-option__item-img" [src]="option[0]" />
+                                    </figure>
+                                </div>
+        
+                                <div class="gallery-option__item-tail">
+                                    <p class="gallery-option__item-p">{{ option[1] }}</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ol>
                 </div>
 
 
                 <div class="gallery-content__container">
-
                     <div class="gallery-content__heading">
-
                         <div class="gallery-content__heading-item">
                             <div class="gallery-content__heading-head">
                                 <figure class="gallery-content__heading-figure">
@@ -28,9 +44,7 @@
                         <div class="gallery-content-block__text">
                             <p class="gallery-content__miniheading-p"> {{imageList.length}} photos</p>
                         </div>
-
                         <div class="gallery-content__empty-container"></div>
-    
                     </div>
                     <div class="gallery-content__body">
                         <ol class="ol-gallery-content__grid">

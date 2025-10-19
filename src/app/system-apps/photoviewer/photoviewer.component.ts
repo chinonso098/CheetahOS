@@ -38,21 +38,25 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _appState!:AppState;
   private _picSrc = Constants.EMPTY_STRING;
   private _skip = false;
-
-  private readonly PATH_TO_IGNORE = '/AppData/StartMenu/photoviewer.url';
-  readonly SECONDS_DELAY = 500;
-  readonly BASE_64_PNG_IMG = 'data:image/png;base64';
-  imageList:string[] = [];
-  currentImg = Constants.EMPTY_STRING;
-  
   private currentImgIndex = 0;
+  private readonly PATH_TO_IGNORE = '/AppData/StartMenu/photoviewer.url';
 
+  readonly SECONDS_DELAY = 500;
   readonly GALLERY_VIEW = 'gallery view';
   readonly PHOTO_VIEW = 'photo view'
-  defaultView = this.GALLERY_VIEW;
+  readonly BASE_64_PNG_IMG = 'data:image/png;base64';
 
+  defaultView = this.GALLERY_VIEW;
   galleryImg = `${Constants.IMAGE_BASE_PATH}photos_gallery.png`;
+  favoriteImg = `${Constants.IMAGE_BASE_PATH}photos_heart.png`;
+  currentImg = Constants.EMPTY_STRING;
+  selectedIdx = -1;
+
   GALLERY = 'Gallery';
+  FAVORITE = 'Favortie';
+
+  imageList:string[] = [];
+  galleryOptions:string[][] = [[this.galleryImg, this.GALLERY], [this.favoriteImg, this.FAVORITE]];
 
   name= 'photoviewer';
   hasWindow = true;
@@ -235,6 +239,10 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
           this.imageList.push(file.getContentPath);
       }
     }
+  }
+
+  async handleMenuSelection(selection:string, idx:number, evt:MouseEvent, view:string): Promise<void>{
+
   }
 
 
