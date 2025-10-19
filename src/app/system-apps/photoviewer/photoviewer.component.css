@@ -42,7 +42,6 @@
     padding: 4em 0em;
     margin: auto;
     overflow: hidden;
-    aspect-ratio: 3 / 2;
     display: grid;
     place-items: center;
 }
@@ -50,6 +49,8 @@
 .photo-viewer img{
     border: 4px solid white;
     box-shadow: 8px 2px 30px black;
+    object-fit: cover; /* keeps image nicely cropped */
+    aspect-ratio: 4 / 3; /* maintains the same proportions */
 }
 
 .photo-slider{
