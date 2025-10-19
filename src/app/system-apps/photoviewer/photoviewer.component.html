@@ -10,7 +10,7 @@
                     <ol class="ol-gallery-option__grid">
                         <li class="li-gallery-option__item" *ngFor="let option of galleryOptions; let i = index">
                             <div class="gallery-option__item-cntnr" 
-                                (click)="handleMenuSelection(option[1], i, $event, GALLERY_VIEW)">
+                                (click)="handleGalleryOptionSelection(option[1], i, $event, GALLERY)">
                                 
                                 <div class="gallery-option__item-head">
                                     <div class="item-head__indication"   [class.active]="i === selectedIdx"></div>
@@ -28,19 +28,31 @@
                     <div class="gallery-content__empty-container"></div>
                     <div class="photos-line"></div>
                     <div class="gallery-content__empty-container"></div>
-                    <div class="gallery-content-block">
+
+                    <div class="gallery-content-block"
+                    (click)="handleSortBy(SCREEN_SHOT)">
+                        <div class="gallery-content-block__indication"   [class.active]="SCREEN_SHOT === sortBy"></div>
                         <div class="gallery-content-block__text_1">
                             <p class="gallery-content__subheading-p"> Screen shots: {{screenShotCount}} </p>
                         </div>
                     </div>
 
-                    <div class="gallery-content-block">
+                    <div class="gallery-content-block"
+                    (click)="handleSortBy(SAMPLE)">
+                        <div class="gallery-content-block__indication"  [class.active]="SAMPLE=== sortBy"></div>
                         <div class="gallery-content-block__text_1">
                             <p class="gallery-content__subheading-p"> Sample:  {{ sampleCount}} </p>
                         </div>
                     </div>
-                </div>
 
+                    <div class="gallery-content-block"
+                    (click)="handleSortBy(OTHER)">
+                        <div class="gallery-content-block__indication"   [class.active]="OTHER === sortBy"></div>
+                        <div class="gallery-content-block__text_1">
+                            <p class="gallery-content__subheading-p"> Other:  {{ otherCount}} </p>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="gallery-content__container">
                     <div class="gallery-content__heading">

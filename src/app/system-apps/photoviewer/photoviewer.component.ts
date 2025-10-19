@@ -54,17 +54,24 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   galleryImg = `${Constants.IMAGE_BASE_PATH}photos_gallery.png`;
   favoriteImg = `${Constants.IMAGE_BASE_PATH}photos_heart.png`;
   currentImg = Constants.EMPTY_STRING;
-  selectedIdx = -1;
+  selectedIdx = 0;
 
   GALLERY = 'Gallery';
   FAVORITE = 'Favorite';
 
   imageList:string[][] = [];
+  unFilteredImageList:string[][] = [];
   imageListUrl:string[] = [];
-  galleryOptions:string[][] = [[this.galleryImg, this.GALLERY], [this.favoriteImg, this.FAVORITE]];
+  galleryOptions:string[][] = [[this.galleryImg, this.GALLERY]]; // [this.favoriteImg, this.FAVORITE]];;
 
   screenShotCount = 0;
   sampleCount = 0;
+  otherCount = 0;
+
+  readonly SCREEN_SHOT = 'ScreenShot';
+  readonly SAMPLE = 'Sample';
+  readonly OTHER = 'Other';
+  sortBy = Constants.EMPTY_STRING;
 
   private readonly defaultPath = '/Users/Pictures';
   private readonly defaultImg = '/Users/Pictures/Samples/no_img.jpeg';
@@ -275,9 +282,10 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
           this.imageList.push([file.getContentPath, this.getSrcName(entryPath) ]);
         }
-
       }
     }
+
+    this.otherCount = (this.imageList.length - this.sampleCount - this.screenShotCount);
   }
 
   getSrcName(path:string):string{
@@ -291,8 +299,22 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     return 'Other';
   }
 
-  async handleMenuSelection(selection:string, idx:number, evt:MouseEvent, view:string): Promise<void>{
+  async handleGalleryOptionSelection(selection:string, idx:number, evt:MouseEvent, view:string): Promise<void>{
 
+  }
+
+  handleSortBy(selection:string):void{
+    this.sortBy = selection;
+    
+    if(this.unFilteredImageList.length === 0)
+      this.unFilteredImageList.push(...this.imageList);
+
+    if(this.unFilteredImageList.length !== this.imageList.length){
+      this.imageList = [];
+      this.imageList.push(...this.unFilteredImageList);
+    }
+
+    this.imageList = this.imageList.filter( x => x[1] === selection);
   }
 
 

@@ -267,6 +267,21 @@
   width: 100%;
 }
 
+.gallery-content-block:hover{
+  background-color: #6d6d6d;
+}
+
+
+.gallery-content-block__indication{
+  width: 4px;
+  height: 30px;
+  margin-right: 1px;
+}
+
+.gallery-content-block__indication.active{
+  background-color: #ffffff;
+}
+
 .gallery-content-block__text{
   height: fit-content;
 }
