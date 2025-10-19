@@ -49,6 +49,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   readonly PHOTO_VIEW = 'photo view'
   defaultView = this.GALLERY_VIEW;
 
+  galleryImg = `${Constants.IMAGE_BASE_PATH}photos_gallery.png`;
+  GALLERY = 'Gallery';
+
   name= 'photoviewer';
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}photoviewer.png`;

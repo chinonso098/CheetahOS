@@ -5,6 +5,11 @@
 
 *{
     box-sizing: border-box;
+    scrollbar-width: none; /* hides scrollbar */
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 .main-photo-viewer__container{
@@ -86,7 +91,7 @@
     background-color: #000000;
 }
 
-.gallery-content{
+.gallery-content__container{
     display: flex;
     width: 750px;
     flex-direction: column;
@@ -94,6 +99,14 @@
     background-color: #121212;
 }
 
+.gallery-content__body{
+    display: block;
+    width: 670px;
+    height: 500px;
+    overflow-y: auto;
+    padding: 0px;
+}
+  
 .ol-gallery-content__grid{
     display: grid;
     grid-auto-flow: row;
@@ -101,18 +114,93 @@
     grid-template-rows: repeat(auto-fill, 184px);
     width: 100%;
     gap: 4px;
-  }
+}
 
-  .li-gallery-content{
+.li-gallery-content{
     aspect-ratio: 4 / 3; /* maintains the same proportions */
     width: 324px;
     height: 184px;
-  }
+}
 
-  .gallery-content__img{
+.gallery-content__img{
     width: 316px;
     height: 180px;
     object-fit: cover; /* keeps image nicely cropped */
     border: 1px solid #ffffff;
-  }
+}
+
+
+.gallery-content__heading{
+  display: flex;
+  flex-direction: column;
+  gap: 5px 0px;
+  width: 100%;
+}
+
+.gallery-content__empty-container{
+  width: 100%;
+}
+
+.gallery-content__heading-item{
+  display: inline-flex;
+  height: 30px;
+  width: 100%;
+}
+
+.gallery-content__heading-head{
+  display: inline-flex;
+  width: 22px;
+  height: 30px;
+}
+
+.gallery-content__heading-figure{
+  position: relative;
+  align-items: center;
+  height: 20px;
+  width: 20px;
+  top: 5px;
+}
+
+.gallery-content__heading-img{
+  height: 20px;
+  width: 20px;
+  position: relative;
+}
+
+.gallery-content__heading-tail{
+  padding: 0 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 15px;
+  font-weight:bold;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width:  100%;
+  height: 30px;
+}
+
+
+.gallery-content-block__text{
+  height: fit-content;
+}
+
+.gallery-content__miniheading-p{
+  padding: 0 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 11px;
+  font-weight:200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
+  height: fit-content;
+}
+
+.gallery-content__heading-p{ 
+  position: relative;
+  width: 100%;
+  top: 4px;
+  left: 5px;
+  overflow: hidden;         
+  text-overflow: ellipsis; 
+  white-space: nowrap;
+}
 /*Gallery View End*/

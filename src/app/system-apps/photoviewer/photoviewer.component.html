@@ -8,15 +8,41 @@
                 <div class="gallery-sidepanel">
 
                 </div>
-                <div class="gallery-content">
-                    <ol class="ol-gallery-content__grid">
-                        <li class="li-gallery-content" *ngFor="let option of tst_imageList; let i = index">
-                            <div class="gallery-content__img" 
-                                (click)="handlePictureSelection(option, $event)" >
-                                <img [src]="option"/>
+
+
+                <div class="gallery-content__container">
+
+                    <div class="gallery-content__heading">
+
+                        <div class="gallery-content__heading-item">
+                            <div class="gallery-content__heading-head">
+                                <figure class="gallery-content__heading-figure">
+                                    <img class="gallery-content__heading-img" [src]="galleryImg" />
+                                </figure>
                             </div>
-                        </li>
-                    </ol>
+                            <div class="gallery-content__heading-tail">
+                                <p class="gallery-content__heading-p">{{ GALLERY }}</p>
+                            </div>
+                        </div>
+            
+                        <div class="gallery-content-block__text">
+                            <p class="gallery-content__miniheading-p"> 5 photos</p>
+                        </div>
+
+                        <div class="gallery-content__empty-container"></div>
+    
+                    </div>
+                    <div class="gallery-content__body">
+                        <ol class="ol-gallery-content__grid">
+                            <li class="li-gallery-content" *ngFor="let option of tst_imageList; let i = index">
+                                <div class="gallery-content__img" 
+                                    (click)="handlePictureSelection(option, $event)" >
+                                    <img [src]="option"/>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+
                 </div>
             </div>
             
