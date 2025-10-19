@@ -286,3 +286,13 @@
   white-space: nowrap;
 }
 /*Gallery View End*/
+
+
+.photos-line{
+  position:relative;
+  height: 0.5px;
+  background-color: #9c9898;
+  color: #9c9898;
+  top: 0px;
+  /* margin: 0 8px; */
+}

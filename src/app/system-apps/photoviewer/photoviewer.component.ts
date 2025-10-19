@@ -37,26 +37,34 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private _picSrc = Constants.EMPTY_STRING;
-  private _skip = false;
+  private _returnedPicSrc = Constants.EMPTY_STRING;
+  private _checkThisDirectoryForMoreImages = true;
+  private _skipOnInit = false;
+  private _skipAfterInit = false;
   private currentImgIndex = 0;
   private readonly PATH_TO_IGNORE = '/AppData/StartMenu/photoviewer.url';
 
-  readonly SECONDS_DELAY = 500;
+  readonly SECONDS_DELAY = 300;// 300ms
   readonly GALLERY_VIEW = 'gallery view';
   readonly PHOTO_VIEW = 'photo view'
   readonly BASE_64_PNG_IMG = 'data:image/png;base64';
+  readonly BLOB = 'blob:http:';
 
-  defaultView = this.GALLERY_VIEW;
+  defaultView = this.PHOTO_VIEW;
   galleryImg = `${Constants.IMAGE_BASE_PATH}photos_gallery.png`;
   favoriteImg = `${Constants.IMAGE_BASE_PATH}photos_heart.png`;
   currentImg = Constants.EMPTY_STRING;
   selectedIdx = -1;
 
   GALLERY = 'Gallery';
-  FAVORITE = 'Favortie';
+  FAVORITE = 'Favorite';
 
   imageList:string[] = [];
+  imageListUrl:string[] = [];
   galleryOptions:string[][] = [[this.galleryImg, this.GALLERY], [this.favoriteImg, this.FAVORITE]];
+
+  private readonly defaultPath = '/Users/Pictures';
+  private readonly defaultImg = '/Users/Pictures/Samples/no_img.jpeg';
 
   name= 'photoviewer';
   hasWindow = true;
@@ -65,12 +73,6 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   processId = 0;
   type = ComponentType.System;
   displayName = 'PhotoViewer';
-  private readonly defaultPath = '/Users/Pictures';
-  private readonly defaultImg = '/Users/Pictures/Samples/no_img.jpeg';
-  tst_imageList:string[] = ['osdrive/Users/Pictures/Samples/Chill on the Moon.jpg', 'osdrive/Users/Pictures/Samples/mystical.jpg',
-                        'osdrive/Users/Pictures/Samples/Sparkling Water.jpg', 'osdrive/Users/Pictures/Samples/Sunset Car.jpg',
-                         'osdrive/Users/Pictures/Samples/Sunset.jpg']
-  
 
   constructor(fileService:FileService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
               triggerProcessService:ProcessHandlerService,  sessionManagmentService: SessionManagmentService, private changeDetectorRef: ChangeDetectorRef,
@@ -88,47 +90,60 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   async ngOnInit():Promise<void> {
     this.retrievePastSessionData();
-    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
-    console.log('this._fileInfo:', this._fileInfo);
 
+    if(this._skipOnInit) return;
+
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+
+    //base64 imgs are generated screenshots, opened  immediately after creation
     if(this.checkIfImgIsBase64(this._fileInfo.getContentPath)){
       this.currentImg = this._fileInfo.getContentPath;
+      this._skipAfterInit = true;
       return;
-    }else{
-      const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
-      this.currentImg = currentImg;
+    }
+
+    if(this.checkForBlobURI(this._fileInfo.getContentPath)){
+      this.currentImg = this._fileInfo.getContentPath;
+      return;
     }
   } 
 
   async ngAfterViewInit():Promise<void> {
+    await CommonFunctions.sleep(this.SECONDS_DELAY);
+    this.captureComponentImg();
+
+    if(this._skipAfterInit) return;
 
     this._picSrc = this.getPictureSrc(this._fileInfo);
-    if(this._picSrc === Constants.EMPTY_STRING){
+    if(this._picSrc === this.PATH_TO_IGNORE){
       await this.getAllPicturesInthePicturesFolder(this.defaultPath);
+      this.defaultView = this.GALLERY;
+
       return;
     }
 
-    if(!this._skip){
+    if(this._checkThisDirectoryForMoreImages){
       await this.getAllPicturesIntheCurrentPath();
 
-      if(this.imageList.length > 0)
+      const wereMoreImagesFound = (this.imageList.length > 0);
+      if(wereMoreImagesFound)
         this.currentImg = this.imageList[0];
-      // else{
-      //   const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
-      //   this.currentImg = this._fileInfo.getContentPath || currentImg;
-      // }
+      else{ 
+        if(this._fileInfo.getContentPath !== Constants.EMPTY_STRING)
+          this.currentImg =  this._fileInfo.getContentPath;
+        else
+          this.currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
+      }
 
-      const appData = (this.imageList.length > 0)? this.imageList : this._picSrc;
+      const appData = (wereMoreImagesFound)? this.imageListUrl :  this._fileInfo.getCurrentPath;
       this.storeAppState(appData);
     }else{
-      this.currentImg = this._picSrc;
+      const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
+      this.currentImg = currentImg;
     }
 
     //tell angular to run additional detection cycle after 
     this.changeDetectorRef.detectChanges();
-
-    await CommonFunctions.sleep(this.SECONDS_DELAY);
-    this.captureComponentImg();
   }
 
   ngOnDestroy(): void {
@@ -138,7 +153,6 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   captureComponentImg():void{
     htmlToImage.toPng(this.photoContainer.nativeElement).then(htmlImg =>{
       //console.log('img data:',htmlImg);
-
       const cmpntImg:TaskBarPreviewImage = {
         pid: this.processId,
         appName: this.name,
@@ -199,28 +213,38 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   async getAllPicturesIntheCurrentPath():Promise<void>{
     let imgCount = 0;
 
-    // if stuff was reutrned from session, then use it.
-    if(this.imageList.length === 0){
-      // else, go fetch.
+    // if stuff was returned from session, then use it.
+    if(this.imageListUrl.length === 0  && (this._fileInfo)){
       const dirPath = dirname(this._fileInfo.getCurrentPath);
       const entries:string[] = await this._fileService.readDirectory(dirPath);
 
-      //check for images
       for(const entry of entries){
-        if(Constants.IMAGE_FILE_EXTENSIONS.includes(extname(entry)) ){
+        if(Constants.IMAGE_FILE_EXTENSIONS.includes(extname(entry))){
+          const entryPath = `${dirPath}/${entry}`;
           imgCount = imgCount +  1;
 
-          if(`${dirPath}/${entry}` !== this._fileInfo.getCurrentPath){
+          if(entryPath !== this._fileInfo.getCurrentPath){
             const file =  await this._fileService.getFileInfo(`${dirPath}/${entry}`);
-            if(file)
+            if(file){
               this.imageList.push(file.getContentPath);
+              this.imageListUrl.push(file.getCurrentPath)
+            }
           }
         }
       }
 
       if(imgCount > 1){
         this.imageList.unshift(this._fileInfo.getContentPath);
+        return;
       }
+    }else if(this.imageListUrl.length > 0){
+      for(const entry of this.imageListUrl){
+        const img = await this._fileService.getFileAsBlobAsync(entry);
+        this.imageList.push(img);
+      }
+      return;
+    }else if(this._returnedPicSrc !== Constants.EMPTY_STRING){
+      this._fileInfo =  await this._fileService.getFileInfo(this._returnedPicSrc);
     }
   }
 
@@ -259,15 +283,17 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
-  getPictureSrc(file:FileInfo):string{    
+  getPictureSrc(file:FileInfo):string{   
+    if(!file) return Constants.EMPTY_STRING;
+
     const { getCurrentPath, getContentPath } = file;
     if(this.checkIfImgIsBase64(getContentPath)){
-      this._skip = true;
+      this._checkThisDirectoryForMoreImages = false;
       return getContentPath;
     }
 
     if (getCurrentPath === this.PATH_TO_IGNORE && getContentPath === Constants.EMPTY_STRING) {
-      return Constants.EMPTY_STRING;
+      return getCurrentPath;
     }
 
     if((getCurrentPath !== Constants.EMPTY_STRING && getContentPath !== Constants.EMPTY_STRING)
@@ -289,6 +315,13 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     return false
   }
 
+  checkForBlobURI(getContentPath:string):boolean{
+    if(getContentPath.substring(0, 10) === this.BLOB)
+      return true;
+
+    return false
+  }
+
   storeAppState(app_data:unknown):void{
     const uid = `${this.name}-${this.processId}`;
     this._appState = {
@@ -304,10 +337,12 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   retrievePastSessionData():void{
     const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
+        this._skipOnInit = true;
+
         if(typeof appSessionData.app_data === 'string')
-          this._picSrc = appSessionData.app_data as string; 
+          this._returnedPicSrc = appSessionData.app_data as string; 
         else
-          this.imageList = appSessionData.app_data as string[];
+          this.imageListUrl = appSessionData.app_data as string[];
     }
   }
 
