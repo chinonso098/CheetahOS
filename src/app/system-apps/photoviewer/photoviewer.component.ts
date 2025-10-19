@@ -50,7 +50,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   readonly BASE_64_PNG_IMG = 'data:image/png;base64';
   readonly BLOB = 'blob:http:';
 
-  defaultView = this.PHOTO_VIEW;
+  defaultView = this.GALLERY_VIEW;
   galleryImg = `${Constants.IMAGE_BASE_PATH}photos_gallery.png`;
   favoriteImg = `${Constants.IMAGE_BASE_PATH}photos_heart.png`;
   currentImg = Constants.EMPTY_STRING;
@@ -99,11 +99,13 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     if(this.checkIfImgIsBase64(this._fileInfo.getContentPath)){
       this.currentImg = this._fileInfo.getContentPath;
       this._skipAfterInit = true;
+      this.defaultView = this.PHOTO_VIEW;
       return;
     }
 
     if(this.checkForBlobURI(this._fileInfo.getContentPath)){
       this.currentImg = this._fileInfo.getContentPath;
+      this.defaultView = this.PHOTO_VIEW;
       return;
     }
   } 
@@ -115,9 +117,10 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     if(this._skipAfterInit) return;
 
     this._picSrc = this.getPictureSrc(this._fileInfo);
-    if(this._picSrc === this.PATH_TO_IGNORE){
+    if(this._picSrc === this.PATH_TO_IGNORE 
+      || (this._picSrc === Constants.EMPTY_STRING && this._returnedPicSrc === Constants.EMPTY_STRING)){
       await this.getAllPicturesInthePicturesFolder(this.defaultPath);
-      this.defaultView = this.GALLERY;
+      this.defaultView = this.GALLERY_VIEW;
 
       return;
     }
@@ -143,7 +146,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     }
 
     //tell angular to run additional detection cycle after 
-    this.changeDetectorRef.detectChanges();
+    //this.changeDetectorRef.detectChanges();
   }
 
   ngOnDestroy(): void {
