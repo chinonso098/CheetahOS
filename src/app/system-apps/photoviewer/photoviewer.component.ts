@@ -59,12 +59,17 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   GALLERY = 'Gallery';
   FAVORITE = 'Favorite';
 
-  imageList:string[] = [];
+  imageList:string[][] = [];
   imageListUrl:string[] = [];
   galleryOptions:string[][] = [[this.galleryImg, this.GALLERY], [this.favoriteImg, this.FAVORITE]];
 
+  screenShotCount = 0;
+  sampleCount = 0;
+
   private readonly defaultPath = '/Users/Pictures';
   private readonly defaultImg = '/Users/Pictures/Samples/no_img.jpeg';
+  private readonly samplePath = '/Users/Pictures/Sample';
+  private readonly screenShotPath = '/Users/Pictures/Screen-Shots';
 
   name= 'photoviewer';
   hasWindow = true;
@@ -121,7 +126,6 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
       || (this._picSrc === Constants.EMPTY_STRING && this._returnedPicSrc === Constants.EMPTY_STRING)){
       await this.getAllPicturesInthePicturesFolder(this.defaultPath);
       this.defaultView = this.GALLERY_VIEW;
-
       return;
     }
 
@@ -130,7 +134,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
       const wereMoreImagesFound = (this.imageList.length > 0);
       if(wereMoreImagesFound)
-        this.currentImg = this.imageList[0];
+        this.currentImg = this.imageList[0][0];
       else{ 
         if(this._fileInfo.getContentPath !== Constants.EMPTY_STRING)
           this.currentImg =  this._fileInfo.getContentPath;
@@ -171,7 +175,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   onKeyDown(evt:KeyboardEvent):void{
     if(evt.key == "ArrowLeft"){
       if((this.currentImgIndex >= 0)){
-        this.currentImg = this.imageList[this.currentImgIndex--];
+        this.currentImg = this.imageList[this.currentImgIndex--][0];
 
         if(this.currentImgIndex < 0){
           this.currentImgIndex = this.imageList.length - 1;
@@ -181,7 +185,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     if(evt.key == "ArrowRight"){
       if(this.currentImgIndex <= this.imageList.length - 1){
-        this.currentImg = this.imageList[this.currentImgIndex++];
+        this.currentImg = this.imageList[this.currentImgIndex++][0];
 
         if(this.currentImgIndex > this.imageList.length -1){
           this.currentImgIndex = 0;
@@ -192,12 +196,12 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   onClick(id?:number):void{
     if(id !== undefined){
-      this.currentImg = this.imageList[id];
+      this.currentImg = this.imageList[id][0];
       this.currentImgIndex = id;
     }else{
       this.currentImgIndex = this.currentImgIndex + 1;
       if(this.currentImgIndex <= this.imageList.length - 1){
-        this.currentImg = this.imageList[this.currentImgIndex];
+        this.currentImg = this.imageList[this.currentImgIndex][0];
       }
     }
   }
@@ -229,7 +233,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
           if(entryPath !== this._fileInfo.getCurrentPath){
             const file =  await this._fileService.getFileInfo(`${dirPath}/${entry}`);
             if(file){
-              this.imageList.push(file.getContentPath);
+              this.imageList.push([file.getContentPath,  this.getSrcName(this._fileInfo.getCurrentPath)]);
               this.imageListUrl.push(file.getCurrentPath)
             }
           }
@@ -237,13 +241,13 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
       }
 
       if(imgCount > 1){
-        this.imageList.unshift(this._fileInfo.getContentPath);
+        this.imageList.unshift([this._fileInfo.getContentPath, this.getSrcName(this._fileInfo.getCurrentPath)]);
         return;
       }
     }else if(this.imageListUrl.length > 0){
       for(const entry of this.imageListUrl){
         const img = await this._fileService.getFileAsBlobAsync(entry);
-        this.imageList.push(img);
+        this.imageList.push([img, this.getSrcName(entry)]);
       }
       return;
     }else if(this._returnedPicSrc !== Constants.EMPTY_STRING){
@@ -261,11 +265,30 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
         await this.getAllPicturesInthePicturesFolder(entryPath);
       }else{
         const file =  await this._fileService.getFileInfo(entryPath);
+        if(file && Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileExtension) && entryPath !== this.defaultImg){
 
-        if(file && Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileExtension) && entryPath !== this.defaultImg)
-          this.imageList.push(file.getContentPath);
+          if(entryPath.includes(this.samplePath))
+            this.sampleCount++;
+
+          if(entryPath.includes(this.screenShotPath))
+            this.screenShotCount++;
+
+          this.imageList.push([file.getContentPath, this.getSrcName(entryPath) ]);
+        }
+
       }
     }
+  }
+
+  getSrcName(path:string):string{
+
+    if(path.includes(this.samplePath))
+      return 'Sample';
+
+    if(path.includes(this.screenShotPath))
+      return 'ScreenShot';
+
+    return 'Other';
   }
 
   async handleMenuSelection(selection:string, idx:number, evt:MouseEvent, view:string): Promise<void>{

@@ -25,7 +25,20 @@
                             </div>
                         </li>
                     </ol>
+                    <div class="gallery-content__empty-container"></div>
                     <div class="photos-line"></div>
+                    <div class="gallery-content__empty-container"></div>
+                    <div class="gallery-content-block">
+                        <div class="gallery-content-block__text_1">
+                            <p class="gallery-content__subheading-p"> Screen shots: {{screenShotCount}} </p>
+                        </div>
+                    </div>
+
+                    <div class="gallery-content-block">
+                        <div class="gallery-content-block__text_1">
+                            <p class="gallery-content__subheading-p"> Sample:  {{ sampleCount}} </p>
+                        </div>
+                    </div>
                 </div>
 
 
@@ -51,8 +64,8 @@
                         <ol class="ol-gallery-content__grid">
                             <li class="li-gallery-content" *ngFor="let option of imageList; let i = index">
                                 <div class="gallery-content__img" 
-                                    (click)="handlePictureSelection(option, $event)" >
-                                    <img [src]="option"/>
+                                    (click)="handlePictureSelection(option[0], $event)" >
+                                    <img [src]="option[0]"/>
                                 </div>
                             </li>
                         </ol>
