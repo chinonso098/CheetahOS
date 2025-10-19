@@ -26,7 +26,7 @@
                         </div>
             
                         <div class="gallery-content-block__text">
-                            <p class="gallery-content__miniheading-p"> 5 photos</p>
+                            <p class="gallery-content__miniheading-p"> {{imageList.length}} photos</p>
                         </div>
 
                         <div class="gallery-content__empty-container"></div>
@@ -34,7 +34,7 @@
                     </div>
                     <div class="gallery-content__body">
                         <ol class="ol-gallery-content__grid">
-                            <li class="li-gallery-content" *ngFor="let option of tst_imageList; let i = index">
+                            <li class="li-gallery-content" *ngFor="let option of imageList; let i = index">
                                 <div class="gallery-content__img" 
                                     (click)="handlePictureSelection(option, $event)" >
                                     <img [src]="option"/>

@@ -44,6 +44,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   readonly BASE_64_PNG_IMG = 'data:image/png;base64';
   imageList:string[] = [];
   currentImg = Constants.EMPTY_STRING;
+  
   private currentImgIndex = 0;
 
   readonly GALLERY_VIEW = 'gallery view';
@@ -100,8 +101,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._picSrc = this.getPictureSrc(this._fileInfo);
     if(this._picSrc === Constants.EMPTY_STRING){
       await this.getAllPicturesInthePicturesFolder(this.defaultPath);
-      console.log('this.imageList:', this.imageList);
-      return
+      return;
     }
 
     if(!this._skip){
@@ -196,49 +196,44 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     let imgCount = 0;
 
     // if stuff was reutrned from session, then use it.
-    // if(this.imageList.length === 0){
-    //   // else, go fetch.
-    //   const dirPath = dirname(this._fileInfo.getCurrentPath);
-    //   const entries:string[] = await this._fileService.readDirectory(dirPath);
+    if(this.imageList.length === 0){
+      // else, go fetch.
+      const dirPath = dirname(this._fileInfo.getCurrentPath);
+      const entries:string[] = await this._fileService.readDirectory(dirPath);
 
-    //   //check for images
-    //   for(const entry of entries){
-    //     if(Constants.IMAGE_FILE_EXTENSIONS.includes(extname(entry)) ){
-    //       imgCount = imgCount +  1;
+      //check for images
+      for(const entry of entries){
+        if(Constants.IMAGE_FILE_EXTENSIONS.includes(extname(entry)) ){
+          imgCount = imgCount +  1;
 
-    //       if(`${dirPath}/${entry}` !== this._fileInfo.getCurrentPath){
-    //         const file =  await this._fileService.getFileInfo(`${dirPath}/${entry}`);
-    //         if(file)
-    //           this.imageList.push(file.getContentPath);
-    //       }
-    //     }
-    //   }
+          if(`${dirPath}/${entry}` !== this._fileInfo.getCurrentPath){
+            const file =  await this._fileService.getFileInfo(`${dirPath}/${entry}`);
+            if(file)
+              this.imageList.push(file.getContentPath);
+          }
+        }
+      }
 
-    //   if(imgCount > 1){
-    //     this.imageList.unshift(this._fileInfo.getContentPath);
-    //   }
-    // }
+      if(imgCount > 1){
+        this.imageList.unshift(this._fileInfo.getContentPath);
+      }
+    }
   }
 
   async getAllPicturesInthePicturesFolder(path:string):Promise<void>{
-    // else, go fetch.
     const entries:string[] = await this._fileService.readDirectory(path);
-
-    //check for images
     for(const entry of entries){
-      const entryPath = `${this.defaultPath}/${entry}`;
-      console.log('entryPath:',entryPath);
-
+      const entryPath = `${path}/${entry}`;
       const isDirectory = await this._fileService.isDirectory(entryPath);
 
       if(isDirectory){
         await this.getAllPicturesInthePicturesFolder(entryPath);
       }else{
         const file =  await this._fileService.getFileInfo(entryPath);
-        if(file && Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileExtension))
+
+        if(file && Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileExtension) && entryPath !== this.defaultImg)
           this.imageList.push(file.getContentPath);
       }
-
     }
   }
 
