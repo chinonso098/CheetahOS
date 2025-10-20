@@ -1661,7 +1661,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.hideDesktopContextMenuAndOthers(this.isDesktopTheCaller);
 
     if(!this.isRenameActive){
-      console.log('i came here')
       this.btnStyleAndValuesReset();
 
       if(this.areMultipleIconsHighlighted &&  this.desktopClickCounter === 0){
