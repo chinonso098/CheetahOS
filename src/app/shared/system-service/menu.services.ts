@@ -30,7 +30,7 @@ export class MenuService implements BaseService{
 
     hideStartMenu: Subject<void> = new Subject<void>();
     showStartMenu: Subject<void> = new Subject<void>();
-    hideContextMenus: Subject<void> = new Subject<void>();
+    hideContextMenus: Subject<string> = new Subject<string>();
     addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();
     showPropertiesView: Subject<FileInfo> = new Subject<FileInfo>();
     

@@ -107,6 +107,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   isTaskBarHidden = false;
   isTaskBarTemporarilyVisible = false;
   isDragFromDesktopActive = false;
+  isDesktopTheCaller = true;
 
   autoAlignIcons = true;
   autoArrangeIcons = true;
@@ -186,8 +187,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private readonly MAX_NUM_COLOR_RANGE = 99999;
   private readonly DEFAULT_COLOR = 0x274c;
   private readonly DESKTOP_MENU_DELAY = 250; //250ms
-  private readonly INTERNAL_CALL = 1;
-  private readonly EXTERNAL_CALL = 2;
 
   private currentDesktopNum = 0;
 
@@ -314,7 +313,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.showTaskBarConextMenu.pipe(concatMap((p) =>this.onShowTaskBarContextMenu(p))).subscribe();
     this._audioService.showVolumeControlNotify.pipe(concatMap(() => this.showVolumeControl())).subscribe();
 
-    this._menuService.hideContextMenus.subscribe(() => { this.resetIconBtnsAndContextMenus(this.EXTERNAL_CALL)});
+    this._menuService.hideContextMenus.subscribe((p) => { 
+      if(p !== this.name)
+        this.resetIconBtnsAndContextMenus();
+    });
+
     this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
     this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
     this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;});
@@ -400,7 +403,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     if(this.startVantaWaveColorChg)
       this.startVantaWaveColorChange();
 
-    this.hideDesktopContextMenuAndOthers();
     this.initClippy();
 
    this.removeVantaJSSideEffect();
@@ -515,14 +517,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     console.log('showDesktopContextMenu - evtOriginator:',evtOriginator);
 
     if(evtOriginator === Constants.EMPTY_STRING){
-      this.resetIconBtnsAndContextMenus(this.INTERNAL_CALL);
+      this.resetIconBtnsAndContextMenus(this.isDesktopTheCaller);
       await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
 
       const menuHeight = 306; //this is not ideal.. menu height should be gotten dynmically
       const menuWidth = 210;
-  
-      this._menuService.hideContextMenus.next();
       this.showDesktopCntxtMenu = true;
+
       const result = DesktopContextMenuHelper.checkAndHandleDesktopCntxtMenuBounds(evt, menuHeight, menuWidth);
       const axis = result[0];
       this.isShiftSubMenuLeft = result[1];
@@ -675,7 +676,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  hideDesktopContextMenuAndOthers(caller?:string):void{
+  hideDesktopContextMenuAndOthers(isDesktopTheCaller:boolean):void{
     /**
      * There is a doubling of responses to certain events that exist on the 
      * desktop compoonent and any other component running at the time the event was triggered.
@@ -689,11 +690,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.showTskBarCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
 
-    // to prevent an endless loop of calls,
-    if(caller !== undefined && caller === this.name){
-      this._menuService.hideContextMenus.next();
-    }
-
     if(this.showVolumeCntrl){
       this.showVolumeCntrl = false;
       this._audioService.hideVolumeControlNotify.next(Constants.EMPTY_STRING);
@@ -704,6 +700,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.hideStartMenu.next();
 
     this.closePwrDialogBox();
+
+    // to prevent an endless loop of calls,
+    if(isDesktopTheCaller)
+      this._menuService.hideContextMenus.next(this.name);
   }
 
   performTasks(evt:MouseEvent):void{
@@ -758,7 +758,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async showVolumeControl(): Promise<void>{
-    this.resetIconBtnsAndContextMenus(this.INTERNAL_CALL);
+    this.resetIconBtnsAndContextMenus(this.isDesktopTheCaller);
     await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
     this.showVolumeCntrl = true;
   }
@@ -907,7 +907,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       else  if(this.desktopBackgroundType === Constants.BACKGROUND_PICTURE)
         this.loadOtherPictureBackgrounds(curNum);
     }
-    this.hideDesktopContextMenuAndOthers();
+    this.resetIconBtnsAndContextMenus(this.isDesktopTheCaller);
   }
 
   nextBackground():void{
@@ -921,7 +921,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         this.loadOtherPictureBackgrounds(curNum);
     }
     
-    this.hideDesktopContextMenuAndOthers();
+    this.resetIconBtnsAndContextMenus(this.isDesktopTheCaller);
   }
 
   loadOtherVantaBackgrounds(i:number):void{
@@ -1130,19 +1130,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  resetIconBtnsAndContextMenus(callType:number):void{
-    //only one cntxt menu at a time
-    if(callType === this.INTERNAL_CALL)
-      this.hideDesktopContextMenuAndOthers(this.name);
-    else
-      this.hideDesktopContextMenuAndOthers();
-
+  resetIconBtnsAndContextMenus(isDesktopTheCaller = false):void{
+    this.hideDesktopContextMenuAndOthers(isDesktopTheCaller);
     this.btnStyleAndValuesReset();
   }
 
   async onShowTaskBarAppIconMenu(data:unknown[]): Promise<void>{
     //--------------------
-    this.resetIconBtnsAndContextMenus(this.INTERNAL_CALL);
+    this.resetIconBtnsAndContextMenus(this.isDesktopTheCaller);
     await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY)
 
     const rect = data[0] as DOMRect;
@@ -1187,7 +1182,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async onShowTaskBarContextMenu(evt:MouseEvent):Promise<void>{
-    this.resetIconBtnsAndContextMenus(this.INTERNAL_CALL);
+    this.resetIconBtnsAndContextMenus(this.isDesktopTheCaller);
     await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
 
     const menuHeight = 116;
@@ -1472,6 +1467,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   onDesktopIconClick(evt:MouseEvent, id:number):void{
+    evt.preventDefault()
     evt.stopPropagation();
     this.executeIconClickTasks(id);
     DesktopStyleHelper.setBtnStyle(id, true, this.currIconId, this.isIconInFocusDueToPriorAction);
@@ -1582,7 +1578,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.isMultiSelectEnabled = true;
 
     if(!this.isMultiSelectActive){
-      if(id != this.currIconId){
+      if(id !== this.currIconId){
         if(this.markedBtnIds.includes(String(id))){
           return;
         } else{
@@ -1646,12 +1642,12 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.currIconId = id;
     this.isIconBtnClickEvt = true;
     this.iconBtnClickCnt++;
-    this.hideDesktopContextMenuAndOthers(this.name);
+    this.hideDesktopContextMenuAndOthers(this.isDesktopTheCaller);
 
     if(!this.markedBtnIds.includes(String(id)))
         this.markedBtnIds.push(String(id));
 
-    if(this.prevIconId != id){
+    if(this.prevIconId !== id){
       DesktopStyleHelper.removeBtnStyle(this.prevIconId);
       //DesktopIconAlignmentHelper.clearPreClonedIconById(this.prevIconId);
     }
@@ -1662,9 +1658,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   handleIconHighLightState():void{
-    this.hideDesktopContextMenuAndOthers(this.name);
+    this.hideDesktopContextMenuAndOthers(this.isDesktopTheCaller);
 
     if(!this.isRenameActive){
+      console.log('i came here')
       this.btnStyleAndValuesReset();
 
       if(this.areMultipleIconsHighlighted &&  this.desktopClickCounter === 0){
@@ -2031,7 +2028,7 @@ OpensWith=${file.getOpensWith}
     this.stopClippy();
     this.hideDesktopIcon(); 
     this.hideVolumeControl();
-    this.hideDesktopContextMenuAndOthers();
+    this.resetIconBtnsAndContextMenus(this.isDesktopTheCaller);
     this.hideTaskBarPreviewWindow();
     this.hideTaskBarToolTip();
     this.closePwrDialogBox();

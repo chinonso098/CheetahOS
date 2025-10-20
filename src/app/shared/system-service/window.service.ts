@@ -180,7 +180,7 @@ export class WindowService implements BaseService{
             const currImages = this._processPreviewImages.get(appName) ?? [];
             const dataIndex = currImages.findIndex(d => d.pid  === pid);
     
-            if(dataIndex != -1){
+            if(dataIndex !== -1){
                 currImages.splice(dataIndex || 0, deleteCount)
             }
         }

@@ -404,7 +404,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       if(menuElmt)
         menuElmt.style.display ='none';
     }
-    else if(menuName != Constants.EMPTY_STRING){
+    else if(menuName !== Constants.EMPTY_STRING){
       if(menuName == 'tskmgr-nav-file-menu' && this.showBtnNavMenu){
         menuElmt =  document.getElementById(`tskmgr-nav-file-menu-${this.processId}`) as HTMLElement;  
         menuElmt.style.display ='block';
@@ -654,7 +654,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   addTrailingZeros(num:number):number {
     const totalLength = 3;
     const strNum = String(num);
-    if(num != 0){
+    if(num !== 0){
       if(strNum.length == 1)
       return parseFloat(strNum.padEnd(totalLength, '.1'));
     }

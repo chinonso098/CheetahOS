@@ -175,7 +175,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
     const ext = ".md";
     let res = false;
 
-    if(contentExt != Constants.EMPTY_STRING && contentExt == ext){
+    if(contentExt !== Constants.EMPTY_STRING && contentExt == ext){
       res = true;
     }else if( currentPathExt == ext){
       res = false;

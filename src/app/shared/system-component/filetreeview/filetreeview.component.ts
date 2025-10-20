@@ -408,7 +408,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
   onMouseLeave(elmntId:string):void{
     console.log('onMouseLeave-elmntId:',elmntId);
-    if(elmntId != this.selectedElementId){
+    if(elmntId !== this.selectedElementId){
       this.removeBtnStyle(elmntId);
     }
     else if((elmntId == this.selectedElementId)){
@@ -419,7 +419,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   onFileTreeContextMenu(evt:MouseEvent, node:FileTreeNode):void{
 
     // looking at what Windows does, at any given time. there is only one context window open
-    this._menuService.hideContextMenus.next(); 
+    this._menuService.hideContextMenus.next(this.name); 
 
     if(!this.rect){
       const navCntnrElement = document.getElementById(`qa-FileExplrTreeView-main-${this.processId}`) as HTMLElement;

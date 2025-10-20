@@ -314,7 +314,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
     this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)});
-    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe(() => { this.hideIconContextMenu()});
+    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe((p) => {
+      if(p !== this.name)
+        this.hideIconContextMenu();
+    });
     this._creatShortCutOnDesktopSub = this._menuService.createDesktopShortcut.subscribe(()=>{this.createShortCutOnDesktop()});
   }
 
@@ -1469,7 +1472,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number, rectInput?:DOMRect, isFileSection?:boolean):void{
     // looking at what Windows does, at any given time. there is only one context window open
-    this._menuService.hideContextMenus.next(); 
+    this._menuService.hideContextMenus.next(this.name); 
     this.hideFileExplorerToolTip();
 
     const menuHeight = (file.getIsFile)? 225 : 344; //this is not ideal.. menu height should be gotten dynmically
@@ -1573,7 +1576,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         return;
 
     // looking at what Windows does, at any given time. there is only one context window open
-    this._menuService.hideContextMenus.next();
+    this._menuService.hideContextMenus.next(this.name);
     const menuHeight = 230; //this is not ideal.. menu height should be gotten dynmically
 
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
@@ -1612,7 +1615,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){
       this.focusWindow();
-      this._menuService.hideContextMenus.next();
+      this._menuService.hideContextMenus.next(this.name);
     }
 
     if(evt){

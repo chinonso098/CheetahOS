@@ -254,14 +254,12 @@
     resize: none;
 }
 
-
 .desktopIcon-clone-container{
     width: fit-content;
     height: fit-content;
     z-index:  3;
     position: absolute;
 }
-
 
 .desktopIcon-multi-select-highlight {
     background-color: hsl(206deg 77% 70%/20%);

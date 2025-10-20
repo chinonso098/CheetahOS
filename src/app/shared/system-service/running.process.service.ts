@@ -62,7 +62,7 @@ export class RunningProcessService implements BaseService{
         const deleteCount = 1;
         const procIndex = this._runningProcesses.findIndex(process => process.getProcessId === proccessToRemove.getProcessId);
 
-        if(procIndex != -1){
+        if(procIndex !== -1){
             this._runningProcesses.splice(procIndex, deleteCount)
         }
     }

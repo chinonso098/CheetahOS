@@ -105,7 +105,7 @@ export class ActivityHistoryService implements BaseService {
                                                                     h.path === entry.path &&
                                                                     h.type === entry.type
                                                                     ));
-        if(activityHistoryIdx != -1){
+        if(activityHistoryIdx !== -1){
             this._activityHistory.splice(activityHistoryIdx, deleteCount);
             this.save();
         }

@@ -87,7 +87,7 @@ export class TaskbarComponent implements AfterViewInit{
   }
 
   hideContextMenus():void{
-    this._menuService.hideContextMenus.next();
+    this._menuService.hideContextMenus.next(this.name);
   }
 
   showTaskBarContextMenu(evt:MouseEvent):void{
@@ -128,7 +128,7 @@ export class TaskbarComponent implements AfterViewInit{
     const delay = 100;
 
     if(!this.isStartMenuVisible){
-      this._menuService.hideContextMenus.next();
+      this._menuService.hideContextMenus.next(this.name);
       await CommonFunctions.sleep(delay);
 
       this._menuService.showStartMenu.next();
@@ -150,7 +150,7 @@ export class TaskbarComponent implements AfterViewInit{
     evt.stopPropagation();
 
     if(this.isSearchWindowVisible){
-      this._menuService.hideContextMenus.next();
+      this._menuService.hideContextMenus.next(this.name);
       await CommonFunctions.sleep(this.SECONDS_DELAY);
 
       this.isSearchWindowVisible = true;
