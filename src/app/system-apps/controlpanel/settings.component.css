@@ -623,9 +623,9 @@
   cursor: pointer;
 }
 
-.lockscreen-timeout-dropdown{
+/* .lockscreen-timeout-dropdown{
   width: 160px;
-}
+} */
 
 /* ===== Selected area ===== */
 .lockscreen-background-dropdown__selected, 

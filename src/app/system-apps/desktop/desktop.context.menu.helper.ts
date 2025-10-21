@@ -86,8 +86,6 @@ export namespace DesktopContextMenuHelper {
         const windowHeight =  mainWindow?.offsetHeight || 0;
         const verticalSum = evt.clientY + menuHeight;
     
-        console.log('verticalSum:', verticalSum);
-    
         if(verticalSum >= windowHeight || (windowHeight - verticalSum) <= 40){
           verticalShift = true;
           const shifMenuUpBy = verticalSum - windowHeight;

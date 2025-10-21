@@ -736,7 +736,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
           setting.imgPath = dsktpBkGrnd[1];
           setting.isImage = true;
-          console.log('image to use:', dsktpBkGrnd[1]);
 
         imgResult = dsktpBkGrnd[1];
       }
@@ -745,7 +744,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
         const dsktpBkGrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND).split(Constants.COLON)
         setting.colorValue = dsktpBkGrnd[1]; setting.isColor = true;
 
-        console.log('color to use:', dsktpBkGrnd[1]);
         imgResult = await this.getDesktopScreenShotHelper(setting, this.CAPTURE_COLOR_BACKGROUND_ONLY);
       }
     }
