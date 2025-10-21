@@ -1649,6 +1649,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     if(this.prevIconId !== id){
       DesktopStyleHelper.removeBtnStyle(this.prevIconId);
+      //this being commented out, is totally fine
       //DesktopIconAlignmentHelper.clearPreClonedIconById(this.prevIconId);
     }
   }

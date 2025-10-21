@@ -94,7 +94,7 @@ export namespace DesktopGeneralHelper {
   export const hanldeBuildSortByMenu = (sortByNameMAction: (event: MouseEvent) => void, isSortByName:boolean,
     sortBySizeMAction: (event: MouseEvent) => void, isSortBySize:boolean,
     sortByItemTypeMAction: (event: MouseEvent) => void, isSortByItemType:boolean,
-    sortByDateModifiedMAction: (event: MouseEvent) => void, isSortByDateModified:boolean,): NestedMenuItem[]=> {
+    sortByDateModifiedMAction: (event: MouseEvent) => void, isSortByDateModified:boolean): NestedMenuItem[]=> {
 
     const sortByName:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Name',  action: sortByNameMAction,  variables:isSortByName , 
       emptyline:false, styleOption:'A' }
