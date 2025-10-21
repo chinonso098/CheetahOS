@@ -91,17 +91,35 @@
         <ng-template #photoView>
             <div class="main-photo-viewer__container" (contextmenu)="focusHere($event)" (click)="focusHere($event)" >
                 <div  class="photo-viewer-container"> 
-                    <div tabindex="0" id="photoCntnr" class="photo-viewer"  (keydown)="onKeyDown($event)" (click)="onClick()">
-                        <img [src]="currentImg"/>
-                    </div>
-                </div> 
-                <div class="photo-slider">
-                    <div class="photo-storage" *ngFor="let img of imageList; let i = index"  (click)="onClick(i)">
-                        <div class="photo-slider-img">
-                            <img [src]="img"/>
+                    <div class="photo-viewer__content-container">
+                        <div tabindex="0" 
+                            id="photoCntnr" 
+                            class="photo-viewer" 
+                            (keydown)="onKeyDown($event)"
+                            (mousemove)="onMouseMove($event)" 
+                            (mousedown)="startPan($event)" 
+                            (mouseup)="endPan()" 
+                            (mouseleave)="endPan()" 
+                            (mousemove)="pan($event)" >  
+                            <img     
+                                [src]="currentImg" 
+                                [style.transform]="transformStyle" 
+                                [style.transform-origin]="transformOrigin"
+                            />
                         </div>
                     </div>
-                </div>
+
+                    <!-- <div class="photo-slider">
+                        <div class="photo-storage" *ngFor="let img of imageList; let i = index"  (click)="onClick(i)">
+                            <div class="photo-slider-img">
+                                <img [src]="img"/>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="photo-viewer__basic-info-container">
+
+                    </div>
+                </div> 
             </div>
         </ng-template>
     </div>

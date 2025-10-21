@@ -73,6 +73,24 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   readonly OTHER = 'Other';
   sortBy = Constants.EMPTY_STRING;
 
+  zoomLevel: number = 1;
+  zoomStep: number = 0.1;
+  minZoom: number = 0.25;
+  maxZoom: number = 4;
+
+  transformOrigin: string = 'center center'; // default
+  // zoomTransform: string = 'scale(1)';
+  transformStyle: string = 'scale(1) translate(0px, 0px)';
+
+  // panning state
+  isPanning: boolean = false;
+  startX: number = 0;
+  startY: number = 0;
+  translateX: number = 0;
+  translateY: number = 0;
+  lastTranslateX: number = 0;
+  lastTranslateY: number = 0;
+
   private readonly defaultPath = '/Users/Pictures';
   private readonly defaultImg = '/Users/Pictures/Samples/no_img.jpeg';
   private readonly samplePath = '/Users/Pictures/Sample';
@@ -179,7 +197,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     })
   }
 
-  onKeyDown(evt:KeyboardEvent):void{
+  onKeyDown1(evt:KeyboardEvent):void{
     if(evt.key == "ArrowLeft"){
       if((this.currentImgIndex >= 0)){
         this.currentImg = this.imageList[this.currentImgIndex--][0];
@@ -201,6 +219,91 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     }
   }
 
+
+  onKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowRight') {
+      this.zoomLevel = Math.min(this.zoomLevel + this.zoomStep, this.maxZoom);
+    } else if (event.key === 'ArrowLeft') {
+      this.zoomLevel = Math.max(this.zoomLevel - this.zoomStep, this.minZoom);
+    }
+  
+    //this.updateZoomTransform();
+    this.updateTransform();
+    this.updateCursor();
+  }
+
+  updateCursor(): void {
+    const img = document.querySelector('.photo-viewer img') as HTMLElement;
+    img.style.cursor = this.zoomLevel > 1 ? 'zoom-out' : 'zoom-in';
+  }
+  
+  onMouseMove(event: MouseEvent): void {
+    const container = event.currentTarget as HTMLElement;
+    const rect = container.getBoundingClientRect();
+  
+    // Get mouse position as percentage within the container
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+  
+    // Update transform origin dynamically
+    this.transformOrigin = `${x}% ${y}%`;
+  }
+  
+  // updateZoomTransform(): void {
+  //   this.zoomTransform = `scale(${this.zoomLevel})`;
+  // }
+
+  startPan(event: MouseEvent): void {
+    if (this.zoomLevel <= 1) return; // only pan when zoomed in
+    this.isPanning = true;
+    this.startX = event.clientX;
+    this.startY = event.clientY;
+    this.lastTranslateX = this.translateX;
+    this.lastTranslateY = this.translateY;
+    (event.currentTarget as HTMLElement).style.cursor = 'grabbing';
+  }
+  
+  pan(event: MouseEvent): void {
+    if (!this.isPanning) return;
+  
+    const deltaX = event.clientX - this.startX;
+    const deltaY = event.clientY - this.startY;
+  
+    this.translateX = this.lastTranslateX + deltaX;
+    this.translateY = this.lastTranslateY + deltaY;
+
+    //this.applyPanBoundaries(event.currentTarget as HTMLElement);
+    this.updateTransform();
+  }
+  
+  endPan(): void {
+    this.isPanning = false;
+    const img = document.querySelector('.photo-viewer img') as HTMLElement;
+    if (img) img.style.cursor = this.zoomLevel > 1 ? 'grab' : 'zoom-in';
+  }
+  
+  updateTransform(): void {
+    this.transformStyle = `scale(${this.zoomLevel}) translate(${this.translateX}px, ${this.translateY}px)`;
+  }
+
+  applyPanBoundaries(container: HTMLElement): void {
+    const rect = container.getBoundingClientRect();
+    const baseHeight = 550; // your default image height
+    const baseWidth = rect.width * (baseHeight / rect.height); // approximate width based on container
+  
+    // actual image size at current zoom
+    const zoomedWidth = baseWidth * this.zoomLevel;
+    const zoomedHeight = baseHeight * this.zoomLevel;
+  
+    // maximum allowed translation (so part of image always visible)
+    const maxX = (zoomedWidth - rect.width) / 2;
+    const maxY = (zoomedHeight - rect.height) / 2;
+  
+    // clamp translation values
+    this.translateX = Math.max(-maxX, Math.min(maxX, this.translateX));
+    this.translateY = Math.max(-maxY, Math.min(maxY, this.translateY));
+  }
+
   onClick(id?:number):void{
     if(id !== undefined){
       this.currentImg = this.imageList[id][0];
@@ -214,6 +317,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   focusHere(evt:MouseEvent):void{
+    evt.preventDefault();
     evt.stopPropagation();
 
     const photoCntnr= document.getElementById('photoCntnr') as HTMLElement;
@@ -316,7 +420,6 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     this.imageList = this.imageList.filter( x => x[1] === selection);
   }
-
 
   handlePictureSelection(img:string, evt:MouseEvent):void{
     evt.stopPropagation();

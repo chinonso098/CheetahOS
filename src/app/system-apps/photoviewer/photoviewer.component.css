@@ -1,76 +1,92 @@
 .main-photos__container{
-    width: 1000px;
-    height: 600px;
+  width: 1000px;
+  height: 600px;
 }
 
 *{
-    box-sizing: border-box;
-    scrollbar-width: none; /* hides scrollbar */
+  box-sizing: border-box;
+  scrollbar-width: none; /* hides scrollbar */
 }
 
 ::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .main-photo-viewer__container{
-    /* z-index: 2; */
-    width: 100;
-    background:linear-gradient(
-        to right,
-        #29323c,
-        #485563
-    )
+  /* z-index: 2; */
+  width: 100;
+  background:linear-gradient(
+      to right,
+      #29323c,
+      #485563
+  )
 }
 
 .photo-viewer-container{
-    /* position: relative; */
-    /* min-width: 1103px; */
-    width: 1000px;
-    width: 100%;
-    height: 100%;
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  text-align: center;
 }
 
-.photo-viewer-container img{
-    width: 100%;
-    height: 100%;
+
+.photo-viewer__content-container{
+  width: 100%;
+  height: 550px;
+  background-color: #121212;
+}
+
+.photo-viewer__basic-info-container{
+  width:  100%;
+  height: 50px;
 }
 
 .photo-viewer{
-    width: 52em;
-    height: 38em;
-    padding: 4em 0em;
-    margin: auto;
-    overflow: hidden;
-    display: grid;
-    place-items: center;
+  max-width:100%;
+  max-height: 550px;
+
+  margin: auto;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
 }
 
 .photo-viewer img{
-    border: 4px solid white;
-    box-shadow: 8px 2px 30px black;
-    object-fit: cover; /* keeps image nicely cropped */
-    aspect-ratio: 4 / 3; /* maintains the same proportions */
+  /* aspect-ratio:auto; */
+
+  /* height: 360px; */
+  object-fit: contain;
+  transition: transform 0.25s ease-out;
+  transform-origin: center center;
+  cursor: zoom-in;
+  user-select: none; /* prevent accidental text/image selection while dragging */
+}
+
+.photo-viewer:active img {
+  cursor: grabbing;
 }
 
 .photo-slider{
-    height: 5.5em;
-    margin: 0em 3em;
+  position: absolute;
+  background-color: transparent;
+  height: 5.5em;
+  margin: 0em 3em;
 }
 
 .photo-slider-img{
-    width:  10.5em;
-    height:  6em;
-    display: inline-flex;
+  width:  10.5em;
+  height:  6em;
+  display: inline-flex;
 }
 
 .photo-storage{
-    display: inline-flex;
-    width: fit-content;
+  display: inline-flex;
+  width: fit-content;
 }
 
 .myslides{
-    display: none;
+  display: none;
 }
 
 /*Gallery View Start*/
@@ -81,7 +97,7 @@
 }
 
 
-/*Gallery o[tion Panel Start*/
+/*Gallery option Panel Start*/
 .gallery-option__panel{
     display: flex;
     flex-direction: column;
