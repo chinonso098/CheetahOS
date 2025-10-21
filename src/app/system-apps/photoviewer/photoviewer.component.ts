@@ -53,6 +53,14 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   defaultView = this.GALLERY_VIEW;
   galleryImg = `${Constants.IMAGE_BASE_PATH}photos_gallery.png`;
   favoriteImg = `${Constants.IMAGE_BASE_PATH}photos_heart.png`;
+  slideShowImg = `${Constants.IMAGE_BASE_PATH}photos_carousel.png`;
+  infoImg = `${Constants.IMAGE_BASE_PATH}photos_info.png`;
+  resolutionImg = `${Constants.IMAGE_BASE_PATH}photos_resolution.png`;
+  sizeImg = `${Constants.IMAGE_BASE_PATH}photos_size.png`;
+  zoomInImg = `${Constants.IMAGE_BASE_PATH}photos_zoom_in.png`;
+  zoomOutImg = `${Constants.IMAGE_BASE_PATH}photos_zoom_out.png`;
+  scaleImg = `${Constants.IMAGE_BASE_PATH}photos_scale_in.png`;
+
   currentImg = Constants.EMPTY_STRING;
   selectedIdx = 0;
 
@@ -73,14 +81,14 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   readonly OTHER = 'Other';
   sortBy = Constants.EMPTY_STRING;
 
-  zoomLevel: number = 1;
+  zoomLevel: number = 0.8;
   zoomStep: number = 0.1;
   minZoom: number = 0.25;
   maxZoom: number = 4;
 
   transformOrigin: string = 'center center'; // default
   // zoomTransform: string = 'scale(1)';
-  transformStyle: string = 'scale(1) translate(0px, 0px)';
+  transformStyle: string = 'scale(0.8) translate(0px, 0px)';
 
   // panning state
   isPanning: boolean = false;
@@ -219,11 +227,10 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     }
   }
 
-
-  onKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'ArrowRight') {
+  onKeyDown_tbd(evt: KeyboardEvent): void {
+    if (evt.key === 'ArrowRight') {
       this.zoomLevel = Math.min(this.zoomLevel + this.zoomStep, this.maxZoom);
-    } else if (event.key === 'ArrowLeft') {
+    } else if (evt.key === 'ArrowLeft') {
       this.zoomLevel = Math.max(this.zoomLevel - this.zoomStep, this.minZoom);
     }
   
@@ -232,18 +239,52 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.updateCursor();
   }
 
+  // Handle keyboard zoom
+  onKeyDown(evt: KeyboardEvent): void {
+    if (evt.key === 'ArrowRight') {
+      this.zoomIn();
+    } else if (evt.key === 'ArrowLeft') {
+      this.zoomOut();
+    }
+  }
+
+  // Handle mouse wheel zoom
+  onWheel(evt: WheelEvent): void {
+    evt.preventDefault();
+    if (evt.deltaY < 0) {
+      this.zoomIn();
+    } else {
+      this.zoomOut();
+    }
+  }
+
+  zoomIn(): void {
+    this.zoomLevel = Math.min(this.zoomLevel + this.zoomStep, this.maxZoom);
+    this.updateTransform();
+    this.updateCursor();
+  }
+
+  zoomOut(): void {
+    this.zoomLevel = Math.max(this.zoomLevel - this.zoomStep, this.minZoom);
+    this.updateTransform();
+    this.updateCursor();
+  }
+
+
   updateCursor(): void {
     const img = document.querySelector('.photo-viewer img') as HTMLElement;
     img.style.cursor = this.zoomLevel > 1 ? 'zoom-out' : 'zoom-in';
   }
   
-  onMouseMove(event: MouseEvent): void {
-    const container = event.currentTarget as HTMLElement;
+  onMouseMove(evt: MouseEvent): void {
+    if(this.zoomLevel < 1) return;
+
+    const container = evt.currentTarget as HTMLElement;
     const rect = container.getBoundingClientRect();
   
     // Get mouse position as percentage within the container
-    const x = ((event.clientX - rect.left) / rect.width) * 100;
-    const y = ((event.clientY - rect.top) / rect.height) * 100;
+    const x = ((evt.clientX - rect.left) / rect.width) * 100;
+    const y = ((evt.clientY - rect.top) / rect.height) * 100;
   
     // Update transform origin dynamically
     this.transformOrigin = `${x}% ${y}%`;
@@ -253,26 +294,30 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   //   this.zoomTransform = `scale(${this.zoomLevel})`;
   // }
 
-  startPan(event: MouseEvent): void {
+  startPan(evt: MouseEvent): void {
+    evt.stopPropagation();
+
     if (this.zoomLevel <= 1) return; // only pan when zoomed in
     this.isPanning = true;
-    this.startX = event.clientX;
-    this.startY = event.clientY;
+    this.startX = evt.clientX;
+    this.startY = evt.clientY;
     this.lastTranslateX = this.translateX;
     this.lastTranslateY = this.translateY;
-    (event.currentTarget as HTMLElement).style.cursor = 'grabbing';
+    (evt.currentTarget as HTMLElement).style.cursor = 'grabbing';
   }
   
-  pan(event: MouseEvent): void {
+  pan(evt: MouseEvent): void {
+    evt.stopPropagation();
+
     if (!this.isPanning) return;
   
-    const deltaX = event.clientX - this.startX;
-    const deltaY = event.clientY - this.startY;
+    const deltaX = evt.clientX - this.startX;
+    const deltaY = evt.clientY - this.startY;
   
     this.translateX = this.lastTranslateX + deltaX;
     this.translateY = this.lastTranslateY + deltaY;
 
-    //this.applyPanBoundaries(event.currentTarget as HTMLElement);
+    //this.applyPanBoundaries(evt.currentTarget as HTMLElement);
     this.updateTransform();
   }
   
@@ -302,6 +347,20 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     // clamp translation values
     this.translateX = Math.max(-maxX, Math.min(maxX, this.translateX));
     this.translateY = Math.max(-maxY, Math.min(maxY, this.translateY));
+  }
+
+   // 🖱 Double-click resets everything
+   resetView(): void {
+    this.zoomLevel = 1;
+    this.translateX = 0;
+    this.translateY = 0;
+    this.transformOrigin = 'center center';
+    this.updateTransform();
+  }
+
+  // 🖼 Fit-to-screen button resets and adjusts for container
+  fitToScreen(): void {
+    this.resetView();
   }
 
   onClick(id?:number):void{

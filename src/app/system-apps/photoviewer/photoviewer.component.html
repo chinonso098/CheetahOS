@@ -91,16 +91,21 @@
         <ng-template #photoView>
             <div class="main-photo-viewer__container" (contextmenu)="focusHere($event)" (click)="focusHere($event)" >
                 <div  class="photo-viewer-container"> 
+                    <div class="photo-viewer__controls-container">
+
+                    </div>
                     <div class="photo-viewer__content-container">
                         <div tabindex="0" 
                             id="photoCntnr" 
                             class="photo-viewer" 
-                            (keydown)="onKeyDown($event)"
+                            (keydown)="onKeyDown($event)" 
                             (mousemove)="onMouseMove($event)" 
                             (mousedown)="startPan($event)" 
                             (mouseup)="endPan()" 
                             (mouseleave)="endPan()" 
-                            (mousemove)="pan($event)" >  
+                            (mousemove)="pan($event)"
+                            (wheel)="onWheel($event)"
+                            (dblclick)="resetView()">  
                             <img     
                                 [src]="currentImg" 
                                 [style.transform]="transformStyle" 
@@ -117,7 +122,46 @@
                         </div>
                     </div> -->
                     <div class="photo-viewer__basic-info-container">
-
+                        <div class="toolbar">
+                            <div class="left">
+                              <div class="icon">
+                                <img [src]="slideShowImg"/>
+                              </div>
+                              <div class="icon"> 
+                                <img [src]="infoImg"/>
+                              </div>
+                              <div class="icon1">  
+                                <img [src]="resolutionImg"/>
+                              </div>
+                              <div class="info">1919 × 1079</div>
+                              <div class="icon1">
+                                <img [src]="sizeImg"/>
+                              </div>
+                              <div class="info">581.5 KB</div>
+                            </div>
+                          
+                            <div class="right">
+                              <div class="icon">
+                                <img [src]="scaleImg"/>
+                              </div>
+                              <div class="zoom">
+                                <select class="dropdown">
+                                  <option>98%</option>
+                                  <option>100%</option>
+                                  <option>150%</option>
+                                </select>
+                                <div class="icon">
+                                    <img [src]="zoomOutImg"/>
+                                </div>
+                                <input type="range" min="0" max="100" value="70">
+                                <div class="icon">
+                                    <img [src]="zoomInImg"/>
+                                </div>
+                              </div>
+                              <!-- <div class="button"></div>
+                              <div class="button"></div> -->
+                            </div>
+                          </div>
                     </div>
                 </div> 
             </div>
