@@ -145,11 +145,31 @@
                                 <img [src]="scaleImg"/>
                               </div>
                               <div class="zoom">
-                                <select class="dropdown">
-                                  <option>98%</option>
-                                  <option>100%</option>
-                                  <option>150%</option>
-                                </select>
+                                <div class="photo-dropdown" (click)="toggleDropdown()" [class.open]="isOpen">
+                                    <div class="photo-dropdown__selected">
+                                      {{ currentZoomValue || 'Select background' }}
+                                    </div>
+                                  
+                                    <span class="photo-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+                                  
+                                    <ul class="photo-dropdown__menu" *ngIf="isOpen">
+                                      <li 
+                                        *ngFor="let option of zoomOptions" 
+                                        (click)="handleZoomSelection(option, $event)"
+                                        [class.selected]="option.label === currentZoomValue">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                                  
                                 <div class="icon">
                                     <img [src]="zoomOutImg"/>
                                 </div>

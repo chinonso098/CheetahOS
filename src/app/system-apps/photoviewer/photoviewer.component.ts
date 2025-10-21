@@ -104,6 +104,18 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private readonly samplePath = '/Users/Pictures/Sample';
   private readonly screenShotPath = '/Users/Pictures/Screen-Shots';
 
+  isOpen = false;
+  currentZoomValue = '80%';
+  zoomOptions = [
+    { value: 4, label: '400%'},
+    { value: 3, label: '300%'},
+    { value: 2, label: '200%'},
+    { value: 1, label: '100%'},
+    { value: 0.75, label: '75%'},
+    { value: 0.5, label: '50%'},
+    { value: 0.25, label: '25%'},
+  ];
+
   name= 'photoviewer';
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}photoviewer.png`;
@@ -361,6 +373,18 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   // 🖼 Fit-to-screen button resets and adjusts for container
   fitToScreen(): void {
     this.resetView();
+  }
+
+  onZoomOptionSelect( evt:any):void{
+    evt.stopPropagation();
+  }
+
+  toggleDropdown():void{
+    this.isOpen = !this.isOpen;
+  }
+
+  handleZoomSelection(option: { value: number, label: string },   evt:MouseEvent):void{
+
   }
 
   onClick(id?:number):void{

@@ -15,13 +15,7 @@
 .main-photo-viewer__container{
   /* z-index: 2; */
   width: 100;
-  /* background:linear-gradient(
-    to right,
-    #29323c,
-    #485563
-  ) */
-
-  background: linear-gradient(to right, #222629, #2c2f33);
+  background:linear-gradient(to right, #29323c, #485563 )
 }
 
 .photo-viewer-container{
@@ -382,9 +376,6 @@
   /* margin: 0 8px; */
 }
 
-
-
-
 /*bottom tool bar start*/
 .toolbar {
   display: flex;
@@ -404,22 +395,22 @@
 }
 
 .icon {
-  width: 16px;
-  height: 16px;
+  width: 17px;
+  height: 17px;
   /* background: #555; */
   border-radius: 3px;
 }
 
 .icon1 {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   /* background: #555; */
   border-radius: 3px;
 }
 
 .info {
   font-size: 13px;
-  color: #bbb;
+  color: #6e7072;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -442,11 +433,98 @@
   border-radius: 3px;
 }
 
-.dropdown {
+.photo-dropdown {
+  width: 80px;
   background: #333;
   color: #ccc;
   border: none;
   padding: 2px 6px;
   border-radius: 4px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-/*Bottom tool bar end*/
+
+/* ===== Selected area ===== */
+.photo-dropdown__selected {
+  width: 45px;
+  padding: 2px 2px 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  text-align: left;
+  color: #ffffff;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.photo-dropdown__selected:hover {
+  border-color: #999;
+  background-color: #f0f0f0;
+}
+
+/* ===== Icon ===== */
+.photo-dropdown__icon {
+  position: absolute;
+  bottom: 10px;
+  right: 185px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  width: 10px;
+  height: 10px;
+}
+
+.photo-dropdown__icon svg {
+  width: 10px;
+  height: 10px;
+  fill: #ffffff;
+  transition: transform 0.2s ease;
+}
+
+.photo-dropdown.open .photo-dropdown__icon svg {
+
+  transform:  rotate(180deg);
+}
+
+/* ===== photo-dropdown Menu ===== */
+.photo-dropdown__menu {
+  position: absolute;
+  right: 170px;
+  bottom: 32px; /* 👈 lifts the photo-dropdown slightly higher */
+  width: 80px;
+  background: #333;
+  border-radius: 6px;
+  margin-top: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 4px 0;
+  list-style: none;
+  z-index: 5;
+  animation: fadeIn 0.15s ease;
+}
+
+/* ===== Option Item ===== */
+.photo-dropdown__menu li {
+  padding: 8px 1px 8px 14px;
+  font-size: 13px;
+  text-align: left;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #ffffff;
+  transition: background-color 0.15s ease;
+}
+
+.photo-dropdown__menu li:hover {
+  background-color: #485563;
+}
+
+.photo-dropdown__menu li.selected {
+  background-color: #e5e5e5;
+  font-weight: 500;
+}
+
+/* ===== Animation ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
