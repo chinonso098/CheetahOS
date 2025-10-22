@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef, signal, WritableSignal, Input } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef, signal, WritableSignal, Input, HostListener } from '@angular/core';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -59,7 +59,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   sizeImg = `${Constants.IMAGE_BASE_PATH}photos_size.png`;
   zoomInImg = `${Constants.IMAGE_BASE_PATH}photos_zoom_in.png`;
   zoomOutImg = `${Constants.IMAGE_BASE_PATH}photos_zoom_out.png`;
-  scaleImg = `${Constants.IMAGE_BASE_PATH}photos_scale_in.png`;
+  scaleInImg = `${Constants.IMAGE_BASE_PATH}photos_scale_in.png`;
+  fullScaleImg = `${Constants.IMAGE_BASE_PATH}photos_scale.png`;
+  scaleImg = `${Constants.IMAGE_BASE_PATH}photos_scale.png`;
 
   currentImg = Constants.EMPTY_STRING;
   selectedIdx = 0;
@@ -85,6 +87,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   zoomStep: number = 0.1;
   minZoom: number = 0.25;
   maxZoom: number = 4;
+  zoomRefValue:number = 0.8;
 
   transformOrigin: string = 'center center'; // default
   // zoomTransform: string = 'scale(1)';
@@ -163,6 +166,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   async ngAfterViewInit():Promise<void> {
     await CommonFunctions.sleep(this.SECONDS_DELAY);
     this.captureComponentImg();
+    this.updateImg();
 
     if(this._skipAfterInit) return;
 
@@ -217,7 +221,11 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     })
   }
 
-  onKeyDown1(evt:KeyboardEvent):void{
+  updateImg():void{
+    this.scaleImg = (this.zoomLevel < 1)? this.scaleInImg : this.fullScaleImg;
+  }
+
+  onKeyDown(evt:KeyboardEvent):void{
     if(evt.key == "ArrowLeft"){
       if((this.currentImgIndex >= 0)){
         this.currentImg = this.imageList[this.currentImgIndex--][0];
@@ -239,27 +247,6 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     }
   }
 
-  onKeyDown_tbd(evt: KeyboardEvent): void {
-    if (evt.key === 'ArrowRight') {
-      this.zoomLevel = Math.min(this.zoomLevel + this.zoomStep, this.maxZoom);
-    } else if (evt.key === 'ArrowLeft') {
-      this.zoomLevel = Math.max(this.zoomLevel - this.zoomStep, this.minZoom);
-    }
-  
-    //this.updateZoomTransform();
-    this.updateTransform();
-    this.updateCursor();
-  }
-
-  // Handle keyboard zoom
-  onKeyDown(evt: KeyboardEvent): void {
-    if (evt.key === 'ArrowRight') {
-      this.zoomIn();
-    } else if (evt.key === 'ArrowLeft') {
-      this.zoomOut();
-    }
-  }
-
   // Handle mouse wheel zoom
   onWheel(evt: WheelEvent): void {
     evt.preventDefault();
@@ -268,20 +255,24 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     } else {
       this.zoomOut();
     }
+    this.updateImg();
   }
 
   zoomIn(): void {
     this.zoomLevel = Math.min(this.zoomLevel + this.zoomStep, this.maxZoom);
+    this.currentZoomValue = `${(this.zoomLevel * 100).toFixed(0)}%`;
     this.updateTransform();
     this.updateCursor();
+    this.updateImg();
   }
 
   zoomOut(): void {
     this.zoomLevel = Math.max(this.zoomLevel - this.zoomStep, this.minZoom);
+    this.currentZoomValue = `${(this.zoomLevel * 100).toFixed(0)}%`;
     this.updateTransform();
     this.updateCursor();
+    this.updateImg();
   }
-
 
   updateCursor(): void {
     const img = document.querySelector('.photo-viewer img') as HTMLElement;
@@ -301,10 +292,6 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     // Update transform origin dynamically
     this.transformOrigin = `${x}% ${y}%`;
   }
-  
-  // updateZoomTransform(): void {
-  //   this.zoomTransform = `scale(${this.zoomLevel})`;
-  // }
 
   startPan(evt: MouseEvent): void {
     evt.stopPropagation();
@@ -364,6 +351,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
    // 🖱 Double-click resets everything
    resetView(): void {
     this.zoomLevel = 1;
+    this.currentZoomValue = '100%';
     this.translateX = 0;
     this.translateY = 0;
     this.transformOrigin = 'center center';
@@ -385,6 +373,23 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   handleZoomSelection(option: { value: number, label: string },   evt:MouseEvent):void{
 
+  }
+
+  onZoomSliderChange(event: Event):void{
+    const inputElement = event.target as HTMLInputElement;
+    const slideValue = Number(inputElement.value);
+    const zoomValue = (slideValue/100);
+    if(zoomValue > this.zoomRefValue){
+      this.zoomRefValue = zoomValue;
+      this.zoomLevel = Math.min(this.zoomLevel + zoomValue, this.maxZoom);
+    }else{
+      this.zoomRefValue = zoomValue;
+      this.zoomLevel = Math.max(this.zoomLevel - this.zoomStep, this.minZoom);
+    }
+
+    this.currentZoomValue = `${(this.zoomLevel * 100).toFixed(0)}%`;
+    this.updateTransform();
+    this.updateCursor();
   }
 
   onClick(id?:number):void{
@@ -508,12 +513,17 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     evt.stopPropagation();
   }
 
+  @HostListener('document:click')
+  onOutsideClick(): void {
+    this.isOpen = false;
+  }
+
 
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
+    this.onOutsideClick();
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
-
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
@@ -600,5 +610,5 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
   }
 
-
 }
+

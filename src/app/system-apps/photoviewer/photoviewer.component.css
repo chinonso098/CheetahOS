@@ -408,6 +408,10 @@
   border-radius: 3px;
 }
 
+.icon:hover, .icon1:hover{
+  background-color:#666;
+}
+
 .info {
   font-size: 13px;
   color: #6e7072;
@@ -452,11 +456,6 @@
   text-align: left;
   color: #ffffff;
   transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.photo-dropdown__selected:hover {
-  border-color: #999;
-  background-color: #f0f0f0;
 }
 
 /* ===== Icon ===== */
@@ -521,7 +520,7 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(32px);
   }
   to {
     opacity: 1;

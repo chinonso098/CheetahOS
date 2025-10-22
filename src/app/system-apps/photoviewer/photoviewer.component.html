@@ -141,7 +141,7 @@
                             </div>
                           
                             <div class="right">
-                              <div class="icon">
+                              <div class="icon" (click)="fitToScreen()">
                                 <img [src]="scaleImg"/>
                               </div>
                               <div class="zoom">
@@ -168,13 +168,12 @@
                                         {{ option.label }}
                                       </li>
                                     </ul>
-                                  </div>
-                                  
-                                <div class="icon">
+                                </div>
+                                <div class="icon" (click)="zoomOut()">
                                     <img [src]="zoomOutImg"/>
                                 </div>
-                                <input type="range" min="0" max="100" value="70">
-                                <div class="icon">
+                                <input type="range" min="25" max="400" value="80"  (input)="onZoomSliderChange($event)">
+                                <div class="icon" (click)="zoomIn()">
                                     <img [src]="zoomInImg"/>
                                 </div>
                               </div>
