@@ -72,6 +72,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   imageList:string[][] = [];
   unFilteredImageList:string[][] = [];
   imageListUrl:string[] = [];
+  imageFileList:FileInfo[] = [];
   galleryOptions:string[][] = [[this.galleryImg, this.GALLERY]]; // [this.favoriteImg, this.FAVORITE]];;
 
   screenShotCount = 0;
@@ -280,7 +281,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
   
   onMouseMove(evt: MouseEvent): void {
-    if(this.zoomLevel < 1) return;
+    if(this.zoomLevel <= 1) return;
 
     const container = evt.currentTarget as HTMLElement;
     const rect = container.getBoundingClientRect();
@@ -433,7 +434,8 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
             const file =  await this._fileService.getFileInfo(`${dirPath}/${entry}`);
             if(file){
               this.imageList.push([file.getContentPath,  this.getSrcName(this._fileInfo.getCurrentPath)]);
-              this.imageListUrl.push(file.getCurrentPath)
+              this.imageListUrl.push(file.getCurrentPath);
+              this.imageFileList.push(file);
             }
           }
         }
@@ -473,6 +475,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
             this.screenShotCount++;
 
           this.imageList.push([file.getContentPath, this.getSrcName(entryPath) ]);
+          this.imageFileList.push(file);
         }
       }
     }
