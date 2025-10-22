@@ -79,6 +79,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   sampleCount = 0;
   otherCount = 0;
 
+  imgDimension = Constants.EMPTY_STRING;
+  imgSize = Constants.EMPTY_STRING;
+
   readonly SCREEN_SHOT = 'ScreenShot';
   readonly SAMPLE = 'Sample';
   readonly OTHER = 'Other';
@@ -109,6 +112,8 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private readonly screenShotPath = '/Users/Pictures/Screen-Shots';
 
   isOpen = false;
+  showImageSlide = false;
+
   currentZoomValue = '80%';
   zoomOptions = [
     { value: 4, label: '400%'},
@@ -148,6 +153,11 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     if(this._skipOnInit) return;
 
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+
+    await this.getImageData(this._fileInfo);
+
+    if(this._fileInfo)
+        this.imageFileList.push(this._fileInfo);
 
     //base64 imgs are generated screenshots, opened  immediately after creation
     if(this.checkIfImgIsBase64(this._fileInfo.getContentPath)){
@@ -205,6 +215,28 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   ngOnDestroy(): void {
     1
+  }
+
+
+  async getImageData(file:FileInfo): Promise<void>{
+    if(!file) return;
+
+    await new Promise<void>((resolve) => {
+      const img = new Image();
+      img.src = file.getContentPath;
+      img.onload = () => {
+        const width = img.naturalWidth;
+        const height = img.naturalHeight;
+        this.imgDimension = `${width} x ${height}`;
+        this.imgSize = `${file.getSize} ${file.getFileSizeUnit}`;
+
+        resolve();
+      };
+      img.onerror = (err) => {
+        console.error("Failed to load image", err);
+        resolve(); // Still resolve to prevent blocking
+      };
+    });
   }
 
   captureComponentImg():void{
@@ -362,6 +394,10 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   // 🖼 Fit-to-screen button resets and adjusts for container
   fitToScreen(): void {
     this.resetView();
+  }
+
+  showImageCarousel(): void {
+    this.showImageSlide = !this.showImageSlide;
   }
 
   onZoomOptionSelect( evt:any):void{

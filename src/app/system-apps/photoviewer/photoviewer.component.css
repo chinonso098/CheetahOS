@@ -104,22 +104,42 @@
   cursor: grabbing;
 }
 
-.photo-slider{
+.photo-slider-container {
   position: absolute;
+  width: 1000px;
+  height: fit-content;
+  overflow-x: auto;
+  bottom: 40px;
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 2px;
+}
+
+.photo-slider {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   background-color: transparent;
-  height: 5.5em;
-  margin: 0em 3em;
+  height: 54px;
+  gap: 2px; /* optional spacing between images */
 }
 
-.photo-slider-img{
-  width:  10.5em;
-  height:  6em;
-  display: inline-flex;
+.photo-storage {
+  display: flex;
+  flex-shrink: 0; /* prevents squishing when scrolling horizontally */
 }
 
-.photo-storage{
-  display: inline-flex;
-  width: fit-content;
+.photo-slider-img {
+  width: 72px;
+  height: 52px;
+  display: flex;
+}
+
+.photo-slider-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5; /* 0 = fully transparent, 1 = fully opaque */
 }
 
 .myslides{

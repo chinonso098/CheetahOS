@@ -114,17 +114,21 @@
                         </div>
                     </div>
 
-                    <!-- <div class="photo-slider">
-                        <div class="photo-storage" *ngFor="let img of imageList; let i = index"  (click)="onClick(i)">
-                            <div class="photo-slider-img">
-                                <img [src]="img"/>
+                    @if(showImageSlide){
+                        <div class="photo-slider-container">
+                            <div class="photo-slider">
+                                <div class="photo-storage" *ngFor="let img of imageList; let i = index"  (click)="onClick(i)">
+                                    <div class="photo-slider-img">
+                                        <img [src]="img[0]"/>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div> -->
+                    }
                     <div class="photo-viewer__basic-info-container">
                         <div class="toolbar">
                             <div class="left">
-                              <div class="icon">
+                              <div class="icon" (click)="showImageCarousel()">
                                 <img [src]="slideShowImg"/>
                               </div>
                               <div class="icon"> 
@@ -133,11 +137,11 @@
                               <div class="icon1">  
                                 <img [src]="resolutionImg"/>
                               </div>
-                              <div class="info">1919 × 1079</div>
+                              <div class="info">{{imgDimension}}</div>
                               <div class="icon1">
                                 <img [src]="sizeImg"/>
                               </div>
-                              <div class="info">581.5 KB</div>
+                              <div class="info">{{imgSize}}</div>
                             </div>
                           
                             <div class="right">
