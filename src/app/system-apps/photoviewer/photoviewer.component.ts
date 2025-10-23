@@ -440,16 +440,12 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.updateCursor();
   }
 
-  onClick(id?:number):void{
-    if(id !== undefined){
-      this.currentImg = this.imageList[id][0];
-      this.currentImgIndex = id;
-    }else{
-      this.currentImgIndex = this.currentImgIndex + 1;
-      if(this.currentImgIndex <= this.imageList.length - 1){
-        this.currentImg = this.imageList[this.currentImgIndex][0];
-      }
-    }
+  async onClick(id:number): Promise<void>{
+    this.currentImg = this.imageList[id][0];
+    this.currentImgIndex = id;
+    
+    const file = this.imageFileList[id];
+    await this.getImageData(file)
   }
 
   focusHere(evt:MouseEvent):void{
