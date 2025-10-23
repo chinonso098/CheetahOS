@@ -92,7 +92,16 @@
             <div class="main-photo-viewer__container" (contextmenu)="focusHere($event)" (click)="focusHere($event)" >
                 <div  class="photo-viewer-container"> 
                     <div class="photo-viewer__controls-container">
-
+                        <div class="photos_top_toolbar">
+                            <div class="photos_bottom_toolbar__left">
+                                <div class="photos_toolbar_icon2" (click)="goBackToGallery()">
+                                    <img [src]="goBackImg"/>
+                                </div>
+                            </div>
+                            <div class="photos_bottom_toolbar__center">
+                                <div class="photos_toolbar_image-name">{{photoName}}</div>
+                            </div>
+                        </div>
                     </div>
                     <div class="photo-viewer__content-container">
                         <div tabindex="0" 
@@ -126,29 +135,29 @@
                         </div>
                     }
                     <div class="photo-viewer__basic-info-container">
-                        <div class="toolbar">
-                            <div class="left">
-                              <div class="icon" (click)="showImageCarousel()">
+                        <div class="photos_bottom_toolbar">
+                            <div class="photos_bottom_toolbar__left">
+                              <div class="photos_toolbar_icon" (click)="showImageCarousel()">
                                 <img [src]="slideShowImg"/>
                               </div>
-                              <div class="icon"> 
+                              <div class="photos_toolbar_icon"> 
                                 <img [src]="infoImg"/>
                               </div>
-                              <div class="icon1">  
+                              <div class="photos_toolbar_icon1">  
                                 <img [src]="resolutionImg"/>
                               </div>
-                              <div class="info">{{imgDimension}}</div>
-                              <div class="icon1">
+                              <div class="photos_toolbar_info">{{imgDimension}}</div>
+                              <div class="photos_toolbar_icon1">
                                 <img [src]="sizeImg"/>
                               </div>
-                              <div class="info">{{imgSize}}</div>
+                              <div class="photos_toolbar_info">{{imgSize}}</div>
                             </div>
                           
-                            <div class="right">
-                              <div class="icon" (click)="fitToScreen()">
+                            <div class="photos_bottom_toolbar__right">
+                              <div class="photos_toolbar_icon" (click)="fitToScreen()">
                                 <img [src]="scaleImg"/>
                               </div>
-                              <div class="zoom">
+                              <div class="photos_toolbar_zoom">
                                 <div class="photo-dropdown" (click)="toggleDropdown()" [class.open]="isOpen">
                                     <div class="photo-dropdown__selected">
                                       {{ currentZoomValue || 'Select background' }}
@@ -173,16 +182,14 @@
                                       </li>
                                     </ul>
                                 </div>
-                                <div class="icon" (click)="zoomOut()">
+                                <div class="photos_toolbar_icon" (click)="zoomOut()">
                                     <img [src]="zoomOutImg"/>
                                 </div>
                                 <input type="range" min="25" max="400" value="80"  (input)="onZoomSliderChange($event)">
-                                <div class="icon" (click)="zoomIn()">
+                                <div class="photos_toolbar_icon" (click)="zoomIn()">
                                     <img [src]="zoomInImg"/>
                                 </div>
                               </div>
-                              <!-- <div class="button"></div>
-                              <div class="button"></div> -->
                             </div>
                           </div>
                     </div>

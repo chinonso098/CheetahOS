@@ -130,7 +130,7 @@
 }
 
 .photo-slider-img {
-  width: 72px;
+  width: 78px;
   height: 52px;
   display: flex;
 }
@@ -142,17 +142,12 @@
   opacity: 0.5; /* 0 = fully transparent, 1 = fully opaque */
 }
 
-.myslides{
-  display: none;
-}
-
 /*Gallery View Start*/
 .main-gallery__container{
-    display: flex;
-    width: 100%;
-    height: 100%;
+  display: flex;
+  width: 100%;
+  height: 100%;
 }
-
 
 /*Gallery option Panel Start*/
 .gallery-option__panel{
@@ -397,7 +392,7 @@
 }
 
 /*bottom tool bar start*/
-.toolbar {
+.photos_bottom_toolbar, .photos_top_toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -407,56 +402,74 @@
   height: 40px;
 }
 
-.left,
-.right {
+.photos_bottom_toolbar__left,
+.photos_bottom_toolbar__center,
+.photos_bottom_toolbar__right {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.icon {
+.photos_bottom_toolbar__center{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.photos_toolbar_icon {
   width: 17px;
   height: 17px;
-  /* background: #555; */
   border-radius: 3px;
 }
 
-.icon1 {
+.photos_toolbar_icon1 {
   width: 14px;
   height: 14px;
-  /* background: #555; */
   border-radius: 3px;
 }
 
-.icon:hover, .icon1:hover{
+.photos_toolbar_icon2 {
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+}
+
+.photos_toolbar_icon:hover, .photos_toolbar_icon1:hover, .photos_toolbar_icon2:hover{
   background-color:#666;
 }
 
-.info {
+.photos_toolbar_icon.active{
+  background-color:#666;
+}
+
+.photos_toolbar_info {
   font-size: 13px;
   color: #6e7072;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.zoom {
+.photos_toolbar_image-name {
+  font-size: 15px;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.photos_toolbar_zoom {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.zoom input[type="range"] {
+.photos_toolbar_zoom input[type="range"] {
   width: 100px;
   accent-color: #4a90e2;
   height: 5px;
 }
 
-.button {
-  width: 18px;
-  height: 18px;
-  background: #666;
-  border-radius: 3px;
-}
+/*bottom tool bar end*/
 
+/*drop down start*/
 .photo-dropdown {
   width: 80px;
   background: #333;
@@ -497,7 +510,6 @@
 }
 
 .photo-dropdown.open .photo-dropdown__icon svg {
-
   transform:  rotate(180deg);
 }
 
@@ -547,3 +559,5 @@
     transform: translateY(0);
   }
 }
+
+/*drop down end*/

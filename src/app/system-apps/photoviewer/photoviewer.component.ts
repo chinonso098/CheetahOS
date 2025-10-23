@@ -62,6 +62,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   scaleInImg = `${Constants.IMAGE_BASE_PATH}photos_scale_in.png`;
   fullScaleImg = `${Constants.IMAGE_BASE_PATH}photos_scale.png`;
   scaleImg = `${Constants.IMAGE_BASE_PATH}photos_scale.png`;
+  prevImg = `${Constants.IMAGE_BASE_PATH}photos_prev_image.png`;
+  nextImg = `${Constants.IMAGE_BASE_PATH}photos_next_image.png`;
+  goBackImg =  `${Constants.IMAGE_BASE_PATH}photos_go_back.png`;
 
   currentImg = Constants.EMPTY_STRING;
   selectedIdx = 0;
@@ -81,6 +84,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   imgDimension = Constants.EMPTY_STRING;
   imgSize = Constants.EMPTY_STRING;
+  photoName = Constants.EMPTY_STRING;
 
   readonly SCREEN_SHOT = 'ScreenShot';
   readonly SAMPLE = 'Sample';
@@ -112,6 +116,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private readonly screenShotPath = '/Users/Pictures/Screen-Shots';
 
   isOpen = false;
+  isMouseMoveActive = false;
   showImageSlide = false;
 
   currentZoomValue = '80%';
@@ -229,6 +234,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
         const height = img.naturalHeight;
         this.imgDimension = `${width} x ${height}`;
         this.imgSize = `${file.getSize} ${file.getFileSizeUnit}`;
+        this.photoName = file.getFileName;
 
         resolve();
       };
@@ -313,7 +319,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
   
   onMouseMove(evt: MouseEvent): void {
-    if(this.zoomLevel <= 1) return;
+    if(!this.isMouseMoveActive) return;
 
     const container = evt.currentTarget as HTMLElement;
     const rect = container.getBoundingClientRect();
@@ -330,6 +336,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     evt.stopPropagation();
 
     if (this.zoomLevel <= 1) return; // only pan when zoomed in
+
     this.isPanning = true;
     this.startX = evt.clientX;
     this.startY = evt.clientY;
@@ -398,6 +405,10 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   showImageCarousel(): void {
     this.showImageSlide = !this.showImageSlide;
+  }
+
+  goBackToGallery(): void {
+    
   }
 
   onZoomOptionSelect( evt:any):void{
