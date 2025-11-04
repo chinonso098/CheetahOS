@@ -35,6 +35,8 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
    @Input() processAppName = Constants.EMPTY_STRING;  
    @Input() priorUId = Constants.EMPTY_STRING;  
    @Input() isMaximizable = true;  
+
+   private _renderer: Renderer2;
    
    private _runningProcessService:RunningProcessService;
    private _sessionManagmentService: SessionManagmentService;
@@ -111,7 +113,7 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
   displayName = Constants.EMPTY_STRING;
   
 
-    constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, private renderer: Renderer2,
+    constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, renderer: Renderer2,
                 windowService:WindowService, sessionManagmentService: SessionManagmentService, systemNotificationServices:SystemNotificationService,
                 menuService: MenuService,){
       this._runningProcessService = runningProcessService;
@@ -119,6 +121,8 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
       this._windowService = windowService;
       this._systemNotificationServices = systemNotificationServices;
       this._menuService = menuService;
+
+      this._renderer = renderer
  
       this._restoreOrMinSub = this._windowService.restoreOrMinimizeProcessWindowNotify.subscribe((p) => {this.restoreHiddenWindow(p)});
       this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusAndResetWindowBoundsByPid(p)});
@@ -282,7 +286,7 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
     }
 
     showGlassPaneContainer() {
-      this.renderer.setStyle(this.glassPaneContainer.nativeElement, 'display', 'block');
+      this._renderer.setStyle(this.glassPaneContainer.nativeElement, 'display', 'block');
     }
 
     hideSilhouette(pid:number):void{
@@ -297,7 +301,7 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
     }
 
     hideGlassPaneContainer() {
-      this.renderer.setStyle(this.glassPaneContainer.nativeElement, 'display', 'none');
+      this._renderer.setStyle(this.glassPaneContainer.nativeElement, 'display', 'none');
     }
 
     removeSilhouette(pid:number):void{
@@ -455,6 +459,9 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
   
         this.windowWidth = `${input.width}px`;
         this.windowHeight = `${input.height}px`;
+   
+        this._renderer.setStyle(this.divWindow.nativeElement, 'width', this.windowWidth);
+        this._renderer.setStyle(this.divWindow.nativeElement, 'height', this.windowHeight);
 
         this._windowService.addWindowState(windowState);
       }
@@ -734,7 +741,7 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
     createSilhouette():void{
       this.uniqueGPId = `gp-${this.uniqueId}`;
       //Every window has a hidden glass pane that is revealed when the window is hidden
-      const glassPane = this.renderer.createElement('div');
+      const glassPane = this._renderer.createElement('div');
 
       // Add attributes
       glassPane.setAttribute('id', this.uniqueGPId);
@@ -749,7 +756,7 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
       glassPane.style.display =  'none';
 
       // Append to the body
-      this.renderer.appendChild(this.glassPaneContainer.nativeElement, glassPane);
+      this._renderer.appendChild(this.glassPaneContainer.nativeElement, glassPane);
     }
 
     onCloseBtnClick(evt:MouseEvent):void{
