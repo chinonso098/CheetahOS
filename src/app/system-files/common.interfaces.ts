@@ -58,3 +58,9 @@ export interface DragEventInfo{
     CurrentLocation:string; /**When and where this information is retrieved,  */
     isDragActive:boolean;
 }
+
+export interface WindowResizeInfo{
+    pid:number;
+    width:number;
+    height:number;
+}

@@ -17,6 +17,7 @@ import { Process } from 'src/app/system-files/process';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
 import { MenuService } from '../../system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
+import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 
  @Component({
    selector: 'cos-window',
@@ -48,6 +49,7 @@ import { Constants } from 'src/app/system-files/constants';
    private _showOnlyCurrentProcessSub!:Subscription;
    private _removeFocusOnOtherProcessesSub!:Subscription;
    private _hideOtherProcessSub!:Subscription;
+   private _resizeWindowSub!:Subscription;
    private _restoreProcessSub!:Subscription;
    private _restoreProcessesSub!:Subscription;
    private _showOrSetProcessWindowToFocusSub!:Subscription;
@@ -134,6 +136,11 @@ import { Constants } from 'src/app/system-files/constants';
 
       this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
       this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
+
+      this._resizeWindowSub = this._windowService.resizeProcessWindowNotify.subscribe((p) => {
+        if(p.pid === this.processId)
+          this.onRZWindow(p)
+      });
     }
 
     get getDivWindowElement(): HTMLElement {
@@ -207,6 +214,7 @@ import { Constants } from 'src/app/system-files/constants';
       this._desktopActiveSub?.unsubscribe();
       this._showTheDesktopSub?.unsubscribe();
       this._showOpenWindowsSub?.unsubscribe();
+      this._resizeWindowSub?.unsubscribe();
     }
 
     ngOnChanges(changes: SimpleChanges):void{
@@ -427,13 +435,28 @@ import { Constants } from 'src/app/system-files/constants';
         windowState.width= width;
         windowState.height= height;
   
-        this.windowWidth = `${String(width)}px`;
-        this.windowHeight = `${String(height)}px`;
+        this.windowWidth = `${width}px`;
+        this.windowHeight = `${height}px`;
   
         this._windowService.addWindowState(windowState);
 
         //send window resize alert(containing new width and height);
-        this._windowService.resizeProcessWindowNotify.next([]);
+        const resize:WindowResizeInfo = {pid:this.processId, width:width, height:height}
+        this._windowService.resizeProcessWindowNotify.next(resize);
+      }
+    }
+
+    onRZWindow(input:WindowResizeInfo):void{
+
+      const windowState = this._windowService.getWindowState(this.processId);
+      if(windowState){
+        windowState.width= input.width;
+        windowState.height= input.height;
+  
+        this.windowWidth = `${input.width}px`;
+        this.windowHeight = `${input.height}px`;
+
+        this._windowService.addWindowState(windowState);
       }
     }
     

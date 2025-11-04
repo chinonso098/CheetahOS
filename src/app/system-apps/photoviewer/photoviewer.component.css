@@ -105,7 +105,7 @@
 }
 
 .photo-slider-container {
-  position: absolute;
+  position: relative;
   width: 1000px;
   height: fit-content;
   overflow-x: auto;
@@ -120,7 +120,7 @@
   flex-direction: row;
   align-items: center;
   background-color: transparent;
-  height: 54px;
+  height: 52px;
   gap: 2px; /* optional spacing between images */
 }
 

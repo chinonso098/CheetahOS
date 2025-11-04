@@ -9,6 +9,7 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { BaseService } from "./base.service.interface";
 import { WindowState, WindowBoundsState } from "../system-component/window/windows.types";
+import { WindowResizeInfo } from "src/app/system-files/common.interfaces";
 
 @Injectable({
     providedIn: 'root'
@@ -44,7 +45,7 @@ export class WindowService implements BaseService{
     showProcessPreviewWindowNotify: Subject<unknown[]> = new Subject<unknown[]>();
     showOrSetProcessWindowToFocusOnClickNotify: Subject<number> = new Subject<number>();
  
-    resizeProcessWindowNotify: Subject<number[]> = new Subject<number[]>();
+    resizeProcessWindowNotify: Subject<WindowResizeInfo> = new Subject<WindowResizeInfo>();
     removeFocusOnOtherProcessesWindowNotify: Subject<number> = new Subject<number>();
     restoreOrMinimizeProcessWindowNotify: Subject<number> = new Subject<number>();
     restoreProcessWindowOnMouseLeaveNotify: Subject<number> = new Subject<number>();

@@ -16,6 +16,7 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 
 @Component({
   selector: 'cos-photoviewer',
@@ -405,6 +406,24 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   showImageCarousel(): void {
     this.showImageSlide = !this.showImageSlide;
+
+    const photosElmnt = document.getElementById('photosContainer') as HTMLDivElement;
+    if(photosElmnt){
+      if(this.showImageSlide){
+        photosElmnt.style.height = '682px';
+        /* original content height of 630, carousel height of 52, title bar of 30 */
+        const sum = 630 + 52 + 30;
+        const resize:WindowResizeInfo = {pid:this.processId, width:1000, height:sum}
+        this._windowService.resizeProcessWindowNotify.next(resize);
+      }
+      else{
+        photosElmnt.style.height = '630px';
+        /* original content height of 630, title bar of 30 */
+        const sum = 630 +  30;
+        const resize:WindowResizeInfo = {pid:this.processId, width:1000, height:sum}
+        this._windowService.resizeProcessWindowNotify.next(resize);
+      }
+    }
   }
 
   goBackToGallery(): void {
@@ -443,7 +462,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   async onClick(id:number): Promise<void>{
     this.currentImg = this.imageList[id][0];
     this.currentImgIndex = id;
-    
+
     const file = this.imageFileList[id];
     await this.getImageData(file)
   }
