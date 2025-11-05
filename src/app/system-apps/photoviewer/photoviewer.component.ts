@@ -64,6 +64,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   readonly PHOTO_VIEW = 'photo view'
   readonly BASE_64_PNG_IMG = 'data:image/png;base64';
   readonly BLOB = 'blob:http:';
+  firstView = Constants.EMPTY_STRING;
 
   defaultView = this.GALLERY_VIEW;
   galleryImg = `${Constants.IMAGE_BASE_PATH}photos_gallery.png`;
@@ -186,8 +187,8 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     if(this._skipOnInit) return;
 
     this._fileInfo = this._processHandlerService.getLastProcessTrigger();
-
     await this.getImageData(this._fileInfo);
+    this.setFirstView(this._fileInfo);
 
     if(this._fileInfo)
         this.imageFileList.push(this._fileInfo);
@@ -213,7 +214,8 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.updateImg();
 
     if(this._skipAfterInit) return;
-
+    
+    this.setFirstView(this._fileInfo);
     this._picSrc = this.getPictureSrc(this._fileInfo);
     if(this._picSrc === this.PATH_TO_IGNORE 
       || (this._picSrc === Constants.EMPTY_STRING && this._returnedPicSrc === Constants.EMPTY_STRING)){
@@ -245,6 +247,19 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   ngOnDestroy(): void {
     1
+  }
+
+  setFirstView(file:FileInfo):void{
+
+  if(this.firstView !== Constants.EMPTY_STRING) return;
+
+
+    if(!file || (file.getContentPath === Constants.EMPTY_STRING && file.getCurrentPath === Constants.EMPTY_STRING)) {
+      this.firstView = this.GALLERY_VIEW;
+      return;
+    }
+
+    this.firstView = this.PHOTO_VIEW;
   }
 
   async getImageData(file:FileInfo): Promise<void>{
@@ -414,7 +429,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.translateY = Math.max(-maxY, Math.min(maxY, this.translateY));
   }
 
-   // 🖱 Double-click resets everything
+   //Double-click resets everything
    resetView(): void {
     this.zoomLevel = 1;
     this.currentZoomValue = '100%';
@@ -424,7 +439,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.updateTransform();
   }
 
-  // 🖼 Fit-to-screen button resets and adjusts for container
+  //Fit-to-screen button resets and adjusts for container
   fitToScreen(): void {
     this.resetView();
   }
@@ -457,7 +472,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   goBackToGallery(): void {
-    
+    this.defaultView = this.GALLERY_VIEW;
   }
 
   onZoomOptionSelect( evt:any):void{
@@ -606,6 +621,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   handlePictureSelection(img:string, evt:MouseEvent):void{
     evt.stopPropagation();
+
+    this.currentImg = img;
+    this.defaultView = this.PHOTO_VIEW;
   }
 
   @HostListener('document:click')

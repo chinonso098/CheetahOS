@@ -94,9 +94,11 @@
                     <div class="photo-viewer__controls-container">
                         <div class="photos_top_toolbar">
                             <div class="photos_bottom_toolbar__left">
-                                <div class="photos_toolbar_icon2" (click)="goBackToGallery()">
-                                    <img [src]="goBackImg"/>
-                                </div>
+                                @if(firstView === GALLERY_VIEW){
+                                    <div class="photos_toolbar_icon2" (click)="goBackToGallery()">
+                                        <img [src]="goBackImg"/>
+                                    </div>
+                                }
                             </div>
                             <div class="photos_bottom_toolbar__center">
                                 <div class="photos_toolbar_image-name">{{photoName}}</div>
