@@ -107,6 +107,8 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   imgDimension = Constants.EMPTY_STRING;
   imgSize = Constants.EMPTY_STRING;
   photoName = Constants.EMPTY_STRING;
+  imgFilePath = Constants.EMPTY_STRING;
+  fileDate:Date= new Date();
 
   readonly SCREEN_SHOT = 'ScreenShot';
   readonly SAMPLE = 'Sample';
@@ -239,15 +241,11 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
       const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
       this.currentImg = currentImg;
     }
-
-    //tell angular to run additional detection cycle after 
-    //this.changeDetectorRef.detectChanges();
   }
 
   ngOnDestroy(): void {
     1
   }
-
 
   async getImageData(file:FileInfo): Promise<void>{
     if(!file) return;
@@ -261,6 +259,8 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
         this.imgDimension = `${width} x ${height}`;
         this.imgSize = `${file.getSize} ${file.getFileSizeUnit}`;
         this.photoName = file.getFileName;
+        this.imgFilePath = file.getCurrentPath;
+        this.fileDate = file.getDateAccessed;
 
         resolve();
       };

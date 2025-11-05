@@ -130,24 +130,24 @@
                     
                             <div class="photo-info-pane__field">
                                 <div class="photo-info-pane__icon"> <img [src]="photoImg" /></div>
-                                <div class="photo-info-pane__text">placeholder_filename</div>
+                                <div class="photo-info-pane__text">{{photoName}}</div>
                             </div>
 
                             <div class="photo-info-pane__field">
                                 <div class="photo-info-pane__icon"> <img [src]="calendarImg" /></div>
                                 <div class="photo-info-pane__group-text">
-                                    <div class="photo-info-pane__group-text_big">Month</div>
-                                    <div class="photo-info-pane__group-text_small">Day</div>
-                                    <div class="photo-info-pane__group-text_small1">Year</div>
+                                    <div class="photo-info-pane__group-text_big"> {{ fileDate | date: 'MMM' }}</div>
+                                    <div class="photo-info-pane__group-text_small"> {{ fileDate | date: 'dd' }}</div>
+                                    <div class="photo-info-pane__group-text_small1"> {{ fileDate | date: 'yyyy' }}</div>
                                 </div>
                             </div>
 
                             <div class="photo-info-pane__field">
                                 <div class="photo-info-pane__icon"> <img [src]="timeImg" /></div>
                                 <div class="photo-info-pane__group-text">
-                                    <div class="photo-info-pane__group-text_small">9</div>
-                                    <div class="photo-info-pane__group-text_small">17</div>
-                                    <div class="photo-info-pane__group-text_small1">PM</div>
+                                    <div class="photo-info-pane__group-text_small">  {{ fileDate | date: 'HH' }}</div>
+                                    <div class="photo-info-pane__group-text_small">  {{ fileDate | date: 'mm' }}</div>
+                                    <div class="photo-info-pane__group-text_small1"> {{ fileDate | date: 'a' }}</div>
                                 </div>
                             </div>
 
@@ -171,7 +171,7 @@
                                 <div class="photo-info-pane__icon1"> <img [src]="folderPathImg" /></div>
                                 <div class="photo-info-pane__group-text-vertical">
                                     <div class="photo-info-pane__label">File Path</div>
-                                    <div class="photo-info-pane__link">C:\placeholder\path\filename.jpeg</div>
+                                    <div class="photo-info-pane__link">{{imgFilePath}}</div>
                                 </div>
                             </div>
                           </div>
