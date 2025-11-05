@@ -121,7 +121,64 @@
                                 [style.transform-origin]="transformOrigin"
                             />
                         </div>
-                    </div>
+
+                        <div class="info-pane_container">
+                            <div class="photo-info-pane">
+                                <div class="photo-info-pane__header">
+                                  <h2>Info</h2>
+                                  <button class="photo-info-pane__close-btn">✕</button>
+                                </div>
+                        
+                                <div class="photo-info-pane__field">
+                                    <div class="photo-info-pane__icon"> <img [src]="photoImg" /></div>
+                                    <div class="photo-info-pane__text">placeholder_filename</div>
+                                </div>
+
+                                <div class="photo-info-pane__field">
+                                    <div class="photo-info-pane__icon"> <img [src]="calendarImg" /></div>
+                                    <div class="photo-info-pane__group-text">
+                                        <div class="photo-info-pane__group-text_big">Month</div>
+                                        <div class="photo-info-pane__group-text_small">Day</div>
+                                        <div class="photo-info-pane__group-text_small1">Year</div>
+                                    </div>
+                                </div>
+
+                                <div class="photo-info-pane__field">
+                                    <div class="photo-info-pane__icon"> <img [src]="timeImg" /></div>
+                                    <div class="photo-info-pane__group-text">
+                                        <div class="photo-info-pane__group-text_small">9</div>
+                                        <div class="photo-info-pane__group-text_small">17</div>
+                                        <div class="photo-info-pane__group-text_small1">PM</div>
+                                    </div>
+                                </div>
+
+                                <div class="photo-info-pane__field">
+                                    <div class="photo-info-pane__icon1"> <img [src]="resolutionImg1" /></div>
+                                    <div class="photo-info-pane__group-text-vertical">
+                                        <div class="photo-info-pane__label">Size Info</div>
+                                        <div class="photo-info-pane__details">1920 x 1080 516kb 72dpi 24bit</div>
+                                    </div>
+                                </div>
+
+                                <div class="photo-info-pane__field">
+                                    <div class="photo-info-pane__icon1"> <img [src]="srcImg" /></div>
+                                    <div class="photo-info-pane__group-text-vertical">
+                                        <div class="photo-info-pane__label">Source</div>
+                                        <div class="photo-info-pane__details">This PC</div>
+                                    </div>
+                                </div>
+
+                                <div class="photo-info-pane__field">
+                                    <div class="photo-info-pane__icon1"> <img [src]="folderPathImg" /></div>
+                                    <div class="photo-info-pane__group-text-vertical">
+                                        <div class="photo-info-pane__label">File Path</div>
+                                        <div class="photo-info-pane__link">C:\placeholder\path\filename.jpeg</div>
+                                    </div>
+                                </div>
+                              </div>
+                            </div>
+                        </div>
+
 
                     @if(showImageSlide){
                         <div class="photo-slider-container">

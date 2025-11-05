@@ -66,6 +66,13 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   prevImg = `${Constants.IMAGE_BASE_PATH}photos_prev_image.png`;
   nextImg = `${Constants.IMAGE_BASE_PATH}photos_next_image.png`;
   goBackImg =  `${Constants.IMAGE_BASE_PATH}photos_go_back.png`;
+  photoImg =  `${Constants.IMAGE_BASE_PATH}photos_info_picture.png`;
+  calendarImg =  `${Constants.IMAGE_BASE_PATH}photos_info_calendar.png`;
+  timeImg =  `${Constants.IMAGE_BASE_PATH}photos_info_time.png`;
+  resolutionImg1 = `${Constants.IMAGE_BASE_PATH}photos_info_resolution.png`;
+  srcImg =  `${Constants.IMAGE_BASE_PATH}photos_info_source.png`;
+  folderPathImg = `${Constants.IMAGE_BASE_PATH}photos_info_path.png`;
+
 
   currentImg = Constants.EMPTY_STRING;
   selectedIdx = 0;

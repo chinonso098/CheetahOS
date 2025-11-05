@@ -451,7 +451,6 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
     }
 
     onRZWindow(input:WindowResizeInfo):void{
-
       const windowState = this._windowService.getWindowState(this.processId);
       if(windowState){
         windowState.width= input.width;
@@ -459,7 +458,7 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
   
         this.windowWidth = `${input.width}px`;
         this.windowHeight = `${input.height}px`;
-   
+
         this._renderer.setStyle(this.divWindow.nativeElement, 'width', this.windowWidth);
         this._renderer.setStyle(this.divWindow.nativeElement, 'height', this.windowHeight);
 
