@@ -17,12 +17,26 @@ import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
   selector: 'cos-photoviewer',
   templateUrl: './photoviewer.component.html',
   styleUrls: ['./photoviewer.component.css'],
-  standalone:false
+  standalone:false,
+  animations: [
+    trigger('slideStatusAnimation1', [
+      state('slideOut', style({zIndex: 0, right: '-300px' })),
+      state('slideIn', style({ zIndex: 1, right: '0' })),
+
+      transition('slideOut => slideIn', [
+        animate('150ms ease-in'),
+      ]),
+      transition('slideIn => slideOut', [
+        animate('100ms ease-out'),
+      ]),
+    ])
+  ]
 })
 export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
 
@@ -98,6 +112,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   readonly SAMPLE = 'Sample';
   readonly OTHER = 'Other';
   sortBy = Constants.EMPTY_STRING;
+  dash = Constants.DASH;
+  imgData = '72 dpi - 24 bit';
+  slideState = 'slideOut';
 
   zoomLevel: number = 0.8;
   zoomStep: number = 0.1;
@@ -126,6 +143,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   isOpen = false;
   isMouseMoveActive = false;
   showImageSlide = false;
+  showImageInfo = false;
 
   currentZoomValue = '80%';
   zoomOptions = [
@@ -411,7 +429,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.resetView();
   }
 
-  showImageCarousel(): void {
+  showImageCarousel():void{
     this.showImageSlide = !this.showImageSlide;
 
     const photosElmnt = document.getElementById('photosContainer') as HTMLDivElement;
@@ -426,11 +444,16 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
       else{
         photosElmnt.style.height = '630px';
         /* original content height of 630, title bar of 30 */
-        const sum = 630 +  30;
+        const sum = 630 + 30;
         const resize:WindowResizeInfo = {pid:this.processId, width:1000, height:sum}
         this._windowService.resizeProcessWindowNotify.next(resize);
       }
     }
+  }
+
+  showImageInfoPane():void{
+    this.showImageInfo = !this.showImageInfo;
+    this.slideState = (this.showImageInfo)? 'slideIn' : 'slideOut';
   }
 
   goBackToGallery(): void {
@@ -589,7 +612,6 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   onOutsideClick(): void {
     this.isOpen = false;
   }
-
 
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();

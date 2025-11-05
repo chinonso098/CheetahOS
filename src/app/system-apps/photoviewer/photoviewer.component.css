@@ -39,27 +39,6 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.photo-viewer__tbd{
-  max-width:100%;
-  max-height: 550px;
-
-  margin: auto;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-}
-
-.photo-viewer__tbd img{
-  /* aspect-ratio:auto; */
-
-  /* height: 360px; */
-  object-fit: contain;
-  transition: transform 0.25s ease-out;
-  transform-origin: center center;
-  cursor: zoom-in;
-  user-select: none; /* prevent accidental text/image selection while dragging */
-}
-
 .photo-viewer {
   width: 100%;
   height: 550px;
@@ -141,32 +120,23 @@
   /*opacity: 0.5;  0 = fully transparent, 1 = fully opaque */
 }
 
-
 /*Photos Info Pane Start*/
-.info-pane_container {
-  background:linear-gradient(to right, #29323c, #485563);
-  font-family: "Segoe UI", sans-serif;
-  color: #f3f3f3;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  height: 550px;
-  margin: 0;
-  padding: 4px;
-  position: absolute;
-  top: 40px;
-  right: 0;
-}
-
 .photo-info-pane {
-  /* background-color: #252526; */
   display: flex;
   flex-direction: column;
   row-gap: 5px;
-  width: 300px;
   padding: 16px 12px;
-  border-radius: 6px;
+  border-radius: 3px;
+  background:linear-gradient(to right, #29323c, #485563);
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  color: #f3f3f3;
+  font-family: "Segoe UI", sans-serif;
+  width: 300px;
+  height: 550px;
+  position: absolute;
+  top: 40px;
+  right: 0;
+  z-index: 0;
 }
 
 .photo-info-pane__header {
@@ -181,7 +151,7 @@
   font-size: 1.1rem;
 }
 
-.photo-info-pane__lose-btn {
+.photo-info-pane__close-btn {
   background: none;
   border: none;
   color: #ccc;
@@ -599,7 +569,7 @@
   background-color:#666;
 }
 
-.photos_toolbar_icon.active{
+.photos_toolbar_icon.active, .photos_toolbar_icon1.active, .photos_toolbar_icon2.active{
   background-color:#666;
 }
 
