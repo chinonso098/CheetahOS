@@ -214,7 +214,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.updateImg();
 
     if(this._skipAfterInit) return;
-    
+
     this.setFirstView(this._fileInfo);
     this._picSrc = this.getPictureSrc(this._fileInfo);
     if(this._picSrc === this.PATH_TO_IGNORE 
@@ -251,10 +251,12 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   setFirstView(file:FileInfo):void{
 
-  if(this.firstView !== Constants.EMPTY_STRING) return;
+    if(this.firstView !== Constants.EMPTY_STRING) return;
 
+    if(!file 
+      || (file.getContentPath === Constants.EMPTY_STRING && file.getCurrentPath === Constants.EMPTY_STRING)
+      || (file.getCurrentPath === this.PATH_TO_IGNORE && file.getContentPath === Constants.EMPTY_STRING)){
 
-    if(!file || (file.getContentPath === Constants.EMPTY_STRING && file.getCurrentPath === Constants.EMPTY_STRING)) {
       this.firstView = this.GALLERY_VIEW;
       return;
     }
@@ -619,11 +621,15 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.imageList = this.imageList.filter( x => x[1] === selection);
   }
 
-  handlePictureSelection(img:string, evt:MouseEvent):void{
+  async handlePictureSelection(img:string, evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
 
     this.currentImg = img;
     this.defaultView = this.PHOTO_VIEW;
+
+    const imgIdx = this.imageList.findIndex(x => x[0] === img);
+    const imgFile = this.imageFileList[imgIdx + 1];
+    await this.getImageData(imgFile);
   }
 
   @HostListener('document:click')

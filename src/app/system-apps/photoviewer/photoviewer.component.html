@@ -82,10 +82,8 @@
                             </li>
                         </ol>
                     </div>
-
                 </div>
             </div>
-            
         </ng-template>
     
         <ng-template #photoView>
@@ -147,8 +145,8 @@
                             <div class="photo-info-pane__field">
                                 <div class="photo-info-pane__icon"> <img [src]="timeImg" /></div>
                                 <div class="photo-info-pane__group-text">
-                                    <div class="photo-info-pane__group-text_small">  {{ fileDate | date: 'HH' }}</div>
-                                    <div class="photo-info-pane__group-text_small">  {{ fileDate | date: 'mm' }}</div>
+                                    <div class="photo-info-pane__group-text_small"> {{ fileDate | date: 'HH' }}</div>
+                                    <div class="photo-info-pane__group-text_small"> {{ fileDate | date: 'mm' }}</div>
                                     <div class="photo-info-pane__group-text_small1"> {{ fileDate | date: 'a' }}</div>
                                 </div>
                             </div>
@@ -176,7 +174,7 @@
                                     <div class="photo-info-pane__link">{{imgFilePath}}</div>
                                 </div>
                             </div>
-                          </div>
+                        </div>
                     </div>
 
                     @if(showImageSlide){
