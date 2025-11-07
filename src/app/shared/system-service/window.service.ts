@@ -142,24 +142,21 @@ export class WindowService implements BaseService{
             this._processPreviewImages.delete(appName);
     }
 
-    removeProcessWindowFromWindows(uId:string):void{
+    removeProcessWindowFromWindows(uId: string): void {
         const appName = uId.split(Constants.DASH)[0];
-
-        if(this._processWindows.has(appName)){
-            const currUIds = this._processWindows.get(appName) ?? [];
-
-            const deleteCount = 1;
-            const uidIndex = currUIds.indexOf(uId)
-            if(uidIndex !== 1) {
-                currUIds.splice(uidIndex, deleteCount);
-                this._processWindows.set(appName, currUIds);
-            }
-
-            if(currUIds.length === 1)
-                this._processWindows.delete(appName);
+    
+        if (!this._processWindows.has(appName)) return;
+    
+        const currUIds = this._processWindows.get(appName) ?? [];
+        const filteredUIds = currUIds.filter(id => id !== uId);
+    
+        if (filteredUIds.length > 0) {
+            this._processWindows.set(appName, filteredUIds);
+        } else {
+            this._processWindows.delete(appName);
         }
     }
-
+    
     removeProcessWindowBounds(uId:string):void{
         const appName = uId.split(Constants.DASH)[0];
         if(this._processWindowBounds.has(appName))
@@ -183,7 +180,6 @@ export class WindowService implements BaseService{
     
         this._processPreviewImages.set(appName, updatedImages);
     }
-    
 
     removeEventOriginator():void{
         this._eventOriginator = Constants.EMPTY_STRING;
