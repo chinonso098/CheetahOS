@@ -250,21 +250,20 @@ export class ChatterService implements BaseService{
     }
 
     private raiseRemoveUserFromOnlineListRecieved(userInfo:any):void{
-        if(userInfo){
-            const offlineUser:IUserData = {
-                userId: userInfo.userId as string,
-                userName: userInfo.userName as string,
-                userNameAcronym: userInfo.userNameAcronym as string,
-                color:userInfo.color as string,
-                isTyping:userInfo.isTyping as boolean,
-            }
+        if(!userInfo) return;
 
-           const deleteCount = 1;
-           const userInfoIdx = this._onlineUsers.findIndex(x => x.userId === offlineUser.userId);
-           if (userInfoIdx !== -1) {
-                this._onlineUsers.splice(userInfoIdx, deleteCount);
-            }
-            
+        const offlineUser:IUserData = {
+            userId: userInfo.userId as string,
+            userName: userInfo.userName as string,
+            userNameAcronym: userInfo.userNameAcronym as string,
+            color:userInfo.color as string,
+            isTyping:userInfo.isTyping as boolean,
+        }
+
+        const originalLength = this._onlineUsers.length;
+        this._onlineUsers = this._onlineUsers.filter(x => x.userId !== offlineUser.userId);
+
+        if(this._onlineUsers.length < originalLength){
             this.updateOnlineUserListNotify.next();
         }
     }

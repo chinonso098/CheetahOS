@@ -98,20 +98,21 @@ export class ActivityHistoryService implements BaseService {
     }
 
     removeActivityHistory(entry: ActivityHistory): void {
-        if(this._activityHistory.length <= 0) return;
-
-        const deleteCount = 1;
-        const activityHistoryIdx = this._activityHistory.findIndex( h =>( h.name === entry.name &&
-                                                                    h.path === entry.path &&
-                                                                    h.type === entry.type
-                                                                    ));
-        if(activityHistoryIdx !== -1){
-            this._activityHistory.splice(activityHistoryIdx, deleteCount);
+        if (this._activityHistory.length === 0) return;
+    
+        const originalLength = this._activityHistory.length;
+    
+        this._activityHistory = this._activityHistory.filter( h => !( h.name === entry.name &&
+                                                                        h.path === entry.path &&
+                                                                        h.type === entry.type
+                                                                    )
+                                                            );
+        // Only save if something was actually removed
+        if (this._activityHistory.length < originalLength) {
             this.save();
         }
     }
-
-
+    
     private save(): void {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this._activityHistory));
     }

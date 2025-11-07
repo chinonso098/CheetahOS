@@ -50,11 +50,7 @@ export class ProcessIDService implements BaseService{
     }
 
     public removeProcessId(pId:number):void{
-       const deleteCount = 1;
-       const pidIndex = this._activeProcessIds.indexOf(pId)
-       if (pidIndex !== -1) {
-            this._activeProcessIds.splice(pidIndex, deleteCount);
-        }
+        this._activeProcessIds = this._activeProcessIds.filter(id => id !== pId);
     }
 
     public processCount():number{

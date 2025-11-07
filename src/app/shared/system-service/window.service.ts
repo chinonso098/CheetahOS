@@ -146,16 +146,16 @@ export class WindowService implements BaseService{
         const appName = uId.split(Constants.DASH)[0];
 
         if(this._processWindows.has(appName)){
-            const currUids = this._processWindows.get(appName) ?? [];
+            const currUIds = this._processWindows.get(appName) ?? [];
 
             const deleteCount = 1;
-            const uidIndex = currUids.indexOf(uId)
+            const uidIndex = currUIds.indexOf(uId)
             if(uidIndex !== 1) {
-                currUids.splice(uidIndex, deleteCount);
-                this._processWindows.set(appName, currUids);
+                currUIds.splice(uidIndex, deleteCount);
+                this._processWindows.set(appName, currUIds);
             }
 
-            if(currUids.length === 1)
+            if(currUIds.length === 1)
                 this._processWindows.delete(appName);
         }
     }
@@ -175,29 +175,22 @@ export class WindowService implements BaseService{
         return false;
     }
 
-    removeProcessPreviewImage(appName:string, pId:number):void{
-        const deleteCount = 1;
-        if(this._processPreviewImages.has(appName)){
-            const currImages = this._processPreviewImages.get(appName) ?? [];
-            const dataIndex = currImages.findIndex(d => d.pId  === pId);
+    removeProcessPreviewImage(appName: string, pId: number): void {
+        if (!this._processPreviewImages.has(appName)) return;
     
-            if(dataIndex !== -1){
-                currImages.splice(dataIndex || 0, deleteCount)
-            }
-        }
+        const currImages = this._processPreviewImages.get(appName) ?? [];
+        const updatedImages = currImages.filter(d => d.pId !== pId);
+    
+        this._processPreviewImages.set(appName, updatedImages);
     }
+    
 
     removeEventOriginator():void{
         this._eventOriginator = Constants.EMPTY_STRING;
     }
 
     removeWindowState(pId:number):void{
-        const deleteCount = 1;
-        const winStateIdx = this._processWindowStates.findIndex(p => p.pId === pId);
-
-        if(winStateIdx !== -1){
-            this._processWindowStates.splice(winStateIdx, deleteCount)
-        }
+        this._processWindowStates = this._processWindowStates.filter(p => p.pId !== pId);
     }
 
     getProcessPreviewImages(appName:string):TaskBarPreviewImage[]{

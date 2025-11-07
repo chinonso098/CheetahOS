@@ -63,7 +63,7 @@ export class ProcessHandlerService implements BaseService{
         "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow", "settings"];
 
     private userOpenedAppsList:string[] = [];
-    private openedAppInstanceUID:string[] = [];
+    private openedAppInstanceUId:string[] = [];
     private userOpenedAppsKey = Constants.USER_OPENED_APPS;
     private appsInstanceUIDKey = Constants.USER_OPENED_APPS_INSTANCE;
 
@@ -245,24 +245,20 @@ export class ProcessHandlerService implements BaseService{
     }
 
     private deleteEntryFromUserOpenedAppsAndSession(proccess:Process):void{
-      const deleteCount = 1;
-      const uId = `${proccess.getProcessName}-${proccess.getProcessId}`;
+        const uId = `${proccess.getProcessName}-${proccess.getProcessId}`;
 
-      let pidIndex = this.userOpenedAppsList.indexOf(proccess.getProcessName);
-      if(pidIndex !== -1) 
-        this.userOpenedAppsList.splice(pidIndex, deleteCount);
+        if(this._runningProcessService.getProcessCount(proccess.getProcessName) === 1){
+            this.userOpenedAppsList = this.userOpenedAppsList.filter(x => x !== proccess.getProcessName);
+            this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList);
+        }
 
-      this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList);
+        this.openedAppInstanceUId = this.openedAppInstanceUId.filter( x => x !== uId);
+        this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUId);
 
-      pidIndex = this.openedAppInstanceUID.indexOf(uId);
-      if(pidIndex !== -1) 
-        this.openedAppInstanceUID.splice(pidIndex, deleteCount);
-
-        this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUID);
-
-      this._sessionMangamentServices.removeSession(uId); 
-      this._sessionMangamentServices.removeAppSession(uId); 
+        this._sessionMangamentServices.removeSession(uId); 
+        this._sessionMangamentServices.removeAppSession(uId); 
     }
+
 
     private fetchPriorSessionInfo():string[]{
         const openedAppList = this._sessionMangamentServices.getSession(this.userOpenedAppsKey) as string[];
@@ -309,10 +305,10 @@ export class ProcessHandlerService implements BaseService{
         if(!this.userOpenedAppsList.includes(pName))
             this.userOpenedAppsList.push(pName);
 
-        this.openedAppInstanceUID.push(uId);
+        this.openedAppInstanceUId.push(uId);
 
         this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList);
-        this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUID);
+        this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUId);
     }
 
     checkAndRestore():void{

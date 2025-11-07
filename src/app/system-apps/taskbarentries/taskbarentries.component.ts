@@ -364,13 +364,9 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   }
 
   checkIfIconWasPinned(procName:string):boolean{
-    const deleteCount = 1;
-    const pinnedIconIdx = this.pinnedTaskBarIconList.findIndex(x => x.opensWith === procName);
-
-    if (pinnedIconIdx === -1) return false;
-  
-    this.pinnedTaskBarIconList.splice(pinnedIconIdx, deleteCount);
-    return true;
+    const originalLength = this.pinnedTaskBarIconList.length;
+    this.pinnedTaskBarIconList = this.pinnedTaskBarIconList.filter(x => x.opensWith !== procName);
+    return this.pinnedTaskBarIconList.length < originalLength;
   }
 
   checkForPriorIcon(pId:number, iconPath:string):string{
@@ -599,19 +595,24 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   removeIconFromTaskBarIconList(pId:number, opensWith:string, isDefault:boolean):void{
     const isMerged = (this.taskBarEntriesIconState === this.mergedIcons)
-    const deleteCount = 1;
-    const tskBarIcons = (isMerged)? this.mergedTaskBarIconList : this.unMergedTaskBarIconList;
-
-    let procIndex  = 0;
+    const tskBarIcons = isMerged? this.mergedTaskBarIconList : this.unMergedTaskBarIconList;
+    let updatedIcons = tskBarIcons;
     if(isDefault){
-      procIndex = (isMerged)? tskBarIcons.findIndex(x => x.opensWith === opensWith) : tskBarIcons.findIndex(x => x.pId === pId);
+      updatedIcons = isMerged
+        ? tskBarIcons.filter(x => x.opensWith !== opensWith) 
+        : tskBarIcons.filter(x => x.pId !== pId);
     }else{
-      procIndex = tskBarIcons.findIndex(x => x.opensWith === opensWith)
+      updatedIcons = tskBarIcons.filter(x => x.opensWith !== opensWith);
     }
-    
-    if(procIndex === -1) return;
 
-    tskBarIcons.splice(procIndex, deleteCount);
+    // Only update the list if something was actually removed
+    if (updatedIcons.length !== tskBarIcons.length) {
+      if (isMerged) {
+          this.mergedTaskBarIconList = updatedIcons;
+      } else {
+          this.unMergedTaskBarIconList = updatedIcons;
+      }
+  }
   }
 
   onTaskBarIconClick(file:TaskBarIconInfo):void{
@@ -940,11 +941,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     
       this.sessionPinnedTaskbarIcons.push(app_data);
     }else if(this.sessionPinnedTaskbarIcons.some(x => x.opensWith === app_data.opensWith) && (action === this.unPinAction)){
-      const deleteCount = 1;
-      const tskBarIconIndex = this.sessionPinnedTaskbarIcons.findIndex(x => x.opensWith === app_data.opensWith);
-      if (tskBarIconIndex !== -1) {
-        this.sessionPinnedTaskbarIcons.splice(tskBarIconIndex, deleteCount);
-      }
+      this.sessionPinnedTaskbarIcons = this.sessionPinnedTaskbarIcons.filter(x => x.opensWith !== app_data.opensWith);
     }
 
     this._sessionManagmentService.addSession(this.cheetahTskBarKey, this.sessionPinnedTaskbarIcons);
