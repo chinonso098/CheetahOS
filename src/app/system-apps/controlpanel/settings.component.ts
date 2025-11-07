@@ -28,10 +28,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   @Input() priorUId = Constants.EMPTY_STRING;
 
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _defaultService:DefaultService;
-  private _windowService:WindowService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _defaultService!:DefaultService;
+  private _windowService!:WindowService;
 
 
   readonly homeImg = `${Constants.IMAGE_BASE_PATH}cp_home.png`;

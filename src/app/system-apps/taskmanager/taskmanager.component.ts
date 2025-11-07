@@ -37,11 +37,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;
 
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _notificationService:UserNotificationService;
-  private _windowService:WindowService;
-  private _sessionManagmentService:SessionManagmentService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _notificationService!:UserNotificationService;
+  private _windowService!:WindowService;
+  private _sessionManagmentService!:SessionManagmentService;
   private _renderer: Renderer2;
   private _appState!:AppState;
 

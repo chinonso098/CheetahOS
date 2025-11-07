@@ -19,7 +19,7 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
   @ViewChild('clippyToolTipText', {static: true}) clippyToolTipText!: ElementRef;
   @ViewChild('clippyGifImg', {static: true}) clippyGifImg!: ElementRef; 
 
-  private _runningProcessService:RunningProcessService;
+  private _runningProcessService!:RunningProcessService;
   private _changeDetectorRef: ChangeDetectorRef
 
   toolTipText = Constants.EMPTY_STRING;

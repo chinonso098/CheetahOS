@@ -29,13 +29,13 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit {
   @Input() priorUId = Constants.EMPTY_STRING;
   
-  private _fileService:FileService;
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _processHandlerService:ProcessHandlerService;
-  private _sessionManagmentService: SessionManagmentService;
-  private _scriptService: ScriptService;
-  private _windowService:WindowService;
+  private _fileService!:FileService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _sessionManagmentService!:SessionManagmentService;
+  private _scriptService!:ScriptService;
+  private _windowService!:WindowService;
   
   private zoomBy = 0;
   private pageRendering = false;

@@ -31,13 +31,13 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   @ViewChild('doswindow') dosWindow!: ElementRef; 
   @Input() priorUId = Constants.EMPTY_STRING;
 
-  private _fileService:FileService;
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _processHandlerService:ProcessHandlerService;
-  private _sessionManagmentService: SessionManagmentService;
-  private _scriptService: ScriptService;
-  private _windowService:WindowService;
+  private _fileService!:FileService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _sessionManagmentService!:SessionManagmentService;
+  private _scriptService!:ScriptService;
+  private _windowService!:WindowService;
   
   private dosInstance: any = null; // Store js-dos instance
 

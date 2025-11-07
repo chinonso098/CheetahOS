@@ -27,12 +27,12 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   @ViewChild('boidCanvas', { static: true }) boidCanvas!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
   
-  private _windowService:WindowService;
-  private _scriptService: ScriptService;
-  private _processIdService:ProcessIDService;
-  private _processHandlerService:ProcessHandlerService;
-  private _runningProcessService:RunningProcessService;
-  private _sessionManagmentService:SessionManagmentService;
+  private _windowService!:WindowService;
+  private _scriptService!:ScriptService;
+  private _processIdService!:ProcessIDService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _runningProcessService!:RunningProcessService;
+  private _sessionManagmentService!:SessionManagmentService;
 
   private SECONDS_DELAY = 1000;
   private _appState!:AppState;

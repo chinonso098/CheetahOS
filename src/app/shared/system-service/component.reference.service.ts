@@ -14,8 +14,8 @@ import { BaseComponent } from "src/app/system-base/base/base.component.interface
 
 export class ComponentReferenceService implements BaseService{
     private _componentsReferences:Map<number, ComponentRef<BaseComponent>>; 
-    private _runningProcessService:RunningProcessService;
-    private _processIdService:ProcessIDService;
+    private _runningProcessService!:RunningProcessService;
+    private _processIdService!:ProcessIDService;
 
     private _componentRefView!:ViewRef;
     private _viewContainerRef!: ViewContainerRef;

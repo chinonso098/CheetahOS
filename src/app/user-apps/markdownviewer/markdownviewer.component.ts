@@ -35,14 +35,13 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   @ViewChild('markDownContent', {static: true}) markDownContent!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
   
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-
-  private _sessionManagmentService: SessionManagmentService;
-  private _processHandlerService:ProcessHandlerService;
-  private _scriptService: ScriptService;
-  private _fileService:FileService;
-  private _windowService:WindowService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _sessionManagmentService!:SessionManagmentService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _scriptService!:ScriptService;
+  private _fileService!:FileService;
+  private _windowService!:WindowService;
 
 
   private _sanitizer: DomSanitizer;

@@ -37,13 +37,13 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _minimizeWindowSub!: Subscription;
   private _changeContentSub!: Subscription;
   
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _processHandlerService:ProcessHandlerService;
-  private _sessionManagmentService: SessionManagmentService;
-  private _scriptService: ScriptService;
-  private _windowService:WindowService;
-  private _audioService:AudioService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _sessionManagmentService!:SessionManagmentService;
+  private _scriptService!:ScriptService;
+  private _windowService!:WindowService;
+  private _audioService!:AudioService;
 
   private _fileInfo!:FileInfo;
   private player: any;

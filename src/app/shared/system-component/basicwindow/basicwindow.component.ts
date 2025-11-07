@@ -32,9 +32,9 @@ import { Constants } from 'src/app/system-files/constants';
    @Input() processAppName = Constants.EMPTY_STRING;  
    @Input() isDialog = false;  
 
-   private _runningProcessService:RunningProcessService;
-   private _systemNotificationServices:SystemNotificationService;
-   private _windowService:WindowService;
+   private _runningProcessService!:RunningProcessService;
+   private _systemNotificationServices!:SystemNotificationService;
+   private _windowService!:WindowService;
    private _originalWindowsState!:WindowState;
    private _menuService!:MenuService;
    private _processHandlerService!:ProcessHandlerService;

@@ -17,8 +17,8 @@ import { WindowResizeInfo } from "src/app/system-files/common.interfaces";
 
 export class WindowService implements BaseService{
 
-    private _runningProcessService:RunningProcessService;
-    private _processIdService:ProcessIDService;
+    private _runningProcessService!:RunningProcessService;
+    private _processIdService!:ProcessIDService;
     
     private _processPreviewImages:Map<string, TaskBarPreviewImage[]>;
     private _processWindows:Map<string, string[]>;

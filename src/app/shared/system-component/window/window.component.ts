@@ -38,10 +38,10 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 
    private _renderer: Renderer2;
    
-   private _runningProcessService:RunningProcessService;
-   private _sessionManagmentService: SessionManagmentService;
-   private _systemNotificationServices:SystemNotificationService;
-   private _windowService:WindowService;
+   private _runningProcessService!:RunningProcessService;
+   private _sessionManagmentService!:SessionManagmentService;
+   private _systemNotificationServices!:SystemNotificationService;
+   private _windowService!:WindowService;
    private _originalWindowsState!:WindowState;
    private _menuService!:MenuService;
 

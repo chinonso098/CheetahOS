@@ -17,8 +17,8 @@ import { BaseService } from "./base.service.interface";
 
 export class MenuService implements BaseService{
 
-    private _runningProcessService:RunningProcessService;
-    private _processIdService:ProcessIDService;
+    private _runningProcessService!:RunningProcessService;
+    private _processIdService!:ProcessIDService;
 
     pinToTaskBar: Subject<FileInfo> = new Subject<FileInfo>();
     unPinFromTaskBar: Subject<FileInfo> = new Subject<FileInfo>();

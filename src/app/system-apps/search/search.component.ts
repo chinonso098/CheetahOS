@@ -32,13 +32,13 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('cheetahSearchDiv', {static: true}) cheetahSearchDiv!: ElementRef<HTMLDivElement>;
   private _renderer:Renderer2;
 
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _menuService:MenuService;
-  private _systemNotificationServices:SystemNotificationService;
-  private _fileIndexerService:FileIndexerService;
-  private _activityHistoryService:ActivityHistoryService;
-  private _processHandlerService:ProcessHandlerService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _menuService!:MenuService;
+  private _systemNotificationServices!:SystemNotificationService;
+  private _fileIndexerService!:FileIndexerService;
+  private _activityHistoryService!:ActivityHistoryService;
+  private _processHandlerService!:ProcessHandlerService;
 
   private _formBuilder:FormBuilder;
   private _fileSearchIndex:FileSearchIndex[] = [];

@@ -22,11 +22,11 @@
 // export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
 //   @Input() priorUId = Constants.EMPTY_STRING;
   
-//   private _windowService:WindowService;
-//   // private _scriptService: ScriptService;
-//   private _processIdService:ProcessIDService;
-//   private _processHandlerService:ProcessHandlerService;
-//   private _runningProcessService:RunningProcessService;
+//   private _windowService!:WindowService;
+//   // private _scriptService!:ScriptService;
+//   private _processIdService!:ProcessIDService;
+//   private _processHandlerService!:ProcessHandlerService;
+//   private _runningProcessService!:RunningProcessService;
 //   private _sessionManagmentService:SessionManagmentService;
 //   private _animationId = 0;
 
@@ -224,10 +224,10 @@ import { getCurl } from './curl';
 export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit {
   @Input() priorUId = Constants.EMPTY_STRING;
   
-  private _windowService:WindowService;
-  private _processIdService:ProcessIDService;
-  private _processHandlerService:ProcessHandlerService;
-  private _runningProcessService:RunningProcessService;
+  private _windowService!:WindowService;
+  private _processIdService!:ProcessIDService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _runningProcessService!:RunningProcessService;
   private _sessionManagmentService:SessionManagmentService;
   private _animationId = 0;
 

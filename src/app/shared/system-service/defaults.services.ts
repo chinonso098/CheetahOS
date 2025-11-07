@@ -17,9 +17,9 @@ import { Subject } from "rxjs";
 })
 export class DefaultService implements BaseService{
 
-    private _processIdService:ProcessIDService;
-    private _runningProcessService:RunningProcessService;
-    private _sessionManagmentService:SessionManagmentService;
+    private _processIdService!:ProcessIDService;
+    private _runningProcessService!:RunningProcessService;
+    private _sessionManagmentService!:SessionManagmentService;
 
     private _defaultSettingsMap!:Map<string, string>; 
     private readonly _defaultSettingServiceKey = Constants.CHEETAH_DEFAULT_SETTINGS_KEY;

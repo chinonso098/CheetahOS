@@ -31,10 +31,10 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 })
 export class TaskbarComponent implements AfterViewInit{
 
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _menuService:MenuService;
-  private _systemNotificationServices:SystemNotificationService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _menuService!:MenuService;
+  private _systemNotificationServices!:SystemNotificationService;
   private _el: ElementRef;
 
   isStartMenuVisible = false;

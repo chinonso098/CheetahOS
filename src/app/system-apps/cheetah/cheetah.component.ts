@@ -18,10 +18,10 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 })
 
 export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _audioService:AudioService;
-  private _windowService:WindowService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _audioService!:AudioService;
+  private _windowService!:WindowService;
 
 
   isVisible = false;

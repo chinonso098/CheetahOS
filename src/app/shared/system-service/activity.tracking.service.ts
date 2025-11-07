@@ -13,8 +13,8 @@ import { RunningProcessService } from './running.process.service';
 })
 export class ActivityHistoryService implements BaseService {
 
-    private _processIdService:ProcessIDService;
-    private _runningProcessService:RunningProcessService;
+    private _processIdService!:ProcessIDService;
+    private _runningProcessService!:RunningProcessService;
     private _activityHistory!: ActivityHistory[];
 
     private readonly STORAGE_KEY = 'activity_history';

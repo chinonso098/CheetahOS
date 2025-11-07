@@ -32,10 +32,10 @@ export class AppComponent implements AfterViewInit {
   
   @ViewChild('processContainerRef', { read: ViewContainerRef })itemViewContainer!: ViewContainerRef
 
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
   private _componentReferenceService:ComponentReferenceService;
-  private _audioService:AudioService;
+  private _audioService!:AudioService;
   private _sessionManagmentService:SessionManagmentService;
 
 

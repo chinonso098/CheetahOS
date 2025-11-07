@@ -46,17 +46,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   @Input() priorUId = Constants.EMPTY_STRING;
  
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _fileService:FileService;
-  private _processHandlerService:ProcessHandlerService;
-  private _sessionManagmentService: SessionManagmentService;
-  private _userNotificationService:UserNotificationService;
-  private _windowService:WindowService;
-  private _menuService:MenuService;
-  private _audioService:AudioService;
-  private _systemNotificationService:SystemNotificationService;
-  private _activityHistoryService:ActivityHistoryService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _fileService!:FileService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _sessionManagmentService!:SessionManagmentService;
+  private _userNotificationService!:UserNotificationService;
+  private _windowService!:WindowService;
+  private _menuService!:MenuService;
+  private _audioService!:AudioService;
+  private _systemNotificationService!:SystemNotificationService;
+  private _activityHistoryService!:ActivityHistoryService;
   private _formBuilder;
   private _appState!:AppState;
 

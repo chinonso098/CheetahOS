@@ -23,10 +23,10 @@ import { FileService } from '../../system-service/file.service';
 export class PropertiesComponent implements BaseComponent, OnChanges{
   @Input() fileInput!:FileInfo;
 
-  private _fileService:FileService;
-  private _runningProcessService:RunningProcessService;
-  private _processIdService:ProcessIDService
-  private _windowService:WindowService;
+  private _fileService!:FileService;
+  private _runningProcessService!:RunningProcessService;
+  private _processIdService!:ProcessIDService
+  private _windowService!:WindowService;
 
   fileFolder = 'File folder';
   osDisk = 'OSDisk';

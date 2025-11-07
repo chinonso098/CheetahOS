@@ -31,13 +31,13 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   @ViewChild('ruffleContainer', { static: true }) ruffleContainer!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
 
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _processHandlerService:ProcessHandlerService;
-  private _sessionManagmentService: SessionManagmentService;
-  private _scriptService: ScriptService;
-  private _windowService:WindowService;
-  private _fileService: FileService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _sessionManagmentService!:SessionManagmentService;
+  private _scriptService!:ScriptService;
+  private _windowService!:WindowService;
+  private _fileService!:FileService;
 
   private _fileInfo!:FileInfo;
   private _appState!:AppState;

@@ -35,12 +35,12 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   @ViewChild('chatHistoryOutput', {static: true}) chatHistoryOutput!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
 
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _windowService:WindowService;
-  private _chatService:ChatterService;
-  private _socketService:SocketService;
-  private _audioService:AudioService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _windowService!:WindowService;
+  private _chatService!:ChatterService;
+  private _socketService!:SocketService;
+  private _audioService!:AudioService;
   private _sessionManagmentService: SessionManagmentService;
 
   private _newChatMessageSub!: Subscription;

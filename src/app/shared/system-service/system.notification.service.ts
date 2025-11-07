@@ -16,8 +16,8 @@ import { DragEventInfo } from "src/app/system-files/common.interfaces";
 
 export class SystemNotificationService implements BaseService{
 
-    private _runningProcessService:RunningProcessService;
-    private _processIdService:ProcessIDService;
+    private _runningProcessService!:RunningProcessService;
+    private _processIdService!:ProcessIDService;
     private _systemMessage = Constants.EMPTY_STRING;
     private _appIconNotificationStore:Map<number, string[]>; 
     private _dragEventInfo:DragEventInfo | undefined = undefined;

@@ -43,12 +43,12 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   @ViewChild('photoContainer', {static: true}) photoContainer!: ElementRef; 
   @Input() priorUId = Constants.EMPTY_STRING;
 
-  private _fileService:FileService;
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _processHandlerService:ProcessHandlerService;
-  private _sessionManagmentService: SessionManagmentService;
-  private _windowService:WindowService;
+  private _fileService!:FileService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _sessionManagmentService!:SessionManagmentService;
+  private _windowService!:WindowService;
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private _picSrc = Constants.EMPTY_STRING;

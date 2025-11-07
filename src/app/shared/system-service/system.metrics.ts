@@ -16,8 +16,8 @@
 // export class SystemMetric implements BaseService{
 
 //     private _systemMetrictsMap:Map<string, any>; 
-//     private _runningProcessService:RunningProcessService;
-//     private _processIdService:ProcessIDService;
+//     private _runningProcessService!:RunningProcessService;
+//     private _processIdService!:ProcessIDService;
 
 //     errorNotify: Subject<string> = new Subject<string>();
 //     InfoNotify: Subject<string> = new Subject<string>();

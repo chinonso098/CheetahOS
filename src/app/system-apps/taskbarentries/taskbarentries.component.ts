@@ -21,13 +21,13 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 })
 export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _processHandlerService:ProcessHandlerService;
-  private _systemNotificationService:SystemNotificationService;
-  private _menuService:MenuService;
-  private _windowServices:WindowService;
-  private _sessionManagmentService:SessionManagmentService
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _systemNotificationService!:SystemNotificationService;
+  private _menuService!:MenuService;
+  private _windowServices!:WindowService;
+  private _sessionManagmentService!:SessionManagmentService
 
   private prevOpenedProccesses:string[]= [];
   mergedTaskBarIconList:TaskBarIconInfo[] = [];

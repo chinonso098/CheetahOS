@@ -17,9 +17,9 @@ import { SocketService } from './socket.service';
 })
 export class ChatterService implements BaseService{
 
-    private _runningProcessService:RunningProcessService;
-    private _processIdService:ProcessIDService;
-    private _sessionManagmentService:SessionManagmentService
+    private _runningProcessService!:RunningProcessService;
+    private _processIdService!:ProcessIDService;
+    private _sessionManagmentService!:SessionManagmentService
     private _socketService!:SocketService;
 
     private _connectedUserCounter = 0;

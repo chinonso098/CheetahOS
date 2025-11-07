@@ -30,12 +30,11 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   @ViewChild('monacoContent', {static: true}) monacoContent!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
   
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-
-  private _processHandlerService:ProcessHandlerService;
-  private _windowService:WindowService;
-  private _sessionManagmentService:SessionManagmentService
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _windowService!:WindowService;
+  private _sessionManagmentService!:SessionManagmentService
 
 
   private _maximizeWindowSub!: Subscription;

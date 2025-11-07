@@ -30,13 +30,13 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   @Input() notificationType = Constants.EMPTY_STRING;
 
   private _userNotificationServices:UserNotificationService;
-  private _windowService:WindowService;
+  private _windowService!:WindowService;
   private _sessionManagementService: SessionManagmentService;
-  private _menuService:MenuService;
-  private _processIdService:ProcessIDService;
-  private _systemNotificationService:SystemNotificationService;
-  private _processHandlerService:ProcessHandlerService;
-  private _audioService:AudioService;
+  private _menuService!:MenuService;
+  private _processIdService!:ProcessIDService;
+  private _systemNotificationService!:SystemNotificationService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _audioService!:AudioService;
 
 
   notificationOption = Constants.EMPTY_STRING;

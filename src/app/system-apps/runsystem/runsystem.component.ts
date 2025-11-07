@@ -16,9 +16,9 @@ import { Process } from 'src/app/system-files/process';
 })
 export class RunSystemComponent implements BaseComponent {
 
-  private _menuService:MenuService;
-  private _processIdService:ProcessIDService;
-    private _runningProcessService:RunningProcessService;
+  private _menuService!:MenuService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}run.png`;

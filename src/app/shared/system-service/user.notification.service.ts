@@ -17,8 +17,8 @@ import { DialogComponent } from "../system-component/dialog/dialog.component";
 
 export class UserNotificationService implements BaseService{
 
-    private _runningProcessService:RunningProcessService;
-    private _processIdService:ProcessIDService;
+    private _runningProcessService!:RunningProcessService;
+    private _processIdService!:ProcessIDService;
     private _componentReferenceService:ComponentReferenceService;
 
     name = 'usr_notification_svc';

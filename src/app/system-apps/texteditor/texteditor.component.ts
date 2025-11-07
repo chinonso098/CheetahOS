@@ -34,13 +34,13 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   @ViewChild('editorContainer', {static: true}) editorContainer!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
   
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _sessionManagmentService: SessionManagmentService;
-  private _processHandlerService:ProcessHandlerService;
-  private _scriptService: ScriptService;
-  private _fileService:FileService;
-  private _windowService:WindowService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _sessionManagmentService!:SessionManagmentService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _scriptService!:ScriptService;
+  private _fileService!:FileService;
+  private _windowService!:WindowService;
 
   private _fileInfo!:FileInfo;
   private _appState!:AppState;

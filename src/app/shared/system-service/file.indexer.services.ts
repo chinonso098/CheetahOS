@@ -23,9 +23,9 @@ export class FileIndexerService implements BaseService{
     static instance:FileIndexerService;
 
     private _Index:FileSearchIndex[] = [];
-    private _runningProcessService:RunningProcessService;
-    private _processIdService:ProcessIDService;
-    private _fileService:FileService;
+    private _runningProcessService!:RunningProcessService;
+    private _processIdService!:ProcessIDService;
+    private _fileService!:FileService;
 
     private _appDirectory:AppDirectory;
     fileIndexChangeOperation: Subject<string> = new Subject<string>();

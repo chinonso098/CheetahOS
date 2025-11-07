@@ -34,15 +34,15 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   
   @Input() priorUId = Constants.EMPTY_STRING;
 
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _maximizeWindowSub!: Subscription;
-  private _minimizeWindowSub!: Subscription;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _maximizeWindowSub!:Subscription;
+  private _minimizeWindowSub!:Subscription;
   private _formBuilder;
   private _terminaCommandsProc!:TerminalCommandProcessor;
-  private _sessionManagmentService: SessionManagmentService;
-  private _windowService:WindowService;
-  private _fileService:FileService;
+  private _sessionManagmentService!:SessionManagmentService;
+  private _windowService!:WindowService;
+  private _fileService!:FileService;
   private _appState!:AppState;
 
 

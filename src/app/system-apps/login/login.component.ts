@@ -25,12 +25,12 @@ import { LoginHelpers } from './login.helper';
 
 export class LoginComponent implements OnInit, AfterViewInit {
 
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _systemNotificationServices:SystemNotificationService;
-  private _sessionManagmentService:SessionManagmentService
-  private _audioService:AudioService;
-  private _defaultService:DefaultService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _systemNotificationServices!:SystemNotificationService;
+  private _sessionManagmentService!:SessionManagmentService
+  private _audioService!:AudioService;
+  private _defaultService!:DefaultService;
   private _wss:HTMLVideoElement | undefined;
 
   loginForm!: FormGroup;

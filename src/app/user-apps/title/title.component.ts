@@ -25,11 +25,11 @@ export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   @ViewChild('titleContent', {static: true}) titleContent!: ElementRef;
   @Input() priorUId = Constants.EMPTY_STRING;
   
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _windowService:WindowService;
-  private _sessionManagmentService:SessionManagmentService;
-  private _maximizeWindowSub!: Subscription;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _windowService!:WindowService;
+  private _sessionManagmentService!:SessionManagmentService;
+  private _maximizeWindowSub!:Subscription;
 
   private _appState!:AppState;
   SECONDS_DELAY = 250;

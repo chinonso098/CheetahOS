@@ -17,8 +17,8 @@ export class SessionManagmentService implements BaseService{
     private _sessionName = "main-session";
     private _sessionDataDict: Map<string, unknown>; 
 
-    private _runningProcessService:RunningProcessService;
-    private _processIdService:ProcessIDService;
+    private _runningProcessService!:RunningProcessService;
+    private _processIdService!:ProcessIDService;
   
     name = 'session_mgmt_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;

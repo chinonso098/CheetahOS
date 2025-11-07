@@ -21,7 +21,7 @@ export class MenuComponent implements OnDestroy{
   @Input() menuType = Constants.EMPTY_STRING;
   @Input() menuOrder = Constants.EMPTY_STRING;  
 
-  private _menuService:MenuService;
+  private _menuService!:MenuService;
   private _storeDataSub!:Subscription;
 
   readonly paste = MenuAction.PASTE;

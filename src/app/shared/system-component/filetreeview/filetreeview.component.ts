@@ -29,10 +29,10 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
  
   quickAccessData: FileTreeNode[] = [];
   selectedFileTreeNode!:FileTreeNode;
-  private _fileService:FileService;
-  private _audioService:AudioService;
-  private _menuService:MenuService;
-  private _processHandlerService:ProcessHandlerService;
+  private _fileService!:FileService;
+  private _audioService!:AudioService;
+  private _menuService!:MenuService;
+  private _processHandlerService!:ProcessHandlerService;
 
   readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
 

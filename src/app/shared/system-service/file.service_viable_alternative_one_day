@@ -94,8 +94,8 @@
 
 //     private _fileDragAndDrop!:FileInfo[];
 
-//     private _runningProcessService:RunningProcessService;
-//     private _processIdService:ProcessIDService;
+//     private _runningProcessService!:RunningProcessService;
+//     private _processIdService!:ProcessIDService;
 //     private _userNotificationService:UserNotificationService
 //     private _sessionManagmentService:SessionManagmentService;
 

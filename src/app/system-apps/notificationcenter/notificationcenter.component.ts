@@ -15,9 +15,9 @@ import { Subscription } from 'rxjs';
   standalone:false,
 })
 export class NotificationCenterComponent implements OnDestroy {
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _menuService:MenuService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _menuService!:MenuService;
   private _hideStartMenuSub!:Subscription;
 
   private isStartMenuVisible = false;

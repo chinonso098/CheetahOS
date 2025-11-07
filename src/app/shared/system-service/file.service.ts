@@ -38,10 +38,10 @@ export class FileService implements BaseService{
     private _fileDragAndDrop!:FileInfo[];
     private _eventOriginator = Constants.EMPTY_STRING;
 
-    private _runningProcessService:RunningProcessService;
-    private _processIdService:ProcessIDService;
-    private _userNotificationService:UserNotificationService
-    private _sessionManagmentService:SessionManagmentService;
+    private _runningProcessService!:RunningProcessService;
+    private _processIdService!:ProcessIDService;
+    private _userNotificationService!:UserNotificationService
+    private _sessionManagmentService!:SessionManagmentService;
     private _fileIndexerService!:FileIndexerService;
 
     private _isCalculated = false;

@@ -14,8 +14,8 @@ import { BaseService } from './base.service.interface';
 @Injectable()
 export class SocketService implements BaseService {
   private socket: Socket;
-  private _runningProcessService:RunningProcessService;
-  private _processIdService:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _processIdService!:ProcessIDService;
 
   name = 'socket_svc';
   icon = `${Constants.IMAGE_BASE_PATH}svc.png`;

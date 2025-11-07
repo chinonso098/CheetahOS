@@ -71,13 +71,13 @@ import { trigger, transition, style, animate, state, keyframes } from '@angular/
 })
 
 export class StartMenuComponent implements OnInit, AfterViewInit {
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _processHandlerService:ProcessHandlerService;
-  private _userNotificationService:UserNotificationService;
-  private _systemNotificationService:SystemNotificationService;
-  private _menuService:MenuService;
-  private _fileService:FileService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _userNotificationService!:UserNotificationService;
+  private _systemNotificationService!:SystemNotificationService;
+  private _menuService!:MenuService;
+  private _fileService!:FileService;
   private _elRef:ElementRef;
 
   slideState = 'slideDown';

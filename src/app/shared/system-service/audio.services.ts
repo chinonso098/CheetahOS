@@ -18,9 +18,9 @@ declare const Howl:any;
 
 export class AudioService implements BaseService {
 
-  private _scriptService:ScriptService;
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
+  private _scriptService!:ScriptService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
   private _audioPlayer: any;
   private _externalAudioSrc: Map<string, any>;
 

@@ -65,18 +65,18 @@ declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: a
 export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   @ViewChild('desktopContainer', {static: true}) desktopContainer!: ElementRef; 
   
-  private _fileService:FileService
-  private _menuService:MenuService;
-  private _audioService:AudioService;
-  private _windowService:WindowService;
-  private _scriptService: ScriptService;
-  private _defaultService: DefaultService;
-  private _processIdService:ProcessIDService;
-  private _processHandlerService:ProcessHandlerService;
-  private _runningProcessService:RunningProcessService;
-  private _systemNotificationServices:SystemNotificationService;
-  private _userNotificationService:UserNotificationService;
-  private _activityHistoryService:ActivityHistoryService;
+  private _fileService!:FileService
+  private _menuService!:MenuService;
+  private _audioService!:AudioService;
+  private _windowService!:WindowService;
+  private _scriptService!:ScriptService;
+  private _defaultService!:DefaultService;
+  private _processIdService!:ProcessIDService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _runningProcessService!:RunningProcessService;
+  private _systemNotificationServices!:SystemNotificationService;
+  private _userNotificationService!:UserNotificationService;
+  private _activityHistoryService!:ActivityHistoryService;
 
   private _elRef:ElementRef;
   private _formBuilder:FormBuilder;

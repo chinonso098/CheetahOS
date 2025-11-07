@@ -13,7 +13,7 @@ import { Service } from "src/app/system-files/service";
 export class ProcessIDService implements BaseService{
 
     private _activeProcessIds: number[];
-    private _runningProcessService:RunningProcessService;
+    private _runningProcessService!:RunningProcessService;
     
     name = 'pid_gen_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;

@@ -14,8 +14,8 @@ import { Constants } from 'src/app/system-files/constants';
 })
 export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
 
-  private _runningProcessService:RunningProcessService;
-  private _systemNotificationService:SystemNotificationService
+  private _runningProcessService!:RunningProcessService;
+  private _systemNotificationService!:SystemNotificationService
   private _windowServices:WindowService;
 
   private _highLightTaskBarPreviewSub!: Subscription;

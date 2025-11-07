@@ -21,11 +21,11 @@ export interface OctalRepresentation {
 
 export class TerminalCommandProcessor{
 
-    private _processHandlerService:ProcessHandlerService;
-    private _runningProcessService:RunningProcessService;
-    private _activityHistoryService:ActivityHistoryService;
+    private _processHandlerService!:ProcessHandlerService;
+    private _runningProcessService!:RunningProcessService;
+    private _activityHistoryService!:ActivityHistoryService;
 
-    private _fileService:FileService;
+    private _fileService!:FileService;
     private _appDirctory = new AppDirectory();
   
     

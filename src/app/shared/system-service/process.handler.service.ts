@@ -48,13 +48,13 @@ import { SettingsComponent } from "src/app/system-apps/controlpanel/settings.com
 
 export class ProcessHandlerService implements BaseService{
 
-    private _runningProcessService:RunningProcessService;
-    private _processIdService:ProcessIDService;
-    private _windowService:WindowService;
-    private _componentReferenceService:ComponentReferenceService;
-    private _sessionMangamentServices:SessionManagmentService;
-    private _menuService:MenuService;
-    private _userNotificationService:UserNotificationService;
+    private _runningProcessService!:RunningProcessService;
+    private _processIdService!:ProcessIDService;
+    private _windowService!:WindowService;
+    private _componentReferenceService!:ComponentReferenceService;
+    private _sessionMangamentServices!:SessionManagmentService;
+    private _menuService!:MenuService;
+    private _userNotificationService!:UserNotificationService;
 
     private _appDirectory:AppDirectory;
     private _TriggerList:FileInfo[];

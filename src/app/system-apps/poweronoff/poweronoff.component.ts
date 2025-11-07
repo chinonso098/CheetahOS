@@ -17,10 +17,10 @@ import { ComponentType } from 'src/app/system-files/system.types';
 })
 export class PowerOnOffComponent implements OnInit, AfterViewInit {
 
-  private _processIdService:ProcessIDService;
-  private _runningProcessService:RunningProcessService;
-  private _systemNotificationService:SystemNotificationService;
-  private _audioService:AudioService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _systemNotificationService!:SystemNotificationService;
+  private _audioService!:AudioService;
   private _sessionManagmentService:SessionManagmentService;
 
   password = Constants.EMPTY_STRING;
