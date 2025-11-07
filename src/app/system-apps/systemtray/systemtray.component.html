@@ -1,7 +1,7 @@
 <div class="main-taskbar-system-tray">
 
-    <div class="main-taskbar-arrow-div"> 
-        <figure  class="taskbar-arrow-fig">
+    <div class="main-taskbar-arrow-div" [class.show]="isShowOverFlowMenuPane"> 
+        <figure  class="taskbar-arrow-fig" [class.show]="isShowOverFlowMenuPane" (click)="showOverFlowMenuPane()">
             <img class="taskbar-arrow-img" [src]="taskBarArrowIcon">
         </figure>
     </div>

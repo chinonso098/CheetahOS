@@ -79,7 +79,6 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
     this._runningProcessService.addProcess(this.getComponentDetail());
     this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess()});
-
     this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.onCloseProcessNotify(p)});
 
     this._menuService.pinToTaskBar.subscribe((p)=>{this.onPinIconToTaskBarIconList(p)});

@@ -5,7 +5,8 @@
     bottom: 0;
     right: 65px;
     z-index: 4;
-    background-color: #403c3c;
+    background-color: rgba(41,41, 41, 0.6);
+    backdrop-filter: blur(20px);
 }
 
 .overflow-content-container{
@@ -33,7 +34,6 @@
 .taskmanager__overflow-icon {
     width: 14px;
     height: 14px;
-    background-image: url('src/osdrive/Cheetah/System/Imageres/taskmanager_grid.png');
     backdrop-filter: none;
     background-color: transparent;
     background-size:cover;

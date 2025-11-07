@@ -21,9 +21,8 @@ interface Scripts {
 })
 
 export class ScriptService implements BaseService {
-
-  private _runningProcessService:RunningProcessService;
-  private _processIdService:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _processIdService!:ProcessIDService;
   private scripts: Scripts = {};
 
   name = 'scripts_svc';

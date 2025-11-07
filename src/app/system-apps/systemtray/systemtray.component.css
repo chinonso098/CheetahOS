@@ -21,13 +21,22 @@
     left: 5px;
 }
 
+.taskbar-arrow-fig.show{
+    top: 6px;
+}
+
 .taskbar-arrow-img{
     height: 14px;
     width: 14px;
 }
 
+.main-taskbar-arrow-div.show,
 .main-taskbar-arrow-div:hover{
     background-color:hsla(0,0%,30%,60%);
+}
+
+.main-taskbar-arrow-div.show{
+    transform:  rotate(180deg);
 }
 
 /* volume  */

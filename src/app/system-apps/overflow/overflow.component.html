@@ -4,10 +4,11 @@
 
       <!-- <div class="overflow-icon"></div> -->
 
-      <div class="taskmanager__overflow-icon" id="tskMngrOverFlowIcon">
-        <div class="taskmanager__progress-bar"  [style.width.%]="tskMngrUtil"> </div>
-      </div>
-
+      @if(showTskMngrUtil){
+        <div class="taskmanager__overflow-icon" id="tskMngrOverFlowIcon">
+          <div class="taskmanager__progress-bar"  [style.width.%]="tskMngrUtil"> </div>
+        </div>
+      }
     </div>
   </div>
 </div>

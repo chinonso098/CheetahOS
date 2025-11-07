@@ -295,7 +295,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
-  
     this._processHandlerService = triggerProcessService;
     this._scriptService = scriptService;
     this._menuService = menuService;
@@ -313,6 +312,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.showTaskBarAppIconMenu.pipe(concatMap((p) =>this.onShowTaskBarAppIconMenu(p))).subscribe();
     this._menuService.showTaskBarConextMenu.pipe(concatMap((p) =>this.onShowTaskBarContextMenu(p))).subscribe();
     this._audioService.showVolumeControlNotify.pipe(concatMap(() => this.showVolumeControl())).subscribe();
+    this._menuService.showOverFlowMenu.pipe(concatMap(() => this.showSysTrayOverFlowPane())).subscribe();
 
     this._menuService.hideContextMenus.subscribe((p) => { 
       if(p !== this.name)
@@ -324,8 +324,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;});
     this._windowService.windowDragIsInActive.subscribe(() => {this.isWindowDragActive = false;}); 
     this._audioService.hideVolumeControlNotify.subscribe(() => { this.hideVolumeControl()});
-
- 
     this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
 
     this._fileService.dirFilesUpdateNotify.subscribe(async () =>{
@@ -339,6 +337,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._systemNotificationServices.showDesktopNotify.subscribe(() => {
       this.desktopIsActive();
     })
+
     this._systemNotificationServices.showLockScreenNotify.subscribe(() => {
       this.lockScreenIsActive();
     });
@@ -393,11 +392,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   loadPictureBackgrounds():void{
     if(this.DESKTOP_PICTURES.length >= 7)
-        return;
+      return;
 
     const desktopImgPath = Constants.DESKTOP_IMAGE_BASE_PATH;
     const desktopImages =  Constants.DESKTOP_PICTURE_SET;
-    desktopImages.forEach( imgName =>{ this.DESKTOP_PICTURES.push(`${desktopImgPath}${imgName}`)});
+    desktopImages.forEach(imgName => { this.DESKTOP_PICTURES.push(`${desktopImgPath}${imgName}`)});
   }
 
   async ngAfterViewInit():Promise<void>{
@@ -406,7 +405,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.initClippy();
 
-   this.removeVantaJSSideEffect();
+    this.removeVantaJSSideEffect();
     await CommonFunctions.sleep(this.SECONDS_DELAY[3]);
     await this.loadFiles();
   }
@@ -696,6 +695,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this._audioService.hideVolumeControlNotify.next(Constants.EMPTY_STRING);
     }
 
+    if(this.showOverflowPane){
+      this.showOverflowPane = false;
+      this._menuService.hideOverFlowMenu.next(Constants.EMPTY_STRING);
+    }
+
     this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
     this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
     this._menuService.hideStartMenu.next();
@@ -766,6 +770,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   hideVolumeControl():void{
     this.showVolumeCntrl = false;
+  }
+
+  async showSysTrayOverFlowPane(): Promise<void>{
+    this.resetIconBtnsAndContextMenus(this.isDesktopTheCaller);
+    await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
+    this.showOverflowPane = true;
+  }
+
+  hideSysTrayOverFlowPane():void{
+    this.showOverflowPane = false;
   }
 
   viewByLargeIcon():void{
@@ -2049,7 +2063,6 @@ OpensWith=${file.getOpensWith}
       this.startVantaWaveColorChg = false;
       this.destoryVanta()
       this.removeOldCanvas();
-
       this.stopVantaWaveColorChange();
 
       const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
@@ -2076,8 +2089,8 @@ OpensWith=${file.getOpensWith}
           const bkgrndIdx = this.DESKTOP_PICTURES.findIndex(x => x === this.desktopBackgroundValue);
           this.currentDesktopNum = bkgrndIdx;
           desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
-        } else
-        1
+        }
+        else 1
         // start slideshow
       }
     }

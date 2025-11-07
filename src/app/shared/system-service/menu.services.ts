@@ -47,6 +47,9 @@ export class MenuService implements BaseService{
     hideSearchBox: Subject<string> = new Subject<string>();
     showSearchBox: Subject<void> = new Subject<void>();
 
+    hideOverFlowMenu: Subject<string> = new Subject<string>();
+    showOverFlowMenu: Subject<void> = new Subject<void>();
+
     private storeData:string[] = []
     private _isPasteActive = false;
     private _path = Constants.EMPTY_STRING;

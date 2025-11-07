@@ -56,7 +56,6 @@ export class ChatterService implements BaseService{
     updateUserNameOrStateNotify: Subject<void> = new Subject<void>();
     updateUserCountNotify: Subject<void> = new Subject<void>();
   
-  
     name = 'chatter_msg_svc';
     icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
     processId = 0;
@@ -224,7 +223,6 @@ export class ChatterService implements BaseService{
         }
     }
 
-
     private raiseUpdateUserNameOrStateRecieved(userInfo:any):void{
         if(userInfo){
             const newUserInfo:IUserData = {
@@ -288,7 +286,6 @@ export class ChatterService implements BaseService{
         );
         return result;
     }
-
     
     setSocketInstance(socketService:SocketService):void{
         this._socketService = socketService;
@@ -305,7 +302,6 @@ export class ChatterService implements BaseService{
         this._updateUserCountSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_COUNT_EVT).subscribe((j)=>{this.updateUserCountAfterComparing(j)});
         this._userOfflineRemoveUserInfoSub = this._socketService.onMessageEvent(this.REMOVE_USER_INFO_EVT).subscribe((t)=>{this.raiseRemoveUserFromOnlineListRecieved(t)});
     }
-
 
     private getProcessDetail():Process{
         return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)

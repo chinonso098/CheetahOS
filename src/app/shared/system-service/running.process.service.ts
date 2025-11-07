@@ -53,7 +53,6 @@ export class RunningProcessService implements BaseService{
         this._runningServices.push(serviceToAdd)
     }
 
-
     addEventOriginator(eventOrig:string):void{
         this._eventOriginator = eventOrig;
     }
@@ -63,7 +62,7 @@ export class RunningProcessService implements BaseService{
     }
 
     removeEventOriginator():void{
-        this._eventOriginator = '';
+        this._eventOriginator = Constants.EMPTY_STRING;
     }
 
     getProcess(processId:number):Process{

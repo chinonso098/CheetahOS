@@ -9,6 +9,7 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { concatMap } from 'rxjs';
+import { MenuService } from 'src/app/shared/system-service/menu.services';
 
 @Component({
   selector: 'cos-systemtray',
@@ -19,13 +20,15 @@ import { concatMap } from 'rxjs';
 })
 export class SystemtrayComponent implements OnInit, AfterViewInit {
 
-  private _processIdService;
-  private _runningProcessService;
-  private _systemNotificationServices:SystemNotificationService;
   private _audioService!:AudioService;
-  private currentVolume = 0;
+  private _menuService!:MenuService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _systemNotificationServices!:SystemNotificationService;
 
+  private currentVolume = 0;
   isShowVolumeControl = false;
+  isShowOverFlowMenuPane = false;
 
   taskBarArrowIcon = `${Constants.IMAGE_BASE_PATH}taskbar_arrow_up.png`;
   taskBarNotificationIcon = `${Constants.IMAGE_BASE_PATH}taskbar_no_notification.png`;
@@ -42,11 +45,13 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   processId = 0;
   type = ComponentType.System
 
-  constructor(processIdService:ProcessIDService,runningProcessService:RunningProcessService,audioService:AudioService, systemNotificationServices:SystemNotificationService) { 
+  constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, audioService:AudioService, 
+             systemNotificationServices:SystemNotificationService, menuService:MenuService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._audioService = audioService;
     this._systemNotificationServices = systemNotificationServices;
+    this._menuService = menuService;
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -58,6 +63,12 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
     this._audioService.hideVolumeControlNotify.subscribe((p) => {
       if(p === Constants.EMPTY_STRING){
         this.hideVolumeControl();
+      }
+    });
+
+    this._menuService.hideOverFlowMenu.subscribe((p) => {
+      if(p === Constants.EMPTY_STRING){
+        this.hideOverFlowMenuPane();
       }
     });
   }
@@ -132,9 +143,23 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
     }
   }
 
+  showOverFlowMenuPane():void{
+    if(!this.isShowOverFlowMenuPane){
+      this.isShowOverFlowMenuPane = true
+      this._menuService.showOverFlowMenu.next();
+    }else{
+      this.hideOverFlowMenuPane();
+    }
+  }
+
   hideVolumeControl():void{
     this.isShowVolumeControl = false;
     this._audioService.hideVolumeControlNotify.next(this.name);
+  }
+
+  hideOverFlowMenuPane():void{
+    this.isShowOverFlowMenuPane = false;
+    this._menuService.hideOverFlowMenu.next(this.name);
   }
 
   private getComponentDetail():Process{

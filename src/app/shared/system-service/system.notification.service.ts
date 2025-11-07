@@ -39,6 +39,9 @@ export class SystemNotificationService implements BaseService{
     taskBarPreviewHighlightNotify: Subject<string> = new Subject<string>();
     taskBarPreviewUnHighlightNotify: Subject<string> = new Subject<string>();
 
+    updateInfoByNameNotify: Subject<Map<string, string[]>> = new Subject<Map<string, string[]>>();
+    updateInfoByUniqueIdNotify: Subject<Map<string, string[]>> = new Subject<Map<string, string[]>>();
+
     name = 'sys_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
     processId = 0;

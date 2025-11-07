@@ -108,7 +108,7 @@ export class ActivityHistoryService implements BaseService {
                                                                     )
                                                             );
         // Only save if something was actually removed
-        if (this._activityHistory.length < originalLength) {
+        if(this._activityHistory.length < originalLength){
             this.save();
         }
     }
