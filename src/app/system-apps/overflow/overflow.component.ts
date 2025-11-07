@@ -16,8 +16,9 @@ export class OverFlowComponent implements AfterViewInit, OnDestroy {
   private _runningProcessService!:RunningProcessService;
   private _processListChangeSub!:Subscription;
 
-  audioIcon =`${Constants.IMAGE_BASE_PATH}no_volume.png`;
-  taskManagerIcon =`${Constants.IMAGE_BASE_PATH}taskmanager_grid.png`
+  chatterIcon =`${Constants.IMAGE_BASE_PATH}chatter.png`;
+  taskManagerIcon =`${Constants.IMAGE_BASE_PATH}taskmanager_grid.png`;
+  indexingGif  =`${Constants.GIF_BASE_PATH}file_system_index.gif`;
 
   tskMngrUtil = 0; // accepts a number between 0 and 100
   showTskMngrUtil = false;
