@@ -1,0 +1,49 @@
+.overflow-container {
+    width: fit-content;
+    height: fit-content;
+    position: absolute;
+    bottom: 0;
+    right: 65px;
+    z-index: 4;
+    background-color: #403c3c;
+}
+
+.overflow-content-container{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    width: 150px;
+    height: 40px;
+}
+
+.overflow-content{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.overflow-icon {
+    width: 18px;
+    height: 18px;
+    background: #555;
+    border-radius: 3px;
+}
+
+.taskmanager__overflow-icon {
+    width: 14px;
+    height: 14px;
+    background-image: url('src/osdrive/Cheetah/System/Imageres/taskmanager_grid.png');
+    backdrop-filter: none;
+    background-color: transparent;
+    background-size:cover;
+    background-repeat: no-repeat;
+    transform: rotate(-90deg);
+    border: 1px solid #dfdfdf;
+}
+
+.taskmanager__progress-bar{
+    height: 100%;
+    background-color: #2da6da;
+    transition: width 0.3s ease-in-out;
+}

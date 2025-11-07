@@ -45,6 +45,10 @@ import { TaskbarpreviewsComponent } from './system-apps/taskbarpreviews/taskbarp
 import { WarpingstarfieldComponent } from './user-apps/warpingstarfield/warpingstarfield.component';
 import { BoidsComponent } from './user-apps/boids/boids.component';
 import { BasicWindowComponent } from './shared/system-component/basicwindow/basicwindow.component';
+import { ParticaleFlowComponent } from './user-apps/particaleflow/particaleflow.component';
+import { PdfViewerComponent } from './user-apps/pdf-viewer/pdf-viewer.component';
+import { NotificationCenterComponent } from './system-apps/notificationcenter/notificationcenter.component';
+import { OverFlowComponent } from './system-apps/overflow/overflow.component';
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
@@ -56,11 +60,6 @@ import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.col
 import { FileExplorerColumnResizeDirective } from './system-apps/fileexplorer/fileexplorer.column-resize.directive';
 import { KeyPressCaptureDirective } from './system-apps/terminal/key.press.capture.directive';
 import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.directives';
-import { ParticaleFlowComponent } from './user-apps/particaleflow/particaleflow.component';
-import { PdfViewerComponent } from './user-apps/pdf-viewer/pdf-viewer.component';
-import { NotificationCenterComponent } from './system-apps/notificationcenter/notificationcenter.component';
-
-
 
 
 
@@ -108,6 +107,7 @@ import { NotificationCenterComponent } from './system-apps/notificationcenter/no
     ParticaleFlowComponent,
     PdfViewerComponent,
     NotificationCenterComponent,
+    OverFlowComponent,
 
     HighlightDirective,
     TaskBarEntryHighlightDirective,

@@ -76,6 +76,10 @@
         @if(showVolumeCntrl){
             <cos-volumecontrol></cos-volumecontrol>
         }
+
+        @if(showOverflowPane){
+            <cos-overflow></cos-overflow>
+        }
         
         @if(showDesktopScreenShotPreview){
             <div [@slideStatusAnimation]="slideState" class="dsktp-screenshot__container" >

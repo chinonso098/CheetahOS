@@ -115,6 +115,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showDesktopScreenShotPreview = false;
   showTaskBarIconToolTip = false;
   showVolumeCntrl = false;
+  showOverflowPane = false;
   
   showClippy = false;
   dsktpPrevImg = Constants.EMPTY_STRING;
