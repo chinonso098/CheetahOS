@@ -20,7 +20,7 @@ import { ProcessHandlerService } from '../../system-service/process.handler.serv
   standalone:false,
 })
 export class FileTreeViewComponent implements OnInit, OnChanges {
-  @Input() pid = 0;
+  @Input() pId = 0;
   @Input() level = 0;
   @Input() showRoot = true;
   @Input() isHoverActive = false;
@@ -89,10 +89,10 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   ngOnChanges():void{
     //console.log('FILETREE onCHANGES:',this.isHoverActive);//TBD
     // console.log('isHoverActive:', this.isHoverActive); //TBD
-    // console.log('fileTreeViewPid:', this.pid); //TBD
+    // console.log('fileTreeViewPid:', this.pId); //TBD
     // console.log('fileTreeViewLvl:', this.level); //TBD
 
-    this.processId = this.pid;
+    this.processId = this.pId;
     this.nextLevel = this.level + 1;
     this.nextLevelSrcId = this.levelSrcId;
 
@@ -112,11 +112,11 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     let ulId = Constants.EMPTY_STRING;   let imgId = Constants.EMPTY_STRING; const lvl = 0;
 
     if(name === 'tp-fileExplrTreeView'){
-      ulId = `ul-${this.pid}-${lvl}`;
-      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}`;
+      ulId = `ul-${this.pId}-${lvl}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}`;
     }else{
-      ulId = `qa-ul-${this.pid}`;
-      imgId = `qa-fileExplrTreeView-img-${this.pid}`;
+      ulId = `qa-ul-${this.pId}`;
+      imgId = `qa-fileExplrTreeView-img-${this.pId}`;
     }
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
@@ -144,9 +144,9 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   showGrandChildren(path:string, id:number,):void{
-    const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}`;
-    const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
-    const cntntId =`ul-${this.pid}-${this.level}-${id}`;
+    const ulId = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}`;
+    const imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}`;
+    const cntntId =`ul-${this.pId}-${this.level}-${id}`;
 
     // console.log('SGC--passed id:', ulId);//TBD
     // console.log('SGC--passed imgId:', imgId);//TBD
@@ -186,12 +186,12 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
         }
       }
 
-      if(!this.expandedViews.includes(`SGC-${this.pid}-${this.level}-${id}`)){
-        this.expandedViews.push(`SGC-${this.pid}-${this.level}-${id}`);
+      if(!this.expandedViews.includes(`SGC-${this.pId}-${this.level}-${id}`)){
+        this.expandedViews.push(`SGC-${this.pId}-${this.level}-${id}`);
 
         //pass event to the parent
-        const uid = `${this.name}-${this.pid}`;
-        this._fileService.addEventOriginator(uid);
+        const uId = `${this.name}-${this.pId}`;
+        this._fileService.addEventOriginator(uId);
         this._fileService.fetchDirectoryDataNotify.next(path);
         setTimeout(()=>{ this.showExpandedViews();}, this.SECONDS_DELAY);
       }
@@ -201,8 +201,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   showGrandChildren_B(id:number):void{
 
     // console.log('SGC--treeData:', this.treeData);//TBD
-    const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}`;
-    const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
+    const ulId = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}`;
+    const imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}`;
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
@@ -217,9 +217,9 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
   showGreatGrandChildren( path:string, id:number, id1:number):void{
 
-    const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}-${id1}`;
-    const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
-    const ulId1 =`newtree-${this.pid}-${this.level}-${id}-${id1}`;
+    const ulId = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}-${id1}`;
+    const imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}-${id1}`;
+    const ulId1 =`newtree-${this.pId}-${this.level}-${id}-${id1}`;
 
     // console.log('SGGC--passed id:', ulId);//TBD
     // console.log('SGGC--passed imgId:', imgId);//TBD
@@ -263,12 +263,12 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
         imgDiv.classList.add('caret-active');
       }
 
-      if(!this.expandedViews.includes(`SGGC-${this.pid}-${this.level}-${id}-${id1}`)){
-        this.expandedViews.push(`SGGC-${this.pid}-${this.level}-${id}-${id1}`);
+      if(!this.expandedViews.includes(`SGGC-${this.pId}-${this.level}-${id}-${id1}`)){
+        this.expandedViews.push(`SGGC-${this.pId}-${this.level}-${id}-${id1}`);
 
         //pass event to the parent
-        const uid = `${this.name}-${this.pid}`;
-        this._fileService.addEventOriginator(uid);
+        const uId = `${this.name}-${this.pId}`;
+        this._fileService.addEventOriginator(uId);
         this._fileService.fetchDirectoryDataNotify.next(path);
         setTimeout(()=>{ this.showExpandedViews();}, this.SECONDS_DELAY);
       }
@@ -278,8 +278,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
   showGreatGrandChildren_B(id:number, id1:number):void{
 
-    const ulId = `tp-fileExplrTreeView-${this.pid}-${this.level}-${id}-${id1}`;
-    const imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
+    const ulId = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}-${id1}`;
+    const imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}-${id1}`;
 
     const toggler =  document.getElementById(ulId) as HTMLElement;
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
@@ -297,7 +297,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     for(const el of this.expandedViews){
       const arr = el.split('-');
       console.log('arr:', arr);
-      if(arr[0] == 'SGC'){
+      if(arr[0] === 'SGC'){
         const id = Number(arr[3]);
         this.showGrandChildren_B(id);
       }else{
@@ -312,8 +312,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     this.showIconCntxtMenu  = false;
 
     const data:string[] = [this.selectedFileTreeNode.name, this.selectedFileTreeNode.path];
-    const uid = `filetreeview-1-${this.pid}`;
-    this._fileService.addEventOriginator(uid);
+    const uId = `filetreeview-1-${this.pId}`;
+    this._fileService.addEventOriginator(uId);
     this._fileService.goToDirectoryNotify.next(data);
   }
 
@@ -321,8 +321,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     console.log(`name:${name}, path:${path}`)
     const data:string[] = [name, path];
 
-    const uid = `filetreeview-1-${this.pid}`;
-    this._fileService.addEventOriginator(uid);
+    const uId = `filetreeview-1-${this.pId}`;
+    this._fileService.addEventOriginator(uId);
 
     evt.stopPropagation();
     await this._audioService.play(this.cheetahNavAudio);
@@ -347,18 +347,18 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     let imgId = Constants.EMPTY_STRING;
 
     if(id === this.negTen && id1 === this.negTen ){
-      imgId = `qa-fileExplrTreeView-img-${this.pid}`;
+      imgId = `qa-fileExplrTreeView-img-${this.pId}`;
     }
 
     if(id === undefined && id1 === undefined ){
-      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}`;
     }
 
     if(id !== undefined && id1 === undefined )
-      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}`;
 
     if(id !== undefined && id1 !== undefined )
-      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}-${id1}`;
 
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
     if(imgDiv){
@@ -370,18 +370,18 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     let imgId = Constants.EMPTY_STRING;
 
     if(id === this.negTen && id1 === this.negTen ){
-      imgId = `qa-fileExplrTreeView-img-${this.pid}`;
+      imgId = `qa-fileExplrTreeView-img-${this.pId}`;
     }
 
     if(id === undefined && id1 === undefined ){
-      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}`;
     }
 
     if(id !== undefined && id1 === undefined )
-      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}`;
 
     if(id !== undefined && id1 !== undefined )
-      imgId = `tp-fileExplrTreeView-img-${this.pid}-${this.level}-${id}-${id1}`;
+      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}-${id1}`;
 
     const imgDiv =  document.getElementById(imgId) as HTMLElement;
 
@@ -417,6 +417,8 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   }
 
   onFileTreeContextMenu(evt:MouseEvent, node:FileTreeNode):void{
+    evt.preventDefault();
+    evt.stopPropagation();
 
     // looking at what Windows does, at any given time. there is only one context window open
     this._menuService.hideContextMenus.next(this.name); 
@@ -439,9 +441,6 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
       'transform':`translate(${x - 90}px, ${y - 115}px)`,
       'z-index': 2,
     }
-
-    evt.preventDefault();
-    evt.stopPropagation();
   }
 
   setBtnStyle(elmntId:string, isMouseHover:boolean):void{

@@ -157,22 +157,22 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   changeContent():void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     const delay = 1000;
 
     this.videoSrc = Constants.EMPTY_STRING;
     this.fileType = Constants.EMPTY_STRING;
 
-    if(this._runningProcessService.getEventOriginator() === uid){
+    if(this._runningProcessService.getEventOriginator() === uId){
       this._fileInfo = this._processHandlerService.getLastProcessTrigger();
       //console.log('new this._fileInfo:',  this._fileInfo);
 
       this.player.pause(); // Pause the video
       this.player.currentTime(0); // Reset to the start (optional)
 
-      this.videoSrc = (this.videoSrc !== '')? 
+      this.videoSrc = (this.videoSrc !== Constants.EMPTY_STRING)? 
       this.videoSrc :this.getVideoSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
-      this.fileType = 'video/'+this._fileInfo.getFileType.replace('.','');
+      this.fileType = 'video/'+this._fileInfo.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING);
 
       setTimeout(async()=> {
         if(this.player) {
@@ -192,7 +192,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       //console.log('img data:',htmlImg);
 
       const cmpntImg:TaskBarPreviewImage = {
-        pid: this.processId,
+        pId: this.processId,
         appName: this.name,
         displayName: this.name,
         icon : this.icon,
@@ -254,31 +254,31 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   storeAppState(app_data:unknown):void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     this._appState = {
-      pid: this.processId,
-      app_data: app_data,
-      app_name: this.name,
-      unique_id: uid,
-      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+      pId: this.processId,
+      appData: app_data,
+      appName: this.name,
+      uId: uId,
+      window: {appName:'', pId:0, xAxis:0, yAxis:0, height:0, width:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uid, this._appState);
+    this._sessionManagmentService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
     const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
-    if(appSessionData !== null && appSessionData.app_data != Constants.EMPTY_STRING){
-        const videoData =  appSessionData.app_data as string[];
+    if(appSessionData !== null && appSessionData.appData != Constants.EMPTY_STRING){
+        const videoData =  appSessionData.appData as string[];
         this.fileType = videoData[0];
         this.videoSrc = videoData[1];
     }
   }
 
   maximizeWindow():void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
-    if(uid === evtOriginator){
+    if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
       const mainWindow = document.getElementById('vantaCntnr') as HTMLElement; //1920 x 1080
 
@@ -301,10 +301,10 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   minmizeWindow(arg:number[]):void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
-    if(uid === evtOriginator){
+    if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
 
       this.videoCntnr.nativeElement.style.width = `${arg[0]}px`;

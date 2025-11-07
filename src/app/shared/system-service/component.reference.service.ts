@@ -61,18 +61,18 @@ export class ComponentReferenceService implements BaseService{
 
     createComponent(componentToLoad: Type<BaseComponent>):ComponentRef<BaseComponent>{
         const componentRef = this._viewContainerRef.createComponent<BaseComponent>(componentToLoad);
-        const pid = componentRef.instance.processId;
-        this.addComponentReference(pid, componentRef);
+        const pId = componentRef.instance.processId;
+        this.addComponentReference(pId, componentRef);
         return componentRef;
     }
 
-    removeComponent(pid:number):void{
-        const componentToDelete = this.getComponentReference(pid);
+    removeComponent(pId:number):void{
+        const componentToDelete = this.getComponentReference(pId);
         if(componentToDelete){
             this._componentRefView = componentToDelete.hostView;
             const iVCntr  = this._viewContainerRef.indexOf(this._componentRefView);
             this._viewContainerRef.remove(iVCntr);
-            this.removeComponentReference(pid);
+            this.removeComponentReference(pId);
         }
     }
     

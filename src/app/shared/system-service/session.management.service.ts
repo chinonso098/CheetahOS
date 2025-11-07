@@ -91,8 +91,8 @@ export class SessionManagmentService implements BaseService{
 
         const processWithWindows = this._runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
         for(const proccess of processWithWindows){
-            const uid = `${proccess.getProcessName}-${proccess.getProcessId}`;
-            this.removeAppSession(uid);
+            const uId = `${proccess.getProcessName}-${proccess.getProcessId}`;
+            this.removeAppSession(uId);
         }
     }
 

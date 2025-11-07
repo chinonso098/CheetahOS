@@ -61,7 +61,7 @@ export class TaskBarPreviewComponent implements OnInit, AfterViewInit {
 
   checkForUpdatedTaskBarPrevInfo():void{
     for(const cmptImage of this.componentImages){
-      const tmpInfo = this._systemNotificationService.getAppIconNotication(cmptImage.pid);
+      const tmpInfo = this._systemNotificationService.getAppIconNotication(cmptImage.pId);
       if(tmpInfo.length > 0){
         cmptImage.displayName = tmpInfo[0];
         cmptImage.icon = tmpInfo[1];

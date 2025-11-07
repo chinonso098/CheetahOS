@@ -167,20 +167,20 @@
 //     this.emitter.update();
 //   }
 
-//   setParticleFlowWindowToFocus(pid:number):void{
-//     this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+//   setParticleFlowWindowToFocus(pId:number):void{
+//     this._windowService.focusOnCurrentProcessWindowNotify.next(pId);
 //   }
   
 //   storeAppState(app_data:unknown):void{
-//     const uid = `${this.name}-${this.processId}`;
+//     const uId = `${this.name}-${this.processId}`;
 //     this._appState = {
-//       pid: this.processId,
+//       pId: this.processId,
 //       app_data: app_data as string,
 //       app_name: this.name,
-//       unique_id: uid,
-//       window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+//       unique_id: uId,
+//       window: {app_name:'', pId:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
 //     }
-//     this._sessionManagmentService.addAppSession(uid, this._appState);
+//     this._sessionManagmentService.addAppSession(uId, this._appState);
 //   }
   
 //   retrievePastSessionData():void{
@@ -362,8 +362,8 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
     this.emitter.update(t * timeMult);
   }
 
-  setParticleFlowWindowToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  setParticleFlowWindowToFocus(pId:number):void{
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pId);
   }
 
   focusWindow(evt:MouseEvent):void{
@@ -375,20 +375,20 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
   }
   
   storeAppState(app_data:unknown):void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     this._appState = {
-      pid: this.processId,
-      app_data: app_data as string,
-      app_name: this.name,
-      unique_id: uid,
-      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+      pId: this.processId,
+      appData: app_data as string,
+      appName: this.name,
+      uId: uId,
+      window: {appName:'', pId:0, xAxis:0, yAxis:0, height:0, width:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uid, this._appState);
+    this._sessionManagmentService.addAppSession(uId, this._appState);
   }
   
   retrievePastSessionData():void{
     const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
-    if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
+    if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
       //
     }
   }

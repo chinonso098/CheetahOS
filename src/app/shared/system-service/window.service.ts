@@ -88,7 +88,7 @@ export class WindowService implements BaseService{
         else{
             const currImages = this._processPreviewImages.get(appName) ?? [];
 
-            const currImg = currImages.find(x => x.pid === data.pid)
+            const currImg = currImages.find(x => x.pId === data.pId)
             if(currImg)
                 currImg.imageData = data.imageData
             else
@@ -97,21 +97,21 @@ export class WindowService implements BaseService{
         }
     }
 
-    addProcessWindowToWindows(uid:string):void{
-        const appName = uid.split(Constants.DASH)[0];
+    addProcessWindowToWindows(uId:string):void{
+        const appName = uId.split(Constants.DASH)[0];
 
         if(!this._processWindows.has(appName)){
-            this._processWindows.set(appName, [uid]);
+            this._processWindows.set(appName, [uId]);
         }
         else{
             const currUids = this._processWindows.get(appName) ?? [];
-            currUids.push(uid);
+            currUids.push(uId);
             this._processWindows.set(appName, currUids);
         }
     }
 
     addWindowState(winState:WindowState):void{
-        const idx = this._processWindowStates.findIndex(x => x.pid === winState.pid);
+        const idx = this._processWindowStates.findIndex(x => x.pId === winState.pId);
 
         if(idx === -1){
             this._processWindowStates.push(winState);
@@ -120,8 +120,8 @@ export class WindowService implements BaseService{
         }
     }
 
-    addProcessWindowBounds(uid:string, bounds:WindowBoundsState):void{
-        const appName = uid.split(Constants.DASH)[0];
+    addProcessWindowBounds(uId:string, bounds:WindowBoundsState):void{
+        const appName = uId.split(Constants.DASH)[0];
         this._processWindowBounds.set(appName, bounds);
     }
 
@@ -129,12 +129,12 @@ export class WindowService implements BaseService{
         this._eventOriginator = eventOrig;
     }
 
-    addProcessWindowIDWithHighestZIndex(pid:number):void{
-        this._processWindowWithTheHighestZIndex = pid;
+    addProcessWindowIDWithHighestZIndex(pId:number):void{
+        this._processWindowWithTheHighestZIndex = pId;
     }
 
-    addProcessIDToHiddenOrVisibleWindows(pid:number):void{
-        this._hiddenOrVisibleWindows.push(pid);
+    addProcessIDToHiddenOrVisibleWindows(pId:number):void{
+        this._hiddenOrVisibleWindows.push(pId);
     }
 
     removeProcessPreviewImages(appName:string):void{
@@ -142,14 +142,14 @@ export class WindowService implements BaseService{
             this._processPreviewImages.delete(appName);
     }
 
-    removeProcessWindowFromWindows(uid:string):void{
-        const appName = uid.split(Constants.DASH)[0];
+    removeProcessWindowFromWindows(uId:string):void{
+        const appName = uId.split(Constants.DASH)[0];
 
         if(this._processWindows.has(appName)){
             const currUids = this._processWindows.get(appName) ?? [];
 
             const deleteCount = 1;
-            const uidIndex = currUids.indexOf(uid)
+            const uidIndex = currUids.indexOf(uId)
             if(uidIndex !== 1) {
                 currUids.splice(uidIndex, deleteCount);
                 this._processWindows.set(appName, currUids);
@@ -160,14 +160,14 @@ export class WindowService implements BaseService{
         }
     }
 
-    removeProcessWindowBounds(uid:string):void{
-        const appName = uid.split(Constants.DASH)[0];
+    removeProcessWindowBounds(uId:string):void{
+        const appName = uId.split(Constants.DASH)[0];
         if(this._processWindowBounds.has(appName))
             this._processWindowBounds.delete(appName);
     }
 
-    isProcessWindowInWindows(uid:string):boolean{
-        const appName = uid.split(Constants.DASH)[0];
+    isProcessWindowInWindows(uId:string):boolean{
+        const appName = uId.split(Constants.DASH)[0];
 
         if(this._processWindows.has(appName))
             return true;
@@ -175,11 +175,11 @@ export class WindowService implements BaseService{
         return false;
     }
 
-    removeProcessPreviewImage(appName:string, pid:number):void{
+    removeProcessPreviewImage(appName:string, pId:number):void{
         const deleteCount = 1;
         if(this._processPreviewImages.has(appName)){
             const currImages = this._processPreviewImages.get(appName) ?? [];
-            const dataIndex = currImages.findIndex(d => d.pid  === pid);
+            const dataIndex = currImages.findIndex(d => d.pId  === pId);
     
             if(dataIndex !== -1){
                 currImages.splice(dataIndex || 0, deleteCount)
@@ -191,9 +191,9 @@ export class WindowService implements BaseService{
         this._eventOriginator = Constants.EMPTY_STRING;
     }
 
-    removeWindowState(pid:number):void{
+    removeWindowState(pId:number):void{
         const deleteCount = 1;
-        const winStateIdx = this._processWindowStates.findIndex(p => p.pid === pid);
+        const winStateIdx = this._processWindowStates.findIndex(p => p.pId === pId);
 
         if(winStateIdx !== -1){
             this._processWindowStates.splice(winStateIdx, deleteCount)
@@ -207,8 +207,8 @@ export class WindowService implements BaseService{
         return [];
     }
 
-    getProcessCountFromWindowList(uid:string):number{
-        const appName = uid.split(Constants.DASH)[0];
+    getProcessCountFromWindowList(uId:string):number{
+        const appName = uId.split(Constants.DASH)[0];
 
         if(this._processPreviewImages.has(appName)){
             const currUids = this._processWindows.get(appName) || [];
@@ -219,8 +219,8 @@ export class WindowService implements BaseService{
         return 0;
     }
 
-    getProcessWindowBounds(uid:string):WindowBoundsState | undefined{
-        const appName = uid.split(Constants.DASH)[0];
+    getProcessWindowBounds(uId:string):WindowBoundsState | undefined{
+        const appName = uId.split(Constants.DASH)[0];
         if(this._processWindowBounds.has(appName))
             return this._processWindowBounds.get(appName);
 
@@ -232,24 +232,24 @@ export class WindowService implements BaseService{
          * get the next window state, where isvisible == true
          */
         let winState:WindowState = {
-            width: 0, height: 0,  x_axis: 0,  y_axis: 0, z_index: 0,is_visible: false,  pid: 0, app_name: ""
+            width: 0, height: 0,  xAxis: 0,  yAxis: 0, zIndex: 0,isVisible: false,  pId: 0, appName: ""
         }
 
         if(this._processWindowStates.length === 0)
-            return winState.pid;
+            return winState.pId;
 
         for(let i = this._processWindowStates.length - 1; i >= 0;  i--){
-            if(this._processWindowStates[i].is_visible){
+            if(this._processWindowStates[i].isVisible){
                 winState = this._processWindowStates[i];
                 break;
             }
         }
 
-        return winState.pid;
+        return winState.pId;
     }
 
-    getWindowState(pid:number):WindowState | null{
-        return this._processWindowStates.find(x => x.pid === pid) || null;
+    getWindowState(pId:number):WindowState | null{
+        return this._processWindowStates.find(x => x.pId === pId) || null;
     }
 
     getWindowStates():WindowState[]{
@@ -272,14 +272,14 @@ export class WindowService implements BaseService{
         this._hiddenOrVisibleWindows = [];
      }
 
-    cleanUp(uid:string):void{
-        const appName = uid.split(Constants.DASH)[0];
-        this.removeProcessWindowFromWindows(uid);
+    cleanUp(uId:string):void{
+        const appName = uId.split(Constants.DASH)[0];
+        this.removeProcessWindowFromWindows(uId);
 
         // only remove window bound information when there is no more windows for the given app
         const currUids = this._processWindows.get(appName) ?? [];
         if(currUids.length === 0){
-            this.removeProcessWindowBounds(uid);
+            this.removeProcessWindowBounds(uId);
         }
     }
 

@@ -65,8 +65,8 @@ export class SystemNotificationService implements BaseService{
         this._isScreenLocked = isLocked;
     }
 
-    setPwrDialogPid(pid:number):void{
-        this._pwrDialogPID = pid;
+    setPwrDialogPid(pId:number):void{
+        this._pwrDialogPID = pId;
     }
 
     setAppIconNotication(msgKey:number, msgValue:string[]):void{

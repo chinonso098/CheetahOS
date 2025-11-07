@@ -719,9 +719,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   closePwrDialogBox():void{
-    const pid = this._systemNotificationServices.getPwrDialogPid();
-    if(pid !== 0){
-      this._userNotificationService.closeDialogMsgBox(pid);
+    const pId = this._systemNotificationServices.getPwrDialogPid();
+    if(pId !== 0){
+      this._userNotificationService.closeDialogMsgBox(pId);
     }
   }
 
@@ -1385,7 +1385,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     event.stopPropagation();
   
     const dragInfo = this._systemNotificationServices.getDragEventInfo();
-    if(dragInfo && dragInfo.Origin.includes(Constants.FILE_EXPLORER)){
+    if(dragInfo && dragInfo.origin.includes(Constants.FILE_EXPLORER)){
       const files = this._fileService.getDragAndDropFile();
       if (!files?.length) return;
 
@@ -1769,7 +1769,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
   onDragStart(evt:DragEvent, i: number):void {
     this.isDragFromDesktopActive = true;
-    const dragEvtInfo:DragEventInfo={Origin:this.uniqueId, CurrentLocation:Constants.EMPTY_STRING, isDragActive: this.isDragFromDesktopActive};
+    const dragEvtInfo:DragEventInfo={origin:this.uniqueId, currentLocation:Constants.EMPTY_STRING, isDragActive: this.isDragFromDesktopActive};
     this._systemNotificationServices.setDropEventInfo(dragEvtInfo);
 
     const countOfMarkedBtns = this.getCountOfAllTheMarkedButtons();

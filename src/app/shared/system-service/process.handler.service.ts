@@ -138,7 +138,7 @@ export class ProcessHandlerService implements BaseService{
         if(this._appDirectory.appExist(file.getOpensWith)){
 
             if(!this._runningProcessService.isProcessRunning(file.getOpensWith) 
-                ||  (this._runningProcessService.isProcessRunning(file.getOpensWith) 
+                || (this._runningProcessService.isProcessRunning(file.getOpensWith) 
                     && !this._onlyOneInstanceAllowed.includes(file.getOpensWith))){
                 this.loadApps(file.getOpensWith);
                 this._TriggerList.push(file);
@@ -159,12 +159,11 @@ export class ProcessHandlerService implements BaseService{
                             runningProcess.getProcessName === this.PARTICLE_FLOW ){
                             this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
                         }else{
-                            const uid = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
-  
                             this._TriggerList.push(file);
                             this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
-                            
-                            this._runningProcessService.addEventOriginator(uid);
+
+                            const uId = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
+                            this._runningProcessService.addEventOriginator(uId);
                             this._runningProcessService.changeProcessContentNotify.next();
                         }
                     }
@@ -189,8 +188,8 @@ export class ProcessHandlerService implements BaseService{
         return new FileInfo;
     }
 
-    async loadApps(appName:string, priorUID?:string):Promise<void>{
-        this.lazyLoadComponment(this._appDirectory.getAppPosition(appName), priorUID);
+    async loadApps(appName:string, priorUId?:string):Promise<void>{
+        this.lazyLoadComponment(this._appDirectory.getAppPosition(appName), priorUId);
     }
 
     private async lazyLoadComponment(appPosition:number, priorUID?:string) {
@@ -247,7 +246,7 @@ export class ProcessHandlerService implements BaseService{
 
     private deleteEntryFromUserOpenedAppsAndSession(proccess:Process):void{
       const deleteCount = 1;
-      const uid = `${proccess.getProcessName}-${proccess.getProcessId}`;
+      const uId = `${proccess.getProcessName}-${proccess.getProcessId}`;
 
       let pidIndex = this.userOpenedAppsList.indexOf(proccess.getProcessName);
       if(pidIndex !== -1) 
@@ -255,14 +254,14 @@ export class ProcessHandlerService implements BaseService{
 
       this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList);
 
-      pidIndex = this.openedAppInstanceUID.indexOf(uid);
+      pidIndex = this.openedAppInstanceUID.indexOf(uId);
       if(pidIndex !== -1) 
         this.openedAppInstanceUID.splice(pidIndex, deleteCount);
 
         this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUID);
 
-      this._sessionMangamentServices.removeSession(uid); 
-      this._sessionMangamentServices.removeAppSession(uid); 
+      this._sessionMangamentServices.removeSession(uId); 
+      this._sessionMangamentServices.removeAppSession(uId); 
     }
 
     private fetchPriorSessionInfo():string[]{
@@ -304,13 +303,13 @@ export class ProcessHandlerService implements BaseService{
 
     private addEntryFromUserOpenedAppssAndSession(cmpntRef:ComponentRef<BaseComponent>):void{
         const pName = cmpntRef.instance.name;
-        const pID = cmpntRef.instance.processId;
-        const uID = `${pName}-${pID}`;
+        const pId = cmpntRef.instance.processId;
+        const uId = `${pName}-${pId}`;
 
         if(!this.userOpenedAppsList.includes(pName))
             this.userOpenedAppsList.push(pName);
 
-        this.openedAppInstanceUID.push(uID);
+        this.openedAppInstanceUID.push(uId);
 
         this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList);
         this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUID);

@@ -76,7 +76,7 @@ Usage:
 help                            get a list of available commands
 help -verbose                   get a detailed list of commands 
 open --app  <foo>               opens app <foo>
-close --app <pid>               closes app <pid>
+close --app <pId>               closes app <pid>
 clear                           clears the terminal output and all previous command
 curl                            query Api's
 download <uri> <path> <name>    download from the internet by providing a urls
@@ -306,8 +306,8 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             return `incomplete command: close --app <pid>, <pid> must be provided`;
 
 
-        const pid = Number(arg1);
-        const processToClose = this._runningProcessService.getProcess(pid);
+        const pId = Number(arg1);
+        const processToClose = this._runningProcessService.getProcess(pId);
         if(processToClose){
             if(this.closingNotAllowed.includes(processToClose.getProcessName)){
                 return `The app: ${processToClose.getProcessName} is not allowed to be closed`;
@@ -317,14 +317,14 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             }
 
         }else{
-            return `${arg1}: No active process with pid:${arg1} found.`
+            return `${arg1}: No active process with pId:${arg1} found.`
         }
     }
 
     exit(arg0:number):void{
         
-        const pid = arg0
-        const processToClose = this._runningProcessService.getProcess(pid);
+        const pId = arg0
+        const processToClose = this._runningProcessService.getProcess(pId);
         if(processToClose){
             this._runningProcessService.closeProcessNotify.next(processToClose);
         }

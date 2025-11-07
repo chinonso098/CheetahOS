@@ -231,7 +231,7 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
     const htmlImg = await this.capturePDFStill(canvas);
 
     const cmpntImg:TaskBarPreviewImage = {
-      pid: this.processId,
+      pId: this.processId,
       appName: this.name,
       displayName: this.name,
       icon : this.icon,
@@ -307,21 +307,21 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
   }
 
   storeAppState(app_data:unknown):void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     this._appState = {
-      pid: this.processId,
-      app_data: app_data,
-      app_name: this.name,
-      unique_id: uid,
-      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+      pId: this.processId,
+      appData: app_data,
+      appName: this.name,
+      uId: uId,
+      window: {appName:'', pId:0, xAxis:0, yAxis:0, height:0, width:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uid, this._appState);
+    this._sessionManagmentService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
     const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
-    if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
-      this.pdfFileSrc = appSessionData.app_data as string;
+    if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
+      this.pdfFileSrc = appSessionData.appData as string;
     }
   }
 

@@ -54,8 +54,8 @@ export class UserNotificationService implements BaseService{
         }
     }
 
-    closeDialogMsgBox(pid:number):void{
-        this._componentReferenceService.removeComponent(pid);
+    closeDialogMsgBox(pId:number):void{
+        this._componentReferenceService.removeComponent(pId);
     }
 
     showErrorNotification(msg:string){

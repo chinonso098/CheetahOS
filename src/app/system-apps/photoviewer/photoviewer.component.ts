@@ -67,27 +67,26 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   firstView = Constants.EMPTY_STRING;
 
   defaultView = this.GALLERY_VIEW;
-  galleryImg = `${Constants.IMAGE_BASE_PATH}photos_gallery.png`;
   favoriteImg = `${Constants.IMAGE_BASE_PATH}photos_heart.png`;
-  slideShowImg = `${Constants.IMAGE_BASE_PATH}photos_carousel.png`;
-  infoImg = `${Constants.IMAGE_BASE_PATH}photos_info.png`;
-  resolutionImg = `${Constants.IMAGE_BASE_PATH}photos_resolution.png`;
-  sizeImg = `${Constants.IMAGE_BASE_PATH}photos_size.png`;
-  zoomInImg = `${Constants.IMAGE_BASE_PATH}photos_zoom_in.png`;
-  zoomOutImg = `${Constants.IMAGE_BASE_PATH}photos_zoom_out.png`;
-  scaleInImg = `${Constants.IMAGE_BASE_PATH}photos_scale_in.png`;
+  folderPathImg = `${Constants.IMAGE_BASE_PATH}photos_info_path.png`;
   fullScaleImg = `${Constants.IMAGE_BASE_PATH}photos_scale.png`;
-  scaleImg = `${Constants.IMAGE_BASE_PATH}photos_scale.png`;
-  prevImg = `${Constants.IMAGE_BASE_PATH}photos_prev_image.png`;
-  nextImg = `${Constants.IMAGE_BASE_PATH}photos_next_image.png`;
+  galleryImg = `${Constants.IMAGE_BASE_PATH}photos_gallery.png`;
   goBackImg =  `${Constants.IMAGE_BASE_PATH}photos_go_back.png`;
+  infoImg = `${Constants.IMAGE_BASE_PATH}photos_info.png`;
+  nextImg = `${Constants.IMAGE_BASE_PATH}photos_next_image.png`;
+  prevImg = `${Constants.IMAGE_BASE_PATH}photos_prev_image.png`;
   photoImg =  `${Constants.IMAGE_BASE_PATH}photos_info_picture.png`;
   calendarImg =  `${Constants.IMAGE_BASE_PATH}photos_info_calendar.png`;
-  timeImg =  `${Constants.IMAGE_BASE_PATH}photos_info_time.png`;
-  resolutionImg1 = `${Constants.IMAGE_BASE_PATH}photos_info_resolution.png`;
+  scaleImg = `${Constants.IMAGE_BASE_PATH}photos_scale.png`;
+  scaleInImg = `${Constants.IMAGE_BASE_PATH}photos_scale_in.png`;
+  sizeImg = `${Constants.IMAGE_BASE_PATH}photos_size.png`;
+  slideShowImg = `${Constants.IMAGE_BASE_PATH}photos_carousel.png`;
   srcImg =  `${Constants.IMAGE_BASE_PATH}photos_info_source.png`;
-  folderPathImg = `${Constants.IMAGE_BASE_PATH}photos_info_path.png`;
-
+  resolutionImg = `${Constants.IMAGE_BASE_PATH}photos_resolution.png`;
+  resolutionImg1 = `${Constants.IMAGE_BASE_PATH}photos_info_resolution.png`;
+  timeImg =  `${Constants.IMAGE_BASE_PATH}photos_info_time.png`;
+  zoomInImg = `${Constants.IMAGE_BASE_PATH}photos_zoom_in.png`;
+  zoomOutImg = `${Constants.IMAGE_BASE_PATH}photos_zoom_out.png`;
 
   currentImg = Constants.EMPTY_STRING;
   selectedIdx = 0;
@@ -237,7 +236,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
           this.currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
       }
 
-      const appData = (wereMoreImagesFound)? this.imageListUrl :  this._fileInfo.getCurrentPath;
+      const appData = (wereMoreImagesFound)? this.imageListUrl : this._fileInfo.getCurrentPath;
       this.storeAppState(appData);
     }else{
       const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
@@ -292,7 +291,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     htmlToImage.toPng(this.photoContainer.nativeElement).then(htmlImg =>{
       //console.log('img data:',htmlImg);
       const cmpntImg:TaskBarPreviewImage = {
-        pid: this.processId,
+        pId: this.processId,
         appName: this.name,
         displayName: this.name,
         icon : this.icon,
@@ -455,14 +454,14 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
         photosElmnt.style.height = '682px';
         /* original content height of 630, carousel height of 52, title bar of 30 */
         const sum = 630 + 52 + 30;
-        const resize:WindowResizeInfo = {pid:this.processId, width:1000, height:sum}
+        const resize:WindowResizeInfo = {pId:this.processId, width:1000, height:sum}
         this._windowService.resizeProcessWindowNotify.next(resize);
       }
       else{
         photosElmnt.style.height = '630px';
         /* original content height of 630, title bar of 30 */
         const sum = 630 + 30;
-        const resize:WindowResizeInfo = {pid:this.processId, width:1000, height:sum}
+        const resize:WindowResizeInfo = {pId:this.processId, width:1000, height:sum}
         this._windowService.resizeProcessWindowNotify.next(resize);
       }
     }
@@ -685,34 +684,34 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   storeAppState(app_data:unknown):void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     this._appState = {
-      pid: this.processId,
-      app_data: app_data,
-      app_name: this.name,
-      unique_id: uid,
-      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+      pId: this.processId,
+      appData: app_data,
+      appName: this.name,
+      uId: uId,
+      window: {appName:'', pId:0, xAxis:0, yAxis:0, height:0, width:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uid, this._appState);
+    this._sessionManagmentService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
     const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
-    if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
+    if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
         this._skipOnInit = true;
 
-        if(typeof appSessionData.app_data === 'string')
-          this._returnedPicSrc = appSessionData.app_data as string; 
+        if(typeof appSessionData.appData === 'string')
+          this._returnedPicSrc = appSessionData.appData as string; 
         else
-          this.imageListUrl = appSessionData.app_data as string[];
+          this.imageListUrl = appSessionData.appData as string[];
     }
   }
 
   maximizeWindow():void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
-    if(uid === evtOriginator){
+    if(uId === evtOriginator){
 
       this._runningProcessService.removeEventOriginator();
       const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;

@@ -1,5 +1,5 @@
 export interface TaskBarPreviewImage {
-    pid: number;
+    pId: number;
     appName:string;
     displayName:string;
     icon:string;

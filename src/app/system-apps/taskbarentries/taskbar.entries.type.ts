@@ -1,6 +1,6 @@
 export interface TaskBarIconInfo{
-    pid:number,
-    uid:string,
+    pId:number,
+    uId:string,
     iconPath:string,
     defaultIconPath:string,
     opensWith:string,

@@ -54,13 +54,13 @@ export interface ShortCut{
 }
 
 export interface DragEventInfo{
-    Origin:string;
-    CurrentLocation:string; /**When and where this information is retrieved,  */
+    origin:string;
+    currentLocation:string; /**When and where this information is retrieved,  */
     isDragActive:boolean;
 }
 
 export interface WindowResizeInfo{
-    pid:number;
+    pId:number;
     width:number;
     height:number;
 }

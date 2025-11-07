@@ -209,8 +209,8 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
     return parseFloat(result.toFixed(2));
   }
 
-  setPropertyWindowToFocus(pid:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pid);
+  setPropertyWindowToFocus(pId:number):void{
+    this._windowService.focusOnCurrentProcessWindowNotify.next(pId);
   }
 
   private getComponentDetail():Process{

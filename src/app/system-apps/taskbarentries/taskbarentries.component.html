@@ -7,14 +7,14 @@
           <ng-container *ngFor="let pin of mergedTaskBarIconList;  let i = index"  >
                @if (pin.instanceCount === 1) {
                     <li class="taskBar-Entries-li" taskBarEntryHighlight id="tskbar-{{pin.opensWith}}" (mouseenter)="onMouseEnter(pin.opensWith, 0, pin.iconPath)" (mouseleave)="onMouseLeave()" (click)="onTaskBarIconClick(pin)" (contextmenu)="onShowIconContextMenu($event, pin)">
-                         <cos-taskbarentry  [taskBarPid]="pin.pid" [taskBarIconImgUrl]="pin.defaultIconPath"  [taskBarIconName]="pin.opensWith" [taskBarEntryType]="hideLabel"> </cos-taskbarentry> 
+                         <cos-taskbarentry  [taskBarPid]="pin.pId" [taskBarIconImgUrl]="pin.defaultIconPath"  [taskBarIconName]="pin.opensWith" [taskBarEntryType]="hideLabel"> </cos-taskbarentry> 
                     </li>
                }
 
                @if(pin.instanceCount > 1){
                     <div class="li-pill-cntnr" id="tskbar-pill-cntnr-{{pin.opensWith}}">
                          <li class="taskBar-Entries-li" taskBarEntryHighlight  id="tskbar-{{pin.opensWith}}" (mouseenter)="onMouseEnter(pin.opensWith, 0, pin.iconPath)" (mouseleave)="onMouseLeave()" (click)="onTaskBarIconClick(pin)" (contextmenu)="onShowIconContextMenu($event, pin)">
-                              <cos-taskbarentry  [taskBarPid]="pin.pid" [taskBarIconImgUrl]="pin.defaultIconPath"  [taskBarIconName]="pin.opensWith" [taskBarEntryType]="hideLabel"> </cos-taskbarentry> 
+                              <cos-taskbarentry  [taskBarPid]="pin.pId" [taskBarIconImgUrl]="pin.defaultIconPath"  [taskBarIconName]="pin.opensWith" [taskBarEntryType]="hideLabel"> </cos-taskbarentry> 
                          </li>
                          <li class="li-pill-divider" id="tskbar-pill-{{pin.opensWith}}"> </li>
                     </div>
@@ -25,8 +25,8 @@
 
 <ng-template #unMergedTskBarIcons>
      <ol class="taskBar-Entries-ol"> 
-          <li class="taskBar-Entries-li" taskBarEntryHighlight *ngFor="let app of unMergedTaskBarIconList;  let i = index" id="tskbar-{{app.opensWith}}-{{app.pid}}" (mouseenter)="onMouseEnter(app.opensWith, app.pid, app.iconPath)" (mouseleave)="onMouseLeave(app.opensWith, app.pid)" (click)="onTaskBarIconClick(app)" (contextmenu)="onShowIconContextMenu($event, app)">
-               <cos-taskbarentry  [taskBarPid]="app.pid" [taskBarIconImgUrl]="app.iconPath"  [taskBarIconName]="app.displayName" (restoreOrMinizeWindowEvent)="restoreOrMinizeWindow($event)" [taskBarEntryType]="app.showLabel"> </cos-taskbarentry> 
+          <li class="taskBar-Entries-li" taskBarEntryHighlight *ngFor="let app of unMergedTaskBarIconList;  let i = index" id="tskbar-{{app.opensWith}}-{{app.pId}}" (mouseenter)="onMouseEnter(app.opensWith, app.pId, app.iconPath)" (mouseleave)="onMouseLeave(app.opensWith, app.pId)" (click)="onTaskBarIconClick(app)" (contextmenu)="onShowIconContextMenu($event, app)">
+               <cos-taskbarentry  [taskBarPid]="app.pId" [taskBarIconImgUrl]="app.iconPath"  [taskBarIconName]="app.displayName" (restoreOrMinizeWindowEvent)="restoreOrMinizeWindow($event)" [taskBarEntryType]="app.showLabel"> </cos-taskbarentry> 
           </li>
      </ol>
 </ng-template>

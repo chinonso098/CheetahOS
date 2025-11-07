@@ -33,14 +33,14 @@ export class ProcessIDService implements BaseService{
     }
 
     public getNewProcessId(): number{
-        let pid = 0;
-        pid = this.generateProcessId();
+        let pId = 0;
+        pId = this.generateProcessId();
 
-        while(this._activeProcessIds.includes(pid))
-                pid = this.generateProcessId();
+        while(this._activeProcessIds.includes(pId))
+                pId = this.generateProcessId();
 
-        this._activeProcessIds.push(pid);
-        return pid;
+        this._activeProcessIds.push(pId);
+        return pId;
     }
 
     private generateProcessId(): number{
@@ -49,9 +49,9 @@ export class ProcessIDService implements BaseService{
         return Math.floor(Math.random() * (max - min + 1)) + min; 
     }
 
-    public removeProcessId(pid:number):void{
+    public removeProcessId(pId:number):void{
        const deleteCount = 1;
-       const pidIndex = this._activeProcessIds.indexOf(pid)
+       const pidIndex = this._activeProcessIds.indexOf(pId)
        if (pidIndex !== -1) {
             this._activeProcessIds.splice(pidIndex, deleteCount);
         }

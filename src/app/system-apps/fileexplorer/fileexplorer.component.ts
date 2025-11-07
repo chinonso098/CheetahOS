@@ -294,8 +294,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this._fetchDirectoryDataSub = this._fileService.fetchDirectoryDataNotify.subscribe((p) => {
       const name = 'filetreeview';
-      const uid = `${name}-${this.processId}`;
-      if(this._fileService.getEventOriginator() === uid){
+      const uId = `${name}-${this.processId}`;
+      if(this._fileService.getEventOriginator() === uId){
         this.updateFileTreeAsync(p);
         this._fileService.removeEventOriginator();
       }
@@ -303,8 +303,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this._goToDirectoryDataSub = this._fileService.goToDirectoryNotify.subscribe((p) => {
       const name = 'filetreeview-1';
-      const uid = `${name}-${this.processId}`;
-      if(this._fileService.getEventOriginator() === uid){
+      const uId = `${name}-${this.processId}`;
+      if(this._fileService.getEventOriginator() === uId){
         if(!this.isRecycleBinFolder){
           this.navigateToFolder(p);
           this._fileService.removeEventOriginator();
@@ -428,7 +428,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       //console.log('img data:',htmlImg);
 
       const cmpntImg:TaskBarPreviewImage = {
-        pid: this.processId,
+        pId: this.processId,
         appName: this.name,
         displayName: this.name,
         icon : this.icon,
@@ -1500,8 +1500,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     }
     
-    const uid = `${this.name}-${this.processId}`;
-    this._runningProcessService.addEventOriginator(uid);
+    const uId = `${this.name}-${this.processId}`;
+    this._runningProcessService.addEventOriginator(uId);
 
     this.adjustIconContextMenuData(file);
     this.selectedFile = file;
@@ -1582,8 +1582,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
 
-    const uid = `${this.name}-${this.processId}`;
-    this._runningProcessService.addEventOriginator(uid);
+    const uId = `${this.name}-${this.processId}`;
+    this._runningProcessService.addEventOriginator(uId);
 
     if(!this.showFileExplrCntxtMenu)
       this.showFileExplrCntxtMenu = !this.showFileExplrCntxtMenu;
@@ -2105,9 +2105,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onDragStart(evt:any):void{
     this.isDragFromFileExplorerActive = true;
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
 
-    const dragEvtInfo:DragEventInfo={Origin:uid, CurrentLocation:Constants.EMPTY_STRING, isDragActive: this.isDragFromFileExplorerActive};
+    const dragEvtInfo:DragEventInfo={origin:uId, currentLocation:Constants.EMPTY_STRING, isDragActive: this.isDragFromFileExplorerActive};
     this._systemNotificationService.setDropEventInfo(dragEvtInfo);
   }
 
@@ -2698,31 +2698,31 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   storeAppState(app_data:unknown):void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     this._appState = {
-      pid: this.processId,
-      app_data: app_data,
-      app_name: this.name,
-      unique_id: uid,
-      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+      pId: this.processId,
+      appData: app_data,
+      appName: this.name,
+      uId: uId,
+      window: {appName:'', pId:0, xAxis:0, yAxis:0, height:0, width:0, zIndex:0, isVisible:true}
     }
 
-    this._sessionManagmentService.addAppSession(uid, this._appState);
+    this._sessionManagmentService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
     const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
 
-    if(appSessionData !== null  && appSessionData.app_data != Constants.EMPTY_STRING){
-      this.directory = appSessionData.app_data as string;
+    if(appSessionData !== null  && appSessionData.appData != Constants.EMPTY_STRING){
+      this.directory = appSessionData.appData as string;
     }
   }
 
   maximizeWindow():void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
-    if(uid === evtOriginator){
+    if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
       const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
 
@@ -2737,10 +2737,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   minimizeWindow(arg:number[]):void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
-    if(uid === evtOriginator){
+    if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
 
       // fileExplr headerTab container, empty line container, fileExplr header container, empty line container 2, footer container

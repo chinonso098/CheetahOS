@@ -24,7 +24,7 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
   @Input() icon = Constants.EMPTY_STRING;
   @Input() name = Constants.EMPTY_STRING;
   @Input() imageData = Constants.EMPTY_STRING;
-  @Input() pid = 0;
+  @Input() pId = 0;
 
   appInfo = Constants.EMPTY_STRING;
   SECONDS_DELAY = 20;
@@ -59,8 +59,8 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
     this.appInfo = (this.appInfo.length > limit) ? this.appInfo.substring(0, limit) + ellipsis : this.appInfo;
   }
 
-  onClosePreviewWindow(pid:number):void{
-    const processToClose = this._runningProcessService.getProcess(pid);
+  onClosePreviewWindow(pId:number):void{
+    const processToClose = this._runningProcessService.getProcess(pId);
     this._runningProcessService.closeProcessNotify.next(processToClose);
   }
 
@@ -73,88 +73,88 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
     this._windowServices.restoreProcessesWindowNotify.next();
   }
 
-  showTaskBarPreviewContextMenu(evt:MouseEvent, pid:number):void{
+  showTaskBarPreviewContextMenu(evt:MouseEvent, pId:number):void{
     console.log('I will implement the TaskBarPreview Context Window.........later');
   }
 
-  setWindowToFocusOnMouseHover(pid:number):void{
-    this._windowServices.setProcessWindowToFocusOnMouseHoverNotify.next(pid);
-    this.setCloseBtnColor(pid, false);
-    this.setSvgIconColor(pid);
+  setWindowToFocusOnMouseHover(pId:number):void{
+    this._windowServices.setProcessWindowToFocusOnMouseHoverNotify.next(pId);
+    this.setCloseBtnColor(pId, false);
+    this.setSvgIconColor(pId);
   }
 
-  restoreWindowOnMouseLeave(pid:number):void{
-    this._windowServices.restoreProcessWindowOnMouseLeaveNotify.next(pid);
-    this.removeCloseBtnColor(pid);
+  restoreWindowOnMouseLeave(pId:number):void{
+    this._windowServices.restoreProcessWindowOnMouseLeaveNotify.next(pId);
+    this.removeCloseBtnColor(pId);
   }
 
-  showOrSetWindowToFocusOnClick(pid:number):void{
+  showOrSetWindowToFocusOnClick(pId:number):void{
     const delay = 100; //100ms
-    this.restoreWindowOnMouseLeave(pid);
+    this.restoreWindowOnMouseLeave(pId);
 
     this.hideTaskBarPreviewWindowAndRestoreDesktop();
 
     setTimeout(() => {
-      this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pid);
+      this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pId);
     }, delay);
   }
 
 
-  setCloseBtnColor(pid:number, isBtnHover:boolean):void{
-    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+  setCloseBtnColor(pId:number, isBtnHover:boolean):void{
+    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pId}`) as HTMLElement;
     if(closeBtnElmnt){
       closeBtnElmnt.style.backgroundColor = (isBtnHover)? 'rgb(232,17,35)' : 'black';
     }
   }
 
-  setSvgIconColor(pid:number):void{
-    const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
+  setSvgIconColor(pId:number):void{
+    const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pId}`) as HTMLElement; 
     if(svgIconElmnt){
       svgIconElmnt.style.fill = '#ababab';
     }
   }
 
-  removeCloseBtnColor(pid:number):void{
-    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+  removeCloseBtnColor(pId:number):void{
+    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pId}`) as HTMLElement;
     if(closeBtnElmnt){
       closeBtnElmnt.style.backgroundColor = '';
     }
   }
 
-  highLightTasktBarPreview(uid: string): void {
-    const pid = uid.split('-')[1];
-    const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uid}`) as HTMLElement;
+  highLightTasktBarPreview(uId: string): void {
+    const pId = uId.split('-')[1];
+    const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uId}`) as HTMLElement;
     if(tskBarPrevElmnt){
       tskBarPrevElmnt.style.backgroundColor = 'hsla(0,0%,25%,60%)';
 
-      const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+      const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pId}`) as HTMLElement;
       if(closeBtnElmnt){
         closeBtnElmnt.style.backgroundColor = 'black';
       }
 
-      const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
+      const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pId}`) as HTMLElement; 
       if(svgIconElmnt){
         svgIconElmnt.style.fill = '#ababab';
       }
     }
   }
 
-  unHighLightTasktBarPreview(uid:string):void{
-    console.log(`highLightTasktBarPreview:${uid}`);
-    const pid = uid.split('-')[1];
-    const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uid}`) as HTMLElement;
+  unHighLightTasktBarPreview(uId:string):void{
+    console.log(`highLightTasktBarPreview:${uId}`);
+    const pId = uId.split('-')[1];
+    const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uId}`) as HTMLElement;
     if(tskBarPrevElmnt){
-      tskBarPrevElmnt.style.backgroundColor ='';
+      tskBarPrevElmnt.style.backgroundColor = Constants.EMPTY_STRING;
     }
 
-    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pid}`) as HTMLElement;
+    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pId}`) as HTMLElement;
     if(closeBtnElmnt){
-      closeBtnElmnt.style.backgroundColor = '';
+      closeBtnElmnt.style.backgroundColor = Constants.EMPTY_STRING;
     }
 
-    const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pid}`) as HTMLElement; 
+    const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pId}`) as HTMLElement; 
     if(svgIconElmnt){
-      svgIconElmnt.style.fill = '';
+      svgIconElmnt.style.fill = Constants.EMPTY_STRING;
     }
   }
 

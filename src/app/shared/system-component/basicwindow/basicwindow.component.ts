@@ -163,14 +163,14 @@ import { Constants } from 'src/app/system-files/constants';
       this.windowZIndex =  String(this.MAX_Z_INDEX);
 
       this._originalWindowsState = {
-        app_name: this.name,
-        pid : this.processId,
+        appName: this.name,
+        pId : this.processId,
         height:this.defaultHeightOnOpen,
         width: this.defaultWidthOnOpen,
-        x_axis: 0,
-        y_axis: 0,
-        z_index:this.MAX_Z_INDEX,
-        is_visible:true
+        xAxis: 0,
+        yAxis: 0,
+        zIndex:this.MAX_Z_INDEX,
+        isVisible:true
       }
 
       this._windowService.addWindowState(this._originalWindowsState);
@@ -197,32 +197,32 @@ import { Constants } from 'src/app/system-files/constants';
       this._showOpenWindowsSub?.unsubscribe();
     }
 
-    setBtnFocus(pid:number):void{
-        if(this.processId == pid){
+    setBtnFocus(pId:number):void{
+        if(this.processId === pId){
           this.closeBtnStyles = {
             'background-color':'rgb(139,10,20)'
           };
         }
     }
 
-    setHeaderInActive(pid:number):void{
-      if(this.processId == pid){
+    setHeaderInActive(pId:number):void{
+      if(this.processId === pId){
         this.headerActiveStyles = {
           'background-color':'hsla(0, 0%, 85%, 1)'
         };
       }
     }
 
-    setHeaderActive(pid:number):void{
-      if(this.processId == pid){
+    setHeaderActive(pId:number):void{
+      if(this.processId === pId){
         this.headerActiveStyles = {
           'background-color':'hsla(0, 0%, 100%, 1)'
         };
       }
     }
 
-    showSilhouette(pid:number):void{
-      if(this.processId === pid){
+    showSilhouette(pId:number):void{
+      if(this.processId === pId){
         this.showGlassPaneContainer();
         const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
         if(glassPane){
@@ -239,8 +239,8 @@ import { Constants } from 'src/app/system-files/constants';
       this.renderer.setStyle(this.bglassPaneContainer.nativeElement, 'display', 'block');
     }
 
-    hideSilhouette(pid:number):void{
-      if(this.processId === pid){
+    hideSilhouette(pId:number):void{
+      if(this.processId === pId){
         this.hideGlassPaneContainer();
         const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
         if(glassPane){
@@ -254,8 +254,8 @@ import { Constants } from 'src/app/system-files/constants';
       this.renderer.setStyle(this.bglassPaneContainer.nativeElement, 'display', 'none');
     }
 
-    removeSilhouette(pid:number):void{
-      if(this.processId === pid){
+    removeSilhouette(pId:number):void{
+      if(this.processId === pId){
         const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
         if (glassPane) {
           glassPane.remove();
@@ -264,27 +264,27 @@ import { Constants } from 'src/app/system-files/constants';
     }
 
     updateWindowZIndex(window: WindowState, zIndex:number):void{
-      if(this.processId == window.pid){
+      if(this.processId === window.pId){
         this.currentWinStyles = {
           // 'top': `${this.windowTop}%`,
           // 'left': `${this.windowLeft}%`,
           'z-index':zIndex,
           'opacity': (zIndex > 0)? 1 : 0,
-          'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
+          'transform': `translate(${window.xAxis}px, ${window.yAxis}px)`
         };
-        window.z_index = zIndex;
+        window.zIndex = zIndex;
         this._windowService.addWindowState(window);
       }
     }
 
     setWindowToPriorHiddenState(window: WindowState, zIndex:number):void{
-      if(this.processId === window.pid){
+      if(this.processId === window.pId){
         this.currentWinStyles = {
           // 'top': `${this.windowTop}%`,
           // 'left': `${this.windowLeft}%`,
           'z-index':zIndex,
           'opacity': (zIndex > 0)?  1 : 0,
-          'transform': `translate(${window.x_axis}px, ${window.y_axis}px)`
+          'transform': `translate(${window.xAxis}px, ${window.yAxis}px)`
         };
       }
     }
@@ -301,8 +301,8 @@ import { Constants } from 'src/app/system-files/constants';
         const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
 
         if(windowState){
-          windowState.x_axis= x_axis;
-          windowState.y_axis= y_axis;
+          windowState.xAxis= x_axis;
+          windowState.yAxis= y_axis;
 
           this.xAxisTmp = x_axis;
           this.yAxisTmp = y_axis;  
@@ -316,48 +316,48 @@ import { Constants } from 'src/app/system-files/constants';
       this._windowService.windowDragIsInActive.next();
     }
 
-    onDragStart(pid:number):void{
-      this.setFocsuOnThisWindow(pid);
-      this._windowService.currentProcessInFocusNotify.next(pid);
+    onDragStart(pId:number):void{
+      this.setFocsuOnThisWindow(pId);
+      this._windowService.currentProcessInFocusNotify.next(pId);
       this._windowService.windowDragIsActive.next();
     }
 
     setHideAndShowAllVisibleWindows():void{
       const windowState = this._windowService.getWindowState(this.processId);
-      if(windowState && windowState.is_visible){
+      if(windowState && windowState.isVisible){
         this.windowHide = !this.windowHide;
         // CSS styles: set per current state of component properties
 
         if(this.windowHide){
-          if(windowState.pid == this.processId){
-            windowState.is_visible = false;
-            windowState.z_index = this.HIDDEN_Z_INDEX;
+          if(windowState.pId === this.processId){
+            windowState.isVisible = false;
+            windowState.zIndex = this.HIDDEN_Z_INDEX;
             this._windowService.addWindowState(windowState);
             this._windowService.addProcessIDToHiddenOrVisibleWindows(this.processId);
   
-            this.setHeaderInActive(windowState.pid);
+            this.setHeaderInActive(windowState.pId);
             this.currentWinStyles = { 
               // 'top': `${this.windowTop}%`,
               // 'left': `${this.windowLeft}%`,
-              'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
+              'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`,
               'z-index':this.HIDDEN_Z_INDEX 
             };
           }
         }
-      }else if(windowState && !windowState.is_visible){
+      }else if(windowState && !windowState.isVisible){
         const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
         if(windowList.includes(this.processId)){
           this.windowHide = !this.windowHide;
 
           if(!this.windowHide){
-            if(windowState.pid == this.processId){
-              windowState.is_visible = true;
+            if(windowState.pId === this.processId){
+              windowState.isVisible = true;
               this._windowService.addWindowState(windowState);
 
               const window_with_highest_zIndex = this._windowService.getProcessWindowIDWithHighestZIndex();
               if(window_with_highest_zIndex === this.processId){
-                this.setFocsuOnThisWindow(windowState.pid);
-                this._windowService.currentProcessInFocusNotify.next(windowState.pid);
+                this.setFocsuOnThisWindow(windowState.pId);
+                this._windowService.currentProcessInFocusNotify.next(windowState.pId);
               }else{
                 this.setWindowToPriorHiddenState(windowState, this.MIN_Z_INDEX);
               }
@@ -417,53 +417,53 @@ import { Constants } from 'src/app/system-files/constants';
       }
     }
 
-    setFocsuOnThisWindow(pid:number):void{
+    setFocsuOnThisWindow(pId:number):void{
       /**
        * If you want to make a non-focusable element focusable, 
        * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
        */
-      const uid = `${this.name}-${pid}`;
-      if((this.uniqueId === uid) && (!this.windowHide)){
-        this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pid);
+      const uId = `${this.name}-${pId}`;
+      if((this.uniqueId === uId) && (!this.windowHide)){
+        this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
 
-        this.setWindowToFocusById(pid);
+        this.setWindowToFocusById(pId);
       }
     }
 
-    setFocusOnWindowInit(pid:number):void{
-      this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pid);
-      this._windowService.currentProcessInFocusNotify.next(pid);
+    setFocusOnWindowInit(pId:number):void{
+      this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
+      this._windowService.currentProcessInFocusNotify.next(pId);
 
-      this.setHeaderActive(pid);
+      this.setHeaderActive(pId);
     }
 
-    setWindowToFocusOnMouseHover(pid:number):void{
+    setWindowToFocusOnMouseHover(pId:number):void{
       /**
        * If you want to make a non-focusable element focusable, 
        * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
        */
-      this._windowService.hideOtherProcessesWindowNotify.next(pid);
+      this._windowService.hideOtherProcessesWindowNotify.next(pId);
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
       
-      if(this.processId === pid){
-        if(pid === pid_with_highest_z_index)
-            this.setHeaderActive(pid);
+      if(this.processId === pId){
+        if(pId === pid_with_highest_z_index)
+            this.setHeaderActive(pId);
 
-        this.hideSilhouette(pid);
-        this.showOnlyWindowById(pid);
+        this.hideSilhouette(pId);
+        this.showOnlyWindowById(pId);
       }
     }
 
     /**
-     * the pid of the current window currently in focus is passed. if the pid of other windows do not match,
+     * the pId of the current window currently in focus is passed. if the pId of other windows do not match,
      * then they are set out of focus 
      */
-    removeFocusOnWindowNotMatchingPid(pid:number):void{
-      if(this.processId !== pid){
+    removeFocusOnWindowNotMatchingPid(pId:number):void{
+      if(this.processId !== pId){
         const windowState = this._windowService.getWindowState(this.processId);
         if(windowState){
-          if(windowState.is_visible){
-            this.setHeaderInActive(windowState.pid);
+          if(windowState.isVisible){
+            this.setHeaderInActive(windowState.pId);
             this.updateWindowZIndex(windowState, this.MIN_Z_INDEX);
           }
         }
@@ -476,96 +476,96 @@ import { Constants } from 'src/app/system-files/constants';
 
       for(let i = 0; i < processWithWindows.length; i++){
         const windowState = processWithWindows[i];          
-        if(windowState && windowState.is_visible){
-          if(windowState.pid !== pid_with_highest_z_index ){
-            this.setHeaderInActive(windowState.pid);
+        if(windowState && windowState.isVisible){
+          if(windowState.pId !== pid_with_highest_z_index ){
+            this.setHeaderInActive(windowState.pId);
             this.updateWindowZIndex(windowState, this.MIN_Z_INDEX);
           }else{
-            this.setHeaderActive(windowState.pid);
+            this.setHeaderActive(windowState.pId);
             this.updateWindowZIndex(windowState, this.MAX_Z_INDEX);
           }
-          this.hideSilhouette(windowState.pid);
+          this.hideSilhouette(windowState.pId);
         }
       }
     }
 
     /**
-     * the pid of the current window currently in focus is passed. if the pid of other windows do not match,
+     * the pId of the current window currently in focus is passed. if the pId of other windows do not match,
      * then they are hidden by setting z -index = 0
      */
-    hideWindowNotMatchingPidOnMouseHover(pid:number):void{
-      if(this.processId !== pid){
-        const windowState  = this._windowService.getWindowStates().find(p => p.pid === this.processId);
+    hideWindowNotMatchingPidOnMouseHover(pId:number):void{
+      if(this.processId !== pId){
+        const windowState  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
 
-        if(windowState && windowState.is_visible){
-          this.showSilhouette(windowState.pid);
+        if(windowState && windowState.isVisible){
+          this.showSilhouette(windowState.pId);
           this.updateWindowZIndex(windowState, this.HIDDEN_Z_INDEX);
         }
-        else if(windowState && !windowState.is_visible){
+        else if(windowState && !windowState.isVisible){
           this.setWindowToPriorHiddenState(windowState, this.HIDDEN_Z_INDEX);
         }
       }
     }
 
-    restoreWindowOnMouseLeave(pid:number):void{
-      const window = this._windowService.getWindowState(pid);
+    restoreWindowOnMouseLeave(pId:number):void{
+      const window = this._windowService.getWindowState(pId);
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
 
       if(window){
-        if(window.is_visible){
-          if(window.pid !==  pid_with_highest_z_index){
-            this.setHeaderInActive(window.pid);
+        if(window.isVisible){
+          if(window.pId !==  pid_with_highest_z_index){
+            this.setHeaderInActive(window.pId);
             this.updateWindowZIndex(window, this.MIN_Z_INDEX);
           }else{
-            this.setHeaderActive(window.pid);
+            this.setHeaderActive(window.pId);
             this.updateWindowZIndex(window, this.MAX_Z_INDEX);
           }
-        } else if(!window.is_visible){
+        } else if(!window.isVisible){
           this.setWindowToPriorHiddenState(window, this.HIDDEN_Z_INDEX);
         }
       }
     }
 
     //the window positioning is acting wonky, but it is kinda 50% there
-    showOrSetProcessWindowToFocusOnClick(pid:number):void{
-      if(this.processId === pid){
-        const windowState = this._windowService.getWindowState(pid);
+    showOrSetProcessWindowToFocusOnClick(pId:number):void{
+      if(this.processId === pId){
+        const windowState = this._windowService.getWindowState(pId);
         if(windowState){
-          this.setFocsuOnThisWindow(windowState.pid);
+          this.setFocsuOnThisWindow(windowState.pId);
         }
       }
     }
 
-    setWindowToFocusAndResetWindowBoundsByPid(pid:number):void{
-      if(this.processId === pid){
+    setWindowToFocusAndResetWindowBoundsByPid(pId:number):void{
+      if(this.processId === pId){
         const window = this._windowService.getWindowState(this.processId);
-        if(window && window.is_visible){
-          this.setWindowToFocusById(window.pid);
+        if(window && window.isVisible){
+          this.setWindowToFocusById(window.pId);
         }
       }
     }
 
-    setWindowToFocusById(pid:number):void{
-      const windowState = this._windowService.getWindowState(pid);
+    setWindowToFocusById(pId:number):void{
+      const windowState = this._windowService.getWindowState(pId);
       if(windowState){
-        if((windowState.pid === pid) && (windowState.z_index < this.MAX_Z_INDEX)){
-          windowState.z_index = this.MAX_Z_INDEX;
+        if((windowState.pId === pId) && (windowState.zIndex < this.MAX_Z_INDEX)){
+          windowState.zIndex = this.MAX_Z_INDEX;
           this._windowService.addWindowState(windowState);
-          this._windowService.addProcessWindowIDWithHighestZIndex(pid);
+          this._windowService.addProcessWindowIDWithHighestZIndex(pId);
 
           this.currentWinStyles = {
             // 'top': `${this.windowTop}%`,
             // 'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
-            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
+            'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`
           };
 
-          this.setHeaderActive(pid);
+          this.setHeaderActive(pId);
           this.setFocusOnDiv();
-        }else if((windowState.pid === pid) && (windowState.z_index === this.MAX_Z_INDEX)){
-          this._windowService.addProcessWindowIDWithHighestZIndex(pid);
+        }else if((windowState.pId === pId) && (windowState.zIndex === this.MAX_Z_INDEX)){
+          this._windowService.addProcessWindowIDWithHighestZIndex(pId);
 
-          this.setHeaderActive(pid);
+          this.setHeaderActive(pId);
           this.setFocusOnDiv();
         }  
       }
@@ -580,25 +580,25 @@ import { Constants } from 'src/app/system-files/constants';
       }
     }
 
-    showOnlyWindowById(pid:number):void{
-      const windowState = this._windowService.getWindowState(pid);
+    showOnlyWindowById(pId:number):void{
+      const windowState = this._windowService.getWindowState(pId);
 
-      if(windowState && (windowState.pid == pid)){
+      if(windowState && (windowState.pId === pId)){
         const z_index = this.TMP_MAX_Z_INDEX;
-        if(!windowState.is_visible){
+        if(!windowState.isVisible){
           this.currentWinStyles = {
             // 'top': `${this.windowTop}%`,
             // 'left': `${this.windowLeft}%`,
             'z-index':z_index,
             'opacity': 1,
-            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
+            'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`
           };
         }else{
           this.currentWinStyles = {
             // 'top': `${this.windowTop}%`,
             // 'left': `${this.windowLeft}%`,
             'z-index':z_index,
-            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`
+            'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`
           };
         }
       }
@@ -606,12 +606,12 @@ import { Constants } from 'src/app/system-files/constants';
 
     lockScreenIsActive():void{
       const windowState = this._windowService.getWindowState(this.processId);
-      if(windowState && windowState.is_visible){
+      if(windowState && windowState.isVisible){
         this.currentWinStyles = {
           // 'top': `${this.windowTop}%`,
           // 'left': `${this.windowLeft}%`,
           'z-index':this.HIDDEN_Z_INDEX,
-          'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
+          'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`,
           'opacity': 0,
         };
         this._windowService.addWindowState(windowState);   
@@ -621,12 +621,12 @@ import { Constants } from 'src/app/system-files/constants';
     desktopIsActive():void{
       const windowState = this._windowService.getWindowState(this.processId);
       if(windowState){
-        if(windowState.pid === this._windowService.getProcessWindowIDWithHighestZIndex()){
+        if(windowState.pId === this._windowService.getProcessWindowIDWithHighestZIndex()){
           this.currentWinStyles = {
             // 'top': `${this.windowTop}%`,
             // 'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
-            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
+            'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`,
             'opacity': 1
           };
         }else{
@@ -634,7 +634,7 @@ import { Constants } from 'src/app/system-files/constants';
             // 'top': `${this.windowTop}%`,
             // 'left': `${this.windowLeft}%`,
             'z-index':this.MIN_Z_INDEX,
-            'transform': `translate(${windowState.x_axis}px, ${windowState.y_axis}px)`,
+            'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`,
             'opacity': 1
           };
         }
@@ -647,7 +647,7 @@ import { Constants } from 'src/app/system-files/constants';
      * @returns Process
      */
    getNextProcess():Process | undefined{
-    const nextPid = this._windowService.getNextPidInWindowStateList();
-    return this._runningProcessService.getProcesses().find(p => p.getProcessId === nextPid);
+    const nextPId = this._windowService.getNextPidInWindowStateList();
+    return this._runningProcessService.getProcesses().find(p => p.getProcessId === nextPId);
    }
 }

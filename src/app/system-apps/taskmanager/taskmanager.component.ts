@@ -197,7 +197,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       //console.log('img data:',htmlImg);
 
       const cmpntImg:TaskBarPreviewImage = {
-        pid: this.processId,
+        pId: this.processId,
         appName: this.name,
         displayName: this.name,
         icon : this.icon,
@@ -371,8 +371,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
 
-    const uid = `${this.name}-${this.processId}`;
-    this._runningProcessService.addEventOriginator(uid);
+    const uId = `${this.name}-${this.processId}`;
+    this._runningProcessService.addEventOriginator(uId);
 
     this.cntxtMenuStyle = {
       'display': 'block', 
@@ -1070,10 +1070,10 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   maximizeWindow():void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
-    if(uid === evtOriginator){
+    if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
       const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
       //const tskmgrCardBody = this.tskmgrCardBody.nativeElement;
@@ -1103,10 +1103,10 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   minimizeWindow(arg:number[]):void{
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
-    if(uid === evtOriginator){
+    if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
 
       console.log('Set windows backto this:', arg);
@@ -1120,21 +1120,21 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   storeAppState(app_data:unknown):void{
     //store refresh state, sort state, and view state
-    const uid = `${this.name}-${this.processId}`;
+    const uId = `${this.name}-${this.processId}`;
     this._appState = {
-      pid: this.processId,
-      app_data: app_data,
-      app_name: this.name,
-      unique_id: uid,
-      window: {app_name:'', pid:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
+      pId: this.processId,
+      appData: app_data,
+      appName: this.name,
+      uId: uId,
+      window: {appName:'', pId:0, xAxis:0, yAxis:0, height:0, width:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uid, this._appState);
+    this._sessionManagmentService.addAppSession(uId, this._appState);
   }
 
 
   retrievePastSessionData():void{
     const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
-    if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
+    if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
     
       //retrieve refresh state, sort state, and view state
     }

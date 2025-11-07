@@ -7,13 +7,13 @@
 
 <div class="file-tree-view-main">
     <ng-container  *ngIf="showRoot"> 
-        <ul class="ul-file-tree-view" id="qa-FileExplrTreeView-main-{{pid}}">
-            <li class="li-file-tree-view0" id="qa-li-{{pid}}">
-                <div class="tree-view-cntnr"  id="qa-fileExplrTreeView-{{pid}}" 
+        <ul class="ul-file-tree-view" id="qa-FileExplrTreeView-main-{{pId}}">
+            <li class="li-file-tree-view0" id="qa-li-{{pId}}">
+                <div class="tree-view-cntnr"  id="qa-fileExplrTreeView-{{pId}}" 
                     (click)="navigateToSelectedPath($event, Quick_ACCESS, Quick_ACCESS)" 
-                    (click)="onBtnClick($event, 'qa-fileExplrTreeView-'+pid)" 
-                    (mouseenter)="onMouseEnter('qa-fileExplrTreeView-'+pid)" 
-                    (mouseleave)="onMouseLeave('qa-fileExplrTreeView-'+pid)">
+                    (click)="onBtnClick($event, 'qa-fileExplrTreeView-'+pId)" 
+                    (mouseenter)="onMouseEnter('qa-fileExplrTreeView-'+pId)" 
+                    (mouseleave)="onMouseLeave('qa-fileExplrTreeView-'+pId)">
                     <div class="fxtreeview-head"> 
                         <figure class="fxtreeview-figure">  
                             <div class="fxtreeview-img" >
@@ -23,7 +23,7 @@
                                     (mouseleave)="unColorChevron(negTen, negTen)" [style]="chevronBtnStyle"
 
                                     height="10" width="10" 
-                                    viewBox="0 0 512 512"  id="qa-fileExplrTreeView-img-{{pid}}">
+                                    viewBox="0 0 512 512"  id="qa-fileExplrTreeView-img-{{pId}}">
                                     <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
                                 </svg>
                             </div>
@@ -33,15 +33,15 @@
                     <div class="fxtreeview-tail"><p class="fxtreeview-nested-p"> {{Quick_ACCESS}}</p></div>
                 </div>
 
-                <ul class="ul-file-tree-view" id="qa-ul-{{pid}}">
+                <ul class="ul-file-tree-view" id="qa-ul-{{pId}}">
                     <ng-container *ngFor="let node of quickAccessData; let i = index">
-                        <li class="li-file-tree-view" id="qa-li-{{pid}}-{{i}}"> 
-                            <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="qa-fileExplrTreeView-{{pid}}-{{i}}" 
+                        <li class="li-file-tree-view" id="qa-li-{{pId}}-{{i}}"> 
+                            <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="qa-fileExplrTreeView-{{pId}}-{{i}}" 
                                 (contextmenu)="onFileTreeContextMenu($event, node)" 
                                 (click)="navigateToSelectedPath($event, node.name, node.path)" 
-                                (click)="onBtnClick($event, 'qa-fileExplrTreeView-'+pid+'-'+i)" 
-                                (mouseenter)="onMouseEnter('qa-fileExplrTreeView-'+pid+'-'+i)" 
-                                (mouseleave)="onMouseLeave('qa-fileExplrTreeView-'+pid+'-'+i)">
+                                (click)="onBtnClick($event, 'qa-fileExplrTreeView-'+pId+'-'+i)" 
+                                (mouseenter)="onMouseEnter('qa-fileExplrTreeView-'+pId+'-'+i)" 
+                                (mouseleave)="onMouseLeave('qa-fileExplrTreeView-'+pId+'-'+i)">
                                 
                                 <div class="fxtreeview-head"> <figure class="fxtreeview-figure"></figure></div>
                                 <div class="fxtreeview-mid"><figure class="fxtreeview-figure1"><img class="fxtreeview-img1" [src]="getIconPath(node.name, node.path)"/></figure></div>
@@ -58,19 +58,19 @@
 
 
     <ul class="ul-file-tree-view" id="{{nextLevelSrcId}}">
-        <li class="li-file-tree-view0" id="li-{{pid}}-{{level}}">
+        <li class="li-file-tree-view0" id="li-{{pId}}-{{level}}">
             <ng-container *ngIf="showRoot">
-                <div class="tree-view-cntnr"  id="tp-fileExplrTreeView-{{pid}}-{{level}}" 
+                <div class="tree-view-cntnr"  id="tp-fileExplrTreeView-{{pId}}-{{level}}" 
                     (click)="navigateToSelectedPath($event, thisPC, thisPC)" 
-                    (click)="onBtnClick($event,'tp-fileExplrTreeView-'+pid+'-'+level)" 
-                    (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level)" 
-                    (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level)">
+                    (click)="onBtnClick($event,'tp-fileExplrTreeView-'+pId+'-'+level)" 
+                    (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pId+'-'+level)" 
+                    (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pId+'-'+level)">
                     <div class="span fxtreeview-head"> 
                         <figure class="fxtreeview-figure">  
                             <div class="fxtreeview-img" >
                                 <svg xmlns="http://www.w3.org/2000/svg" (click)="showChildren('tp-fileExplrTreeView')" (mouseenter)="colorChevron()" (mouseleave)="unColorChevron()" [style]="chevronBtnStyle"
                                     height="10" width="10" 
-                                    viewBox="0 0 512 512"  id="tp-fileExplrTreeView-img-{{pid}}-{{level}}">
+                                    viewBox="0 0 512 512"  id="tp-fileExplrTreeView-img-{{pId}}-{{level}}">
                                     <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
                                 </svg>
                             </div>
@@ -81,22 +81,22 @@
                 </div>
             </ng-container>
 
-            <ul class="ul-file-tree-view" id="ul-{{pid}}-{{level}}">
+            <ul class="ul-file-tree-view" id="ul-{{pId}}-{{level}}">
                 <ng-container *ngFor="let node of treeData; let i = index">
-                    <li class="li-file-tree-view" id="li-{{pid}}-{{level}}-{{i}}"> 
+                    <li class="li-file-tree-view" id="li-{{pId}}-{{level}}-{{i}}"> 
                                                                                 <!--here is the id-->
-                        <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="tp-fileExplrTreeView-{{pid}}-{{level}}-{{i}}"  
+                        <div class="tree-view-cntnr" *ngIf="node.isFolder"  id="tp-fileExplrTreeView-{{pId}}-{{level}}-{{i}}"  
                             (contextmenu)="onFileTreeContextMenu($event, node)" 
                             (click)="navigateToSelectedPath($event, node.name, node.path)" 
-                            (click)="onBtnClick($event, 'tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)" 
-                            (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)" 
-                            (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i)">
+                            (click)="onBtnClick($event, 'tp-fileExplrTreeView-'+pId+'-'+level+'-'+i)" 
+                            (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pId+'-'+level+'-'+i)" 
+                            (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pId+'-'+level+'-'+i)">
                             <div class="span fxtreeview-head"> 
                                 <figure class="fxtreeview-figure">  
                                     <div class="fxtreeview-img" >
                                         <svg xmlns="http://www.w3.org/2000/svg" (click)="showGrandChildren(node.path, i)" (mouseenter)="colorChevron(i)" (mouseleave)="unColorChevron(i)" [style]="chevronBtnStyle"
                                             height="10" width="10" 
-                                            viewBox="0 0 512 512"  id="tp-fileExplrTreeView-img-{{pid}}-{{level}}-{{i}}"> <!--here is the id-->
+                                            viewBox="0 0 512 512"  id="tp-fileExplrTreeView-img-{{pId}}-{{level}}-{{i}}"> <!--here is the id-->
                                             <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
                                         </svg>
                                     </div>
@@ -107,22 +107,22 @@
                         </div>
 
                         <ng-container *ngIf="node.children && node.children.length">
-                            <ul class="ul-file-tree-view" id="ul-{{pid}}-{{level}}-{{i}}">
+                            <ul class="ul-file-tree-view" id="ul-{{pId}}-{{level}}-{{i}}">
                                 
                                 <ng-container *ngFor="let child of node.children; let j = index">
-                                    <li class="li-file-tree-view" id="li-{{pid}}-{{level}}-{{i}}-{{j}}"> 
+                                    <li class="li-file-tree-view" id="li-{{pId}}-{{level}}-{{i}}-{{j}}"> 
                                                                                                                     <!--here is the id1-->
-                                        <div class="tree-view-cntnr" *ngIf="child.isFolder"  id="tp-fileExplrTreeView-{{pid}}-{{level}}-{{i}}-{{j}}" 
+                                        <div class="tree-view-cntnr" *ngIf="child.isFolder"  id="tp-fileExplrTreeView-{{pId}}-{{level}}-{{i}}-{{j}}" 
                                             (click)="navigateToSelectedPath($event, child.name, child.path)"
-                                            (click)="onBtnClick($event, 'tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)" 
-                                            (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)" 
-                                            (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pid+'-'+level+'-'+i+'-'+j)">
+                                            (click)="onBtnClick($event, 'tp-fileExplrTreeView-'+pId+'-'+level+'-'+i+'-'+j)" 
+                                            (mouseenter)="onMouseEnter('tp-fileExplrTreeView-'+pId+'-'+level+'-'+i+'-'+j)" 
+                                            (mouseleave)="onMouseLeave('tp-fileExplrTreeView-'+pId+'-'+level+'-'+i+'-'+j)">
                                             <div class="span fxtreeview-head"> 
                                                 <figure class="fxtreeview-figure">  
                                                     <div class="fxtreeview-img" >
                                                         <svg xmlns="http://www.w3.org/2000/svg" (click)="showGreatGrandChildren(child.path, i, j)" (mouseenter)="colorChevron(i,j)" (mouseleave)="unColorChevron(i,j)" [style]="chevronBtnStyle"
                                                             height="10" width="10" 
-                                                            viewBox="0 0 512 512"  id="tp-fileExplrTreeView-img-{{pid}}-{{level}}-{{i}}-{{j}}"> <!--here is the id1-->
+                                                            viewBox="0 0 512 512"  id="tp-fileExplrTreeView-img-{{pId}}-{{level}}-{{i}}-{{j}}"> <!--here is the id1-->
                                                             <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
                                                         </svg>
                                                     </div>
@@ -133,7 +133,7 @@
                                         </div>
 
                                         <ng-container *ngIf="child.children && child.children.length">
-                                            <cos-filetreeview [level]="this.nextLevel" [pid]="this.processId" [showRoot]="false" [levelSrcId]="'newtree-'+pid+'-'+level+'-'+i+'-'+j" [treeData]="child.children"></cos-filetreeview>
+                                            <cos-filetreeview [level]="this.nextLevel" [pId]="this.processId" [showRoot]="false" [levelSrcId]="'newtree-'+pId+'-'+level+'-'+i+'-'+j" [treeData]="child.children"></cos-filetreeview>
                                         </ng-container>
                                     </li>
                                 </ng-container>
