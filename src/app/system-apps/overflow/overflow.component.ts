@@ -2,9 +2,10 @@
 import { AfterViewInit, OnDestroy, Component } from '@angular/core';
 import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { Subscription } from 'rxjs';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { InformationUpdate } from 'src/app/system-files/common.interfaces';
 
 @Component({
   selector: 'cos-overflow',
@@ -14,7 +15,10 @@ import { Subscription } from 'rxjs';
 })
 export class OverFlowComponent implements AfterViewInit, OnDestroy {
   private _runningProcessService!:RunningProcessService;
+  private _systemNotificationService:SystemNotificationService;
+
   private _processListChangeSub!:Subscription;
+  private _updateInformationSub!:Subscription;
 
   chatterIcon =`${Constants.IMAGE_BASE_PATH}chatter.png`;
   taskManagerIcon =`${Constants.IMAGE_BASE_PATH}taskmanager_grid.png`;
@@ -22,27 +26,41 @@ export class OverFlowComponent implements AfterViewInit, OnDestroy {
 
   tskMngrUtil = 0; // accepts a number between 0 and 100
   showTskMngrUtil = false;
+  showChatterIcon = false;
+  showIndexingIcon = false;
 
-  constructor(runningProcessService:RunningProcessService) { 
+  private readonly TASK_MANAGER = "taskmanager";
+
+  constructor(runningProcessService:RunningProcessService, systemNotificationService:SystemNotificationService) { 
     this._runningProcessService = runningProcessService;
-    this._processListChangeSub = this._runningProcessService.processListChangeNotify.subscribe(() =>{this.hideShowTaskManagerUtil()});
+    this._systemNotificationService = systemNotificationService;
+
+    this._processListChangeSub = this._runningProcessService.processListChangeNotify.subscribe(() =>{
+      this.hideShowTaskManagerUtil();
+      this.hideShowChatter();
+    });
+
+    this._updateInformationSub = this._systemNotificationService.updateInformationNotify.subscribe((p) =>{
+      if(p.appName === this.TASK_MANAGER)
+        this.updateTaskManager(p);
+    });
   }
 
   async ngAfterViewInit():Promise<void>{  
     const delay = 500; //.5 secs  
     await CommonFunctions.sleep(delay);
     this.hideShowTaskManagerUtil();
+    this.hideShowChatter();
   }
 
   ngOnDestroy(): void {
     this._processListChangeSub?.unsubscribe();
+    this._updateInformationSub?.unsubscribe();
   }
 
   async hideShowTaskManagerUtil():Promise<void>{
-    const tskMnger = "taskmanager";
-    const isRunning = this._runningProcessService.isProcessRunning(tskMnger);
-    const delay = 100; //.1 secs  
-    const delay1 = 2000; //2secs  
+    const isRunning = this._runningProcessService.isProcessRunning(this.TASK_MANAGER);
+    const delay = 100; //.1 secs 
 
     if(!isRunning){
       this.showTskMngrUtil = false;
@@ -55,11 +73,25 @@ export class OverFlowComponent implements AfterViewInit, OnDestroy {
     const overFlowElmnt = document.getElementById('tskMngrOverFlowIcon') as HTMLDivElement;
     if(overFlowElmnt){
       overFlowElmnt.style.backgroundImage = `url(${this.taskManagerIcon})`;
-
-      setInterval(() => {
-        this.tskMngrUtil = this.getRandomInt(10, 100);
-      }, delay1);
     }
+  }
+
+  updateTaskManager(update:InformationUpdate):void{
+    const updatedInfo = update.info;
+    const cpuData =  updatedInfo[0].split(Constants.COLON)[1];
+    const cpuUtil = Number(cpuData);
+    this.tskMngrUtil = cpuUtil;
+  }
+
+  hideShowChatter():void{
+    const chatter = "chatter";
+    const isRunning = this._runningProcessService.isProcessRunning(chatter);
+    if(!isRunning){
+      this.showChatterIcon = false;
+      return;
+    }
+
+    this.showChatterIcon = true;
   }
 
   getRandomInt(min: number, max: number): number {

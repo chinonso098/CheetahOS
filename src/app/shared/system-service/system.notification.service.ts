@@ -7,7 +7,7 @@ import { RunningProcessService } from "./running.process.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { BaseService } from "./base.service.interface";
-import { DragEventInfo } from "src/app/system-files/common.interfaces";
+import { DragEventInfo, InformationUpdate } from "src/app/system-files/common.interfaces";
 
 
 @Injectable({
@@ -30,7 +30,6 @@ export class SystemNotificationService implements BaseService{
     restartSystemNotify: Subject<number> = new Subject<number>();
     shutDownSystemNotify: Subject<void> = new Subject<void>();
 
-
     hideTaskBarNotify: Subject<void> = new Subject<void>();
     showTaskBarNotify: Subject<void> = new Subject<void>();
     showTaskBarToolTipNotify: Subject<unknown[]> = new Subject<unknown[]>();
@@ -39,8 +38,7 @@ export class SystemNotificationService implements BaseService{
     taskBarPreviewHighlightNotify: Subject<string> = new Subject<string>();
     taskBarPreviewUnHighlightNotify: Subject<string> = new Subject<string>();
 
-    updateInfoByNameNotify: Subject<Map<string, string[]>> = new Subject<Map<string, string[]>>();
-    updateInfoByUniqueIdNotify: Subject<Map<string, string[]>> = new Subject<Map<string, string[]>>();
+    updateInformationNotify: Subject<InformationUpdate> = new Subject<InformationUpdate>();
 
     name = 'sys_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;

@@ -16,6 +16,8 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 import { Service } from 'src/app/system-files/service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { AppState } from 'src/app/system-files/state/state.interface';
+import { InformationUpdate } from 'src/app/system-files/common.interfaces';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 
 
 @Component({
@@ -42,6 +44,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   private _notificationService!:UserNotificationService;
   private _windowService!:WindowService;
   private _sessionManagmentService!:SessionManagmentService;
+  private _systemNotificationService!:SystemNotificationService;
   private _renderer: Renderer2;
   private _appState!:AppState;
 
@@ -115,13 +118,15 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, sessionManagmentService:SessionManagmentService,
-               notificationService:UserNotificationService, renderer: Renderer2 ,windowService:WindowService) { 
+               notificationService:UserNotificationService, renderer: Renderer2 ,windowService:WindowService,
+               systemNotificationService:SystemNotificationService) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._notificationService = notificationService;
     this._windowService = windowService;
     this._sessionManagmentService = sessionManagmentService;
+    this._systemNotificationService = systemNotificationService;
     this._renderer = renderer;
 
     this.processId = this._processIdService.getNewProcessId()
@@ -669,6 +674,14 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this.diskUtil = clamp(processes.reduce((n, { getDiskUsage }) => n + getDiskUsage, 0));
     this.networkUtil = clamp(processes.reduce((n, { getNetworkUsage }) => n + getNetworkUsage, 0));
     this.gpuUtil = clamp(processes.reduce((n, { getGpuUsage }) => n + getGpuUsage, 0));
+
+    const update:InformationUpdate = {
+      pId:this.processId, 
+      appName:this.name, 
+      info:[`cpu:${this.cpuUtil}`, `memory:${this.memUtil}`, `disk:${this.diskUtil}`, `gpu:${this.gpuUtil}`]
+    }
+
+    this._systemNotificationService.updateInformationNotify.next(update);
   }
 
 

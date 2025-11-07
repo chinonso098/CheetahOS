@@ -1,10 +1,14 @@
 <div class="overflow-container">
   <div class="overflow-content-container">
     <div class="overflow-content">
+      @if(showChatterIcon){
+        <div class="overflow-icon"> <img [src]="chatterIcon"/></div>
+      }
 
-      <div class="overflow-icon"> <img [src]="chatterIcon"/></div>
-      <div class="overflow-icon"> <img [src]="indexingGif"/></div>
-      
+      @if(showIndexingIcon){
+        <div class="overflow-icon"> <img [src]="indexingGif"/></div>
+      }
+
       @if(showTskMngrUtil){
         <div class="taskmanager__overflow-icon" id="tskMngrOverFlowIcon">
           <div class="taskmanager__progress-bar"  [style.width.%]="tskMngrUtil"> </div>

@@ -27,8 +27,8 @@
 .overflow-icon {
     width: 18px;
     height: 18px;
-    background: #555;
-    border-radius: 3px;
+    /* background: #555; 
+    border-radius: 3px;*/
 }
 
 .taskmanager__overflow-icon {

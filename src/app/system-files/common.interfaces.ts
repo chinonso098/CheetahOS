@@ -64,3 +64,9 @@ export interface WindowResizeInfo{
     width:number;
     height:number;
 }
+
+export interface InformationUpdate{
+    pId:number,
+    appName:string,
+    info:string[]
+}
