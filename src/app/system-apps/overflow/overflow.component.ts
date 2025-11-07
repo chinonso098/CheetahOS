@@ -77,11 +77,39 @@ export class OverFlowComponent implements AfterViewInit, OnDestroy {
   }
 
   updateTaskManager(update:InformationUpdate):void{
+    // Basic guard: ensure update and info exist
+    if (!update || !Array.isArray(update.info) || update.info.length === 0) {
+      console.warn("updateTaskManager: Invalid or empty update.info");
+      return;
+    }
+  
     const updatedInfo = update.info;
-    const cpuData =  updatedInfo[0].split(Constants.COLON)[1];
+    const firstInfo = updatedInfo[0];
+  
+    // Ensure firstInfo is a string containing a colon
+    if (typeof firstInfo !== "string" || !firstInfo.includes(Constants.COLON)) {
+      console.warn("updateTaskManager: Malformed info string", firstInfo);
+      return;
+    }
+  
+    const parts = firstInfo.split(Constants.COLON);
+    if (parts.length < 2) {
+      console.warn("updateTaskManager: Missing data after colon");
+      return;
+    }
+  
+    const cpuData = parts[1].trim();
     const cpuUtil = Number(cpuData);
+  
+    // Validate that cpuUtil is a finite number
+    if (isNaN(cpuUtil) || !isFinite(cpuUtil)) {
+      console.warn("updateTaskManager: Invalid CPU utilization value", cpuData);
+      return;
+    }
+  
     this.tskMngrUtil = cpuUtil;
   }
+  
 
   hideShowChatter():void{
     const chatter = "chatter";
