@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import {Component, Input, OnChanges, SimpleChanges, AfterViewInit} from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges, AfterViewInit, EventEmitter, Output, OnDestroy} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { UserNotificationType } from 'src/app/system-files/common.enums';
 
@@ -16,7 +16,6 @@ import { BaseComponent } from 'src/app/system-base/base/base.component.interface
 import { AudioService } from '../../system-service/audio.services';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 
-
 @Component({
   selector: 'cos-dialog',
   templateUrl: './dialog.component.html',
@@ -24,11 +23,13 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   standalone:false,
 })
 
-export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit {
+export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit, OnDestroy {
 
   @Input() inputMsg = Constants.EMPTY_STRING;
   @Input() inputTitle = Constants.EMPTY_STRING;
   @Input() notificationType = Constants.EMPTY_STRING;
+  @Output() confirm = new EventEmitter<void>();
+  @Output() cancel = new EventEmitter<void>();
 
   private _userNotificationServices:UserNotificationService;
   private _windowService!:WindowService;
@@ -130,8 +131,14 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
     this.playDialogNotifcationSound();
   }
 
+  ngOnDestroy(): void {
+    console.log('Dialog was destroyed')
+  }
+
   onYesDialogBox():void{
-    this._menuService.createDesktopShortcut.next();
+    //this._menuService.createDesktopShortcut.next();
+    this.confirm.emit();
+    this._userNotificationServices.closeDialogMsgBox(this.processId);
   }
 
   onCheckboxChange():void{
@@ -171,6 +178,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   }
 
   onCloseDialogBox():void{
+    this.cancel.emit();
     this._userNotificationServices.closeDialogMsgBox(this.processId);
 
     if(this.notificationOption !== UserNotificationType.PowerOnOff){

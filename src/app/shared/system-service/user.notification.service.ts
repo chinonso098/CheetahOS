@@ -20,7 +20,6 @@ export class UserNotificationService implements BaseService{
     private _runningProcessService!:RunningProcessService;
     private _processIdService!:ProcessIDService;
     private _componentReferenceService:ComponentReferenceService;
-    private dialogResponse = false;
 
     name = 'usr_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -39,7 +38,6 @@ export class UserNotificationService implements BaseService{
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
     }
-
 
     private showDialogMsgBox(dialogMsgType:string, msg:string, title:string=Constants.EMPTY_STRING):void{
         const componentRef = this._componentReferenceService.createComponent(DialogComponent);
@@ -68,8 +66,26 @@ export class UserNotificationService implements BaseService{
         this.showDialogMsgBox(UserNotificationType.Info, msg);
     }
 
-    showWarningNotification(msg:string, title:string){
-        this.showDialogMsgBox(UserNotificationType.Warning, msg, title);
+    // showWarningNotification(msg:string, title:string){
+    //     this.showDialogMsgBox(UserNotificationType.Warning, msg, title);
+    // }
+
+    async showWarningNotification(message: string, title: string): Promise<boolean> {
+        return new Promise((resolve) => {
+            const componentRef = this._componentReferenceService.createComponent(DialogComponent);
+            componentRef.setInput('inputMsg', message);
+            componentRef.setInput('inputTitle', title);
+            componentRef.setInput('notificationType', UserNotificationType.Warning );
+      
+            // hook up close events
+            componentRef.instance.confirm.subscribe(() => {
+              resolve(true);
+            });
+      
+            componentRef.instance.cancel.subscribe(() => {
+              resolve(false);
+            });
+        });
     }
 
     showPowerOnOffNotification(msg:string){
@@ -78,16 +94,6 @@ export class UserNotificationService implements BaseService{
 
     showFileTransferNotification(msg:string){
         this.showDialogMsgBox(UserNotificationType.FileTransfer, msg);
-    }
-
-    setDialogResponse(response:boolean):void{
-        this.dialogResponse = response;
-    }
-
-    getDialogResponse():boolean{
-        const tmp = this.dialogResponse;
-        this.dialogResponse = false;
-        return tmp;
     }
 
     private getProcessDetail():Process{
