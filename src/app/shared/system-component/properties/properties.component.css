@@ -234,9 +234,14 @@
     font-size: 12px; /* Font size for the text */
     font-weight: normal;
     height: 24px;
-    width: 65px;
+    width: 70px;
 }
 
+.btn.btn-primary:hover {
+    border: 1px solid #0265ce; /* Border color for the primary button */
+    padding: 3px 20px; /* Padding for the primary button (adjust as needed) */
+    background-color: #80aae4; /* Primary button background color */
+}
 
 svg {
   width: 100px;
