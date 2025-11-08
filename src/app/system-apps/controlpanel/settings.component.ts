@@ -552,8 +552,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
           await CommonFunctions.sleep(delay);
           const color =(isChanged) ? prevSolidColor: this.retrievedBackgroundValue ;
-          const desktopBkgrndImg = await this.getDesktopScreenShot(color);
-          screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
+          // const desktopBkgrndImg = await this.getDesktopScreenShot(color);
+          // screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
+
+          screenPrevElmnt.style.backgroundImage = color;
         }
       }
     }else{

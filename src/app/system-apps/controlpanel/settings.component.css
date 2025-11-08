@@ -667,14 +667,42 @@
   color: white;
 }
 
-.desktop-overlay___top-bar {
+.desktop-overlay___app {
   position: absolute;
   top: 10px;
   left: 250px;
-  width: 60px;
-  height: 30px;
+  width: fit-content;
+  height: fit-content;
   background: white;
   border-radius: 1px;
+  display: flex;
+  flex-direction: column;
+}
+
+.desktop-overlay___top-bar, .desktop-overlay___heading{
+  position: relative;
+  width: 80px;
+  height: 40px;
+  background-color: rgba(41,41, 41, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 1px;
+  color: white;
+}
+
+.desktop-overlay___white-bar{
+  position: absolute;
+  top: 2.5px;
+  left: 5px;
+  width: 60px;
+  height: 4px;
+  background: white;
+  border-radius: 1px;
+}
+
+.desktop-overlay___heading{
+  background: #0079d9;
+  backdrop-filter: none;
+  height: 10px;
 }
 
 .desktop-overlay___bottom-bar {
