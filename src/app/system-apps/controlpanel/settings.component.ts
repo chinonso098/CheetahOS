@@ -390,7 +390,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.clipboardSaveStateText = (this.isSaveClipboardHistory)? Constants.ON : Constants.OFF;
   }
 
-  async handleDropDownChoiceAndSetBkgrnd(option?: { value: number, label: string },   evt?: any): Promise<void>{
+  async handleDropDownChoiceAndSetBkgrnd(option?: { value: number, label: string }, evt?: any): Promise<void>{
     if(evt)
       evt.stopPropagation();
 
@@ -464,14 +464,16 @@ export class SettingsComponent implements OnInit, OnDestroy {
           const prevDefaultPic = this._defaultService.getDefaultSetting(Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE);
           const selection = (isChanged) ? prevDefaultPic  : `${this.retrievedBackgroundValue}`;
 
+          console.log('handlePictureBkgrnd:', selection);
+
           if(isChanged){
             //auto apply
             const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${selection}`;
             this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
           }
 
-          const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
-          screenPrevElmnt.style.backgroundImage = `url(${img})`;
+          //const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
+          screenPrevElmnt.style.backgroundImage = `url(${selection})`;
         }else{
           const defaultImg = 'osdrive/Cheetah/Themes/LockScreen/bamboo_moon.jpg';
           screenPrevElmnt.style.backgroundImage = (isChanged) 
@@ -499,6 +501,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
           const selection = (isChanged) ? prevDynamicImg : correctedPath;
           const delay = 25; //25ms
 
+          console.log('handleMirrorAndDynamicBkgrnd:', selection);
+
           if(isChanged){
             //auto apply
             const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
@@ -506,9 +510,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
           }
 
           await CommonFunctions.sleep(delay);
-          const desktopBkgrndImg = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);  
+          //const desktopBkgrndImg = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);  
           this.setStyle(screenPrevElmnt, styleClasses, activeClass);
-          screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
+          screenPrevElmnt.style.backgroundImage = `url(${selection})`;
         }
       }
       this.desktopPictureOptions = SettingsHelper.generateDesktopPictureOptions(this.desktopBkgrndOption);
@@ -633,6 +637,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   async handleScreenPictureAndColorSelection(selection:string, evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
 
+    console.log('handleScreenPictureAndColorSelection:', selection);
+
     const isDesktopView = (this.selectedPersonalizationOption === this.PERSONALIZATION_DESKTOP_BACKGROUND )? true: false;
     let activeClass = Constants.EMPTY_STRING;
 
@@ -686,11 +692,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.setStyle(screenPrevElmnt, styleClasses, activeClass)
 
         if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC){;
-          const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
-          screenPrevElmnt.style.backgroundImage =`url(${img})`;
+          //const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
+          screenPrevElmnt.style.backgroundImage =`url(${selection})`;
         }else{
-          const img = await this.getDesktopScreenShot(Constants.EMPTY_STRING, selection);
-          screenPrevElmnt.style.backgroundImage =`url(${img})`;
+          // const img = await this.getDesktopScreenShot(Constants.EMPTY_STRING, selection);
+          // screenPrevElmnt.style.backgroundImage =`url(${img})`;
+          screenPrevElmnt.style.backgroundColor = selection;
         }
       }
     }
