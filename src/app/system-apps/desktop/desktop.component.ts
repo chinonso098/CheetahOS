@@ -1870,6 +1870,17 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async onEmptyRecyleBin():Promise<void>{
+    const count = await this._fileService.countFolderItems(Constants.RECYCLE_BIN_PATH);
+    if(count === 1)
+      await this.onEmptyRecyleBinHelper();
+    else if (count > 1){
+      const title = 'Delete Multiple Items';
+      const msg = `Are you sure you want to permanently delete these ${count} items?`;
+      this._userNotificationService.showWarningNotification(msg, title);
+    }
+  }
+
+  async onEmptyRecyleBinHelper():Promise<void>{
     let result = false;
     const isRecycleBin = true;
     const isFile = false;

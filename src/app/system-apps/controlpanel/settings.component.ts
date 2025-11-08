@@ -509,7 +509,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
             this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
           }
 
-          await CommonFunctions.sleep(delay);
+          //await CommonFunctions.sleep(delay);
           //const desktopBkgrndImg = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);  
           this.setStyle(screenPrevElmnt, styleClasses, activeClass);
           screenPrevElmnt.style.backgroundImage = `url(${selection})`;

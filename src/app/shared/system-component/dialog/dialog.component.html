@@ -5,7 +5,7 @@
 </ng-container>
 
 <ng-template #errorNotice>
-    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="displayMgs" [processAppName]="ERROR_DIALOG" [isDialog]="true">
+    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="ERROR_DIALOG" [isDialog]="true">
         <div ngDraggable class="error-dialog-main-container">
             <div class="error-dialog-mid-container">
                 <div class="error-dialog-mid-section1">
@@ -15,11 +15,13 @@
                         </figure>
                     </div>
                     <div class="error-dialog-mid-txt1">
-                        <span class="error-dialog-mid-section1-msg">{{displayMgs}}</span>
+                        <span class="error-dialog-mid-section1-msg">{{dialogMgs}}</span>
                     </div>
                 </div>
                 <div class="error-dialog-mid-section2">
-                    <span class="error-dialog-mid-section2-msg">{{displayAdditionalMsg}}</span>
+                    @if(showExtraErroMsg){
+                        <span class="error-dialog-mid-section2-msg">{{displayAdditionalMsg}}</span>
+                    }
                 </div>
             </div>
             <div class="error-dialog-tail-container">
@@ -44,7 +46,7 @@
                         </figure>
                     </div>
                     <div class="info-dialog-mid-txt1">
-                        <span class="info-dialog-mid-section1-msg">{{displayMgs}}</span>
+                        <span class="info-dialog-mid-section1-msg">{{dialogMgs}}</span>
                     </div>
                 </div>
             </div>
@@ -62,7 +64,7 @@
 
 
 <ng-template #warningNotice>
-    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="'Shortcut'" [processAppName]="WARNING_DIALOG" [isDialog]="true">
+    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="true">
         <div  class="warning-dialog-main-container"> 
             <div class="warning-dialog-mid-container" tabindex="0">
                 <div class="warning-dialog-mid-section1">
@@ -72,7 +74,7 @@
                         </figure>
                     </div>
                     <div class="warning-dialog-mid-txt1">
-                        <p class="warning-dialog-mid-section1-msg">{{displayMgs}}</p>
+                        <p class="warning-dialog-mid-section1-msg">{{dialogMgs}}</p>
                     </div>
                 </div>
             </div>
@@ -101,7 +103,7 @@
                 <h1 class="shutdown-restart-dialog-h1">
                     <figure class="shutdown-restart-dialog-figure">
                         <!-- <img class="shutdown-restart-dialog-img" [src]="this.icon" [alt]="this.name"/> -->
-                        <figcaption class="shutdown-restart-dialog-figcaption"> {{displayMgs}} </figcaption>
+                        <figcaption class="shutdown-restart-dialog-figcaption"> {{dialogMgs}} </figcaption>
                     </figure>
                 </h1>
             </div>

@@ -172,8 +172,9 @@ export class ProcessHandlerService implements BaseService{
             }
         }
 
-        msg = `Osdrive:/App Directory/${file.getOpensWith}`;
-        this._userNotificationService.showErrorNotification(msg);
+        msg = `C:/App Directory/${file.getOpensWith}`;
+        const title = msg;
+        this._userNotificationService.showErrorNotification(msg, title);
         return;
     }
 

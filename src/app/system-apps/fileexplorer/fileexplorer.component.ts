@@ -2983,6 +2983,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async createShortCut(): Promise<void>{
+    const title = 'Shorcut'
     const selectedFile = this.selectedFile;
     const shortCut:FileInfo = new FileInfo();
     //const directory = '/';//(inputDir)? inputDir : this.directory;
@@ -2994,7 +2995,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 Do you want the shortcut to be placed on the desktop instead?`;
 
       this._menuService.setStageData(fileContent);
-      this._userNotificationService.showWarningNotification(msg);
+      this._userNotificationService.showWarningNotification(msg, title);
       return;
     }
 

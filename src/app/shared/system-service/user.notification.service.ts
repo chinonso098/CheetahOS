@@ -20,6 +20,7 @@ export class UserNotificationService implements BaseService{
     private _runningProcessService!:RunningProcessService;
     private _processIdService!:ProcessIDService;
     private _componentReferenceService:ComponentReferenceService;
+    private dialogResponse = false;
 
     name = 'usr_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -40,7 +41,7 @@ export class UserNotificationService implements BaseService{
     }
 
 
-    private showDialogMsgBox(dialogMsgType:string, msg:string):void{
+    private showDialogMsgBox(dialogMsgType:string, msg:string, title:string=Constants.EMPTY_STRING):void{
         const componentRef = this._componentReferenceService.createComponent(DialogComponent);
 
         if(dialogMsgType === UserNotificationType.Error ||
@@ -50,6 +51,7 @@ export class UserNotificationService implements BaseService{
             dialogMsgType === UserNotificationType.FileTransfer
         ){
           componentRef.setInput('inputMsg', msg);
+          componentRef.setInput('inputTitle', title);
           componentRef.setInput('notificationType', dialogMsgType);
         }
     }
@@ -58,16 +60,16 @@ export class UserNotificationService implements BaseService{
         this._componentReferenceService.removeComponent(pId);
     }
 
-    showErrorNotification(msg:string){
-       this.showDialogMsgBox(UserNotificationType.Error, msg);
+    showErrorNotification(msg:string, title:string){
+       this.showDialogMsgBox(UserNotificationType.Error, msg, title);
     }
 
     showInfoNotification(msg:string){
         this.showDialogMsgBox(UserNotificationType.Info, msg);
     }
 
-    showWarningNotification(msg:string){
-        this.showDialogMsgBox(UserNotificationType.Warning, msg);
+    showWarningNotification(msg:string, title:string){
+        this.showDialogMsgBox(UserNotificationType.Warning, msg, title);
     }
 
     showPowerOnOffNotification(msg:string){
@@ -76,6 +78,16 @@ export class UserNotificationService implements BaseService{
 
     showFileTransferNotification(msg:string){
         this.showDialogMsgBox(UserNotificationType.FileTransfer, msg);
+    }
+
+    setDialogResponse(response:boolean):void{
+        this.dialogResponse = response;
+    }
+
+    getDialogResponse():boolean{
+        const tmp = this.dialogResponse;
+        this.dialogResponse = false;
+        return tmp;
     }
 
     private getProcessDetail():Process{

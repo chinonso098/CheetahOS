@@ -743,7 +743,8 @@ export class FileService implements BaseService{
         const directoryExists = await this.exists(destPath);
         if(directoryExists){
             const msg = `Folder: ${newName}, already exists`;
-            this._userNotificationService.showErrorNotification(msg);
+            const title = 'Folder Matching Name Present';
+            this._userNotificationService.showErrorNotification(msg, title);
             return false;
         }
 

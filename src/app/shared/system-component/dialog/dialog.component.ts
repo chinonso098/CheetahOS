@@ -27,6 +27,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit {
 
   @Input() inputMsg = Constants.EMPTY_STRING;
+  @Input() inputTitle = Constants.EMPTY_STRING;
   @Input() notificationType = Constants.EMPTY_STRING;
 
   private _userNotificationServices:UserNotificationService;
@@ -61,6 +62,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   ];
 
   reOpenWindows = true;
+  showExtraErroMsg = false;
   selectedOption = 'Shut down';
   pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
 
@@ -80,8 +82,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
   transferPercentageText = `${this.transferPercentage}% complete`;
   fileName = 'wet ass pussy.txt';
 
+  dialogTitle = Constants.EMPTY_STRING;
   type = ComponentType.System;
-  displayMgs = Constants.EMPTY_STRING;
+  dialogMgs = Constants.EMPTY_STRING;
   displayAdditionalMsg ='Application not found';
   name = Constants.EMPTY_STRING;
   hasWindow = false;
@@ -107,11 +110,17 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit 
 
   ngOnChanges(changes: SimpleChanges):void{
     console.log('DIALOG onCHANGES:',changes);
-    this.displayMgs = this.inputMsg;
+    this.dialogMgs = this.inputMsg;
+    this.dialogTitle = this.inputTitle;
 
     this.notificationOption = this.notificationType;
     if(this.notificationType === UserNotificationType.PowerOnOff){
       this.setPwrDialogPid(this.UPDATE);
+    }
+
+    if(this.notificationType === UserNotificationType.Error){
+      if(this.dialogMgs === this.dialogTitle)
+          this.showExtraErroMsg = true;
     }
   }
 
