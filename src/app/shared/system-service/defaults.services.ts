@@ -72,10 +72,12 @@ export class DefaultService implements BaseService{
         return Constants.EMPTY_STRING;
     }
 
-    setDefultData(key:string, val:string):void{
+    setDefultData(key:string, val:string, raiseEvent:boolean = true):void{
         this._defaultSettingsMap.set(key, val);
         this._sessionManagmentService.addMapBasedSession(this._defaultSettingServiceKey, this._defaultSettingsMap);
-        this.defaultSettingsChangeNotify.next(key);
+        
+        if(raiseEvent)
+            this.defaultSettingsChangeNotify.next(key);
     }
 
     private retrievePastSessionData(key:string):void{

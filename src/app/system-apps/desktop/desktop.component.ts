@@ -941,6 +941,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   loadOtherVantaBackgrounds(i:number):void{
     this.removeOldCanvas();
+    const raiseEvent = false;
     this._scriptService.loadScript(this.vantaBackgroundName[i], this.vantaBackGroundPath[i]).then(() =>{
 
       this.buildVantaEffect(i);
@@ -951,18 +952,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
 
       const defaultDesktopBackgrounValue = `${this.desktopBackgroundType}:${this.vantaBackgroundName[i]}`;
-      this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+      this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue, raiseEvent);
     })
   }
 
   loadOtherPictureBackgrounds(i:number):void{
     const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
+    const raiseEvent = false;
     if(desktopElmnt){
       this.desktopBackgroundValue = this.DESKTOP_PICTURES[i];
       desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
       
       const defaultDesktopBackgrounValue = `${this.desktopBackgroundType}:${this.desktopBackgroundValue}`;
-      this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+      this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue, raiseEvent);
     }
   }
 
@@ -2096,10 +2098,10 @@ OpensWith=${file.getOpensWith}
     }
 
     if(this.desktopBackgroundType === Constants.BACKGROUND_DYNAMIC){
-      const lockScreenElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
-      if(lockScreenElmnt){
+      const desktopScreenElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
+      if(desktopScreenElmnt){
         activeClass = styleClasses[2];
-        this.setStyle(lockScreenElmnt, styleClasses, activeClass);
+        this.setStyle(desktopScreenElmnt, styleClasses, activeClass);
 
         const bkgrndIdx = this.vantaBackgroundName.findIndex(x => x === this.desktopBackgroundValue);
         this.currentDesktopNum = bkgrndIdx;
