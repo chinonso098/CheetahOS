@@ -545,6 +545,11 @@ span {
   color: #000; /* Text color when active or focused */
 }
 
+.btn.btn-primary.active:hover {
+  border: 1px solid #0056b3; /* Border color for the primary button */
+  background-color: #84b3e4; /* Primary button background color */
+}
+
 /* Active (clicked) state for the primary button */
 .btn.btn-primary.head:active, .btn.btn-primary.head:focus {
   background-color: #0056b3; /* Background color when active or focused */
