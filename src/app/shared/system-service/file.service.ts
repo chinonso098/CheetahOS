@@ -197,15 +197,15 @@ export class FileService implements BaseService{
     public async copyAsync(srcPath:string, destPath:string, isFile?:boolean):Promise<boolean>{
         const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
 
-        const count = await this.getFullCountOfFolderItemsInt(srcPath);
-        const fileCount = count.files;
-
         const firstMsg = 'Estimating';
         const title = 'Copying';
         const dialogPId = this.initFileTransfer(firstMsg, title);
         this.sendFirstUpdate(dialogPId);
 
-        await CommonFunctions.sleep(this.generateBusyNumber(1000, 5000)); // sleep 1 - 5 seconds
+        const count = await this.getFullCountOfFolderItemsInt(srcPath);
+        const fileCount = count.files;
+
+        //await CommonFunctions.sleep(this.generateBusyNumber(1000, 5000)); // sleep 1 - 5 seconds
         const result = isDirectory
             ? await this.copyFolderHandlerAsync(Constants.EMPTY_STRING, srcPath, destPath, fileCount, dialogPId, 0)
             : await this.copyFileAsync(srcPath, destPath);
@@ -256,7 +256,7 @@ export class FileService implements BaseService{
                     const result = await this.copyFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
                     if(result){
                         //console.info(`file:${srcPath}/${directoryEntry} successfully copied to destination:${destPath}/${folderName}`);
-                        await CommonFunctions.sleep(this.generateBusyNumber(250, 750)); // sleep 0.25 - .75 seconds
+                        //await CommonFunctions.sleep(this.generateBusyNumber(250, 750)); // sleep 0.25 - .75 seconds
                         numOfCopiedFiles++;
                         const infoUpdate:FileSystemUpdateInfo = {
                             srcPath:srcPath, 

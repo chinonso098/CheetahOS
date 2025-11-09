@@ -79,7 +79,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   readonly UPDATE = 'Update';
   readonly UPDATE_0 = 'Update0';
 
-  fakeEsitmateIntervalId!: NodeJS.Timeout;
+  showEsitmateIntervalId!: NodeJS.Timeout;
   isInit = true;
   from = Constants.BLANK_SPACE;
   to = Constants.BLANK_SPACE;
@@ -245,23 +245,23 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
     if(isFirstData){
       this.transferPercentageText = this.dialogMgs;
-      this.fakeEstimating();
+      this.showEstimating();
     }else{
       this.isInit = false;
-      if(this.fakeEsitmateIntervalId)
-        clearInterval(this.fakeEsitmateIntervalId);
+      if(this.showEsitmateIntervalId)
+        clearInterval(this.showEsitmateIntervalId);
 
       this.setTransferDialogFields(updateInfo);
     }
   }
 
-  fakeEstimating():void{
-    const delay = 1000; //1 sec
+  showEstimating():void{
+    const delay = 250; //.25 sec
     const maxAppendNum = 5;
     let counter = -1;
     this.transferPercentageText = this.dialogMgs;
 
-    this.fakeEsitmateIntervalId = setInterval(() => {
+    this.showEsitmateIntervalId = setInterval(() => {
       while(counter < maxAppendNum){
         const curString = this.transferPercentageText;
         if(counter >= 0){
