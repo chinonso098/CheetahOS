@@ -318,7 +318,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(p !== this.name)
         this.hideIconContextMenu();
     });
-    this._creatShortCutOnDesktopSub = this._menuService.createDesktopShortcut.subscribe(()=>{this.createShortCutOnDesktop()});
+
   }
 
   ngOnInit():void{
@@ -2979,35 +2979,31 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           {icon1:`${Constants.IMAGE_BASE_PATH}vs_code.png`, icon2:Constants.EMPTY_STRING, label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> Constants.EMPTY_STRING, emptyline:true},
           {icon1:Constants.EMPTY_STRING,  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> Constants.EMPTY_STRING, action1: this.shiftNewSubMenu.bind(this), emptyline:true},
           {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label:'Properties', nest:[], action: () => console.log('Properties'), action1: ()=> Constants.EMPTY_STRING, emptyline:false}
-      ]
+    ]
   }
 
   async createShortCut(): Promise<void>{
-    const title = 'Shorcut'
+    const title = 'Shortcut';
     const selectedFile = this.selectedFile;
     const shortCut:FileInfo = new FileInfo();
-    //const directory = '/';//(inputDir)? inputDir : this.directory;
     const directory = this.directory;
-    const fileContent = this.createShortCutHelper(selectedFile);
+    const fileContent = this.generateShortcuContent(selectedFile);
+    shortCut.setContentPath = fileContent;
 
     if(directory === Constants.ROOT){
       const msg = `Cheetah can't create a shortcut here.
 Do you want the shortcut to be placed on the desktop instead?`;
 
-      this._menuService.setStageData(fileContent);
-      this._userNotificationService.showWarningNotification(msg, title);
-      return;
+      const confirm = await this._userNotificationService.showWarningNotification(msg, title);
+      const createOnDesktop = true;
+      if(confirm)
+        await this.createShortCutHelper(shortCut, selectedFile.getFileName, createOnDesktop);
     }
-
-    shortCut.setContentPath = fileContent
-    shortCut.setFileName= `${selectedFile.getFileName} - ${Constants.SHORTCUT}${Constants.URL}`;
-    const result = await this._fileService.writeFileAsync(this.directory, shortCut);
-    if(result){
-      await this.loadFiles();
-    }
+    else
+      await this.createShortCutHelper(shortCut, selectedFile.getFileName);
   }
 
-  createShortCutHelper(file:FileInfo):string{
+  generateShortcuContent(file:FileInfo):string{
     let fileContent = Constants.EMPTY_STRING;
     const shortCut = ` - ${Constants.SHORTCUT}`;
 
@@ -3021,17 +3017,21 @@ OpensWith=${file.getOpensWith}
     return fileContent;
   }
 
-  async createShortCutOnDesktop(): Promise<void>{
-    const shortCut:FileInfo = new FileInfo();
-    const fileContent = this._menuService.getStageData();
-    const dsktpPath = Constants.DESKTOP_PATH;
-
-    shortCut.setContentPath = fileContent
-    shortCut.setFileName= `${this.selectedFile.getFileName} - ${Constants.SHORTCUT}${Constants.URL}`;
-    const result = await this._fileService.writeFileAsync(dsktpPath, shortCut);
-    if(result){
-      this._fileService.addEventOriginator(Constants.DESKTOP);
-      this._fileService.dirFilesUpdateNotify.next();
+  async createShortCutHelper(shortCut:FileInfo, fileName:string, createOnDesktop:boolean = false):Promise<void>{
+    let result = false;
+    shortCut.setFileName= `${fileName} - ${Constants.SHORTCUT}${Constants.URL}`;
+  
+    if(createOnDesktop){
+      result = await this._fileService.writeFileAsync(Constants.DESKTOP_PATH, shortCut);
+      if(result){
+        this._fileService.addEventOriginator(Constants.DESKTOP);
+        this._fileService.dirFilesUpdateNotify.next();
+      }
+    }
+    else{ 
+      result = await this._fileService.writeFileAsync(this.directory, shortCut);
+      if(result)
+        await this.loadFiles();
     }
   }
 

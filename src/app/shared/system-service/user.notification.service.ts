@@ -44,7 +44,7 @@ export class UserNotificationService implements BaseService{
 
         if(dialogMsgType === UserNotificationType.Error ||
             dialogMsgType === UserNotificationType.Info ||
-            dialogMsgType === UserNotificationType.Warning ||
+            //dialogMsgType === UserNotificationType.Warning ||
             dialogMsgType === UserNotificationType.PowerOnOff ||
             dialogMsgType === UserNotificationType.FileTransfer
         ){

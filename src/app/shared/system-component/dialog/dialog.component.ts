@@ -3,7 +3,6 @@ import {Component, Input, OnChanges, SimpleChanges, AfterViewInit, EventEmitter,
 import { ComponentType } from 'src/app/system-files/system.types';
 import { UserNotificationType } from 'src/app/system-files/common.enums';
 
-import { MenuService } from '../../system-service/menu.services';
 import { WindowService } from '../../system-service/window.service';
 import { ProcessIDService } from '../../system-service/process.id.service';
 import { ProcessHandlerService } from '../../system-service/process.handler.service';
@@ -27,6 +26,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   @Input() inputMsg = Constants.EMPTY_STRING;
   @Input() inputTitle = Constants.EMPTY_STRING;
+  @Input() inputPId = 0;
   @Input() notificationType = Constants.EMPTY_STRING;
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
@@ -34,12 +34,10 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   private _userNotificationServices:UserNotificationService;
   private _windowService!:WindowService;
   private _sessionManagementService: SessionManagmentService;
-  private _menuService!:MenuService;
   private _processIdService!:ProcessIDService;
   private _systemNotificationService!:SystemNotificationService;
   private _processHandlerService!:ProcessHandlerService;
   private _audioService!:AudioService;
-
 
   notificationOption = Constants.EMPTY_STRING;
   errorNotification = UserNotificationType.Error;
@@ -94,19 +92,17 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   processId = 0;
   displayName = Constants.EMPTY_STRING;
 
-  constructor(notificationServices:UserNotificationService, menuService:MenuService, windowService:WindowService,
-              systemNotificationServices:SystemNotificationService, sessionManagementService:SessionManagmentService, processIdService:ProcessIDService,
-              processHandlerService:ProcessHandlerService, audioService:AudioService){
+  constructor(notificationServices:UserNotificationService,  windowService:WindowService, systemNotificationServices:SystemNotificationService, 
+              sessionManagementService:SessionManagmentService, processIdService:ProcessIDService, processHandlerService:ProcessHandlerService,
+              audioService:AudioService){
+
     this._userNotificationServices = notificationServices;
-    this._menuService = menuService;
     this._sessionManagementService = sessionManagementService;
     this._processIdService = processIdService;
     this._windowService = windowService;
     this._systemNotificationService = systemNotificationServices;
     this._processHandlerService = processHandlerService;
     this._audioService = audioService;
-
-    this.processId = this._processIdService.getNewProcessId();
   }
 
   ngOnChanges(changes: SimpleChanges):void{
@@ -115,6 +111,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this.dialogTitle = this.inputTitle;
 
     this.notificationOption = this.notificationType;
+    this.setProcessId();
+
     if(this.notificationType === UserNotificationType.PowerOnOff){
       this.setPwrDialogPid(this.UPDATE);
     }
@@ -132,11 +130,17 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
 
   ngOnDestroy(): void {
-    console.log('Dialog was destroyed')
+    //console.log('Dialog was destroyed')
+  }
+
+  setProcessId():void{
+    if(this.notificationType === UserNotificationType.FileTransfer){
+      this.processId = this.inputPId;
+    }else
+      this.processId = this._processIdService.getNewProcessId();
   }
 
   onYesDialogBox():void{
-    //this._menuService.createDesktopShortcut.next();
     this.confirm.emit();
     this._userNotificationServices.closeDialogMsgBox(this.processId);
   }

@@ -33,8 +33,6 @@ export class MenuService implements BaseService{
     hideContextMenus: Subject<string> = new Subject<string>();
     addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();
     showPropertiesView: Subject<FileInfo> = new Subject<FileInfo>();
-    
-    createDesktopShortcut: Subject<void> = new Subject<void>();
 
     hideShowTaskBar: Subject<void> = new Subject<void>();
     UnMergeTaskBarIcon: Subject<void> = new Subject<void>();
@@ -63,7 +61,6 @@ export class MenuService implements BaseService{
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
     description = ' ';
-
 
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){
         this._processIdService = processIDService;
