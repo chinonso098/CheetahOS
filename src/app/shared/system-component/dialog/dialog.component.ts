@@ -43,6 +43,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   private _audioService!:AudioService;
 
   private _updateInformationSub!:Subscription;
+  private _autoCloseDialogSub!:Subscription;
 
   notificationOption = Constants.EMPTY_STRING;
   errorNotification = UserNotificationType.Error;
@@ -82,7 +83,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   isInit = true;
   from = Constants.BLANK_SPACE;
   to = Constants.BLANK_SPACE;
-  srcToDest = Constants.BLANK_SPACE;
+  srcToDestPart1 = Constants.BLANK_SPACE;
+  srcToDestPart2 = Constants.BLANK_SPACE;
   transferPercentage = 0;
   transferProgress = 0;
   transferPercentageText = Constants.BLANK_SPACE;
@@ -121,6 +123,11 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       if(p.appName === this.FILE_TRANSFER_DIALOG_APP_NAME && p.pId === this.processId)
         this.updateFileTransferDialog(p);
     });
+
+    this._autoCloseDialogSub = this._systemNotificationService.autoCloseDialogNotify.subscribe((p) =>{
+      if(p === this.processId)
+        this._userNotificationServices.closeDialogMsgBox(this.processId);
+    });
   }
 
   ngOnChanges(changes: SimpleChanges):void{
@@ -155,6 +162,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   ngOnDestroy(): void {
     //console.log('Dialog was destroyed')
     this._updateInformationSub?.unsubscribe();
+    this._autoCloseDialogSub?.unsubscribe();
   }
 
   onYesDialogBox():void{
@@ -292,16 +300,15 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
   
     // Only set `from` and `to` once if they’re blank initially
-    if (this.from === Constants.BLANK_SPACE) {
-      this.from = `<strong>${basename(srcPath)}</strong>`;
-    }
-
-    if (this.to === Constants.BLANK_SPACE) {
-      this.to = `<strong>${basename(destPath)}</strong>`;
-    }
+    if (this.from === Constants.BLANK_SPACE) 
+      this.from = basename(srcPath)
+    
+    if (this.to === Constants.BLANK_SPACE) 
+      this.to = basename(destPath)
+    
     // Compose status message
-    this.srcToDest = `${this.transferAction} ${copiedFiles} items from &nbsp ${this.from} &nbsp to &nbsp ${this.to}`;
-
+    this.srcToDestPart1 = `${this.transferAction} ${copiedFiles} items from`;
+    this.srcToDestPart2 ='to';
   
     // Compute transfer progress safely
     const value = this.getTransferPercentage(totalFiles, copiedFiles);
@@ -347,7 +354,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       return 0;
     }
   
-    const percentage = (curVal / total) * 100;
+    const percentage = Math.round((curVal / total) * 100);
     return Math.min(Math.max(percentage, 0), 100); // Clamp between 0–100
   }
   

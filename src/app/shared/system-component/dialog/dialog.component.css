@@ -378,7 +378,7 @@
     padding: 2px 0px;
 }
 
-.file-transfer-dialog-from-to p {
+/* .file-transfer-dialog-from-to p {
     color: #000;
     display: flex;
     align-items: center;
@@ -390,22 +390,37 @@
     text-overflow: ellipsis;
     margin: 0;
     padding: 0;
+} */
+
+.file-transfer-dialog-from-to {
+    display: flex ;
+    align-items: center;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+    padding: 0;
 }
 
-/* Windows Explorer blue */
-/* .folder-name {
+.file-transfer-p1{
+    color: #000;
+    font-weight: 400;
+}
+
+.file-transfer-p2{
     color: #0f4c92; 
     font-weight: 500;
-} */
+}
 
 /* Destination folder (like "7589") */
 /* slightly brighter blue */
-/* .folder-dest {
+.file-transfer-p3 {
     color: #3366cc; 
     font-weight: 500;
 }
-   */
-
+  
 .file-transfer-dialog-progress-text{
     padding-bottom: 6px;
 }

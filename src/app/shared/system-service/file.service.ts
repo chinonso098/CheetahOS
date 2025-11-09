@@ -27,6 +27,7 @@ import { SystemNotificationService } from "./system.notification.service";
 import { OpensWith } from "src/app/system-files/common.interfaces";
 import JSZip from "jszip";
 import { CommonFunctions } from "src/app/system-files/common.functions";
+import { FileSystemUpdateInfo } from "src/app/system-files/file.system.update.information";
 
 @Injectable({
     providedIn: 'root'
@@ -201,13 +202,10 @@ export class FileService implements BaseService{
 
         const firstMsg = 'Estimating';
         const title = 'Copying';
-        this._userNotificationService.showFileTransferNotification(firstMsg, title);
-        const dialogPId = this._userNotificationService.getDialogPId();
-        //console.log('copyAsync dialogPid:',dialogPId);
-        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`firstData:0`]}
-        this._systemNotificationService.updateInformationNotify.next(firstUpdate);
+        const dialogPId = this.initFileTransfer(firstMsg, title);
+        this.sendFirstUpdate(dialogPId);
 
-        await CommonFunctions.sleep(this.generateBusyNumber(1000, 6000)); // sleep 1 - 6 seconds
+        await CommonFunctions.sleep(this.generateBusyNumber(1000, 5000)); // sleep 1 - 5 seconds
         const result = isDirectory
             ? await this.copyFolderHandlerAsync(Constants.EMPTY_STRING, srcPath, destPath, fileCount, dialogPId, 0)
             : await this.copyFileAsync(srcPath, destPath);
@@ -258,16 +256,16 @@ export class FileService implements BaseService{
                     const result = await this.copyFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
                     if(result){
                         //console.info(`file:${srcPath}/${directoryEntry} successfully copied to destination:${destPath}/${folderName}`);
-                        await CommonFunctions.sleep(this.generateBusyNumber(500, 1000)); // sleep 0.5 - 1 seconds
+                        await CommonFunctions.sleep(this.generateBusyNumber(250, 750)); // sleep 0.25 - .75 seconds
                         numOfCopiedFiles++;
-                        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, 
-                            info:[`srcPath:${srcPath}`,
-                                  `destPath:${destPath}`,
-                                  `totalNumberOfFiles:${fileCount}`, 
-                                  `numberOfFilesCopied:${numOfCopiedFiles}`,
-                                  `fileName:${directoryEntry}`
-                            ]}
-                        this._systemNotificationService.updateInformationNotify.next(firstUpdate);
+                        const infoUpdate:FileSystemUpdateInfo = {
+                            srcPath:srcPath, 
+                            destPath:destPath, 
+                            totalNumberOfFiles:fileCount,
+                            numberOfFilesCopied:numOfCopiedFiles, 
+                            fileName:directoryEntry
+                        }
+                        this.sendFileTransferInformationUpdate(dialogPId, infoUpdate);
                     }else{
                         console.error(`file:${srcPath}/${directoryEntry} failed to copy to destination:${destPath}/${folderName}`)
                         return false
@@ -797,6 +795,14 @@ export class FileService implements BaseService{
             let result = false;
 
             folderToProcessingQueue.push(srcPath);
+
+            const count = await this.getFullCountOfFolderItemsInt(srcPath);
+            const fileCount = count.files;
+    
+            const firstMsg = 'Estimating';
+            const title = 'Moving';
+            const dialogPId = this.initFileTransfer(firstMsg, title);
+            this.sendFirstUpdate(dialogPId);
 
             //check if destPath Exists
             const exists = await this.exists(destPath);
@@ -1539,7 +1545,31 @@ OpensWith=${shortCutData.opensWith}
     }
 
     private generateBusyNumber(min:number, max:number): number{
-        return Math.floor(Math.random() * (max - min + 1)) + min; 
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    private initFileTransfer(firstMsg:string, title:string):number{
+        this._userNotificationService.showFileTransferNotification(firstMsg, title);
+        return this._userNotificationService.getDialogPId();
+    }
+
+    private sendFirstUpdate(dialogPId:number,):void{
+        //console.log('copyAsync dialogPid:',dialogPId);
+        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`firstData:0`]}
+        this._systemNotificationService.updateInformationNotify.next(firstUpdate);
+    }
+
+    private sendFileTransferInformationUpdate(dialogPId:number, update:FileSystemUpdateInfo):void{
+        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, 
+            info:[`srcPath:${update.srcPath}`,
+                  `destPath:${update.destPath}`,
+                  `totalNumberOfFiles:${update.totalNumberOfFiles}`, 
+                  `numberOfFilesCopied:${update.numberOfFilesCopied}`,
+                  `fileName:${update.fileName}`
+            ]}
+        this._systemNotificationService.updateInformationNotify.next(firstUpdate);
     }
 
     // checkIfFileDropEventTriggered():boolean{

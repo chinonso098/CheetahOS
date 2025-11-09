@@ -171,7 +171,13 @@
         <div class="file-transfer-dialog-main-container" tabindex="0">
             <div class="file-transfer-dialog-content-container" > 
                 <div class="file-transfer-dialog-from-to">
-                    <p [innerHTML]="srcToDest"></p>
+                    <p class="file-transfer-p1">{{srcToDestPart1}}</p>
+                    &nbsp;
+                    <p class="file-transfer-p2">{{from}}</p>
+                    &nbsp;
+                    <p class="file-transfer-p1">{{srcToDestPart2}}</p>
+                    &nbsp;
+                    <p class="file-transfer-p3">{{to}}</p>
                 </div>
 
                 <div class="file-transfer-dialog-progress-text">
