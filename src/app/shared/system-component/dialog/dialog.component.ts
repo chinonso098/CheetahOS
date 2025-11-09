@@ -10,10 +10,13 @@ import { UserNotificationService } from '../../system-service/user.notification.
 import { SessionManagmentService } from '../../system-service/session.management.service';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
 
-import { Constants } from 'src/app/system-files/constants';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { AudioService } from '../../system-service/audio.services';
+
+import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { Subscription } from 'rxjs';
+import { InformationUpdate } from 'src/app/system-files/common.interfaces';
 
 @Component({
   selector: 'cos-dialog',
@@ -37,6 +40,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   private _systemNotificationService!:SystemNotificationService;
   private _processHandlerService!:ProcessHandlerService;
   private _audioService!:AudioService;
+
+   private _updateInformationSub!:Subscription;
 
   notificationOption = Constants.EMPTY_STRING;
   errorNotification = UserNotificationType.Error;
@@ -72,13 +77,24 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   readonly UPDATE = 'Update';
   readonly UPDATE_0 = 'Update0';
 
-  from = '<strong>Downloads</strong>';
-  to = '<b>Desktop</b>';
-  srcToDest = `from &nbsp ${this.from} &nbsp (C:/Downloads) to &nbsp ${this.to} &nbsp (C:/Users/Desktop)`;
-  transferPercentage = 35;
-  transferProgress = 35;
-  transferPercentageText = `${this.transferPercentage}% complete`;
-  fileName = 'wet ass pussy.txt';
+  // from = '<strong>Downloads</strong>';
+  // to = '<b>Desktop</b>';
+  // srcToDest = `from &nbsp ${this.from} &nbsp (C:/Downloads) to &nbsp ${this.to} &nbsp (C:/Users/Desktop)`;
+  // transferPercentage = 35;
+  // transferProgress = 35;
+  // transferPercentageText = `${this.transferPercentage}% complete`;
+  // fileName = 'wet ass pussy.txt';
+
+  from = Constants.EMPTY_STRING;
+  to = Constants.EMPTY_STRING;
+  srcToDest = Constants.EMPTY_STRING;
+  transferPercentage = 0;
+  transferProgress = 0;
+  private itemOrSizeCount = 0
+  transferPercentageText = Constants.EMPTY_STRING;
+  fileName = Constants.EMPTY_STRING;
+
+  readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
 
   dialogTitle = Constants.EMPTY_STRING;
   type = ComponentType.System;
@@ -104,6 +120,12 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this._audioService = audioService;
 
     this.processId = this._processIdService.getNewProcessId();
+
+
+    this._updateInformationSub = this._systemNotificationService.updateInformationNotify.subscribe((p) =>{
+      if(p.appName === this.FILE_TRANSFER_DIALOG_APP_NAME && p.pId === this.processId)
+        this.updateFileTransferDialog(p);
+    });
   }
 
   ngOnChanges(changes: SimpleChanges):void{
@@ -121,17 +143,22 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       if(this.dialogMgs === this.dialogTitle)
         this.showExtraErroMsg = true;
     }
+
+    if(this.notificationType === UserNotificationType.FileTransfer){
+      this.transferPercentageText = this.dialogMgs;
+    }
   }
 
   async ngAfterViewInit(): Promise<void> {
     const delay = 200; //200ms
-    
+
     await CommonFunctions.sleep(delay);
     this.playDialogNotifcationSound();
   }
 
   ngOnDestroy(): void {
     //console.log('Dialog was destroyed')
+    this._updateInformationSub?.unsubscribe();
   }
 
   onYesDialogBox():void{
@@ -203,6 +230,25 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
     if(this.notificationOption === this.warnNotification)
       await this._audioService.play(this.cheetahBackGroundNotifyAudio);
+  }
+
+  updateFileTransferDialog(update:InformationUpdate):void{
+    const updateInfo = update.info;
+    const firstData = 'firstData';
+    const firstEntryName = updateInfo[0].split(Constants.COLON)[0];
+    const firstEntryValue = Number(updateInfo[0].split(Constants.COLON)[1]);
+    const isFirstData  = (firstEntryName === firstData);
+
+    if(isFirstData){
+      // this.from = Constants.EMPTY_STRING;
+      // this.to = Constants.EMPTY_STRING;
+      // this.srcToDest = Constants.EMPTY_STRING;
+      // this.transferPercentage = 35;
+      // this.transferProgress = 35;
+      this.transferPercentageText = this.dialogMgs;
+    }else{
+
+    }
   }
 
   private generateNotificationId(): number{

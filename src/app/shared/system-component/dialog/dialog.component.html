@@ -166,7 +166,7 @@
 </ng-template>
 
 <ng-template #fileTransfer>
-    <cos-window [runningProcessID]="processId" [processAppIcon]="fileTransferIcon" [processAppName]="transferPercentageText">
+    <cos-window [runningProcessID]="processId" [processAppIcon]="fileTransferIcon" [processAppName]="transferPercentageText" [isMaximizable]="isMaximizable">
         <div class="file-transfer-dialog-main-container" tabindex="0">
             <div class="file-transfer-dialog-content-container" > 
                 <div class="file-transfer-dialog-from-to">

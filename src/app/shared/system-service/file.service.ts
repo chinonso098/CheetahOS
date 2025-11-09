@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { FileInfo } from "src/app/system-files/file.info";
-import { ShortCut } from "src/app/system-files/common.interfaces";
+import { InformationUpdate, ShortCut } from "src/app/system-files/common.interfaces";
 import {extname, basename, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FSModule } from "src/osdrive/Cheetah/System/BrowserFS/node/core/FS";
@@ -17,14 +17,17 @@ import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 
 import { BaseService } from "./base.service.interface";
-import { UserNotificationService } from "./user.notification.service";
 import { ProcessIDService } from "./process.id.service";
-import { RunningProcessService } from "./running.process.service";
-import { SessionManagmentService } from "./session.management.service";
 import { FileIndexerService } from "./file.indexer.services";
+import { RunningProcessService } from "./running.process.service";
+import { UserNotificationService } from "./user.notification.service";
+import { SessionManagmentService } from "./session.management.service";
+import { SystemNotificationService } from "./system.notification.service";
+
 import { OpensWith } from "src/app/system-files/common.interfaces";
 import JSZip from "jszip";
 import { CommonFunctions } from "src/app/system-files/common.functions";
+
 @Injectable({
     providedIn: 'root'
 })
@@ -41,6 +44,7 @@ export class FileService implements BaseService{
     private _runningProcessService!:RunningProcessService;
     private _processIdService!:ProcessIDService;
     private _userNotificationService!:UserNotificationService
+    private _systemNotificationService:SystemNotificationService;
     private _sessionManagmentService!:SessionManagmentService;
     private _fileIndexerService!:FileIndexerService;
 
@@ -56,6 +60,7 @@ export class FileService implements BaseService{
 
     readonly fileServiceRestoreKey = Constants.FILE_SVC_RESTORE_KEY;
     readonly fileServiceIterateKey = Constants.FILE_SVC_FILE_ITERATE_KEY;
+    readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
 
     // SECONDS_DELAY = 200;
 
@@ -70,7 +75,7 @@ export class FileService implements BaseService{
 
     
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService,
-                sessionManagmentService:SessionManagmentService){ 
+                sessionManagmentService:SessionManagmentService, systemNotificationService:SystemNotificationService){ 
         this.initBrowserFS();
         this._fileExistsMap =  new Map<string, string>();
         this._restorePoint =  new Map<string, string>();
@@ -81,6 +86,7 @@ export class FileService implements BaseService{
         this._runningProcessService = runningProcessService;
         this._userNotificationService = userNotificationService;
         this._sessionManagmentService = sessionManagmentService;
+        this._systemNotificationService = systemNotificationService;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
@@ -190,6 +196,18 @@ export class FileService implements BaseService{
     public async copyAsync(srcPath:string, destPath:string, isFile?:boolean):Promise<boolean>{
         const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
 
+        const count = await this.getFullCountOfFolderItemsInt(srcPath);
+        const fileCount = count.files;
+
+        const firstMsg = 'Estimating.......';
+        const title = 'Copying';
+        this._userNotificationService.showFileTransferNotification(firstMsg, title)
+        const dialogPId = this._userNotificationService.getDialogPId();
+        console.log('copyAsync dialogPid:',dialogPId);
+        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`firstData:${fileCount}`]}
+        this._systemNotificationService.updateInformationNotify.next(firstUpdate);
+
+        await CommonFunctions.sleep(300000); // sleep 5mins
         const result = isDirectory
             ? await this.copyFolderHandlerAsync(Constants.EMPTY_STRING, srcPath, destPath)
             : await this.copyFileAsync(srcPath, destPath);
@@ -629,13 +647,11 @@ export class FileService implements BaseService{
 		}
 	}
 
-
     private populateShortCut(iconPath = Constants.EMPTY_STRING, fileName = Constants.EMPTY_STRING, fileType = Constants.EMPTY_STRING, contentPath = Constants.EMPTY_STRING, opensWith = Constants.EMPTY_STRING ):ShortCut{
 		return{
             iconPath:iconPath, fileName:fileName, fileType:fileType, contentPath:contentPath, opensWith:opensWith
         }
 	}
-    
 
     public async getShortCutFromURL(path: string): Promise<ShortCut> {
         return new Promise<ShortCut>((resolve) => {
@@ -1202,6 +1218,15 @@ OpensWith=${shortCutData.opensWith}
         queue.push(path);
         await this.traverseAndCountFolderItems(queue, counts);
         return `${counts.files} Files, ${counts.folders} Folders`;
+    }
+
+    private  async getFullCountOfFolderItemsInt(path:string): Promise<{files: number; folders: number;}> {
+        const counts = { files: 0, folders: 0 };
+        const queue:string[] = [];
+        
+        queue.push(path);
+        await this.traverseAndCountFolderItems(queue, counts);
+        return counts;
     }
 
     private  async traverseAndCountFolderItems(queue:string[], counts:{files: number, folders: number}): Promise<void> {
