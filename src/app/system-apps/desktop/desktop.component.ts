@@ -23,7 +23,7 @@ import { SystemNotificationService } from 'src/app/shared/system-service/system.
 import { GeneralMenu, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import * as htmlToImage from 'html-to-image';
 import { trigger, state, style, transition, animate } from '@angular/animations';
-import { basename, dirname} from 'path';
+import { dirname} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 
 import { TaskBarIconInfo } from '../taskbarentries/taskbar.entries.type';
@@ -1871,7 +1871,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async onEmptyRecyleBin():Promise<void>{
     const count = await this._fileService.countFolderItems(Constants.RECYCLE_BIN_PATH);
-    
+
     if(count === 1)
       await this.onEmptyRecyleBinHelper();
 

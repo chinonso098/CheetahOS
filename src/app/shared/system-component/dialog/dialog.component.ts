@@ -13,6 +13,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { AudioService } from '../../system-service/audio.services';
 
+import { basename, dirname} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Subscription } from 'rxjs';
@@ -41,7 +42,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   private _processHandlerService!:ProcessHandlerService;
   private _audioService!:AudioService;
 
-   private _updateInformationSub!:Subscription;
+  private _updateInformationSub!:Subscription;
 
   notificationOption = Constants.EMPTY_STRING;
   errorNotification = UserNotificationType.Error;
@@ -77,22 +78,15 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   readonly UPDATE = 'Update';
   readonly UPDATE_0 = 'Update0';
 
-  // from = '<strong>Downloads</strong>';
-  // to = '<b>Desktop</b>';
-  // srcToDest = `from &nbsp ${this.from} &nbsp (C:/Downloads) to &nbsp ${this.to} &nbsp (C:/Users/Desktop)`;
-  // transferPercentage = 35;
-  // transferProgress = 35;
-  // transferPercentageText = `${this.transferPercentage}% complete`;
-  // fileName = 'wet ass pussy.txt';
-
-  from = Constants.EMPTY_STRING;
-  to = Constants.EMPTY_STRING;
-  srcToDest = Constants.EMPTY_STRING;
+  fakeEsitmateIntervalId!: NodeJS.Timeout;
+  isInit = true;
+  from = Constants.BLANK_SPACE;
+  to = Constants.BLANK_SPACE;
+  srcToDest = Constants.BLANK_SPACE;
   transferPercentage = 0;
   transferProgress = 0;
-  private itemOrSizeCount = 0
-  transferPercentageText = Constants.EMPTY_STRING;
-  fileName = Constants.EMPTY_STRING;
+  transferPercentageText = Constants.BLANK_SPACE;
+  fileName = Constants.BLANK_SPACE;
 
   readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
 
@@ -240,15 +234,64 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     const isFirstData  = (firstEntryName === firstData);
 
     if(isFirstData){
-      // this.from = Constants.EMPTY_STRING;
-      // this.to = Constants.EMPTY_STRING;
-      // this.srcToDest = Constants.EMPTY_STRING;
-      // this.transferPercentage = 35;
-      // this.transferProgress = 35;
       this.transferPercentageText = this.dialogMgs;
+      this.fakeEstimating();
     }else{
+      this.isInit = false;
+      if(this.fakeEsitmateIntervalId)
+        clearInterval(this.fakeEsitmateIntervalId);
 
+      this.setTransferDialogFields(updateInfo);
     }
+  }
+
+  fakeEstimating():void{
+    const delay = 1000; //1 sec
+    const maxAppendNum = 5;
+    let counter = -1;
+    this.transferPercentageText = this.dialogMgs;
+
+    this.fakeEsitmateIntervalId = setInterval(() => {
+      while(counter < maxAppendNum){
+        const curString = this.transferPercentageText;
+        if(counter >= 0){
+          this.transferPercentageText = `${curString}.`;
+        }
+        counter++;
+        break;
+      }
+
+      if(counter === maxAppendNum) {
+        this.transferPercentageText = this.dialogMgs;
+        counter = 0
+      }
+    }, delay);
+  }
+
+  setTransferDialogFields(update:string[]):void{
+    // `srcPath:${srcPath}`,
+    //                               `destPath:${destPath}`,
+    //                               `totalNumberOfFiles:${fileCount}`, 
+    //                               `numberOfFilesCopied:${numOfCopiedFiles}`,
+    //                               `fileName:${directoryEntry}`
+
+    this.from = (this.from === Constants.BLANK_SPACE)? `<strong>${basename(this.getValue(update[0]))}</strong>` : this.from ;
+    this.to = (this.to === Constants.BLANK_SPACE)? `<b>${basename(this.getValue(update[1]))}</b>` : this.to;
+    this.srcToDest = `from &nbsp ${this.from} &nbsp (C:/Downloads) to &nbsp ${this.to} &nbsp (C:/Users/Desktop)`;
+
+    const value = this.getTransferPercentage(Number(this.getValue(update[2])), Number(this.getValue(update[3])));
+    this.transferPercentage = value;
+    this.transferProgress = value;
+    this.transferPercentageText = `${this.transferPercentage}% complete`;
+    this.fileName = `${this.getValue(update[4])}`;
+  }
+
+  getValue(input:string):string{
+    return input.split(Constants.COLON)[1];
+  }
+
+  getTransferPercentage(total:number, curVal:number):number{
+    return ((curVal/total) * 100);
   }
 
   private generateNotificationId(): number{

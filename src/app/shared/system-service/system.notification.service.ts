@@ -39,6 +39,7 @@ export class SystemNotificationService implements BaseService{
     taskBarPreviewUnHighlightNotify: Subject<string> = new Subject<string>();
 
     updateInformationNotify: Subject<InformationUpdate> = new Subject<InformationUpdate>();
+    autoCloseDialogNotify:Subject<number> =  new Subject<number>(); 
 
     name = 'sys_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;

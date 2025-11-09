@@ -165,8 +165,9 @@
     </div>
 </ng-template>
 
+<!-- File Transfer Dialog To be Added -->
 <ng-template #fileTransfer>
-    <cos-window [runningProcessID]="processId" [processAppIcon]="fileTransferIcon" [processAppName]="transferPercentageText" [isMaximizable]="isMaximizable">
+    <cos-window [runningProcessID]="processId" [processAppIcon]="fileTransferIcon" [processAppName]="isInit? dialogTitle: transferPercentageText" [isMaximizable]="isMaximizable">
         <div class="file-transfer-dialog-main-container" tabindex="0">
             <div class="file-transfer-dialog-content-container" > 
                 <div class="file-transfer-dialog-from-to">
@@ -185,7 +186,9 @@
                 </div>
 
                 <div class="file-transfer-dialog-progress-file-name">
-                    <p>Name: {{fileName}}</p>
+                    @if(!isInit){
+                        <p>Name: {{fileName}}</p>
+                    }
                 </div>
             </div>
             <div class="file-transfer-dialog-tail-container">
@@ -198,5 +201,3 @@
         </div>
     </cos-window>
 </ng-template>
-
-<!-- File Transfer Dialog To be Added -->

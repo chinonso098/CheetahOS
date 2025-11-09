@@ -199,17 +199,17 @@ export class FileService implements BaseService{
         const count = await this.getFullCountOfFolderItemsInt(srcPath);
         const fileCount = count.files;
 
-        const firstMsg = 'Estimating.......';
+        const firstMsg = 'Estimating';
         const title = 'Copying';
-        this._userNotificationService.showFileTransferNotification(firstMsg, title)
+        this._userNotificationService.showFileTransferNotification(firstMsg, title);
         const dialogPId = this._userNotificationService.getDialogPId();
-        console.log('copyAsync dialogPid:',dialogPId);
-        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`firstData:${fileCount}`]}
+        //console.log('copyAsync dialogPid:',dialogPId);
+        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`firstData:0`]}
         this._systemNotificationService.updateInformationNotify.next(firstUpdate);
 
-        await CommonFunctions.sleep(300000); // sleep 5mins
+        await CommonFunctions.sleep(this.generateBusyNumber(6000, 12000)); // sleep 6 - 12 seconds
         const result = isDirectory
-            ? await this.copyFolderHandlerAsync(Constants.EMPTY_STRING, srcPath, destPath)
+            ? await this.copyFolderHandlerAsync(Constants.EMPTY_STRING, srcPath, destPath, fileCount, dialogPId, 0)
             : await this.copyFileAsync(srcPath, destPath);
 
         await this.recalculateUsedStorage();
@@ -239,8 +239,9 @@ export class FileService implements BaseService{
         return result;
     }
 
-    private async copyFolderHandlerAsync(arg0:string, srcPath:string, destPath:string):Promise<boolean>{
+    private async copyFolderHandlerAsync(arg0:string, srcPath:string, destPath:string, fileCount:number, dialogPId:number, copiedFiles:number):Promise<boolean>{
 
+        let numOfCopiedFiles = copiedFiles;
         const folderName = this.getNameFromPath(srcPath);
         const  createFolderResult = await this.createFolderAsync(destPath, folderName);
         if(createFolderResult){
@@ -248,7 +249,7 @@ export class FileService implements BaseService{
             for(const directoryEntry of loadedDirectoryEntries){
                 const checkIfDirResult = await this.isDirectory(`${srcPath}/${directoryEntry}`);
                 if(checkIfDirResult){
-                    const result = await this.copyFolderHandlerAsync(arg0,`${srcPath}/${directoryEntry}`,`${destPath}/${folderName}`);
+                    const result = await this.copyFolderHandlerAsync(arg0,`${srcPath}/${directoryEntry}`,`${destPath}/${folderName}`, fileCount, dialogPId, numOfCopiedFiles);
                     if(!result){
                         console.error(`Failed to copy directory: ${srcPath}/${directoryEntry}`);
                         return false;
@@ -256,7 +257,17 @@ export class FileService implements BaseService{
                 }else{
                     const result = await this.copyFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
                     if(result){
-                        console.log(`file:${srcPath}/${directoryEntry} successfully copied to destination:${destPath}/${folderName}`);
+                        //console.info(`file:${srcPath}/${directoryEntry} successfully copied to destination:${destPath}/${folderName}`);
+                        await CommonFunctions.sleep(this.generateBusyNumber(1000, 3000)); // sleep 1 - 3 seconds
+                        numOfCopiedFiles++;
+                        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, 
+                            info:[`srcPath:${srcPath}`,
+                                  `destPath:${destPath}`,
+                                  `totalNumberOfFiles:${fileCount}`, 
+                                  `numberOfFilesCopied:${numOfCopiedFiles}`,
+                                  `fileName:${directoryEntry}`
+                            ]}
+                        this._systemNotificationService.updateInformationNotify.next(firstUpdate);
                     }else{
                         console.error(`file:${srcPath}/${directoryEntry} failed to copy to destination:${destPath}/${folderName}`)
                         return false
@@ -1525,6 +1536,10 @@ OpensWith=${shortCutData.opensWith}
 
     removeDragAndDropFile():void{
         this._fileDragAndDrop = [];
+    }
+
+    private generateBusyNumber(min:number, max:number): number{
+        return Math.floor(Math.random() * (max - min + 1)) + min; 
     }
 
     // checkIfFileDropEventTriggered():boolean{

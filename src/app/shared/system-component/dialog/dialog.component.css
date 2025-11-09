@@ -406,7 +406,7 @@
     background-color: #eee;
 
     overflow: hidden;
-    border: 2px solid #ccc;
+    border: 1px solid #ccc;
 }
 
 .file-transfer-dialog-progress-bar {
