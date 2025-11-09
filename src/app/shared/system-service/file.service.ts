@@ -207,7 +207,7 @@ export class FileService implements BaseService{
         const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`firstData:0`]}
         this._systemNotificationService.updateInformationNotify.next(firstUpdate);
 
-        await CommonFunctions.sleep(this.generateBusyNumber(6000, 12000)); // sleep 6 - 12 seconds
+        await CommonFunctions.sleep(this.generateBusyNumber(1000, 6000)); // sleep 1 - 6 seconds
         const result = isDirectory
             ? await this.copyFolderHandlerAsync(Constants.EMPTY_STRING, srcPath, destPath, fileCount, dialogPId, 0)
             : await this.copyFileAsync(srcPath, destPath);
@@ -258,7 +258,7 @@ export class FileService implements BaseService{
                     const result = await this.copyFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
                     if(result){
                         //console.info(`file:${srcPath}/${directoryEntry} successfully copied to destination:${destPath}/${folderName}`);
-                        await CommonFunctions.sleep(this.generateBusyNumber(500, 1500)); // sleep 1 - 3 seconds
+                        await CommonFunctions.sleep(this.generateBusyNumber(500, 1000)); // sleep 0.5 - 1 seconds
                         numOfCopiedFiles++;
                         const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, 
                             info:[`srcPath:${srcPath}`,

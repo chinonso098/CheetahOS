@@ -378,15 +378,33 @@
     padding: 2px 0px;
 }
 
-.file-transfer-dialog-from-to p{
+.file-transfer-dialog-from-to p {
     color: #000;
     display: flex;
+    align-items: center;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
     font-size: 12px;
-    font-weight:400;
-    white-space: nowrap; /* Prevent text from wrapping */
-    overflow: hidden; /* Hide overflow */
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
+    margin: 0;
+    padding: 0;
 }
+
+/* Windows Explorer blue */
+/* .folder-name {
+    color: #0f4c92; 
+    font-weight: 500;
+} */
+
+/* Destination folder (like "7589") */
+/* slightly brighter blue */
+/* .folder-dest {
+    color: #3366cc; 
+    font-weight: 500;
+}
+   */
 
 .file-transfer-dialog-progress-text{
     padding-bottom: 6px;
@@ -400,11 +418,12 @@
 }
 
 .file-transfer-dialog-progress-container {
+    /* display: flex;
+    align-items: flex-end; */
     display: block;
     width: 420px;
     height: 18px;
     background-color: #eee;
-
     overflow: hidden;
     border: 1px solid #ccc;
 }
@@ -412,6 +431,8 @@
 .file-transfer-dialog-progress-bar {
     height: 100%;
     background-color: #28b42c;
+    position: relative;
+    overflow: hidden;
     transition: width 0.3s ease-in-out;
 }
 
@@ -438,6 +459,34 @@
     position: relative;
     left: -8px;
 }
+
+
+/* The moving light/shimmer effect */
+.progress-bar__light-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.6) 50%,
+      rgba(255, 255, 255, 0.1) 100%
+    );
+    background-size: 200% 200%;
+    animation: shine 6s linear infinite;
+  }
+  
+  /* Animate the light diagonally */
+  @keyframes shine {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
 
 /*file-transfer seaction end*/
 

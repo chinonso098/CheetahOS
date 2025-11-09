@@ -270,34 +270,87 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }, delay);
   }
 
-  setTransferDialogFields(update:string[]):void{
-    // 0 srcPath, 1 destPath,  2 totalNumberOfFiles, 3 numberOfFilesCopied, 4 fileName
+  setTransferDialogFields(update: string[]): void {
+    // Validate the update array and its required indices
+    if (!Array.isArray(update) || update.length < 5) {
+      console.warn("setTransferDialogFields: Invalid or incomplete update array", update);
+      return;
+    }
+  
+    // 0 srcPath, 1 destPath, 2 totalNumberOfFiles, 3 numberOfFilesCopied, 4 fileName
+    // Safely extract values with guards
+    const srcPath = this.safeGetValue(update[0]);
+    const destPath = this.safeGetValue(update[1]);
+    const totalFiles = Number(this.safeGetValue(update[2]));
+    const copiedFiles = Number(this.safeGetValue(update[3]));
+    const fileName = this.safeGetValue(update[4]);
+  
+    // Validate numeric values
+    if (!isFinite(totalFiles) || !isFinite(copiedFiles) || totalFiles <= 0) {
+      console.warn("setTransferDialogFields: Invalid file counts", { totalFiles, copiedFiles });
+      return;
+    }
+  
+    // Only set `from` and `to` once if they’re blank initially
+    if (this.from === Constants.BLANK_SPACE) {
+      this.from = `<strong>${basename(srcPath)}</strong>`;
+    }
 
-    this.from = (this.from === Constants.BLANK_SPACE)? `<strong>${basename(this.getValue(update[0]))}</strong>` : this.from ;
-    this.to = (this.to === Constants.BLANK_SPACE)? `<b>${basename(this.getValue(update[1]))}</b>` : this.to;
-    this.srcToDest = `${this.transferAction} &nbsp ${this.getValue(update[3])} &nbsp items &nbsp from &nbsp ${this.from} &nbsp to &nbsp ${this.to}`;
+    if (this.to === Constants.BLANK_SPACE) {
+      this.to = `<strong>${basename(destPath)}</strong>`;
+    }
+    // Compose status message
+    this.srcToDest = `${this.transferAction} ${copiedFiles} items from &nbsp ${this.from} &nbsp to &nbsp ${this.to}`;
 
-    const value = this.getTransferPercentage(Number(this.getValue(update[2])), Number(this.getValue(update[3])));
+  
+    // Compute transfer progress safely
+    const value = this.getTransferPercentage(totalFiles, copiedFiles);
     this.transferPercentage = value;
     this.transferProgress = value;
-    this.transferPercentageText = `${this.transferPercentage}% complete`;
-    this.fileName = `${this.getValue(update[4])}`;
-
-    if(value === 100){
-      const delay = 1000;
+    this.transferPercentageText = `${value}% complete`;
+    this.fileName = fileName;
+  
+    //Auto-close if 100% complete
+    if (value >= 100) {
+      const delay = 1000; // 1 sec
       setTimeout(() => {
         this._userNotificationServices.closeDialogMsgBox(this.processId);
       }, delay);
     }
   }
-
-  getValue(input:string):string{
-    return input.split(Constants.COLON)[1];
+  
+  // --- Safe helpers ---
+  
+  /**
+   * Safely extracts the value after a colon. Returns an empty string if invalid.
+   */
+  safeGetValue(input: string): string {
+    if (typeof input !== "string" || !input.includes(Constants.COLON)) {
+      console.warn("safeGetValue: Malformed input", input);
+      return Constants.EMPTY_STRING;
+    }
+  
+    const parts = input.split(Constants.COLON);
+    return parts.length > 1 ? parts[1].trim() : Constants.EMPTY_STRING;
   }
-
-  getTransferPercentage(total:number, curVal:number):number{
-    return ((curVal/total) * 100);
+  
+  /**
+   * Safely computes percentage with zero and NaN checks.
+   */
+  getTransferPercentage(total: number, curVal: number): number {
+    if (!isFinite(total) || total <= 0) {
+      console.warn("getTransferPercentage: Invalid total value", total);
+      return 0;
+    }
+    if (!isFinite(curVal) || curVal < 0) {
+      console.warn("getTransferPercentage: Invalid current value", curVal);
+      return 0;
+    }
+  
+    const percentage = (curVal / total) * 100;
+    return Math.min(Math.max(percentage, 0), 100); // Clamp between 0–100
   }
+  
 
   private generateNotificationId(): number{
     const min = 10;
