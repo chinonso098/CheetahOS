@@ -258,7 +258,7 @@ export class FileService implements BaseService{
                     const result = await this.copyFileAsync(`${srcPath}/${directoryEntry}`, `${destPath}/${folderName}`);
                     if(result){
                         //console.info(`file:${srcPath}/${directoryEntry} successfully copied to destination:${destPath}/${folderName}`);
-                        await CommonFunctions.sleep(this.generateBusyNumber(1000, 3000)); // sleep 1 - 3 seconds
+                        await CommonFunctions.sleep(this.generateBusyNumber(500, 1500)); // sleep 1 - 3 seconds
                         numOfCopiedFiles++;
                         const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, 
                             info:[`srcPath:${srcPath}`,

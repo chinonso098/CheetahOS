@@ -16,7 +16,7 @@ import { AudioService } from '../../system-service/audio.services';
 import { basename, dirname} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { Subscription } from 'rxjs';
+import { delay, Subscription } from 'rxjs';
 import { InformationUpdate } from 'src/app/system-files/common.interfaces';
 
 @Component({
@@ -89,6 +89,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   fileName = Constants.BLANK_SPACE;
 
   readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
+  private transferAction = Constants.EMPTY_STRING;
 
   dialogTitle = Constants.EMPTY_STRING;
   type = ComponentType.System;
@@ -140,6 +141,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
     if(this.notificationType === UserNotificationType.FileTransfer){
       this.transferPercentageText = this.dialogMgs;
+      this.transferAction = this.inputTitle;
     }
   }
 
@@ -269,21 +271,24 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
 
   setTransferDialogFields(update:string[]):void{
-    // `srcPath:${srcPath}`,
-    //                               `destPath:${destPath}`,
-    //                               `totalNumberOfFiles:${fileCount}`, 
-    //                               `numberOfFilesCopied:${numOfCopiedFiles}`,
-    //                               `fileName:${directoryEntry}`
+    // 0 srcPath, 1 destPath,  2 totalNumberOfFiles, 3 numberOfFilesCopied, 4 fileName
 
     this.from = (this.from === Constants.BLANK_SPACE)? `<strong>${basename(this.getValue(update[0]))}</strong>` : this.from ;
     this.to = (this.to === Constants.BLANK_SPACE)? `<b>${basename(this.getValue(update[1]))}</b>` : this.to;
-    this.srcToDest = `from &nbsp ${this.from} &nbsp (C:/Downloads) to &nbsp ${this.to} &nbsp (C:/Users/Desktop)`;
+    this.srcToDest = `${this.transferAction} &nbsp ${this.getValue(update[3])} &nbsp items &nbsp from &nbsp ${this.from} &nbsp to &nbsp ${this.to}`;
 
     const value = this.getTransferPercentage(Number(this.getValue(update[2])), Number(this.getValue(update[3])));
     this.transferPercentage = value;
     this.transferProgress = value;
     this.transferPercentageText = `${this.transferPercentage}% complete`;
     this.fileName = `${this.getValue(update[4])}`;
+
+    if(value === 100){
+      const delay = 1000;
+      setTimeout(() => {
+        this._userNotificationServices.closeDialogMsgBox(this.processId);
+      }, delay);
+    }
   }
 
   getValue(input:string):string{
