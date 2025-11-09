@@ -2983,7 +2983,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async createShortCut(): Promise<void>{
-    const title = 'Shortcut';
     const selectedFile = this.selectedFile;
     const shortCut:FileInfo = new FileInfo();
     const directory = this.directory;
@@ -2991,6 +2990,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     shortCut.setContentPath = fileContent;
 
     if(directory === Constants.ROOT){
+      const title = 'Shortcut';
       const msg = `Cheetah can't create a shortcut here.
 Do you want the shortcut to be placed on the desktop instead?`;
 

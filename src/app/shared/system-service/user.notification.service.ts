@@ -20,6 +20,7 @@ export class UserNotificationService implements BaseService{
     private _runningProcessService!:RunningProcessService;
     private _processIdService!:ProcessIDService;
     private _componentReferenceService:ComponentReferenceService;
+    private dialogPid = 0;
 
     name = 'usr_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -51,6 +52,7 @@ export class UserNotificationService implements BaseService{
           componentRef.setInput('inputMsg', msg);
           componentRef.setInput('inputTitle', title);
           componentRef.setInput('notificationType', dialogMsgType);
+          this.dialogPid = componentRef.instance.processId;
         }
     }
 
@@ -76,6 +78,7 @@ export class UserNotificationService implements BaseService{
             componentRef.setInput('inputMsg', message);
             componentRef.setInput('inputTitle', title);
             componentRef.setInput('notificationType', UserNotificationType.Warning );
+            this.dialogPid = componentRef.instance.processId;
       
             // hook up close events
             componentRef.instance.confirm.subscribe(() => {
@@ -94,6 +97,15 @@ export class UserNotificationService implements BaseService{
 
     showFileTransferNotification(msg:string){
         this.showDialogMsgBox(UserNotificationType.FileTransfer, msg);
+    }
+
+    /**
+     * All dialog box's PId can be gotten instantly, except WarningNotifiation, as result of it async nature.
+     * it can only be retrieved after a selection is made.
+     * @returns a proccess id for dialog box
+     */
+    getDialogPId():number{
+        return this.dialogPid;
     }
 
     private getProcessDetail():Process{

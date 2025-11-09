@@ -26,7 +26,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   @Input() inputMsg = Constants.EMPTY_STRING;
   @Input() inputTitle = Constants.EMPTY_STRING;
-  @Input() inputPId = 0;
   @Input() notificationType = Constants.EMPTY_STRING;
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
@@ -103,6 +102,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this._systemNotificationService = systemNotificationServices;
     this._processHandlerService = processHandlerService;
     this._audioService = audioService;
+
+    this.processId = this._processIdService.getNewProcessId();
   }
 
   ngOnChanges(changes: SimpleChanges):void{
@@ -111,7 +112,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this.dialogTitle = this.inputTitle;
 
     this.notificationOption = this.notificationType;
-    this.setProcessId();
 
     if(this.notificationType === UserNotificationType.PowerOnOff){
       this.setPwrDialogPid(this.UPDATE);
@@ -119,25 +119,19 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
     if(this.notificationType === UserNotificationType.Error){
       if(this.dialogMgs === this.dialogTitle)
-          this.showExtraErroMsg = true;
+        this.showExtraErroMsg = true;
     }
   }
 
   async ngAfterViewInit(): Promise<void> {
     const delay = 200; //200ms
+    
     await CommonFunctions.sleep(delay);
     this.playDialogNotifcationSound();
   }
 
   ngOnDestroy(): void {
     //console.log('Dialog was destroyed')
-  }
-
-  setProcessId():void{
-    if(this.notificationType === UserNotificationType.FileTransfer){
-      this.processId = this.inputPId;
-    }else
-      this.processId = this._processIdService.getNewProcessId();
   }
 
   onYesDialogBox():void{
@@ -159,26 +153,25 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
   }
 
-  onYesPowerDialogBox():void{
+  async onYesPowerDialogBox(): Promise<void>{
     const delay = 200; //200ms
     const clearSessionData = !this.reOpenWindows;
     
     this.onCloseDialogBox();
     this._processHandlerService.closeActiveProcessWithWindows(clearSessionData);
 
-    setTimeout(() => {
-      if(this.selectedOption === Constants.SYSTEM_RESTART){
-        if(!this.reOpenWindows)
-          this._sessionManagementService.clearAppSession();
+    await CommonFunctions.sleep(delay);
+    if(this.selectedOption === Constants.SYSTEM_RESTART){
+      if(!this.reOpenWindows)
+        this._sessionManagementService.clearAppSession();
 
-        this._systemNotificationService.restartSystemNotify.next(Constants.RSTRT_ORDER_LOCK_SCREEN);
-      }else{
-        if(!this.reOpenWindows)
-          this._sessionManagementService.clearAppSession();
+      this._systemNotificationService.restartSystemNotify.next(Constants.RSTRT_ORDER_LOCK_SCREEN);
+    }else{
+      if(!this.reOpenWindows)
+        this._sessionManagementService.clearAppSession();
 
-        this._systemNotificationService.shutDownSystemNotify.next();
-      }
-    }, delay);
+      this._systemNotificationService.shutDownSystemNotify.next();
+    }
   }
 
   onCloseDialogBox():void{
@@ -190,7 +183,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
 
     if(this.notificationOption === UserNotificationType.PowerOnOff){
-       this.setPwrDialogPid(this.UPDATE_0);
+      this.setPwrDialogPid(this.UPDATE_0);
     }
   }
 
@@ -205,12 +198,11 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
 
   async playDialogNotifcationSound():Promise<void>{
-
     if(this.notificationOption === this.errorNotification)
-        await this._audioService.play(this.errorNotificationAudio);
+      await this._audioService.play(this.errorNotificationAudio);
 
     if(this.notificationOption === this.warnNotification)
-        await this._audioService.play(this.cheetahBackGroundNotifyAudio);
+      await this._audioService.play(this.cheetahBackGroundNotifyAudio);
   }
 
   private generateNotificationId(): number{
