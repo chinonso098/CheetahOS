@@ -87,7 +87,7 @@ export class FileIndexerService implements BaseService{
             this._Index.push(this.getFileSearchIndex(FileIndexIDs.FOLDERS, entry, filePath, Constants.EMPTY_STRING, this.handleNonAppIcons(entry, isFile), opensWith, date));
         }
 
-        await CommonFunctions.sleep(this.generateBusyNumber(500,2000));
+        await CommonFunctions.sleep(this.generateBusyNumber(500, 2000));
         this.IndexingInProgress.next(false);
         return this.indexDirectoryHelperAsync(queue);
     }
