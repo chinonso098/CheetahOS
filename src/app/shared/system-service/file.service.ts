@@ -65,6 +65,9 @@ export class FileService implements BaseService{
     readonly fileServiceIterateKey = Constants.FILE_SVC_FILE_ITERATE_KEY;
     readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
 
+    // Concurrency limit (adjust as needed)
+    private readonly CONCURRENCY_LIMIT = 4;
+
     name = 'file_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
     processId = 0;
@@ -248,7 +251,7 @@ export class FileService implements BaseService{
     }
 
     // Updated function signature and usage
-    private async copyFolderHandlerAsync(options: CopyFolderOptions): Promise<boolean> {
+    private async copyFolderHandlerAsync_sequencial(options: CopyFolderOptions): Promise<boolean> {
         const { arg0, srcPath, destPath, fileCount, dialogPId, copiedFiles, signal } = options;
 
         const folderName = this.getNameFromPath(srcPath);
@@ -268,7 +271,7 @@ export class FileService implements BaseService{
                     // console.log('DID A DIR CHECK');
                     // console.log('CHECKED FOR:', entryPath);
                     // console.log('----------Copied Files--------:', copiedFiles.fileCount);
-                    const result = await this.copyFolderHandlerAsync({
+                    const result = await this.copyFolderHandlerAsync_sequencial({
                         ...options,
                         srcPath: entryPath,
                         destPath: `${destPath}/${folderName}`,
@@ -281,7 +284,7 @@ export class FileService implements BaseService{
                 } else {
                     const result = await this.copyFileAsync(entryPath, `${destPath}/${folderName}`);
                     if(result){
-                        console.info(`file:${entryPath} successfully copied to destination:${destPath}/${folderName}`);
+                        //console.info(`file:${entryPath} successfully copied to destination:${destPath}/${folderName}`);
 
                         copiedFiles.fileCount++;
                         const infoUpdate = this.getFileSystemUpdateInfo(srcPath, destPath, fileCount, copiedFiles.fileCount, directoryEntry);
@@ -296,6 +299,77 @@ export class FileService implements BaseService{
 
         return true;
     }
+
+    /**
+     * Run several file copies in parallel
+     * @param options 
+     * @returns 
+     */
+    private async copyFolderHandlerAsync(options: CopyFolderOptions): Promise<boolean> {
+        const { arg0, srcPath, destPath, fileCount, dialogPId, copiedFiles, signal } = options;
+    
+        const folderName = this.getNameFromPath(srcPath);
+        const createFolderResult = await this.createFolderAsync(destPath, folderName);
+        if (!createFolderResult) return false;
+    
+        const loadedDirectoryEntries = await this.readDirectory(srcPath);
+        let activeTasks: Promise<boolean>[] = [];
+    
+        for(const directoryEntry of loadedDirectoryEntries){
+            const entryPath = `${srcPath}/${directoryEntry}`;
+            if (dialogPId === this._dialogPIdToCancel && signal.aborted) {
+                console.warn("Transfer aborted.");
+                return false;
+            }
+    
+            const isDir = await this.isDirectory(entryPath);
+            const task = (async () => {
+                if (isDir) {
+                    const result = await this.copyFolderHandlerAsync({
+                        ...options,
+                        srcPath: entryPath,
+                        destPath: `${destPath}/${folderName}`,
+                        copiedFiles
+                    });
+                    if (!result) {
+                        console.error(`Failed to copy directory: ${entryPath}`);
+                        return false;
+                    }
+                } else {
+                    const result = await this.copyFileAsync(entryPath, `${destPath}/${folderName}`);
+                    if (result) {
+                        copiedFiles.fileCount++;
+                        const infoUpdate = this.getFileSystemUpdateInfo(srcPath, destPath, fileCount, copiedFiles.fileCount, directoryEntry);
+                        this.sendFileTransferInformationUpdate(dialogPId, infoUpdate);
+                    } else {
+                        console.error(`file:${entryPath} failed to copy to destination:${destPath}/${folderName}`);
+                        return false;
+                    }
+                }
+                return true;
+            })();
+    
+            activeTasks.push(task);
+    
+            // ✅ Throttle to maintain concurrency limit
+            if (activeTasks.length >= this.CONCURRENCY_LIMIT) {
+                const results = await Promise.allSettled(activeTasks);
+                const failed = results.some(r => r.status === "fulfilled" && r.value === false);
+                if (failed) return false;
+                activeTasks = [];
+            }
+        }
+    
+        // Wait for any remaining tasks
+        if (activeTasks.length > 0) {
+            const results = await Promise.allSettled(activeTasks);
+            const failed = results.some(r => r.status === "fulfilled" && r.value === false);
+            if (failed) return false;
+        }
+    
+        return true;
+    }
+    
 
     private terminateTransfer(): void {
         this.abortController?.abort();
