@@ -14,6 +14,7 @@ import { fileIndexChangeOperationType, FileIndexIDs } from "src/app/system-files
 import {extname, basename} from 'path';
 import { FileSearchIndex } from "src/app/system-files/common.interfaces";
 import { Subject } from "rxjs";
+import { CommonFunctions } from "src/app/system-files/common.functions";
 
 @Injectable({
     providedIn: 'root'
@@ -29,6 +30,7 @@ export class FileIndexerService implements BaseService{
 
     private _appDirectory:AppDirectory;
     fileIndexChangeOperation: Subject<string> = new Subject<string>();
+    IndexingInProgress: Subject<boolean> = new Subject<boolean>();
 
     private readonly ENTRY_TO_EXCLUDE = 'Recycle Bin';
     private readonly PATH_TO_EXCLUDE = '/Users/Desktop/Recycle Bin';
@@ -55,11 +57,11 @@ export class FileIndexerService implements BaseService{
 
     public async indexDirectoryAsync(path = Constants.USER_BASE_PATH):Promise<void>{
         const queue:string[] = [];
-        
+  
         queue.push(path);
         this.indexApps();
         await this.indexDirectoryHelperAsync(queue);
-        //console.log('_SearchIndex Result:', this._Index)
+        //console.log('_SearchIndex Result:', this._Index);
         return;
     }
 
@@ -68,6 +70,7 @@ export class FileIndexerService implements BaseService{
 
         const filePath = queue.shift() || Constants.EMPTY_STRING;
 
+        this.IndexingInProgress.next(true);
         const directoryEntries = await this._fileService.readDirectory(filePath);      
         for(const entry of directoryEntries){
             const entryPath = `${filePath}/${entry}`;
@@ -84,6 +87,8 @@ export class FileIndexerService implements BaseService{
             this._Index.push(this.getFileSearchIndex(FileIndexIDs.FOLDERS, entry, filePath, Constants.EMPTY_STRING, this.handleNonAppIcons(entry, isFile), opensWith, date));
         }
 
+        await CommonFunctions.sleep(this.generateBusyNumber(500,2000));
+        this.IndexingInProgress.next(false);
         return this.indexDirectoryHelperAsync(queue);
     }
 
@@ -158,7 +163,7 @@ export class FileIndexerService implements BaseService{
     //### a better solution is to pass the added file info and update the index store, rather then re-indexing
     public async addNotify(path:string, isFile:boolean): Promise<void>{
         const fileName = basename(path);
-        const isPresent = this._Index.some(x => (x.srcPath === path && x.name === fileName));
+        const isPresent = this._Index.some(x => (x.srcPath === path && x.name === fileName));       
 
         if(isPresent)
             console.info('Duplication avoided, file is already present in the index');
@@ -185,6 +190,12 @@ export class FileIndexerService implements BaseService{
 
     public getFileIndex():FileSearchIndex[]{
         return this._Index
+    }
+
+    private generateBusyNumber(min:number, max:number): number{
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     private getProcessDetail():Process{

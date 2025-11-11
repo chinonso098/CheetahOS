@@ -6,6 +6,7 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { Subscription } from 'rxjs';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { InformationUpdate } from 'src/app/system-files/common.interfaces';
+import { FileIndexerService } from 'src/app/shared/system-service/file.indexer.services';
 
 @Component({
   selector: 'cos-overflow',
@@ -16,9 +17,11 @@ import { InformationUpdate } from 'src/app/system-files/common.interfaces';
 export class OverFlowComponent implements AfterViewInit, OnDestroy {
   private _runningProcessService!:RunningProcessService;
   private _systemNotificationService:SystemNotificationService;
+  private _fileIndexerService:FileIndexerService;
 
   private _processListChangeSub!:Subscription;
   private _updateInformationSub!:Subscription;
+  private _indexingInProgressSub!:Subscription;
 
   chatterIcon =`${Constants.IMAGE_BASE_PATH}chatter.png`;
   taskManagerIcon =`${Constants.IMAGE_BASE_PATH}taskmanager_grid.png`;
@@ -31,9 +34,10 @@ export class OverFlowComponent implements AfterViewInit, OnDestroy {
 
   private readonly TASK_MANAGER = "taskmanager";
 
-  constructor(runningProcessService:RunningProcessService, systemNotificationService:SystemNotificationService) { 
+  constructor(runningProcessService:RunningProcessService, systemNotificationService:SystemNotificationService, fileIndexerService:FileIndexerService) { 
     this._runningProcessService = runningProcessService;
     this._systemNotificationService = systemNotificationService;
+    this._fileIndexerService = fileIndexerService;
 
     this._processListChangeSub = this._runningProcessService.processListChangeNotify.subscribe(() =>{
       this.hideShowTaskManagerUtil();
@@ -44,6 +48,8 @@ export class OverFlowComponent implements AfterViewInit, OnDestroy {
       if(p.appName === this.TASK_MANAGER)
         this.updateTaskManager(p);
     });
+
+    this._indexingInProgressSub = this._fileIndexerService.IndexingInProgress.subscribe((p) =>{ this.showIndexingIcon = p});
   }
 
   async ngAfterViewInit():Promise<void>{  
@@ -56,6 +62,7 @@ export class OverFlowComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this._processListChangeSub?.unsubscribe();
     this._updateInformationSub?.unsubscribe();
+    this._indexingInProgressSub?.unsubscribe();
   }
 
   async hideShowTaskManagerUtil():Promise<void>{
