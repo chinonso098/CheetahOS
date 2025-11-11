@@ -116,6 +116,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showTaskBarIconToolTip = false;
   showVolumeCntrl = false;
   showOverflowPane = false;
+  confirmDelete = true;
+  moveToRecycleBinOnDelete = true;
   
   showClippy = false;
   dsktpPrevImg = Constants.EMPTY_STRING;
@@ -188,7 +190,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private readonly MAX_NUM_COLOR_RANGE = 99999;
   private readonly DEFAULT_COLOR = 0x274c;
   private readonly DESKTOP_MENU_DELAY = 250; //250ms
-
   private currentDesktopNum = 0;
 
   readonly cheetahDsktpIconSortKey = 'cheetahDsktpIconSortKey';
@@ -270,7 +271,9 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     {icon:'', label: 'Create shortcut', action: this.createShortCut.bind(this)},
     {icon:'', label: 'Delete', action: this.onDelete.bind(this) },
     {icon:'', label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
-    {icon:'', label: 'Properties', action: this.showPropertiesWindow.bind(this) }
+    {icon:'', label: 'Properties', action: this.showPropertiesWindow.bind(this) },
+    {icon:'', label: 'Confirm Delete', action: this.onConfirmDelete.bind(this)},
+    {icon:'', label: 'Recycle on Delete', action: this.onDeleteMoveToRecycleBin.bind(this)},
   ];
   menuData:GeneralMenu[] =[];
 
@@ -952,7 +955,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
 
       const defaultDesktopBackgrounValue = `${this.desktopBackgroundType}:${this.vantaBackgroundName[i]}`;
-      this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue, raiseEvent);
+      this._defaultService.updateDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue, raiseEvent);
     })
   }
 
@@ -964,7 +967,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
       
       const defaultDesktopBackgrounValue = `${this.desktopBackgroundType}:${this.desktopBackgroundValue}`;
-      this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue, raiseEvent);
+      this._defaultService.updateDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue, raiseEvent);
     }
   }
 
@@ -1503,7 +1506,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     await CommonFunctions.sleep(this.DESKTOP_MENU_DELAY);
 
     const menuHeight = (file.getIsFile)? 253 : 337; //this is not ideal.. menu height should be gotten dynmically
-    const result = DesktopContextMenuHelper.adjustIconContextMenuData(file ,this.sourceData);
+    const result = DesktopContextMenuHelper.adjustIconContextMenuData(file ,this.sourceData, this._defaultService);
     this.menuData = result[0];
     this.menuOrder = result[1];
 
@@ -1883,6 +1886,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(confirmed)
         await this.onEmptyRecyleBinHelper();
     }
+  }
+
+  onConfirmDelete():void{
+    this.confirmDelete = !this.confirmDelete;
+    const raiseEvent = false;
+
+    const confirmationState = (this.confirmDelete)? Constants.TRUE : Constants.FALSE;
+    this._defaultService.updateDefultData(Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG, confirmationState, raiseEvent);
+  }
+
+  onDeleteMoveToRecycleBin():void{
+    this.moveToRecycleBinOnDelete = !this.moveToRecycleBinOnDelete;
+    const raiseEvent = false;
+
+    const confirmationState = (this.moveToRecycleBinOnDelete)? Constants.TRUE : Constants.FALSE;
+    this._defaultService.updateDefultData(Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG, confirmationState, raiseEvent);
   }
 
   async onEmptyRecyleBinHelper():Promise<void>{

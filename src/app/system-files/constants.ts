@@ -145,6 +145,14 @@ export namespace Constants{
     export const RSTRT_ORDER_PWR_ON_OFF_SCREEN = 1;
     export const STORAGE_CAPACITY = 512_050_500;
 
+    export const DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG = 'DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG_VALUE = TRUE;
+
+    export const DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE = 'DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE_VALUE = TRUE;
+
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
         '.png',

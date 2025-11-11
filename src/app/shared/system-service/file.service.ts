@@ -17,6 +17,7 @@ import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 
 import { BaseService } from "./base.service.interface";
+import { DefaultService } from "./defaults.services";
 import { ProcessIDService } from "./process.id.service";
 import { FileIndexerService } from "./file.indexer.services";
 import { RunningProcessService } from "./running.process.service";
@@ -27,7 +28,7 @@ import { SystemNotificationService } from "./system.notification.service";
 import { OpensWith } from "src/app/system-files/common.interfaces";
 import JSZip from "jszip";
 import { CommonFunctions } from "src/app/system-files/common.functions";
-import { FileSystemUpdateInfo, CopyFolderOptions, FilesCopiedCount } from "src/app/system-files/file.system.types";
+import { FileTransferUpdate, FileTransferOptions, FileTransferCount } from "src/app/system-files/file.system.types";
 
 @Injectable({
     providedIn: 'root'
@@ -49,6 +50,7 @@ export class FileService implements BaseService{
     private _systemNotificationService:SystemNotificationService;
     private _sessionManagmentService!:SessionManagmentService;
     private _fileIndexerService!:FileIndexerService;
+    private _defaultService:DefaultService;
 
     private _isCalculated = false;
     private _isDuplicate = false;
@@ -79,7 +81,7 @@ export class FileService implements BaseService{
 
     
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService,
-                sessionManagmentService:SessionManagmentService, systemNotificationService:SystemNotificationService){ 
+                sessionManagmentService:SessionManagmentService, systemNotificationService:SystemNotificationService, defaultService:DefaultService){ 
         this.initBrowserFS();
         this._fileExistsMap =  new Map<string, string>();
         this._restorePoint =  new Map<string, string>();
@@ -91,6 +93,7 @@ export class FileService implements BaseService{
         this._userNotificationService = userNotificationService;
         this._sessionManagmentService = sessionManagmentService;
         this._systemNotificationService = systemNotificationService;
+        this._defaultService = defaultService;
 
         this.cancelFileTransferNotify.subscribe((p) =>{
             this.terminateTransfer();
@@ -208,19 +211,17 @@ export class FileService implements BaseService{
         this.abortController = new AbortController();
         const signal = this.abortController.signal;
 
-        const filesCopiedCount:FilesCopiedCount = { fileCount: 0};
+        const filesTrasnferedCount:FileTransferCount = { fileCount: 0};
         const firstMsg = 'Estimating';
         const title = 'Copying';
         const dialogPId = this.initFileTransfer(firstMsg, title);
-        this.sendFirstUpdate(dialogPId);
+        this.sendUpdate(dialogPId);
 
         const count = await this.getFullCountOfFolderItemsInt(srcPath);
-        console.log('count of files:', count);
-        const fileCount = count.files;
+        const fileToCopyCount = count.files;
 
-        //await CommonFunctions.sleep(this.generateBusyNumber(1000, 5000)); // sleep 1 - 5 seconds
         const result = isDirectory
-            ? await this.copyFolderHandlerAsync({arg0:Constants.EMPTY_STRING, srcPath, destPath, fileCount, dialogPId, copiedFiles:filesCopiedCount, signal})
+            ? await this.copyFolderHandlerAsync({arg0:Constants.EMPTY_STRING, srcPath, destPath, filesToTransferCount: fileToCopyCount, dialogPId, fileTransferCount:filesTrasnferedCount, signal})
             : await this.copyFileAsync(srcPath, destPath);
 
         await this.recalculateUsedStorage();
@@ -250,9 +251,8 @@ export class FileService implements BaseService{
         return result;
     }
 
-    // Updated function signature and usage
-    private async copyFolderHandlerAsync_sequencial(options: CopyFolderOptions): Promise<boolean> {
-        const { arg0, srcPath, destPath, fileCount, dialogPId, copiedFiles, signal } = options;
+    private async copyFolderHandlerAsync_sequencial(options: FileTransferOptions): Promise<boolean> {
+        const { arg0, srcPath, destPath, filesToTransferCount: fileCount, dialogPId, fileTransferCount: copiedFiles, signal } = options;
 
         const folderName = this.getNameFromPath(srcPath);
         const createFolderResult = await this.createFolderAsync(destPath, folderName);
@@ -275,7 +275,7 @@ export class FileService implements BaseService{
                         ...options,
                         srcPath: entryPath,
                         destPath: `${destPath}/${folderName}`,
-                        copiedFiles: copiedFiles
+                        fileTransferCount: copiedFiles
                     });
                     if(!result){
                         console.error(`Failed to copy directory: ${entryPath}`);
@@ -287,8 +287,8 @@ export class FileService implements BaseService{
                         //console.info(`file:${entryPath} successfully copied to destination:${destPath}/${folderName}`);
 
                         copiedFiles.fileCount++;
-                        const infoUpdate = this.getFileSystemUpdateInfo(srcPath, destPath, fileCount, copiedFiles.fileCount, directoryEntry);
-                        this.sendFileTransferInformationUpdate(dialogPId, infoUpdate);
+                        const infoUpdate = this.genFileTransferUpdate(srcPath, destPath, fileCount, copiedFiles.fileCount, directoryEntry);
+                        this.sendFileTransferUpdate(dialogPId, infoUpdate);
                     } else {
                         console.error(`file:${entryPath} failed to copy to destination:${destPath}/${folderName}`);
                         return false;
@@ -305,8 +305,8 @@ export class FileService implements BaseService{
      * @param options 
      * @returns 
      */
-    private async copyFolderHandlerAsync(options: CopyFolderOptions): Promise<boolean> {
-        const { arg0, srcPath, destPath, fileCount, dialogPId, copiedFiles, signal } = options;
+    private async copyFolderHandlerAsync(options: FileTransferOptions): Promise<boolean> {
+        const { arg0, srcPath, destPath, filesToTransferCount: fileCount, dialogPId, fileTransferCount: copiedFiles, signal } = options;
     
         const folderName = this.getNameFromPath(srcPath);
         const createFolderResult = await this.createFolderAsync(destPath, folderName);
@@ -319,28 +319,29 @@ export class FileService implements BaseService{
             const entryPath = `${srcPath}/${directoryEntry}`;
             if (dialogPId === this._dialogPIdToCancel && signal.aborted) {
                 console.warn("Transfer aborted.");
+                this._dialogPIdToCancel = 0;
                 return false;
             }
     
             const isDir = await this.isDirectory(entryPath);
-            const task = (async () => {
-                if (isDir) {
+            const task = (async()=>{
+                if(isDir){
                     const result = await this.copyFolderHandlerAsync({
                         ...options,
                         srcPath: entryPath,
                         destPath: `${destPath}/${folderName}`,
-                        copiedFiles
+                        fileTransferCount: copiedFiles
                     });
-                    if (!result) {
+                    if(!result){
                         console.error(`Failed to copy directory: ${entryPath}`);
                         return false;
                     }
                 } else {
                     const result = await this.copyFileAsync(entryPath, `${destPath}/${folderName}`);
-                    if (result) {
+                    if(result){
                         copiedFiles.fileCount++;
-                        const infoUpdate = this.getFileSystemUpdateInfo(srcPath, destPath, fileCount, copiedFiles.fileCount, directoryEntry);
-                        this.sendFileTransferInformationUpdate(dialogPId, infoUpdate);
+                        const transferUpdate = this.genFileTransferUpdate(srcPath, destPath, fileCount, copiedFiles.fileCount, directoryEntry);
+                        this.sendFileTransferUpdate(dialogPId, transferUpdate);
                     } else {
                         console.error(`file:${entryPath} failed to copy to destination:${destPath}/${folderName}`);
                         return false;
@@ -351,7 +352,7 @@ export class FileService implements BaseService{
     
             activeTasks.push(task);
     
-            // ✅ Throttle to maintain concurrency limit
+            //Throttle to maintain concurrency limit
             if (activeTasks.length >= this.CONCURRENCY_LIMIT) {
                 const results = await Promise.allSettled(activeTasks);
                 const failed = results.some(r => r.status === "fulfilled" && r.value === false);
@@ -379,8 +380,7 @@ export class FileService implements BaseService{
         this._dialogPIdToCancel = pId;
     }
 
-
-    getFileSystemUpdateInfo(srcPath:string, destPath:string, fileCount:number, copiedFiles:number, fileName:string):FileSystemUpdateInfo{
+    genFileTransferUpdate(srcPath:string, destPath:string, fileCount:number, copiedFiles:number, fileName:string):FileTransferUpdate{
         return{
             srcPath,
             destPath,
@@ -901,6 +901,10 @@ export class FileService implements BaseService{
     //virtual filesystem, use copy and then delete
     public async moveAsync(srcPath: string, destPath: string, isFile?: boolean, isRecycleBin?: boolean): Promise<boolean> {
         const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
+
+        let firstMsg = 'Estimating';
+        let title = Constants.EMPTY_STRING;
+        let dialogPId = 0;
         
         if(isDirectory){
             const folderToProcessingQueue:string[] =  [];
@@ -909,13 +913,19 @@ export class FileService implements BaseService{
 
             folderToProcessingQueue.push(srcPath);
 
-            const count = await this.getFullCountOfFolderItemsInt(srcPath);
-            const fileCount = count.files;
-    
-            const firstMsg = 'Estimating';
-            const title = 'Moving';
-            const dialogPId = this.initFileTransfer(firstMsg, title);
-            this.sendFirstUpdate(dialogPId);
+            if(destPath === Constants.RECYCLE_BIN_PATH){
+                const count = await this.getFullCountOfFolderItemsInt(srcPath);
+                const fileCount = count.files;
+        
+                const title = 'Preparing to recycle from';
+                firstMsg = 'Discovered';
+                const dialogPId = this.initFileTransfer(firstMsg, title);
+                this.sendUpdate(dialogPId);
+            }else{
+                const title = 'Moving';
+                const dialogPId = this.initFileTransfer(firstMsg, title);
+                this.sendUpdate(dialogPId);
+            }
 
             //check if destPath Exists
             const exists = await this.exists(destPath);
@@ -1221,12 +1231,13 @@ OpensWith=${shortCutData.opensWith}
     }
 
     public async deleteAsync(path:string, isFile?:boolean, isRecycleBin?:boolean):Promise<boolean> {
-        // is file or folder is not currently in the bin, move it to the bing
+        // is file or folder not currently in the bin, move it to the bin if option is allow, or delete it right away
         if(isRecycleBin){
             return await this.deleteFolderHandlerAsync(Constants.EMPTY_STRING, path, isRecycleBin);
         }
 
-        if(!path.includes(Constants.RECYCLE_BIN_PATH)){
+        const sendToRecycleBin = this.getMoveToRecycleBinState();
+        if(!path.includes(Constants.RECYCLE_BIN_PATH) && sendToRecycleBin){
             const name = this.getNameFromPath(path);
             this._restorePoint.set(`${Constants.RECYCLE_BIN_PATH}/${name}`, path);
             this.addAndUpdateSessionData(this.fileServiceRestoreKey, this._restorePoint);
@@ -1327,6 +1338,11 @@ OpensWith=${shortCutData.opensWith}
                 await this.deleteFolderAsync(path);                    
             }
         }
+    }
+
+    getMoveToRecycleBinState():boolean{
+        const confirmationState = this._defaultService.getDefaultSetting(Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE);
+        return confirmationState === (Constants.TRUE)? true : false;
     }
     
     public  async countFolderItems(path:string): Promise<number> {
@@ -1662,13 +1678,13 @@ OpensWith=${shortCutData.opensWith}
         return this._userNotificationService.getDialogPId();
     }
 
-    private sendFirstUpdate(dialogPId:number,):void{
+    private sendUpdate(dialogPId:number,):void{
         //console.log('copyAsync dialogPid:',dialogPId);
         const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`firstData:0`]}
         this._systemNotificationService.updateInformationNotify.next(firstUpdate);
     }
 
-    private sendFileTransferInformationUpdate(dialogPId:number, update:FileSystemUpdateInfo):void{
+    private sendFileTransferUpdate(dialogPId:number, update:FileTransferUpdate):void{
         const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, 
             info:[`srcPath:${update.srcPath}`,
                   `destPath:${update.destPath}`,

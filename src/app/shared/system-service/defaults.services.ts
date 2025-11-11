@@ -58,7 +58,9 @@ export class DefaultService implements BaseService{
             [Constants.DEFAULT_TASKBAR_COMBINATION, Constants.DEFAULT_TASKBAR_COMBINATION_VALUE],
             [Constants.DEFAULT_AUTO_HIDE_TASKBAR, Constants.DEFAULT_AUTO_HIDE_TASKBAR_VALUE],
             [Constants.DEFAULT_CLIP_BOARD_STATE, Constants.DEFAULT_CLIP_BOARD_STATE_VALUE],
-            [Constants.DEFAULT_SCREEN_SAVER_STATE, Constants.DEFAULT_SCREEN_SAVER_STATE_VALUE]
+            [Constants.DEFAULT_SCREEN_SAVER_STATE, Constants.DEFAULT_SCREEN_SAVER_STATE_VALUE],
+            [Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG, Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG_VALUE],
+            [Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE, Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE_VALUE]
           ]);
 
         this._sessionManagmentService.addMapBasedSession(this._defaultSettingServiceKey, this._defaultSettingsMap);
@@ -72,7 +74,7 @@ export class DefaultService implements BaseService{
         return Constants.EMPTY_STRING;
     }
 
-    setDefultData(key:string, val:string, raiseEvent:boolean = true):void{
+    updateDefultData(key:string, val:string, raiseEvent:boolean = true):void{
         this._defaultSettingsMap.set(key, val);
         this._sessionManagmentService.addMapBasedSession(this._defaultSettingServiceKey, this._defaultSettingsMap);
         

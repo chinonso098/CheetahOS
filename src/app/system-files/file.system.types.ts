@@ -1,4 +1,4 @@
-export interface FileSystemUpdateInfo {
+export interface FileTransferUpdate {
     srcPath: string;
     destPath: string;
     totalNumberOfFiles: number;
@@ -6,14 +6,14 @@ export interface FileSystemUpdateInfo {
     fileName: string;
 }
 
-export interface FilesCopiedCount{ fileCount: number; }
+export interface FileTransferCount{ fileCount: number; }
 
-export interface CopyFolderOptions {
+export interface FileTransferOptions {
     arg0: string;
     srcPath: string;
     destPath: string;
-    fileCount: number;
+    filesToTransferCount: number;
     dialogPId: number;
-    copiedFiles: FilesCopiedCount;
+    fileTransferCount: FileTransferCount;
     signal: AbortSignal;
 }

@@ -469,7 +469,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           if(isChanged){
             //auto apply
             const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${selection}`;
-            this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+            this._defaultService.updateDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
           }
 
           //const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
@@ -506,7 +506,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           if(isChanged){
             //auto apply
             const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
-            this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+            this._defaultService.updateDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
           }
 
           //await CommonFunctions.sleep(delay);
@@ -522,7 +522,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
         if(isMirror){
           const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${this.lockScreenBkgrndOption}`;
-          this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
+          this._defaultService.updateDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
         }
         if(screenPrevElmnt){  
           const desktopBkgrndImg = await this.getDesktopScreenShot();  
@@ -547,7 +547,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           if(isChanged){
             //auto apply
             const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${prevSolidColor}`;
-            this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+            this._defaultService.updateDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
           }
 
           await CommonFunctions.sleep(delay);
@@ -633,7 +633,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     const timeOutValue = this.lockScreenTimeOutOptions.find(x => x.label === this.lockScreenTimeoutOption)?.value;
     const defaultLockScreenBackgrounValue = `${this.lockScreenTimeoutOption}:${timeOutValue}`;
-    this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, defaultLockScreenBackgrounValue);
+    this._defaultService.updateDefultData(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, defaultLockScreenBackgrounValue);
   }
 
   async handleScreenPictureAndColorSelection(selection:string, evt:MouseEvent): Promise<void>{
@@ -646,19 +646,19 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     if(isDesktopView){
       const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
-      this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+      this._defaultService.updateDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
 
       if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC)
-        this._defaultService.setDefultData(Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG, selection);
+        this._defaultService.updateDefultData(Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG, selection);
 
       if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE)
-        this._defaultService.setDefultData(Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE, selection);
+        this._defaultService.updateDefultData(Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE, selection);
 
       if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR)
-        this._defaultService.setDefultData(Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR, selection);
+        this._defaultService.updateDefultData(Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR, selection);
     }else{
       const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selection}`;
-      this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
+      this._defaultService.updateDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
     }
 
     const styleClasses = (isDesktopView)
@@ -876,11 +876,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const isDesktopView = (this.selectedPersonalizationOption === this.PERSONALIZATION_DESKTOP_BACKGROUND)? true: false;
     if(isDesktopView){
       const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${selectedValue}`;
-      this._defaultService.setDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+      this._defaultService.updateDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
 
     }else{
       const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selectedValue}`;
-      this._defaultService.setDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
+      this._defaultService.updateDefultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
     }
   }
   
@@ -889,21 +889,21 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     const selectedValue = option.label;
     this.taskBarCombinationOption = selectedValue;
-    this._defaultService.setDefultData(Constants.DEFAULT_TASKBAR_COMBINATION, selectedValue);
+    this._defaultService.updateDefultData(Constants.DEFAULT_TASKBAR_COMBINATION, selectedValue);
   }
 
   changeAutoHideTaskBarState():void{
     this.autoHideTaskBarText = (this.isAutoHideTaskBar)? Constants.ON : Constants.OFF;
     const autoHideValue = (this.isAutoHideTaskBar)? Constants.TRUE : Constants.FALSE;
     const defaultAutoHideValue = `${autoHideValue}`;
-    this._defaultService.setDefultData(Constants.DEFAULT_AUTO_HIDE_TASKBAR, defaultAutoHideValue);
+    this._defaultService.updateDefultData(Constants.DEFAULT_AUTO_HIDE_TASKBAR, defaultAutoHideValue);
   }
 
   changeScreenSaverState():void{
     this.isScreenSaverActiveText = (this.isScreenSaverActive)? Constants.ON : Constants.OFF;
     const screenSaverState = (this.isScreenSaverActive)? Constants.TRUE : Constants.FALSE;
     const defaultScreenSaverState = `${screenSaverState}`;
-    this._defaultService.setDefultData(Constants.DEFAULT_SCREEN_SAVER_STATE, defaultScreenSaverState);
+    this._defaultService.updateDefultData(Constants.DEFAULT_SCREEN_SAVER_STATE, defaultScreenSaverState);
   }
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
