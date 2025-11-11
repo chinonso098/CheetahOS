@@ -47,7 +47,7 @@ export class UserNotificationService implements BaseService{
             dialogMsgType === UserNotificationType.Info ||
             //dialogMsgType === UserNotificationType.Warning ||
             dialogMsgType === UserNotificationType.PowerOnOff ||
-            dialogMsgType === UserNotificationType.FileTransfer
+            dialogMsgType === UserNotificationType.FileTransferProgress
         ){
           componentRef.setInput('inputMsg', msg);
           componentRef.setInput('inputTitle', title);
@@ -72,12 +72,12 @@ export class UserNotificationService implements BaseService{
     //     this.showDialogMsgBox(UserNotificationType.Warning, msg, title);
     // }
 
-    async showWarningNotification(message: string, title: string): Promise<boolean> {
+    async showWarningNotification(message: string, title: string, warningType:UserNotificationType = UserNotificationType.Warning): Promise<boolean> {
         return new Promise((resolve) => {
             const componentRef = this._componentReferenceService.createComponent(DialogComponent);
             componentRef.setInput('inputMsg', message);
             componentRef.setInput('inputTitle', title);
-            componentRef.setInput('notificationType', UserNotificationType.Warning );
+            componentRef.setInput('notificationType', warningType);
             this.dialogPid = componentRef.instance.processId;
       
             // hook up close events
@@ -90,13 +90,14 @@ export class UserNotificationService implements BaseService{
             });
         });
     }
+    
 
     showPowerOnOffNotification(msg:string){
         this.showDialogMsgBox(UserNotificationType.PowerOnOff, msg);
     }
 
     showFileTransferNotification(msg:string, title: string){
-        this.showDialogMsgBox(UserNotificationType.FileTransfer, msg, title);
+        this.showDialogMsgBox(UserNotificationType.FileTransferProgress, msg, title);
     }
 
     /**

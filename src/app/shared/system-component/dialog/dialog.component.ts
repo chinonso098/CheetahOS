@@ -52,7 +52,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   warnNotification = UserNotificationType.Warning;
   infoNotification =  UserNotificationType.Info;
   pwrOnOffNotification =  UserNotificationType.PowerOnOff;
-  fileTransferNotification =  UserNotificationType.FileTransfer;
+  fileTransferProgressNotification =  UserNotificationType.FileTransferProgress;
+  deleteWarnNotification = UserNotificationType.DeleteWarning;
+  deleteProgressNotification = UserNotificationType.DeleteProgress;
 
   readonly cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   readonly myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
@@ -148,7 +150,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
         this.showExtraErroMsg = true;
     }
 
-    if(this.notificationType === UserNotificationType.FileTransfer){
+    if(this.notificationType === UserNotificationType.FileTransferProgress){
       this.transferPercentageText = this.dialogMgs;
       this.transferAction = this.inputTitle;
     }
@@ -168,7 +170,10 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
 
   onYesDialogBox():void{
-    this.confirm.emit();
+    if(this.notificationOption === UserNotificationType.Warning || this.notificationOption === UserNotificationType.DeleteWarning){
+      this.cancel.emit();
+    }
+    
     this._userNotificationServices.closeDialogMsgBox(this.processId);
   }
 
@@ -208,11 +213,11 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
 
   onCloseDialogBox():void{
-    if(this.notificationOption === UserNotificationType.Warning){
+    if(this.notificationOption === UserNotificationType.Warning || this.notificationOption === UserNotificationType.DeleteWarning){
       this.cancel.emit();
     }
 
-    if(this.notificationOption === UserNotificationType.FileTransfer){
+    if(this.notificationOption === UserNotificationType.FileTransferProgress){
       this._fileService.cancelFileTransferNotify.next(this.processId);
     }
 

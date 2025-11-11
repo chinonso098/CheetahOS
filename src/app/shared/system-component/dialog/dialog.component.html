@@ -1,7 +1,8 @@
 <ng-container [ngTemplateOutlet]="notificationOption === errorNotification ? errorNotice :
                                   notificationOption === warnNotification ? warningNotice :
                                   notificationOption === infoNotification ? infoNotice :
-                                  notificationOption === pwrOnOffNotification ? shutDownRestartNotice : fileTransfer">
+                                  notificationOption === pwrOnOffNotification ? shutDownRestartNotice : 
+                                  notificationOption === deleteWarnNotification ? deleteWarning : fileTransfer">
 </ng-container>
 
 <ng-template #errorNotice>
@@ -63,7 +64,7 @@
 </ng-template>
 
 
-<ng-template #warningNotice>
+<ng-template #warningNotice >
     <cos-basicwindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="true">
         <div  class="warning-dialog-main-container"> 
             <div class="warning-dialog-mid-container" tabindex="0">
@@ -205,4 +206,44 @@
             </div>
         </div>
     </cos-window>
+</ng-template>
+
+<ng-template #deleteWarning>
+    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="true">
+        <div class="delete-warning__dialog-container">
+            <div class="delete-warning__dialog">          
+              <div class="delete-warning__dialog-body">
+                <img src="recycle-bin-placeholder.png" alt="Recycle Bin" class="delete-warning__icon" />
+          
+                <div class="delete-warning__dialog-content">
+                  <p class="delete-warning__dialog-question">
+                    Are you sure that you want to move this folder to the Recycle Bin?
+                  </p>
+          
+                  <div class="delete-warning__folder-info">
+                    <img src="folder-placeholder.png" alt="Folder" class="delete-warning__folder-icon" />
+                    <div class="delete-warning__folder-metadata">
+                      <div class="delete-warning__folder-name">New folder</div>
+                      <div class="delete-warning__folder-date">Type: 16 Mar 2023 16:00</div>
+                      <div class="delete-warning__folder-date">Path: 16 Mar 2023 16:00</div>
+                      <div class="delete-warning__folder-date">Date created: 16 Mar 2023 16:00</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          
+              <div class="delete-warning__dialog-buttons">
+                <span style="position: fixed; margin-top:10px; right:4%;">
+                    <button class="btn btn-primary" (click)="onYesDialogBox()" >
+                        Yes
+                    </button>
+                    <div style="padding-left: 5px; display: inline;"></div>
+                    <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
+                        No
+                    </button>
+                </span>
+              </div>
+            </div>
+        </div> 
+    </cos-basicwindow>
 </ng-template>

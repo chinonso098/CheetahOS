@@ -9,8 +9,10 @@ export enum UserNotificationType {
     Error = "Error",
     Info = "Info",
     Warning = "Warning",
+    DeleteWarning = "DeleteWarning",
     PowerOnOff = "ShutdownRestart",
-    FileTransfer = "FileTransfer",
+    FileTransferProgress = "FileTransferProgress",
+    DeleteProgress = "DeleteProgress",
 }
 
 export enum FileIndexIDs { 

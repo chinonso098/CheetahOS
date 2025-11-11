@@ -5,7 +5,7 @@ import { FileInfo } from "src/app/system-files/file.info";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DesktopContextMenuHelper {
-    export const checkAndHandleDesktopCntxtMenuBounds =(evt:MouseEvent, menuHeightInput:number, menuWidthInput:number):[MenuPosition, boolean] =>{
+   export const checkAndHandleDesktopCntxtMenuBounds =(evt:MouseEvent, menuHeightInput:number, menuWidthInput:number):[MenuPosition, boolean] =>{
         let xAxis = 0;
         let yAxis = 0;
         const menuWidth = menuWidthInput;
@@ -97,25 +97,25 @@ export namespace DesktopContextMenuHelper {
     }
 
     export const  checkAndHandleDesktopIconCntxtMenuBounds =(evt:MouseEvent, menuHeight:number):MenuPosition =>{
-        let yAxis = 0;
-        let verticalShift = false;
-    
-        const xAxis = 0;
-        const taskBarHeight = 40;
-        const mainWindow = document.getElementById('vantaCntnr');
-        const windowHeight =  mainWindow?.offsetHeight || 0;
-        const verticalSum = evt.clientY + menuHeight;
-    
-        if(verticalSum >= windowHeight || (windowHeight - verticalSum) <= 40){
-          verticalShift = true;
-          const shifMenuUpBy = verticalSum - windowHeight;
-          yAxis = evt.clientY - (shifMenuUpBy + taskBarHeight);
-        }
-    
-        if(!verticalShift){
-          yAxis = evt.clientY;
-        }
-    
-        return {xAxis, yAxis};
+      let yAxis = 0;
+      let verticalShift = false;
+  
+      const xAxis = 0;
+      const taskBarHeight = 40;
+      const mainWindow = document.getElementById('vantaCntnr');
+      const windowHeight =  mainWindow?.offsetHeight || 0;
+      const verticalSum = evt.clientY + menuHeight;
+  
+      if(verticalSum >= windowHeight || (windowHeight - verticalSum) <= 40){
+        verticalShift = true;
+        const shifMenuUpBy = verticalSum - windowHeight;
+        yAxis = evt.clientY - (shifMenuUpBy + taskBarHeight);
+      }
+  
+      if(!verticalShift){
+        yAxis = evt.clientY;
+      }
+  
+      return {xAxis, yAxis};
     }
 }

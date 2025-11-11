@@ -3,7 +3,7 @@ import { AfterViewInit, OnInit,OnDestroy, Component, ElementRef, ViewChild} from
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { BIRDS, GLOBE, HALO, RINGS, WAVE } from './vanta-object/vanta.interfaces';
-import { ActivityType, SortBys } from 'src/app/system-files/common.enums';
+import { ActivityType, SortBys, UserNotificationType } from 'src/app/system-files/common.enums';
 import { Colors } from './colorutil/colors';
 import { FileInfo } from 'src/app/system-files/file.info';
 
@@ -1842,6 +1842,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async onDelete(): Promise<void> {
+
+    if(this.confirmDelete){
+      let title = `Delete ${this.selectedFile.getIsFile? 'File' : 'Folder'}`;
+      let msg = Constants.EMPTY_STRING;
+      const confirmed = await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.DeleteWarning);
+      if(!confirmed) return;
+    }
+
     // Determine which files to delete
     const filesToDelete = (this.areMultipleIconsHighlighted)
       ? this.markedBtnIds.map(id => this.files[Number(id)])
