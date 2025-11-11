@@ -17,7 +17,7 @@ import { FileIndexerService } from 'src/app/shared/system-service/file.indexer.s
 export class OverFlowComponent implements AfterViewInit, OnDestroy {
   private _runningProcessService!:RunningProcessService;
   private _systemNotificationService:SystemNotificationService;
-  private _fileIndexerService:FileIndexerService;
+  private _fileIndexerService!:FileIndexerService;
 
   private _processListChangeSub!:Subscription;
   private _updateInformationSub!:Subscription;

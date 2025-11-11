@@ -3,6 +3,7 @@ import {Component, Input, OnChanges, SimpleChanges, AfterViewInit, EventEmitter,
 import { ComponentType } from 'src/app/system-files/system.types';
 import { UserNotificationType } from 'src/app/system-files/common.enums';
 
+import { FileService } from '../../system-service/file.service';
 import { WindowService } from '../../system-service/window.service';
 import { ProcessIDService } from '../../system-service/process.id.service';
 import { ProcessHandlerService } from '../../system-service/process.handler.service';
@@ -13,10 +14,10 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { AudioService } from '../../system-service/audio.services';
 
-import { basename, dirname} from 'path';
+import { basename} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { delay, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { InformationUpdate } from 'src/app/system-files/common.interfaces';
 
 @Component({
@@ -41,6 +42,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   private _systemNotificationService!:SystemNotificationService;
   private _processHandlerService!:ProcessHandlerService;
   private _audioService!:AudioService;
+  private _fileService!:FileService;
 
   private _updateInformationSub!:Subscription;
   private _autoCloseDialogSub!:Subscription;
@@ -106,7 +108,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   constructor(notificationServices:UserNotificationService,  windowService:WindowService, systemNotificationServices:SystemNotificationService, 
               sessionManagementService:SessionManagmentService, processIdService:ProcessIDService, processHandlerService:ProcessHandlerService,
-              audioService:AudioService){
+              audioService:AudioService, fileService:FileService){
 
     this._userNotificationServices = notificationServices;
     this._sessionManagementService = sessionManagementService;
@@ -115,9 +117,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this._systemNotificationService = systemNotificationServices;
     this._processHandlerService = processHandlerService;
     this._audioService = audioService;
+    this._fileService = fileService;
 
     this.processId = this._processIdService.getNewProcessId();
-
 
     this._updateInformationSub = this._systemNotificationService.updateInformationNotify.subscribe((p) =>{
       if(p.appName === this.FILE_TRANSFER_DIALOG_APP_NAME && p.pId === this.processId)
@@ -206,8 +208,13 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
 
   onCloseDialogBox():void{
-    this.cancel.emit();
-    this._userNotificationServices.closeDialogMsgBox(this.processId);
+    if(this.notificationOption === UserNotificationType.Warning){
+      this.cancel.emit();
+    }
+
+    if(this.notificationOption === UserNotificationType.FileTransfer){
+      this._fileService.cancelFileTransferNotify.next(this.processId);
+    }
 
     if(this.notificationOption !== UserNotificationType.PowerOnOff){
       this._windowService.removeWindowState(this.processId);
@@ -216,6 +223,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     if(this.notificationOption === UserNotificationType.PowerOnOff){
       this.setPwrDialogPid(this.UPDATE_0);
     }
+
+    this._userNotificationServices.closeDialogMsgBox(this.processId);
   }
 
   onPwrDialogWindowClick(evt:MouseEvent):void{

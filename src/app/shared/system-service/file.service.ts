@@ -265,9 +265,9 @@ export class FileService implements BaseService{
 
                 const isDir = await this.isDirectory(entryPath);
                 if(isDir){
-                    console.log('DID A DIR CHECK');
-                    console.log('CHECKED FOR:', entryPath);
-                    console.log('----------Copied Files--------:', copiedFiles.fileCount);
+                    // console.log('DID A DIR CHECK');
+                    // console.log('CHECKED FOR:', entryPath);
+                    // console.log('----------Copied Files--------:', copiedFiles.fileCount);
                     const result = await this.copyFolderHandlerAsync({
                         ...options,
                         srcPath: entryPath,

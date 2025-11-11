@@ -19,7 +19,7 @@ export class UserNotificationService implements BaseService{
 
     private _runningProcessService!:RunningProcessService;
     private _processIdService!:ProcessIDService;
-    private _componentReferenceService:ComponentReferenceService;
+    private _componentReferenceService!:ComponentReferenceService;
     private dialogPid = 0;
 
     name = 'usr_notification_svc';
