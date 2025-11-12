@@ -1096,7 +1096,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     const sortByMenu = [newFolder, textEditor, codeEditor ]
 
-    return sortByMenu
+    return sortByMenu;
   }
 
   getDesktopMenuData():void{
@@ -1831,8 +1831,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.iconSizeStyle = result[0];
     this.shortCutIconSizeStyle = result[1];
-    this.figCapIconSizeStyle = result[2]
-    
+    this.figCapIconSizeStyle = result[2];
   }
 
   changeGridRowColSize():void{
@@ -1844,8 +1843,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   async onDelete(): Promise<void> {
 
     if(this.confirmDelete && this.markedBtnIds.length === 1){
-      let title = `Delete ${this.selectedFile.getIsFile? 'File' : 'Folder'}`;
-      let msg = Constants.EMPTY_STRING;
+      const msg = Constants.EMPTY_STRING;
+      const title = this.selectedFile.getIsFile && this.selectedFile.getFileType === Constants.URL
+      ? 'Delete Shortcut'
+      : `Delete ${this.selectedFile.getIsFile ? 'File' : 'Folder'}`;
+    
       const confirmed = await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.DeleteWarning, this.selectedFile);
       if(!confirmed) return;
     }

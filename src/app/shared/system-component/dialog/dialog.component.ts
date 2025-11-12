@@ -54,9 +54,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   warnNotification = UserNotificationType.Warning;
   infoNotification =  UserNotificationType.Info;
   pwrOnOffNotification =  UserNotificationType.PowerOnOff;
-  fileTransferProgressNotification =  UserNotificationType.FileTransferProgress;
   deleteWarnNotification = UserNotificationType.DeleteWarning;
-  deleteProgressNotification = UserNotificationType.DeleteProgress;
+  fileTransferProgressNotification =  UserNotificationType.FileTransferProgress;
+  deleteProgressNotification = UserNotificationType.FileDeleteProgress;
 
   readonly cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   readonly myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
@@ -87,8 +87,12 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   readonly UPDATE = 'Update';
   readonly UPDATE_0 = 'Update0';
 
+  readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
+  private transferAction = Constants.EMPTY_STRING;
   showEsitmateIntervalId!: NodeJS.Timeout;
   isInit = true;
+  isFileTransferInProgress = false;
+  isFileDeleteInProgress = false;
   from = Constants.BLANK_SPACE;
   to = Constants.BLANK_SPACE;
   srcToDestPart1 = Constants.BLANK_SPACE;
@@ -103,9 +107,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   fType = Constants.EMPTY_STRING;
   fPath = Constants.EMPTY_STRING;
   fDateCreated!:Date;
-
-  readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
-  private transferAction = Constants.EMPTY_STRING;
 
   dialogTitle = Constants.EMPTY_STRING;
   type = ComponentType.System;
@@ -160,9 +161,18 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
         this.showExtraErroMsg = true;
     }
 
-    if(this.notificationType === UserNotificationType.FileTransferProgress){
-      this.transferPercentageText = this.dialogMgs;
-      this.transferAction = this.inputTitle;
+    if(this.notificationType === UserNotificationType.FileTransferProgress || this.notificationType === UserNotificationType.FileDeleteProgress){
+      if(this.notificationType === UserNotificationType.FileTransferProgress){ 
+        this.isFileTransferInProgress = true;
+        this.transferPercentageText = this.dialogMgs;
+        this.transferAction = this.inputTitle;
+      }
+
+      if(this.notificationType === UserNotificationType.FileDeleteProgress){ 
+        this.isFileDeleteInProgress = true;
+        this.transferPercentageText = this.dialogMgs;
+        this.transferAction = this.inputTitle;
+      }
     }
 
     if(this.notificationType === UserNotificationType.DeleteWarning){

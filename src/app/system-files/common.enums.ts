@@ -12,7 +12,7 @@ export enum UserNotificationType {
     DeleteWarning = "DeleteWarning",
     PowerOnOff = "ShutdownRestart",
     FileTransferProgress = "FileTransferProgress",
-    DeleteProgress = "DeleteProgress",
+    FileDeleteProgress = "FileDeleteProgress",
 }
 
 export enum FileIndexIDs { 
