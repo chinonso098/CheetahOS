@@ -800,13 +800,13 @@
 .delete-warning__folder-info {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 10px;
     padding: 8px 10px;
 }
 
 .delete-warning__folder-metadata{
     position: relative;
-    top: -8px;
+    top: -2px;
 }
 
 .delete-warning__folder-icon {

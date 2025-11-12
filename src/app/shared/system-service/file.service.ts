@@ -29,6 +29,7 @@ import { OpensWith } from "src/app/system-files/common.interfaces";
 import JSZip from "jszip";
 import { CommonFunctions } from "src/app/system-files/common.functions";
 import { FileTransferUpdate, FileTransferOptions, FileTransferCount } from "src/app/system-files/file.system.types";
+import { UserNotificationType } from "src/app/system-files/common.enums";
 
 @Injectable({
     providedIn: 'root'
@@ -916,10 +917,16 @@ export class FileService implements BaseService{
             if(destPath === Constants.RECYCLE_BIN_PATH){
                 const count = await this.getFullCountOfFolderItemsInt(srcPath);
                 const fileCount = count.files;
+
+                const folderSize = await this.getFolderSizeAsync(srcPath);
+                const size = CommonFunctions.getReadableFileSizeValue(folderSize);         
+                const sizeUnit  = CommonFunctions.getFileSizeUnit(folderSize);
         
                 const title = 'Preparing to recycle from';
-                firstMsg = 'Discovered';
-                const dialogPId = this.initFileTransfer(firstMsg, title);
+                firstMsg = `Discovered ${fileCount} items  (${size} ${sizeUnit})`;
+                console.log('first message:', firstMsg);
+                console.log('title:', title);
+                const dialogPId = this.initDeleteProcess(firstMsg, title);
                 this.sendUpdate(dialogPId);
             }else{
                 const title = 'Moving';
@@ -1673,12 +1680,18 @@ OpensWith=${shortCutData.opensWith}
         this._fileDragAndDrop = [];
     }
 
+
+    private initDeleteProcess(firstMsg:string, title:string):number{
+        this._userNotificationService.showFileTransferNotification(firstMsg, title, UserNotificationType.FileDeleteProgress);
+        return this._userNotificationService.getDialogPId();
+    }
+
     private initFileTransfer(firstMsg:string, title:string):number{
         this._userNotificationService.showFileTransferNotification(firstMsg, title);
         return this._userNotificationService.getDialogPId();
     }
 
-    private sendUpdate(dialogPId:number,):void{
+    private sendUpdate(dialogPId:number):void{
         //console.log('copyAsync dialogPid:',dialogPId);
         const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`firstData:0`]}
         this._systemNotificationService.updateInformationNotify.next(firstUpdate);

@@ -105,8 +105,8 @@ export class UserNotificationService implements BaseService{
         this.showDialogMsgBox(UserNotificationType.PowerOnOff, msg);
     }
 
-    showFileTransferNotification(msg:string, title: string){
-        this.showDialogMsgBox(UserNotificationType.FileTransferProgress, msg, title);
+    showFileTransferNotification(msg:string, title: string, type:UserNotificationType = UserNotificationType.FileTransferProgress){
+        this.showDialogMsgBox(type, msg, title);
     }
 
     /**

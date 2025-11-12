@@ -99,7 +99,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   srcToDestPart2 = Constants.BLANK_SPACE;
   transferPercentage = 0;
   transferProgress = 0;
-  transferPercentageText = Constants.BLANK_SPACE;
+  progressUpdateText = Constants.BLANK_SPACE;
   fileName = Constants.BLANK_SPACE;
 
   fIcon = Constants.EMPTY_STRING;
@@ -164,13 +164,13 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     if(this.notificationType === UserNotificationType.FileTransferProgress || this.notificationType === UserNotificationType.FileDeleteProgress){
       if(this.notificationType === UserNotificationType.FileTransferProgress){ 
         this.isFileTransferInProgress = true;
-        this.transferPercentageText = this.dialogMgs;
+        this.progressUpdateText = this.dialogMgs;
         this.transferAction = this.inputTitle;
       }
 
       if(this.notificationType === UserNotificationType.FileDeleteProgress){ 
         this.isFileDeleteInProgress = true;
-        this.transferPercentageText = this.dialogMgs;
+        this.progressUpdateText = this.dialogMgs;
         this.transferAction = this.inputTitle;
       }
     }
@@ -200,7 +200,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   onYesDialogBox():void{
     if(this.notificationOption === UserNotificationType.Warning || this.notificationOption === UserNotificationType.DeleteWarning){
-      this.cancel.emit();
+      this.confirm.emit();
     }
     
     this._userNotificationServices.closeDialogMsgBox(this.processId);
@@ -287,7 +287,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     const isFirstData  = (firstEntryName === firstData);
 
     if(isFirstData){
-      this.transferPercentageText = this.dialogMgs;
+      this.progressUpdateText = this.dialogMgs;
       this.showEstimating();
     }else{
       this.isInit = false;
@@ -302,20 +302,20 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     const delay = 250; //.25 sec
     const maxAppendNum = 5;
     let counter = -1;
-    this.transferPercentageText = this.dialogMgs;
+    this.progressUpdateText = this.dialogMgs;
 
     this.showEsitmateIntervalId = setInterval(() => {
       while(counter < maxAppendNum){
-        const curString = this.transferPercentageText;
+        const curString = this.progressUpdateText;
         if(counter >= 0){
-          this.transferPercentageText = `${curString}.`;
+          this.progressUpdateText = `${curString}.`;
         }
         counter++;
         break;
       }
 
       if(counter === maxAppendNum) {
-        this.transferPercentageText = this.dialogMgs;
+        this.progressUpdateText = this.dialogMgs;
         counter = 0
       }
     }, delay);
@@ -357,7 +357,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     const value = this.getTransferPercentage(totalFiles, copiedFiles);
     this.transferPercentage = value;
     this.transferProgress = value;
-    this.transferPercentageText = `${value}% complete`;
+    this.progressUpdateText = `${value}% complete`;
     this.fileName = fileName;
   
     //Auto-close if 100% complete

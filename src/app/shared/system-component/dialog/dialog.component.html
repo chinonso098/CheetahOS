@@ -28,7 +28,7 @@
             <div class="error-dialog-tail-container">
                 <span style="position: fixed; margin-top:10px; right:4%;">
                     <button class="btn btn-primary" (click)="onCloseDialogBox()" >
-                    OK
+                        Ok
                     </button>
                 </span>
             </div>
@@ -55,7 +55,7 @@
             <div class="info-dialog-tail-container">
                 <span style="position: fixed; margin-top:10px; right:4%;">
                     <button class="btn btn-primary" (click)="onCloseDialogBox()" >
-                    OK
+                        Ok
                     </button>
                 </span>
             </div>
@@ -63,8 +63,7 @@
     </cos-basicwindow>
 </ng-template>
 
-
-<ng-template #warningNotice >
+<ng-template #warningNotice>
     <cos-basicwindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="true">
         <div  class="warning-dialog-main-container"> 
             <div class="warning-dialog-mid-container" tabindex="0">
@@ -83,19 +82,17 @@
             <div class="warning-dialog-tail-container">
                 <span style="position: fixed; margin-top:10px; right:4%;">
                     <button class="btn btn-primary" (click)="onYesDialogBox()" >
-                    Yes
+                        Yes
                     </button>
                     <div style="padding-left: 5px; display: inline;"></div>
                     <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
-                    No
+                        No
                     </button>
                 </span>
             </div>
         </div>
     </cos-basicwindow>
 </ng-template>
-
-
 
 <ng-template #shutDownRestartNotice>
     <div ngDraggable [handle]="leftHS4"  (click)="onPwrDialogWindowClick($event)"  [ngDraggable]="false" class="shutdown-restart-dialog-main-container" id="shutdown-restart-dialog-{{processId}}">
@@ -168,7 +165,7 @@
 
 <!-- File Transfer Dialog To be Added -->
 <ng-template #fileTransfer>
-    <cos-window [runningProcessID]="processId" [processAppIcon]="fileTransferIcon" [processAppName]="isInit? dialogTitle: transferPercentageText" [isMaximizable]="isMaximizable">
+    <cos-window [runningProcessID]="processId" [processAppIcon]="fileTransferIcon" [processAppName]="isInit? dialogTitle: progressUpdateText" [isMaximizable]="isMaximizable">
         <div class="file-transfer-dialog-main-container" tabindex="0">
             <div class="file-transfer-dialog-content-container" > 
 
@@ -184,7 +181,7 @@
                     </div>
     
                     <div class="file-transfer-dialog-progress-text">
-                        <p>{{transferPercentageText}}</p>
+                        <p>{{progressUpdateText}}</p>
                     </div>
     
                     <div class="file-transfer-dialog-progress-container">
@@ -193,7 +190,6 @@
                         </div>
                     </div>
                 }
-
 
                 @if(isFileDeleteInProgress){
                     <div class="file-transfer-dialog-from-to">
@@ -207,7 +203,7 @@
                     </div>
     
                     <div class="file-transfer-dialog-progress-text">
-                        <p>{{transferPercentageText}}</p>
+                        <p>{{progressUpdateText}}</p>
                     </div>
     
                     <div class="file-transfer-dialog-progress-container">
@@ -216,7 +212,6 @@
                         </div>
                     </div>
                 }
-
 
                 <div class="file-transfer-dialog-progress-file-name">
                     @if(!isInit){
