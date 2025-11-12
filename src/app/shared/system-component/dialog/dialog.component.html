@@ -213,7 +213,7 @@
         <div class="delete-warning__dialog-container">
             <div class="delete-warning__dialog">          
               <div class="delete-warning__dialog-body">
-                <img src="recycle-bin-placeholder.png" alt="Recycle Bin" class="delete-warning__icon" />
+                <img [src]="contentInRecycleBin" alt="Recycle Bin" class="delete-warning__icon" />
           
                 <div class="delete-warning__dialog-content">
                   <p class="delete-warning__dialog-question">
@@ -221,12 +221,12 @@
                   </p>
           
                   <div class="delete-warning__folder-info">
-                    <img src="folder-placeholder.png" alt="Folder" class="delete-warning__folder-icon" />
+                    <img [src]="fIcon" alt="Folder" class="delete-warning__folder-icon" />
                     <div class="delete-warning__folder-metadata">
-                      <div class="delete-warning__folder-name">New folder</div>
-                      <div class="delete-warning__folder-date">Type: 16 Mar 2023 16:00</div>
-                      <div class="delete-warning__folder-date">Path: 16 Mar 2023 16:00</div>
-                      <div class="delete-warning__folder-date">Date created: 16 Mar 2023 16:00</div>
+                      <div class="delete-warning__folder-name">Name:{{fName}}</div>
+                      <div class="delete-warning__folder-date">Type:{{fType}}</div>
+                      <div class="delete-warning__folder-date">Path:{{fPath}}</div>
+                      <div class="delete-warning__folder-date"> Date created:{{fDateCreated | date: 'dd MMM yyyy HH:mm' }}</div>
                     </div>
                   </div>
                 </div>

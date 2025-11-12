@@ -9,6 +9,7 @@ import { BaseService } from "./base.service.interface";
 import { ComponentReferenceService } from "./component.reference.service";
 import { UserNotificationType } from "src/app/system-files/common.enums";
 import { DialogComponent } from "../system-component/dialog/dialog.component";
+import { FileInfo } from "src/app/system-files/file.info";
 
 
 @Injectable({
@@ -72,12 +73,20 @@ export class UserNotificationService implements BaseService{
     //     this.showDialogMsgBox(UserNotificationType.Warning, msg, title);
     // }
 
-    async showWarningNotification(message: string, title: string, warningType:UserNotificationType = UserNotificationType.Warning): Promise<boolean> {
+    async showWarningNotification(message: string, title: string, warningType:UserNotificationType = UserNotificationType.Warning, fileInfo?:FileInfo): Promise<boolean> {
         return new Promise((resolve) => {
             const componentRef = this._componentReferenceService.createComponent(DialogComponent);
             componentRef.setInput('inputMsg', message);
             componentRef.setInput('inputTitle', title);
             componentRef.setInput('notificationType', warningType);
+
+            if(warningType === UserNotificationType.DeleteWarning){
+                if(!fileInfo){
+                    console.error('File Information Can not be undefined or null');
+                    resolve(false);
+                }
+                componentRef.setInput('inputFile', fileInfo);
+            }
             this.dialogPid = componentRef.instance.processId;
       
             // hook up close events

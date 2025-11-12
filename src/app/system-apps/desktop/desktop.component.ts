@@ -294,7 +294,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
               scriptService:ScriptService, audioService:AudioService, menuService:MenuService, 
               fileService:FileService, windowService:WindowService, systemNotificationServices:SystemNotificationService,
               userNotificationService:UserNotificationService, activityHistoryService:ActivityHistoryService, formBuilder:FormBuilder,
-              defaultService: DefaultService, elRef:ElementRef) { 
+              defaultService: DefaultService, elRef:ElementRef){ 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -1843,10 +1843,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async onDelete(): Promise<void> {
 
-    if(this.confirmDelete){
+    if(this.confirmDelete && this.markedBtnIds.length === 1){
       let title = `Delete ${this.selectedFile.getIsFile? 'File' : 'Folder'}`;
       let msg = Constants.EMPTY_STRING;
-      const confirmed = await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.DeleteWarning);
+      const confirmed = await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.DeleteWarning, this.selectedFile);
       if(!confirmed) return;
     }
 

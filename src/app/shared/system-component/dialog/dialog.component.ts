@@ -19,6 +19,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Subscription } from 'rxjs';
 import { InformationUpdate } from 'src/app/system-files/common.interfaces';
+import { FileInfo } from 'src/app/system-files/file.info';
 
 @Component({
   selector: 'cos-dialog',
@@ -32,6 +33,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   @Input() inputMsg = Constants.EMPTY_STRING;
   @Input() inputTitle = Constants.EMPTY_STRING;
   @Input() notificationType = Constants.EMPTY_STRING;
+  @Input() inputFile!:FileInfo; 
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
 
@@ -58,6 +60,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   readonly cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   readonly myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
+  readonly contentInRecycleBin = `${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
+  readonly emptyRecycleBin = `${Constants.IMAGE_BASE_PATH}empty_bin.png`;
   readonly infoIcon = `${Constants.IMAGE_BASE_PATH}info.png`;
   readonly warningIcon = `${Constants.IMAGE_BASE_PATH}warning.png`;
   readonly errorIcon = `${Constants.IMAGE_BASE_PATH}red_x.png`;
@@ -93,6 +97,12 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   transferProgress = 0;
   transferPercentageText = Constants.BLANK_SPACE;
   fileName = Constants.BLANK_SPACE;
+
+  fIcon = Constants.EMPTY_STRING;
+  fName = Constants.EMPTY_STRING;
+  fType = Constants.EMPTY_STRING;
+  fPath = Constants.EMPTY_STRING;
+  fDateCreated!:Date;
 
   readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
   private transferAction = Constants.EMPTY_STRING;
@@ -153,6 +163,15 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     if(this.notificationType === UserNotificationType.FileTransferProgress){
       this.transferPercentageText = this.dialogMgs;
       this.transferAction = this.inputTitle;
+    }
+
+    if(this.notificationType === UserNotificationType.DeleteWarning){
+      console.log('File Input:', this.inputFile);
+      this.fIcon = this.inputFile.getIconPath;
+      this.fName = this.inputFile.getFileName;
+      this.fType = this.inputFile.getFileType;
+      this.fPath = this.inputFile.getCurrentPath;
+      this.fDateCreated = this.inputFile.getDateCreated;
     }
   }
 
@@ -246,7 +265,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     if(this.notificationOption === this.errorNotification)
       await this._audioService.play(this.errorNotificationAudio);
 
-    if(this.notificationOption === this.warnNotification)
+    if(this.notificationOption === this.warnNotification || this.notificationOption === this.deleteWarnNotification)
       await this._audioService.play(this.cheetahBackGroundNotifyAudio);
   }
 
