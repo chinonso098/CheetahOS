@@ -196,10 +196,6 @@
                         <p class="file-transfer-p1">{{srcToDestPart1}}</p>
                         &nbsp;
                         <p class="file-transfer-p2">{{from}}</p>
-                        &nbsp;
-                        <p class="file-transfer-p1">{{srcToDestPart2}}</p>
-                        &nbsp;
-                        <p class="file-transfer-p3">{{to}}</p>
                     </div>
     
                     <div class="file-transfer-dialog-progress-text">
@@ -207,7 +203,7 @@
                     </div>
     
                     <div class="file-transfer-dialog-progress-container">
-                        <div class="file-transfer-dialog-progress-bar-1" [style.width.%]="transferProgress">
+                        <div class="file-transfer-dialog-progress-bar-1">
                             <div class="progress-bar__light-effect-1"></div>
                         </div>
                     </div>
@@ -216,10 +212,16 @@
                 <div class="file-transfer-dialog-progress-file-name">
                     @if(!isInit){
                         <p>Name: {{fileName}}</p>
+                        <!--<p>Time remaining: About {{fileName}}</p>
+                        <p>Items remaining: {{fileName}}</p>-->
                     }
                 </div>
             </div>
             <div class="file-transfer-dialog-tail-container">
+                <div class="file-tranfer__details-option">
+                    <div class="file-tranfer__icon"><img [src]="'osdrive/Cheetah/System/Imageres/arrow_down.png'"></div>
+                    <div class="file-tranfer__info">More details</div>
+                </div>
                 <span style="position: fixed; margin-top:10px; right:4%;">
                     <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
                         <p class="file-transfer-btn-cancel">Cancel</p>

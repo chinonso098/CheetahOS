@@ -48,7 +48,8 @@ export class UserNotificationService implements BaseService{
             dialogMsgType === UserNotificationType.Info ||
             //dialogMsgType === UserNotificationType.Warning ||
             dialogMsgType === UserNotificationType.PowerOnOff ||
-            dialogMsgType === UserNotificationType.FileTransferProgress
+            dialogMsgType === UserNotificationType.FileTransferProgress||
+            dialogMsgType === UserNotificationType.FileDeleteProgress
         ){
           componentRef.setInput('inputMsg', msg);
           componentRef.setInput('inputTitle', title);

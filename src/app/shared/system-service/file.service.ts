@@ -922,7 +922,7 @@ export class FileService implements BaseService{
                 const size = CommonFunctions.getReadableFileSizeValue(folderSize);         
                 const sizeUnit  = CommonFunctions.getFileSizeUnit(folderSize);
         
-                const title = 'Preparing to recycle from';
+                const title = `Preparing to recycle from ${basename(srcPath)}`;
                 firstMsg = `Discovered ${fileCount} items  (${size} ${sizeUnit})`;
                 console.log('first message:', firstMsg);
                 console.log('title:', title);
@@ -1455,7 +1455,7 @@ OpensWith=${shortCutData.opensWith}
     }
 
     private changeExtToZip(filename: string): string {
-        const lastDotIndex = filename.lastIndexOf('.');
+        const lastDotIndex = filename.lastIndexOf(Constants.DOT);
         return lastDotIndex === -1
             ? `${filename}.cab`
             : `${filename.slice(0, lastDotIndex)}.cab`;

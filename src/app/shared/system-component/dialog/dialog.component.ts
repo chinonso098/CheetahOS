@@ -170,13 +170,14 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
       if(this.notificationType === UserNotificationType.FileDeleteProgress){ 
         this.isFileDeleteInProgress = true;
+        this.dialogTitle = this.dialogMgs;
         this.progressUpdateText = this.dialogMgs;
-        this.transferAction = this.inputTitle;
+        this.from = this.inputTitle.replace('Preparing to recycle from ', Constants.EMPTY_STRING);
+        this.srcToDestPart1 = 'Preparing to recycle from';
       }
     }
 
     if(this.notificationType === UserNotificationType.DeleteWarning){
-      console.log('File Input:', this.inputFile);
       this.fIcon = this.inputFile.getIconPath;
       this.fName = this.inputFile.getFileName;
       this.fType = this.inputFile.getFileType;
@@ -285,6 +286,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     const firstEntryName = updateInfo[0].split(Constants.COLON)[0];
     const firstEntryValue = Number(updateInfo[0].split(Constants.COLON)[1]);
     const isFirstData  = (firstEntryName === firstData);
+
+    console.log('updateFileTransferDialog:', update);
 
     if(isFirstData){
       this.progressUpdateText = this.dialogMgs;
