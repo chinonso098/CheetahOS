@@ -11,7 +11,7 @@ export interface FileTransferUpdate {
 
 export interface FileTransferCount{ fileCount: number; }
 
-export interface FileTransferOptions {
+export interface FileTransferCopyOptions {
     arg0: string;
     srcPath: string;
     destPath: string;
@@ -21,4 +21,13 @@ export interface FileTransferOptions {
     initialSize:number;
     currentSize:number;
     signal: AbortSignal;
+}
+
+export interface FileTransferMoveOptions {
+    destPath: string;
+    folderToProcessingQueue: string[];
+    folderToDeleteStack: string[];
+    isRecycleBin?: boolean;
+    moveFolderItself?: boolean; // true = move folder, false = move only contents
+    skipCounter?: number;
 }
