@@ -18,7 +18,6 @@ export interface FileTransferCopyOptions {
     filesToTransferCount: number;
     dialogPId: number;
     fileTransferCount: FileTransferCount;
-    initialSize:number;
     currentSize:number;
     signal: AbortSignal;
 }
@@ -27,6 +26,11 @@ export interface FileTransferMoveOptions {
     destPath: string;
     folderToProcessingQueue: string[];
     folderToDeleteStack: string[];
+    filesToMoveCount: number;
+    dialogPId: number;
+    filesMovedCount: FileTransferCount;
+    currentSize:number;
+    signal: AbortSignal;
     isRecycleBin?: boolean;
     moveFolderItself?: boolean; // true = move folder, false = move only contents
     skipCounter?: number;

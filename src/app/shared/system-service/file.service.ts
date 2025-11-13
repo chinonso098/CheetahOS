@@ -30,7 +30,6 @@ import JSZip from "jszip";
 import { CommonFunctions } from "src/app/system-files/common.functions";
 import { FileTransferUpdate, FileTransferCopyOptions, FileTransferCount, FileTransferMoveOptions } from "src/app/system-files/file.system.types";
 import { UserNotificationType } from "src/app/system-files/common.enums";
-
 @Injectable({
     providedIn: 'root'
 })
@@ -78,8 +77,6 @@ export class FileService implements BaseService{
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
     description = 'Mediates btwn ui & filesystem';
-
-
     
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService,
                 sessionManagmentService:SessionManagmentService, systemNotificationService:SystemNotificationService, defaultService:DefaultService){ 
@@ -222,7 +219,7 @@ export class FileService implements BaseService{
         const fileToCopyCount = count.files;
 
         const result = isDirectory
-            ? await this.copyFolderHandlerAsync({arg0:Constants.EMPTY_STRING, srcPath, destPath, filesToTransferCount: fileToCopyCount, dialogPId, fileTransferCount:filesTrasnferedCount, initialSize:dirSize, currentSize:dirSize, signal})
+            ? await this.copyFolderHandlerAsync({arg0:Constants.EMPTY_STRING, srcPath, destPath, filesToTransferCount: fileToCopyCount, dialogPId, fileTransferCount:filesTrasnferedCount, currentSize:dirSize, signal})
             : await this.copyFileAsync(srcPath, destPath);
 
         await this.recalculateUsedStorage();
@@ -483,7 +480,6 @@ export class FileService implements BaseService{
             });
         });
     }
-
 
     public async geFileMetaData(path: string): Promise<FileMetaData> {
         return new Promise((resolve) =>{
@@ -762,7 +758,7 @@ export class FileService implements BaseService{
 
     private isDataUrl(utf8Data: string):boolean{
         const dataPrefix = utf8Data.substring(0, 5);
-        const isDataUrl = (dataPrefix === 'data:')
+        const isDataUrl = (dataPrefix === 'data:');
 
         return isDataUrl;
     }
@@ -905,10 +901,32 @@ export class FileService implements BaseService{
         const result = await this.createFolderAsync(directoryPath, newName);
         if(!result){ return result }
 
+        this.abortController = new AbortController();
+        const signal = this.abortController.signal;
+
+        const firstMsg = 'Estimating';
+        const title = 'Moving';
+
+        const dialogPId = this.initFileTransfer(firstMsg, title);
+        this.sendUpdate(dialogPId);
+
+        const dirItemsCount = await this.getFullCountOfFolderItemsInt(srcPath);
+        const dirFilesCount = dirItemsCount.files;
+        const folderSize = await this.getFolderSizeAsync(srcPath);
+        const filesMovedCount:FileTransferCount = { fileCount: 0};
+
         folderToProcessingQueue.push(srcPath);
-        const isRenameSuccessful = await this.moveHandlerAsync({destPath, folderToProcessingQueue, folderToDeleteStack,
-            moveFolderItself: false, // same as moveHandlerBAsync
-        });
+        const isRenameSuccessful = await this.moveHandlerAsync({ 
+            destPath, 
+            folderToProcessingQueue, 
+            folderToDeleteStack,
+            filesToMoveCount:dirFilesCount,
+            dialogPId,
+            filesMovedCount,
+            currentSize:folderSize,
+            signal,
+            moveFolderItself: false  // same as moveHandlerBAsync
+        });   
         
         if(isRenameSuccessful){
           await this.deleteEmptyFolders(folderToDeleteStack);
@@ -921,9 +939,14 @@ export class FileService implements BaseService{
     public async moveAsync(srcPath: string, destPath: string, isFile?: boolean, isRecycleBin?: boolean): Promise<boolean> {
         const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
 
+        this.abortController = new AbortController();
+        const signal = this.abortController.signal;
+
         let firstMsg = 'Estimating';
-        let title = Constants.EMPTY_STRING;
         let dialogPId = 0;
+        let dirFilesCount = 0;
+        let folderSize = 0;
+        const filesMovedCount:FileTransferCount = { fileCount: 0};
         
         if(isDirectory){
             const folderToProcessingQueue:string[] =  [];
@@ -932,16 +955,16 @@ export class FileService implements BaseService{
 
             folderToProcessingQueue.push(srcPath);
 
-            if(destPath === Constants.RECYCLE_BIN_PATH){
-                const count = await this.getFullCountOfFolderItemsInt(srcPath);
-                const fileCount = count.files;
+            const dirItemsCount = await this.getFullCountOfFolderItemsInt(srcPath);
+            dirFilesCount = dirItemsCount.files;
+            folderSize = await this.getFolderSizeAsync(srcPath);
 
-                const folderSize = await this.getFolderSizeAsync(srcPath);
+            if(destPath === Constants.RECYCLE_BIN_PATH){
                 const size = CommonFunctions.getReadableFileSizeValue(folderSize);         
                 const sizeUnit  = CommonFunctions.getFileSizeUnit(folderSize);
         
                 const title = `Preparing to recycle:from:${basename(srcPath)}`;
-                firstMsg = `Discovered ${fileCount} items  (${size} ${sizeUnit})`;
+                firstMsg = `Discovered ${dirFilesCount} items  (${size} ${sizeUnit})`;
                 const dialogPId = this.initDeleteProcess(firstMsg, title);
                 this.sendUpdate(dialogPId);
             }else{
@@ -953,11 +976,28 @@ export class FileService implements BaseService{
             //check if destPath Exists
             const exists = await this.exists(destPath);
             if(exists){
-                result = await this.moveHandlerAsync({ destPath, folderToProcessingQueue,folderToDeleteStack, isRecycleBin,      // or false
+                result = await this.moveHandlerAsync({ 
+                    destPath, 
+                    folderToProcessingQueue, 
+                    folderToDeleteStack,
+                    filesToMoveCount:dirFilesCount,
+                    dialogPId,
+                    filesMovedCount,
+                    currentSize:folderSize,
+                    signal,
+                    isRecycleBin,      // or false
                     moveFolderItself: true   // same as moveHandlerAAsync
                 });
             }else{
-                result = await this.moveHandlerAsync({ destPath, folderToProcessingQueue, folderToDeleteStack,
+                result = await this.moveHandlerAsync({ 
+                    destPath, 
+                    folderToProcessingQueue, 
+                    folderToDeleteStack,
+                    filesToMoveCount:dirFilesCount,
+                    dialogPId,
+                    filesMovedCount,
+                    currentSize:folderSize,
+                    signal,
                     moveFolderItself: false  // same as moveHandlerBAsync
                 });   
             }
@@ -977,20 +1017,21 @@ export class FileService implements BaseService{
         }
     }
 
-
     private async moveHandlerAsync(options: FileTransferMoveOptions): Promise<boolean> {
-        const {
-            destPath,
-            folderToProcessingQueue,
-            folderToDeleteStack,
-            isRecycleBin = false,
-            moveFolderItself = true,
-        } = options;
+        const {destPath, folderToProcessingQueue, folderToDeleteStack, filesToMoveCount, dialogPId,
+            filesMovedCount, signal, isRecycleBin = false, moveFolderItself = true } = options;
     
-        let { skipCounter = 0 } = options;
+        let { skipCounter = 0, } = options;
     
         if (folderToProcessingQueue.length === 0)
             return true;
+    
+        //Abort check before any I/O
+        if((dialogPId === this._dialogPIdToCancel) && signal.aborted){
+            this._dialogPIdToCancel = 0;
+            console.warn("Move operation aborted.");
+            return false;
+        }
     
         const srcPath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
         folderToDeleteStack.push(srcPath);
@@ -998,7 +1039,7 @@ export class FileService implements BaseService{
         let folderName = this.getNameFromPath(srcPath);
         let shouldCreateFolder = true;
     
-        // In "contents only" mode (B), skip creating the top-level folder
+        // In "contents only" mode, skip creating the top-level folder
         if (!moveFolderItself && skipCounter === 0) {
             folderName = Constants.EMPTY_STRING;
             shouldCreateFolder = false;
@@ -1016,30 +1057,84 @@ export class FileService implements BaseService{
         }
     
         skipCounter++;
+        let activeTasks: Promise<boolean>[] = [];
     
         for (const directoryEntry of loadedDirectoryEntries) {
-            const fullSrc = `${srcPath}/${directoryEntry}`;
-            const isDir = await this.isDirectory(fullSrc);
+            const fullSrcPath = `${srcPath}/${directoryEntry}`;
     
-            if (isDir) {
-                folderToProcessingQueue.push(fullSrc);
-            } else {
-                const fullDest = `${destPath}/${folderName}`;
-                const result = await this.moveFileAsync(fullSrc, fullDest, undefined, isRecycleBin);
-                if (!result) {
-                    console.error(`file:${fullSrc} failed to move to destination:${fullDest}`);
-                    return false;
+            // Abort check before scheduling the task
+            if((dialogPId === this._dialogPIdToCancel) && signal.aborted){
+                this._dialogPIdToCancel = 0;
+                console.warn("Move operation aborted.");
+                return false;
+            }
+    
+            const isDir = await this.isDirectory(fullSrcPath);
+            const task = (async ()=>{
+                if(isDir){
+                    folderToProcessingQueue.push(fullSrcPath);
+                    return true;
+                }else{
+                    const fullDestPath = `${destPath}/${folderName}`;
+                    const start = performance.now();
+                    const fileMetaData = await this.geFileMetaData(fullSrcPath);
+                    const result = await this.moveFileAsync(fullSrcPath, fullDestPath, undefined, isRecycleBin);
+                    const end = performance.now();
+                    const duration = end - start;
+    
+                    if(result){
+                        filesMovedCount.fileCount++;
+                        const itemsRemaining = filesToMoveCount - filesMovedCount.fileCount;
+                        const estimatedRemainingTime = duration * itemsRemaining;
+                        options.currentSize = Math.max(0, (options.currentSize ?? 0) - fileMetaData.getSize);
+                        const itemsRemainingSize = options.currentSize;
+    
+                        // Generate transfer update
+                        const transferUpdate = this.genFileTransferUpdate(
+                            srcPath,
+                            fullDestPath,
+                            filesToMoveCount,
+                            filesMovedCount.fileCount,
+                            estimatedRemainingTime,
+                            itemsRemaining,
+                            itemsRemainingSize,
+                            directoryEntry
+                        );
+    
+                        this.sendFileTransferUpdate(dialogPId, transferUpdate);
+                        return true;
+                    }else{
+                        console.error(`file:${fullSrcPath} failed to move to destination:${fullDestPath}`);
+                        return false;
+                    }
                 }
+            })();
+    
+            activeTasks.push(task);
+    
+            //Throttle to maintain concurrency limit
+            if (activeTasks.length >= this.CONCURRENCY_LIMIT) {
+                const results = await Promise.allSettled(activeTasks);
+                const failed = results.some(r => r.status === "fulfilled" && r.value === false);
+                if(failed)return false;
+                activeTasks = [];
             }
         }
     
-        return this.moveHandlerAsync({
-            ...options,
+        // Wait for remaining tasks
+        if (activeTasks.length > 0) {
+            const results = await Promise.allSettled(activeTasks);
+            const failed = results.some(r => r.status === "fulfilled" && r.value === false);
+            if (failed) return false;
+        }
+    
+        // Recursive call for next folder in queue
+        return this.moveHandlerAsync(Object.assign(options, {
             destPath: `${destPath}/${folderName}`,
             folderToProcessingQueue,
             folderToDeleteStack,
             skipCounter,
-        });
+        }));
     }
 
     //virtual filesystem, use copy and then delete. There is a BrowserFS bug causing an error to be thrown
