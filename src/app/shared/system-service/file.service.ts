@@ -253,7 +253,7 @@ export class FileService implements BaseService{
         return result;
     }
 
-    private async copyFolderHandlerAsync_sequencial(options: FileTransferOptions): Promise<boolean> {
+    private async copyFolderHandlerAsync(options: FileTransferOptions): Promise<boolean> {
         const { arg0, srcPath, destPath, filesToTransferCount: fileCount, dialogPId, fileTransferCount: copiedFiles, signal } = options;
 
         const folderName = this.getNameFromPath(srcPath);
@@ -270,27 +270,39 @@ export class FileService implements BaseService{
 
                 const isDir = await this.isDirectory(entryPath);
                 if(isDir){
-                    // console.log('DID A DIR CHECK');
-                    // console.log('CHECKED FOR:', entryPath);
-                    // console.log('----------Copied Files--------:', copiedFiles.fileCount);
-                    const result = await this.copyFolderHandlerAsync_sequencial({
-                        ...options,
+                    const result = await this.copyFolderHandlerAsync(Object.assign(options, {
                         srcPath: entryPath,
                         destPath: `${destPath}/${folderName}`,
-                        fileTransferCount: copiedFiles
-                    });
+                    }));
                     if(!result){
                         console.error(`Failed to copy directory: ${entryPath}`);
                         return false;
                     }
                 } else {
+                    const start = performance.now();
                     const result = await this.copyFileAsync(entryPath, `${destPath}/${folderName}`);
-                    if(result){
-                        //console.info(`file:${entryPath} successfully copied to destination:${destPath}/${folderName}`);
+                    const fileMetaData = await this.geFileMetaData(entryPath);
+                    const end = performance.now();
+                    const duration = end - start;
 
+                    if(result){
                         copiedFiles.fileCount++;
-                        //const infoUpdate = this.genFileTransferUpdate(srcPath, destPath, fileCount, copiedFiles.fileCount, directoryEntry);
-                        //this.sendFileTransferUpdate(dialogPId, infoUpdate);
+                        const itemsRemaining = fileCount - copiedFiles.fileCount;
+                        const timeRemaining = duration * itemsRemaining;
+                        options.currentSize = Math.max(0, (options.currentSize ?? 0) - fileMetaData.getSize);
+                        const itemsRemainingSize = options.currentSize;
+
+                        const transferUpdate = this.genFileTransferUpdate(
+                            srcPath,
+                            destPath,
+                            fileCount,
+                            copiedFiles.fileCount,
+                            timeRemaining,
+                            itemsRemaining,
+                            itemsRemainingSize,
+                            directoryEntry
+                        );
+                        this.sendFileTransferUpdate(dialogPId, transferUpdate);
                     } else {
                         console.error(`file:${entryPath} failed to copy to destination:${destPath}/${folderName}`);
                         return false;
@@ -307,8 +319,8 @@ export class FileService implements BaseService{
      * @param options 
      * @returns 
      */
-    private async copyFolderHandlerAsync(options: FileTransferOptions): Promise<boolean> {
-        const { arg0, srcPath, destPath, filesToTransferCount: fileCount, dialogPId, fileTransferCount: copiedFiles, currentSize, signal } = options;
+    private async copyFolderHandlerAsync_parralel(options: FileTransferOptions): Promise<boolean> {
+        const { arg0, srcPath, destPath, filesToTransferCount: fileCount, dialogPId, fileTransferCount: copiedFiles, signal } = options;
     
         const folderName = this.getNameFromPath(srcPath);
         const createFolderResult = await this.createFolderAsync(destPath, folderName);
@@ -328,12 +340,10 @@ export class FileService implements BaseService{
             const isDir = await this.isDirectory(entryPath);
             const task = (async()=>{
                 if(isDir){
-                    const result = await this.copyFolderHandlerAsync({
-                        ...options,
+                    const result = await this.copyFolderHandlerAsync_parralel(Object.assign(options, {
                         srcPath: entryPath,
                         destPath: `${destPath}/${folderName}`,
-                        fileTransferCount: copiedFiles
-                    });
+                    }));
                     if(!result){
                         console.error(`Failed to copy directory: ${entryPath}`);
                         return false;
@@ -349,10 +359,19 @@ export class FileService implements BaseService{
                         copiedFiles.fileCount++;
                         const itemsRemaining = fileCount - copiedFiles.fileCount;
                         const timeRemaining = duration * itemsRemaining;
-                        const itemsRemainingSize = currentSize - fileMetaData.getSize;
-                        options.currentSize = itemsRemainingSize;
+                        options.currentSize = Math.max(0, (options.currentSize ?? 0) - fileMetaData.getSize);
+                        const itemsRemainingSize = options.currentSize;
 
-                        const transferUpdate = this.genFileTransferUpdate(srcPath, destPath, fileCount, copiedFiles.fileCount, timeRemaining, itemsRemaining, itemsRemainingSize, directoryEntry);
+                        const transferUpdate = this.genFileTransferUpdate(
+                            srcPath,
+                            destPath,
+                            fileCount,
+                            copiedFiles.fileCount,
+                            timeRemaining,
+                            itemsRemaining,
+                            itemsRemainingSize,
+                            directoryEntry
+                        );
                         this.sendFileTransferUpdate(dialogPId, transferUpdate);
                     } else {
                         console.error(`file:${entryPath} failed to copy to destination:${destPath}/${folderName}`);
