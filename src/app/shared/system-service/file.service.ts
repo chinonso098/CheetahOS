@@ -253,7 +253,12 @@ export class FileService implements BaseService{
         return result;
     }
 
-    private async copyFolderHandlerAsync(options: FileTransferOptions): Promise<boolean> {
+    /**
+    * Copies files sequentially
+     * @param options 
+     * @returns 
+     */
+    private async copyFolderHandlerSequenceAsync(options: FileTransferOptions): Promise<boolean> {
         const { arg0, srcPath, destPath, filesToTransferCount: fileCount, dialogPId, fileTransferCount: copiedFiles, signal } = options;
 
         const folderName = this.getNameFromPath(srcPath);
@@ -270,7 +275,7 @@ export class FileService implements BaseService{
 
                 const isDir = await this.isDirectory(entryPath);
                 if(isDir){
-                    const result = await this.copyFolderHandlerAsync(Object.assign(options, {
+                    const result = await this.copyFolderHandlerSequenceAsync(Object.assign(options, {
                         srcPath: entryPath,
                         destPath: `${destPath}/${folderName}`,
                     }));
@@ -319,7 +324,7 @@ export class FileService implements BaseService{
      * @param options 
      * @returns 
      */
-    private async copyFolderHandlerAsync_parralel(options: FileTransferOptions): Promise<boolean> {
+    private async copyFolderHandlerAsync(options: FileTransferOptions): Promise<boolean> {
         const { arg0, srcPath, destPath, filesToTransferCount: fileCount, dialogPId, fileTransferCount: copiedFiles, signal } = options;
     
         const folderName = this.getNameFromPath(srcPath);
@@ -340,7 +345,7 @@ export class FileService implements BaseService{
             const isDir = await this.isDirectory(entryPath);
             const task = (async()=>{
                 if(isDir){
-                    const result = await this.copyFolderHandlerAsync_parralel(Object.assign(options, {
+                    const result = await this.copyFolderHandlerAsync(Object.assign(options, {
                         srcPath: entryPath,
                         destPath: `${destPath}/${folderName}`,
                     }));
