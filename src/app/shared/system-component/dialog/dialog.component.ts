@@ -18,7 +18,7 @@ import { basename} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Subscription } from 'rxjs';
-import { InformationUpdate } from 'src/app/system-files/common.interfaces';
+import { InformationUpdate, WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 import { FileInfo } from 'src/app/system-files/file.info';
 
 @Component({
@@ -61,13 +61,18 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   readonly cheetahOS = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
   readonly myComputer = `${Constants.IMAGE_BASE_PATH}my_computer.png`;
   readonly contentInRecycleBin = `${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
-  readonly emptyRecycleBin = `${Constants.IMAGE_BASE_PATH}empty_bin.png`;
+  readonly arrowDown = `${Constants.IMAGE_BASE_PATH}arrow_down.png`;
+  readonly arrowUp = `${Constants.IMAGE_BASE_PATH}arrow_up.png`;
   readonly infoIcon = `${Constants.IMAGE_BASE_PATH}info.png`;
   readonly warningIcon = `${Constants.IMAGE_BASE_PATH}warning.png`;
   readonly errorIcon = `${Constants.IMAGE_BASE_PATH}red_x.png`;
   readonly fileTransferIcon = `${Constants.IMAGE_BASE_PATH}file_transfer.png`;
   readonly errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_critical_stop.wav`;
   readonly cheetahBackGroundNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_background.wav`;
+
+  showMoreDetails = false;
+  arrowPosition = this.arrowDown;
+  detailsAmount = 'More details';
 
   pwrOnOffOptions = [
     { value: 'Shut down', label: 'Closes all apps and turns off the PC.' },
@@ -402,6 +407,44 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   
     const percentage = Math.round((curVal / total) * 100);
     return Math.min(Math.max(percentage, 0), 100); // Clamp between 0–100
+  }
+
+  changeDetailsAmount():void{
+    this.showMoreDetails = !this.showMoreDetails;
+    this.arrowPosition = (this.showMoreDetails)? this.arrowUp : this.arrowDown;
+    this.detailsAmount = (this.showMoreDetails)? 'Fewer details' : 'More details';
+
+
+    const fileTransferElmnt = document.getElementById(
+      `fileTransferDialog-${this.processId}`
+    ) as HTMLDivElement | null;
+    
+    if (fileTransferElmnt) {
+      const fileTransferTailElmnt = document.getElementById(
+        `fileTransferDialogTail-${this.processId}`
+      ) as HTMLDivElement | null;
+    
+      const baseHeight = 135;
+      const titleBarHeight = 30;
+      const detailsHeight = this.showMoreDetails ? 60 : 0;
+      const totalHeight = baseHeight + titleBarHeight + detailsHeight;
+    
+      fileTransferElmnt.style.height = `${totalHeight}px`;
+    
+      const resize: WindowResizeInfo = {
+        pId: this.processId,
+        width: 450,
+        height: totalHeight
+      };
+    
+      this._windowService.resizeProcessWindowNotify.next(resize);
+    
+      if (fileTransferTailElmnt) {
+        fileTransferTailElmnt.style.position = 'fixed';
+        fileTransferTailElmnt.style.bottom = '0';
+      }
+    }
+    
   }
   
 

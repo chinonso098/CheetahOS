@@ -367,12 +367,12 @@
 
 .file-transfer-dialog-content-container{
     width: 450px;
-    height: 110px;
+    height: 90px;
     background-color: #fff;
     padding: 8px 14px;
 }
 
-.file-transfer-dialog-from-to, .file-transfer-dialog-progress-text, .file-transfer-dialog-progress-file-name{
+.file-transfer-dialog-from-to, .file-transfer-dialog-progress-text, .file-transfer-dialog-progress-details{
     width: 422px;
     height: fit-content;
     padding: 2px 0px;
@@ -442,11 +442,11 @@
     background-color: #fff;
 }
 
-.file-transfer-dialog-progress-file-name{
-    padding-top: 6px;
+.file-transfer-dialog-progress-details{
+    padding-top: 5px;
 }
 
-.file-transfer-dialog-progress-file-name p{
+.file-transfer-dialog-progress-details p{
     color: #000;
     display: flex;
     font-size: 12px;

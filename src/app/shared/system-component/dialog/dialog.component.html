@@ -167,7 +167,7 @@
 <ng-template #fileTransfer>
     <cos-window [runningProcessID]="processId" [processAppIcon]="fileTransferIcon" [processAppName]="isInit? dialogTitle: progressUpdateText" [isMaximizable]="isMaximizable">
         <div class="file-transfer-dialog-main-container" tabindex="0">
-            <div class="file-transfer-dialog-content-container" > 
+            <div class="file-transfer-dialog-content-container" id="fileTransferDialog-{{processId}}"> 
 
                 @if(isFileTransferInProgress){
                     <div class="file-transfer-dialog-from-to">
@@ -209,18 +209,18 @@
                     </div>
                 }
 
-                <div class="file-transfer-dialog-progress-file-name">
-                    @if(!isInit){
+                @if(!isInit && showMoreDetails){
+                    <div class="file-transfer-dialog-progress-details">
                         <p>Name: {{fileName}}</p>
-                        <!--<p>Time remaining: About {{fileName}}</p>
-                        <p>Items remaining: {{fileName}}</p>-->
-                    }
-                </div>
+                        <p>Time remaining: About {{fileName}}</p>
+                        <p>Items remaining: {{fileName}}</p>
+                    </div>
+                }
             </div>
-            <div class="file-transfer-dialog-tail-container">
+            <div class="file-transfer-dialog-tail-container" id="fileTransferDialogTail-{{processId}}">
                 <div class="file-tranfer__details-option">
-                    <div class="file-tranfer__icon"><img [src]="'osdrive/Cheetah/System/Imageres/arrow_down.png'"></div>
-                    <div class="file-tranfer__info">More details</div>
+                    <div class="file-tranfer__icon" (click)="changeDetailsAmount()"><img [src]="this.arrowPosition"></div>
+                    <div class="file-tranfer__info">{{detailsAmount}}</div>
                 </div>
                 <span style="position: fixed; margin-top:10px; right:4%;">
                     <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
