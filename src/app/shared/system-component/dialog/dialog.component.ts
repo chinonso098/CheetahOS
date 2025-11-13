@@ -106,6 +106,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   transferProgress = 0;
   progressUpdateText = Constants.BLANK_SPACE;
   fileName = Constants.BLANK_SPACE;
+  timeRemaining = Constants.EMPTY_STRING;
+  itemsRemaining = Constants.EMPTY_STRING;
+  itemsRemainingSize = Constants.EMPTY_STRING;
 
   fIcon = Constants.EMPTY_STRING;
   fName = Constants.EMPTY_STRING;
@@ -335,14 +338,29 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       console.warn("setTransferDialogFields: Invalid or incomplete update array", update);
       return;
     }
+
+    let timeRemaining = Constants.EMPTY_STRING;
+    let itemsRemaining = 0;
+    let itemsRemainingSize = 0;
+    let itemsRemainingSizeUnit = Constants.EMPTY_STRING;
+    let fileName = Constants.EMPTY_STRING;
+    
   
-    // 0 srcPath, 1 destPath, 2 totalNumberOfFiles, 3 numberOfFilesCopied, 4 fileName
+    // 0 srcPath, 1 destPath, 2 totalNumberOfFiles, 3 numberOfFilesCopied, 4 timeRemaining, 5 itemsRemaining, 6 itemsRemainingSize, 7 fileName
     // Safely extract values with guards
     const srcPath = this.safeGetValue(update[0]);
     const destPath = this.safeGetValue(update[1]);
     const totalFiles = Number(this.safeGetValue(update[2]));
     const copiedFiles = Number(this.safeGetValue(update[3]));
-    const fileName = this.safeGetValue(update[4]);
+
+    if(this.showMoreDetails){
+      timeRemaining = CommonFunctions.formatDuration(Number(this.safeGetValue(update[4])));
+      itemsRemaining = Number(this.safeGetValue(update[5]));
+      itemsRemainingSize = CommonFunctions.getReadableFileSizeValue(Number(this.safeGetValue(update[6])));
+      itemsRemainingSizeUnit = CommonFunctions.getFileSizeUnit(Number(this.safeGetValue(update[6])));
+      fileName = this.safeGetValue(update[7]);
+    }
+
   
     // Validate numeric values
     if (!isFinite(totalFiles) || !isFinite(copiedFiles) || totalFiles <= 0) {
@@ -367,6 +385,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this.transferProgress = value;
     this.progressUpdateText = `${value}% complete`;
     this.fileName = fileName;
+    this.timeRemaining = timeRemaining;
+    this.itemsRemaining = `${itemsRemaining} (${itemsRemainingSize} ${itemsRemainingSizeUnit})`;
   
     //Auto-close if 100% complete
     if (value >= 100) {
@@ -447,7 +467,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     
   }
   
-
   private generateNotificationId(): number{
     const min = 10;
     const max = 999;

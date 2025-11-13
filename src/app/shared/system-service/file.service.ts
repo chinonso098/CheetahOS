@@ -219,10 +219,11 @@ export class FileService implements BaseService{
         this.sendUpdate(dialogPId);
 
         const count = await this.getFullCountOfFolderItemsInt(srcPath);
+        const dirSize = await this.getFolderSizeAsync(srcPath);
         const fileToCopyCount = count.files;
 
         const result = isDirectory
-            ? await this.copyFolderHandlerAsync({arg0:Constants.EMPTY_STRING, srcPath, destPath, filesToTransferCount: fileToCopyCount, dialogPId, fileTransferCount:filesTrasnferedCount, signal})
+            ? await this.copyFolderHandlerAsync({arg0:Constants.EMPTY_STRING, srcPath, destPath, filesToTransferCount: fileToCopyCount, dialogPId, fileTransferCount:filesTrasnferedCount, initialSize:dirSize, currentSize:dirSize, signal})
             : await this.copyFileAsync(srcPath, destPath);
 
         await this.recalculateUsedStorage();
@@ -288,8 +289,8 @@ export class FileService implements BaseService{
                         //console.info(`file:${entryPath} successfully copied to destination:${destPath}/${folderName}`);
 
                         copiedFiles.fileCount++;
-                        const infoUpdate = this.genFileTransferUpdate(srcPath, destPath, fileCount, copiedFiles.fileCount, directoryEntry);
-                        this.sendFileTransferUpdate(dialogPId, infoUpdate);
+                        //const infoUpdate = this.genFileTransferUpdate(srcPath, destPath, fileCount, copiedFiles.fileCount, directoryEntry);
+                        //this.sendFileTransferUpdate(dialogPId, infoUpdate);
                     } else {
                         console.error(`file:${entryPath} failed to copy to destination:${destPath}/${folderName}`);
                         return false;
@@ -307,7 +308,7 @@ export class FileService implements BaseService{
      * @returns 
      */
     private async copyFolderHandlerAsync(options: FileTransferOptions): Promise<boolean> {
-        const { arg0, srcPath, destPath, filesToTransferCount: fileCount, dialogPId, fileTransferCount: copiedFiles, signal } = options;
+        const { arg0, srcPath, destPath, filesToTransferCount: fileCount, dialogPId, fileTransferCount: copiedFiles, currentSize, signal } = options;
     
         const folderName = this.getNameFromPath(srcPath);
         const createFolderResult = await this.createFolderAsync(destPath, folderName);
@@ -338,10 +339,20 @@ export class FileService implements BaseService{
                         return false;
                     }
                 } else {
+                    const start = performance.now();
                     const result = await this.copyFileAsync(entryPath, `${destPath}/${folderName}`);
+                    const fileMetaData = await this.geFileMetaData(entryPath);
+                    const end = performance.now();
+                    const duration = end - start;
+
                     if(result){
                         copiedFiles.fileCount++;
-                        const transferUpdate = this.genFileTransferUpdate(srcPath, destPath, fileCount, copiedFiles.fileCount, directoryEntry);
+                        const itemsRemaining = fileCount - copiedFiles.fileCount;
+                        const timeRemaining = duration * itemsRemaining;
+                        const itemsRemainingSize = currentSize - fileMetaData.getSize;
+                        options.currentSize = itemsRemainingSize;
+
+                        const transferUpdate = this.genFileTransferUpdate(srcPath, destPath, fileCount, copiedFiles.fileCount, timeRemaining, itemsRemaining, itemsRemainingSize, directoryEntry);
                         this.sendFileTransferUpdate(dialogPId, transferUpdate);
                     } else {
                         console.error(`file:${entryPath} failed to copy to destination:${destPath}/${folderName}`);
@@ -381,12 +392,15 @@ export class FileService implements BaseService{
         this._dialogPIdToCancel = pId;
     }
 
-    genFileTransferUpdate(srcPath:string, destPath:string, fileCount:number, copiedFiles:number, fileName:string):FileTransferUpdate{
+    genFileTransferUpdate(srcPath:string, destPath:string, fileCount:number, copiedFiles:number, timeRemaining:number, itemsRemaining:number, itemsRemainingSize:number, fileName:string):FileTransferUpdate{
         return{
             srcPath,
             destPath,
             totalNumberOfFiles: fileCount,
             numberOfFilesCopied: copiedFiles,
+            timeRemaining,
+            itemsRemaining,
+            itemsRemainingSize,
             fileName
         };
     }
@@ -1703,18 +1717,13 @@ OpensWith=${shortCutData.opensWith}
                   `destPath:${update.destPath}`,
                   `totalNumberOfFiles:${update.totalNumberOfFiles}`, 
                   `numberOfFilesCopied:${update.numberOfFilesCopied}`,
+                  `timeRemaining:${update.timeRemaining}`,
+                  `itemsRemaining:${update.itemsRemaining}`,
+                  `itemsRemainingSize:${update.itemsRemainingSize}`,
                   `fileName:${update.fileName}`
             ]}
         this._systemNotificationService.updateInformationNotify.next(firstUpdate);
     }
-
-    // checkIfFileDropEventTriggered():boolean{
-    //     return this._isFileDropEventTriggered;
-    // }
-
-    // setFileDropEventTriggeredFlag(flag:boolean):void{
-    //     this._isFileDropEventTriggered = flag;
-    // }
 
     removeExtensionFromName(name:string):string{
         return basename(name, extname(name));

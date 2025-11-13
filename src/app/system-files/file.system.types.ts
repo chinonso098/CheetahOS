@@ -3,6 +3,9 @@ export interface FileTransferUpdate {
     destPath: string;
     totalNumberOfFiles: number;
     numberOfFilesCopied: number;
+    timeRemaining:number;
+    itemsRemaining:number;
+    itemsRemainingSize:number;
     fileName: string;
 }
 
@@ -15,5 +18,7 @@ export interface FileTransferOptions {
     filesToTransferCount: number;
     dialogPId: number;
     fileTransferCount: FileTransferCount;
+    initialSize:number;
+    currentSize:number;
     signal: AbortSignal;
 }
