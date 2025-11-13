@@ -315,6 +315,10 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     let counter = -1;
     this.progressUpdateText = this.dialogMgs;
 
+    this.fileName = Constants.BLANK_SPACE;
+    this.timeRemaining = 'Calculating...';
+    this.itemsRemaining ='Calculating...';
+
     this.showEsitmateIntervalId = setInterval(() => {
       while(counter < maxAppendNum){
         const curString = this.progressUpdateText;
