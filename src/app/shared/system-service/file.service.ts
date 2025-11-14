@@ -30,6 +30,7 @@ import JSZip from "jszip";
 import { CommonFunctions } from "src/app/system-files/common.functions";
 import { FileTransferUpdate, FileTransferCopyOptions, FileTransferCount, FileTransferMoveOptions } from "src/app/system-files/file.system.types";
 import { UserNotificationType } from "src/app/system-files/common.enums";
+import { Console } from "console";
 @Injectable({
     providedIn: 'root'
 })
@@ -259,7 +260,7 @@ export class FileService implements BaseService{
     
         const folderName = this.getNameFromPath(srcPath);
         const createFolderResult = await this.createFolderAsync(destPath, folderName);
-        if (!createFolderResult) return false;
+        if(!createFolderResult) return false;
     
         const loadedDirectoryEntries = await this.readDirectory(srcPath);
         let activeTasks: Promise<boolean>[] = [];
@@ -283,7 +284,7 @@ export class FileService implements BaseService{
                         console.error(`Failed to copy directory: ${entryPath}`);
                         return false;
                     }
-                } else {
+                }else{
                     const start = performance.now();
                     const result = await this.copyFileAsync(entryPath, `${destPath}/${folderName}`);
                     const fileMetaData = await this.geFileMetaData(entryPath);
@@ -319,7 +320,7 @@ export class FileService implements BaseService{
             activeTasks.push(task);
     
             //Throttle to maintain concurrency limit
-            if (activeTasks.length >= this.CONCURRENCY_LIMIT) {
+            if(activeTasks.length >= this.CONCURRENCY_LIMIT){
                 const results = await Promise.allSettled(activeTasks);
                 const failed = results.some(r => r.status === "fulfilled" && r.value === false);
                 if (failed) return false;
@@ -899,11 +900,11 @@ export class FileService implements BaseService{
         
                 const title = `Preparing to recycle:from:${basename(srcPath)}`;
                 firstMsg = `Discovered ${dirFilesCount} items  (${size} ${sizeUnit})`;
-                const dialogPId = this.initDeleteProcess(firstMsg, title);
+                dialogPId = this.initDeleteProcess(firstMsg, title);
                 this.sendUpdate(dialogPId);
             }else{
                 const title = 'Moving';
-                const dialogPId = this.initFileTransfer(firstMsg, title);
+                dialogPId = this.initFileTransfer(firstMsg, title);
                 this.sendUpdate(dialogPId);
             }
 
@@ -1034,7 +1035,6 @@ export class FileService implements BaseService{
                             itemsRemainingSize,
                             directoryEntry
                         );
-    
                         this.sendFileTransferUpdate(dialogPId, transferUpdate);
                         return true;
                     }else{
@@ -1738,12 +1738,12 @@ OpensWith=${shortCutData.opensWith}
 
     private sendUpdate(dialogPId:number):void{
         //console.log('copyAsync dialogPid:',dialogPId);
-        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`firstData:0`]}
+        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`firstData:0`]};
         this._systemNotificationService.updateInformationNotify.next(firstUpdate);
     }
 
     private sendFileTransferUpdate(dialogPId:number, update:FileTransferUpdate):void{
-        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, 
+        const newUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, 
             info:[`srcPath:${update.srcPath}`,
                   `destPath:${update.destPath}`,
                   `totalNumberOfFiles:${update.totalNumberOfFiles}`, 
@@ -1753,7 +1753,8 @@ OpensWith=${shortCutData.opensWith}
                   `itemsRemainingSize:${update.itemsRemainingSize}`,
                   `fileName:${update.fileName}`
             ]}
-        this._systemNotificationService.updateInformationNotify.next(firstUpdate);
+
+        this._systemNotificationService.updateInformationNotify.next(newUpdate);
     }
 
     removeExtensionFromName(name:string):string{

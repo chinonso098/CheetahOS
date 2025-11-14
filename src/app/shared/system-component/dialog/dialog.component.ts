@@ -180,8 +180,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
         this.isFileDeleteInProgress = true;
         this.dialogTitle = this.dialogMgs;
         this.progressUpdateText = this.dialogMgs;
-        this.from = this.inputTitle.replace('Preparing to recycle from ', Constants.EMPTY_STRING);
-        this.srcToDestPart1 = 'Preparing to recycle from';
+        const parts = this.inputTitle.split(Constants.COLON);
+        this.srcToDestPart1 = `${parts[0]} ${parts[1]}`;
+        this.from  = parts[2];
       }
     }
 
@@ -295,8 +296,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     const firstEntryValue = Number(updateInfo[0].split(Constants.COLON)[1]);
     const isFirstData  = (firstEntryName === firstData);
 
-    console.log('updateFileTransferDialog:', update);
-
     if(isFirstData){
       this.progressUpdateText = this.dialogMgs;
       this.showEstimating();
@@ -348,14 +347,14 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     let itemsRemainingSize = 0;
     let itemsRemainingSizeUnit = Constants.EMPTY_STRING;
     let fileName = Constants.EMPTY_STRING;
-    
   
-    // 0 srcPath, 1 destPath, 2 totalNumberOfFiles, 3 numberOfFilesCopied, 4 timeRemaining, 5 itemsRemaining, 6 itemsRemainingSize, 7 fileName
+    // 0 srcPath, 1 destPath, 2 totalNumberOfFiles, 3 numberOfFiles Copied/Moved, 
+    // 4 timeRemaining, 5 itemsRemaining, 6 itemsRemainingSize, 7 fileName
     // Safely extract values with guards
     const srcPath = this.safeGetValue(update[0]);
     const destPath = this.safeGetValue(update[1]);
     const totalFiles = Number(this.safeGetValue(update[2]));
-    const copiedFiles = Number(this.safeGetValue(update[3]));
+    const movedFiles = Number(this.safeGetValue(update[3]));
 
     if(this.showMoreDetails){
       timeRemaining = CommonFunctions.formatDuration(Number(this.safeGetValue(update[4])));
@@ -364,11 +363,10 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       itemsRemainingSizeUnit = CommonFunctions.getFileSizeUnit(Number(this.safeGetValue(update[6])));
       fileName = this.safeGetValue(update[7]);
     }
-
   
     // Validate numeric values
-    if (!isFinite(totalFiles) || !isFinite(copiedFiles) || totalFiles <= 0) {
-      console.warn("setTransferDialogFields: Invalid file counts", { totalFiles, copiedFiles });
+    if (!isFinite(totalFiles) || !isFinite(movedFiles) || totalFiles <= 0) {
+      console.warn("setTransferDialogFields: Invalid file counts", { totalFiles, copiedFiles: movedFiles });
       return;
     }
   
@@ -380,14 +378,17 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       this.to = basename(destPath)
     
     // Compose status message
-    this.srcToDestPart1 = `${this.transferAction} ${copiedFiles} items from`;
+    this.srcToDestPart1 = `${this.transferAction} ${movedFiles} items from`;
     this.srcToDestPart2 ='to';
   
     // Compute transfer progress safely
-    const value = this.getTransferPercentage(totalFiles, copiedFiles);
+    const value = this.getTransferPercentage(totalFiles, movedFiles);
     this.transferPercentage = value;
     this.transferProgress = value;
-    this.progressUpdateText = `${value}% complete`;
+    this.progressUpdateText = (this.notificationType === UserNotificationType.FileDeleteProgress) 
+    ? `${movedFiles} items recycled` 
+    : `${value}% complete`;
+
     this.fileName = fileName;
     this.timeRemaining = `About ${timeRemaining}`;
     this.itemsRemaining = `${itemsRemaining} (${itemsRemainingSize} ${itemsRemainingSizeUnit})`;
@@ -443,7 +444,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       `fileTransferDialog-${this.processId}`
     ) as HTMLDivElement | null;
     
-    if (fileTransferElmnt) {
+    if(fileTransferElmnt){
       const fileTransferTailElmnt = document.getElementById(
         `fileTransferDialogTail-${this.processId}`
       ) as HTMLDivElement | null;
@@ -463,7 +464,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     
       this._windowService.resizeProcessWindowNotify.next(resize);
     
-      if (fileTransferTailElmnt) {
+      if(fileTransferTailElmnt){
         fileTransferTailElmnt.style.position = 'fixed';
         fileTransferTailElmnt.style.bottom = '0';
       }

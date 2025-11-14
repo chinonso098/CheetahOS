@@ -431,7 +431,7 @@
 
 .file-transfer-dialog-progress-bar, .file-transfer-dialog-progress-bar-1 {
     height: 100%;
-    background-color: #28b42c;
+    background-color: #00700b;
     position: relative;
     overflow: hidden;
     transition: width 0.3s ease-in-out;
@@ -524,7 +524,7 @@
       90deg,
       rgba(255, 255, 255, 1) 0%,
       rgba(255, 255, 255, 1) 50%, 
-      rgba(40, 180, 44, 0.9) 100%
+      rgba(0, 112, 11, 1) 100%
     );
     background-size: 200% 200%;
     animation: shine 3s linear infinite;
@@ -838,7 +838,6 @@
     font-size: 12px;
     color: #000;
 }
-
 
 .delete-warning__dialog-buttons {
     display: flex;
