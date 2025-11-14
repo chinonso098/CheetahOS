@@ -209,10 +209,10 @@
                     </div>
                 }
 
-                @if(!isInit && showMoreDetails){
+                @if(showMoreDetails){
                     <div class="file-transfer-dialog-progress-details">
                         <p>Name: {{fileName}}</p>
-                        <p>Time remaining: About {{timeRemaining}}</p>
+                        <p>Time remaining: {{timeRemaining}}</p>
                         <p>Items remaining: {{itemsRemaining}}</p>
                     </div>
                 }

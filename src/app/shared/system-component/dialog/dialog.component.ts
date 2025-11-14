@@ -389,7 +389,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this.transferProgress = value;
     this.progressUpdateText = `${value}% complete`;
     this.fileName = fileName;
-    this.timeRemaining = timeRemaining;
+    this.timeRemaining = `About ${timeRemaining}`;
     this.itemsRemaining = `${itemsRemaining} (${itemsRemainingSize} ${itemsRemainingSizeUnit})`;
   
     //Auto-close if 100% complete
