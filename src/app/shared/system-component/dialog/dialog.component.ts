@@ -291,12 +291,12 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   updateFileTransferDialog(update:InformationUpdate):void{
     const updateInfo = update.info;
-    const firstData = 'firstData';
-    const firstEntryName = updateInfo[0].split(Constants.COLON)[0];
-    const firstEntryValue = Number(updateInfo[0].split(Constants.COLON)[1]);
-    const isFirstData  = (firstEntryName === firstData);
+    const initInformation = 'initInformation';
+    const initInformationName = updateInfo[0].split(Constants.COLON)[0];
+   // const initInformationValue = Number(updateInfo[0].split(Constants.COLON)[1]);
+    const isInitInformation  = (initInformationName === initInformation);
 
-    if(isFirstData){
+    if(isInitInformation){
       this.progressUpdateText = this.dialogMgs;
       this.showEstimating();
     }else{

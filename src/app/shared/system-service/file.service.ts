@@ -838,7 +838,6 @@ export class FileService implements BaseService{
 
         this.abortController = new AbortController();
         const signal = this.abortController.signal;
-
         const firstMsg = 'Estimating';
         const title = 'Moving';
 
@@ -899,7 +898,7 @@ export class FileService implements BaseService{
                 const sizeUnit  = CommonFunctions.getFileSizeUnit(folderSize);
         
                 const title = `Preparing to recycle:from:${basename(srcPath)}`;
-                firstMsg = `Discovered ${dirFilesCount} items  (${size} ${sizeUnit})`;
+                firstMsg = `Discovered ${dirFilesCount} items  (${size} ${sizeUnit})...`;
                 dialogPId = this.initDeleteProcess(firstMsg, title);
                 this.sendUpdate(dialogPId);
             }else{
@@ -975,7 +974,7 @@ export class FileService implements BaseService{
         let shouldCreateFolder = true;
     
         // In "contents only" mode, skip creating the top-level folder
-        if (!moveFolderItself && skipCounter === 0) {
+        if(!moveFolderItself && skipCounter === 0){
             folderName = Constants.EMPTY_STRING;
             shouldCreateFolder = false;
         }
@@ -983,9 +982,9 @@ export class FileService implements BaseService{
         const loadedDirectoryEntries = await this.readDirectory(srcPath);
         let moveFolderResult = true;
     
-        if (shouldCreateFolder) {
+        if(shouldCreateFolder){
             moveFolderResult = await this.createFolderAsync(destPath, folderName);
-            if (!moveFolderResult) {
+            if(!moveFolderResult){
                 console.error(`folder:${destPath}/${folderName} creation failed`);
                 return false;
             }
@@ -1076,7 +1075,7 @@ export class FileService implements BaseService{
         let destinationPath = Constants.EMPTY_STRING;
         if (generatePath === undefined || generatePath){
             const fileName = (isRecycleBin)
-                ?  this.appendToFileName(this.getNameFromPath(srcPath), "_rst") 
+                ? this.appendToFileName(this.getNameFromPath(srcPath), "_rst") 
                 : this.getNameFromPath(srcPath);
 
             destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
@@ -1737,8 +1736,7 @@ OpensWith=${shortCutData.opensWith}
     }
 
     private sendUpdate(dialogPId:number):void{
-        //console.log('copyAsync dialogPid:',dialogPId);
-        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`firstData:0`]};
+        const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`initInformation:0`]};
         this._systemNotificationService.updateInformationNotify.next(firstUpdate);
     }
 
