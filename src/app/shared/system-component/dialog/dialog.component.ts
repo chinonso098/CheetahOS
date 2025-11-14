@@ -18,7 +18,7 @@ import { basename} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Subscription } from 'rxjs';
-import { InformationUpdate, WindowResizeInfo } from 'src/app/system-files/common.interfaces';
+import { InformationUpdate, WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 import { FileInfo } from 'src/app/system-files/file.info';
 
 @Component({
@@ -157,7 +157,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     console.log('DIALOG onCHANGES:',changes);
     this.dialogMgs = this.inputMsg;
     this.dialogTitle = this.inputTitle;
-
     this.notificationOption = this.notificationType;
 
     if(this.notificationType === UserNotificationType.PowerOnOff){
@@ -197,6 +196,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   async ngAfterViewInit(): Promise<void> {
     const delay = 200; //200ms
+
+    this.changeDefaultOpeningPostions();
 
     await CommonFunctions.sleep(delay);
     this.playDialogNotifcationSound();
@@ -403,7 +404,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
   
   // --- Safe helpers ---
-  
   /**
    * Safely extracts the value after a colon. Returns an empty string if invalid.
    */
@@ -470,6 +470,13 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       }
     }
     
+  }
+
+  changeDefaultOpeningPostions():void{
+    if(this.notificationOption === UserNotificationType.DeleteWarning){
+      const positionInfo:WindowPositionInfo = {pId:this.processId, top:45, left:50, transform:'translate(-50%, -50%)'};
+      this._windowService.positionProcessWindowNotify.next(positionInfo);
+    }
   }
   
   private generateNotificationId(): number{

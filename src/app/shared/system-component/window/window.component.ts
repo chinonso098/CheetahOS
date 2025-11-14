@@ -17,7 +17,7 @@ import { Process } from 'src/app/system-files/process';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
 import { MenuService } from '../../system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
-import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
+import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 
  @Component({
    selector: 'cos-window',
@@ -59,6 +59,7 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
    private _desktopActiveSub!:Subscription;
    private _showTheDesktopSub!:Subscription;
    private _showOpenWindowsSub!:Subscription;
+   private _positionWindowSub!:Subscription;
 
   readonly SECONDS_DELAY = 450;
   readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
@@ -145,6 +146,11 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
         if(p.pId === this.processId)
           this.onRZWindow(p)
       });
+
+      this._positionWindowSub = this._windowService.positionProcessWindowNotify.subscribe((p) => {
+        if(p.pId === this.processId)
+          this.onPositionWindow(p)
+      });
     }
 
     get getDivWindowElement(): HTMLElement {
@@ -219,6 +225,7 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
       this._showTheDesktopSub?.unsubscribe();
       this._showOpenWindowsSub?.unsubscribe();
       this._resizeWindowSub?.unsubscribe();
+      this._positionWindowSub?.unsubscribe();
     }
 
     ngOnChanges(changes: SimpleChanges):void{
@@ -452,18 +459,29 @@ import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 
     onRZWindow(input:WindowResizeInfo):void{
       const windowState = this._windowService.getWindowState(this.processId);
-      if(windowState){
-        windowState.width= input.width;
-        windowState.height= input.height;
-  
-        this.windowWidth = `${input.width}px`;
-        this.windowHeight = `${input.height}px`;
+      if(!windowState) return;
+        
+      windowState.width= input.width;
+      windowState.height= input.height;
 
-        this._renderer.setStyle(this.divWindow.nativeElement, 'width', this.windowWidth);
-        this._renderer.setStyle(this.divWindow.nativeElement, 'height', this.windowHeight);
+      this.windowWidth = `${input.width}px`;
+      this.windowHeight = `${input.height}px`;
 
-        this._windowService.addWindowState(windowState);
-      }
+      this._renderer.setStyle(this.divWindow.nativeElement, 'width', this.windowWidth);
+      this._renderer.setStyle(this.divWindow.nativeElement, 'height', this.windowHeight);
+
+      this._windowService.addWindowState(windowState);
+    
+    }
+
+    onPositionWindow(input:WindowPositionInfo):void{
+      console.log('onPositionWindow-main window:', input);
+
+      this.currentStyles = { 
+        'top': `${input.top}%`,
+        'left': `${input.left}%`,
+        'transform': input.transform,
+      };
     }
     
     generateCloseAnimationValues(x_axis:number, y_axis:number):void{

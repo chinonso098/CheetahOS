@@ -13,6 +13,7 @@ import {Subscription } from 'rxjs';
 import { WindowState  } from '../window/windows.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
+import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
 
 
 @Component({
@@ -53,6 +54,7 @@ import { Constants } from 'src/app/system-files/constants';
    private _showTheDesktopSub!:Subscription;
    private _showOpenWindowsSub!:Subscription;
    private _closeCurrentProcessSub!:Subscription;
+   private _positionWindowSub!:Subscription;
 
   readonly HIDDEN_Z_INDEX = 0;
   readonly MIN_Z_INDEX = 1;
@@ -69,8 +71,9 @@ import { Constants } from 'src/app/system-files/constants';
   xAxisTmp = 0;
   yAxisTmp = 0;
 
-  // windowTop = Constants.ZERO;
-  // windowLeft = Constants.ZERO;
+  windowTop = 0;
+  windowLeft = 0;
+  windowTransform = Constants.EMPTY_STRING;
 
   isDialogContent = false;
   currentWinStyles: Record<string, unknown> = {};
@@ -118,6 +121,11 @@ import { Constants } from 'src/app/system-files/constants';
 
       this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
       this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
+
+      this._positionWindowSub = this._windowService.positionProcessWindowNotify.subscribe((p) => {
+        if(p.pId === this.processId)
+          this.onPositionWindow(p)
+      });
     }
 
     get getDivWindowElement(): HTMLElement {
@@ -195,6 +203,7 @@ import { Constants } from 'src/app/system-files/constants';
       this._desktopActiveSub?.unsubscribe();
       this._showTheDesktopSub?.unsubscribe();
       this._showOpenWindowsSub?.unsubscribe();
+      this._positionWindowSub?.unsubscribe();
     }
 
     setBtnFocus(pId:number):void{
@@ -320,6 +329,19 @@ import { Constants } from 'src/app/system-files/constants';
       this.setFocsuOnThisWindow(pId);
       this._windowService.currentProcessInFocusNotify.next(pId);
       this._windowService.windowDragIsActive.next();
+    }
+
+    onPositionWindow(input:WindowPositionInfo):void{
+      console.log('onPositionWindow:', input);
+      this.windowTop = input.top;
+      this.windowLeft = input.left
+      this.windowTransform = input.transform;
+
+      this.currentWinStyles = { 
+        'top': `${input.top}%`,
+        'left': `${input.left}%`,
+        'transform': input.transform,
+      };
     }
 
     setHideAndShowAllVisibleWindows():void{
