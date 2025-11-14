@@ -2033,6 +2033,8 @@ OpensWith=${file.getOpensWith}
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         const fileIdx = this.files.findIndex(f => (dirname(f.getCurrentPath) === dirname(this.selectedFile.getCurrentPath)) && (f.getFileName === this.selectedFile.getFileName));
+        this.selectedFile.setContentPath = renameText;
+        this.selectedFile.setCurrentPath = `${dirname(this.selectedFile.getCurrentPath)}/${renameText}`;
         this.selectedFile.setFileName = renameText;
         this.selectedFile.setDateModified = Date.now().toString();
         this.files[fileIdx] = this.selectedFile;

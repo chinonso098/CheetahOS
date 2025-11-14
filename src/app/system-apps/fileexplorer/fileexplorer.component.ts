@@ -2613,9 +2613,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         //const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));
         const fileIdx = this.fetchedFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getCurrentPath) && (f.getFileName == this.selectedFile.getFileName));
+        this.selectedFile.setContentPath = renameText;
+        this.selectedFile.setCurrentPath = `${dirname(this.selectedFile.getCurrentPath)}/${renameText}`;
         this.selectedFile.setFileName = renameText;
         this.selectedFile.setDateModified = Date.now().toString();
         this.fetchedFiles[fileIdx] = this.selectedFile;
+
 
         this.renameForm.reset();
         this._menuService.resetStoreData();

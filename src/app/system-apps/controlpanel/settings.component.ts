@@ -464,8 +464,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
           const prevDefaultPic = this._defaultService.getDefaultSetting(Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE);
           const selection = (isChanged) ? prevDefaultPic  : `${this.retrievedBackgroundValue}`;
 
-          console.log('handlePictureBkgrnd:', selection);
-
           if(isChanged){
             //auto apply
             const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${selection}`;
@@ -475,7 +473,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           //const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
           screenPrevElmnt.style.backgroundImage = `url(${selection})`;
         }else{
-          const defaultImg = 'osdrive/Cheetah/Themes/LockScreen/bamboo_moon.jpg';
+          const defaultImg = `${Constants.LOCK_SCREEN_IMAGE_BASE_PATH}bamboo_moon.jpg`;
           screenPrevElmnt.style.backgroundImage = (isChanged) 
           ? `url(${defaultImg})` 
           : `url(${this.retrievedBackgroundValue})`;
@@ -500,8 +498,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
           const correctedPath = `${Constants.DESKTOP_IMAGE_BASE_PATH}${this.retrievedBackgroundValue}.jpg`;
           const selection = (isChanged) ? prevDynamicImg : correctedPath;
           const delay = 25; //25ms
-
-          console.log('handleMirrorAndDynamicBkgrnd:', selection);
 
           if(isChanged){
             //auto apply
@@ -551,7 +547,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           }
 
           await CommonFunctions.sleep(delay);
-          const color =(isChanged) ? prevSolidColor: this.retrievedBackgroundValue ;
+          const color = (isChanged) ? prevSolidColor : this.retrievedBackgroundValue ;
           // const desktopBkgrndImg = await this.getDesktopScreenShot(color);
           // screenPrevElmnt.style.backgroundImage = `url(${desktopBkgrndImg})`;
 
@@ -638,8 +634,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   async handleScreenPictureAndColorSelection(selection:string, evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
-
-    console.log('handleScreenPictureAndColorSelection:', selection);
 
     const isDesktopView = (this.selectedPersonalizationOption === this.PERSONALIZATION_DESKTOP_BACKGROUND )? true: false;
     let activeClass = Constants.EMPTY_STRING;
