@@ -6,7 +6,9 @@
 
 Building a Dektop environment in the web browser.
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.0.0^.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 19.1.6^.
+
+# Note! An Angular dev env is needed for this project to run, for the time being atleast.
 
 ## Development server
 
