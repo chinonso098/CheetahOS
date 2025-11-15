@@ -5,6 +5,7 @@ export interface WindowState{
     height:number,
     xAxis:number,
     yAxis:number,
+    transform?:string,
     zIndex:number,
     isVisible:boolean,
 }

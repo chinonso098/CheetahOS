@@ -844,11 +844,9 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
     removeFocusOnWindowNotMatchingPid(pId:number):void{
       if(this.processId !== pId){
         const windowState = this._windowService.getWindowState(this.processId);
-        if(windowState){
-          if(windowState.isVisible){
-            this.setHeaderInActive(windowState.pId);
-            this.updateWindowZIndex(windowState, this.MIN_Z_INDEX);
-          }
+        if(windowState && windowState.isVisible){
+          this.setHeaderInActive(windowState.pId);
+          this.updateWindowZIndex(windowState, this.MIN_Z_INDEX);
         }
       }
     }

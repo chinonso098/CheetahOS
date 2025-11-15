@@ -718,7 +718,9 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this.onEndTaskBtnClick();
   }
 
-  onEndTaskBtnClick():void{
+  onEndTaskBtnClick(evt?:MouseEvent):void{
+    evt?.stopPropagation();
+
     const processToClose = this._runningProcessService.getProcess(this.processIdToClose);
     if(!this.closingNotAllowed.includes(processToClose.getProcessName)){
       this._runningProcessService.closeProcessNotify.next(processToClose);

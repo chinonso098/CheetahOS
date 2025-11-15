@@ -142,7 +142,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       //console.log('WINDOW onCHANGES:',changes);
 
       if(this.name === "Window")
-          this.name = this.processAppName;
+        this.name = this.processAppName;
 
       this.icon = this.processAppIcon;
       if(this.isDialog)
@@ -351,36 +351,30 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     onPositionWindowById(input:string[]):void{
-      const thisWindowId = input[0];
       const callingWindowId = input[1];
       const windowElmnt = document.getElementById(`wincmpnt-${callingWindowId}`) as HTMLElement;
-      console.log('windowElmnt:', windowElmnt);
+      const dialogWindowElmnt = document.getElementById(`bwincmpnt-${this.uniqueId}`) as HTMLElement;
+      //const windowState  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
 
       if(!windowElmnt) return;
-
       const winRect = windowElmnt.getBoundingClientRect();
 
-      const dialogWindowElmnt = document.getElementById(`bwincmpnt-${this.uniqueId}`) as HTMLElement;
       if(!dialogWindowElmnt) return;
-
 
       this.windowTop = winRect.y + (winRect.height /2);
       this.windowLeft = winRect.x + (winRect.width / 2);
       this.windowTransform = 'translate(-50%, -50%)';
 
-      // setTimeout(() => {
-      //   // dialogWindowElmnt.style.zIndex = '2';
-      //   // dialogWindowElmnt.style.left = `${this.windowLeft}px`;
-      //   // dialogWindowElmnt.style.top = `${this.windowTop}px`;
-      //   // dialogWindowElmnt.style.transform = this.windowTransform;
-      // }, 0);
-
-      this.currentWinStyles = { 
-        'z-index':this.MAX_Z_INDEX,
-        'top': `${this.windowTop}px`,
-        'left': `${this.windowLeft}px`,
-        'transform': `${this.windowTransform}`,
-      };
+      /**
+       * in testing, using currentWinStyles was slower, but a minute yet noticeable diff. hence it is not used
+       * Also, This slight delay is added due to timinig issue
+       */
+      setTimeout(() => {
+        // dialogWindowElmnt.style.zIndex = '2';
+        dialogWindowElmnt.style.left = `${this.windowLeft}px`;
+        dialogWindowElmnt.style.top = `${this.windowTop}px`;
+        dialogWindowElmnt.style.transform = this.windowTransform;
+      }, 0);
     }
 
     setHideAndShowAllVisibleWindows():void{
@@ -522,11 +516,9 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     removeFocusOnWindowNotMatchingPid(pId:number):void{
       if(this.processId !== pId){
         const windowState = this._windowService.getWindowState(this.processId);
-        if(windowState){
-          if(windowState.isVisible){
-            this.setHeaderInActive(windowState.pId);
-            this.updateWindowZIndex(windowState, this.MIN_Z_INDEX);
-          }
+        if(windowState && windowState.isVisible){
+          this.setHeaderInActive(windowState.pId);
+          this.updateWindowZIndex(windowState, this.MIN_Z_INDEX);
         }
       }
     }
