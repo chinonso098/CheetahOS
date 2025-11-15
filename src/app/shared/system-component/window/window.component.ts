@@ -11,8 +11,6 @@ import { WindowBoundsState, WindowState } from './windows.types';
 import {openCloseAnimation, hideShowAnimation, minimizeMaximizeAnimation} from 'src/app/shared/system-component/window/animation/animations';
 import { AnimationEvent } from '@angular/animations';
 
-import * as htmlToImage from 'html-to-image';
-import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Process } from 'src/app/system-files/process';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
 import { MenuService } from '../../system-service/menu.services';
@@ -35,6 +33,8 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
    @Input() processAppName = Constants.EMPTY_STRING;  
    @Input() priorUId = Constants.EMPTY_STRING;  
    @Input() isMaximizable = true;  
+   @Input() turnOffWindowOpenCloseAnimation = false;  
+   @Input() turnOffWindowStacking = false;  
 
    private _renderer: Renderer2;
    
@@ -62,7 +62,6 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
    private _positionWindowSub!:Subscription;
 
   readonly SECONDS_DELAY = 450;
-  readonly WINDOW_CAPTURE_SECONDS_DELAY = 5000;
   readonly HIDDEN_Z_INDEX = 0;
   readonly MIN_Z_INDEX = 1;
   readonly MAX_Z_INDEX = 2;
@@ -72,6 +71,7 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
 
   windowHide = false;
   windowMaximize = false;
+  disableWindowAnimaion = false;
   windowOpenCloseAction = 'open';
   windowHideShowAction = 'visible';
   windowMinMaxAction = 'minimized';
@@ -162,13 +162,17 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
       this.icon = this.processAppIcon;
       this.name = this.processAppName;
       this.isWindowMaximizable = this.isMaximizable;
-
       this.retrievePastSessionData();
-      this.windowOpenCloseAction = 'open';
+
+      if(!this.turnOffWindowOpenCloseAnimation)
+        this.windowOpenCloseAction = 'open';
+
       this.uniqueId = `${this.name}-${this.processId}`;
       this._runningProcessService.newProcessNotify.next(this.uniqueId);
       setTimeout(() => {
-        this.stackWindow(); 
+        if(!this.turnOffWindowStacking)
+          this.stackWindow(); 
+
         this.setFocusOnWindowInit(this.processId)
       }, 0);
 
@@ -181,7 +185,11 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
       this.defaultHeightOnOpen = this.getDivWindowElement.offsetHeight;
       this.defaultWidthOnOpen  = this.getDivWindowElement.offsetWidth;
 
-      this.windowTransform =  'translate(0, 0)';
+      if(this.turnOffWindowOpenCloseAnimation)
+        this.windowTransform =  'translate(-50%, -50%)';
+      else
+        this.windowTransform =  'translate(0, 0)';
+
       this.windowHeight =  `${String(this.defaultHeightOnOpen)}px`;
       this.windowWidth =  `${String(this.defaultWidthOnOpen)}px`;
       this.windowZIndex =  String(this.MAX_Z_INDEX);
@@ -203,11 +211,6 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
 
       //tell angular to run additional detection cycle after 
       this.changeDetectorRef.detectChanges();
-
-      //setTimeout(()=>{ /**When i get this working as it should, i will remove the other capture methods */
-      //  this.captureComponentImg();
-      //},this.WINDOW_CAPTURE_SECONDS_DELAY);
-  
     }
 
     ngOnDestroy():void{
@@ -230,28 +233,15 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
 
     ngOnChanges(changes: SimpleChanges):void{
       //console.log('WINDOW onCHANGES:',changes);
-
       if(this.name === "Window")
           this.name = this.processAppName;
 
       this.displayName = this.processAppName;
       this.icon = this.processAppIcon;
-    }
 
-
-    captureComponentImg():void{
-      htmlToImage.toPng(this.divWindow.nativeElement).then(htmlImg =>{
-  
-        const cmpntImg:TaskBarPreviewImage = {
-          pId: this.processId,
-          appName: this.name,
-          displayName: this.name,
-          icon : this.icon,
-          defaultIcon: this.icon,
-          imageData: htmlImg
-        }
-        this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-      })
+      if(this.turnOffWindowOpenCloseAnimation){
+        this.disableWindowAnimaion = true;
+      }
     }
 
     setBtnFocus(pId:number):void{
@@ -476,6 +466,10 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
 
     onPositionWindow(input:WindowPositionInfo):void{
       console.log('onPositionWindow-main window:', input);
+
+      this.windowTop = input.top;
+      this.windowLeft = input.left;
+      //this.windowTransform = input.transform;
 
       this.currentStyles = { 
         'top': `${input.top}%`,
@@ -779,8 +773,11 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
     onCloseBtnClick(evt:MouseEvent):void{
       evt.stopPropagation();
 
-      this.windowOpenCloseAction = 'close';
-      this.generateCloseAnimationValues(this.xAxisTmp, this.yAxisTmp);
+      if(!this.turnOffWindowOpenCloseAnimation){
+        this.windowOpenCloseAction = 'close';
+        this.generateCloseAnimationValues(this.xAxisTmp, this.yAxisTmp);
+      }
+
       this._windowService.removeWindowState(this.processId);
       this.removeSilhouette(this.processId);
 

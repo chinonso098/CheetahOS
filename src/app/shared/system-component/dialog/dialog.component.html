@@ -165,7 +165,14 @@
 
 <!-- File Transfer Dialog To be Added -->
 <ng-template #fileTransfer>
-    <cos-window [runningProcessID]="processId" [processAppIcon]="fileTransferIcon" [processAppName]="isInit? dialogTitle: progressUpdateText" [isMaximizable]="isMaximizable">
+    <cos-window 
+        [runningProcessID]="processId" 
+        [processAppIcon]="fileTransferIcon" 
+        [processAppName]="isInit? dialogTitle: progressUpdateText" 
+        [isMaximizable]="isMaximizable"
+        [turnOffWindowOpenCloseAnimation]="turnOffWindowOpenCloseAnimation"
+        [turnOffWindowStacking]="turnOffWindowStacking"
+        >
         <div class="file-transfer-dialog-main-container" tabindex="0">
             <div class="file-transfer-dialog-content-container" id="fileTransferDialog-{{processId}}"> 
 
