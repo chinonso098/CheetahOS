@@ -363,19 +363,20 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       const dialogWindowElmnt = document.getElementById(`bwincmpnt-${this.uniqueId}`) as HTMLElement;
       if(!dialogWindowElmnt) return;
 
-      // const diagWinRect = dialogWindowElmnt.getBoundingClientRect();
-      // console.log('windowElmntBoundingRect:', winRect);
-      // console.log('diagWinRect:', diagWinRect);
-
 
       this.windowTop = winRect.y + (winRect.height /2);
       this.windowLeft = winRect.x + (winRect.width / 2);
       this.windowTransform = 'translate(-50%, -50%)';
 
-      console.log('windowTop:', this.windowTop);
-      console.log('windowLeft:', this.windowLeft);
+      // setTimeout(() => {
+      //   // dialogWindowElmnt.style.zIndex = '2';
+      //   // dialogWindowElmnt.style.left = `${this.windowLeft}px`;
+      //   // dialogWindowElmnt.style.top = `${this.windowTop}px`;
+      //   // dialogWindowElmnt.style.transform = this.windowTransform;
+      // }, 0);
 
       this.currentWinStyles = { 
+        'z-index':this.MAX_Z_INDEX,
         'top': `${this.windowTop}px`,
         'left': `${this.windowLeft}px`,
         'transform': `${this.windowTransform}`,
@@ -432,7 +433,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       this._menuService.updateTaskBarContextMenu.next();
     }
 
-    createSilhouette():void{
+     createSilhouette():void{
       this.uniqueGPId = `bgp-${this.uniqueId}`;
       //Every window has a hidden glass pane that is revealed when the window is hidden
       const glassPane = this.renderer.createElement('div');
