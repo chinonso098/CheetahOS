@@ -123,6 +123,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   name = Constants.EMPTY_STRING;
   hasWindow = false;
   isMaximizable = false;
+  isMinimizable = false;
   turnOffWindowStacking = true;
   turnOffWindowOpenCloseAnimation = true;
   icon = this.fileTransferIcon;

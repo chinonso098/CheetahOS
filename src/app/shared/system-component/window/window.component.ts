@@ -32,6 +32,7 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
    @Input() processAppIcon = Constants.EMPTY_STRING;  
    @Input() processAppName = Constants.EMPTY_STRING;  
    @Input() priorUId = Constants.EMPTY_STRING;  
+   @Input() isMinimizable = true; 
    @Input() isMaximizable = true;  
    @Input() turnOffWindowOpenCloseAnimation = false;  
    @Input() turnOffWindowStacking = false;  
@@ -97,6 +98,7 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
   windowLeft = 0;
 
   isWindowMaximizable = true;
+  isWindowMinimizable = true;
   currentWindowSizeState = false;
   currentStyles: Record<string, unknown> = {};
   headerActiveStyles: Record<string, unknown> = {}; 
@@ -161,7 +163,6 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
       this.processId = this.runningProcessID;
       this.icon = this.processAppIcon;
       this.name = this.processAppName;
-      this.isWindowMaximizable = this.isMaximizable;
       this.retrievePastSessionData();
 
       if(!this.turnOffWindowOpenCloseAnimation)
@@ -238,6 +239,8 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
 
       this.displayName = this.processAppName;
       this.icon = this.processAppIcon;
+      this.isWindowMaximizable = this.isMaximizable;
+      this.isWindowMinimizable = this.isMinimizable;
 
       if(this.turnOffWindowOpenCloseAnimation){
         this.disableWindowAnimaion = true;
@@ -320,7 +323,9 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
       evt.stopPropagation();
       
       if(this.processId === pId){
-        this.setHideAndShow();
+        if(this.isWindowMinimizable){
+          this.setHideAndShow();
+        }
       }
     }
 
