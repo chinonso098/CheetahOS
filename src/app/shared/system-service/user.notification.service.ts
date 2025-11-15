@@ -41,7 +41,7 @@ export class UserNotificationService implements BaseService{
         this._runningProcessService.addService(this.getServiceDetail());
     }
 
-    private showDialogMsgBox(dialogMsgType:string, msg:string, title:string=Constants.EMPTY_STRING):void{
+    private showDialogMsgBox(dialogMsgType:string, msg:string, title:string=Constants.EMPTY_STRING, uId:string = Constants.EMPTY_STRING):void{
         const componentRef = this._componentReferenceService.createComponent(DialogComponent);
 
         if(dialogMsgType === UserNotificationType.Error ||
@@ -53,6 +53,7 @@ export class UserNotificationService implements BaseService{
         ){
           componentRef.setInput('inputMsg', msg);
           componentRef.setInput('inputTitle', title);
+          componentRef.setInput('inputCallingUId', uId);
           componentRef.setInput('notificationType', dialogMsgType);
           this.dialogPid = componentRef.instance.processId;
         }
@@ -66,8 +67,8 @@ export class UserNotificationService implements BaseService{
        this.showDialogMsgBox(UserNotificationType.Error, msg, title);
     }
 
-    showInfoNotification(msg:string){
-        this.showDialogMsgBox(UserNotificationType.Info, msg);
+    showInfoNotification(msg:string,  uId:string = Constants.EMPTY_STRING){
+        this.showDialogMsgBox(UserNotificationType.Info, msg, Constants.EMPTY_STRING, uId);
     }
 
     // showWarningNotification(msg:string, title:string){

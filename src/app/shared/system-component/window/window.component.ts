@@ -470,8 +470,6 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
     }
 
     onPositionWindow(input:WindowPositionInfo):void{
-      console.log('onPositionWindow-main window:', input);
-
       this.windowTop = input.top;
       this.windowLeft = input.left;
       //this.windowTransform = input.transform;

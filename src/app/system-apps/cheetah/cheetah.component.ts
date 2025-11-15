@@ -9,6 +9,7 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
 
 @Component({
   selector:'cos-cheetah',
@@ -57,6 +58,8 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   }
 
    async ngAfterViewInit(): Promise<void> {
+    this.changeDefaultOpeningPostions();
+    
     await CommonFunctions.sleep((10))
     this.getInfoMessage();
   }
@@ -147,6 +150,11 @@ Other trademarks and logos are property of their respective owners
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
+
+    changeDefaultOpeningPostions():void{
+      const positionInfo:WindowPositionInfo = {pId:this.processId, top:45, left:50, transform:'translate(-50%, -50%)'};
+      this._windowService.positionProcessWindowNotify.next(positionInfo);
+    }
 
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type);

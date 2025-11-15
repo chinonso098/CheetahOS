@@ -55,6 +55,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
    private _showOpenWindowsSub!:Subscription;
    private _closeCurrentProcessSub!:Subscription;
    private _positionWindowSub!:Subscription;
+   private _positionWindowByIdSub!:Subscription;
 
   readonly HIDDEN_Z_INDEX = 0;
   readonly MIN_Z_INDEX = 1;
@@ -125,6 +126,11 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       this._positionWindowSub = this._windowService.positionProcessWindowNotify.subscribe((p) => {
         if(p.pId === this.processId)
           this.onPositionWindow(p)
+      });
+
+      this._positionWindowByIdSub = this._windowService.positionProcessWindowByIdNotify.subscribe((p) => {
+        if(Number(p[0]) === this.processId)
+          this.onPositionWindowById(p)
       });
     }
 
@@ -204,6 +210,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       this._showTheDesktopSub?.unsubscribe();
       this._showOpenWindowsSub?.unsubscribe();
       this._positionWindowSub?.unsubscribe();
+      this._positionWindowByIdSub?.unsubscribe();
     }
 
     setBtnFocus(pId:number):void{
@@ -332,7 +339,6 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     onPositionWindow(input:WindowPositionInfo):void{
-      console.log('onPositionWindow:', input);
       this.windowTop = input.top;
       this.windowLeft = input.left
       this.windowTransform = input.transform;
@@ -341,6 +347,38 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
         'top': `${input.top}%`,
         'left': `${input.left}%`,
         'transform': input.transform,
+      };
+    }
+
+    onPositionWindowById(input:string[]):void{
+      const thisWindowId = input[0];
+      const callingWindowId = input[1];
+      const windowElmnt = document.getElementById(`wincmpnt-${callingWindowId}`) as HTMLElement;
+      console.log('windowElmnt:', windowElmnt);
+
+      if(!windowElmnt) return;
+
+      const winRect = windowElmnt.getBoundingClientRect();
+
+      const dialogWindowElmnt = document.getElementById(`bwincmpnt-${this.uniqueId}`) as HTMLElement;
+      if(!dialogWindowElmnt) return;
+
+      // const diagWinRect = dialogWindowElmnt.getBoundingClientRect();
+      // console.log('windowElmntBoundingRect:', winRect);
+      // console.log('diagWinRect:', diagWinRect);
+
+
+      this.windowTop = winRect.y + (winRect.height /2);
+      this.windowLeft = winRect.x + (winRect.width / 2);
+      this.windowTransform = 'translate(-50%, -50%)';
+
+      console.log('windowTop:', this.windowTop);
+      console.log('windowLeft:', this.windowLeft);
+
+      this.currentWinStyles = { 
+        'top': `${this.windowTop}px`,
+        'left': `${this.windowLeft}px`,
+        'transform': `${this.windowTransform}`,
       };
     }
 

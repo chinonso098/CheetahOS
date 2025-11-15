@@ -33,6 +33,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   @Input() inputMsg = Constants.EMPTY_STRING;
   @Input() inputTitle = Constants.EMPTY_STRING;
   @Input() notificationType = Constants.EMPTY_STRING;
+  @Input() inputCallingUId = Constants.EMPTY_STRING;
   @Input() inputFile!:FileInfo; 
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
@@ -478,9 +479,14 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   changeDefaultOpeningPostions():void{
     if(this.notificationOption === UserNotificationType.FileTransferProgress 
       || this.notificationOption === UserNotificationType.FileDeleteProgress 
-      || this.notificationOption === UserNotificationType.DeleteWarning){
+      || this.notificationOption === UserNotificationType.DeleteWarning
+      || this.notificationOption === UserNotificationType.Error){
       const positionInfo:WindowPositionInfo = {pId:this.processId, top:45, left:50, transform:'translate(-50%, -50%)'};
       this._windowService.positionProcessWindowNotify.next(positionInfo);
+    }
+
+    if(this.notificationOption === UserNotificationType.Info){
+      this._windowService.positionProcessWindowByIdNotify.next([String(this.processId), this.inputCallingUId]);
     }
   }
   
