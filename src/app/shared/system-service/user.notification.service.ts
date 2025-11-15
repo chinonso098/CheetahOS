@@ -75,7 +75,7 @@ export class UserNotificationService implements BaseService{
     //     this.showDialogMsgBox(UserNotificationType.Warning, msg, title);
     // }
 
-    async showWarningNotification(message: string, title: string, warningType:UserNotificationType = UserNotificationType.Warning, fileInfo?:FileInfo): Promise<boolean> {
+    async showWarningNotification(message: string, title: string, warningType:UserNotificationType = UserNotificationType.Warning, fileInfo?:FileInfo, uId:string = Constants.EMPTY_STRING): Promise<boolean> {
         return new Promise((resolve) => {
             const componentRef = this._componentReferenceService.createComponent(DialogComponent);
             componentRef.setInput('inputMsg', message);
@@ -88,6 +88,7 @@ export class UserNotificationService implements BaseService{
                     resolve(false);
                 }
                 componentRef.setInput('inputFile', fileInfo);
+                componentRef.setInput('inputCallingUId', uId);
             }
             this.dialogPid = componentRef.instance.processId;
       
