@@ -572,19 +572,20 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const colorOff = 'transparent';
     const colorOn = '#00adef';
 
+    await CommonFunctions.sleep(100) // sleep for a bit to let the cntxt menu dis-appear 
+
     try{
       DesktopStyleHelper.changeMainDkstpBkgrndColor(colorOff);
       //'#vanta > canvas'
       const dsktpCntnr = this.desktopContainer.nativeElement;
       const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
 
-      if (!dsktpCntnr) {
+      if(!dsktpCntnr){
         console.error('Desktop container or Vanta canvas not found.');
         return;
       }
 
-      console.log('canvasElmnt:', canvasElmnt);
-      if (!canvasElmnt) {
+      if(!canvasElmnt){
         console.warn('Vanta canvas not found. Skipping Vanta');
       }
 
@@ -1106,7 +1107,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         {icon1:empty,  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=>empty, action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
         {icon1:empty,  icon2:'', label: 'Refresh', nest:[], action:this.refresh.bind(this), action1: ()=> empty, emptyline:true},
         {icon1:empty,  icon2:'', label: 'Paste', nest:[], action:this.onPaste.bind(this), action1: ()=> empty, emptyline:false},
-        {icon1:`${Constants.IMAGE_BASE_PATH}terminal.png`, icon2:'', label:'Open in Terminal', nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
+        {icon1:`${Constants.IMAGE_BASE_PATH}terminal.png`, icon2:'', label:'Open Terminal', nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
         {icon1:`${Constants.IMAGE_BASE_PATH}camera.png`, icon2:'', label:'Screen Shot', nest:[], action: this.captureComponentImg.bind(this), action1: ()=> '', emptyline:false},
         {icon1:empty,  icon2:'', label:'Next Background', nest:[], action: this.nextBackground.bind(this), action1: ()=> empty, emptyline:false},
         {icon1:empty,  icon2:'', label:'Previous Background', nest:[], action: this.previousBackground.bind(this), action1: ()=> empty, emptyline:true},
