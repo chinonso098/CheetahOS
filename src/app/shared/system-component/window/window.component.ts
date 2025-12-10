@@ -892,18 +892,16 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
       const window = this._windowService.getWindowState(pId);
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
 
-      if(window){
-        if(window.isVisible){
-          if(window.pId !==  pid_with_highest_z_index){
-            this.setHeaderInActive(window.pId);
-            this.updateWindowZIndex(window, this.MIN_Z_INDEX);
-          }else{
-            this.setHeaderActive(window.pId);
-            this.updateWindowZIndex(window, this.MAX_Z_INDEX);
-          }
-        } else if(!window.isVisible){
-          this.setWindowToPriorHiddenState(window, this.HIDDEN_Z_INDEX);
+      if(window && window.isVisible){
+        if(window.pId !==  pid_with_highest_z_index){
+          this.setHeaderInActive(window.pId);
+          this.updateWindowZIndex(window, this.MIN_Z_INDEX);
+        }else{
+          this.setHeaderActive(window.pId);
+          this.updateWindowZIndex(window, this.MAX_Z_INDEX);
         }
+      } else if(window && !window.isVisible){
+        this.setWindowToPriorHiddenState(window, this.HIDDEN_Z_INDEX);
       }
     }
 

@@ -360,7 +360,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   resetAuthFormTimeOutOnly():void{
     // prevent overlapping timeouts
-    if (this.authFormTimeoutId) {
+    if(this.authFormTimeoutId){
       clearTimeout(this.authFormTimeoutId);
     }
   }
@@ -385,13 +385,14 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  async showLockScreen(isShtDwnOrRstrt?:boolean):Promise<void>{
+  async showLockScreen(isShtDwnOrRstrt?:boolean, chgBkgrnd?:boolean):Promise<void>{
     this.viewOptions = (isShtDwnOrRstrt === undefined)? this.currentDateTime : this.authForm;
 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
       lockScreenElmnt.style.zIndex = '6';
       lockScreenElmnt.style.backdropFilter = 'none';
+      lockScreenElmnt.style.backgroundColor = (chgBkgrnd) ? '#0078d8' : '';
 
       if(!this.isScreenLocked)
         await this._audioService.play(this.cheetahlockAudio);
@@ -513,36 +514,36 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.showFailedEntry = false;
   }
 
-  shutDownOSFromLockScreen():void{
+  async shutDownOSFromLockScreen():Promise<void>{
     const delay = 6000; // 6 secs
     this.resetFields();
     this.changeLockScreenLogonPosition(40);
     this.hidePowerBtn();
     this.exitMessage = 'Shutting down';
     this.showRestartShutDown = true;
-    this._audioService.play(this.cheetahRestarAndShutDownAudio);
+    await this._audioService.play(this.cheetahRestarAndShutDownAudio);
     this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_SHUT_DOWN);
     this.storeState(Constants.SIGNED_OUT);
     this.storePwrState(Constants.SYSTEM_SHUT_DOWN);
 
-    setTimeout(() => {
-      this.showPowerOnOffScreen();
-    }, delay);
+    setTimeout(() => { this.showPowerOnOffScreen(); }, delay);
   }
 
-  shutDownOSFromDesktop():void{
-    this.showLockScreen(true);
-    this.shutDownOSFromLockScreen();
+  async shutDownOSFromDesktop():Promise<void>{
+    const isShutDown = true;
+    const changeBkgrndColor = true;
+    this.showLockScreen(isShutDown, changeBkgrndColor);
+    await this.shutDownOSFromLockScreen();
   }
 
-  restartOSFromLockScreen():void{
+  async restartOSFromLockScreen():Promise<void>{
     const delay = 5500; // 5.5secs
     this.resetFields();
     this.changeLockScreenLogonPosition(40);
     this.hidePowerBtn();
     this.exitMessage = 'Restarting';
     this.showRestartShutDown = true;
-    this._audioService.play(this.cheetahRestarAndShutDownAudio);
+    await this._audioService.play(this.cheetahRestarAndShutDownAudio);
     this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_RESTART);
     this.storeState(Constants.SIGNED_OUT);
     this.storePwrState(Constants.SYSTEM_RESTART);
@@ -553,9 +554,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }, delay);
   }
 
-  restartOSFromDesktop():void{
-    this.showLockScreen(true);
-    this.restartOSFromLockScreen();
+  async restartOSFromDesktop():Promise<void>{
+    const isRestart = true;
+    const changeBkgrndColor = true;
+    this.showLockScreen(isRestart, changeBkgrndColor);
+    await this.restartOSFromLockScreen();
   }
 
   showPowerOnOffScreen():void{
