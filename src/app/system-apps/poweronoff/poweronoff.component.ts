@@ -1,10 +1,12 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { concatMap } from 'rxjs';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -65,15 +67,16 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
 
     this._systemNotificationService.restartSystemNotify.subscribe((p) => { 
       if(p === Constants.RSTRT_ORDER_PWR_ON_OFF_SCREEN){
-        this.simulateRestart()
+        this.simulateRestart();
       }
     });
+
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.retrievePastSessionData();
     if(this.isSystemPowered){
-      this.showLockScreen();
+      await this.showLockScreen();
     }
   }
 
@@ -89,49 +92,47 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
     }
   }
 
-  simulateBusy() {
+  simulateBusy():void{
     this.showStartUpGif = true;
     this.isSystemPowered = true;
     let index = 0;
     this.loadingMessage = 'Powering On';
     const secondsDelay = 2000; //2 seconds
 
-    const interval = setInterval(() => {
-      if (index < this.startUpMessages.length) {
+    const interval = setInterval(async() => {
+      if(index < this.startUpMessages.length){
         this.loadingMessage = this.startUpMessages[index];
         index++;
-      } else {
+      }else{
         clearInterval(interval);
-        this.showLockScreen();
+        await this.showLockScreen();
       }
     }, secondsDelay);
   }
 
-  simulateRestart(): void {
+  async simulateRestart(): Promise<void> {
     this.isFirstPwrOn = true;
     this.isSystemPowered = false;
     this.showPowerBtn = false;
     this.loadingMessage = Constants.EMPTY_STRING;
     const delay = 1000;
-    setTimeout(() => {
-      this.showStartUpGif = true;
-      this.loadingMessage = Constants.EMPTY_STRING;
-      this.simulateBusy();
-    }, delay);
+
+    await CommonFunctions.sleep(delay);
+    this.showStartUpGif = true;
+    this.loadingMessage = Constants.EMPTY_STRING;
+    this.simulateBusy();
   }
 
-
-  showLockScreen():void{
+  async showLockScreen(): Promise<void>{
     this.revertSettings();
     const powerOnOffElmnt = document.getElementById('powerOnOffCmpnt') as HTMLDivElement;
     if(powerOnOffElmnt){
       powerOnOffElmnt.style.zIndex = '-2';
       powerOnOffElmnt.style.display = 'none';
 
-
       // play startup sound
       if(this.isSystemPowered && this.isFirstPwrOn){
-        this._audioService.play(this.powerOnAudio);
+        await this._audioService.play(this.powerOnAudio);
         this.isFirstPwrOn = false;
       }
     }

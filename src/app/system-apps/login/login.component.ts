@@ -72,7 +72,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   cheetahUnlockAudio = `${Constants.AUDIO_BASE_PATH}cheetah_unlock.wav`;
   cheetahlockAudio = `${Constants.AUDIO_BASE_PATH}cheetah_lock.mp3`;
-  cheetahRestarAndShutDownAudio = `${Constants.AUDIO_BASE_PATH}cheetah_shutdown.wav`;
+  cheetahRestartAndShutDownAudio = `${Constants.AUDIO_BASE_PATH}cheetah_shutdown.wav`;
 
   video1 = `${Constants.SCREEN_SAVER_BASE_PATH}falling_leaves.mp4`;
   video2 = `${Constants.SCREEN_SAVER_BASE_PATH}gentle_moments.mp4`;
@@ -528,12 +528,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.hidePowerBtn();
     this.exitMessage = 'Shutting down';
     this.showRestartShutDown = true;
-    await this._audioService.play(this.cheetahRestarAndShutDownAudio);
+    await this._audioService.play(this.cheetahRestartAndShutDownAudio);
     this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_SHUT_DOWN);
     this.storeState(Constants.SIGNED_OUT);
     this.storePwrState(Constants.SYSTEM_SHUT_DOWN);
-
-    //setTimeout(() => { this.showPowerOnOffScreen(); }, delay);
 
     await CommonFunctions.sleep(delay);
     this.showPowerOnOffScreen();
@@ -554,12 +552,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.hidePowerBtn();
     this.exitMessage = 'Restarting';
     this.showRestartShutDown = true;
-    await this._audioService.play(this.cheetahRestarAndShutDownAudio);
+    await this._audioService.play(this.cheetahRestartAndShutDownAudio);
     this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_RESTART);
     this.storeState(Constants.SIGNED_OUT);
     this.storePwrState(Constants.SYSTEM_RESTART);
- 
-    //setTimeout(() => { }, delay);
 
     await CommonFunctions.sleep(delay);
     this.showPowerOnOffScreen();
