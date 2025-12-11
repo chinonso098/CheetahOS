@@ -186,7 +186,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   getDate():void{
-    this.currentDate = LoginHelpers.getDate()
+    this.currentDate = LoginHelpers.getDate();
   }
 
   getLockScreenBackgroundData():void{
@@ -206,9 +206,17 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  setLockScreenBackground():void{
+  setLockScreenBackground(isShtDwnOrRstrt:boolean  = false, chgBkgrnd:boolean = false):void{
     const styleClasses = ['lockscreen_background_mirror', 'lockscreen_background_solid_color', 'lockscreen_background_picture'];
     let activeClass = Constants.EMPTY_STRING;
+
+    if(isShtDwnOrRstrt && chgBkgrnd){
+      const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+      if(lockScreenElmnt)
+        lockScreenElmnt.style.backgroundColor = (chgBkgrnd) ? '#0078d8' : Constants.EMPTY_STRING;
+
+      return;
+    }
 
     if(this.lockScreenBackgroundType === Constants.BACKGROUND_MIRROR){
       const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
@@ -385,15 +393,14 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  async showLockScreen(isShtDwnOrRstrt?:boolean, chgBkgrnd?:boolean):Promise<void>{
-    this.viewOptions = (isShtDwnOrRstrt === undefined)? this.currentDateTime : this.authForm;
+  async showLockScreen(isShtDwnOrRstrt:boolean = false, chgBkgrnd:boolean = false):Promise<void>{
+    this.viewOptions = (!isShtDwnOrRstrt)? this.currentDateTime : this.authForm;
 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
       lockScreenElmnt.style.zIndex = '6';
       lockScreenElmnt.style.backdropFilter = 'none';
-      lockScreenElmnt.style.backgroundColor = (chgBkgrnd) ? '#0078d8' : '';
-
+ 
       if(!this.isScreenLocked)
         await this._audioService.play(this.cheetahlockAudio);
 
@@ -404,7 +411,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked);
       this.storeState(Constants.SIGNED_OUT);
 
-      this.setLockScreenBackground();
+      this.setLockScreenBackground(isShtDwnOrRstrt, chgBkgrnd);
 
       if(this.isScreenSaverActive)
         this.showScreenSaver();
@@ -526,7 +533,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.storeState(Constants.SIGNED_OUT);
     this.storePwrState(Constants.SYSTEM_SHUT_DOWN);
 
-    setTimeout(() => { this.showPowerOnOffScreen(); }, delay);
+    //setTimeout(() => { this.showPowerOnOffScreen(); }, delay);
+
+    await CommonFunctions.sleep(delay);
+    this.showPowerOnOffScreen();
   }
 
   async shutDownOSFromDesktop():Promise<void>{
@@ -534,6 +544,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     const changeBkgrndColor = true;
     this.showLockScreen(isShutDown, changeBkgrndColor);
     await this.shutDownOSFromLockScreen();
+    this.setLockScreenBackground();
   }
 
   async restartOSFromLockScreen():Promise<void>{
@@ -548,10 +559,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.storeState(Constants.SIGNED_OUT);
     this.storePwrState(Constants.SYSTEM_RESTART);
  
-    setTimeout(() => {
-      this.showPowerOnOffScreen();
-      this._systemNotificationServices.restartSystemNotify.next(Constants.RSTRT_ORDER_PWR_ON_OFF_SCREEN);
-    }, delay);
+    //setTimeout(() => { }, delay);
+
+    await CommonFunctions.sleep(delay);
+    this.showPowerOnOffScreen();
+    this._systemNotificationServices.restartSystemNotify.next(Constants.RSTRT_ORDER_PWR_ON_OFF_SCREEN);
   }
 
   async restartOSFromDesktop():Promise<void>{
@@ -559,6 +571,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     const changeBkgrndColor = true;
     this.showLockScreen(isRestart, changeBkgrndColor);
     await this.restartOSFromLockScreen();
+    this.setLockScreenBackground();
   }
 
   showPowerOnOffScreen():void{
