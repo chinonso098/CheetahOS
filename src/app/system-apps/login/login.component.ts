@@ -136,7 +136,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   ngOnInit():void {
     this.getLockScreenBackgroundData();
-    this.firstToDo();
+    this.thingsToDoFirstOnInit();
     this.retrievePastSessionData();
 
     if(this.isUserLogedIn)
@@ -167,7 +167,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     LoginHelpers.stopWebSceenSaver();
   }
 
-  firstToDo():void{
+  thingsToDoFirstOnInit():void{
     this.loginForm = this._formBuilder.nonNullable.group({
       loginInput: Constants.EMPTY_STRING,
     });

@@ -1,5 +1,6 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { concatMap } from 'rxjs/operators';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -70,6 +71,7 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
       }
     });
 
+    this._systemNotificationService.shutDownSystemNotify.pipe(concatMap(() =>  this.thingsToDoOnShutDown())).subscribe();
   }
 
   async ngOnInit(): Promise<void> {
@@ -142,11 +144,22 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
     }
   }
 
+
+  async thingsToDoOnShutDown():Promise<void>{
+    const delay = 6250; //6.25 secss
+    await CommonFunctions.sleep(delay);
+
+    this.isFirstPwrOn = true;
+    this.isSystemPowered = false;
+    this.showStartUpGif = false;
+    this.showPowerBtn = true;
+    this.loadingMessage = 'Pwr On';
+  }
+
   revertSettings():void{
     this.showStartUpGif = false;
     this.showPowerBtn = true;
     this.loadingMessage = 'Pwr On';
-    //this.storeState(Constants.SYSTEM_SHUT_DOWN);
   }
 
   storeState(state:string):void{
