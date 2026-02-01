@@ -249,7 +249,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     const clearApplicationSessionData = !this.reOpenWindows;
     const restorePriorOpenedAppsState = !clearApplicationSessionData ? Constants.TRUE : Constants.FALSE;
     this._defaultService.updateDefultData(Constants.DEFAULT_RESTORE_USER_OPENED_APPS, restorePriorOpenedAppsState, raiseEvent);
-    console.log('clearSessionData:',clearApplicationSessionData);
     
     this.onCloseDialogBox();
     this.closeActiveProcessWithWindows(clearApplicationSessionData);
@@ -263,16 +262,16 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
   }
 
-  closeActiveProcessWithWindows(clearSessionData:boolean):void{
+  closeActiveProcessWithWindows(clearApplicationSessionData:boolean):void{
 
-    if(!this.reOpenWindows)
-      this._sessionManagementService.clearAppSession();
+    // if(!this.reOpenWindows)
+    //   this._sessionManagementService.clearAppSession();
 
     const proccesses = this._runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
     for(const proccess of proccesses){
       this._runningProcessService.closeProcessNotify.next(proccess);
 
-      if(clearSessionData)
+      if(clearApplicationSessionData)
         this._processHandlerService.clearSessionData(proccess)
     }
 
