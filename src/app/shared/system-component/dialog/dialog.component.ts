@@ -228,8 +228,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this._userNotificationServices.closeDialogMsgBox(this.processId);
   }
 
-  onCheckboxChange():void{
-    console.log('Checkbox is checked:', this.reOpenWindows);
+  onReOpenWindowsCheckboxChange():void{
+    //console.log('onReOpenWindows is checked:', this.reOpenWindows);
   }
 
   setPwrDialogPid(action:string):void{ 
@@ -246,30 +246,28 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   async onYesPowerDialogBox(): Promise<void>{
     const delay = 200; //200ms
     const raiseEvent = false;
-    const clearSessionData = !this.reOpenWindows;
-    const restorePriorOpenedAppsState = clearSessionData ? Constants.FALSE : Constants.TRUE;
+    const clearApplicationSessionData = !this.reOpenWindows;
+    const restorePriorOpenedAppsState = !clearApplicationSessionData ? Constants.TRUE : Constants.FALSE;
     this._defaultService.updateDefultData(Constants.DEFAULT_RESTORE_USER_OPENED_APPS, restorePriorOpenedAppsState, raiseEvent);
-    console.log('clearSessionData:',clearSessionData);
+    console.log('clearSessionData:',clearApplicationSessionData);
     
     this.onCloseDialogBox();
-    this.closeActiveProcessWithWindows(clearSessionData);
+    this.closeActiveProcessWithWindows(clearApplicationSessionData);
+   
     
     await CommonFunctions.sleep(delay);
     if(this.selectedOption === Constants.SYSTEM_RESTART){
-      if(!this.reOpenWindows)
-        this._sessionManagementService.clearAppSession();
-
       this._systemNotificationService.restartSystemNotify.next(Constants.RSTRT_ORDER_LOCK_SCREEN);
     }else{
-      if(!this.reOpenWindows)
-        this._sessionManagementService.clearAppSession();
-
       this._systemNotificationService.shutDownSystemNotify.next();
     }
   }
-  
 
   closeActiveProcessWithWindows(clearSessionData:boolean):void{
+
+    if(!this.reOpenWindows)
+      this._sessionManagementService.clearAppSession();
+
     const proccesses = this._runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
     for(const proccess of proccesses){
       this._runningProcessService.closeProcessNotify.next(proccess);
