@@ -67,7 +67,7 @@ export namespace Constants{
     export const SERVICES_STATE_STOPPED = 'Stopped';
 
     export const SYSTEM_RESTART = 'Restart';
-    export const SYSTEM_SHUT_DOWN = 'Shutdown';
+    export const SYSTEM_SHUT_DOWN = 'Shut down';
     export const SYSTEM_ON = ON;
 
     export const SIGNED_OUT = 'sOut';

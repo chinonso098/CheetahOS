@@ -324,9 +324,9 @@ export class ProcessHandlerService implements BaseService{
         const restorePriorOpenedAppsState = this._defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
         const restorePriorOpenedApps = (restorePriorOpenedAppsState === Constants.TRUE) ? true : false;
 
-        const isShutDownOrRestart = ((this._systemNotificationService.getSystemPendingAction() === Constants.SYSTEM_RESTART)
-            || (this._systemNotificationService.getSystemPendingAction() === Constants.SYSTEM_SHUT_DOWN));
-
+        const powerAction = this._systemNotificationService.getSystemPendingAction();
+        const isShutDownOrRestart = powerAction === Constants.SYSTEM_RESTART || powerAction === Constants.SYSTEM_SHUT_DOWN;
+        
         return restorePriorOpenedApps && isShutDownOrRestart;
     }
 

@@ -247,12 +247,10 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   /** When Yes is clicked on Shutdown or Restart Power dialog.*/
   async onYesPowerDialogBox(): Promise<void>{
-    const delay = 200; //200ms
-    const clearApplicationSessionData = !this.reOpenWindows;
-    
+    const delay = 200; //200ms    
     this.onCloseDialogBox();
-    CommonFunctions.prepareSystemForShutdownOrRestart(clearApplicationSessionData, this.selectedOption, 
-      this._systemNotificationService, this._runningProcessService, this._processHandlerService, this._windowService, this._defaultService);
+    CommonFunctions.prepareSystemForShutdownOrRestart(this.selectedOption, this._systemNotificationService, 
+      this._runningProcessService, this._processHandlerService, this._windowService, this._defaultService);
    
     await CommonFunctions.sleep(delay);
     if(this.selectedOption === Constants.SYSTEM_RESTART){
@@ -261,26 +259,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       this._systemNotificationService.shutDownSystemNotify.next();
     }
   }
-
-  // terminateActiveProcessWithWindows(clearApplicationSessionData:boolean):void{
-  //   // if(!this.reOpenWindows)
-  //   //   this._sessionManagementService.clearAppSession();
-
-  //   if(this.selectedOption === Constants.SYSTEM_RESTART)
-  //     this._systemNotificationService.setSystemPendingAction(Constants.SYSTEM_RESTART);
-  //   else
-  //     this._systemNotificationService.setSystemPendingAction(Constants.SYSTEM_SHUT_DOWN);
-
-  //   const proccesses = this._runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
-  //   for(const proccess of proccesses){
-  //     this._runningProcessService.closeProcessNotify.next(proccess);
-
-  //     if(clearApplicationSessionData)
-  //       this._processHandlerService.clearSessionData(proccess)
-  //   }
-
-  //   this._windowService.reset();
-  // }
 
   onCloseDialogBox():void{
     if(this.notificationOption === UserNotificationType.Warning || this.notificationOption === UserNotificationType.DeleteWarning){

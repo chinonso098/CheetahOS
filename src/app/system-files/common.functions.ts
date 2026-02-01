@@ -216,16 +216,20 @@ export namespace CommonFunctions {
   }
 
 
-  export const prepareSystemForShutdownOrRestart = (clearApplicationSessionData:boolean, selectedOption:string, 
+  export const prepareSystemForShutdownOrRestart = (powerAction:string, 
       systemNotificationService:SystemNotificationService, runningProcessService:RunningProcessService,
       processHandlerService:ProcessHandlerService, windowService:WindowService, defaultService:DefaultService ):void =>{
 
     // if(!this.reOpenWindows)
     //   this._sessionManagementService.clearAppSession();
+    
     const raiseEvent = false;
     const isRestored =  Constants.FALSE;
 
-    systemNotificationService.setSystemPendingAction(selectedOption);
+    const restorePriorOpenedApps = defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
+    const clearApplicationSessionData = (restorePriorOpenedApps === Constants.TRUE) ? false : true;
+
+    systemNotificationService.setSystemPendingAction(powerAction);
 
     const proccesses = runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
     for(const proccess of proccesses){

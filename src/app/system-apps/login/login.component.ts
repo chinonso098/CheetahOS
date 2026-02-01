@@ -598,11 +598,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  shutDownRestartPrep(action:string):void{
-    const restorePriorOpenedApps = this._defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
-    const clearApplicationSessionData = (restorePriorOpenedApps === Constants.TRUE) ? true : false;
-
-    CommonFunctions.prepareSystemForShutdownOrRestart(clearApplicationSessionData, action, this._systemNotificationService, 
+  shutDownRestartPrep(powerAction:string):void{
+    CommonFunctions.prepareSystemForShutdownOrRestart(powerAction, this._systemNotificationService, 
       this._runningProcessService, this._processHandlerService, this._windowService, this._defaultService);
   }
 
