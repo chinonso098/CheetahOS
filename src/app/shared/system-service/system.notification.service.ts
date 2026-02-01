@@ -9,7 +9,6 @@ import { Service } from "src/app/system-files/service";
 import { BaseService } from "./base.service.interface";
 import { DragEventInfo, InformationUpdate } from "src/app/system-files/common.interfaces";
 
-
 @Injectable({
     providedIn: 'root'
 })
@@ -18,7 +17,7 @@ export class SystemNotificationService implements BaseService{
 
     private _runningProcessService!:RunningProcessService;
     private _processIdService!:ProcessIDService;
-    private _systemMessage = Constants.EMPTY_STRING;
+    private _systemPendingAction = Constants.EMPTY_STRING;
     private _appIconNotificationStore:Map<number, string[]>; 
     private _dragEventInfo:DragEventInfo | undefined = undefined;
     private _isScreenLocked = true;
@@ -47,7 +46,7 @@ export class SystemNotificationService implements BaseService{
     type = ProcessType.Background;
     status  = Constants.SERVICES_STATE_RUNNING;
     hasWindow = false;
-    description = ' ';
+    description = Constants.BLANK_SPACE;
     
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){
         this._processIdService = processIDService;
@@ -59,8 +58,8 @@ export class SystemNotificationService implements BaseService{
         this._runningProcessService.addService(this.getServiceDetail());
     }
 
-    setSystemMessage(msg:string):void{
-        this._systemMessage = msg;
+    setSystemPendingAction(msg:string):void{
+        this._systemPendingAction = msg;
     }
 
     setIsScreenLocked(isLocked:boolean):void{
@@ -87,13 +86,11 @@ export class SystemNotificationService implements BaseService{
         return [];
     }
 
-    getSystemMessage():string{
+    getSystemPendingAction():string{
         /**
-         * system message is cleared after it is retrieved
+         * system pending action is cleared after it is retrieved
          */
-        const tmpMsg = this._systemMessage;
-        this._systemMessage = Constants.EMPTY_STRING;
-        return tmpMsg;
+        return this._systemPendingAction;
     }
 
     getIsScreenLocked():boolean{

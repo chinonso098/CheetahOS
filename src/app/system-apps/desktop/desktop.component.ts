@@ -955,7 +955,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
 
       const defaultDesktopBackgrounValue = `${this.desktopBackgroundType}:${this.vantaBackgroundName[i]}`;
-      this._defaultService.updateDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue, raiseEvent);
+      this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue, raiseEvent);
     })
   }
 
@@ -967,7 +967,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       desktopElmnt.style.backgroundImage = `url(${this.desktopBackgroundValue})`;
       
       const defaultDesktopBackgrounValue = `${this.desktopBackgroundType}:${this.desktopBackgroundValue}`;
-      this._defaultService.updateDefultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue, raiseEvent);
+      this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue, raiseEvent);
     }
   }
 
@@ -1903,7 +1903,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const raiseEvent = false;
 
     const confirmationState = (this.confirmDelete)? Constants.TRUE : Constants.FALSE;
-    this._defaultService.updateDefultData(Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG, confirmationState, raiseEvent);
+    this._defaultService.updateDefaultData(Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG, confirmationState, raiseEvent);
   }
 
   onDeleteMoveToRecycleBin():void{
@@ -1911,7 +1911,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const raiseEvent = false;
 
     const confirmationState = (this.moveToRecycleBinOnDelete)? Constants.TRUE : Constants.FALSE;
-    this._defaultService.updateDefultData(Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG, confirmationState, raiseEvent);
+    this._defaultService.updateDefaultData(Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG, confirmationState, raiseEvent);
   }
 
   async onEmptyRecyleBinHelper():Promise<void>{
@@ -2078,18 +2078,22 @@ OpensWith=${file.getOpensWith}
     this.isIconInFocusDueToPriorAction = true;
   }
 
-  async restorPriorOpenApps(): Promise<void>{
-    let restorePriorOpenedAppsState = this._defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
-    if(restorePriorOpenedAppsState === Constants.TRUE){
-      await CommonFunctions.sleep(this.SECONDS_DELAY[2]);
+  async restorePriorOpenApps(): Promise<void>{
+    const raiseEvent = false;
+    const restorePriorOpenedApps = this._defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
+    if(restorePriorOpenedApps === Constants.FALSE)
+      return;
 
-      console.log('check for apps re-open......');
-      this._processHandlerService.checkAndRestore();
+    let isPriorOpenedAppsRestored = this._defaultService.getDefaultSetting(Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED);
+    if(isPriorOpenedAppsRestored === Constants.TRUE)
+      return;
 
-      const raiseEvent = false;
-      restorePriorOpenedAppsState = Constants.FALSE;
-      this._defaultService.updateDefultData(Constants.DEFAULT_RESTORE_USER_OPENED_APPS, restorePriorOpenedAppsState, raiseEvent);
-    }
+    console.log('check for apps re-open......');
+    await CommonFunctions.sleep(this.SECONDS_DELAY[2]);
+    this._processHandlerService.checkAndRestore();
+
+    isPriorOpenedAppsRestored = Constants.TRUE;
+    this._defaultService.updateDefaultData(Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED, isPriorOpenedAppsRestored, raiseEvent);
   }
   
 
@@ -2105,7 +2109,7 @@ OpensWith=${file.getOpensWith}
 
   desktopIsActive():void{
     this.showDesktopIcon();
-    this.restorPriorOpenApps();
+    this.restorePriorOpenApps();
     //this.startClippy();
   }
 

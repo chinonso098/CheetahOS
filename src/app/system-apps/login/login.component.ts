@@ -5,6 +5,8 @@ import { GeneralMenu } from 'src/app/shared/system-component/menu/menu.types';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
+import { WindowService } from 'src/app/shared/system-service/window.service';
+import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
@@ -25,12 +27,14 @@ import { LoginHelpers } from './login.helper';
 
 export class LoginComponent implements OnInit, AfterViewInit {
 
-  private _processIdService!:ProcessIDService;
-  private _runningProcessService!:RunningProcessService;
-  private _systemNotificationServices!:SystemNotificationService;
-  private _sessionManagmentService!:SessionManagmentService
   private _audioService!:AudioService;
   private _defaultService!:DefaultService;
+  private _windowService!:WindowService;
+  private _processIdService!:ProcessIDService;
+  private _runningProcessService!:RunningProcessService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _sessionManagmentService!:SessionManagmentService
+  private _systemNotificationService!:SystemNotificationService;
   private _wss:HTMLVideoElement | undefined;
 
   loginForm!: FormGroup;
@@ -97,19 +101,23 @@ export class LoginComponent implements OnInit, AfterViewInit {
   
 
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
-              formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, systemNotificationServices:SystemNotificationService,
-              defaultService:DefaultService){
+              formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, systemNotificationService:SystemNotificationService,
+              defaultService:DefaultService, windowService:WindowService, processHandlerService:ProcessHandlerService){
     this._processIdService = processIdService;
     this.processId = this._processIdService.getNewProcessId();
-    this._audioService = audioService;
+
     this._formBuilder = formBuilder;
-    this._systemNotificationServices = systemNotificationServices;
-    this._sessionManagmentService = sessionManagmentService;
+
+    this._audioService = audioService;
+    this._windowService = windowService
     this._defaultService = defaultService;
+    this._processHandlerService = processHandlerService
+    this._sessionManagmentService = sessionManagmentService;
+    this._systemNotificationService = systemNotificationService;
 
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
-    this._systemNotificationServices.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
+    this._systemNotificationService.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
 
     this._defaultService.defaultSettingsChangeNotify.subscribe((p) => {
       if(p === Constants.DEFAULT_LOCK_SCREEN_TIMEOUT){
@@ -126,8 +134,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
       }
     })
 
-    this._systemNotificationServices.shutDownSystemNotify.subscribe(() => { this.shutDownOSFromDesktop()});
-    this._systemNotificationServices.restartSystemNotify.subscribe((p) => { 
+    this._systemNotificationService.shutDownSystemNotify.subscribe(() => { this.shutDownOSFromDesktop()});
+    this._systemNotificationService.restartSystemNotify.subscribe((p) => { 
       if(p === Constants.RSTRT_ORDER_LOCK_SCREEN){
         this.restartOSFromDesktop()
       }
@@ -180,8 +188,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
     setInterval(() => { this.getTime(); }, secondsDelay[0]); 
     setInterval(() => { this.getDate();  }, secondsDelay[1]); 
 
-    this._systemNotificationServices.showLockScreenNotify.next();
-    this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked);
+    this._systemNotificationService.showLockScreenNotify.next();
+    this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
     this.getPowerMenuData();
   }
 
@@ -380,8 +388,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
       lockScreenElmnt.style.backdropFilter = 'none';
 
       this.isScreenLocked = false;
-      this._systemNotificationServices.showDesktopNotify.next();
-      this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked);
+      this._systemNotificationService.showDesktopNotify.next();
+      this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
       this.startLockScreenTimeOut();
 
       if(this.isUserLogedIn && this.isFirstLogIn)
@@ -407,8 +415,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.isScreenLocked = true;
       this.isFirstLogIn = true;
       this.loginForm.controls[this.formCntrlName].setValue(null);
-      this._systemNotificationServices.showLockScreenNotify.next();
-      this._systemNotificationServices.setIsScreenLocked(this.isScreenLocked);
+      this._systemNotificationService.showLockScreenNotify.next();
+      this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
       this.storeState(Constants.SIGNED_OUT);
 
       this.setLockScreenBackground(isShtDwnOrRstrt, chgBkgrnd);
@@ -529,7 +537,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.exitMessage = 'Shutting down';
     this.showRestartShutDown = true;
     await this._audioService.play(this.cheetahRestartAndShutDownAudio);
-    this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_SHUT_DOWN);
+
+    this.shutDownRestartPrep(Constants.SYSTEM_SHUT_DOWN);
     this.storeState(Constants.SIGNED_OUT);
     this.storePwrState(Constants.SYSTEM_SHUT_DOWN);
 
@@ -553,13 +562,14 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.exitMessage = 'Restarting';
     this.showRestartShutDown = true;
     await this._audioService.play(this.cheetahRestartAndShutDownAudio);
-    this._systemNotificationServices.setSystemMessage(Constants.SYSTEM_RESTART);
+
+    this.shutDownRestartPrep(Constants.SYSTEM_RESTART);
     this.storeState(Constants.SIGNED_OUT);
     this.storePwrState(Constants.SYSTEM_RESTART);
 
     await CommonFunctions.sleep(delay);
     this.showPowerOnOffScreen();
-    this._systemNotificationServices.restartSystemNotify.next(Constants.RSTRT_ORDER_PWR_ON_OFF_SCREEN);
+    this._systemNotificationService.restartSystemNotify.next(Constants.RSTRT_ORDER_PWR_ON_OFF_SCREEN);
   }
 
   async restartOSFromDesktop():Promise<void>{
@@ -586,6 +596,14 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.resetAuthFormTimeOutOnly();
       // raise events to close opened apps
     }
+  }
+
+  shutDownRestartPrep(action:string):void{
+    const restorePriorOpenedApps = this._defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
+    const clearApplicationSessionData = (restorePriorOpenedApps === Constants.TRUE) ? true : false;
+
+    CommonFunctions.prepareSystemForShutdownOrRestart(clearApplicationSessionData, action, this._systemNotificationService, 
+      this._runningProcessService, this._processHandlerService, this._windowService, this._defaultService);
   }
 
   removeLockScreenBackDrop():void{

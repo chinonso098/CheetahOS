@@ -1,4 +1,9 @@
 import { ActivityHistoryService } from "../shared/system-service/activity.tracking.service";
+import { DefaultService } from "../shared/system-service/defaults.services";
+import { ProcessHandlerService } from "../shared/system-service/process.handler.service";
+import { RunningProcessService } from "../shared/system-service/running.process.service";
+import { SystemNotificationService } from "../shared/system-service/system.notification.service";
+import { WindowService } from "../shared/system-service/window.service";
 import { ActivityType, SortBys } from "./common.enums";
 import { Activity } from "./common.interfaces";
 import { Constants } from "./constants";
@@ -208,6 +213,30 @@ export namespace CommonFunctions {
 
   export const getTrackingActivity = (type:ActivityType, name:string, path:string, oldFileName = Constants.EMPTY_STRING, isRename?:boolean ):Activity =>{
     return{type:type, name:name, path:path, oldFileName:oldFileName, isRename:isRename }
+  }
+
+
+  export const prepareSystemForShutdownOrRestart = (clearApplicationSessionData:boolean, selectedOption:string, 
+      systemNotificationService:SystemNotificationService, runningProcessService:RunningProcessService,
+      processHandlerService:ProcessHandlerService, windowService:WindowService, defaultService:DefaultService ):void =>{
+
+    // if(!this.reOpenWindows)
+    //   this._sessionManagementService.clearAppSession();
+    const raiseEvent = false;
+    const isRestored =  Constants.FALSE;
+
+    systemNotificationService.setSystemPendingAction(selectedOption);
+
+    const proccesses = runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
+    for(const proccess of proccesses){
+      runningProcessService.closeProcessNotify.next(proccess);
+
+      if(clearApplicationSessionData)
+        processHandlerService.clearSessionData(proccess)
+    }
+
+    windowService.reset();
+    defaultService.updateDefaultData(Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED, isRestored, raiseEvent);
   }
 
 }

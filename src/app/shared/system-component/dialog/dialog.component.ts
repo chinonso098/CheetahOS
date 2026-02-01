@@ -171,6 +171,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this.notificationOption = this.notificationType;
 
     if(this.notificationType === UserNotificationType.PowerOnOff){
+      this.getRestoreUserOpenedAppDefault();
       this.setPwrDialogPid(this.UPDATE);
     }
 
@@ -207,11 +208,10 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   async ngAfterViewInit(): Promise<void> {
     const delay = 200; //200ms
-
     this.changeDefaultOpeningPostions();
 
     await CommonFunctions.sleep(delay);
-    this.playDialogNotifcationSound();
+    await this.playDialogNotifcationSound();
   }
 
   ngOnDestroy(): void {
@@ -230,6 +230,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   onReOpenWindowsCheckboxChange():void{
     //console.log('onReOpenWindows is checked:', this.reOpenWindows);
+    const raiseEvent = false;
+    const restorePriorOpenedApps = this.reOpenWindows ? Constants.TRUE : Constants.FALSE;
+    this._defaultService.updateDefaultData(Constants.DEFAULT_RESTORE_USER_OPENED_APPS, restorePriorOpenedApps, raiseEvent);
   }
 
   setPwrDialogPid(action:string):void{ 
@@ -245,15 +248,12 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   /** When Yes is clicked on Shutdown or Restart Power dialog.*/
   async onYesPowerDialogBox(): Promise<void>{
     const delay = 200; //200ms
-    const raiseEvent = false;
     const clearApplicationSessionData = !this.reOpenWindows;
-    const restorePriorOpenedAppsState = !clearApplicationSessionData ? Constants.TRUE : Constants.FALSE;
-    this._defaultService.updateDefultData(Constants.DEFAULT_RESTORE_USER_OPENED_APPS, restorePriorOpenedAppsState, raiseEvent);
     
     this.onCloseDialogBox();
-    this.closeActiveProcessWithWindows(clearApplicationSessionData);
+    CommonFunctions.prepareSystemForShutdownOrRestart(clearApplicationSessionData, this.selectedOption, 
+      this._systemNotificationService, this._runningProcessService, this._processHandlerService, this._windowService, this._defaultService);
    
-    
     await CommonFunctions.sleep(delay);
     if(this.selectedOption === Constants.SYSTEM_RESTART){
       this._systemNotificationService.restartSystemNotify.next(Constants.RSTRT_ORDER_LOCK_SCREEN);
@@ -262,22 +262,25 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
   }
 
-  closeActiveProcessWithWindows(clearApplicationSessionData:boolean):void{
+  // terminateActiveProcessWithWindows(clearApplicationSessionData:boolean):void{
+  //   // if(!this.reOpenWindows)
+  //   //   this._sessionManagementService.clearAppSession();
 
-    // if(!this.reOpenWindows)
-    //   this._sessionManagementService.clearAppSession();
+  //   if(this.selectedOption === Constants.SYSTEM_RESTART)
+  //     this._systemNotificationService.setSystemPendingAction(Constants.SYSTEM_RESTART);
+  //   else
+  //     this._systemNotificationService.setSystemPendingAction(Constants.SYSTEM_SHUT_DOWN);
 
-    const proccesses = this._runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
-    for(const proccess of proccesses){
-      this._runningProcessService.closeProcessNotify.next(proccess);
+  //   const proccesses = this._runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
+  //   for(const proccess of proccesses){
+  //     this._runningProcessService.closeProcessNotify.next(proccess);
 
-      if(clearApplicationSessionData)
-        this._processHandlerService.clearSessionData(proccess)
-    }
+  //     if(clearApplicationSessionData)
+  //       this._processHandlerService.clearSessionData(proccess)
+  //   }
 
-    this._windowService.reset();
-  }
-
+  //   this._windowService.reset();
+  // }
 
   onCloseDialogBox():void{
     if(this.notificationOption === UserNotificationType.Warning || this.notificationOption === UserNotificationType.DeleteWarning){
@@ -512,6 +515,12 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       this._windowService.positionProcessWindowByIdNotify.next([String(this.processId), this.inputCallingUId]);
     }
   }
+
+  getRestoreUserOpenedAppDefault(): void{
+    const restorePriorOpenedApps = this._defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
+    this.reOpenWindows = (restorePriorOpenedApps === Constants.TRUE) ? true : false;
+  }
+
   
   private generateNotificationId(): number{
     const min = 10;

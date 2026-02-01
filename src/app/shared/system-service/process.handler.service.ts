@@ -40,6 +40,8 @@ import { WarpingstarfieldComponent } from "src/app/user-apps/warpingstarfield/wa
 import { ParticaleFlowComponent } from "src/app/user-apps/particaleflow/particaleflow.component";
 import { PdfViewerComponent } from "src/app/user-apps/pdf-viewer/pdf-viewer.component";
 import { SettingsComponent } from "src/app/system-apps/controlpanel/settings.component";
+import { DefaultService } from "./defaults.services";
+import { SystemNotificationService } from "./system.notification.service";
 
 
 @Injectable({
@@ -54,7 +56,9 @@ export class ProcessHandlerService implements BaseService{
     private _componentReferenceService!:ComponentReferenceService;
     private _sessionMangamentServices!:SessionManagmentService;
     private _menuService!:MenuService;
+    private _defaultService!: DefaultService;
     private _userNotificationService!:UserNotificationService;
+    private _systemNotificationService!:SystemNotificationService;
 
     private _appDirectory:AppDirectory;
     private _TriggerList:FileInfo[];
@@ -75,13 +79,13 @@ export class ProcessHandlerService implements BaseService{
     hasWindow = false;
     description = 'inits components';
 
-    readonly TASK_MANAGER = "taskmanager";
-    readonly CHATTER ="chatter";
-    readonly RUN_SYSTEM = "runsystem";
-    readonly CHEETAH = "cheetah";
-    readonly BOIDS = "boids";
-    readonly STAR_FIELD = "starfield";
-    readonly PARTICLE_FLOW = "particleflow";
+    private readonly TASK_MANAGER = "taskmanager";
+    private readonly CHATTER ="chatter";
+    private readonly RUN_SYSTEM = "runsystem";
+    private readonly CHEETAH = "cheetah";
+    private readonly BOIDS = "boids";
+    private readonly STAR_FIELD = "starfield";
+    private readonly PARTICLE_FLOW = "particleflow";
        
     //:TODO when you have more apps with a UI worth looking at, add a way to select the right component for the give
     //appname
@@ -112,7 +116,7 @@ export class ProcessHandlerService implements BaseService{
 
     constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, windowService:WindowService, 
         componentReferenceService:ComponentReferenceService, menuService:MenuService, sessionMangamentServices:SessionManagmentService,
-        userNotificationService:UserNotificationService){
+        userNotificationService:UserNotificationService, systemNotificationService:SystemNotificationService, defaultService: DefaultService){
 
         this._appDirectory = new AppDirectory();
         this._TriggerList = [];
@@ -124,6 +128,8 @@ export class ProcessHandlerService implements BaseService{
         this._sessionMangamentServices = sessionMangamentServices;
         this._menuService = menuService;
         this._userNotificationService = userNotificationService;
+        this._systemNotificationService = systemNotificationService;
+        this._defaultService = defaultService;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
@@ -223,31 +229,34 @@ export class ProcessHandlerService implements BaseService{
         }
     }
 
-    closeApplicationProcess(eventData:Process):void{
+    closeApplicationProcess(process:Process):void{
         // remove component ref
-        this._componentReferenceService.removeComponent(eventData.getProcessId)
+        this._componentReferenceService.removeComponent(process.getProcessId);
 
-        this._processIdService.removeProcessId(eventData.getProcessId);
+        this._processIdService.removeProcessId(process.getProcessId);
 
-        this._windowService.removeProcessPreviewImage(eventData.getProcessName, eventData.getProcessId);
+        this._windowService.removeProcessPreviewImage(process.getProcessName, process.getProcessId);
 
-        this._runningProcessService.removeProcess(eventData);
+        if(!this.shouldRestoreUserOpenedApps())
+            this.clearSessionData(process);
+
+        this._runningProcessService.removeProcess(process);
         this._runningProcessService.processListChangeNotify.next();
     }
 
-    public clearSessionData(eventData:Process){
-        this.deleteEntryFromUserOpenedAppsAndSession(eventData);
+    public clearSessionData(process:Process){
+        this.deleteEntryFromUserOpenedAppsAndSession(process);
     }
 
-    private deleteEntryFromUserOpenedAppsAndSession(proccess:Process):void{
-        const uId = `${proccess.getProcessName}-${proccess.getProcessId}`;
+    private deleteEntryFromUserOpenedAppsAndSession(process:Process):void{
+        const uId = `${process.getProcessName}-${process.getProcessId}`;
 
-        if(this._runningProcessService.getProcessCount(proccess.getProcessName) === 1){
-            this.userOpenedAppsList = this.userOpenedAppsList.filter(x => x !== proccess.getProcessName);
+        if(this._runningProcessService.getProcessCount(process.getProcessName) === 1){
+            this.userOpenedAppsList = this.userOpenedAppsList.filter(x => x !== process.getProcessName);
             this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList);
         }
 
-        this.openedAppInstanceUId = this.openedAppInstanceUId.filter( x => x !== uId);
+        this.openedAppInstanceUId = this.openedAppInstanceUId.filter(x => x !== uId);
         this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUId);
 
         this._sessionMangamentServices.removeSession(uId); 
@@ -311,11 +320,21 @@ export class ProcessHandlerService implements BaseService{
         this.restorePriorSession(priorSessionInfo);
     }
 
+    private shouldRestoreUserOpenedApps(): boolean{
+        const restorePriorOpenedAppsState = this._defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
+        const restorePriorOpenedApps = (restorePriorOpenedAppsState === Constants.TRUE) ? true : false;
+
+        const isShutDownOrRestart = ((this._systemNotificationService.getSystemPendingAction() === Constants.SYSTEM_RESTART)
+            || (this._systemNotificationService.getSystemPendingAction() === Constants.SYSTEM_SHUT_DOWN));
+
+        return restorePriorOpenedApps && isShutDownOrRestart;
+    }
+
     private getProcessDetail():Process{
-        return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
+        return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type);
     }
 
     private getServiceDetail():Service{
-        return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status)
+        return new Service(this.processId, this.name, this.icon, this.type, this.description, this.status);
     }
 }

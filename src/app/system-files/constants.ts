@@ -79,9 +79,9 @@ export namespace Constants{
     export const FILE_SVC_RESTORE_KEY = 'fileServiceRestoreKey';
     export const FILE_SVC_FILE_ITERATE_KEY = 'fileServiceFileIterateKey';
 
-    export const DEFAULT_LOCK_SCREEN_TIMEOUT = 'LOCK_SCREEN_TIMEOUT';
-    export const DEFAULT_LOCK_SCREEN_BACKGROUND = 'LOCK_SCREEN_BACKGROUND';
-    export const DEFAULT_DESKTOP_BACKGROUND = 'DESKTOP_BACKGROUND';
+    export const DEFAULT_LOCK_SCREEN_TIMEOUT = 'DEFAULT_LOCK_SCREEN_TIMEOUT';
+    export const DEFAULT_LOCK_SCREEN_BACKGROUND = 'DEFAULT_LOCK_SCREEN_BACKGROUND';
+    export const DEFAULT_DESKTOP_BACKGROUND = 'DEFAULT_DESKTOP_BACKGROUND';
 
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_LOCK_SCREEN_TIMEOUT_VALUE = '1 Minute:60000';
@@ -111,7 +111,6 @@ export namespace Constants{
     export const DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG_VALUE = 'osdrive/Cheetah/Themes/Desktop/vanta_wave.jpg';
     
     export const COLOR_AND_PICTURE_SLIDE_DELAY = 28000; //28 secs
-
 
     export const DEFAULT_SCREEN_SAVER_STATE = 'DEFAULT_SCREEN_SAVER_STATE';
     /**⚠️ WARNING: Do not reference directly.*/
@@ -153,9 +152,9 @@ export namespace Constants{
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE_VALUE = TRUE;
 
-    export const DEFAULT_RESTORE_USER_OPENED_APPS = 'RESTORE_USER_OPENED_APPS';
+    export const DEFAULT_RESTORE_USER_OPENED_APPS = 'DEFAULT_RESTORE_USER_OPENED_APPS';
     
-    export const DEFAULT_IS_USER_OPENED_APPS_RESTORED = 'IS_USER_OPENED_APPS_RESTORED';
+    export const DEFAULT_IS_USER_OPENED_APPS_RESTORED = 'DEFAULT_IS_USER_OPENED_APPS_RESTORED';
 
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_RESTORE_USER_OPENED_APPS_VALUE = TRUE;
