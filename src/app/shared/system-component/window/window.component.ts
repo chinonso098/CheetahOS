@@ -16,6 +16,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 import { MenuService } from '../../system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/common.interfaces';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
  @Component({
    selector: 'cos-window',
@@ -773,7 +774,7 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
       this._renderer.appendChild(this.glassPaneContainer.nativeElement, glassPane);
     }
 
-    onCloseBtnClick(evt:MouseEvent):void{
+    async onCloseBtnClick(evt:MouseEvent):Promise<void>{
       evt.stopPropagation();
 
       if(!this.turnOffWindowOpenCloseAnimation){
@@ -784,19 +785,18 @@ import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/commo
       this._windowService.removeWindowState(this.processId);
       this.removeSilhouette(this.processId);
 
-      setTimeout(()=>{
-        const processToClose = this._runningProcessService.getProcess(this.processId);
-        if(processToClose){
-          this._runningProcessService.closeProcessNotify.next(processToClose);
-          this._windowService.cleanUp(this.uniqueId);
-        }
+      await CommonFunctions.sleep(this.SECONDS_DELAY);
+      const processToClose = this._runningProcessService.getProcess(this.processId);
+      if(processToClose){
+        this._runningProcessService.closeProcessNotify.next(processToClose);
+        this._windowService.cleanUp(this.uniqueId);
+      }
 
-        const nextProc = this.getNextProcess();
-        if(nextProc){
-          this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
-          this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
-        }
-      },this.SECONDS_DELAY) ;
+      const nextProc = this.getNextProcess();
+      if(nextProc){
+        this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
+        this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
+      }
     }
 
     setFocsuOnThisWindow(pId:number):void{

@@ -211,7 +211,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   isMultiSelectEnabled = true;
   isMultiSelectActive = false;
   areMultipleIconsHighlighted = false;
-  isRestored = false;
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo;
@@ -2079,15 +2078,20 @@ OpensWith=${file.getOpensWith}
     this.isIconInFocusDueToPriorAction = true;
   }
 
-  restorPriorOpenApps():void{
-    if(!this.isRestored){
-      setTimeout(()=> {
-        console.log('check for apps re-open......')
-        this._processHandlerService.checkAndRestore();
-        this.isRestored = true;
-      }, this.SECONDS_DELAY[2]);
+  async restorPriorOpenApps(): Promise<void>{
+    let restorePriorOpenedAppsState = this._defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
+    if(restorePriorOpenedAppsState === Constants.TRUE){
+      await CommonFunctions.sleep(this.SECONDS_DELAY[2]);
+
+      console.log('check for apps re-open......');
+      this._processHandlerService.checkAndRestore();
+
+      const raiseEvent = false;
+      restorePriorOpenedAppsState = Constants.FALSE;
+      this._defaultService.updateDefultData(Constants.DEFAULT_RESTORE_USER_OPENED_APPS, restorePriorOpenedAppsState, raiseEvent);
     }
   }
+  
 
   lockScreenIsActive():void{
     this.stopClippy();

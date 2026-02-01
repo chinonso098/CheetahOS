@@ -153,6 +153,16 @@ export namespace Constants{
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE_VALUE = TRUE;
 
+    export const DEFAULT_RESTORE_USER_OPENED_APPS = 'RESTORE_USER_OPENED_APPS';
+    
+    export const DEFAULT_IS_USER_OPENED_APPS_RESTORED = 'IS_USER_OPENED_APPS_RESTORED';
+
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_RESTORE_USER_OPENED_APPS_VALUE = TRUE;
+
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_IS_USER_OPENED_APPS_RESTORED_VALUE = FALSE;
+
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
         '.png',

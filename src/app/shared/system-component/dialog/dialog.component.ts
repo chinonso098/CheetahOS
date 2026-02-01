@@ -5,8 +5,10 @@ import { UserNotificationType } from 'src/app/system-files/common.enums';
 
 import { FileService } from '../../system-service/file.service';
 import { WindowService } from '../../system-service/window.service';
+import { DefaultService } from '../../system-service/defaults.services';
 import { ProcessIDService } from '../../system-service/process.id.service';
 import { ProcessHandlerService } from '../../system-service/process.handler.service';
+import { RunningProcessService } from '../../system-service/running.process.service';
 import { UserNotificationService } from '../../system-service/user.notification.service';
 import { SessionManagmentService } from '../../system-service/session.management.service';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
@@ -43,9 +45,11 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   private _sessionManagementService: SessionManagmentService;
   private _processIdService!:ProcessIDService;
   private _systemNotificationService!:SystemNotificationService;
+  private _runningProcessService!:RunningProcessService;
   private _processHandlerService!:ProcessHandlerService;
   private _audioService!:AudioService;
   private _fileService!:FileService;
+  private _defaultService!:DefaultService;
 
   private _updateInformationSub!:Subscription;
   private _autoCloseDialogSub!:Subscription;
@@ -131,18 +135,21 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   processId = 0;
   displayName = Constants.EMPTY_STRING;
 
-  constructor(notificationServices:UserNotificationService,  windowService:WindowService, systemNotificationServices:SystemNotificationService, 
-              sessionManagementService:SessionManagmentService, processIdService:ProcessIDService, processHandlerService:ProcessHandlerService,
-              audioService:AudioService, fileService:FileService){
+  constructor(runningProcessService:RunningProcessService, notificationServices:UserNotificationService,  windowService:WindowService,
+              systemNotificationServices:SystemNotificationService, sessionManagementService:SessionManagmentService, processIdService:ProcessIDService, 
+              processHandlerService:ProcessHandlerService, audioService:AudioService, fileService:FileService,
+              defaultService:DefaultService){
 
     this._userNotificationServices = notificationServices;
     this._sessionManagementService = sessionManagementService;
+    this._processHandlerService = processHandlerService;
     this._processIdService = processIdService;
     this._windowService = windowService;
     this._systemNotificationService = systemNotificationServices;
-    this._processHandlerService = processHandlerService;
+    this._runningProcessService = runningProcessService;
     this._audioService = audioService;
     this._fileService = fileService;
+    this._defaultService = defaultService;
 
     this.processId = this._processIdService.getNewProcessId();
 
@@ -235,13 +242,18 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
   }
 
+  /** When Yes is clicked on Shutdown or Restart Power dialog.*/
   async onYesPowerDialogBox(): Promise<void>{
     const delay = 200; //200ms
+    const raiseEvent = false;
     const clearSessionData = !this.reOpenWindows;
+    const restorePriorOpenedAppsState = clearSessionData ? Constants.FALSE : Constants.TRUE;
+    this._defaultService.updateDefultData(Constants.DEFAULT_RESTORE_USER_OPENED_APPS, restorePriorOpenedAppsState, raiseEvent);
+    console.log('clearSessionData:',clearSessionData);
     
     this.onCloseDialogBox();
-    this._processHandlerService.closeActiveProcessWithWindows(clearSessionData);
-
+    this.closeActiveProcessWithWindows(clearSessionData);
+    
     await CommonFunctions.sleep(delay);
     if(this.selectedOption === Constants.SYSTEM_RESTART){
       if(!this.reOpenWindows)
@@ -255,6 +267,20 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       this._systemNotificationService.shutDownSystemNotify.next();
     }
   }
+  
+
+  closeActiveProcessWithWindows(clearSessionData:boolean):void{
+    const proccesses = this._runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
+    for(const proccess of proccesses){
+      this._runningProcessService.closeProcessNotify.next(proccess);
+
+      if(clearSessionData)
+        this._processHandlerService.clearSessionData(proccess)
+    }
+
+    this._windowService.reset();
+  }
+
 
   onCloseDialogBox():void{
     if(this.notificationOption === UserNotificationType.Warning || this.notificationOption === UserNotificationType.DeleteWarning){

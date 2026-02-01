@@ -60,7 +60,9 @@ export class DefaultService implements BaseService{
             [Constants.DEFAULT_CLIP_BOARD_STATE, Constants.DEFAULT_CLIP_BOARD_STATE_VALUE],
             [Constants.DEFAULT_SCREEN_SAVER_STATE, Constants.DEFAULT_SCREEN_SAVER_STATE_VALUE],
             [Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG, Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG_VALUE],
-            [Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE, Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE_VALUE]
+            [Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE, Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE_VALUE],
+            [Constants.DEFAULT_RESTORE_USER_OPENED_APPS, Constants.DEFAULT_RESTORE_USER_OPENED_APPS_VALUE],
+            //[Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED, Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED_VALUE]
           ]);
 
         this._sessionManagmentService.addMapBasedSession(this._defaultSettingServiceKey, this._defaultSettingsMap);
