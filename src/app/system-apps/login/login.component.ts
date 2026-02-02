@@ -44,6 +44,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   password = Constants.EMPTY_STRING;
   currentTime = Constants.EMPTY_STRING;
   currentDate = Constants.EMPTY_STRING;
+  logInCounter = 0;
 
   authFormTimeoutId!: NodeJS.Timeout;
   lockScreenTimeoutId!: NodeJS.Timeout;
@@ -59,6 +60,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   isScreenLocked = true;
   isUserLogedIn = false;
   isFirstLogIn = false;
+  isScreenSaverEnabled = false;
   isScreenSaverActive = false;
 
   powerMenuStyle:Record<string, unknown> = {};
@@ -120,22 +122,20 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this._systemNotificationService.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
 
     this._defaultService.defaultSettingsChangeNotify.subscribe((p) => {
-      if(p === Constants.DEFAULT_LOCK_SCREEN_TIMEOUT){
-        this.resetLockScreenTimeOut();
-      }
+      if(p === Constants.DEFAULT_LOCK_SCREEN_TIMEOUT){  this.resetLockScreenTimeOut(); }
 
-      if(p === Constants.DEFAULT_LOCK_SCREEN_BACKGROUND){
-        this.getLockScreenBackgroundData();
-      }
+      if(p === Constants.DEFAULT_LOCK_SCREEN_BACKGROUND){  this.getLockScreenBackgroundData(); }
 
-      if(p === Constants.DEFAULT_SCREEN_SAVER_STATE){
-        this.isScreenSaverActive = true;
-        this.showScreenSaver();
-      }
+      if(p === Constants.DEFAULT_SCREEN_SAVER_STATE){  this.enableDisableScreenSaver();  }
     })
 
-    this._systemNotificationService.shutDownSystemNotify.subscribe(() => { this.shutDownOSFromDesktop()});
+    this._systemNotificationService.shutDownSystemNotify.subscribe(() => { 
+      this.logInCounter = 0;
+      this.shutDownOSFromDesktop();
+    });
+
     this._systemNotificationService.restartSystemNotify.subscribe((p) => { 
+      this.logInCounter = 0;
       if(p === Constants.RSTRT_ORDER_LOCK_SCREEN){
         this.restartOSFromDesktop()
       }
@@ -155,24 +155,41 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.setLockScreenBackground();
-
-    if(this.isScreenSaverActive)
-      this.showScreenSaver();
   }
 
   getTime():void {
     this.currentTime = LoginHelpers.updateTime();
   }
 
-  showScreenSaver():void{
+  enableDisableScreenSaver():void{
+    const screenSaverState = this._defaultService.getDefaultSetting(Constants.DEFAULT_SCREEN_SAVER_STATE);
+    this.isScreenSaverEnabled = screenSaverState === Constants.ON ? true : false;
+  }
+
+  startScreenSaver():void{
+    this.isScreenSaverActive = true;
     const elRef = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     const videoScreenSaver = LoginHelpers.createVideoScreenSaver(elRef, this.video1)
     this._wss = LoginHelpers.startWebScreenSaver(videoScreenSaver);
   }
 
   stopScreenSaver():void{
-   if(this._wss)
-    LoginHelpers.stopWebSceenSaver();
+    if(!this.isScreenSaverActive) return;
+
+    this.isScreenSaverActive = false;
+    if(this._wss)
+      LoginHelpers.stopWebSceenSaver();
+  }
+
+  startStopScreenSaver():void{
+    // if(this.isScreenSaverEnabled)
+    //     this.startScreenSaver();
+
+   const isLogonForm = this.viewOptions === this.currentDateTime;
+    if(isLogonForm && this.isScreenSaverEnabled && this.isScreenLocked  && this.logInCounter > 0)
+      this.startScreenSaver();
+    else
+      this.stopScreenSaver();
   }
 
   thingsToDoFirstOnInit():void{
@@ -201,17 +218,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
     this.lockScreenBackgroundType = defaultBkgrnd[0];
     this.lockScreenBackgroundValue = defaultBkgrnd[1];
-  }
-
-  getLockScreenScreenSaverdData():void{
-    const defaultScreenSaver = this._defaultService.getDefaultSetting(Constants.DEFAULT_SCREEN_SAVER_STATE);
-    if(defaultScreenSaver === Constants.OFF){
-      this.isScreenSaverActive = false;
-      this.stopScreenSaver();
-    }else if(defaultScreenSaver === Constants.ON){
-      this.isScreenSaverActive = true;
-      this.showScreenSaver();
-    }
   }
 
   setLockScreenBackground(isShtDwnOrRstrt:boolean  = false, chgBkgrnd:boolean = false):void{
@@ -299,12 +305,20 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   onKeyDown(evt:KeyboardEvent):void{
+
+    if(this.isScreenSaverActive)
+      this.stopScreenSaver();
+
     if(evt.key === Constants.BLANK_SPACE){
       this.showAuthForm();
     }
   }
 
   onLockScreenViewClick():void{
+    
+    if(this.isScreenSaverActive)
+      this.stopScreenSaver();
+
     this.showPowerMenu = false;
     this.showAuthForm();
   }
@@ -340,7 +354,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onEnteringPassword(evt?:KeyboardEvent):void{
+  async onEnteringPassword(evt?:KeyboardEvent): Promise<void>{
     const secondsDelays = [2500, 3000]; //2.5 & 3 seconds
     if(evt?.key === "Enter"){
       const loginTxt = this.loginForm.value.loginInput as string;
@@ -348,16 +362,23 @@ export class LoginComponent implements OnInit, AfterViewInit {
         this.isUserLogedIn = true;
         this.showPasswordEntry = false;
         this.showLoading = true;
+        this.logInCounter++;
 
-        setTimeout(async() => { await this.showDesktop(); }, secondsDelays[0]);
+        await CommonFunctions.sleep(secondsDelays[0]);
+        await this.showDesktop(); 
+        //setTimeout(async() => { }, secondsDelays[0]);
       }else{
         this.showPasswordEntry = false;
         this.showLoading = true;
 
-        setTimeout(() => {
-          this.showLoading = false;
-          this.showFailedEntry = true
-        }, secondsDelays[1]);
+        // setTimeout(() => {
+        //   this.showLoading = false;
+        //   this.showFailedEntry = true
+        // }, secondsDelays[1]);
+
+        await CommonFunctions.sleep(secondsDelays[1]);
+        this.showLoading = false;
+        this.showFailedEntry = true;
 
         this.loginForm.controls[this.formCntrlName].setValue(null);
       }
@@ -421,8 +442,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
       this.setLockScreenBackground(isShtDwnOrRstrt, chgBkgrnd);
 
-      if(this.isScreenSaverActive)
-        this.showScreenSaver();
+      this.startStopScreenSaver()
     }
   }
 

@@ -141,7 +141,7 @@ export class ProcessHandlerService implements BaseService{
         this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.closeApplicationProcess(p)})
     }
 
-    runApplication(file:FileInfo):void{
+    public runApplication(file:FileInfo):void{
         let msg = Constants.EMPTY_STRING;
         if(this._appDirectory.appExist(file.getOpensWith)){
 
@@ -189,7 +189,7 @@ export class ProcessHandlerService implements BaseService{
     /**
      * Getting the last process from the Trigger, will remove it the TriggerList.
      */
-    getLastProcessTrigger():FileInfo{
+    public getLastProcessTrigger():FileInfo{
         if(this._TriggerList.length > 0){
            return this._TriggerList.pop() || new FileInfo;
         }
@@ -231,7 +231,7 @@ export class ProcessHandlerService implements BaseService{
         }
     }
 
-    closeApplicationProcess(process:Process):void{
+    public closeApplicationProcess(process:Process):void{
         // remove component ref
         this._componentReferenceService.removeComponent(process.getProcessId);
 
@@ -322,7 +322,7 @@ export class ProcessHandlerService implements BaseService{
         }
     }
 
-    reset():void{
+    public reset():void{
         this.userOpenedAppsList = [];
         this.openedAppInstanceUId = [];
         this.priorUserOpenedAppsList = [];
