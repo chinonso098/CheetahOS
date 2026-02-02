@@ -115,7 +115,8 @@ export namespace Constants{
     export const DEFAULT_SCREEN_SAVER_STATE = 'DEFAULT_SCREEN_SAVER_STATE';
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_SCREEN_SAVER_STATE_VALUE = OFF;
-    export const SCREEN_SAVER_DELAY = 30000; //30 secs
+    export const PRIMARY_SCREEN_SAVER_DELAY = 30000; //30 secs
+    export const SECONDARY_SCREEN_SAVER_DELAY = 5000; //5 secs
 
     export const DEFAULT_AUTO_HIDE_TASKBAR = 'DEFAULT_AUTO_HIDE_TASKBAR';
     export const DEFAULT_TASKBAR_COMBINATION = 'DEFAULT_TASKBAR_COMBINATION';

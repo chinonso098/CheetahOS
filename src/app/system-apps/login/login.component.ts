@@ -196,7 +196,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   startScreenSaver():void{
     const elRef = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
-    const videoScreenSaver = LoginHelpers.createVideoScreenSaver(elRef, this.video1);
+    const videoList = [this.video1, this.video2, this.video3];
+    const videoSelection = CommonFunctions.simpleRandomNumberGen(0, 2);
+    const scrnSaverVideo = videoList[videoSelection];
+
+    const videoScreenSaver = LoginHelpers.createVideoScreenSaver(elRef, scrnSaverVideo);
     this._wss = LoginHelpers.startWebScreenSaver(videoScreenSaver);
   }
 
@@ -204,7 +208,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
     if(this._wss)
       LoginHelpers.stopWebSceenSaver();
   }
-
 
   getLockScreenBackgroundData():void{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
@@ -338,8 +341,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
     this.viewOptions = this.currentDateTime;
     this.updateScreenSaverParams();
-    if(this.isCurrentDateTimeVisibleOnLockScreen() && this.isScreenLocked  && this.logInCounter > 0)
-      this.startScreenSaver();
+
+    if(this.isScreenSaverEnabled){
+      if(this.isCurrentDateTimeVisibleOnLockScreen() && this.isScreenLocked  && this.logInCounter > 0)
+        this.startScreenSaver();
+    }
 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
@@ -360,15 +366,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
         this.stopScreenSaver();
         await CommonFunctions.sleep(secondsDelays[0]);
         await this.showDesktop(); 
-        //setTimeout(async() => { }, secondsDelays[0]);
       }else{
         this.showPasswordEntry = false;
         this.showLoading = true;
-
-        // setTimeout(() => {
-        //   this.showLoading = false;
-        //   this.showFailedEntry = true
-        // }, secondsDelays[1]);
 
         await CommonFunctions.sleep(secondsDelays[1]);
         this.showLoading = false;
@@ -473,33 +473,33 @@ export class LoginComponent implements OnInit, AfterViewInit {
     ];
   }
 
-  onPowerBtnClick(evt:MouseEvent):void{
+  async onPowerBtnClick(evt:MouseEvent): Promise<void>{
     evt.preventDefault();
 
     //The onLockScreenViewClick also listens for a click event. hence, i have to delay the response of onPowerBtnClick
     const delay = 10;
-    setTimeout(() => {
-      if(!this.showPowerMenu && !this.isPowerMenuVisible){
-        this.showPowerMenu = true;
+    await CommonFunctions.sleep(delay);
 
-        const powerBtnElmt = document.getElementById('powerBtnCntnr'); 
-        if(powerBtnElmt){
-          const pwrBtnRect = powerBtnElmt.getBoundingClientRect();
-          powerBtnElmt.style.backgroundColor = Constants.EMPTY_STRING;
-  
-          this.powerMenuStyle = {
-            'position':'absolute',
-            'transform':`translate(${String(pwrBtnRect.x - 50)}px, ${String(pwrBtnRect.y - 352)}px)`,
-            'z-index': 6,
-          }
-          this.isPowerMenuVisible = true;
-          this.onPwdFieldRemoveFocus();
+    if(!this.showPowerMenu && !this.isPowerMenuVisible){
+      this.showPowerMenu = true;
+
+      const powerBtnElmt = document.getElementById('powerBtnCntnr'); 
+      if(powerBtnElmt){
+        const pwrBtnRect = powerBtnElmt.getBoundingClientRect();
+        powerBtnElmt.style.backgroundColor = Constants.EMPTY_STRING;
+
+        this.powerMenuStyle = {
+          'position':'absolute',
+          'transform':`translate(${String(pwrBtnRect.x - 50)}px, ${String(pwrBtnRect.y - 352)}px)`,
+          'z-index': 6,
         }
-      }else{
-        this.showPowerMenu = false;
-        this.isPowerMenuVisible = false;
-      }      
-    }, delay);
+        this.isPowerMenuVisible = true;
+        this.onPwdFieldRemoveFocus();
+      }
+    }else{
+      this.showPowerMenu = false;
+      this.isPowerMenuVisible = false;
+    }    
   }
 
   onPowerBtnMouseEnter():void{

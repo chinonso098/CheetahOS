@@ -91,6 +91,10 @@ export namespace CommonFunctions {
     return  path.split(Constants.ROOT).length > 1 ? true : false;
   }
 
+  export const simpleRandomNumberGen = (min:number = 0, max:number = 5):number=>{
+    return Math.floor(Math.random() * (max - min + 1)) + min; 
+  }
+
   /**
    * Starts a smooth background color slideshow on the given element.
    * @param screenPrevElmnt The HTML element to apply color transitions on.

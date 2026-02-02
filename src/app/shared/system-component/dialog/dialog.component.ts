@@ -499,10 +499,4 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this.reOpenWindows = (restorePriorOpenedApps === Constants.TRUE) ? true : false;
   }
 
-  
-  private generateNotificationId(): number{
-    const min = 10;
-    const max = 999;
-    return Math.floor(Math.random() * (max - min + 1)) + min; 
-  }
 }

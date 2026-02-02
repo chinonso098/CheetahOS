@@ -27,8 +27,6 @@ export namespace LoginHelpers {
         video.style.width = config.width;
         video.style.height = config.height;
 
-        //console.log('config:', config);
-
         const container =  config.elRef;
         if(!container){
             console.warn("LoginHelpers: No container element found for screensaver.");
@@ -39,7 +37,7 @@ export namespace LoginHelpers {
             container.appendChild(video);
             attachDeactivationListeners(config.elRef);
             videoRef = video;
-        }, Constants.SCREEN_SAVER_DELAY);
+        }, Constants.PRIMARY_SCREEN_SAVER_DELAY);
 
         return video;
     }
@@ -142,11 +140,10 @@ export namespace LoginHelpers {
         cleanupVideo(videoRef);
 
         initDelayTimeoutId = setTimeout(()=>{
-        if(isCurrentDateTimeVisibleOnLogonForm && isScreenLocked && logInCounter > 0){
-            startWebScreenSaver(screenSaverConfig);
-        }
-
-        }, Constants.SCREEN_SAVER_DELAY);
+            if(isCurrentDateTimeVisibleOnLogonForm && isScreenLocked && logInCounter > 0){
+                startWebScreenSaver(screenSaverConfig);
+            }
+        }, Constants.SECONDARY_SCREEN_SAVER_DELAY);
     };
 
     export const updateTime=(): string=>{
