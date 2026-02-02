@@ -6,6 +6,9 @@ export namespace LoginHelpers {
     let initDelayTimeoutId:NodeJS.Timeout | null = null;
     let videoRef:HTMLVideoElement | null = null;
     let screenSaverConfig:VideoScreenSaver | null = null;
+    let isCurrentDateTimeVisibleOnLogonForm: boolean = false;
+    let isScreenLocked: boolean = false;
+    let logInCounter:number = 0;
 
     export const startWebScreenSaver =(config:VideoScreenSaver | null):HTMLVideoElement | undefined =>{
         if(!config){
@@ -24,8 +27,10 @@ export namespace LoginHelpers {
         video.style.width = config.width;
         video.style.height = config.height;
 
+        //console.log('config:', config);
+
         const container =  config.elRef;
-        if (!container) {
+        if(!container){
             console.warn("LoginHelpers: No container element found for screensaver.");
             return;
         }
@@ -105,9 +110,11 @@ export namespace LoginHelpers {
                 muted:muted, 
                 loop:loop, 
                 playsInline:playsInline, 
-                preload:preload, 
+                preload:preload,
                 height:height, 
-                width:width 
+                width:width  
+                // height: `${elRef?.offsetHeight}px`, 
+                // width:`${elRef?.offsetWidth}px` 
         }
     }
 
@@ -135,7 +142,10 @@ export namespace LoginHelpers {
         cleanupVideo(videoRef);
 
         initDelayTimeoutId = setTimeout(()=>{
-            startWebScreenSaver(screenSaverConfig)
+        if(isCurrentDateTimeVisibleOnLogonForm && isScreenLocked && logInCounter > 0){
+            startWebScreenSaver(screenSaverConfig);
+        }
+
         }, Constants.SCREEN_SAVER_DELAY);
     };
 
@@ -156,6 +166,18 @@ export namespace LoginHelpers {
           month:'long',
           day:'numeric'
         });
+    }
+
+    export const updateIsCurrentDateTimeOnLogonForm = (isLogonForm:boolean):void =>{
+        isCurrentDateTimeVisibleOnLogonForm = isLogonForm;
+    }
+
+    export const updateIsScreenLocked = (isScrnLckd :boolean):void =>{
+        isScreenLocked = isScrnLckd;
+    }
+
+    export const updateLogInCounter = (counter:number):void =>{
+        logInCounter = counter;
     }
 
 }

@@ -61,7 +61,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
   isUserLogedIn = false;
   isFirstLogIn = false;
   isScreenSaverEnabled = false;
-  isScreenSaverActive = false;
 
   powerMenuStyle:Record<string, unknown> = {};
   powerMenuOption = Constants.POWER_MENU_OPTION;
@@ -157,41 +156,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.setLockScreenBackground();
   }
 
-  getTime():void {
-    this.currentTime = LoginHelpers.updateTime();
-  }
-
-  enableDisableScreenSaver():void{
-    const screenSaverState = this._defaultService.getDefaultSetting(Constants.DEFAULT_SCREEN_SAVER_STATE);
-    this.isScreenSaverEnabled = screenSaverState === Constants.ON ? true : false;
-  }
-
-  startScreenSaver():void{
-    this.isScreenSaverActive = true;
-    const elRef = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
-    const videoScreenSaver = LoginHelpers.createVideoScreenSaver(elRef, this.video1)
-    this._wss = LoginHelpers.startWebScreenSaver(videoScreenSaver);
-  }
-
-  stopScreenSaver():void{
-    if(!this.isScreenSaverActive) return;
-
-    this.isScreenSaverActive = false;
-    if(this._wss)
-      LoginHelpers.stopWebSceenSaver();
-  }
-
-  startStopScreenSaver():void{
-    // if(this.isScreenSaverEnabled)
-    //     this.startScreenSaver();
-
-   const isLogonForm = this.viewOptions === this.currentDateTime;
-    if(isLogonForm && this.isScreenSaverEnabled && this.isScreenLocked  && this.logInCounter > 0)
-      this.startScreenSaver();
-    else
-      this.stopScreenSaver();
-  }
-
   thingsToDoFirstOnInit():void{
     this.loginForm = this._formBuilder.nonNullable.group({
       loginInput: Constants.EMPTY_STRING,
@@ -213,6 +177,34 @@ export class LoginComponent implements OnInit, AfterViewInit {
   getDate():void{
     this.currentDate = LoginHelpers.getDate();
   }
+
+  getTime():void {
+    this.currentTime = LoginHelpers.updateTime();
+  }
+
+  enableDisableScreenSaver():void{
+    const screenSaverState = this._defaultService.getDefaultSetting(Constants.DEFAULT_SCREEN_SAVER_STATE);
+    this.isScreenSaverEnabled = screenSaverState === Constants.ON ? true : false;
+
+    if(this.isScreenSaverEnabled){
+      if(this.isCurrentDateTimeVisibleOnLockScreen() && this.isScreenLocked  && this.logInCounter > 0)
+        this.startScreenSaver();
+    }
+    else
+      this.stopScreenSaver();
+  }
+
+  startScreenSaver():void{
+    const elRef = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    const videoScreenSaver = LoginHelpers.createVideoScreenSaver(elRef, this.video1);
+    this._wss = LoginHelpers.startWebScreenSaver(videoScreenSaver);
+  }
+
+  stopScreenSaver():void{
+    if(this._wss)
+      LoginHelpers.stopWebSceenSaver();
+  }
+
 
   getLockScreenBackgroundData():void{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
@@ -305,26 +297,21 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   onKeyDown(evt:KeyboardEvent):void{
-
-    if(this.isScreenSaverActive)
-      this.stopScreenSaver();
-
     if(evt.key === Constants.BLANK_SPACE){
       this.showAuthForm();
+      this.updateScreenSaverParams();
     }
   }
 
   onLockScreenViewClick():void{
-    
-    if(this.isScreenSaverActive)
-      this.stopScreenSaver();
-
     this.showPowerMenu = false;
     this.showAuthForm();
+    this.updateScreenSaverParams();
   }
 
   showAuthForm():void{
     this.viewOptions = this.authForm;
+    LoginHelpers
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
       if(this.lockScreenBackgroundType === Constants.BACKGROUND_MIRROR){
@@ -347,7 +334,13 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   showDateTime():void{
+    if(!this.isScreenLocked) return;
+
     this.viewOptions = this.currentDateTime;
+    this.updateScreenSaverParams();
+    if(this.isCurrentDateTimeVisibleOnLockScreen() && this.isScreenLocked  && this.logInCounter > 0)
+      this.startScreenSaver();
+
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
     if(lockScreenElmnt){
       lockScreenElmnt.style.backdropFilter = 'none';
@@ -364,6 +357,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
         this.showLoading = true;
         this.logInCounter++;
 
+        this.stopScreenSaver();
         await CommonFunctions.sleep(secondsDelays[0]);
         await this.showDesktop(); 
         //setTimeout(async() => { }, secondsDelays[0]);
@@ -430,7 +424,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       lockScreenElmnt.style.zIndex = '6';
       lockScreenElmnt.style.backdropFilter = 'none';
  
-      if(!this.isScreenLocked)
+      if(!isShtDwnOrRstrt && !this.isScreenLocked)
         await this._audioService.play(this.cheetahlockAudio);
 
       this.isScreenLocked = true;
@@ -442,7 +436,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
       this.setLockScreenBackground(isShtDwnOrRstrt, chgBkgrnd);
 
-      this.startStopScreenSaver()
+      if(!isShtDwnOrRstrt && this.isScreenSaverEnabled){
+        this.updateScreenSaverParams();
+        this.startScreenSaver();
+      }
     }
   }
 
@@ -547,6 +544,16 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.showPasswordEntry = false;
     this.showLoading = false
     this.showFailedEntry = false;
+  }
+
+  isCurrentDateTimeVisibleOnLockScreen():boolean{
+    return (this.viewOptions === this.currentDateTime);
+  }
+
+  updateScreenSaverParams():void{
+    LoginHelpers.updateIsCurrentDateTimeOnLogonForm(this.isCurrentDateTimeVisibleOnLockScreen());
+    LoginHelpers.updateIsScreenLocked(this.isScreenLocked);
+    LoginHelpers.updateLogInCounter(this.logInCounter);
   }
 
   async shutDownOSFromLockScreen():Promise<void>{

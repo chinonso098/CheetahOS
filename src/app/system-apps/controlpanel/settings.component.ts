@@ -302,7 +302,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   geScreenSaverData():void{
     const scrSvrState = this._defaultService.getDefaultSetting(Constants.DEFAULT_SCREEN_SAVER_STATE);
-    this.isScreenSaverActive = (scrSvrState === Constants.TRUE)? true : false;
+    this.isScreenSaverActive = (scrSvrState === Constants.ON)? true : false;
   }
 
   focusWindow(evt:MouseEvent):void{
@@ -895,9 +895,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   changeScreenSaverState():void{
     this.isScreenSaverActiveText = (this.isScreenSaverActive)? Constants.ON : Constants.OFF;
-    const screenSaverState = (this.isScreenSaverActive)? Constants.TRUE : Constants.FALSE;
-    const defaultScreenSaverState = `${screenSaverState}`;
-    this._defaultService.updateDefaultData(Constants.DEFAULT_SCREEN_SAVER_STATE, defaultScreenSaverState);
+    this._defaultService.updateDefaultData(Constants.DEFAULT_SCREEN_SAVER_STATE, this.isScreenSaverActiveText);
   }
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
