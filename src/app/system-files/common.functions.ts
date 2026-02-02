@@ -4,6 +4,7 @@ import { ProcessHandlerService } from "../shared/system-service/process.handler.
 import { RunningProcessService } from "../shared/system-service/running.process.service";
 import { SystemNotificationService } from "../shared/system-service/system.notification.service";
 import { WindowService } from "../shared/system-service/window.service";
+
 import { ActivityType, SortBys } from "./common.enums";
 import { Activity } from "./common.interfaces";
 import { Constants } from "./constants";
@@ -241,6 +242,7 @@ export namespace CommonFunctions {
 
     windowService.reset();
     processHandlerService.reset();
+    systemNotificationService.setSystemPendingAction(Constants.EMPTY_STRING);
     defaultService.updateDefaultData(Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED, isRestored, raiseEvent);
   }
 

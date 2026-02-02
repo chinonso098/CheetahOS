@@ -299,18 +299,12 @@ export class ProcessHandlerService implements BaseService{
     public checkAndRestore():void{
         const delay = 1000; //1sec
         if(this.priorUserOpenedAppsList.length > 0){
-            console.log('openedAppInstList:', this.priorOpenedAppInstanceUId);
 
             const tasks: [string, string][] = [];
             for(const pName of this.priorUserOpenedAppsList){
                 const tmpKeys = this.priorOpenedAppInstanceUId.filter(x => x.includes(pName));
-
                 for(const pUId of tmpKeys){
                     tasks.push([pName, pUId]);
-
-                    // remove prior opend app instance
-                    this.openedAppInstanceUId = this.openedAppInstanceUId.filter(x => x !== pUId);
-                    this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUId);
                 }
             }
 
