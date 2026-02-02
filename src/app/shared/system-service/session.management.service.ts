@@ -46,7 +46,7 @@ export class SessionManagmentService implements BaseService{
     }
 
     addSession(key:string, dataToAdd:unknown): void{
-        this._sessionDataDict.set(key, dataToAdd)
+        this._sessionDataDict.set(key, dataToAdd);
         this.saveSession(this._sessionDataDict);
     }
 
@@ -70,7 +70,7 @@ export class SessionManagmentService implements BaseService{
     }
 
     removeSession(key:string): void{
-        this._sessionDataDict.delete(key)
+        this._sessionDataDict.delete(key);
         this.saveSession(this._sessionDataDict);
     }
 

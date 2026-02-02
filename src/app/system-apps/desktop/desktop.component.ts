@@ -2088,6 +2088,8 @@ OpensWith=${file.getOpensWith}
     if(isPriorOpenedAppsRestored === Constants.TRUE)
       return;
 
+    this._processHandlerService.fetchPriorSessionInfo();
+
     console.log('check for apps re-open......');
     await CommonFunctions.sleep(this.SECONDS_DELAY[2]);
     this._processHandlerService.checkAndRestore();

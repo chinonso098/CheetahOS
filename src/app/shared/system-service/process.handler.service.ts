@@ -68,6 +68,8 @@ export class ProcessHandlerService implements BaseService{
 
     private userOpenedAppsList:string[] = [];
     private openedAppInstanceUId:string[] = [];
+    private priorUserOpenedAppsList:string[] = [];
+    private priorOpenedAppInstanceUId:string[] = [];
     private userOpenedAppsKey = Constants.USER_OPENED_APPS;
     private appsInstanceUIDKey = Constants.USER_OPENED_APPS_INSTANCE;
 
@@ -259,31 +261,56 @@ export class ProcessHandlerService implements BaseService{
         this.openedAppInstanceUId = this.openedAppInstanceUId.filter(x => x !== uId);
         this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUId);
 
-        this._sessionMangamentServices.removeSession(uId); 
+        //this._sessionMangamentServices.removeSession(uId); 
         this._sessionMangamentServices.removeAppSession(uId); 
     }
 
 
-    private fetchPriorSessionInfo():string[]{
+    public fetchPriorSessionInfo():void{
+        // retrieve list
         const openedAppList = this._sessionMangamentServices.getSession(this.userOpenedAppsKey) as string[];
-        //console.log('openedAppList:', openedAppList);
         if(openedAppList)
-            return openedAppList;
+            this.priorUserOpenedAppsList.push(...openedAppList);
 
-        return [];
+        const openedAppInstList = this._sessionMangamentServices.getSession(this.appsInstanceUIDKey) as string[];
+        if(openedAppInstList)
+            this.priorOpenedAppInstanceUId.push(...openedAppInstList);
+
+        // purge prior sesseion
+        this._sessionMangamentServices.addSession(this.userOpenedAppsKey, []);
+        this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, []);
     }
 
-    private restorePriorSession(priorOpenedApps: string[]):void{
-        const delay = 750; //750ms
-        if(priorOpenedApps.length > 0){
-            const openedAppInstList = this._sessionMangamentServices.getSession(this.appsInstanceUIDKey) as string[];
-            //console.log('openedAppInstList:', openedAppInstList);
+
+    private addEntryFromUserOpenedAppssAndSession(cmpntRef:ComponentRef<BaseComponent>):void{
+        const pName = cmpntRef.instance.name;
+        const pId = cmpntRef.instance.processId;
+        const uId = `${pName}-${pId}`;
+
+        if(!this.userOpenedAppsList.includes(pName))
+            this.userOpenedAppsList.push(pName);
+
+        this.openedAppInstanceUId.push(uId);
+
+        this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList);
+        this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUId);
+    }
+
+    public checkAndRestore():void{
+        const delay = 1000; //1sec
+        if(this.priorUserOpenedAppsList.length > 0){
+            console.log('openedAppInstList:', this.priorOpenedAppInstanceUId);
 
             const tasks: [string, string][] = [];
-            for(const pName of priorOpenedApps){
-                const tmpKeys = openedAppInstList.filter(x => x.includes(pName));
+            for(const pName of this.priorUserOpenedAppsList){
+                const tmpKeys = this.priorOpenedAppInstanceUId.filter(x => x.includes(pName));
+
                 for(const pUId of tmpKeys){
                     tasks.push([pName, pUId]);
+
+                    // remove prior opend app instance
+                    this.openedAppInstanceUId = this.openedAppInstanceUId.filter(x => x !== pUId);
+                    this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUId);
                 }
             }
 
@@ -301,23 +328,11 @@ export class ProcessHandlerService implements BaseService{
         }
     }
 
-    private addEntryFromUserOpenedAppssAndSession(cmpntRef:ComponentRef<BaseComponent>):void{
-        const pName = cmpntRef.instance.name;
-        const pId = cmpntRef.instance.processId;
-        const uId = `${pName}-${pId}`;
-
-        if(!this.userOpenedAppsList.includes(pName))
-            this.userOpenedAppsList.push(pName);
-
-        this.openedAppInstanceUId.push(uId);
-
-        this._sessionMangamentServices.addSession(this.userOpenedAppsKey, this.userOpenedAppsList);
-        this._sessionMangamentServices.addSession(this.appsInstanceUIDKey, this.openedAppInstanceUId);
-    }
-
-    checkAndRestore():void{
-        const priorSessionInfo = this.fetchPriorSessionInfo();
-        this.restorePriorSession(priorSessionInfo);
+    reset():void{
+        this.userOpenedAppsList = [];
+        this.openedAppInstanceUId = [];
+        this.priorUserOpenedAppsList = [];
+        this.priorOpenedAppInstanceUId= [];
     }
 
     private shouldRestoreUserOpenedApps(): boolean{
@@ -326,7 +341,7 @@ export class ProcessHandlerService implements BaseService{
 
         const powerAction = this._systemNotificationService.getSystemPendingAction();
         const isShutDownOrRestart = powerAction === Constants.SYSTEM_RESTART || powerAction === Constants.SYSTEM_SHUT_DOWN;
-        
+
         return restorePriorOpenedApps && isShutDownOrRestart;
     }
 

@@ -240,6 +240,7 @@ export namespace CommonFunctions {
     }
 
     windowService.reset();
+    processHandlerService.reset();
     defaultService.updateDefaultData(Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED, isRestored, raiseEvent);
   }
 
