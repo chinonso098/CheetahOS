@@ -125,7 +125,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
       if(p === Constants.DEFAULT_LOCK_SCREEN_BACKGROUND){  this.getLockScreenBackgroundData(); }
 
-      if(p === Constants.DEFAULT_SCREEN_SAVER_STATE){  this.enableDisableScreenSaver();  }
+      if(p === Constants.DEFAULT_SCREEN_SAVER_STATE){  this.syncAndHandleScreenSaver();  }
     })
 
     this._systemNotificationService.shutDownSystemNotify.subscribe(() => { 
@@ -153,7 +153,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    const onlySyncScrnSvrState = true;
+
     this.setLockScreenBackground();
+    this.syncAndHandleScreenSaver(onlySyncScrnSvrState);
   }
 
   thingsToDoFirstOnInit():void{
@@ -182,9 +185,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.currentTime = LoginHelpers.updateTime();
   }
 
-  enableDisableScreenSaver():void{
+  syncAndHandleScreenSaver(onlySyncScrnSvrState:boolean = false):void{
     const screenSaverState = this._defaultService.getDefaultSetting(Constants.DEFAULT_SCREEN_SAVER_STATE);
     this.isScreenSaverEnabled = screenSaverState === Constants.ON ? true : false;
+
+    if(onlySyncScrnSvrState) return;
 
     if(this.isScreenSaverEnabled){
       if(this.isCurrentDateTimeVisibleOnLockScreen() && this.isScreenLocked  && this.logInCounter > 0)
