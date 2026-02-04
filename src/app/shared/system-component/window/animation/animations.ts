@@ -54,9 +54,9 @@ const MAX_Z_INDEX = 2;
         ]);
     
 
-    export const minimizeMaximizeAnimation =
-        trigger('minimizeMaximize', [
-            state('minimized', style({
+    export const maximizeRestoreAnimation =
+        trigger('maximizeRestore', [
+            state('restore', style({
                 opacity: 1,
                 width :'{{winWidth}}',
                 height : '{{winHeight}}',
@@ -74,6 +74,6 @@ const MAX_Z_INDEX = 2;
                 transform : 'translate(0,0)',
                 zIndex: '{{winZIndex}}',
             }),{params:{winZIndex:''}}),
-            transition('minimized => maximized', animate('0.50s ease-out')),
-            transition('maximized => minimized', animate('0.50s ease-in')),
+            transition('restore => maximized', animate('0.50s ease-out')),
+            transition('maximized => restore', animate('0.50s ease-in')),
         ]);
