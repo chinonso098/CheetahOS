@@ -260,7 +260,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       appData: app_data,
       appName: this.name,
       uId: uId,
-      window: {appName:'', pId:0, xAxis:0, yAxis:0, height:0, width:0, zIndex:0, isVisible:true}
+      window: {appName:'', pId:0, leftPx:0, topPx:0, height:0, width:0, zIndex:0, isVisible:true}
     }
     this._sessionManagmentService.addAppSession(uId, this._appState);
   }

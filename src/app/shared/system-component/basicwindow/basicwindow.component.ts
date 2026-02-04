@@ -181,8 +181,8 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
         pId : this.processId,
         height:this.defaultHeightOnOpen,
         width: this.defaultWidthOnOpen,
-        xAxis: 0,
-        yAxis: 0,
+        leftPx: 0,
+        topPx: 0,
         zIndex:this.MAX_Z_INDEX,
         isVisible:true
       }
@@ -286,7 +286,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
           // 'left': `${this.windowLeft}%`,
           'z-index':zIndex,
           'opacity': (zIndex > 0)? 1 : 0,
-          'transform': `translate(${window.xAxis}px, ${window.yAxis}px)`
+          'transform': `translate(${window.leftPx}px, ${window.topPx}px)`
         };
         window.zIndex = zIndex;
         this._windowService.addWindowState(window);
@@ -300,7 +300,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
           // 'left': `${this.windowLeft}%`,
           'z-index':zIndex,
           'opacity': (zIndex > 0)?  1 : 0,
-          'transform': `translate(${window.xAxis}px, ${window.yAxis}px)`
+          'transform': `translate(${window.leftPx}px, ${window.topPx}px)`
         };
       }
     }
@@ -317,8 +317,8 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
         const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
 
         if(windowState){
-          windowState.xAxis= x_axis;
-          windowState.yAxis= y_axis;
+          windowState.leftPx= x_axis;
+          windowState.topPx= y_axis;
 
           this.xAxisTmp = x_axis;
           this.yAxisTmp = y_axis;  
@@ -394,7 +394,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
             this.currentWinStyles = { 
               // 'top': `${this.windowTop}%`,
               // 'left': `${this.windowLeft}%`,
-              'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`,
+              'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`,
               'z-index':this.HIDDEN_Z_INDEX 
             };
           }
@@ -610,7 +610,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
             // 'top': `${this.windowTop}%`,
             // 'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
-            'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`
+            'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`
           };
 
           this.setHeaderActive(pId);
@@ -644,14 +644,14 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
             // 'left': `${this.windowLeft}%`,
             'z-index':z_index,
             'opacity': 1,
-            'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`
+            'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`
           };
         }else{
           this.currentWinStyles = {
             // 'top': `${this.windowTop}%`,
             // 'left': `${this.windowLeft}%`,
             'z-index':z_index,
-            'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`
+            'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`
           };
         }
       }
@@ -664,7 +664,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
           // 'top': `${this.windowTop}%`,
           // 'left': `${this.windowLeft}%`,
           'z-index':this.HIDDEN_Z_INDEX,
-          'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`,
+          'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`,
           'opacity': 0,
         };
         this._windowService.addWindowState(windowState);   
@@ -679,7 +679,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
             // 'top': `${this.windowTop}%`,
             // 'left': `${this.windowLeft}%`,
             'z-index':this.MAX_Z_INDEX,
-            'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`,
+            'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`,
             'opacity': 1
           };
         }else{
@@ -687,7 +687,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
             // 'top': `${this.windowTop}%`,
             // 'left': `${this.windowLeft}%`,
             'z-index':this.MIN_Z_INDEX,
-            'transform': `translate(${windowState.xAxis}px, ${windowState.yAxis}px)`,
+            'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`,
             'opacity': 1
           };
         }

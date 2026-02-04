@@ -348,3 +348,11 @@
     /* Windows 10 Blue */
     background-color: #00adef;
 }
+
+/* the desktop/container that windows live inside */
+/* #vantaCntnr{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; prevents going outside 
+}*/

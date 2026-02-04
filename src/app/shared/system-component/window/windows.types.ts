@@ -3,9 +3,9 @@ export interface WindowState{
     appName:string
     width:number,
     height:number,
-    xAxis:number,
-    yAxis:number,
-    transform?:string,
+    leftPx:number,
+    topPx:number,
+    //transform?:string,
     zIndex:number,
     isVisible:boolean,
 }

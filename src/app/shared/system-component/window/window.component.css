@@ -1,5 +1,5 @@
 
-
+/* 
 .window-container{
   font-size: 1rem;
   text-align: center;
@@ -13,7 +13,29 @@
   top: 25%;
   left: 25%;
   z-index: 2;
+} */
+
+.window-container{
+  font-size: 1rem;
+  text-align: center;
+  background-color: #808080;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%);
+  position: absolute;
+
+  /* remove these defaults (they fight your ngStyle) */
+  /* top: 25%; */
+  /* left: 25%; */
+
+  width: fit-content;
+  height: fit-content;
+
+  outline: 1px hsl(0deg 0% 20%/70%);
+  overflow: hidden;
+
+  /* do NOT hardcode z-index here either */
+  /* z-index: 2; */
 }
+
 
 .header-container{
   width: 100%;
