@@ -339,13 +339,13 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     onPositionWindow(input:WindowPositionInfo):void{
-      this.windowTop = input.top;
-      this.windowLeft = input.left
+      this.windowTop = input.topPx;
+      this.windowLeft = input.leftPx
       this.windowTransform = input.transform;
 
       this.currentWinStyles = { 
-        'top': `${input.top}%`,
-        'left': `${input.left}%`,
+        'top': `${input.topPx}%`,
+        'left': `${input.leftPx}%`,
         'transform': input.transform,
       };
     }

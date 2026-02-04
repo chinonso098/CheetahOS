@@ -68,6 +68,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   readonly MIN_Z_INDEX = 1;
   readonly MAX_Z_INDEX = 2;
   readonly TMP_MAX_Z_INDEX = 3;
+
   readonly WIN_TOP = 25;
   readonly WIN_LEFT = 25;
 
@@ -247,6 +248,75 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
         this.disableWindowAnimaion = true;
       }
     }
+
+    storeWindowStateAfterViewInit():void{
+      const clamped = this.computeClampedPosition(this.WIN_LEFT, this.WIN_TOP, this.defaultWidthOnOpen, this.defaultHeightOnOpen);
+      if(!clamped){
+          console.warn('Clamped in undefined');
+          return
+      }
+
+      this._originalWindowsState = {
+        appName: this.name,
+        pId: this.processId,
+        width: this.defaultWidthOnOpen,
+        height: this.defaultHeightOnOpen,
+        leftPx: clamped.leftPx,
+        topPx: clamped.topPx,
+        zIndex: this.MIN_Z_INDEX,   // placeholder, service will normalize
+        isVisible: true,
+        isTempHidden: false,        // ensure present on type
+      };
+
+      this._windowService.addWindowState(this._originalWindowsState);
+
+      // refresh + apply normalized version
+      const normalized = this._windowService.getWindowState(this.processId);
+      if (normalized) 
+        this.applyFromState(normalized);
+
+      this.createSilhouette();
+
+    }
+
+         private clamp(n: number, min: number, max: number): number {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    private computeClampedPosition(leftPx: number, topPx: number, width: number, height: number): ClampedPosition | undefined{
+      const desktop = this.getDesktopRect();
+      const taskBarHeight = 40;
+
+      if(!desktop){
+        console.warn('Computing clamped position failed, desktop is undefined');
+         return;
+      }
+      const maxLeft = Math.max(0, desktop.width - width);
+      const maxTop  = Math.max(0, desktop.height - taskBarHeight - height);
+
+      return {
+        leftPx: this.clamp(leftPx, 0, maxLeft),
+        topPx: this.clamp(topPx, 0, maxTop),
+      };
+    }
+
+    private applyFromState(win: WindowState): void {
+      const isHidden = !win.isVisible || !!win.isTempHidden;
+
+      this.currentStyles = {
+        left: `${win.leftPx}px`,
+        top: `${win.topPx}px`,
+        width: `${win.width}px`,
+        height: `${win.height}px`,
+        'z-index': String(isHidden ? 0 : win.zIndex),
+        opacity: isHidden ? 0 : 1,
+
+        // IMPORTANT: transform no longer positions the window
+        // keep it empty so animations can temporarily override it
+        transform: 'translate(0,0)',
+      };
+    }
+
 
     setBtnFocus(pId:number):void{
         if(this.processId === pId){
@@ -471,13 +541,13 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
     }
 
     onPositionWindow(input:WindowPositionInfo):void{
-      this.windowTop = input.top;
-      this.windowLeft = input.left;
+      this.windowTop = input.topPx;
+      this.windowLeft = input.leftPx;
       //this.windowTransform = input.transform;
 
       this.currentStyles = { 
-        'top': `${input.top}%`,
-        'left': `${input.left}%`,
+        'top': `${input.topPx}%`,
+        'left': `${input.leftPx}%`,
         'transform': input.transform,
       };
     }

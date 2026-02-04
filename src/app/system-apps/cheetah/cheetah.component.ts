@@ -152,7 +152,7 @@ Other trademarks and logos are property of their respective owners
   }
 
     changeDefaultOpeningPostions():void{
-      const positionInfo:WindowPositionInfo = {pId:this.processId, top:45, left:50, transform:'translate(-50%, -50%)'};
+      const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:45, leftPx:50, transform:'translate(-50%, -50%)'};
       this._windowService.positionProcessWindowNotify.next(positionInfo);
     }
 
