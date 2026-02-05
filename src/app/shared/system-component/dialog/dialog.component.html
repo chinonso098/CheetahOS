@@ -6,7 +6,7 @@
 </ng-container>
 
 <ng-template #errorNotice>
-    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="ERROR_DIALOG" [isDialog]="true">
+    <cos-secondarywindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="ERROR_DIALOG" [isDialog]="true">
         <div ngDraggable class="error-dialog-main-container">
             <div class="error-dialog-mid-container">
                 <div class="error-dialog-mid-section1">
@@ -33,11 +33,11 @@
                 </span>
             </div>
         </div>
-    </cos-basicwindow>
+    </cos-secondarywindow>
 </ng-template>
 
 <ng-template #infoNotice>
-    <cos-basicwindow [runningProcessID]="processId" [processAppName]="INFO_DIALOG" [isDialog]="true">
+    <cos-secondarywindow [runningProcessID]="processId" [processAppName]="INFO_DIALOG" [isDialog]="true">
         <div  class="info-dialog-main-container">    
             <div class="info-dialog-mid-container" tabindex="0">
                 <div class="info-dialog-mid-section1">
@@ -60,11 +60,11 @@
                 </span>
             </div>
         </div>
-    </cos-basicwindow>
+    </cos-secondarywindow>
 </ng-template>
 
 <ng-template #warningNotice>
-    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="true">
+    <cos-secondarywindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="true">
         <div  class="warning-dialog-main-container"> 
             <div class="warning-dialog-mid-container" tabindex="0">
                 <div class="warning-dialog-mid-section1">
@@ -91,7 +91,7 @@
                 </span>
             </div>
         </div>
-    </cos-basicwindow>
+    </cos-secondarywindow>
 </ng-template>
 
 <ng-template #shutDownRestartNotice>
@@ -241,7 +241,7 @@
 </ng-template>
 
 <ng-template #deleteWarning>
-    <cos-basicwindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="true">
+    <cos-secondarywindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="true">
         <div class="delete-warning__dialog-container">
             <div class="delete-warning__dialog">          
               <div class="delete-warning__dialog-body">
@@ -277,5 +277,5 @@
               </div>
             </div>
         </div> 
-    </cos-basicwindow>
+    </cos-secondarywindow>
 </ng-template>

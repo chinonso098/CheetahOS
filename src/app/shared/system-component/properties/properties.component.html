@@ -5,7 +5,7 @@
 </ng-container>
 
 <ng-template #fileView>
-    <cos-basicwindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
         <div class="properties-main-container" id="propDisplay-{{processId}}">
             <div class="properties-body-container">
                 <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
@@ -121,12 +121,12 @@
                 </span>
             </div>
         </div>
-    </cos-basicwindow>
+    </cos-secondarywindow>
 </ng-template>
 
 
 <ng-template #folderView>
-    <cos-basicwindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
         <div class="properties-main-container" id="propDisplay-{{processId}}">
             <div class="properties-body-container">
                 <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
@@ -208,11 +208,11 @@
                 </span>
             </div>
         </div>
-    </cos-basicwindow>
+    </cos-secondarywindow>
 </ng-template>
 
 <ng-template #rootFolderView>
-    <cos-basicwindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
         <div class="properties-main-container" id="propDisplay-{{processId}}">
             <div class="properties-body-container">
                 <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
@@ -327,11 +327,11 @@
                 </span>
             </div>
         </div>
-    </cos-basicwindow>
+    </cos-secondarywindow>
 </ng-template>
 
 <ng-template #deletedView>
-    <cos-basicwindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
         <div class="properties-main-container" id="propDisplay-{{processId}}">
             <div class="properties-body-container">
                 <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
@@ -406,6 +406,6 @@
                 </span>
             </div>
         </div>
-    </cos-basicwindow>
+    </cos-secondarywindow>
 </ng-template>
 

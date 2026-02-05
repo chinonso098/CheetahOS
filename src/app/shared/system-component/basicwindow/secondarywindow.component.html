@@ -1,6 +1,6 @@
 
 <div
-    #basicWindowContainer class="window-container  window-dd-box"
+    #secondaryWindowContainer class="window-container  window-dd-box"
      [ngStyle]="currentWinStyles"   
      tabindex="0" 
     cdkDrag
@@ -8,7 +8,7 @@
     (mousedown)="onMouseDown(this.processId)"
     (cdkDragEnded)="onDragEnded($event)"
     
-    id="bwincmpnt-{{uniqueId}}">
+    id="secwincmpnt-{{uniqueId}}">
 
     <div class="header-container"
         appHighlight tabindex="0"
@@ -37,4 +37,4 @@
     </div>
 </div> 
 
-<div #bglassPaneContainer></div>
+<div #secglassPaneContainer></div>

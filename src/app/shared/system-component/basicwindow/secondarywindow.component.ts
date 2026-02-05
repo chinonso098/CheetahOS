@@ -18,15 +18,15 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
 
 
 @Component({
-  selector: 'cos-basicwindow',
-  templateUrl: './basicwindow.component.html',
-  styleUrl: './basicwindow.component.css',
+  selector: 'cos-secondarywindow',
+  templateUrl: './secondarywindow.component.html',
+  styleUrl: './secondarywindow.component.css',
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone:false,
 })
- export class BasicWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
-   @ViewChild('basicWindowContainer') basicWindowContainer!: ElementRef;
-   @ViewChild('bglassPaneContainer') bglassPaneContainer!: ElementRef;
+ export class SecondaryWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+   @ViewChild('secondaryWindowContainer') secondaryWindowContainer!: ElementRef;
+   @ViewChild('secglassPaneContainer') secglassPaneContainer!: ElementRef;
 
    @Input() runningProcessID = 0;  
    @Input() processAppIcon = Constants.EMPTY_STRING;  
@@ -147,7 +147,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     get getMainWindowContainerElmnt(): HTMLElement {
-      return this.basicWindowContainer.nativeElement;
+      return this.secondaryWindowContainer.nativeElement;
     }
 
     ngOnChanges(changes: SimpleChanges):void{
@@ -291,7 +291,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
 
     private clampToContainer(): void {
       const desktop = this.getDesktopRect();
-      const winEl = this.basicWindowContainer?.nativeElement as HTMLElement | undefined;
+      const winEl = this.secondaryWindowContainer?.nativeElement as HTMLElement | undefined;
       if (!desktop || !winEl) return;
 
       const winRect = winEl.getBoundingClientRect();
@@ -367,7 +367,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     showGlassPaneContainer() {
-      this.renderer.setStyle(this.bglassPaneContainer.nativeElement, 'display', 'block');
+      this.renderer.setStyle(this.secglassPaneContainer.nativeElement, 'display', 'block');
     }
 
     hideSilhouette(pId:number):void{
@@ -382,7 +382,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     hideGlassPaneContainer() {
-      this.renderer.setStyle(this.bglassPaneContainer.nativeElement, 'display', 'none');
+      this.renderer.setStyle(this.secglassPaneContainer.nativeElement, 'display', 'none');
     }
 
     removeSilhouette(pId:number):void{
@@ -452,7 +452,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     // onPositionWindowById(input:string[]):void{
     //   const callingWindowId = input[1];
     //   const windowElmnt = document.getElementById(`wincmpnt-${callingWindowId}`) as HTMLElement;
-    //   const dialogWindowElmnt = document.getElementById(`bwincmpnt-${this.uniqueId}`) as HTMLElement;
+    //   const dialogWindowElmnt = document.getElementById(`secwincmpnt-${this.uniqueId}`) as HTMLElement;
     //   //const windowState  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
 
     //   if(!windowElmnt) return;
@@ -571,7 +571,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       glassPane.style.display =  'none';
 
       // Append to the body
-      this.renderer.appendChild(this.bglassPaneContainer.nativeElement, glassPane);
+      this.renderer.appendChild(this.secglassPaneContainer.nativeElement, glassPane);
     }
 
     onCloseBtnClick():void{
@@ -746,7 +746,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     setFocusOnDiv():void{
-      const winCmpntId =`bwincmpnt-${this.name}-${this.processId}`;
+      const winCmpntId =`secwincmpnt-${this.name}-${this.processId}`;
       const winCmpnt = document.getElementById(winCmpntId) as HTMLDivElement;
       
       if(winCmpnt){

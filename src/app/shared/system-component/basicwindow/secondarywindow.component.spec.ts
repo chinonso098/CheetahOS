@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BasicWindowComponent } from './basicwindow.component';
+import { SecondaryWindowComponent } from './secondarywindow.component';
 
 describe('BasicwindowComponent', () => {
-  let component: BasicWindowComponent;
-  let fixture: ComponentFixture<BasicWindowComponent>;
+  let component: SecondaryWindowComponent;
+  let fixture: ComponentFixture<SecondaryWindowComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [BasicWindowComponent]
+      declarations: [SecondaryWindowComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(BasicWindowComponent);
+    fixture = TestBed.createComponent(SecondaryWindowComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

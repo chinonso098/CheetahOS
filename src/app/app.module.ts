@@ -45,7 +45,7 @@ import { SystemtrayComponent } from './system-apps/systemtray/systemtray.compone
 import { TaskbarpreviewsComponent } from './system-apps/taskbarpreviews/taskbarpreviews.component';
 import { WarpingstarfieldComponent } from './user-apps/warpingstarfield/warpingstarfield.component';
 import { BoidsComponent } from './user-apps/boids/boids.component';
-import { BasicWindowComponent } from './shared/system-component/basicwindow/basicwindow.component';
+import { SecondaryWindowComponent } from './shared/system-component/basicwindow/secondarywindow.component';
 import { ParticaleFlowComponent } from './user-apps/particaleflow/particaleflow.component';
 import { PdfViewerComponent } from './user-apps/pdf-viewer/pdf-viewer.component';
 import { NotificationCenterComponent } from './system-apps/notificationcenter/notificationcenter.component';
@@ -104,7 +104,7 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     TaskbarpreviewsComponent,
     WarpingstarfieldComponent,
     BoidsComponent,
-    BasicWindowComponent,
+    SecondaryWindowComponent,
     ParticaleFlowComponent,
     PdfViewerComponent,
     NotificationCenterComponent,
