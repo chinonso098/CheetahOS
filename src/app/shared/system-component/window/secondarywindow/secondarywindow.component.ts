@@ -3,11 +3,11 @@ import { CdkDragEnd } from '@angular/cdk/drag-drop';
 
 import { ComponentType } from 'src/app/system-files/system.types';
 
-import { MenuService } from '../../system-service/menu.services';
+import { MenuService } from '../../../system-service/menu.services';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { ProcessHandlerService } from '../../system-service/process.handler.service';
-import { UserNotificationService } from '../../system-service/user.notification.service';
-import { SystemNotificationService } from '../../system-service/system.notification.service';
+import { ProcessHandlerService } from '../../../system-service/process.handler.service';
+import { UserNotificationService } from '../../../system-service/user.notification.service';
+import { SystemNotificationService } from '../../../system-service/system.notification.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 
 import {Subscription } from 'rxjs';

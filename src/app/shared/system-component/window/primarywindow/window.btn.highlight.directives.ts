@@ -25,8 +25,8 @@ export class HighlightDirective {
     this.highlight('','');
   }
 
-  @HostListener("focus")
-  private highlight(color: string, xBtnColor:string) {
+  //@HostListener("focus")
+  highlight(color: string, xBtnColor:string) {
     
     if(this.el.nativeElement.id == "closeBtn"){
       this.el.nativeElement.style.backgroundColor = xBtnColor;

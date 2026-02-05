@@ -9,27 +9,27 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 
 import {Subscription } from 'rxjs';
 import { ClampedPosition, WindowBoundsState, WindowState } from './windows.types';
-import {openCloseAnimation, hideShowAnimation, maximizeRestoreAnimation} from 'src/app/shared/system-component/primarywindow/animation/animations';
+import {openCloseAnimation, hideShowAnimation, maximizeRestoreAnimation} from 'src/app/shared/system-component/window/animation/animations';
 import { AnimationEvent } from '@angular/animations';
 
 import { Process } from 'src/app/system-files/process';
-import { SystemNotificationService } from '../../system-service/system.notification.service';
-import { MenuService } from '../../system-service/menu.services';
+import { SystemNotificationService } from '../../../system-service/system.notification.service';
+import { MenuService } from '../../../system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
 
  @Component({
-   selector: 'cos-primarywindow',
-   templateUrl: './primarywindow.component.html',
+   selector: 'cos-window',
+   templateUrl: './window.component.html',
    animations: [openCloseAnimation,hideShowAnimation,maximizeRestoreAnimation],
-   styleUrls: ['./primarywindow.component.css'],
+   styleUrls: ['./window.component.css'],
    standalone:false,
  })
- export class PrimaryWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
-   @ViewChild('primaryWindowContainer') primaryWindowContainer!: ElementRef;
-   @ViewChild('primGlassPaneContainer') primGlassPaneContainer!: ElementRef;
+ export class WindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+   @ViewChild('mainWindowContainer') mainWindowContainer!: ElementRef;
+   @ViewChild('glassPaneContainer') glassPaneContainer!: ElementRef;
 
    @Input() runningProcessID = 0;  
    @Input() processAppIcon = Constants.EMPTY_STRING;  
@@ -163,8 +163,8 @@ import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
       });
     }
 
-    get getPrimaryWindowContainerElmnt(): HTMLElement {
-      return this.primaryWindowContainer.nativeElement;
+    get getMainWindowContainerElmnt(): HTMLElement {
+      return this.mainWindowContainer.nativeElement;
     }
 
     ngOnInit():void{
@@ -188,8 +188,8 @@ import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
       this.hideGlassPaneContainer();
       
       // get defaultHeightOnOpen and defaultWidthOnOpen  
-      this.windowHeightPx = this.getPrimaryWindowContainerElmnt.offsetHeight;
-      this.windowWidthPx = this.getPrimaryWindowContainerElmnt.offsetWidth;
+      this.windowHeightPx = this.getMainWindowContainerElmnt.offsetHeight;
+      this.windowWidthPx = this.getMainWindowContainerElmnt.offsetWidth;
       this.applySizeStyles();
 ;
       // if(this.turnOffWindowOpenCloseAnimation)
@@ -302,7 +302,7 @@ import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
 
     private clampToContainer(): void {
       const desktop = this.getDesktopRect();
-      const winEl = this.primaryWindowContainer?.nativeElement as HTMLElement | undefined;
+      const winEl = this.mainWindowContainer?.nativeElement as HTMLElement | undefined;
       if (!desktop || !winEl) return;
 
       const winRect = winEl.getBoundingClientRect();
@@ -353,8 +353,8 @@ import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
     private applySizeStyles(): void {
       this.strWindowHeightPx = `${this.windowHeightPx}px`;
       this.strWindowWidthPx =  `${this.windowWidthPx}px`;
-      this._renderer.setStyle(this.primaryWindowContainer.nativeElement, 'width', `${this.windowWidthPx}px`);
-      this._renderer.setStyle(this.primaryWindowContainer.nativeElement, 'height', `${this.windowHeightPx}px`);
+      this._renderer.setStyle(this.mainWindowContainer.nativeElement, 'width', `${this.windowWidthPx}px`);
+      this._renderer.setStyle(this.mainWindowContainer.nativeElement, 'height', `${this.windowHeightPx}px`);
 
       this.syncSilhouetteSize();
     }
@@ -407,7 +407,7 @@ import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
     }
 
     showGlassPaneContainer() {
-      this._renderer.setStyle(this.primGlassPaneContainer.nativeElement, 'display', 'block');
+      this._renderer.setStyle(this.glassPaneContainer.nativeElement, 'display', 'block');
     }
 
     hideSilhouette(pId:number):void{
@@ -422,7 +422,7 @@ import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
     }
 
     hideGlassPaneContainer() {
-      this._renderer.setStyle(this.primGlassPaneContainer.nativeElement, 'display', 'none');
+      this._renderer.setStyle(this.glassPaneContainer.nativeElement, 'display', 'none');
     }
 
     removeSilhouette(pId:number):void{
@@ -752,7 +752,7 @@ import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
 
     stackWindow():void{
       const containerRect = this.getDesktopRect();
-      const winEl = this.primaryWindowContainer?.nativeElement as HTMLElement | undefined;
+      const winEl = this.mainWindowContainer?.nativeElement as HTMLElement | undefined;
       if (!containerRect || !winEl) return;
 
       const winRect = winEl.getBoundingClientRect();
@@ -841,7 +841,7 @@ import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
       glassPane.style.display =  'none';
 
       // Append to the body
-      this._renderer.appendChild(this.primGlassPaneContainer.nativeElement, glassPane);
+      this._renderer.appendChild(this.glassPaneContainer.nativeElement, glassPane);
     }
 
     async onCloseBtnClick(evt:MouseEvent):Promise<void>{
@@ -1024,7 +1024,7 @@ import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
     }
 
     setFocusOnDiv():void{
-      const winCmpntId =`primWinCmpnt-${this.name}-${this.processId}`;
+      const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
       const winCmpnt = document.getElementById(winCmpntId) as HTMLDivElement;
       
       if(winCmpnt){
