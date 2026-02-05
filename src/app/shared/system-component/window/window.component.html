@@ -24,7 +24,8 @@
     cdkDrag
     [cdkDragBoundary]="'#vantaCntnr'"
     (mousedown)="onMouseDown(this.processId)"
-    (cdkDragEnded)="onDragEndCdk($event)"
+    (cdkDragStarted)="onDragStarted()"
+    (cdkDragEnded)="onDragEnded($event)"
     id="wincmpnt-{{uniqueId}}">
 
         <!-- (rzStop)="onRZStop($event)"  

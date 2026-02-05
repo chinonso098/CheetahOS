@@ -5,13 +5,9 @@ export interface WindowState{
     height:number,
     leftPx:number,
     topPx:number,
-    //transform?:string,
     zIndex:number,
     isVisible:boolean,
     isMaximized?:boolean,
-
-    // NEW: hover-hide only (does not affect taskbar visibility)
-    isTempHidden?: boolean;
 }
 
 

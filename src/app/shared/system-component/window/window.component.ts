@@ -18,6 +18,7 @@ import { MenuService } from '../../system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
 
  @Component({
    selector: 'cos-window',
@@ -253,6 +254,10 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
         return;
       }
 
+      this.windowLeftPx = clamped.leftPx;
+      this.windowTopPx  = clamped.topPx;
+      this.applyPositionStyles();
+
       this._originalWindowsState = {
         appName: this.name,
         pId: this.processId,
@@ -350,6 +355,8 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       this.strWindowWidthPx =  `${this.windowWidthPx}px`;
       this._renderer.setStyle(this.mainWindowContainer.nativeElement, 'width', `${this.windowWidthPx}px`);
       this._renderer.setStyle(this.mainWindowContainer.nativeElement, 'height', `${this.windowHeightPx}px`);
+
+      this.syncSilhouetteSize();
     }
 
 
@@ -427,6 +434,15 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       }
     }
 
+    private syncSilhouetteSize(): void {
+      const glassPane = document.getElementById(this.uniqueGPId) as HTMLDivElement | null;
+      if (!glassPane) return;
+      
+      glassPane.style.width = `${this.windowWidthPx}px`;
+      glassPane.style.height = `${this.windowHeightPx}px`;
+    }
+
+
     setWindowToFullScreen(pId:number, z_index:number):void{
       if(this.processId === pId){
         this.windowZIndex =   String(z_index);
@@ -463,22 +479,20 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       }
     }
 
-    onMaximizeBtnClick(evt:MouseEvent):void{
+    onMaximizeBtnClick(evt: MouseEvent): void {
       evt.stopPropagation();
 
-      if(this.isWindowMaximizable){
-        this.windowMaximize = true;
-        this.windowMaxRestoreAction = 'maximized';
-        this.setMaximizeAndUnMaximize();
-      }
+      if (!this.isWindowMaximizable) return;
+
+      const maxWindow = true;   // full screen
+      this.setMaximizeOrRestore(maxWindow);
     }
 
-    onRestoreBtnClick(evt:MouseEvent):void{
+    onRestoreBtnClick(evt: MouseEvent): void {
       evt.stopPropagation();
 
-      this.windowMaximize = false;
-      this.windowMaxRestoreAction = 'restore';
-      this.setMaximizeAndUnMaximize();
+      const maxWindow = false;   // restore window to prior size
+      this.setMaximizeOrRestore(maxWindow);
     }
 
     onTitleBarDoubleClick(evt:MouseEvent):void{
@@ -493,17 +507,20 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       //     this.windowMaximize = true;
       //     this.windowMaxRestoreAction = 'maximized';
       //   }
-      //   this.setMaximizeAndUnMaximize()
+      //   this.setMaximizeAndRestore()
       // }
     }
 
     onMouseDown(pId:number):void{
-      this._windowService.windowDragIsActive.next();
       this.setFocsuOnThisWindow(pId);
       this._windowService.currentProcessInFocusNotify.next(pId);
     }
 
-    onDragEndCdk(event: CdkDragEnd): void {
+    onDragStarted():void{
+      this._windowService.windowDragIsActive.next();
+    }
+
+    onDragEnded(event: CdkDragEnd): void {
       if(this.isWindowInFullScreenMode){ // dragging full screen window is not allowed
         this._windowService.windowDragIsInActive.next();
         return;
@@ -672,7 +689,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       this._menuService.updateTaskBarContextMenu.next();
     }
 
-    setMaximizeAndUnMaximize():void{
+    setMaximizeAndRestore():void{
       const ws = this._windowService.getWindowState(this.processId);
       if(!ws)return;
 
@@ -697,6 +714,44 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 
       this.windowMaximize = !this.windowMaximize;
     }
+
+
+    private setMaximizeOrRestore(maxWindow: boolean): void {
+        const ws = this._windowService.getWindowState(this.processId);
+        if (!ws) return;
+
+        this.isWindowInFullScreenMode = maxWindow;
+        ws.isMaximized = maxWindow;
+
+        if(maxWindow){
+          this.windowMaxRestoreAction = 'maximized';
+          // keep current zIndex, just ensure it is top visually
+          this.setWindowToFullScreen(this.processId, ws.zIndex);
+
+          this._windowService.addEventOriginator(this.uniqueId);
+          this._windowService.maximizeProcessWindowNotify.next();
+        } else {
+          this.windowMaxRestoreAction = 'restore';
+
+          // Restore to stored service size (or original default)
+          this.windowWidthPx  = ws.width || this.windowWidthPx;
+          this.windowHeightPx = ws.height || this.windowHeightPx;
+
+          const windowTitleBarHeight = 30;
+          this.applySizeStyles();
+
+          this._windowService.addEventOriginator(this.uniqueId);
+          this._windowService.minimizeProcessWindowNotify.next([
+            this.windowWidthPx,
+            this.windowHeightPx - windowTitleBarHeight
+          ]);
+        }
+
+        this._windowService.addWindowState(ws);
+    }
+
+
+
 
     stackWindow():void{
       const containerRect = this.getDesktopRect();
