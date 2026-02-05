@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PrimaryWindowComponent } from './window.component';
+import { PrimaryWindowComponent } from './primarywindow.component';
 
-describe('WindowComponent', () => {
+describe('PrimaryWindowComponent', () => {
   let component: PrimaryWindowComponent;
   let fixture: ComponentFixture<PrimaryWindowComponent>;
 

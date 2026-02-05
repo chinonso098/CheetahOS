@@ -22,9 +22,9 @@ import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
 
  @Component({
    selector: 'cos-primarywindow',
-   templateUrl: './window.component.html',
+   templateUrl: './primarywindow.component.html',
    animations: [openCloseAnimation,hideShowAnimation,maximizeRestoreAnimation],
-   styleUrls: ['./window.component.css'],
+   styleUrls: ['./primarywindow.component.css'],
    standalone:false,
  })
  export class PrimaryWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
