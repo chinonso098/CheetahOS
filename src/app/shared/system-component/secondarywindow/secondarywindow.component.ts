@@ -26,7 +26,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
 })
  export class SecondaryWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
    @ViewChild('secondaryWindowContainer') secondaryWindowContainer!: ElementRef;
-   @ViewChild('secglassPaneContainer') secglassPaneContainer!: ElementRef;
+   @ViewChild('secGlassPaneContainer') secGlassPaneContainer!: ElementRef;
 
    @Input() runningProcessID = 0;  
    @Input() processAppIcon = Constants.EMPTY_STRING;  
@@ -92,15 +92,13 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
   currentWinStyles: Record<string, unknown> = {};
   headerActiveStyles: Record<string, unknown> = {}; 
   closeBtnStyles: Record<string, unknown> = {};
-  defaultWidthOnOpen = 0;
-  defaultHeightOnOpen = 0;
 
   hasWindow = false;
   icon = Constants.EMPTY_STRING;
   name = 'Window';
   processId = 0;
   uniqueId = Constants.EMPTY_STRING;
-  uniqueGPId = Constants.EMPTY_STRING;
+  uniqueGlassPaneId = Constants.EMPTY_STRING;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
   
@@ -146,7 +144,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       });
     }
 
-    get getMainWindowContainerElmnt(): HTMLElement {
+    get getSecondaryWindowContainerElmnt(): HTMLElement {
       return this.secondaryWindowContainer.nativeElement;
     }
 
@@ -171,9 +169,8 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     
       this.uniqueId = `${this.name}-${this.processId}`;
       this._runningProcessService.newProcessNotify.next(this.uniqueId);
-      setTimeout(() => {
-        this.setFocusOnWindowInit(this.processId)
-      }, 0);
+
+      setTimeout(() => { this.setFocusOnWindowInit(this.processId); }, 0);
 
       this._windowService.addProcessWindowToWindows(this.uniqueId); 
       this.resetHideShowWindowsList();
@@ -184,8 +181,8 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
 
 
       // get defaultHeightOnOpen and defaultWidthOnOpen  
-      this.windowHeightPx = this.getMainWindowContainerElmnt.offsetHeight;
-      this.windowWidthPx = this.getMainWindowContainerElmnt.offsetWidth;
+      this.windowHeightPx = this.getSecondaryWindowContainerElmnt.offsetHeight;
+      this.windowWidthPx = this.getSecondaryWindowContainerElmnt.offsetWidth;
       this.applySizeStyles();
 
       this.storeWindowStateAfterViewInit();
@@ -345,19 +342,20 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     showSilhouette(pId: number): void {
-      if (this.processId === pId) {
-        this.showGlassPaneContainer();
-        const glassPane = document.getElementById(this.uniqueGPId) as HTMLDivElement;
-        if (glassPane) {
-          glassPane.style.display = 'block';
-          glassPane.style.zIndex = String(this.MIN_Z_INDEX);
-          this.positionSilhouette();
-        }
-      }
+      if(this.processId !== pId) return;
+
+      this.showGlassPaneContainer();
+
+      const glassPane = document.getElementById(this.uniqueGlassPaneId) as HTMLDivElement;
+      if (!glassPane)return;
+
+      glassPane.style.display = 'block';
+      glassPane.style.zIndex = String(this.MIN_Z_INDEX);
+      this.positionSilhouette();
     }
 
     private positionSilhouette(): void {
-      const glassPane = document.getElementById(this.uniqueGPId) as HTMLDivElement;
+      const glassPane = document.getElementById(this.uniqueGlassPaneId) as HTMLDivElement;
       if (!glassPane) return;
 
       glassPane.style.position = 'absolute';
@@ -367,45 +365,46 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     showGlassPaneContainer() {
-      this.renderer.setStyle(this.secglassPaneContainer.nativeElement, 'display', 'block');
+      this.renderer.setStyle(this.secGlassPaneContainer.nativeElement, 'display', 'block');
     }
 
     hideSilhouette(pId:number):void{
-      if(this.processId === pId){
-        this.hideGlassPaneContainer();
-        const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
-        if(glassPane){
-          glassPane.style.display = 'none';
-          glassPane.style.zIndex = String(this.HIDDEN_Z_INDEX);
-        }
-      }
+      if(this.processId !== pId) return;
+
+      this.hideGlassPaneContainer();
+
+      const glassPane= document.getElementById(this.uniqueGlassPaneId) as HTMLDivElement;
+      if(!glassPane) return;
+
+      glassPane.style.display = 'none';
+      glassPane.style.zIndex = String(this.HIDDEN_Z_INDEX);
     }
 
     hideGlassPaneContainer() {
-      this.renderer.setStyle(this.secglassPaneContainer.nativeElement, 'display', 'none');
+      this.renderer.setStyle(this.secGlassPaneContainer.nativeElement, 'display', 'none');
     }
 
     removeSilhouette(pId:number):void{
-      if(this.processId === pId){
-        const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
-        if (glassPane) {
-          glassPane.remove();
-        } 
-      }
+      if(this.processId !== pId) return;
+
+      const glassPane= document.getElementById(this.uniqueGlassPaneId) as HTMLDivElement;
+      if (!glassPane) return;
+
+      glassPane.remove();
     }
 
     updateWindowZIndex(window: WindowState, zIndex:number):void{
-      if (this.processId === window.pId) {
-        this.applyOpacityZ(zIndex, zIndex > 0 ? 1 : 0);
-        window.zIndex = zIndex;
-        this._windowService.addWindowState(window);
-      }
+      if (this.processId !== window.pId) return;
+
+      this.applyOpacityZ(zIndex, zIndex > 0 ? 1 : 0);
+      window.zIndex = zIndex;
+      this._windowService.addWindowState(window);
     }
 
-    setWindowToPriorHiddenState(window: WindowState, zIndex: number): void {
-      if (this.processId === window.pId) {
-        this.applyOpacityZ(zIndex, zIndex > 0 ? 1 : 0);
-      }
+    setWindowToPriorHiddenState(ws: WindowState, zIndex: number): void {
+      if(this.processId !== ws.pId) return;
+
+      this.applyOpacityZ(zIndex, zIndex > 0 ? 1 : 0);
     }
 
     onMouseDown(pId:number):void{
@@ -554,16 +553,16 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
      createSilhouette():void{
-      this.uniqueGPId = `bgp-${this.uniqueId}`;
+      this.uniqueGlassPaneId = `secGP-${this.uniqueId}`;
       //Every window has a hidden glass pane that is revealed when the window is hidden
       const glassPane = this.renderer.createElement('div');
 
       // Add attributes
-      glassPane.setAttribute('id', this.uniqueGPId);
+      glassPane.setAttribute('id', this.uniqueGlassPaneId);
 
       glassPane.style.transform =  'translate(0, 0)';
-      glassPane.style.height =  `${this.defaultHeightOnOpen}px`;
-      glassPane.style.width =  `${this.defaultWidthOnOpen}px`;
+      glassPane.style.height =  `${this.windowHeightPx}px`;
+      glassPane.style.width =  `${this.windowWidthPx}px`;
 
       glassPane.style.zIndex =  String(this.HIDDEN_Z_INDEX);
       glassPane.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
@@ -571,7 +570,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       glassPane.style.display =  'none';
 
       // Append to the body
-      this.renderer.appendChild(this.secglassPaneContainer.nativeElement, glassPane);
+      this.renderer.appendChild(this.secGlassPaneContainer.nativeElement, glassPane);
     }
 
     onCloseBtnClick():void{
@@ -599,12 +598,13 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     setFocsuOnThisWindow(pId:number):void{
+      const uId = `${this.name}-${pId}`;
+      if(this.uniqueId !== uId) return;
       /**
        * If you want to make a non-focusable element focusable, 
        * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
        */
-      const uId = `${this.name}-${pId}`;
-      if((this.uniqueId === uId) && (!this.windowHide)){
+      if(!this.windowHide){
         this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
 
         this.setWindowToFocusById(pId);
@@ -626,13 +626,13 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       this._windowService.hideOtherProcessesWindowNotify.next(pId);
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
       
-      if(this.processId === pId){
-        if(pId === pid_with_highest_z_index)
-            this.setHeaderActive(pId);
+      if(this.processId !== pId) return;
 
-        this.hideSilhouette(pId);
-        this.showOnlyWindowById(pId);
-      }
+      if(pId === pid_with_highest_z_index)
+        this.setHeaderActive(pId);
+
+      this.hideSilhouette(pId);
+      this.showOnlyWindowById(pId);
     }
 
     /**
@@ -640,12 +640,14 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
      * then they are set out of focus 
      */
     removeFocusOnWindowNotMatchingPid(pId:number):void{
-      if(this.processId !== pId){
-        const windowState = this._windowService.getWindowState(this.processId);
-        if(windowState && windowState.isVisible){
-          this.setHeaderInActive(windowState.pId);
-          this.updateWindowZIndex(windowState, this.MIN_Z_INDEX);
-        }
+      if(this.processId === pId) return;
+
+      const ws = this._windowService.getWindowState(this.processId);
+      if(!ws) return;
+
+      if(ws.isVisible){
+        this.setHeaderInActive(ws.pId);
+        this.updateWindowZIndex(ws, this.MIN_Z_INDEX);
       }
     }
 
@@ -654,16 +656,20 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
 
       for(let i = 0; i < processWithWindows.length; i++){
-        const windowState = processWithWindows[i];          
-        if(windowState && windowState.isVisible){
-          if(windowState.pId !== pid_with_highest_z_index ){
-            this.setHeaderInActive(windowState.pId);
-            this.updateWindowZIndex(windowState, this.MIN_Z_INDEX);
+        const ws = processWithWindows[i];          
+        if(ws && ws.isVisible){
+          if(ws.pId !== pid_with_highest_z_index ){
+
+            this.setHeaderInActive(ws.pId);
+            this.updateWindowZIndex(ws, this.MIN_Z_INDEX);
+
           }else{
-            this.setHeaderActive(windowState.pId);
-            this.updateWindowZIndex(windowState, this.MAX_Z_INDEX);
+
+            this.setHeaderActive(ws.pId);
+            this.updateWindowZIndex(ws, this.MAX_Z_INDEX);
+
           }
-          this.hideSilhouette(windowState.pId);
+          this.hideSilhouette(ws.pId);
         }
       }
     }
@@ -673,33 +679,36 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
      * then they are hidden by setting z -index = 0
      */
     hideWindowNotMatchingPidOnMouseHover(pId:number):void{
-      if(this.processId !== pId){
-        const windowState  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
+      if(this.processId === pId) return;
 
-        if(windowState && windowState.isVisible){
-          this.showSilhouette(windowState.pId);
-          this.updateWindowZIndex(windowState, this.HIDDEN_Z_INDEX);
-        }
-        else if(windowState && !windowState.isVisible){
-          this.setWindowToPriorHiddenState(windowState, this.HIDDEN_Z_INDEX);
-        }
+      const ws  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
+      if(!ws) return;
+
+      if(ws.isVisible){
+        this.showSilhouette(ws.pId);
+        this.updateWindowZIndex(ws, this.HIDDEN_Z_INDEX);
+      }
+      else if(!ws.isVisible){
+        this.setWindowToPriorHiddenState(ws, this.HIDDEN_Z_INDEX);
       }
     }
 
     restoreWindowOnMouseLeave(pId:number):void{
-      const window = this._windowService.getWindowState(pId);
+      const ws = this._windowService.getWindowState(pId);
+      if(!ws) return;
+
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
 
-      if(window && window.isVisible){
-        if(window.pId !==  pid_with_highest_z_index){
-          this.setHeaderInActive(window.pId);
-          this.updateWindowZIndex(window, this.MIN_Z_INDEX);
+      if(ws.isVisible){
+        if(ws.pId !==  pid_with_highest_z_index){
+          this.setHeaderInActive(ws.pId);
+          this.updateWindowZIndex(ws, this.MIN_Z_INDEX);
         }else{
-          this.setHeaderActive(window.pId);
-          this.updateWindowZIndex(window, this.MAX_Z_INDEX);
+          this.setHeaderActive(ws.pId);
+          this.updateWindowZIndex(ws, this.MAX_Z_INDEX);
         }
-      } else if(window && !window.isVisible){
-        this.setWindowToPriorHiddenState(window, this.HIDDEN_Z_INDEX);
+      } else if(!ws.isVisible){
+        this.setWindowToPriorHiddenState(ws, this.HIDDEN_Z_INDEX);
       }
     }
 
