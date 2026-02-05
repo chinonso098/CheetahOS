@@ -19,14 +19,11 @@
 }"
 
 #mainWindowContainer class="window-container  window-dd-box" 
-
    [ngStyle]="currentStyles" 
     tabindex="0" 
     cdkDrag
     [cdkDragBoundary]="'#vantaCntnr'"
-    (mousedown)="onMouseDown()"
-    (mouseup)="onMouseUp()"
-    (cdkDragStarted)="onDragStart(this.processId)"
+    (mousedown)="onMouseDown(this.processId)"
     (cdkDragEnded)="onDragEndCdk($event)"
     id="wincmpnt-{{uniqueId}}">
 

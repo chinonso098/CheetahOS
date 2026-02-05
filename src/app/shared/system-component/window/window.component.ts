@@ -106,7 +106,6 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   strWindowWidthPx = '0px';
   strWindowHeightPx = '0px';
 
-  isMouseDown = false;
   isWindowMaximizable = true;
   isWindowMinimizable = true;
   isWindowInFullScreenMode = false;
@@ -537,28 +536,19 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       this._windowService.windowDragIsInActive.next();
     }
 
-    onMouseDown():void{
-      this.isMouseDown = true;
-    }
-
-    onMouseUp():void{
-      this.isMouseDown = false;
+    onMouseDown(pId:number):void{
+      this._windowService.windowDragIsActive.next();
+      this.setFocsuOnThisWindow(pId);
+      this._windowService.currentProcessInFocusNotify.next(pId);
     }
 
     onDragEndCdk(event: CdkDragEnd): void {
-      console.log('event:', event)
       if(this.isWindowInFullScreenMode){ // dragging full screen window is not allowed
         this._windowService.windowDragIsInActive.next();
         return;
       }
       // CDK gives a clean delta since drag started
       const delta = event.distance;
-      if (delta.x === 0 && delta.y === 0) {
-        console.log('dx:', delta.x);
-        console.log('dy:', delta.y);
-        //this._windowService.windowDragIsInActive.next();
-        return;
-      }
 
       // Commit delta into absolute left/top
       this.windowLeftPx += delta.x;
@@ -575,18 +565,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 
       // Important: reset the drag transform so we don't accumulate drift
       event.source.reset();
-
-      if(!this.isMouseDown)
-        this._windowService.windowDragIsInActive.next();
-    }
-
-
-    onDragStart(pId:number):void{
-
-      console.log('onDragStart:',pId)
-      this.setFocsuOnThisWindow(pId);
-      this._windowService.currentProcessInFocusNotify.next(pId);
-      this._windowService.windowDragIsActive.next();
+      this._windowService.windowDragIsInActive.next();
     }
 
     onRZStop(input:any):void{
@@ -876,6 +855,8 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
     }
 
     setFocsuOnThisWindow(pId:number):void{
+      console.log('setFocsuOnThisWindow:', pId);
+
       /**
        * If you want to make a non-focusable element focusable, 
        * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
@@ -983,27 +964,28 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 
     //the window positioning is acting wonky, but it is kinda 50% there
     showOrSetProcessWindowToFocusOnClick(pId:number):void{
-      if(this.processId === pId){
-        const windowState = this._windowService.getWindowState(pId);
-        if(windowState){
-          if(!windowState.isVisible){
-            this.restoreHiddenWindow(pId);
-          }else{
-            this.setFocsuOnThisWindow(windowState.pId);
-          }
-        }
+      if(this.processId !== pId) return;
+
+      const ws = this._windowService.getWindowState(pId);
+      if(!ws) return;
+
+      if(!ws.isVisible){
+        this.restoreHiddenWindow(pId);
+      }else{
+        this.setFocsuOnThisWindow(ws.pId);
       }
     }
 
     setWindowToFocusAndResetWindowBoundsByPid(pId:number):void{
-      if(this.processId === pId){
-        const window = this._windowService.getWindowState(this.processId);
-        if(window && window.isVisible){
-          this.setWindowToFocusById(window.pId);
-  
-          //reset window bound when a window is closed or hidden.
-          this.updateWindowBoundsState();
-        }
+      if(this.processId !== pId) return;
+
+      const ws = this._windowService.getWindowState(this.processId);
+      if(!ws) return;
+      
+      if(ws.isVisible){
+        this.setWindowToFocusById(ws.pId);
+        //reset window bound when a window is closed or hidden.
+        this.updateWindowBoundsState();
       }
     }
 
