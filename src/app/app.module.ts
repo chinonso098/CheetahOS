@@ -54,7 +54,7 @@ import { OverFlowComponent } from './system-apps/overflow/overflow.component';
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
 
-import { HighlightDirective } from './shared/system-component/window/primarywindow/window.btn.highlight.directives';
+import { HighlightDirective } from './shared/system-component/window/window.btn.highlight.directives';
 import { TaskBarEntryHighlightDirective } from './system-apps/taskbarentries/taskbar.entries.highlight.directives';
 import { LongPressDirective } from './system-apps/audioplayer/long.press.directive';
 import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.column-resize.directive';
