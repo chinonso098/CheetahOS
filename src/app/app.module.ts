@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { AngularDraggableModule } from 'angular2-draggable';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
@@ -123,6 +124,7 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
   imports: [
     BrowserModule,
     AngularDraggableModule,
+    DragDropModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
     FormsModule,

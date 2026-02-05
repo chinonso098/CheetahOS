@@ -18,10 +18,17 @@
     params:{ winWidth: strWindowWidthPx, winHeight: strWindowHeightPx, winTransform: windowTransform, winZIndex:windowZIndex }
 }"
 
-#mainWindowContainer class="window-container  window-dd-box" [ngStyle]="currentStyles" tabindex="0" 
-    ngDraggable [handle]="leftHS" 
-    (stopped)="onDragEnd($event)" 
-    (started)="onDragStart(this.processId)" id="wincmpnt-{{uniqueId}}">
+#mainWindowContainer class="window-container  window-dd-box" 
+
+   [ngStyle]="currentStyles" 
+    tabindex="0" 
+    cdkDrag
+    [cdkDragBoundary]="'#vantaCntnr'"
+    (mousedown)="onMouseDown()"
+    (mouseup)="onMouseUp()"
+    (cdkDragStarted)="onDragStart(this.processId)"
+    (cdkDragEnded)="onDragEndCdk($event)"
+    id="wincmpnt-{{uniqueId}}">
 
         <!-- (rzStop)="onRZStop($event)"  
         ngResizable [rzHandles]="'e,s,w,se,sw'" 
@@ -31,7 +38,7 @@
         appHighlight tabindex="0"
         [ngStyle]="headerActiveStyles"
         (dblclick)="onTitleBarDoubleClick($event)">
-        <div #leftHS class="left-header-section">
+        <div class="left-header-section" cdkDragHandle>
             <h1>
                 <figure>
                     <img [src]="this.icon" [alt]="this.name"/>
@@ -46,7 +53,7 @@
                     <path d="M0 0h10v1H0z" [ngStyle]="{'fill':isWindowMinimizable? '#FFFFFF': '#989898CC'}"/>
                     </svg>
                 </button>
-                <button *ngIf="!currentWindowSizeState, else elseBlock" id="maxBtn" appHighlight (click)="onMaximizeBtnClick($event)" title="Maximize">
+                <button *ngIf="!isWindowInFullScreenMode, else elseBlock" id="maxBtn" appHighlight (click)="onMaximizeBtnClick($event)" title="Maximize">
                     <svg width="10" viewBox="0 0 10 10">
                         <path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"  [ngStyle]="{'fill':isWindowMaximizable? '#FFFFFF': '#989898CC'}" />
                     </svg>            

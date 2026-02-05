@@ -1,5 +1,6 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChanges, ViewChild, ChangeDetectorRef, SimpleChanges, Renderer2 } from '@angular/core';
+import { CdkDragEnd } from '@angular/cdk/drag-drop';
 
 import { ComponentType } from 'src/app/system-files/system.types';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -74,9 +75,6 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   readonly TASKBAR_HEIGHT_PX = 40;
   readonly EDGE_PAD_PX = 8;
 
-  // angular2-draggable controlled translate (we reset it to avoid drift)
-  dragPosition = { x: 0, y: 0 };
-
   windowHide = false;
   windowMaximize = false;
   disableWindowAnimaion = false;
@@ -108,14 +106,13 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   strWindowWidthPx = '0px';
   strWindowHeightPx = '0px';
 
+  isMouseDown = false;
   isWindowMaximizable = true;
   isWindowMinimizable = true;
-  currentWindowSizeState = false;
+  isWindowInFullScreenMode = false;
   currentStyles: Record<string, unknown> = {};
   headerActiveStyles: Record<string, unknown> = {}; 
   closeBtnStyles: Record<string, unknown> = {};
-  defaultWidthOnOpen = 0;
-  defaultHeightOnOpen = 0;
 
   hasWindow = false;
   icon = Constants.EMPTY_STRING;
@@ -189,16 +186,19 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 
     ngAfterViewInit():void{
       this.hideGlassPaneContainer();
-      this.defaultHeightOnOpen = this.getMainWindowContainerElmnt.offsetHeight;
-      this.defaultWidthOnOpen  = this.getMainWindowContainerElmnt.offsetWidth;
-
+      
+      // get defaultHeightOnOpen and defaultWidthOnOpen  
+      this.windowHeightPx = this.getMainWindowContainerElmnt.offsetHeight;
+      this.windowWidthPx = this.getMainWindowContainerElmnt.offsetWidth;
+      this.applySizeStyles();
+;
       // if(this.turnOffWindowOpenCloseAnimation)
       //   this.windowTransform =  'translate(-50%, -50%)';
       // else
       //   this.windowTransform =  'translate(0, 0)';
 
       // cascade position after view is ready
-      if (!this.turnOffWindowStacking) {
+      if (!this.turnOffWindowStacking){
         this.stackWindow();
       } else {
         this.windowLeftPx = this.WIN_LEFT_PX;
@@ -207,15 +207,8 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
         this.syncStatePositionSize();
       }
 
-
-      this.windowHeightPx = this.defaultHeightOnOpen;
-      this.windowWidthPx = this.defaultWidthOnOpen; 
       this.windowZIndex =  String(this.MAX_Z_INDEX);
-      this.strWindowHeightPx =  `${String(this.defaultHeightOnOpen)}px`;
-      this.strWindowWidthPx =  `${String(this.defaultWidthOnOpen)}px`;
       this.storeWindowStateAfterViewInit();
-
-      
 
       //tell angular to run additional detection cycle after 
       this.changeDetectorRef.detectChanges();
@@ -255,17 +248,17 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
     }
 
     storeWindowStateAfterViewInit():void{
-      const clamped = this.computeClampedPosition(this.WIN_LEFT_PX, this.WIN_TOP_PX, this.defaultWidthOnOpen, this.defaultHeightOnOpen);
+      const clamped = this.computeClampedPosition(this.windowLeftPx, this.windowTopPx, this.windowWidthPx, this.windowHeightPx);
       if(!clamped){
-          console.warn('Clamped in undefined');
-          return
+        console.warn('Clamped in undefined');
+        return;
       }
 
       this._originalWindowsState = {
         appName: this.name,
         pId: this.processId,
-        width: this.defaultWidthOnOpen,
-        height: this.defaultHeightOnOpen,
+        width: this.windowWidthPx,
+        height: this.windowHeightPx,
         leftPx: clamped.leftPx,
         topPx: clamped.topPx,
         zIndex: this.MIN_Z_INDEX,   // placeholder, service will normalize
@@ -338,9 +331,6 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
         'z-index': this.windowHide ? this.HIDDEN_Z_INDEX : this.windowZIndex,
         opacity: this.windowHide ? 0 : 1,
       };
-
-      // always clear drag translate after committing
-      this.dragPosition = { x: 0, y: 0 };
     }
 
     private syncStatePositionSize(): void {
@@ -547,8 +537,53 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       this._windowService.windowDragIsInActive.next();
     }
 
+    onMouseDown():void{
+      this.isMouseDown = true;
+    }
+
+    onMouseUp():void{
+      this.isMouseDown = false;
+    }
+
+    onDragEndCdk(event: CdkDragEnd): void {
+      console.log('event:', event)
+      if(this.isWindowInFullScreenMode){ // dragging full screen window is not allowed
+        this._windowService.windowDragIsInActive.next();
+        return;
+      }
+      // CDK gives a clean delta since drag started
+      const delta = event.distance;
+      if (delta.x === 0 && delta.y === 0) {
+        console.log('dx:', delta.x);
+        console.log('dy:', delta.y);
+        //this._windowService.windowDragIsInActive.next();
+        return;
+      }
+
+      // Commit delta into absolute left/top
+      this.windowLeftPx += delta.x;
+      this.windowTopPx  += delta.y;
+
+      // Clamp, apply, sync
+      this.clampToContainer();
+      this.applyPositionStyles();
+      this.syncStatePositionSize();
+      this.positionSilhouette();
+
+      // Update per-app cascade starting point
+      this.updateWindowBoundsState();
+
+      // Important: reset the drag transform so we don't accumulate drift
+      event.source.reset();
+
+      if(!this.isMouseDown)
+        this._windowService.windowDragIsInActive.next();
+    }
+
+
     onDragStart(pId:number):void{
 
+      console.log('onDragStart:',pId)
       this.setFocsuOnThisWindow(pId);
       this._windowService.currentProcessInFocusNotify.next(pId);
       this._windowService.windowDragIsActive.next();
@@ -627,7 +662,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
           }
       }
       else if(!this.windowHide && (ws.pId === this.processId)){
-          if(this.currentWindowSizeState){ 
+          if(this.isWindowInFullScreenMode){ 
             // if window was in full screen when hidden, give the proper z-index when unhidden
             this.setWindowToFullScreen(this.processId, ws.zIndex);
           }
@@ -664,7 +699,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
         const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
 
         if(windowList.includes(this.processId)){
-          if(this.currentWindowSizeState){ 
+          if(this.isWindowInFullScreenMode){ 
             // if window was in full screen when hidden, give the proper z-index when unhidden
             this.setWindowToFullScreen(this.processId, ws.zIndex);
           }
@@ -699,7 +734,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       const ws = this._windowService.getWindowState(this.processId);
       if(!ws)return;
 
-      this.currentWindowSizeState = this.windowMaximize;
+      this.isWindowInFullScreenMode = this.windowMaximize;
       if(this.windowMaximize && ws.pId === this.processId){
           this.setWindowToFullScreen(this.processId, ws.zIndex);
 
@@ -773,42 +808,26 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
     }
 
 
-
-    //THIS IS NOT WORKING RIGHT, THE VALUES ARE WRONG
-    /**
-     * if a window is Dragged, get its accurate position relative to the desktop and update the window bound data.
-     * any window of the same app that is opened, will use the updatedBound as it's starting point
-     * This is producing wrong values
-     */
-
-    updateWindowBoundsState():void{
-      let newLeft = 0;
-      let newTop = 0;
-
-      const winCmpntId =`wincmpnt-${this.name}-${this.processId}`;
-      const mainWindow = document.getElementById('vantaCntnr')?.getBoundingClientRect();
-      const winCmpnt = document.getElementById(winCmpntId)?.getBoundingClientRect();
+    updateWindowBoundsState(): void {
       const currentBound = this._windowService.getProcessWindowBounds(this.uniqueId);
 
-      console.log('currentBound:',currentBound);
+      const next: WindowBoundsState = currentBound ?? {
+        xOffset: 0,
+        yOffset: 0,
+        xBoundsSubtraction: 0,
+        yBoundsSubtraction: 0
+      };
 
-      if(winCmpnt && mainWindow){
-        newTop = ((winCmpnt.top / mainWindow.height) * 100);
-        newLeft = ((winCmpnt.left / mainWindow.width) * 100);
+      // Store the current committed absolute px position
+      next.xOffset = this.windowLeftPx;
+      next.yOffset = this.windowTopPx;
 
-        console.log('newLeft:',newLeft);
-        console.log('newTop:',newTop);
+      next.xBoundsSubtraction = 0;
+      next.yBoundsSubtraction = 0;
 
-        if(currentBound){
-          currentBound.xOffset += newLeft;
-          currentBound.yOffset += newTop
-          currentBound.xBoundsSubtraction = 0;
-          currentBound.yBoundsSubtraction = 0;
-
-          this._windowService.addProcessWindowBounds(this.uniqueId, currentBound);
-        }
-      }
+      this._windowService.addProcessWindowBounds(this.uniqueId, next);
     }
+
 
     createSilhouette():void{
       this.uniqueGPId = `gp-${this.uniqueId}`;
@@ -819,8 +838,8 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       glassPane.setAttribute('id', this.uniqueGPId);
 
       glassPane.style.transform =  'translate(0, 0)';
-      glassPane.style.height =  `${this.defaultHeightOnOpen}px`;
-      glassPane.style.width =  `${this.defaultWidthOnOpen}px`;
+      glassPane.style.height =  `${this.windowHeightPx}px`;
+      glassPane.style.width =  `${this.windowWidthPx}px`;
 
       glassPane.style.zIndex =  String(this.HIDDEN_Z_INDEX);
       glassPane.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';

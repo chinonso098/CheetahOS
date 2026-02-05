@@ -200,7 +200,7 @@ export class WindowService implements BaseService{
     getProcessCountFromWindowList(uId:string):number{
         const appName = uId.split(Constants.DASH)[0];
 
-        if(this._processPreviewImages.has(appName)){
+        if(this._processWindows.has(appName)){
             const currUids = this._processWindows.get(appName) || [];
 
             return currUids.length;
