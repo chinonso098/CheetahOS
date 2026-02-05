@@ -512,12 +512,9 @@ import { v } from '@angular/cdk/scrolling-module.d-ud2XrbF8';
     }
 
     onMouseDown(pId:number):void{
+      this._windowService.windowDragIsActive.next();
       this.setFocsuOnThisWindow(pId);
       this._windowService.currentProcessInFocusNotify.next(pId);
-    }
-
-    onDragStarted():void{
-      this._windowService.windowDragIsActive.next();
     }
 
     onDragEnded(event: CdkDragEnd): void {

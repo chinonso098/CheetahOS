@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChanges, ViewChild, ChangeDetectorRef, SimpleChanges, Renderer2 } from '@angular/core';
+import { CdkDragEnd } from '@angular/cdk/drag-drop';
 
 import { ComponentType } from 'src/app/system-files/system.types';
 
@@ -10,7 +11,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 
 import {Subscription } from 'rxjs';
-import { WindowState  } from '../window/windows.types';
+import { ClampedPosition, WindowState  } from '../window/windows.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
@@ -24,7 +25,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
   standalone:false,
 })
  export class BasicWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
-   @ViewChild('bdivWindow') bdivWindow!: ElementRef;
+   @ViewChild('basicWindowContainer') basicWindowContainer!: ElementRef;
    @ViewChild('bglassPaneContainer') bglassPaneContainer!: ElementRef;
 
    @Input() runningProcessID = 0;  
@@ -61,13 +62,24 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
   readonly MIN_Z_INDEX = 1;
   readonly MAX_Z_INDEX = 2;
   readonly TMP_MAX_Z_INDEX = 3;
+  readonly WIN_TOP_PX = 40;
+  readonly WIN_LEFT_PX = 40;
+  readonly CASCADE_STEP_PX = 24;
+  readonly TASKBAR_HEIGHT_PX = 40;
+  readonly EDGE_PAD_PX = 8;
 
   windowHide = false;
   windowMaximize = false;
 
-  windowWidth = '0px';
-  windowHeight = '0px';
+  windowTopPx = 0;
+  windowLeftPx = 0;
+  windowWidthPx = 0;
+  windowHeightPx = 0;
+
   windowZIndex = '0';
+  strWindowWidthPx = '0px';
+  strWindowHeightPx = '0px';
+
 
   xAxisTmp = 0;
   yAxisTmp = 0;
@@ -103,7 +115,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       this._processHandlerService = controlProcessService;
       this._userNotificationServices = notificationServices;
  
-      this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusAndResetWindowBoundsByPid(p)});
+      this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusByPid(p)});
       this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p)});
       this._removeFocusOnOtherProcessesSub = this._windowService.removeFocusOnOtherProcessesWindowNotify.subscribe((p) => {this.removeFocusOnWindowNotMatchingPid(p)});
       this._showOnlyCurrentProcessSub = this._windowService.setProcessWindowToFocusOnMouseHoverNotify.subscribe((p) => {this.setWindowToFocusOnMouseHover(p)});
@@ -134,8 +146,8 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       });
     }
 
-    get getDivWindowElement(): HTMLElement {
-      return this.bdivWindow.nativeElement;
+    get getMainWindowContainerElmnt(): HTMLElement {
+      return this.basicWindowContainer.nativeElement;
     }
 
     ngOnChanges(changes: SimpleChanges):void{
@@ -169,27 +181,14 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
 
     ngAfterViewInit():void{
       this.hideGlassPaneContainer();
-      this.defaultHeightOnOpen = this.getDivWindowElement.offsetHeight;
-      this.defaultWidthOnOpen  = this.getDivWindowElement.offsetWidth;
 
-      this.windowHeight =  `${String(this.defaultHeightOnOpen)}px`;
-      this.windowWidth =  `${String(this.defaultWidthOnOpen)}px`;
-      this.windowZIndex =  String(this.MAX_Z_INDEX);
 
-      this._originalWindowsState = {
-        appName: this.name,
-        pId : this.processId,
-        height:this.defaultHeightOnOpen,
-        width: this.defaultWidthOnOpen,
-        leftPx: 0,
-        topPx: 0,
-        zIndex:this.MAX_Z_INDEX,
-        isVisible:true
-      }
+      // get defaultHeightOnOpen and defaultWidthOnOpen  
+      this.windowHeightPx = this.getMainWindowContainerElmnt.offsetHeight;
+      this.windowWidthPx = this.getMainWindowContainerElmnt.offsetWidth;
+      this.applySizeStyles();
 
-      this._windowService.addWindowState(this._originalWindowsState);
-      this._windowService.addProcessWindowIDWithHighestZIndex(this.processId);
-      this.createSilhouette();
+      this.storeWindowStateAfterViewInit();
 
       //tell angular to run additional detection cycle after 
       this.changeDetectorRef.detectChanges();  
@@ -237,18 +236,134 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       }
     }
 
-    showSilhouette(pId:number):void{
-      if(this.processId === pId){
+    storeWindowStateAfterViewInit():void{
+      const clamped = this.computeClampedPosition(this.windowLeftPx, this.windowTopPx, this.windowWidthPx, this.windowHeightPx);
+      if(!clamped){
+        console.warn('Clamped in undefined');
+        return;
+      }
+
+      this.windowLeftPx = clamped.leftPx;
+      this.windowTopPx  = clamped.topPx;
+      this.applyPositionStyles();
+
+      this._originalWindowsState = {
+        appName: this.name,
+        pId: this.processId,
+        width: this.windowWidthPx,
+        height: this.windowHeightPx,
+        leftPx: clamped.leftPx,
+        topPx: clamped.topPx,
+        zIndex: this.MIN_Z_INDEX,   // placeholder, service will normalize
+        isVisible: true,
+      };
+
+      this._windowService.addWindowState(this._originalWindowsState);
+      this._windowService.addProcessWindowIDWithHighestZIndex(this.processId);
+      this.createSilhouette();
+
+    }
+
+ private getDesktopRect(): DOMRect | null {
+      const el = document.getElementById('vantaCntnr') as HTMLElement | null;
+      return el ? el.getBoundingClientRect() : null;
+    }
+
+    private clamp(n: number, min: number, max: number): number {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    private computeClampedPosition(leftPx: number, topPx: number, width: number, height: number): ClampedPosition | undefined{
+      const desktop = this.getDesktopRect();
+
+      if(!desktop){
+        console.warn('Computing clamped position failed, desktop is undefined');
+         return;
+      }
+      const maxLeft = Math.max(0, desktop.width - width);
+      const maxTop  = Math.max(0, desktop.height - this.TASKBAR_HEIGHT_PX - height);
+
+      return {
+        leftPx: this.clamp(leftPx, 0, maxLeft),
+        topPx: this.clamp(topPx, 0, maxTop),
+      };
+    }
+
+    private clampToContainer(): void {
+      const desktop = this.getDesktopRect();
+      const winEl = this.basicWindowContainer?.nativeElement as HTMLElement | undefined;
+      if (!desktop || !winEl) return;
+
+      const winRect = winEl.getBoundingClientRect();
+      const pad = this.EDGE_PAD_PX;
+
+      const maxLeft = Math.max(pad, desktop.width - winRect.width - pad);
+      const maxTop  = Math.max(pad, desktop.height - this.TASKBAR_HEIGHT_PX - winRect.height - pad);
+
+      this.windowLeftPx = Math.min(Math.max(this.windowLeftPx, pad), maxLeft);
+      this.windowTopPx  = Math.min(Math.max(this.windowTopPx, pad), maxTop);
+    }
+
+    private applyOpacityZ(zIndex: number, opacity: number): void {
+      this.currentWinStyles = {
+        ...this.currentWinStyles,
+        left: `${this.windowLeftPx}px`,
+        top: `${this.windowTopPx}px`,
+        transform: 'translate(0px, 0px)',
+        'z-index': zIndex,
+        opacity
+      };
+    }
+
+    private applyPositionStyles(): void {
+      this.currentWinStyles = {
+        ...this.currentWinStyles,
+        left: `${this.windowLeftPx}px`,
+        top: `${this.windowTopPx}px`,
+        transform: 'translate(0px, 0px)', // keep draggable neutral
+        'z-index': this.windowHide ? this.HIDDEN_Z_INDEX : this.windowZIndex,
+        opacity: this.windowHide ? 0 : 1,
+      };
+    }
+
+    private syncStatePositionSize(): void {
+      const ws = this._windowService.getWindowState(this.processId);
+      if (!ws) return;
+
+      ws.leftPx = this.windowLeftPx;
+      ws.topPx = this.windowTopPx;
+      ws.width = this.windowWidthPx;
+      ws.height = this.windowHeightPx;
+      ws.zIndex = Number(this.windowZIndex);
+
+      this._windowService.addWindowState(ws);
+    }
+
+    private applySizeStyles(): void {
+      this.strWindowHeightPx = `${this.windowHeightPx}px`;
+      this.strWindowWidthPx =  `${this.windowWidthPx}px`;
+    }
+
+    showSilhouette(pId: number): void {
+      if (this.processId === pId) {
         this.showGlassPaneContainer();
-        const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
-        if(glassPane){
-          glassPane.style.position = 'absolute';
+        const glassPane = document.getElementById(this.uniqueGPId) as HTMLDivElement;
+        if (glassPane) {
           glassPane.style.display = 'block';
           glassPane.style.zIndex = String(this.MIN_Z_INDEX);
-          // glassPane.style.top =  `${this.windowTop}%`;
-          // glassPane.style.left =  `${this.windowLeft}%`;
+          this.positionSilhouette();
         }
       }
+    }
+
+    private positionSilhouette(): void {
+      const glassPane = document.getElementById(this.uniqueGPId) as HTMLDivElement;
+      if (!glassPane) return;
+
+      glassPane.style.position = 'absolute';
+      glassPane.style.left = `${this.windowLeftPx}px`;
+      glassPane.style.top = `${this.windowTopPx}px`;
+      glassPane.style.transform = 'translate(0px, 0px)';
     }
 
     showGlassPaneContainer() {
@@ -280,143 +395,154 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     updateWindowZIndex(window: WindowState, zIndex:number):void{
-      if(this.processId === window.pId){
-        this.currentWinStyles = {
-          // 'top': `${this.windowTop}%`,
-          // 'left': `${this.windowLeft}%`,
-          'z-index':zIndex,
-          'opacity': (zIndex > 0)? 1 : 0,
-          'transform': `translate(${window.leftPx}px, ${window.topPx}px)`
-        };
+      if (this.processId === window.pId) {
+        this.applyOpacityZ(zIndex, zIndex > 0 ? 1 : 0);
         window.zIndex = zIndex;
         this._windowService.addWindowState(window);
       }
     }
 
-    setWindowToPriorHiddenState(window: WindowState, zIndex:number):void{
-      if(this.processId === window.pId){
-        this.currentWinStyles = {
-          // 'top': `${this.windowTop}%`,
-          // 'left': `${this.windowLeft}%`,
-          'z-index':zIndex,
-          'opacity': (zIndex > 0)?  1 : 0,
-          'transform': `translate(${window.leftPx}px, ${window.topPx}px)`
-        };
+    setWindowToPriorHiddenState(window: WindowState, zIndex: number): void {
+      if (this.processId === window.pId) {
+        this.applyOpacityZ(zIndex, zIndex > 0 ? 1 : 0);
       }
     }
 
-    onDragEnd(input:HTMLElement):void{
-      const style = window.getComputedStyle(input);
-      const matrix1 = new WebKitCSSMatrix(style.transform);
-      const x_axis = matrix1.m41;
-      const y_axis = matrix1.m42;
+    onMouseDown(pId:number):void{
+      this._windowService.windowDragIsActive.next();
+      this.setFocsuOnThisWindow(pId);
+      this._windowService.currentProcessInFocusNotify.next(pId);
+    }
 
-      //ignore false drag
-      if( x_axis!== 0  && y_axis !== 0){
-        const windowState = this._windowService.getWindowState(this.processId);
-        const glassPane= document.getElementById(this.uniqueGPId) as HTMLDivElement;
+    onDragEnded(event: CdkDragEnd): void {
 
-        if(windowState){
-          windowState.leftPx= x_axis;
-          windowState.topPx= y_axis;
+      // CDK gives a clean delta since drag started
+      const delta = event.distance;
 
-          this.xAxisTmp = x_axis;
-          this.yAxisTmp = y_axis;  
-          this._windowService.addWindowState(windowState);
-        }
+      // Commit delta into absolute left/top
+      this.windowLeftPx += delta.x;
+      this.windowTopPx  += delta.y;
 
-        if(glassPane){
-          glassPane.style.transform = `translate(${x_axis}px , ${y_axis}px)`;   
-        }
-      }
+      // Clamp, apply, sync
+      this.clampToContainer();
+      this.applyPositionStyles();
+      this.syncStatePositionSize();
+      this.positionSilhouette();
+
+
+      // Important: reset the drag transform so we don't accumulate drift
+      event.source.reset();
       this._windowService.windowDragIsInActive.next();
     }
 
-    onDragStart(pId:number):void{
-      this.setFocsuOnThisWindow(pId);
-      this._windowService.currentProcessInFocusNotify.next(pId);
-      this._windowService.windowDragIsActive.next();
-    }
-
     onPositionWindow(input:WindowPositionInfo):void{
-      this.windowTop = input.topPx;
-      this.windowLeft = input.leftPx
-      this.windowTransform = input.transform;
+      // If you still receive % from elsewhere, convert it to px here.
+      const rect = this.getDesktopRect();
+      if (!rect) return;
 
-      this.currentWinStyles = { 
-        'top': `${input.topPx}%`,
-        'left': `${input.leftPx}%`,
-        'transform': input.transform,
-      };
+      this.windowLeftPx = Math.round(input.leftPx);
+      this.windowTopPx  = Math.round(input.topPx);
+
+      this.clampToContainer();
+      this.applyPositionStyles();
+      this.syncStatePositionSize();
+      this.positionSilhouette();
     }
 
-    onPositionWindowById(input:string[]):void{
-      const callingWindowId = input[1];
-      const windowElmnt = document.getElementById(`wincmpnt-${callingWindowId}`) as HTMLElement;
-      const dialogWindowElmnt = document.getElementById(`bwincmpnt-${this.uniqueId}`) as HTMLElement;
-      //const windowState  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
+    // onPositionWindowById(input:string[]):void{
+    //   const callingWindowId = input[1];
+    //   const windowElmnt = document.getElementById(`wincmpnt-${callingWindowId}`) as HTMLElement;
+    //   const dialogWindowElmnt = document.getElementById(`bwincmpnt-${this.uniqueId}`) as HTMLElement;
+    //   //const windowState  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
 
-      if(!windowElmnt) return;
-      const winRect = windowElmnt.getBoundingClientRect();
+    //   if(!windowElmnt) return;
+    //   const winRect = windowElmnt.getBoundingClientRect();
 
-      if(!dialogWindowElmnt) return;
+    //   if(!dialogWindowElmnt) return;
 
-      this.windowTop = winRect.y + (winRect.height /2);
-      this.windowLeft = winRect.x + (winRect.width / 2);
-      this.windowTransform = 'translate(-50%, -50%)';
+    //   this.windowTop = winRect.y + (winRect.height /2);
+    //   this.windowLeft = winRect.x + (winRect.width / 2);
+    //   this.windowTransform = 'translate(-50%, -50%)';
 
-      /**
-       * in testing, using currentWinStyles was slower, but a minute yet noticeable diff. hence it is not used
-       * Also, This slight delay is added due to timinig issue
-       */
-      setTimeout(() => {
-        // dialogWindowElmnt.style.zIndex = '2';
-        dialogWindowElmnt.style.left = `${this.windowLeft}px`;
-        dialogWindowElmnt.style.top = `${this.windowTop}px`;
-        dialogWindowElmnt.style.transform = this.windowTransform;
-      }, 0);
+    //   /**
+    //    * in testing, using currentWinStyles was slower, but a minute yet noticeable diff. hence it is not used
+    //    * Also, This slight delay is added due to timinig issue
+    //    */
+    //   setTimeout(() => {
+    //     // dialogWindowElmnt.style.zIndex = '2';
+    //     dialogWindowElmnt.style.left = `${this.windowLeft}px`;
+    //     dialogWindowElmnt.style.top = `${this.windowTop}px`;
+    //     dialogWindowElmnt.style.transform = this.windowTransform;
+    //   }, 0);
+    // }
+
+
+
+    onPositionWindowById(input: string[]): void {
+      // Expected input shape: [something, callingWindowId]
+      const callingWindowId = input?.[1];
+      if (!callingWindowId) return;
+
+      const desktopEl = document.getElementById('vantaCntnr') as HTMLElement | null;
+      if (!desktopEl) return;
+
+      const targetEl = document.getElementById(`wincmpnt-${callingWindowId}`) as HTMLElement | null;
+      if (!targetEl) return;
+
+      // Convert viewport coordinates -> desktop-relative coordinates
+      const desktopRect = desktopEl.getBoundingClientRect();
+      const targetRect = targetEl.getBoundingClientRect();
+
+      const targetCenterLeft = (targetRect.left - desktopRect.left) + (targetRect.width / 2);
+      const targetCenterTop  = (targetRect.top  - desktopRect.top)  + (targetRect.height / 2);
+
+      // Position THIS window so its center aligns with target center
+      // (left/top represent the window's top-left corner)
+      this.windowLeftPx = Math.round(targetCenterLeft - (this.windowWidthPx / 2));
+      this.windowTopPx  = Math.round(targetCenterTop  - (this.windowHeightPx / 2));
+
+      // Clamp + commit to styles/state
+      this.clampToContainer();
+      this.applyPositionStyles();
+      this.syncStatePositionSize();
+      this.positionSilhouette();
+
+      // Optional: bring to focus if that's the desired behavior
+      this.setFocsuOnThisWindow(this.processId);
+      this._windowService.currentProcessInFocusNotify.next(this.processId);
     }
+
 
     setHideAndShowAllVisibleWindows():void{
-      const windowState = this._windowService.getWindowState(this.processId);
-      if(windowState && windowState.isVisible){
-        this.windowHide = !this.windowHide;
-        // CSS styles: set per current state of component properties
+      const ws = this._windowService.getWindowState(this.processId);
+      if(!ws) return;
 
-        if(this.windowHide){
-          if(windowState.pId === this.processId){
-            windowState.isVisible = false;
-            windowState.zIndex = this.HIDDEN_Z_INDEX;
-            this._windowService.addWindowState(windowState);
-            this._windowService.addProcessIDToHiddenOrVisibleWindows(this.processId);
-  
-            this.setHeaderInActive(windowState.pId);
-            this.currentWinStyles = { 
-              // 'top': `${this.windowTop}%`,
-              // 'left': `${this.windowLeft}%`,
-              'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`,
-              'z-index':this.HIDDEN_Z_INDEX 
-            };
-          }
-        }
-      }else if(windowState && !windowState.isVisible){
+      this.windowHide = !this.windowHide;
+      // CSS styles: set per current state of component properties
+
+      if(ws.isVisible && this.windowHide && (ws.pId === this.processId)){
+        ws.isVisible = false;
+        ws.zIndex = this.HIDDEN_Z_INDEX;
+        this._windowService.addWindowState(ws);
+        this._windowService.addProcessIDToHiddenOrVisibleWindows(this.processId);
+
+        this.setHeaderInActive(ws.pId);
+        this.applyOpacityZ(this.HIDDEN_Z_INDEX, 1)
+      }
+      else if(!ws.isVisible && !this.windowHide && (ws.pId === this.processId)){
         const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
+
         if(windowList.includes(this.processId)){
-          this.windowHide = !this.windowHide;
 
-          if(!this.windowHide){
-            if(windowState.pId === this.processId){
-              windowState.isVisible = true;
-              this._windowService.addWindowState(windowState);
+          ws.isVisible = true;
+          this._windowService.addWindowState(ws);
 
-              const window_with_highest_zIndex = this._windowService.getProcessWindowIDWithHighestZIndex();
-              if(window_with_highest_zIndex === this.processId){
-                this.setFocsuOnThisWindow(windowState.pId);
-                this._windowService.currentProcessInFocusNotify.next(windowState.pId);
-              }else{
-                this.setWindowToPriorHiddenState(windowState, this.MIN_Z_INDEX);
-              }
-            }
+          const window_with_highest_zIndex = this._windowService.getProcessWindowIDWithHighestZIndex();
+          if(window_with_highest_zIndex === this.processId){
+            this.setFocsuOnThisWindow(ws.pId);
+            this._windowService.currentProcessInFocusNotify.next(ws.pId);
+          }else{
+            this.setWindowToPriorHiddenState(ws, this.MIN_Z_INDEX);
           }
         }
       }
@@ -564,64 +690,59 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       const window = this._windowService.getWindowState(pId);
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
 
-      if(window){
-        if(window.isVisible){
-          if(window.pId !==  pid_with_highest_z_index){
-            this.setHeaderInActive(window.pId);
-            this.updateWindowZIndex(window, this.MIN_Z_INDEX);
-          }else{
-            this.setHeaderActive(window.pId);
-            this.updateWindowZIndex(window, this.MAX_Z_INDEX);
-          }
-        } else if(!window.isVisible){
-          this.setWindowToPriorHiddenState(window, this.HIDDEN_Z_INDEX);
+      if(window && window.isVisible){
+        if(window.pId !==  pid_with_highest_z_index){
+          this.setHeaderInActive(window.pId);
+          this.updateWindowZIndex(window, this.MIN_Z_INDEX);
+        }else{
+          this.setHeaderActive(window.pId);
+          this.updateWindowZIndex(window, this.MAX_Z_INDEX);
         }
+      } else if(window && !window.isVisible){
+        this.setWindowToPriorHiddenState(window, this.HIDDEN_Z_INDEX);
       }
     }
 
     //the window positioning is acting wonky, but it is kinda 50% there
     showOrSetProcessWindowToFocusOnClick(pId:number):void{
-      if(this.processId === pId){
-        const windowState = this._windowService.getWindowState(pId);
-        if(windowState){
-          this.setFocsuOnThisWindow(windowState.pId);
-        }
+      if(this.processId !== pId) return;
+
+      const ws = this._windowService.getWindowState(pId);
+      if(!ws) return;
+
+      if(ws.isVisible){
+        this.setFocsuOnThisWindow(ws.pId);
       }
     }
 
-    setWindowToFocusAndResetWindowBoundsByPid(pId:number):void{
-      if(this.processId === pId){
-        const window = this._windowService.getWindowState(this.processId);
-        if(window && window.isVisible){
-          this.setWindowToFocusById(window.pId);
-        }
+    setWindowToFocusByPid(pId:number):void{
+      if(this.processId !== pId) return;
+
+      const ws = this._windowService.getWindowState(this.processId);
+      if(!ws) return;
+      
+      if(ws.isVisible){
+        this.setWindowToFocusById(ws.pId);
       }
     }
 
     setWindowToFocusById(pId:number):void{
-      const windowState = this._windowService.getWindowState(pId);
-      if(windowState){
-        if((windowState.pId === pId) && (windowState.zIndex < this.MAX_Z_INDEX)){
-          windowState.zIndex = this.MAX_Z_INDEX;
-          this._windowService.addWindowState(windowState);
-          this._windowService.addProcessWindowIDWithHighestZIndex(pId);
+      const ws = this._windowService.getWindowState(pId);
+      if(!ws) return;
 
-          this.currentWinStyles = {
-            // 'top': `${this.windowTop}%`,
-            // 'left': `${this.windowLeft}%`,
-            'z-index':this.MAX_Z_INDEX,
-            'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`
-          };
+      if((ws.pId === pId) && (ws.zIndex < this.MAX_Z_INDEX)){
+        ws.zIndex = this.MAX_Z_INDEX;
+        this._windowService.addWindowState(ws);
+        this._windowService.addProcessWindowIDWithHighestZIndex(pId);
 
-          this.setHeaderActive(pId);
-          this.setFocusOnDiv();
-        }else if((windowState.pId === pId) && (windowState.zIndex === this.MAX_Z_INDEX)){
-          this._windowService.addProcessWindowIDWithHighestZIndex(pId);
-
-          this.setHeaderActive(pId);
-          this.setFocusOnDiv();
-        }  
-      }
+        this.applyOpacityZ(this.MAX_Z_INDEX, 1);
+        this.setHeaderActive(pId);
+        this.setFocusOnDiv();
+      }else if((ws.pId === pId) && (ws.zIndex === this.MAX_Z_INDEX)){
+        this._windowService.addProcessWindowIDWithHighestZIndex(pId);
+        this.setHeaderActive(pId);
+        this.setFocusOnDiv();
+      } 
     }
 
     setFocusOnDiv():void{
@@ -633,66 +754,29 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       }
     }
 
-    showOnlyWindowById(pId:number):void{
-      const windowState = this._windowService.getWindowState(pId);
+    showOnlyWindowById(pId: number): void {
+      const ws = this._windowService.getWindowState(pId);
+      if (!ws || ws.pId !== pId) return;
 
-      if(windowState && (windowState.pId === pId)){
-        const z_index = this.TMP_MAX_Z_INDEX;
-        if(!windowState.isVisible){
-          this.currentWinStyles = {
-            // 'top': `${this.windowTop}%`,
-            // 'left': `${this.windowLeft}%`,
-            'z-index':z_index,
-            'opacity': 1,
-            'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`
-          };
-        }else{
-          this.currentWinStyles = {
-            // 'top': `${this.windowTop}%`,
-            // 'left': `${this.windowLeft}%`,
-            'z-index':z_index,
-            'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`
-          };
-        }
+      const z = this.TMP_MAX_Z_INDEX;
+      this.applyOpacityZ(z, 1);
+    }
+
+    lockScreenIsActive(): void {
+      const ws = this._windowService.getWindowState(this.processId);
+      if (ws && ws.isVisible) {
+        this.applyOpacityZ(this.HIDDEN_Z_INDEX, 0);
       }
     }
 
-    lockScreenIsActive():void{
-      const windowState = this._windowService.getWindowState(this.processId);
-      if(windowState && windowState.isVisible){
-        this.currentWinStyles = {
-          // 'top': `${this.windowTop}%`,
-          // 'left': `${this.windowLeft}%`,
-          'z-index':this.HIDDEN_Z_INDEX,
-          'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`,
-          'opacity': 0,
-        };
-        this._windowService.addWindowState(windowState);   
-      }
-    }
+    desktopIsActive(): void {
+      const ws = this._windowService.getWindowState(this.processId);
+      if (!ws || !ws.isVisible) return;
 
-    desktopIsActive():void{
-      const windowState = this._windowService.getWindowState(this.processId);
-      if(windowState){
-        if(windowState.pId === this._windowService.getProcessWindowIDWithHighestZIndex()){
-          this.currentWinStyles = {
-            // 'top': `${this.windowTop}%`,
-            // 'left': `${this.windowLeft}%`,
-            'z-index':this.MAX_Z_INDEX,
-            'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`,
-            'opacity': 1
-          };
-        }else{
-          this.currentWinStyles = {
-            // 'top': `${this.windowTop}%`,
-            // 'left': `${this.windowLeft}%`,
-            'z-index':this.MIN_Z_INDEX,
-            'transform': `translate(${windowState.leftPx}px, ${windowState.topPx}px)`,
-            'opacity': 1
-          };
-        }
-        this._windowService.addWindowState(windowState);   
-      }
+      const topPid = this._windowService.getProcessWindowIDWithHighestZIndex();
+      const z = ws.pId === topPid ? this.MAX_Z_INDEX : this.MIN_Z_INDEX;
+
+      this.applyOpacityZ(z, 1);
     }
 
     /**

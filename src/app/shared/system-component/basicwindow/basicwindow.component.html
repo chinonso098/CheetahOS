@@ -1,13 +1,19 @@
 
 <div
-    #bdivWindow class="window-container  window-dd-box" [ngStyle]="currentWinStyles"   tabindex="0" 
-    ngDraggable [handle]="leftHS" (stopped)="onDragEnd($event)" (started)="onDragStart(this.processId)" 
+    #basicWindowContainer class="window-container  window-dd-box"
+     [ngStyle]="currentWinStyles"   
+     tabindex="0" 
+    cdkDrag
+    [cdkDragBoundary]="'#vantaCntnr'"
+    (mousedown)="onMouseDown(this.processId)"
+    (cdkDragEnded)="onDragEnded($event)"
+    
     id="bwincmpnt-{{uniqueId}}">
 
     <div class="header-container"
         appHighlight tabindex="0"
         [ngStyle]="headerActiveStyles">
-        <div #leftHS class="left-header-section">
+        <div class="left-header-section" cdkDragHandle>
             <h1>
                 <figure>
                     @if(!isDialogContent){<img [src]="this.icon" [alt]="this.name"/>}
