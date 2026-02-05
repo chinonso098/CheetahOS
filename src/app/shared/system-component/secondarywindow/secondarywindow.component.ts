@@ -11,7 +11,7 @@ import { SystemNotificationService } from '../../system-service/system.notificat
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 
 import {Subscription } from 'rxjs';
-import { ClampedPosition, WindowState  } from '../window/windows.types';
+import { ClampedPosition, WindowState  } from '../primarywindow/windows.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';

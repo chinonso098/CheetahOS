@@ -9,7 +9,7 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
 
 import {Subscription } from 'rxjs';
 import { ClampedPosition, WindowBoundsState, WindowState } from './windows.types';
-import {openCloseAnimation, hideShowAnimation, maximizeRestoreAnimation} from 'src/app/shared/system-component/window/animation/animations';
+import {openCloseAnimation, hideShowAnimation, maximizeRestoreAnimation} from 'src/app/shared/system-component/primarywindow/animation/animations';
 import { AnimationEvent } from '@angular/animations';
 
 import { Process } from 'src/app/system-files/process';

@@ -1,4 +1,4 @@
-import { WindowState } from "src/app/shared/system-component/window/windows.types";
+import { WindowState } from "src/app/shared/system-component/primarywindow/windows.types";
 
 interface BaseState{
     pId: number,
