@@ -60,7 +60,7 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
    async ngAfterViewInit(): Promise<void> {
     this.changeDefaultOpeningPostions();
     
-    await CommonFunctions.sleep((10))
+    await CommonFunctions.sleep((10)); //delay of 10ms
     this.getInfoMessage();
   }
 
@@ -152,7 +152,7 @@ Other trademarks and logos are property of their respective owners
   }
 
     changeDefaultOpeningPostions():void{
-      const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:45, leftPx:50, transform:'translate(-50%, -50%)'};
+      const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:25, leftPx:35, transform:'translate(0px, 0px)'};
       this._windowService.positionProcessWindowNotify.next(positionInfo);
     }
 

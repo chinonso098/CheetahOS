@@ -485,7 +485,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       || this.notificationOption === UserNotificationType.FileDeleteProgress 
       || this.notificationOption === UserNotificationType.DeleteWarning
       || this.notificationOption === UserNotificationType.Error){
-      const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:45, leftPx:50, transform:'translate(-50%, -50%)'};
+        
+      const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:25, leftPx:35, transform:'translate(0px, 0px)'};
       this._windowService.positionProcessWindowNotify.next(positionInfo);
     }
 

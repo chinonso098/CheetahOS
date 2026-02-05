@@ -315,7 +315,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
         ...this.currentStyles,
         left: `${this.windowLeftPx}px`,
         top: `${this.windowTopPx}px`,
-        transform: 'translate(0px,0px)',
+        transform: 'translate(0px, 0px)',
         'z-index': zIndex,
         opacity
       };
@@ -326,7 +326,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
         ...this.currentStyles,
         left: `${this.windowLeftPx}px`,
         top: `${this.windowTopPx}px`,
-        transform: 'translate(0px,0px)', // keep draggable neutral
+        transform: 'translate(0px, 0px)', // keep draggable neutral
         'z-index': this.windowHide ? this.HIDDEN_Z_INDEX : this.windowZIndex,
         opacity: this.windowHide ? 0 : 1,
       };
@@ -396,7 +396,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       glassPane.style.position = 'absolute';
       glassPane.style.left = `${this.windowLeftPx}px`;
       glassPane.style.top = `${this.windowTopPx}px`;
-      glassPane.style.transform = 'translate(0px,0px)';
+      glassPane.style.transform = 'translate(0px, 0px)';
     }
 
     showGlassPaneContainer() {
@@ -486,54 +486,15 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       console.log('this featured is turned off');
 
       // if(this.isWindowMaximizable){
-      //   if(this.currentWindowSizeState && !this.windowMaximize){
+      //   if(this.isWindowInFullScreenMode && !this.windowMaximize){
       //     this.windowMaximize = false;
-      //     this.windowMinMaxAction = 'restore';
+      //     this.windowMaxRestoreAction = 'restore';
       //   }else{
       //     this.windowMaximize = true;
-      //     this.windowMinMaxAction = 'maximized';
+      //     this.windowMaxRestoreAction = 'maximized';
       //   }
       //   this.setMaximizeAndUnMaximize()
       // }
-    }
-
-    //THIS IS NOT WORKING RIGHT. 
-    /**
-     * Position window accurately 
-     */
-    onDragEnd(input:HTMLElement):void{
-      const style = window.getComputedStyle(input);
-      console.log('onDragEnd style:', style);
-      const matrix1 = new WebKitCSSMatrix(style.transform); // the only data comming though is the transform change data
-      const x_axis = matrix1.m41;
-      const y_axis = matrix1.m42;
-
-      console.log('onDragEnd x_axis:', x_axis);
-      console.log('onDragEnd y_axis:', y_axis);
-
-      //ignore false drag
-      if( x_axis!== 0  && y_axis !== 0){
-        const ws = this._windowService.getWindowState(this.processId);
-
-
-        if(!ws) return;
-
-        this.windowLeftPx = x_axis;
-        this.windowTopPx = y_axis;
-        this.xAxisTmp = x_axis;
-        this.yAxisTmp = y_axis;
-
-        this.windowTransform = `translate(${x_axis}px , ${y_axis}px)`;    
-        this._windowService.addWindowState(ws);
-
-        this.applyPositionStyles();      // sets left/top + clears transform
-        this.clampToContainer();
-        this.syncStatePositionSize();
-        this.positionSilhouette();
-
-        this.updateWindowBoundsState(); // any window of the same app that is opened, will use the updatedBound as it's starting point
-      }
-      this._windowService.windowDragIsInActive.next();
     }
 
     onMouseDown(pId:number):void{
@@ -595,11 +556,13 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       const rect = this.getDesktopRect();
       if (!rect) return;
 
-      this.windowTopPx = Math.round((rect.height * input.topPx) / 100);
-      this.windowLeftPx = Math.round((rect.width * input.leftPx) / 100);
+      this.windowLeftPx = Math.round(input.leftPx);
+      this.windowTopPx  = Math.round(input.topPx);
 
+      this.clampToContainer();
       this.applyPositionStyles();
       this.syncStatePositionSize();
+      this.positionSilhouette();
     }
     
     generateCloseAnimationValues(x_axis:number, y_axis:number):void{
