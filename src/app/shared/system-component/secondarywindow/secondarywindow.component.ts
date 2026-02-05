@@ -450,7 +450,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
 
     // onPositionWindowById(input:string[]):void{
     //   const callingWindowId = input[1];
-    //   const windowElmnt = document.getElementById(`wincmpnt-${callingWindowId}`) as HTMLElement;
+    //   const windowElmnt = document.getElementById(`primWinCmpnt-${callingWindowId}`) as HTMLElement;
     //   const dialogWindowElmnt = document.getElementById(`secWinCmpnt-${this.uniqueId}`) as HTMLElement;
     //   //const windowState  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
 
@@ -485,7 +485,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
       const desktopEl = document.getElementById('vantaCntnr') as HTMLElement | null;
       if (!desktopEl) return;
 
-      const targetEl = document.getElementById(`wincmpnt-${callingWindowId}`) as HTMLElement | null;
+      const targetEl = document.getElementById(`primWinCmpnt-${callingWindowId}`) as HTMLElement | null;
       if (!targetEl) return;
 
       // Convert viewport coordinates -> desktop-relative coordinates

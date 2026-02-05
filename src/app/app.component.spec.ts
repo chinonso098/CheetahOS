@@ -2,7 +2,7 @@ import {TestBed} from '@angular/core/testing';
 import {AppComponent} from './app.component';
 import {TitleComponent } from './user-apps/title/title.component';
 import {DesktopComponent} from './system-apps/desktop/desktop.component';
-import {WindowComponent} from './shared/system-component/window/window.component'
+import {PrimaryWindowComponent} from './shared/system-component/window/window.component'
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -10,7 +10,7 @@ describe('AppComponent', () => {
       declarations: [
         AppComponent,
         DesktopComponent,
-        WindowComponent,
+        PrimaryWindowComponent,
         TitleComponent
       ],
     }).compileComponents();

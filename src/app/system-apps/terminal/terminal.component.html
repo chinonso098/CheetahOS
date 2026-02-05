@@ -1,4 +1,4 @@
-<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
+<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
     <div class="terminal-container" tabIndex="0" 
         (keydown)="onKeyDownOnWindow($event)" 
         (drop)="onDrop($event)" (click)="focusWindow($event)" #terminalCntnr>
@@ -67,4 +67,4 @@
             </div>
         </div>
     </div>
-</cos-window>
+</cos-primarywindow>

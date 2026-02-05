@@ -18,14 +18,14 @@
     params:{ winWidth: strWindowWidthPx, winHeight: strWindowHeightPx, winTransform: windowTransform, winZIndex:windowZIndex }
 }"
 
-#mainWindowContainer class="window-container  window-dd-box" 
+#primaryWindowContainer class="window-container  window-dd-box" 
    [ngStyle]="currentStyles" 
     tabindex="0" 
     cdkDrag
     [cdkDragBoundary]="'#vantaCntnr'"
     (mousedown)="onMouseDown(this.processId)"
     (cdkDragEnded)="onDragEnded($event)"
-    id="wincmpnt-{{uniqueId}}">
+    id="primWinCmpnt-{{uniqueId}}">
 
         <!-- (rzStop)="onRZStop($event)"  
         ngResizable [rzHandles]="'e,s,w,se,sw'" 
@@ -76,4 +76,4 @@
     </div>
 </div> 
 
-<div #glassPaneContainer></div>
+<div #primGlassPaneContainer></div>

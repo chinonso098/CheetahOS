@@ -1,4 +1,4 @@
-<cos-window [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
+<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
     <div class="settings-main__container" (contextmenu)="focusWindow($event)" (click)="focusWindow($event)">
 
         <ng-container [ngTemplateOutlet]="  DEFAULT_VIEW === HOME_VIEW ? homeView:
@@ -636,4 +636,4 @@
 
 
     </div>
-</cos-window>
+</cos-primarywindow>

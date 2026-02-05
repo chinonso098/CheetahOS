@@ -165,7 +165,7 @@
 
 <!-- File Transfer Dialog To be Added -->
 <ng-template #fileTransfer>
-    <cos-window 
+    <cos-primarywindow 
         [runningProcessID]="processId" 
         [processAppIcon]="fileTransferIcon" 
         [processAppName]="isInit? dialogTitle: progressUpdateText" 
@@ -237,7 +237,7 @@
                 </span>
             </div>
         </div>
-    </cos-window>
+    </cos-primarywindow>
 </ng-template>
 
 <ng-template #deleteWarning>
