@@ -452,7 +452,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     // onPositionWindowById(input:string[]):void{
     //   const callingWindowId = input[1];
     //   const windowElmnt = document.getElementById(`wincmpnt-${callingWindowId}`) as HTMLElement;
-    //   const dialogWindowElmnt = document.getElementById(`secwincmpnt-${this.uniqueId}`) as HTMLElement;
+    //   const dialogWindowElmnt = document.getElementById(`secWinCmpnt-${this.uniqueId}`) as HTMLElement;
     //   //const windowState  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
 
     //   if(!windowElmnt) return;
@@ -746,7 +746,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     setFocusOnDiv():void{
-      const winCmpntId =`secwincmpnt-${this.name}-${this.processId}`;
+      const winCmpntId =`secWinCmpnt-${this.name}-${this.processId}`;
       const winCmpnt = document.getElementById(winCmpntId) as HTMLDivElement;
       
       if(winCmpnt){

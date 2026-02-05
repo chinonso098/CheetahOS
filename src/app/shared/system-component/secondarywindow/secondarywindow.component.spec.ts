@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SecondaryWindowComponent } from './secondarywindow.component';
 
-describe('BasicwindowComponent', () => {
+describe('SecondaryWindowComponent', () => {
   let component: SecondaryWindowComponent;
   let fixture: ComponentFixture<SecondaryWindowComponent>;
 
