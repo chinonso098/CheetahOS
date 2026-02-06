@@ -2,7 +2,6 @@ import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChange
 import { CdkDragEnd } from '@angular/cdk/drag-drop';
 
 import { ComponentType } from 'src/app/system-files/system.types';
-
 import { MenuService } from '../../../system-service/menu.services';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ProcessHandlerService } from '../../../system-service/process.handler.service';
@@ -11,12 +10,12 @@ import { SystemNotificationService } from '../../../system-service/system.notifi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 
 import {Subscription } from 'rxjs';
-import { ClampedPosition, WindowPositionInfo, WindowState  } from '../windows.types';
+import { WindowPositionInfo, WindowState  } from '../windows.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowHelper } from '../window.helper';
 import { WindowStyleHelper } from '../window.style.helper';
-
+import { WindowConstants } from '../window.constants';
 
 @Component({
   selector: 'cos-secondarywindow',
@@ -59,15 +58,7 @@ import { WindowStyleHelper } from '../window.style.helper';
    private _positionWindowSub!:Subscription;
    private _positionWindowByIdSub!:Subscription;
 
-  readonly HIDDEN_Z_INDEX = 0;
-  readonly MIN_Z_INDEX = 1;
-  readonly MAX_Z_INDEX = 2;
-  readonly TMP_MAX_Z_INDEX = 3;
-  readonly WIN_TOP_PX = 40;
-  readonly WIN_LEFT_PX = 40;
-  readonly CASCADE_STEP_PX = 24;
-  readonly TASKBAR_HEIGHT_PX = 40;
-  readonly EDGE_PAD_PX = 8;
+
 
   windowHide = false;
   windowMaximize = false;
@@ -77,15 +68,12 @@ import { WindowStyleHelper } from '../window.style.helper';
   windowWidthPx = 0;
   windowHeightPx = 0;
 
-  windowZIndex = '0';
+  strWindowZIndex = '0';
   strWindowWidthPx = '0px';
   strWindowHeightPx = '0px';
 
-
   xAxisTmp = 0;
   yAxisTmp = 0;
-
-
   windowTransform = Constants.EMPTY_STRING;
 
   isDialogContent = false;
@@ -209,33 +197,23 @@ import { WindowStyleHelper } from '../window.style.helper';
       this._positionWindowByIdSub?.unsubscribe();
     }
     
-
     setBtnFocus(pId:number):void{
-        if(this.processId === pId){
-          this.closeBtnStyles = {
-            'background-color':'rgb(139,10,20)'
-          };
-        }
+      if(this.processId !== pId) return;
+      this.closeBtnStyles = { 'background-color':'rgb(139,10,20)' };
     }
 
     setHeaderInActive(pId:number):void{
-      if(this.processId === pId){
-        this.headerActiveStyles = {
-          'background-color':'hsla(0, 0%, 85%, 1)'
-        };
-      }
+      if(this.processId !== pId) return;
+      this.headerActiveStyles = {'background-color':'hsla(0, 0%, 85%, 1)'};
     }
 
     setHeaderActive(pId:number):void{
-      if(this.processId === pId){
-        this.headerActiveStyles = {
-          'background-color':'hsla(0, 0%, 100%, 1)'
-        };
-      }
+      if(this.processId !== pId) return; 
+      this.headerActiveStyles = {  'background-color':'hsla(0, 0%, 100%, 1)' };
     }
 
     storeWindowStateAfterViewInit():void{
-      const clamped = WindowHelper.computeClampedPosition(this.windowLeftPx, this.windowTopPx, this.windowWidthPx, this.windowHeightPx, this.TASKBAR_HEIGHT_PX );
+      const clamped = WindowHelper.computeClampedPosition(this.windowLeftPx, this.windowTopPx, this.windowWidthPx, this.windowHeightPx, WindowConstants.TASKBAR_HEIGHT_PX );
       if(!clamped){
         console.warn('Clamped in undefined');
         return;
@@ -252,7 +230,7 @@ import { WindowStyleHelper } from '../window.style.helper';
         height: this.windowHeightPx,
         leftPx: clamped.leftPx,
         topPx: clamped.topPx,
-        zIndex: this.MIN_Z_INDEX,   // placeholder, service will normalize
+        zIndex: WindowConstants.MIN_Z_INDEX,   // placeholder, service will normalize
         isVisible: true,
       };
 
@@ -263,7 +241,7 @@ import { WindowStyleHelper } from '../window.style.helper';
     }
 
     private clampToContainer():void{
-      const clampData = WindowHelper.clampToContainer(this.secondaryWindowContainer, this.windowLeftPx, this.windowTopPx, this.EDGE_PAD_PX, this.TASKBAR_HEIGHT_PX);
+      const clampData = WindowHelper.clampToContainer(this.secondaryWindowContainer, this.windowLeftPx, this.windowTopPx, WindowConstants.EDGE_PAD_PX, WindowConstants.TASKBAR_HEIGHT_PX);
       if(!clampData) return;
 
       this.windowLeftPx = clampData.leftPx;
@@ -277,15 +255,16 @@ import { WindowStyleHelper } from '../window.style.helper';
     }
 
     private applyPositionStyles(): void {
-      const zIndex = this.windowHide ? this.HIDDEN_Z_INDEX : this.windowZIndex;
+      const zIndex = this.windowHide ? WindowConstants.HIDDEN_Z_INDEX : this.strWindowZIndex;
       const opacity = this.windowHide ? 0 : 1;
+
       this.currentWinStyles = WindowStyleHelper.applyStyle(this.currentWinStyles, this.windowLeftPx,
          this.windowTopPx, Number(zIndex), opacity);
     }
 
     private syncStatePositionSize(): void {
       WindowHelper.syncStatePositionSize(this._windowService, this.processId, this.windowLeftPx,
-        this.windowTopPx, this.windowWidthPx, this.windowHeightPx, this.windowZIndex);
+        this.windowTopPx, this.windowWidthPx, this.windowHeightPx, this.strWindowZIndex);
     }
 
     private applySizeStyles(): void {
@@ -305,11 +284,8 @@ import { WindowStyleHelper } from '../window.style.helper';
 
     setSilhouetteState():void{
       WindowStyleHelper.updateState({
-        renderer: this.renderer,
-        glassPaneContainer: this.secGlassPaneContainer,
-        uniqueGlassPaneId: this.uniqueGlassPaneId,
-        windowLeftPx: this.windowLeftPx,
-        windowTopPx: this.windowTopPx,
+        renderer: this.renderer, glassPaneContainer: this.secGlassPaneContainer, uniqueGlassPaneId: this.uniqueGlassPaneId,
+        windowLeftPx: this.windowLeftPx, windowTopPx: this.windowTopPx,
       });
     }
 
@@ -358,7 +334,6 @@ import { WindowStyleHelper } from '../window.style.helper';
     }
 
     onDragEnded(event: CdkDragEnd): void {
-
       // CDK gives a clean delta since drag started
       const delta = event.distance;
 
@@ -372,7 +347,6 @@ import { WindowStyleHelper } from '../window.style.helper';
       this.syncStatePositionSize();
       this.setSilhouetteState();
       WindowStyleHelper.positionSilhouette();
-
 
       // Important: reset the drag transform so we don't accumulate drift
       event.source.reset();
@@ -396,7 +370,6 @@ import { WindowStyleHelper } from '../window.style.helper';
     }
 
     onPositionWindowById(input:string[]):void{
-
       const callingWindowId = input?.[1];
       if (!callingWindowId) return;
 
@@ -407,21 +380,18 @@ import { WindowStyleHelper } from '../window.style.helper';
       if(!windowElmnt || !dialogWindowElmnt) return;
 
       const winRect = windowElmnt.getBoundingClientRect();
-
       this.windowTopPx = winRect.y + (winRect.height /2);
       this.windowLeftPx = winRect.x + (winRect.width / 2);
-      this.windowTransform = 'translate(0, 0)';
+      //this.windowTransform = 'translate(0, 0)';
 
       /**
        * in testing, using currentWinStyles was slower, but a minute yet noticeable diff. hence it is not used
        * Also, This slight delay is added due to timinig issue
        */
-      setTimeout(() => {
-        // dialogWindowElmnt.style.zIndex = '2';
-        dialogWindowElmnt.style.left = `${this.windowLeftPx}px`;
-        dialogWindowElmnt.style.top = `${this.windowTopPx}px`;
-        dialogWindowElmnt.style.transform = this.windowTransform;
-      }, 0);
+      // dialogWindowElmnt.style.zIndex = '2';
+      dialogWindowElmnt.style.left = `${this.windowLeftPx}px`;
+      dialogWindowElmnt.style.top = `${this.windowTopPx}px`;
+      //dialogWindowElmnt.style.transform = this.windowTransform;
     }
 
 
@@ -434,12 +404,12 @@ import { WindowStyleHelper } from '../window.style.helper';
 
       if(ws.isVisible && this.windowHide && (ws.pId === this.processId)){
         ws.isVisible = false;
-        ws.zIndex = this.HIDDEN_Z_INDEX;
+        ws.zIndex = WindowConstants.HIDDEN_Z_INDEX;
         this._windowService.addWindowState(ws);
         this._windowService.addProcessIDToHiddenOrVisibleWindows(this.processId);
 
         this.setHeaderInActive(ws.pId);
-        this.applyOpacityZ(this.HIDDEN_Z_INDEX, 1)
+        this.applyOpacityZ(WindowConstants.HIDDEN_Z_INDEX, 1)
       }
       else if(!ws.isVisible && !this.windowHide && (ws.pId === this.processId)){
         const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
@@ -454,7 +424,7 @@ import { WindowStyleHelper } from '../window.style.helper';
             this.setFocsuOnThisWindow(ws.pId);
             this._windowService.currentProcessInFocusNotify.next(ws.pId);
           }else{
-            this.setWindowToPriorHiddenState(ws, this.MIN_Z_INDEX);
+            this.setWindowToPriorHiddenState(ws, WindowConstants.MIN_Z_INDEX);
           }
         }
       }
@@ -465,7 +435,8 @@ import { WindowStyleHelper } from '../window.style.helper';
       this._menuService.updateTaskBarContextMenu.next();
     }
 
-    onCloseBtnClick():void{
+    onCloseBtnClick(evt:MouseEvent):void{
+      evt.stopPropagation();
       this.closeWindow();
     }
 
@@ -541,7 +512,7 @@ import { WindowStyleHelper } from '../window.style.helper';
 
       if(ws.isVisible){
         this.setHeaderInActive(ws.pId);
-        this.updateWindowZIndex(ws, this.MIN_Z_INDEX);
+        this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
       }
     }
 
@@ -553,15 +524,11 @@ import { WindowStyleHelper } from '../window.style.helper';
         const ws = processWithWindows[i];          
         if(ws && ws.isVisible){
           if(ws.pId !== pid_with_highest_z_index ){
-
             this.setHeaderInActive(ws.pId);
-            this.updateWindowZIndex(ws, this.MIN_Z_INDEX);
-
+            this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
           }else{
-
             this.setHeaderActive(ws.pId);
-            this.updateWindowZIndex(ws, this.MAX_Z_INDEX);
-
+            this.updateWindowZIndex(ws, WindowConstants.MAX_Z_INDEX);
           }
           this.hideSilhouette(ws.pId);
         }
@@ -580,10 +547,10 @@ import { WindowStyleHelper } from '../window.style.helper';
 
       if(ws.isVisible){
         this.showSilhouette(ws.pId);
-        this.updateWindowZIndex(ws, this.HIDDEN_Z_INDEX);
+        this.updateWindowZIndex(ws, WindowConstants.HIDDEN_Z_INDEX);
       }
       else if(!ws.isVisible){
-        this.setWindowToPriorHiddenState(ws, this.HIDDEN_Z_INDEX);
+        this.setWindowToPriorHiddenState(ws, WindowConstants.HIDDEN_Z_INDEX);
       }
     }
 
@@ -596,13 +563,13 @@ import { WindowStyleHelper } from '../window.style.helper';
       if(ws.isVisible){
         if(ws.pId !==  pid_with_highest_z_index){
           this.setHeaderInActive(ws.pId);
-          this.updateWindowZIndex(ws, this.MIN_Z_INDEX);
+          this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
         }else{
           this.setHeaderActive(ws.pId);
-          this.updateWindowZIndex(ws, this.MAX_Z_INDEX);
+          this.updateWindowZIndex(ws, WindowConstants.MAX_Z_INDEX);
         }
       } else if(!ws.isVisible){
-        this.setWindowToPriorHiddenState(ws, this.HIDDEN_Z_INDEX);
+        this.setWindowToPriorHiddenState(ws, WindowConstants.HIDDEN_Z_INDEX);
       }
     }
 
@@ -633,18 +600,18 @@ import { WindowStyleHelper } from '../window.style.helper';
       const ws = this._windowService.getWindowState(pId);
       const winCmpntId =`secWinCmpnt-${this.name}-${this.processId}`;
 
-      if(!ws || (ws.pId !== pId) ) return;
+      if(!ws || ws.pId !== pId) return;
 
-      if(ws.zIndex < this.MAX_Z_INDEX){
-        ws.zIndex = this.MAX_Z_INDEX;
+      if(ws.zIndex < WindowConstants.MAX_Z_INDEX){
+        ws.zIndex = WindowConstants.MAX_Z_INDEX;
         this._windowService.addWindowState(ws);
         this._windowService.addProcessWindowIDWithHighestZIndex(pId);
 
-        this.applyOpacityZ(this.MAX_Z_INDEX, 1);
+        this.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);
         this.setHeaderActive(pId);
         WindowHelper.setFocusOnDiv(winCmpntId);
       }
-      else if(ws.zIndex === this.MAX_Z_INDEX){
+      else if(ws.zIndex === WindowConstants.MAX_Z_INDEX){
         this._windowService.addProcessWindowIDWithHighestZIndex(pId);
         this.setHeaderActive(pId);
         WindowHelper.setFocusOnDiv(winCmpntId);
@@ -656,14 +623,14 @@ import { WindowStyleHelper } from '../window.style.helper';
       const ws = this._windowService.getWindowState(pId);
       if (!ws || ws.pId !== pId) return;
 
-      const z = this.TMP_MAX_Z_INDEX;
+      const z = WindowConstants.TMP_MAX_Z_INDEX;
       this.applyOpacityZ(z, 1);
     }
 
     lockScreenIsActive(): void {
       const ws = this._windowService.getWindowState(this.processId);
       if (ws && ws.isVisible) {
-        this.applyOpacityZ(this.HIDDEN_Z_INDEX, 0);
+        this.applyOpacityZ(WindowConstants.HIDDEN_Z_INDEX, 0);
       }
     }
 
@@ -672,7 +639,7 @@ import { WindowStyleHelper } from '../window.style.helper';
       if (!ws || !ws.isVisible) return;
 
       const topPid = this._windowService.getProcessWindowIDWithHighestZIndex();
-      const z = ws.pId === topPid ? this.MAX_Z_INDEX : this.MIN_Z_INDEX;
+      const z = ws.pId === topPid ? WindowConstants.MAX_Z_INDEX : WindowConstants.MIN_Z_INDEX;
 
       this.applyOpacityZ(z, 1);
     }

@@ -1,11 +1,10 @@
 import { ElementRef, Renderer2 } from "@angular/core";
 import { Constants } from "src/app/system-files/constants";
+import { WindowConstants } from "./window.constants";
 
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace WindowStyleHelper {
-      const MIN_Z_INDEX = 1;
-      const HIDDEN_Z_INDEX = 0;
 
     type State = {
       glassPaneContainer: ElementRef<HTMLElement> | null;
@@ -68,7 +67,7 @@ export namespace WindowStyleHelper {
       glassPane.style.height =  `${windowHeightPx}px`;
       glassPane.style.width =  `${windowWidthPx}px`;
 
-      glassPane.style.zIndex =  String(HIDDEN_Z_INDEX);
+      glassPane.style.zIndex =  String(WindowConstants.HIDDEN_Z_INDEX);
       glassPane.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
       glassPane.style.backdropFilter = 'blur(2px)';
       glassPane.style.display =  'none';
@@ -88,7 +87,7 @@ export namespace WindowStyleHelper {
       if (!glassPane)return;
 
       glassPane.style.display = 'block';
-      glassPane.style.zIndex = String(MIN_Z_INDEX);
+      glassPane.style.zIndex = String(WindowConstants.MIN_Z_INDEX);
       WindowStyleHelper.positionSilhouette();
     }
 
@@ -115,7 +114,7 @@ export namespace WindowStyleHelper {
       if(!glassPane) return;
 
       glassPane.style.display = 'none';
-      glassPane.style.zIndex = String(HIDDEN_Z_INDEX);
+      glassPane.style.zIndex = String(WindowConstants.HIDDEN_Z_INDEX);
     }
 
     export const hideGlassPaneContainer =():void=> {

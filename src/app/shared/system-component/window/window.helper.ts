@@ -1,7 +1,6 @@
 import { ElementRef } from "@angular/core";
 import { ClampedPosition, WindowPositionInfo } from "./windows.types";
 import { WindowService } from "../../system-service/window.service";
-import { S } from "@angular/cdk/scrolling-module.d-ud2XrbF8";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace WindowHelper {
@@ -31,7 +30,9 @@ export namespace WindowHelper {
       };
     }
 
-    export const clampToContainer = (secondaryWindowContainer:ElementRef, windowLeftPx:number, windowTopPx:number, edgePadPx:number,taskBarHeightPx:number): WindowPositionInfo | undefined => {
+    export const clampToContainer = (secondaryWindowContainer:ElementRef, windowLeftPx:number, windowTopPx:number, 
+      edgePadPx:number,taskBarHeightPx:number): WindowPositionInfo | undefined => {
+        
       const desktop = WindowHelper.getDesktopRect();
       const winEl = secondaryWindowContainer?.nativeElement as HTMLElement | undefined;
       if (!desktop || !winEl) return;
