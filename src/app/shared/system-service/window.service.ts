@@ -8,8 +8,8 @@ import { ProcessType } from "src/app/system-files/system.types";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { BaseService } from "./base.service.interface";
-import { WindowState, WindowBoundsState } from "../system-component/window/windows.types";
-import { WindowPositionInfo, WindowResizeInfo } from "src/app/system-files/common.interfaces";
+import { WindowState, WindowBoundsState, WindowPositionInfo } from "../system-component/window/windows.types";
+import { WindowResizeInfo } from "src/app/system-files/common.interfaces";
 
 @Injectable({
     providedIn: 'root'

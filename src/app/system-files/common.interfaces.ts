@@ -65,12 +65,7 @@ export interface WindowResizeInfo{
     height:number;
 }
 
-export interface WindowPositionInfo{
-    pId:number;
-    topPx:number;
-    leftPx:number;
-    transform:string;
-}
+
 
 export interface InformationUpdate{
     pId:number,

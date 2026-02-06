@@ -20,8 +20,9 @@ import { basename} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Subscription } from 'rxjs';
-import { InformationUpdate, WindowPositionInfo, WindowResizeInfo } from 'src/app/system-files/common.interfaces';
+import { InformationUpdate, WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 import { FileInfo } from 'src/app/system-files/file.info';
+import { WindowPositionInfo } from '../window/windows.types';
 
 @Component({
   selector: 'cos-dialog',
@@ -486,7 +487,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       || this.notificationOption === UserNotificationType.DeleteWarning
       || this.notificationOption === UserNotificationType.Error){
         
-      const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:25, leftPx:35, transform:'translate(0px, 0px)'};
+      const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:25, leftPx:35};
       this._windowService.positionProcessWindowNotify.next(positionInfo);
     }
 

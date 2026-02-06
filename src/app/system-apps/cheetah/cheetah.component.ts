@@ -9,7 +9,7 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
+import { WindowPositionInfo } from 'src/app/shared/system-component/window/windows.types';
 
 @Component({
   selector:'cos-cheetah',
@@ -152,7 +152,7 @@ Other trademarks and logos are property of their respective owners
   }
 
     changeDefaultOpeningPostions():void{
-      const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:25, leftPx:35, transform:'translate(0px, 0px)'};
+      const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:25, leftPx:35};
       this._windowService.positionProcessWindowNotify.next(positionInfo);
     }
 

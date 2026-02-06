@@ -1,14 +1,10 @@
 import {trigger, transition, state, animate, style, keyframes} from '@angular/animations';
     
-//const HIDDEN_Z_INDEX = 0;
-//const MIN_Z_INDEX = 1;
-const MAX_Z_INDEX = 2;
-
   // Routable animations
     export const openCloseAnimation = trigger('openClose', [
         state('open', style({ 
             opacity: 1,
-            zIndex: MAX_Z_INDEX,
+            zIndex: 2,
         })),
         state('close', style({ 
             opacity: 0

@@ -11,10 +11,10 @@ import { SystemNotificationService } from '../../../system-service/system.notifi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 
 import {Subscription } from 'rxjs';
-import { ClampedPosition, WindowState  } from '../windows.types';
+import { ClampedPosition, WindowPositionInfo, WindowState  } from '../windows.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
-import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
+import { WindowHelper } from '../window.helper';
 
 
 @Component({
@@ -234,7 +234,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
     }
 
     storeWindowStateAfterViewInit():void{
-      const clamped = this.computeClampedPosition(this.windowLeftPx, this.windowTopPx, this.windowWidthPx, this.windowHeightPx);
+      const clamped = WindowHelper.computeClampedPosition(this.windowLeftPx, this.windowTopPx, this.windowWidthPx, this.windowHeightPx, this.TASKBAR_HEIGHT_PX );
       if(!clamped){
         console.warn('Clamped in undefined');
         return;
@@ -261,33 +261,8 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
 
     }
 
- private getDesktopRect(): DOMRect | null {
-      const el = document.getElementById('vantaCntnr') as HTMLElement | null;
-      return el ? el.getBoundingClientRect() : null;
-    }
-
-    private clamp(n: number, min: number, max: number): number {
-      return Math.max(min, Math.min(max, n));
-    }
-
-    private computeClampedPosition(leftPx: number, topPx: number, width: number, height: number): ClampedPosition | undefined{
-      const desktop = this.getDesktopRect();
-
-      if(!desktop){
-        console.warn('Computing clamped position failed, desktop is undefined');
-         return;
-      }
-      const maxLeft = Math.max(0, desktop.width - width);
-      const maxTop  = Math.max(0, desktop.height - this.TASKBAR_HEIGHT_PX - height);
-
-      return {
-        leftPx: this.clamp(leftPx, 0, maxLeft),
-        topPx: this.clamp(topPx, 0, maxTop),
-      };
-    }
-
     private clampToContainer(): void {
-      const desktop = this.getDesktopRect();
+      const desktop = WindowHelper.getDesktopRect();
       const winEl = this.secondaryWindowContainer?.nativeElement as HTMLElement | undefined;
       if (!desktop || !winEl) return;
 
@@ -436,7 +411,7 @@ import { WindowPositionInfo } from 'src/app/system-files/common.interfaces';
 
     onPositionWindow(input:WindowPositionInfo):void{
       // If you still receive % from elsewhere, convert it to px here.
-      const rect = this.getDesktopRect();
+      const rect = WindowHelper.getDesktopRect();
       if (!rect) return;
 
       this.windowLeftPx = Math.round(input.leftPx);
