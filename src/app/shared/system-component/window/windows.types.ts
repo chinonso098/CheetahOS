@@ -28,3 +28,9 @@ export interface WindowPositionInfo {
   leftPx: number;
   topPx: number;
 }
+
+export interface WindowResizeInfo{
+    pId:number;
+    width:number;
+    height:number;
+}

@@ -20,9 +20,9 @@ import { basename} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Subscription } from 'rxjs';
-import { InformationUpdate, WindowResizeInfo } from 'src/app/system-files/common.interfaces';
+import { InformationUpdate } from 'src/app/system-files/common.interfaces';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { WindowPositionInfo } from '../window/windows.types';
+import { WindowPositionInfo, WindowResizeInfo } from '../window/windows.types';
 
 @Component({
   selector: 'cos-dialog',

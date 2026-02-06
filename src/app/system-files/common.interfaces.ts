@@ -59,14 +59,6 @@ export interface DragEventInfo{
     isDragActive:boolean;
 }
 
-export interface WindowResizeInfo{
-    pId:number;
-    width:number;
-    height:number;
-}
-
-
-
 export interface InformationUpdate{
     pId:number,
     appName:string,

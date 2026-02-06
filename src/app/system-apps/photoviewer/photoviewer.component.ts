@@ -16,8 +16,8 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 
 @Component({
   selector: 'cos-photoviewer',

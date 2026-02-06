@@ -8,7 +8,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 
 import {Subscription } from 'rxjs';
-import { ClampedPosition, WindowBoundsState, WindowPositionInfo, WindowState } from '../windows.types';
+import { ClampedPosition, WindowBoundsState, WindowPositionInfo, WindowResizeInfo, WindowState } from '../windows.types';
 import {openCloseAnimation, hideShowAnimation, maximizeRestoreAnimation} from 'src/app/shared/system-component/window/window.animations';
 import { AnimationEvent } from '@angular/animations';
 
@@ -16,7 +16,6 @@ import { Process } from 'src/app/system-files/process';
 import { SystemNotificationService } from '../../../system-service/system.notification.service';
 import { MenuService } from '../../../system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
-import { WindowResizeInfo } from 'src/app/system-files/common.interfaces';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 
  @Component({
