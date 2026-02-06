@@ -13,6 +13,8 @@
 
   /* IMPORTANT: all animations happen here */
   will-change: transform, opacity;
+  transform-origin: bottom center;
+  /* transform-origin: top center; */
   
 }
 
