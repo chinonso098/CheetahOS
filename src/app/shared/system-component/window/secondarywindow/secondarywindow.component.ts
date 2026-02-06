@@ -277,7 +277,6 @@ import { WindowStyleHelper } from '../window.style.helper';
     }
 
     private applyPositionStyles(): void {
-
       const zIndex = this.windowHide ? this.HIDDEN_Z_INDEX : this.windowZIndex;
       const opacity = this.windowHide ? 0 : 1;
       this.currentWinStyles = WindowStyleHelper.applyStyle(this.currentWinStyles, this.windowLeftPx,
@@ -285,7 +284,6 @@ import { WindowStyleHelper } from '../window.style.helper';
     }
 
     private syncStatePositionSize(): void {
-
       WindowHelper.syncStatePositionSize(this._windowService, this.processId, this.windowLeftPx,
         this.windowTopPx, this.windowWidthPx, this.windowHeightPx, this.windowZIndex);
     }
@@ -295,56 +293,48 @@ import { WindowStyleHelper } from '../window.style.helper';
       this.strWindowWidthPx =  `${this.windowWidthPx}px`;
     }
 
+    createSilhouette():void{
+      this.uniqueGlassPaneId = `secGP-${this.uniqueId}`;
+      
+      // //Every window has a hidden glass pane that is revealed when the window is hidden
+      this.secGlassPaneContainer = WindowStyleHelper.createSilhouette(this.uniqueGlassPaneId, this.renderer, this.secGlassPaneContainer,
+         this.windowHeightPx, this.windowWidthPx);
+
+      this.setSilhouetteState();
+    }
+
+    setSilhouetteState():void{
+      WindowStyleHelper.updateState({
+        renderer: this.renderer,
+        glassPaneContainer: this.secGlassPaneContainer,
+        uniqueGlassPaneId: this.uniqueGlassPaneId,
+        windowLeftPx: this.windowLeftPx,
+        windowTopPx: this.windowTopPx,
+      });
+    }
+
     showSilhouette(pId: number): void {
       if(this.processId !== pId) return;
 
-      this.showGlassPaneContainer();
-
-      const glassPane = document.getElementById(this.uniqueGlassPaneId) as HTMLDivElement;
-      if (!glassPane)return;
-
-      glassPane.style.display = 'block';
-      glassPane.style.zIndex = String(this.MIN_Z_INDEX);
-      this.positionSilhouette();
-    }
-
-    private positionSilhouette(): void {
-      const glassPane = document.getElementById(this.uniqueGlassPaneId) as HTMLDivElement;
-      if (!glassPane) return;
-
-      glassPane.style.position = 'absolute';
-      glassPane.style.left = `${this.windowLeftPx}px`;
-      glassPane.style.top = `${this.windowTopPx}px`;
-      glassPane.style.transform = 'translate(0px, 0px)';
+      this.setSilhouetteState();
+      WindowStyleHelper.showSilhouette();
     }
 
     showGlassPaneContainer() {
-      this.renderer.setStyle(this.secGlassPaneContainer.nativeElement, 'display', 'block');
+      this.setSilhouetteState();
+      WindowStyleHelper.showGlassPaneContainer();
     }
 
     hideSilhouette(pId:number):void{
       if(this.processId !== pId) return;
 
-      this.hideGlassPaneContainer();
-
-      const glassPane= document.getElementById(this.uniqueGlassPaneId) as HTMLDivElement;
-      if(!glassPane) return;
-
-      glassPane.style.display = 'none';
-      glassPane.style.zIndex = String(this.HIDDEN_Z_INDEX);
+      this.setSilhouetteState();
+      WindowStyleHelper.hideSilhouette();
     }
 
     hideGlassPaneContainer() {
-      this.renderer.setStyle(this.secGlassPaneContainer.nativeElement, 'display', 'none');
-    }
-
-    removeSilhouette(pId:number):void{
-      if(this.processId !== pId) return;
-
-      const glassPane= document.getElementById(this.uniqueGlassPaneId) as HTMLDivElement;
-      if (!glassPane) return;
-
-      glassPane.remove();
+      this.setSilhouetteState();
+      WindowStyleHelper.hideGlassPaneContainer();
     }
 
     updateWindowZIndex(window: WindowState, zIndex:number):void{
@@ -380,7 +370,8 @@ import { WindowStyleHelper } from '../window.style.helper';
       this.clampToContainer();
       this.applyPositionStyles();
       this.syncStatePositionSize();
-      this.positionSilhouette();
+      this.setSilhouetteState();
+      WindowStyleHelper.positionSilhouette();
 
 
       // Important: reset the drag transform so we don't accumulate drift
@@ -399,7 +390,9 @@ import { WindowStyleHelper } from '../window.style.helper';
       this.clampToContainer();
       this.applyPositionStyles();
       this.syncStatePositionSize();
-      this.positionSilhouette();
+
+      this.setSilhouetteState();
+      WindowStyleHelper.positionSilhouette();
     }
 
     // onPositionWindowById(input:string[]):void{
@@ -458,7 +451,9 @@ import { WindowStyleHelper } from '../window.style.helper';
       this.clampToContainer();
       this.applyPositionStyles();
       this.syncStatePositionSize();
-      this.positionSilhouette();
+
+      this.setSilhouetteState();
+      WindowStyleHelper.positionSilhouette();
 
       // Optional: bring to focus if that's the desired behavior
       this.setFocsuOnThisWindow(this.processId);
@@ -506,34 +501,15 @@ import { WindowStyleHelper } from '../window.style.helper';
       this._menuService.updateTaskBarContextMenu.next();
     }
 
-     createSilhouette():void{
-      this.uniqueGlassPaneId = `secGP-${this.uniqueId}`;
-      //Every window has a hidden glass pane that is revealed when the window is hidden
-      const glassPane = this.renderer.createElement('div');
-
-      // Add attributes
-      glassPane.setAttribute('id', this.uniqueGlassPaneId);
-
-      glassPane.style.transform =  'translate(0, 0)';
-      glassPane.style.height =  `${this.windowHeightPx}px`;
-      glassPane.style.width =  `${this.windowWidthPx}px`;
-
-      glassPane.style.zIndex =  String(this.HIDDEN_Z_INDEX);
-      glassPane.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
-      glassPane.style.backdropFilter = 'blur(2px)';
-      glassPane.style.display =  'none';
-
-      // Append to the body
-      this.renderer.appendChild(this.secGlassPaneContainer.nativeElement, glassPane);
-    }
-
     onCloseBtnClick():void{
       this.closeWindow();
     }
 
     closeWindow():void{
       this._windowService.removeWindowState(this.processId);
-      this.removeSilhouette(this.processId);
+
+      this.setSilhouetteState();
+      WindowStyleHelper.removeSilhouette();
 
       if(!this.isDialogContent){ // if it is visible, then the window is not a dialog box
         const processToClose = this._runningProcessService.getProcess(this.processId);
