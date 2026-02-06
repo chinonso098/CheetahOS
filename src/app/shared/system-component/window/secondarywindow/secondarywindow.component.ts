@@ -85,8 +85,7 @@ import { WindowStyleHelper } from '../window.style.helper';
   xAxisTmp = 0;
   yAxisTmp = 0;
 
-  windowTop = 0;
-  windowLeft = 0;
+
   windowTransform = Constants.EMPTY_STRING;
 
   isDialogContent = false;
@@ -209,6 +208,7 @@ import { WindowStyleHelper } from '../window.style.helper';
       this._positionWindowSub?.unsubscribe();
       this._positionWindowByIdSub?.unsubscribe();
     }
+    
 
     setBtnFocus(pId:number):void{
         if(this.processId === pId){
@@ -295,7 +295,7 @@ import { WindowStyleHelper } from '../window.style.helper';
 
     createSilhouette():void{
       this.uniqueGlassPaneId = `secGP-${this.uniqueId}`;
-      
+
       // //Every window has a hidden glass pane that is revealed when the window is hidden
       this.secGlassPaneContainer = WindowStyleHelper.createSilhouette(this.uniqueGlassPaneId, this.renderer, this.secGlassPaneContainer,
          this.windowHeightPx, this.windowWidthPx);
@@ -395,69 +395,33 @@ import { WindowStyleHelper } from '../window.style.helper';
       WindowStyleHelper.positionSilhouette();
     }
 
-    // onPositionWindowById(input:string[]):void{
-    //   const callingWindowId = input[1];
-    //   const windowElmnt = document.getElementById(`primWinCmpnt-${callingWindowId}`) as HTMLElement;
-    //   const dialogWindowElmnt = document.getElementById(`secWinCmpnt-${this.uniqueId}`) as HTMLElement;
-    //   //const windowState  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
+    onPositionWindowById(input:string[]):void{
 
-    //   if(!windowElmnt) return;
-    //   const winRect = windowElmnt.getBoundingClientRect();
-
-    //   if(!dialogWindowElmnt) return;
-
-    //   this.windowTop = winRect.y + (winRect.height /2);
-    //   this.windowLeft = winRect.x + (winRect.width / 2);
-    //   this.windowTransform = 'translate(-50%, -50%)';
-
-    //   /**
-    //    * in testing, using currentWinStyles was slower, but a minute yet noticeable diff. hence it is not used
-    //    * Also, This slight delay is added due to timinig issue
-    //    */
-    //   setTimeout(() => {
-    //     // dialogWindowElmnt.style.zIndex = '2';
-    //     dialogWindowElmnt.style.left = `${this.windowLeft}px`;
-    //     dialogWindowElmnt.style.top = `${this.windowTop}px`;
-    //     dialogWindowElmnt.style.transform = this.windowTransform;
-    //   }, 0);
-    // }
-
-
-
-    onPositionWindowById(input: string[]): void {
-      // Expected input shape: [something, callingWindowId]
       const callingWindowId = input?.[1];
       if (!callingWindowId) return;
 
-      const desktopEl = document.getElementById('vantaCntnr') as HTMLElement | null;
-      if (!desktopEl) return;
+      const windowElmnt = document.getElementById(`primWinCmpnt-${callingWindowId}`) as HTMLElement;
+      const dialogWindowElmnt = document.getElementById(`secWinCmpnt-${this.uniqueId}`) as HTMLElement;
+      //const windowState  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
 
-      const targetEl = document.getElementById(`primWinCmpnt-${callingWindowId}`) as HTMLElement | null;
-      if (!targetEl) return;
+      if(!windowElmnt || !dialogWindowElmnt) return;
 
-      // Convert viewport coordinates -> desktop-relative coordinates
-      const desktopRect = desktopEl.getBoundingClientRect();
-      const targetRect = targetEl.getBoundingClientRect();
+      const winRect = windowElmnt.getBoundingClientRect();
 
-      const targetCenterLeft = (targetRect.left - desktopRect.left) + (targetRect.width / 2);
-      const targetCenterTop  = (targetRect.top  - desktopRect.top)  + (targetRect.height / 2);
+      this.windowTopPx = winRect.y + (winRect.height /2);
+      this.windowLeftPx = winRect.x + (winRect.width / 2);
+      this.windowTransform = 'translate(0, 0)';
 
-      // Position THIS window so its center aligns with target center
-      // (left/top represent the window's top-left corner)
-      this.windowLeftPx = Math.round(targetCenterLeft - (this.windowWidthPx / 2));
-      this.windowTopPx  = Math.round(targetCenterTop  - (this.windowHeightPx / 2));
-
-      // Clamp + commit to styles/state
-      this.clampToContainer();
-      this.applyPositionStyles();
-      this.syncStatePositionSize();
-
-      this.setSilhouetteState();
-      WindowStyleHelper.positionSilhouette();
-
-      // Optional: bring to focus if that's the desired behavior
-      this.setFocsuOnThisWindow(this.processId);
-      this._windowService.currentProcessInFocusNotify.next(this.processId);
+      /**
+       * in testing, using currentWinStyles was slower, but a minute yet noticeable diff. hence it is not used
+       * Also, This slight delay is added due to timinig issue
+       */
+      setTimeout(() => {
+        // dialogWindowElmnt.style.zIndex = '2';
+        dialogWindowElmnt.style.left = `${this.windowLeftPx}px`;
+        dialogWindowElmnt.style.top = `${this.windowTopPx}px`;
+        dialogWindowElmnt.style.transform = this.windowTransform;
+      }, 0);
     }
 
 
@@ -667,31 +631,26 @@ import { WindowStyleHelper } from '../window.style.helper';
 
     setWindowToFocusById(pId:number):void{
       const ws = this._windowService.getWindowState(pId);
-      if(!ws) return;
+      const winCmpntId =`secWinCmpnt-${this.name}-${this.processId}`;
 
-      if((ws.pId === pId) && (ws.zIndex < this.MAX_Z_INDEX)){
+      if(!ws || (ws.pId !== pId) ) return;
+
+      if(ws.zIndex < this.MAX_Z_INDEX){
         ws.zIndex = this.MAX_Z_INDEX;
         this._windowService.addWindowState(ws);
         this._windowService.addProcessWindowIDWithHighestZIndex(pId);
 
         this.applyOpacityZ(this.MAX_Z_INDEX, 1);
         this.setHeaderActive(pId);
-        this.setFocusOnDiv();
-      }else if((ws.pId === pId) && (ws.zIndex === this.MAX_Z_INDEX)){
+        WindowHelper.setFocusOnDiv(winCmpntId);
+      }
+      else if(ws.zIndex === this.MAX_Z_INDEX){
         this._windowService.addProcessWindowIDWithHighestZIndex(pId);
         this.setHeaderActive(pId);
-        this.setFocusOnDiv();
+        WindowHelper.setFocusOnDiv(winCmpntId);
       } 
     }
 
-    setFocusOnDiv():void{
-      const winCmpntId =`secWinCmpnt-${this.name}-${this.processId}`;
-      const winCmpnt = document.getElementById(winCmpntId) as HTMLDivElement;
-      
-      if(winCmpnt){
-        winCmpnt.focus();
-      }
-    }
 
     showOnlyWindowById(pId: number): void {
       const ws = this._windowService.getWindowState(pId);

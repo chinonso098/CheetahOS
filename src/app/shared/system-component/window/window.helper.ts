@@ -1,6 +1,7 @@
 import { ElementRef } from "@angular/core";
 import { ClampedPosition, WindowPositionInfo } from "./windows.types";
 import { WindowService } from "../../system-service/window.service";
+import { S } from "@angular/cdk/scrolling-module.d-ud2XrbF8";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace WindowHelper {
@@ -59,5 +60,13 @@ export namespace WindowHelper {
       ws.zIndex = Number(windowZIndex);
 
       windowService.addWindowState(ws);
+    }
+
+    export const  setFocusOnDiv =(winCmpntId:string):void =>{
+      const winCmpnt = document.getElementById(winCmpntId) as HTMLDivElement;
+
+      if(!winCmpnt) return;
+      
+      winCmpnt.focus();
     }
 }
