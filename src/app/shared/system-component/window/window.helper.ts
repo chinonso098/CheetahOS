@@ -1,6 +1,8 @@
 import { ElementRef } from "@angular/core";
 import { ClampedPosition, WindowPositionInfo } from "./windows.types";
+import { WindowService } from "../../system-service/window.service";
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace WindowHelper {
 
     export const  getDesktopRect =():DOMRect | undefined => {
@@ -39,9 +41,23 @@ export namespace WindowHelper {
       const maxLeft = Math.max(pad, desktop.width - winRect.width - pad);
       const maxTop  = Math.max(pad, desktop.height - taskBarHeightPx - winRect.height - pad);
 
-      const windowLeftPx1 = Math.min(Math.max(windowLeftPx, pad), maxLeft);
-      const windowTopPx1  = Math.min(Math.max(windowTopPx, pad), maxTop);
+      const winLeftPx = Math.min(Math.max(windowLeftPx, pad), maxLeft);
+      const winTopPx  = Math.min(Math.max(windowTopPx, pad), maxTop);
 
-      return {pId:0, leftPx:windowLeftPx1, topPx:windowTopPx1};
+      return {pId:0, leftPx:winLeftPx, topPx:winTopPx};
+    }
+
+    export const syncStatePositionSize =(windowService:WindowService, pId:number, windowLeftPx:number, 
+        windowTopPx:number, windowWidthPx:number, windowHeightPx:number, windowZIndex:string): void=>{
+      const ws = windowService.getWindowState(pId);
+      if (!ws) return;
+
+      ws.leftPx = windowLeftPx;
+      ws.topPx =  windowTopPx;
+      ws.width =  windowWidthPx;
+      ws.height = windowHeightPx;
+      ws.zIndex = Number(windowZIndex);
+
+      windowService.addWindowState(ws);
     }
 }

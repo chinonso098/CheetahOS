@@ -15,6 +15,7 @@ import { ClampedPosition, WindowPositionInfo, WindowState  } from '../windows.ty
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowHelper } from '../window.helper';
+import { WindowStyleHelper } from '../window.style.helper';
 
 
 @Component({
@@ -261,54 +262,32 @@ import { WindowHelper } from '../window.helper';
 
     }
 
-    private clampToContainer(): void {
-      const desktop = WindowHelper.getDesktopRect();
-      const winEl = this.secondaryWindowContainer?.nativeElement as HTMLElement | undefined;
-      if (!desktop || !winEl) return;
+    private clampToContainer():void{
+      const clampData = WindowHelper.clampToContainer(this.secondaryWindowContainer, this.windowLeftPx, this.windowTopPx, this.EDGE_PAD_PX, this.TASKBAR_HEIGHT_PX);
+      if(!clampData) return;
 
-      const winRect = winEl.getBoundingClientRect();
-      const pad = this.EDGE_PAD_PX;
-
-      const maxLeft = Math.max(pad, desktop.width - winRect.width - pad);
-      const maxTop  = Math.max(pad, desktop.height - this.TASKBAR_HEIGHT_PX - winRect.height - pad);
-
-      this.windowLeftPx = Math.min(Math.max(this.windowLeftPx, pad), maxLeft);
-      this.windowTopPx  = Math.min(Math.max(this.windowTopPx, pad), maxTop);
+      this.windowLeftPx = clampData.leftPx;
+      this.windowTopPx  = clampData.topPx;
     }
 
     private applyOpacityZ(zIndex: number, opacity: number): void {
-      this.currentWinStyles = {
-        ...this.currentWinStyles,
-        left: `${this.windowLeftPx}px`,
-        top: `${this.windowTopPx}px`,
-        transform: 'translate(0px, 0px)',
-        'z-index': zIndex,
-        opacity
-      };
+
+      this.currentWinStyles = WindowStyleHelper.applyStyle(this.currentWinStyles, this.windowLeftPx,
+         this.windowTopPx, zIndex, opacity);
     }
 
     private applyPositionStyles(): void {
-      this.currentWinStyles = {
-        ...this.currentWinStyles,
-        left: `${this.windowLeftPx}px`,
-        top: `${this.windowTopPx}px`,
-        transform: 'translate(0px, 0px)', // keep draggable neutral
-        'z-index': this.windowHide ? this.HIDDEN_Z_INDEX : this.windowZIndex,
-        opacity: this.windowHide ? 0 : 1,
-      };
+
+      const zIndex = this.windowHide ? this.HIDDEN_Z_INDEX : this.windowZIndex;
+      const opacity = this.windowHide ? 0 : 1;
+      this.currentWinStyles = WindowStyleHelper.applyStyle(this.currentWinStyles, this.windowLeftPx,
+         this.windowTopPx, Number(zIndex), opacity);
     }
 
     private syncStatePositionSize(): void {
-      const ws = this._windowService.getWindowState(this.processId);
-      if (!ws) return;
 
-      ws.leftPx = this.windowLeftPx;
-      ws.topPx = this.windowTopPx;
-      ws.width = this.windowWidthPx;
-      ws.height = this.windowHeightPx;
-      ws.zIndex = Number(this.windowZIndex);
-
-      this._windowService.addWindowState(ws);
+      WindowHelper.syncStatePositionSize(this._windowService, this.processId, this.windowLeftPx,
+        this.windowTopPx, this.windowWidthPx, this.windowHeightPx, this.windowZIndex);
     }
 
     private applySizeStyles(): void {
