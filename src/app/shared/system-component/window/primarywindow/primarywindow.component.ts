@@ -144,6 +144,7 @@ import { WindowHelper } from '../window.helper';
     }
 
     ngOnInit():void{
+      console.log('1:');
       this.processId = this.runningProcessID;
       this.icon = this.processAppIcon;
       this.name = this.processAppName;
@@ -156,6 +157,7 @@ import { WindowHelper } from '../window.helper';
     }
 
     ngAfterViewInit():void{
+      console.log('2:');
       this.hideGlassPaneContainer();
       this.setFocusOnWindowAfterInit(this.processId);
       
@@ -170,10 +172,10 @@ import { WindowHelper } from '../window.helper';
       
       else if(this.turnOffWindowOpenCloseAnimation && this.turnOffWindowStacking){ // file tranfer Dialog
         const rect = WindowHelper.getDesktopRect();
-        if(rect) {
-          console.log('rect:', rect);
-          this.windowLeftPx = rect.width * 0.5;
-          this.windowTopPx = rect.height * 0.5;
+        if(rect){
+          // top-left position that centers the element
+          this.windowLeftPx = Math.round((rect.width - this.windowWidthPx) * 0.5);
+          this.windowTopPx  = Math.round((rect.height - this.windowHeightPx) * 0.5);
           this.applyPositionStyles();
           this.syncStatePositionSize();
         }
@@ -181,13 +183,12 @@ import { WindowHelper } from '../window.helper';
 
       this.strWindowZIndex =  String(WindowConstants.MAX_Z_INDEX);
       this.storeWindowStateAfterViewInit();
-
-      //tell angular to run additional detection cycle after 
-      this.changeDetectorRef.detectChanges();
+      this.changeDetectorRef.detectChanges();      //tell angular to run additional detection cycle after 
     }
 
     ngOnChanges(changes: SimpleChanges):void{
       //console.log('WINDOW onCHANGES:',changes);
+      console.log('3:');
       if(this.name === "Window")
         this.name = this.processAppName;
 

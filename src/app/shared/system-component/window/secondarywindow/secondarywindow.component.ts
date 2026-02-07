@@ -165,10 +165,20 @@ import { WindowConstants } from '../window.constants';
       this.windowWidthPx = this.getSecondaryWindowContainerElmnt.offsetWidth;
       this.applySizeStyles();
 
-      this.storeWindowStateAfterViewInit();
+      if(this.isDialog){ // file Dialog
+        const rect = WindowHelper.getDesktopRect();
+        if(rect){
+          // top-left position that centers the element
+          this.windowLeftPx = Math.round((rect.width - this.windowWidthPx) * 0.5);
+          this.windowTopPx  = Math.round((rect.height - this.windowHeightPx) * 0.5);
+          this.applyPositionStyles();
+          this.syncStatePositionSize();
+        }
+      }
 
-      //tell angular to run additional detection cycle after 
-      this.changeDetectorRef.detectChanges();  
+      this.strWindowZIndex =  String(WindowConstants.MAX_Z_INDEX);
+      this.storeWindowStateAfterViewInit();
+      this.changeDetectorRef.detectChanges();      //tell angular to run additional detection cycle after 
     }
 
     ngOnDestroy():void{

@@ -102,6 +102,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   private transferAction = Constants.EMPTY_STRING;
   showEsitmateIntervalId!: NodeJS.Timeout;
   isInit = true;
+  isDialog = true;
   isFileTransferInProgress = false;
   isFileDeleteInProgress = false;
   from = Constants.BLANK_SPACE;
@@ -482,14 +483,14 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
 
   changeDefaultOpeningPostions():void{
-    if(this.notificationOption === UserNotificationType.FileTransferProgress 
-      || this.notificationOption === UserNotificationType.FileDeleteProgress 
-      || this.notificationOption === UserNotificationType.DeleteWarning
-      || this.notificationOption === UserNotificationType.Error){
+    // if(this.notificationOption === UserNotificationType.FileTransferProgress 
+    //   || this.notificationOption === UserNotificationType.FileDeleteProgress 
+    //   || this.notificationOption === UserNotificationType.DeleteWarning
+    //   || this.notificationOption === UserNotificationType.Error){
         
-      const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:25, leftPx:35};
-      this._windowService.positionProcessWindowNotify.next(positionInfo);
-    }
+    //   const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:25, leftPx:35};
+    //   this._windowService.positionProcessWindowNotify.next(positionInfo);
+    //}
 
     if(this.notificationOption === UserNotificationType.Info){
       this._windowService.positionProcessWindowByIdNotify.next([String(this.processId), this.inputCallingUId]);

@@ -6,7 +6,7 @@
 </ng-container>
 
 <ng-template #errorNotice>
-    <cos-secondarywindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="ERROR_DIALOG" [isDialog]="true">
+    <cos-secondarywindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="ERROR_DIALOG" [isDialog]="isDialog">
         <div ngDraggable class="error-dialog-main-container">
             <div class="error-dialog-mid-container">
                 <div class="error-dialog-mid-section1">
@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="error-dialog-tail-container">
-                <span style="position: fixed; margin-top:10px; right:4%;">
+                <span class="footer-btn">
                     <button class="btn btn-primary" (click)="onCloseDialogBox()" >
                         Ok
                     </button>
@@ -37,7 +37,7 @@
 </ng-template>
 
 <ng-template #infoNotice>
-    <cos-secondarywindow [runningProcessID]="processId" [processAppName]="INFO_DIALOG" [isDialog]="true">
+    <cos-secondarywindow [runningProcessID]="processId" [processAppName]="INFO_DIALOG" [isDialog]="isDialog">
         <div  class="info-dialog-main-container">    
             <div class="info-dialog-mid-container" tabindex="0">
                 <div class="info-dialog-mid-section1">
@@ -53,7 +53,7 @@
             </div>
         
             <div class="info-dialog-tail-container">
-                <span style="position: fixed; margin-top:10px; right:4%;">
+                <span class="footer-btn">
                     <button class="btn btn-primary" (click)="onCloseDialogBox()" >
                         Ok
                     </button>
@@ -64,7 +64,7 @@
 </ng-template>
 
 <ng-template #warningNotice>
-    <cos-secondarywindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="true">
+    <cos-secondarywindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="isDialog">
         <div  class="warning-dialog-main-container"> 
             <div class="warning-dialog-mid-container" tabindex="0">
                 <div class="warning-dialog-mid-section1">
@@ -80,7 +80,7 @@
             </div>
         
             <div class="warning-dialog-tail-container">
-                <span style="position: fixed; margin-top:10px; right:4%;">
+                <span class="footer-btn">
                     <button class="btn btn-primary" (click)="onYesDialogBox()" >
                         Yes
                     </button>
@@ -95,9 +95,9 @@
 </ng-template>
 
 <ng-template #shutDownRestartNotice>
-    <div ngDraggable [handle]="leftHS4"  (click)="onPwrDialogWindowClick($event)"  [ngDraggable]="false" class="shutdown-restart-dialog-main-container" id="shutdown-restart-dialog-{{processId}}">
+    <div (click)="onPwrDialogWindowClick($event)" class="shutdown-restart-dialog-main-container" id="shutdown-restart-dialog-{{processId}}">
         <div class="shutdown-restart-dialog-header-container" tabindex="0">
-            <div #leftHS4 class="shutdown-restart-dialog-left-header-section">
+            <div  class="shutdown-restart-dialog-left-header-section">
                 <h1 class="shutdown-restart-dialog-h1">
                     <figure class="shutdown-restart-dialog-figure">
                         <!-- <img class="shutdown-restart-dialog-img" [src]="this.icon" [alt]="this.name"/> -->
@@ -230,7 +230,7 @@
                     <div class="file-tranfer__icon" (click)="changeDetailsAmount()"><img [src]="this.arrowPosition"></div>
                     <div class="file-tranfer__info">{{detailsAmount}}</div>
                 </div>
-                <span style="position: fixed; margin-top:10px; right:4%;">
+                <span class="footer-btn">
                     <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
                         <p class="file-transfer-btn-cancel">Cancel</p>
                     </button>
@@ -265,11 +265,11 @@
               </div>
           
               <div class="delete-warning__dialog-buttons">
-                <span style="position: fixed; margin-top:10px; right:4%;">
+                <span class="footer-btn1">
                     <button class="btn btn-primary" (click)="onYesDialogBox()" >
                         Yes
                     </button>
-                    <div style="padding-left: 5px; display: inline;"></div>
+                    <div style="padding-left: 10px; display: inline;"></div>
                     <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
                         No
                     </button>
