@@ -95,8 +95,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   readonly FILE_TRANSFER_DIALOG = 'fileTransfer-dialog';
   readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
 
-  readonly UPDATE = 'Update';
-  readonly UPDATE_0 = 'Update0';
+  readonly SET_PWR_DIALOG_PID_ON_OPEN = 'Update';
+  readonly SET_PWR_DIALOG_PID_ON_CLOSE = 'Update0';
 
   private transferAction = Constants.EMPTY_STRING;
   showEsitmateIntervalId!: NodeJS.Timeout;
@@ -171,7 +171,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
     if(this.notificationType === UserNotificationType.PowerOnOff){
       this.getRestoreUserOpenedAppDefault();
-      this.setPwrDialogPid(this.UPDATE);
+      this.setPwrDialogPid(this.SET_PWR_DIALOG_PID_ON_OPEN);
     }
 
     if(this.notificationType === UserNotificationType.Error){
@@ -236,9 +236,19 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this._defaultService.updateDefaultData(Constants.DEFAULT_RESTORE_USER_OPENED_APPS, restorePriorOpenedApps, raiseEvent);
   }
 
+  /**
+   * The power dialog can be closed in two two ways
+   * A. by clicking yes / no on from the dialog window
+   * B. by clicking on the desktop when the dialog window is visible.
+   * 
+   * This method simply sets the pid, just in case the power dialog is closed by clicking on the desktop
+   * if the pid is not 0, then dialog is closed.
+   * @param action 
+   */
+
   setPwrDialogPid(action:string):void{ 
     if(this.notificationOption === UserNotificationType.PowerOnOff){
-      if(action === this.UPDATE){
+      if(action === this.SET_PWR_DIALOG_PID_ON_OPEN){
         this._systemNotificationService.setPwrDialogPid(this.processId);
       }else{
         this._systemNotificationService.setPwrDialogPid(0);
@@ -277,7 +287,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
 
     if(this.notificationOption === UserNotificationType.PowerOnOff){
-      this.setPwrDialogPid(this.UPDATE_0);
+      this.setPwrDialogPid(this.SET_PWR_DIALOG_PID_ON_CLOSE);
     }
 
     this._userNotificationServices.closeDialogMsgBox(this.processId);
@@ -488,7 +498,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     const restorePriorOpenedApps = this._defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
     this.reOpenWindows = (restorePriorOpenedApps === Constants.TRUE) ? true : false;
   }
-
 
   private setFileTransferDialogComponentDetail(action:string):void{
     const folderIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
