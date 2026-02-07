@@ -25,70 +25,68 @@ import { WindowConstants } from '../window.constants';
   standalone:false,
 })
  export class SecondaryWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
-   @ViewChild('secondaryWindowContainer') secondaryWindowContainer!: ElementRef;
-   @ViewChild('secGlassPaneContainer') secGlassPaneContainer!: ElementRef;
+    @ViewChild('secondaryWindowContainer') secondaryWindowContainer!: ElementRef;
+    @ViewChild('secGlassPaneContainer') secGlassPaneContainer!: ElementRef;
 
-   @Input() runningProcessID = 0;  
-   @Input() processAppIcon = Constants.EMPTY_STRING;  
-   @Input() displayMessage = Constants.EMPTY_STRING;  
-   @Input() processAppName = Constants.EMPTY_STRING;  
-   @Input() isDialog = false;  
+    @Input() runningProcessID = 0;  
+    @Input() processAppIcon = Constants.EMPTY_STRING;  
+    @Input() displayMessage = Constants.EMPTY_STRING;  
+    @Input() processAppName = Constants.EMPTY_STRING;  
+    @Input() isDialog = false;  
 
-   private _runningProcessService!:RunningProcessService;
-   private _systemNotificationServices!:SystemNotificationService;
-   private _windowService!:WindowService;
-   private _originalWindowsState!:WindowState;
-   private _menuService!:MenuService;
-   private _processHandlerService!:ProcessHandlerService;
-   private _userNotificationServices:UserNotificationService;
+    private _runningProcessService!:RunningProcessService;
+    private _systemNotificationServices!:SystemNotificationService;
+    private _windowService!:WindowService;
+    private _originalWindowsState!:WindowState;
+    private _menuService!:MenuService;
+    private _processHandlerService!:ProcessHandlerService;
+    private _userNotificationServices:UserNotificationService;
 
-   private _focusOnNextProcessSub!:Subscription;
-   private _focusOnCurrentProcessSub!:Subscription;
-   private _showOnlyCurrentProcessSub!:Subscription;
-   private _removeFocusOnOtherProcessesSub!:Subscription;
-   private _hideOtherProcessSub!:Subscription;
-   private _restoreProcessSub!:Subscription;
-   private _restoreProcessesSub!:Subscription;
-   private _showOrSetProcessWindowToFocusSub!:Subscription;
-   private _lockScreenActiveSub!:Subscription;
-   private _desktopActiveSub!:Subscription;
-   private _showTheDesktopSub!:Subscription;
-   private _showOpenWindowsSub!:Subscription;
-   private _closeCurrentProcessSub!:Subscription;
-   private _positionWindowSub!:Subscription;
-   private _positionWindowByIdSub!:Subscription;
+    private _focusOnNextProcessSub!:Subscription;
+    private _focusOnCurrentProcessSub!:Subscription;
+    private _showOnlyCurrentProcessSub!:Subscription;
+    private _removeFocusOnOtherProcessesSub!:Subscription;
+    private _hideOtherProcessSub!:Subscription;
+    private _restoreProcessSub!:Subscription;
+    private _restoreProcessesSub!:Subscription;
+    private _showOrSetProcessWindowToFocusSub!:Subscription;
+    private _lockScreenActiveSub!:Subscription;
+    private _desktopActiveSub!:Subscription;
+    private _showTheDesktopSub!:Subscription;
+    private _showOpenWindowsSub!:Subscription;
+    private _closeCurrentProcessSub!:Subscription;
+    private _positionWindowSub!:Subscription;
+    private _positionWindowByIdSub!:Subscription;
 
+    windowHide = false;
+    windowMaximize = false;
 
+    windowTopPx = 0;
+    windowLeftPx = 0;
+    windowWidthPx = 0;
+    windowHeightPx = 0;
 
-  windowHide = false;
-  windowMaximize = false;
+    strWindowZIndex = '0';
+    strWindowWidthPx = '0px';
+    strWindowHeightPx = '0px';
 
-  windowTopPx = 0;
-  windowLeftPx = 0;
-  windowWidthPx = 0;
-  windowHeightPx = 0;
+    xAxisTmp = 0;
+    yAxisTmp = 0;
+    windowTransform = Constants.EMPTY_STRING;
 
-  strWindowZIndex = '0';
-  strWindowWidthPx = '0px';
-  strWindowHeightPx = '0px';
+    isDialogContent = false;
+    currentWinStyles: Record<string, unknown> = {};
+    headerActiveStyles: Record<string, unknown> = {}; 
+    closeBtnStyles: Record<string, unknown> = {};
 
-  xAxisTmp = 0;
-  yAxisTmp = 0;
-  windowTransform = Constants.EMPTY_STRING;
-
-  isDialogContent = false;
-  currentWinStyles: Record<string, unknown> = {};
-  headerActiveStyles: Record<string, unknown> = {}; 
-  closeBtnStyles: Record<string, unknown> = {};
-
-  hasWindow = false;
-  icon = Constants.EMPTY_STRING;
-  name = 'Window';
-  processId = 0;
-  uniqueId = Constants.EMPTY_STRING;
-  uniqueGlassPaneId = Constants.EMPTY_STRING;
-  type = ComponentType.System;
-  displayName = Constants.EMPTY_STRING;
+    hasWindow = false;
+    icon = Constants.EMPTY_STRING;
+    name = 'Window';
+    processId = 0;
+    uniqueId = Constants.EMPTY_STRING;
+    uniqueGlassPaneId = Constants.EMPTY_STRING;
+    type = ComponentType.System;
+    displayName = Constants.EMPTY_STRING;
   
 
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, private renderer: Renderer2,
@@ -121,10 +119,7 @@ import { WindowConstants } from '../window.constants';
       this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
       this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
 
-      this._positionWindowSub = this._windowService.positionProcessWindowNotify.subscribe((p) => {
-        if(p.pId === this.processId)
-          this.onPositionWindow(p)
-      });
+      this._positionWindowSub = this._windowService.positionProcessWindowNotify.subscribe((p) => { if(p.pId === this.processId) this.onPositionWindow(p) });
 
       this._positionWindowByIdSub = this._windowService.positionProcessWindowByIdNotify.subscribe((p) => {
         if(Number(p[0]) === this.processId)

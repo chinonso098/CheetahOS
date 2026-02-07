@@ -505,7 +505,7 @@ import { WindowHelper } from '../window.helper';
       this.hideWindow = !this.hideWindow;
 
       if(ws.isVisible && this.hideWindow){
-        this.windowHideShowAction = this.hideWindow ? 'hidden' : 'visible';
+        //this.windowHideShowAction = this.hideWindow ? 'hidden' : 'visible';
 
         ws.isVisible = false;
         ws.zIndex = WindowConstants.HIDDEN_Z_INDEX;
@@ -519,7 +519,7 @@ import { WindowHelper } from '../window.helper';
         const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
 
         if(windowList.includes(this.processId) && !this.hideWindow){
-          this.windowHideShowAction = this.hideWindow ? 'hidden' : 'visible';
+          //this.windowHideShowAction = this.hideWindow ? 'hidden' : 'visible';
 
           if(this.isWindowInFullScreenMode)  // if window was in full screen when hidden, give the proper z-index when unhidden
             this.syncFullScreenWindowZIndexForProcess(this.processId, ws.zIndex);
