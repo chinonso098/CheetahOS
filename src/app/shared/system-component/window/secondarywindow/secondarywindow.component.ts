@@ -397,12 +397,11 @@ import { WindowConstants } from '../window.constants';
 
     setHideAndShowAllVisibleWindows():void{
       const ws = this._windowService.getWindowState(this.processId);
-      if(!ws) return;
+      if(!ws || ws.pId !== this.processId) return;
 
       this.windowHide = !this.windowHide;
-      // CSS styles: set per current state of component properties
 
-      if(ws.isVisible && this.windowHide && (ws.pId === this.processId)){
+      if(ws.isVisible && this.windowHide){
         ws.isVisible = false;
         ws.zIndex = WindowConstants.HIDDEN_Z_INDEX;
         this._windowService.addWindowState(ws);
@@ -411,11 +410,10 @@ import { WindowConstants } from '../window.constants';
         this.setHeaderInActive(ws.pId);
         this.applyOpacityZ(WindowConstants.HIDDEN_Z_INDEX, 0);
       }
-      else if(!ws.isVisible && !this.windowHide && (ws.pId === this.processId)){
+      else if(!ws.isVisible && !this.windowHide ){
         const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
 
         if(windowList.includes(this.processId)){
-
           ws.isVisible = true;
           this._windowService.addWindowState(ws);
 
@@ -423,7 +421,8 @@ import { WindowConstants } from '../window.constants';
           if(window_with_highest_zIndex === this.processId){
             this.setFocsuOnThisWindow(ws.pId);
             this._windowService.currentProcessInFocusNotify.next(ws.pId);
-          }else{
+          }
+          else{
             this.setWindowToPriorHiddenState(ws, WindowConstants.MIN_Z_INDEX);
           }
         }
