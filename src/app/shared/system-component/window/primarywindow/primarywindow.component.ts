@@ -8,7 +8,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 
 import {Subscription } from 'rxjs';
-import { ClampedPosition, WindowBoundsState, WindowPositionInfo, WindowResizeInfo, WindowState } from '../windows.types';
+import { WindowBoundsState, WindowPositionInfo, WindowResizeInfo, WindowState } from '../windows.types';
 import {openCloseAnimation, hideShowAnimation, maximizeRestoreAnimation} from 'src/app/shared/system-component/window/window.animations';
 import { AnimationEvent } from '@angular/animations';
 
@@ -42,7 +42,6 @@ import { WindowHelper } from '../window.helper';
    @Input() turnOffWindowStacking = false;  
 
    private _renderer: Renderer2;
-   
    private _runningProcessService!:RunningProcessService;
    private _sessionManagmentService!:SessionManagmentService;
    private _systemNotificationServices!:SystemNotificationService;
@@ -826,7 +825,6 @@ import { WindowHelper } from '../window.helper';
       
       if(ws.isVisible){
         this.setWindowToFocusById(ws.pId);
-        //reset window bound when a window is closed or hidden.
         this.updateWindowBoundsState();
       }
     }
@@ -874,7 +872,6 @@ import { WindowHelper } from '../window.helper';
 
       const topPid = this._windowService.getProcessWindowIDWithHighestZIndex();
       const z = ws.pId === topPid ? WindowConstants.MAX_Z_INDEX : WindowConstants.MIN_Z_INDEX;
-
       this.applyOpacityZ(z, 1);
     }
 

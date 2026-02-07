@@ -409,7 +409,7 @@ import { WindowConstants } from '../window.constants';
         this._windowService.addProcessIDToHiddenOrVisibleWindows(this.processId);
 
         this.setHeaderInActive(ws.pId);
-        this.applyOpacityZ(WindowConstants.HIDDEN_Z_INDEX, 1)
+        this.applyOpacityZ(WindowConstants.HIDDEN_Z_INDEX, 0);
       }
       else if(!ws.isVisible && !this.windowHide && (ws.pId === this.processId)){
         const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
@@ -442,23 +442,22 @@ import { WindowConstants } from '../window.constants';
 
     closeWindow():void{
       this._windowService.removeWindowState(this.processId);
-
       this.setSilhouetteState();
       WindowStyleHelper.removeSilhouette();
 
       if(!this.isDialogContent){ // if it is visible, then the window is not a dialog box
-        const processToClose = this._runningProcessService.getProcess(this.processId);
-        if(processToClose){
-          this._processHandlerService.closeApplicationProcess(processToClose);
+        const process = this._runningProcessService.getProcess(this.processId);
+        if(process){
+          this._processHandlerService.closeApplicationProcess(process);
         }
       }else{ 
         this._userNotificationServices.closeDialogMsgBox(this.processId);
       }
       this._windowService.cleanupWindowDataForApp(this.uniqueId);
-      const nextProc = this.getNextProcess();
-      if(nextProc){
-        this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
-        this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
+      const nxtProc = this.getNextProcess();
+      if(nxtProc){
+        this._windowService.focusOnNextProcessWindowNotify.next(nxtProc.getProcessId);
+        this._windowService.currentProcessInFocusNotify.next(nxtProc.getProcessId);
       }
     }
 
@@ -471,7 +470,6 @@ import { WindowConstants } from '../window.constants';
        */
       if(!this.windowHide){
         this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
-
         this.setWindowToFocusById(pId);
       }
     }
@@ -614,6 +612,7 @@ import { WindowConstants } from '../window.constants';
       else if(ws.zIndex === WindowConstants.MAX_Z_INDEX){
         this._windowService.addProcessWindowIDWithHighestZIndex(pId);
         this.setHeaderActive(pId);
+         this.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);
         WindowHelper.setFocusOnDiv(winCmpntId);
       } 
     }
@@ -640,7 +639,6 @@ import { WindowConstants } from '../window.constants';
 
       const topPid = this._windowService.getProcessWindowIDWithHighestZIndex();
       const z = ws.pId === topPid ? WindowConstants.MAX_Z_INDEX : WindowConstants.MIN_Z_INDEX;
-
       this.applyOpacityZ(z, 1);
     }
 
@@ -648,8 +646,8 @@ import { WindowConstants } from '../window.constants';
      * this method returns a process that has a windows, with a visible state
      * @returns Process
      */
-   getNextProcess():Process | undefined{
-    const nextPId = this._windowService.getNextPidInWindowStateList();
-    return this._runningProcessService.getProcesses().find(p => p.getProcessId === nextPId);
-   }
+    getNextProcess():Process | undefined{
+      const nextPId = this._windowService.getNextPidInWindowStateList();
+      return this._runningProcessService.getProcesses().find(p => p.getProcessId === nextPId);
+    }
 }
