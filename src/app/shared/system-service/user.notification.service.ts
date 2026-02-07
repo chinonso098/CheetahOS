@@ -60,7 +60,11 @@ export class UserNotificationService implements BaseService{
     }
 
     closeDialogMsgBox(pId:number):void{
-        this._componentReferenceService.removeComponent(pId);
+        const process = this._runningProcessService.getProcess(pId); // if process exists, It is a  file Tranfser or Delete Dialog
+        if(process)
+            this._runningProcessService.closeProcessNotify.next(process);
+        else
+            this._componentReferenceService.removeComponent(pId);
     }
 
     showErrorNotification(msg:string, title:string){

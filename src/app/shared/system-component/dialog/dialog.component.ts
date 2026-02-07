@@ -22,6 +22,7 @@ import { Subscription } from 'rxjs';
 import { InformationUpdate } from 'src/app/system-files/common.interfaces';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { WindowResizeInfo } from '../window/windows.types';
+import { Process } from 'src/app/system-files/process';
 
 @Component({
   selector: 'cos-dialog',
@@ -179,10 +180,12 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
 
     if(this.notificationType === UserNotificationType.FileTransferProgress || this.notificationType === UserNotificationType.FileDeleteProgress){
+      let action = Constants.EMPTY_STRING;
       if(this.notificationType === UserNotificationType.FileTransferProgress){ 
         this.isFileTransferInProgress = true;
         this.progressUpdateText = this.dialogMgs;
         this.transferAction = this.inputTitle;
+        action = 'xfer';
       }
 
       if(this.notificationType === UserNotificationType.FileDeleteProgress){ 
@@ -192,7 +195,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
         const parts = this.inputTitle.split(Constants.COLON);
         this.srcToDestPart1 = `${parts[0]} ${parts[1]}`;
         this.from  = parts[2];
+        action = 'del';
       }
+      this.setFileTransferDialogComponentDetail(action);
     }
 
     if(this.notificationType === UserNotificationType.DeleteWarning){
@@ -345,7 +350,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }, delay);
   }
 
-  setTransferDialogFields(update: string[]): void {
+  setTransferDialogFields(update: string[]):void{
     // Validate the update array and its required indices
     if (!Array.isArray(update) || update.length < 5) {
       console.warn("setTransferDialogFields: Invalid or incomplete update array", update);
@@ -375,7 +380,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
   
     // Validate numeric values
-    if (!isFinite(totalFiles) || !isFinite(movedFiles) || totalFiles <= 0) {
+    if(!isFinite(totalFiles) || !isFinite(movedFiles) || totalFiles <= 0){
       console.warn("setTransferDialogFields: Invalid file counts", { totalFiles, copiedFiles: movedFiles });
       return;
     }
@@ -404,7 +409,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this.itemsRemaining = `${itemsRemaining} (${itemsRemainingSize} ${itemsRemainingSizeUnit})`;
   
     //Auto-close if 100% complete
-    if (value >= 100) {
+    if(value >= 100){
       const delay = 1000; // 1 sec
       setTimeout(() => {
         this._userNotificationServices.closeDialogMsgBox(this.processId);
@@ -416,7 +421,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   /**
    * Safely extracts the value after a colon. Returns an empty string if invalid.
    */
-  safeGetValue(input: string): string {
+  safeGetValue(input: string):string{
     if (typeof input !== "string" || !input.includes(Constants.COLON)) {
       console.warn("safeGetValue: Malformed input", input);
       return Constants.EMPTY_STRING;
@@ -429,7 +434,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   /**
    * Safely computes percentage with zero and NaN checks.
    */
-  getTransferPercentage(total: number, curVal: number): number {
+  getTransferPercentage(total: number, curVal: number):number{
     if (!isFinite(total) || total <= 0) {
       console.warn("getTransferPercentage: Invalid total value", total);
       return 0;
@@ -479,9 +484,20 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     
   }
 
-  getRestoreUserOpenedAppDefault(): void{
+  getRestoreUserOpenedAppDefault():void{
     const restorePriorOpenedApps = this._defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
     this.reOpenWindows = (restorePriorOpenedApps === Constants.TRUE) ? true : false;
+  }
+
+
+  private setFileTransferDialogComponentDetail(action:string):void{
+    const folderIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
+    const dialogName = Constants.BLANK_SPACE;
+    const hasWindow = true;
+
+    const process = new Process(this.processId, dialogName, folderIcon, hasWindow, this.type);
+    this._runningProcessService.addProcess(process);
+    this._runningProcessService.processListChangeNotify.next();
   }
 
 }

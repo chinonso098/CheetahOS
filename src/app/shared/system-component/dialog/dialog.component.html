@@ -240,11 +240,9 @@
                     <div class="file-tranfer__icon" (click)="changeDetailsAmount()"><img [src]="this.arrowPosition"></div>
                     <div class="file-tranfer__info">{{detailsAmount}}</div>
                 </div>
-                <span class="footer-btn">
-                    <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
-                        <p class="file-transfer-btn-cancel">Cancel</p>
-                    </button>
-                </span>
+                <button class="btn btn-secondary file-transfer-btn-cancel" (click)="onCloseDialogBox()">
+                    Cancel
+                </button>
             </div>
         </div>
     </cos-primarywindow>

@@ -453,36 +453,49 @@
 
 /*Tail Section*/
 .file-transfer-dialog-tail-container{
-    position: relative;
-    /* display: flex; */
-    background-color: #e5e5e5;
-    width: 100%;
-    height: 45px;
+  background-color: #e5e5e5;
+  width: 100%;
+  height: 45px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;          /* same left/right padding */
+  box-sizing: border-box;
 }
 
 .file-tranfer__details-option{
-    display: flex;
-    position: relative; 
-    left: 12px;
-    align-items: center;
-    gap: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.file-tranfer__icon {
-    width: 20px;
-    height: 20px;
-    border-radius: 3px;
+.file-tranfer__icon{
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.file-tranfer__info {
-    font-size: 12px;
-    color: #000;
+.file-tranfer__icon img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;           /* prevents baseline weirdness */
 }
 
+.file-tranfer__info{
+  font-size: 12px;
+  color: #000;
+}
+
+/* optional: ensure button doesn't stretch */
 .file-transfer-btn-cancel{
-    position: relative;
-    left: -8px;
+  flex: 0 0 auto;
 }
+
 
 /* The moving light/shimmer effect */
 .progress-bar__light-effect {
