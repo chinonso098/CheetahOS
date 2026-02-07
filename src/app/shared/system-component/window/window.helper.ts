@@ -56,8 +56,8 @@ export namespace WindowHelper {
 
       ws.leftPx = windowLeftPx;
       ws.topPx =  windowTopPx;
-      ws.width =  windowWidthPx;
-      ws.height = windowHeightPx;
+      ws.widthPx =  windowWidthPx;
+      ws.heightPx = windowHeightPx;
       ws.zIndex = Number(windowZIndex);
 
       windowService.addWindowState(ws);

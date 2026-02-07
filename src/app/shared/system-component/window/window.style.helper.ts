@@ -42,8 +42,9 @@ export namespace WindowStyleHelper {
       if (patch.uniqueGlassPaneId !== undefined) state.uniqueGlassPaneId = patch.uniqueGlassPaneId ?? Constants.EMPTY_STRING;
     };
 
-    export const applyStyle = (inputStyle:Record<string, unknown>, windowLeftPx:number, windowTopPx:number,  zIndex: number, opacity: number):Record<string, unknown> => {
-
+    export const applyStyle = (inputStyle:Record<string, unknown>, windowLeftPx:number, windowTopPx:number,
+        zIndex: number, opacity: number):Record<string, unknown> => {
+          
       const style= {
         ...inputStyle,
         left: `${windowLeftPx}px`,
@@ -62,7 +63,6 @@ export namespace WindowStyleHelper {
 
       // Add attributes
       glassPane.setAttribute('id', uniqueGlassPaneId);
-
       glassPane.style.transform =  'translate(0, 0)';
       glassPane.style.height =  `${windowHeightPx}px`;
       glassPane.style.width =  `${windowWidthPx}px`;
@@ -74,7 +74,6 @@ export namespace WindowStyleHelper {
 
       // Append to the body
       renderer.appendChild(glassPaneContainer.nativeElement, glassPane);
-
       return glassPaneContainer;
     }
 

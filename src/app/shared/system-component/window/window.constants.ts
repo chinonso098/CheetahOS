@@ -10,4 +10,5 @@ export namespace WindowConstants{
     export const CASCADE_STEP_PX = 24;
     export const TASKBAR_HEIGHT_PX = 40;
     export const EDGE_PAD_PX = 8;
+    export const WINDOW = "Window";
 }

@@ -119,8 +119,6 @@ import { WindowConstants } from '../window.constants';
       this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
       this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
 
-      this._positionWindowSub = this._windowService.positionProcessWindowNotify.subscribe((p) => { if(p.pId === this.processId) this.onPositionWindow(p) });
-
       this._positionWindowByIdSub = this._windowService.positionProcessWindowByIdNotify.subscribe((p) => {
         if(Number(p[0]) === this.processId)
           this.onPositionWindowById(p)
@@ -129,19 +127,6 @@ import { WindowConstants } from '../window.constants';
 
     get getSecondaryWindowContainerElmnt(): HTMLElement {
       return this.secondaryWindowContainer.nativeElement;
-    }
-
-    ngOnChanges(changes: SimpleChanges):void{
-      //console.log('WINDOW onCHANGES:',changes);
-
-      if(this.name === "Window")
-        this.name = this.processAppName;
-
-      this.icon = this.processAppIcon;
-      if(this.isDialog)
-      { this.displayName = this.displayMessage; }
-      else
-      { this.displayName = this.processAppName;}
     }
 
     ngOnInit():void{
@@ -163,6 +148,7 @@ import { WindowConstants } from '../window.constants';
       // get defaultHeightOnOpen and defaultWidthOnOpen  
       this.windowHeightPx = this.getSecondaryWindowContainerElmnt.offsetHeight;
       this.windowWidthPx = this.getSecondaryWindowContainerElmnt.offsetWidth;
+      this.strWindowZIndex =  String(WindowConstants.MAX_Z_INDEX);
       this.applySizeStyles();
 
       if(this.isDialog){ // file Dialog
@@ -175,8 +161,6 @@ import { WindowConstants } from '../window.constants';
           this.syncStatePositionSize();
         }
       }
-
-      this.strWindowZIndex =  String(WindowConstants.MAX_Z_INDEX);
       this.storeWindowStateAfterViewInit();
       this.changeDetectorRef.detectChanges();      //tell angular to run additional detection cycle after 
     }
@@ -197,6 +181,18 @@ import { WindowConstants } from '../window.constants';
       this._showOpenWindowsSub?.unsubscribe();
       this._positionWindowSub?.unsubscribe();
       this._positionWindowByIdSub?.unsubscribe();
+    }
+
+    ngOnChanges(changes: SimpleChanges):void{
+      //console.log('WINDOW onCHANGES:',changes);
+      if(this.name ===  WindowConstants.WINDOW)
+        this.name = this.processAppName;
+
+      this.icon = this.processAppIcon;
+      if(this.isDialog)
+       this.displayName = this.displayMessage; 
+      else
+       this.displayName = this.processAppName;
     }
     
     setBtnFocus(pId:number):void{
@@ -228,11 +224,11 @@ import { WindowConstants } from '../window.constants';
       this._originalWindowsState = {
         appName: this.name,
         pId: this.processId,
-        width: this.windowWidthPx,
-        height: this.windowHeightPx,
+        widthPx: this.windowWidthPx,
+        heightPx: this.windowHeightPx,
         leftPx: clamped.leftPx,
         topPx: clamped.topPx,
-        zIndex: WindowConstants.MIN_Z_INDEX,   // placeholder, service will normalize
+        zIndex: WindowConstants.MAX_Z_INDEX,   // placeholder, service will normalize
         isVisible: true,
       };
 
@@ -351,22 +347,6 @@ import { WindowConstants } from '../window.constants';
       // Important: reset the drag transform so we don't accumulate drift
       event.source.reset();
       this._windowService.windowDragIsInActive.next();
-    }
-
-    onPositionWindow(input:WindowPositionInfo):void{
-      // If you still receive % from elsewhere, convert it to px here.
-      const rect = WindowHelper.getDesktopRect();
-      if (!rect) return;
-
-      this.windowLeftPx = Math.round(input.leftPx);
-      this.windowTopPx  = Math.round(input.topPx);
-
-      this.clampToContainer();
-      this.applyPositionStyles();
-      this.syncStatePositionSize();
-
-      this.setSilhouetteState();
-      WindowStyleHelper.positionSilhouette();
     }
 
     onPositionWindowById(input:string[]):void{

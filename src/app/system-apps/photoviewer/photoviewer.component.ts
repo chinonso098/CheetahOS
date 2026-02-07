@@ -454,14 +454,14 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
         photosElmnt.style.height = '682px';
         /* original content height of 630, carousel height of 52, title bar of 30 */
         const sum = 630 + 52 + 30;
-        const resize:WindowResizeInfo = {pId:this.processId, width:1000, height:sum}
+        const resize:WindowResizeInfo = {pId:this.processId, widthPx:1000, heightPx:sum}
         this._windowService.resizeProcessWindowNotify.next(resize);
       }
       else{
         photosElmnt.style.height = '630px';
         /* original content height of 630, title bar of 30 */
         const sum = 630 + 30;
-        const resize:WindowResizeInfo = {pId:this.processId, width:1000, height:sum}
+        const resize:WindowResizeInfo = {pId:this.processId, widthPx:1000, heightPx:sum}
         this._windowService.resizeProcessWindowNotify.next(resize);
       }
     }
@@ -690,7 +690,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
       appData: app_data,
       appName: this.name,
       uId: uId,
-      window: {appName:'', pId:0, leftPx:0, topPx:0, height:0, width:0, zIndex:0, isVisible:true}
+      window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
     this._sessionManagmentService.addAppSession(uId, this._appState);
   }

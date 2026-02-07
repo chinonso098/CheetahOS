@@ -1,8 +1,8 @@
 export interface WindowState{
     pId: number,
     appName:string
-    width:number,
-    height:number,
+    widthPx:number,
+    heightPx:number,
     leftPx:number,
     topPx:number,
     zIndex:number,
@@ -23,13 +23,12 @@ export interface ClampedPosition{
 }
 
 export interface WindowPositionInfo {
-  pId: number;
-  leftPx: number;
-  topPx: number;
+    pId: number;
+    leftPx: number;
+    topPx: number;
 }
-
 export interface WindowResizeInfo{
     pId:number;
-    width:number;
-    height:number;
+    widthPx:number;
+    heightPx:number;
 }

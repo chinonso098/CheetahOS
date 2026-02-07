@@ -185,7 +185,7 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
       appData: app_data as string,
       appName: this.name,
       uId: uId,
-      window: {appName:'', pId:0, leftPx:0, topPx:0, height:0, width:0, zIndex:0, isVisible:true}
+      window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
     this._sessionManagmentService.addAppSession(uId, this._appState);
   }

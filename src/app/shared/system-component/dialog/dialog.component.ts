@@ -22,7 +22,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Subscription } from 'rxjs';
 import { InformationUpdate } from 'src/app/system-files/common.interfaces';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { WindowPositionInfo, WindowResizeInfo } from '../window/windows.types';
+import { WindowResizeInfo } from '../window/windows.types';
 
 @Component({
   selector: 'cos-dialog',
@@ -467,9 +467,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       fileTransferElmnt.style.height = `${totalHeight}px`;
     
       const resize: WindowResizeInfo = {
-        pId: this.processId,
-        width: 450,
-        height: totalHeight
+        pId: this.processId,  widthPx: 450, heightPx: totalHeight
       };
     
       this._windowService.resizeProcessWindowNotify.next(resize);
@@ -483,15 +481,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
 
   changeDefaultOpeningPostions():void{
-    // if(this.notificationOption === UserNotificationType.FileTransferProgress 
-    //   || this.notificationOption === UserNotificationType.FileDeleteProgress 
-    //   || this.notificationOption === UserNotificationType.DeleteWarning
-    //   || this.notificationOption === UserNotificationType.Error){
-        
-    //   const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:25, leftPx:35};
-    //   this._windowService.positionProcessWindowNotify.next(positionInfo);
-    //}
-
     if(this.notificationOption === UserNotificationType.Info){
       this._windowService.positionProcessWindowByIdNotify.next([String(this.processId), this.inputCallingUId]);
     }

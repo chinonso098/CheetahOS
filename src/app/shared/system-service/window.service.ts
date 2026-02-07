@@ -227,7 +227,7 @@ export class WindowService implements BaseService{
          * get the next window state, where isvisible == true
          */
         let winState:WindowState = {
-            width: 0, height: 0,  leftPx: 0,  topPx: 0, zIndex: 0,isVisible: false,  pId: 0, appName: ""
+            widthPx: 0, heightPx: 0,  leftPx: 0,  topPx: 0, zIndex: 0,isVisible: false,  pId: 0, appName: ""
         }
 
         if(this._processWindowStates.length === 0)

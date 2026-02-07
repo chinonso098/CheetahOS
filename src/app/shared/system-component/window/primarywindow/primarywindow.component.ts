@@ -132,11 +132,6 @@ import { WindowHelper } from '../window.helper';
         if(p.pId === this.processId)
           this.onRZWindow(p)
       });
-
-      this._positionWindowSub = this._windowService.positionProcessWindowNotify.subscribe((p) => {
-        if(p.pId === this.processId)
-          this.onPositionWindow(p)
-      });
     }
 
     get getPrimaryWindowContainerElmnt(): HTMLElement {
@@ -144,7 +139,6 @@ import { WindowHelper } from '../window.helper';
     }
 
     ngOnInit():void{
-      console.log('1:');
       this.processId = this.runningProcessID;
       this.icon = this.processAppIcon;
       this.name = this.processAppName;
@@ -157,13 +151,13 @@ import { WindowHelper } from '../window.helper';
     }
 
     ngAfterViewInit():void{
-      console.log('2:');
       this.hideGlassPaneContainer();
       this.setFocusOnWindowAfterInit(this.processId);
       
       // set defaultHeightOnOpen and defaultWidthOnOpen  
       this.windowHeightPx = this.getPrimaryWindowContainerElmnt.offsetHeight;
       this.windowWidthPx = this.getPrimaryWindowContainerElmnt.offsetWidth;
+      this.strWindowZIndex =  String(WindowConstants.MAX_Z_INDEX);
       this.applySizeStyles();
 
       // cascade position after view is ready
@@ -180,16 +174,13 @@ import { WindowHelper } from '../window.helper';
           this.syncStatePositionSize();
         }
       }
-
-      this.strWindowZIndex =  String(WindowConstants.MAX_Z_INDEX);
       this.storeWindowStateAfterViewInit();
       this.changeDetectorRef.detectChanges();      //tell angular to run additional detection cycle after 
     }
 
     ngOnChanges(changes: SimpleChanges):void{
       //console.log('WINDOW onCHANGES:',changes);
-      console.log('3:');
-      if(this.name === "Window")
+      if(this.name === WindowConstants.WINDOW)
         this.name = this.processAppName;
 
       this.displayName = this.processAppName;
@@ -234,11 +225,11 @@ import { WindowHelper } from '../window.helper';
       this._originalWindowsState = {
         appName: this.name,
         pId: this.processId,
-        width: this.windowWidthPx,
-        height: this.windowHeightPx,
+        widthPx: this.windowWidthPx,
+        heightPx: this.windowHeightPx,
         leftPx: clamped.leftPx,
         topPx: clamped.topPx,
-        zIndex: WindowConstants.MIN_Z_INDEX,
+        zIndex: WindowConstants.MAX_Z_INDEX,
         isVisible: true,
       };
 
@@ -426,7 +417,7 @@ import { WindowHelper } from '../window.helper';
       this.syncStatePositionSize();
 
       //send window resize alert(containing new width and height);
-      const resize:WindowResizeInfo = {pId:this.processId, width:this.windowWidthPx, height:this.windowHeightPx}
+      const resize:WindowResizeInfo = {pId:this.processId, widthPx:this.windowWidthPx, heightPx:this.windowHeightPx}
       this._windowService.resizeProcessWindowNotify.next(resize);
     }
 
@@ -434,26 +425,10 @@ import { WindowHelper } from '../window.helper';
       const windowState = this._windowService.getWindowState(this.processId);
       if(!windowState) return;
         
-      this.windowHeightPx = input.height;
-      this.windowWidthPx = input.width; 
+      this.windowHeightPx = input.heightPx;
+      this.windowWidthPx = input.widthPx; 
       this.applySizeStyles();
       this.syncStatePositionSize();
-    }
-
-    onPositionWindow(input: WindowPositionInfo): void {
-      // If you still receive % from elsewhere, convert it to px here.
-      const rect = WindowHelper.getDesktopRect();
-      if (!rect) return;
-
-      this.windowLeftPx = Math.round(input.leftPx);
-      this.windowTopPx  = Math.round(input.topPx);
-
-      this.clampToContainer();
-      this.applyPositionStyles();
-      this.syncStatePositionSize();
-
-      this.setSilhouetteState();
-      WindowStyleHelper.positionSilhouette();
     }
 
     setHideAndShow():void{
@@ -564,8 +539,8 @@ import { WindowHelper } from '../window.helper';
         this.windowMaxRestoreAction = 'restore';
 
         // Restore to stored service size (or original default)
-        this.windowWidthPx  = ws.width || this.windowWidthPx;
-        this.windowHeightPx = ws.height || this.windowHeightPx;
+        this.windowWidthPx  = ws.widthPx || this.windowWidthPx;
+        this.windowHeightPx = ws.heightPx || this.windowHeightPx;
 
         const windowTitleBarHeight = 30;
         this.applySizeStyles();

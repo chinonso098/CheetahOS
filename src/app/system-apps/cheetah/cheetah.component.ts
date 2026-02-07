@@ -9,7 +9,6 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { WindowPositionInfo } from 'src/app/shared/system-component/window/windows.types';
 
 @Component({
   selector:'cos-cheetah',
@@ -25,6 +24,7 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   private _windowService!:WindowService;
 
 
+  isDialog = true;
   isVisible = false;
   infoMessageTimeOutId!:NodeJS.Timeout;
 
@@ -57,9 +57,7 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
     await this._audioService.play(this.defaultAudio);
   }
 
-   async ngAfterViewInit(): Promise<void> {
-    this.changeDefaultOpeningPostions();
-    
+   async ngAfterViewInit(): Promise<void> {    
     await CommonFunctions.sleep((10)); //delay of 10ms
     this.getInfoMessage();
   }
@@ -86,7 +84,6 @@ Other trademarks and logos are property of their respective owners
   }
 
   onMouseEnter(showFancyLetters = true):void{
-
     const toolTipID = 'cheetahAboutTooltip';
     const aboutToolTip = document.getElementById(toolTipID) as HTMLElement;
     if(aboutToolTip){
@@ -147,14 +144,8 @@ Other trademarks and logos are property of their respective owners
     evt?.stopPropagation();
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
-
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
-
-    changeDefaultOpeningPostions():void{
-      const positionInfo:WindowPositionInfo = {pId:this.processId, topPx:25, leftPx:35};
-      this._windowService.positionProcessWindowNotify.next(positionInfo);
-    }
 
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type);
