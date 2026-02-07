@@ -85,7 +85,7 @@ export class UserNotificationService implements BaseService{
 
             if(warningType === UserNotificationType.DeleteWarning){
                 if(!fileInfo){
-                    console.error('File Information Can not be undefined or null');
+                    console.error('File Information can not be undefined or null');
                     resolve(false);
                 }
                 componentRef.setInput('inputFile', fileInfo);

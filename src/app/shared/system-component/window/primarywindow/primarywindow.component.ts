@@ -8,7 +8,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 
 import {Subscription } from 'rxjs';
-import { WindowBoundsState, WindowPositionInfo, WindowResizeInfo, WindowState } from '../windows.types';
+import { WindowBoundsState, WindowResizeInfo, WindowState } from '../windows.types';
 import {openCloseAnimation, hideShowAnimation, maximizeRestoreAnimation} from 'src/app/shared/system-component/window/window.animations';
 import { AnimationEvent } from '@angular/animations';
 
@@ -36,7 +36,6 @@ import { WindowHelper } from '../window.helper';
    @Input() processAppIcon = Constants.EMPTY_STRING;  
    @Input() processAppName = Constants.EMPTY_STRING;  
    @Input() priorUId = Constants.EMPTY_STRING;  
-   @Input() isMinimizable = true; 
    @Input() isMaximizable = true;  
    @Input() turnOffWindowOpenCloseAnimation = false;  
    @Input() turnOffWindowStacking = false;  
@@ -85,7 +84,6 @@ import { WindowHelper } from '../window.helper';
   strWindowHeightPx = '0px';
 
   isWindowMaximizable = true;
-  isWindowMinimizable = true;
   isWindowInFullScreenMode = false;
   currentStyles: Record<string, unknown> = {};
   headerActiveStyles: Record<string, unknown> = {}; 
@@ -186,7 +184,6 @@ import { WindowHelper } from '../window.helper';
       this.displayName = this.processAppName;
       this.icon = this.processAppIcon;
       this.isWindowMaximizable = this.isMaximizable;
-      this.isWindowMinimizable = this.isMinimizable;
 
       if(this.turnOffWindowOpenCloseAnimation && this.turnOffWindowStacking){ // file tranfer Dialog
         this.disableWindowAnimaion = true;
@@ -317,7 +314,7 @@ import { WindowHelper } from '../window.helper';
     onHideBtnClick(pId:number, evt:MouseEvent):void{
       evt.stopPropagation();
       
-      if(this.processId !== pId || !this.isWindowMinimizable) return;
+      if(this.processId !== pId) return;
       this.setHideAndShow();
     }
 

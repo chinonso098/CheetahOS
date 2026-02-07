@@ -41,7 +41,7 @@
             <nav>
                 <button appHighlight id="hideBtn" (click)="onHideBtnClick(this.processId, $event)" title="Hide">
                     <svg width="10" viewBox="0 0 10 1">
-                    <path d="M0 0h10v1H0z" [ngStyle]="{'fill':isWindowMinimizable? '#FFFFFF': '#989898CC'}"/>
+                    <path d="M0 0h10v1H0z" fill = "#FFFFFF"/>
                     </svg>
                 </button>
                 <button *ngIf="!isWindowInFullScreenMode, else elseBlock" id="maxBtn" appHighlight (click)="onMaximizeBtnClick($event)" title="Maximize">

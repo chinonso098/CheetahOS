@@ -361,7 +361,7 @@ import { WindowConstants } from '../window.constants';
       setTimeout(() => { 
         this.applyPositionStyles()
         this.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);
-        this.setHeaderActive(this.processId); }, 5);
+        this.setHeaderActive(this.processId); }, 1);
     }
 
     setHideAndShowAllVisibleWindows():void{
