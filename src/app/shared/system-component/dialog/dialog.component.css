@@ -277,7 +277,7 @@
     height: 45px;
     background-color: #e5e5e5;
     position: relative; /* anchor for absolute children */
-    bottom: -4px;
+    bottom: -15px;
 }
 
 /*Warning Notification*/
