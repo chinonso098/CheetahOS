@@ -725,7 +725,6 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     if(!this.closingNotAllowed.includes(processToClose.getProcessName)){
       this._runningProcessService.closeProcessNotify.next(processToClose);
     }else{
-      //alert(`The app: ${processToClose.getProcessName} is not allowed to be closed`)
       const uId = `${this.name}-${this.processId}`;
       const msg = `The proccess '${processToClose.getProcessName}' can't to be closed`;
       

@@ -81,6 +81,7 @@ export class UserNotificationService implements BaseService{
             componentRef.setInput('inputMsg', message);
             componentRef.setInput('inputTitle', title);
             componentRef.setInput('notificationType', warningType);
+            componentRef.setInput('inputCallingProcessUId', uId);
 
             if(warningType === UserNotificationType.DeleteWarning){
                 if(!fileInfo){
@@ -88,7 +89,6 @@ export class UserNotificationService implements BaseService{
                     resolve(false);
                 }
                 componentRef.setInput('inputFile', fileInfo);
-                componentRef.setInput('inputCallingProcessUId', uId);
             }
             this.dialogPid = componentRef.instance.processId;
       

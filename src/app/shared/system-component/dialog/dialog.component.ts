@@ -93,7 +93,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   readonly INFO_DIALOG = 'info-dialog';
   readonly FILE_TRANSFER_DIALOG = 'fileTransfer-dialog';
   readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
-  
+
   readonly UPDATE = 'Update';
   readonly UPDATE_0 = 'Update0';
 
@@ -256,7 +256,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
   }
 
-  onCloseDialogBox():void{
+  onCloseDialogBox(evt?:MouseEvent):void{
+    evt?.stopImmediatePropagation();
+
     if(this.notificationOption === UserNotificationType.Warning || this.notificationOption === UserNotificationType.DeleteWarning){
       this.cancel.emit();
     }
@@ -290,7 +292,10 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     if(this.notificationOption === this.errorNotification)
       await this._audioService.play(this.errorNotificationAudio);
 
-    if(this.notificationOption === this.warnNotification || this.notificationOption === this.deleteWarnNotification)
+    if(this.notificationOption === this.warnNotification 
+      || this.notificationOption === this.deleteWarnNotification 
+      || this.notificationOption === this.infoNotification)
+
       await this._audioService.play(this.cheetahBackGroundNotifyAudio);
   }
 

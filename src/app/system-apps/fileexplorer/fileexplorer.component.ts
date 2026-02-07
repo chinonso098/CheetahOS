@@ -19,7 +19,7 @@ import { Constants } from 'src/app/system-files/constants';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
-import { ActivityType, SortBys } from 'src/app/system-files/common.enums';
+import { ActivityType, SortBys, UserNotificationType } from 'src/app/system-files/common.enums';
 import { DragEventInfo, FileTreeNode } from 'src/app/system-files/common.interfaces';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
@@ -2997,7 +2997,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const msg = `Cheetah can't create a shortcut here.
 Do you want the shortcut to be placed on the desktop instead?`;
 
-      const confirm = await this._userNotificationService.showWarningNotification(msg, title);
+      const uId = `${this.name}-${this.processId}`;
+      const confirm = await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.Warning,  undefined, uId);
       const createOnDesktop = true;
       if(confirm)
         await this.createShortCutHelper(shortCut, selectedFile.getFileName, createOnDesktop);

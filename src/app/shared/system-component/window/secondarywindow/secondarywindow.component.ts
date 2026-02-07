@@ -158,7 +158,7 @@ import { WindowConstants } from '../window.constants';
         }
       }else if(this.isDialog && this.callingProcessUId !== Constants.EMPTY_STRING){
         this.callingProcessId = Number(this.callingProcessUId.split(Constants.DASH)[1]);
-        this.positionWindowWithinCallingProcess();
+        this.centerNotificationWindowWithinCallingProcess();
       }
 
       this.storeWindowStateAfterViewInit();
@@ -349,7 +349,8 @@ import { WindowConstants } from '../window.constants';
       this._windowService.windowDragIsInActive.next();
     }
 
-    positionWindowWithinCallingProcess():void{
+    centerNotificationWindowWithinCallingProcess():void{
+      console.log('callingProcessUId:', this.callingProcessUId);
       const primWindElmnt = document.getElementById(`primWinCmpnt-${this.callingProcessUId}`) as HTMLElement;
       if(!primWindElmnt) return;
 
@@ -357,7 +358,10 @@ import { WindowConstants } from '../window.constants';
       this.windowTopPx = winRect.y + (winRect.height * 0.25);
       this.windowLeftPx = winRect.x + (winRect.width * 0.25);
 
-      setTimeout(() => { this.setFocsuOnThisWindow(this.processId); }, 1);
+      setTimeout(() => { 
+        this.applyPositionStyles()
+        this.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);
+        this.setHeaderActive(this.processId); }, 5);
     }
 
     setHideAndShowAllVisibleWindows():void{
@@ -417,22 +421,11 @@ import { WindowConstants } from '../window.constants';
           this._processHandlerService.closeApplicationProcess(process);
       }
       this._windowService.cleanupWindowDataForApp(this.uniqueId);
-      let focusProcessId = 0;
+      const nextProc = this.getNextProcess();
+      if(!nextProc) return;
 
-      console.log('callingProcessId:', this.callingProcessId);
-
-      // If this was a notification/warning dialog, restore focus to the calling window and stop.
-      if (this.callingProcessId === 0) {
-        focusProcessId = this.callingProcessId;
-      } else {
-        const nextProc = this.getNextProcess();
-        focusProcessId = nextProc ? nextProc.getProcessId : 0;
-      }
-
-      if (focusProcessId !== 0) {
-        this._windowService.focusOnNextProcessWindowNotify.next(focusProcessId);
-        this._windowService.currentProcessInFocusNotify.next(focusProcessId);
-      }
+      this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
+      this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
     }
 
     setFocsuOnThisWindow(pId:number):void{
