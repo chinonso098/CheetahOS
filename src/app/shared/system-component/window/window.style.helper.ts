@@ -78,9 +78,7 @@ export namespace WindowStyleHelper {
       return glassPaneContainer;
     }
 
-    export const showSilhouette = (): void=>{
-      //if(state.processId !== pId) return;
-
+    export const showSilhouette =(): void=>{
       WindowStyleHelper.showGlassPaneContainer();
 
       const glassPane = document.getElementById(state.uniqueGlassPaneId) as HTMLDivElement;
@@ -107,7 +105,7 @@ export namespace WindowStyleHelper {
       state.renderer.setStyle(state.glassPaneContainer.nativeElement, 'display', 'block');
     }
 
-    export const hideSilhouette = ():void=>{
+    export const hideSilhouette =():void=>{
       WindowStyleHelper.hideGlassPaneContainer();
 
       const glassPane= document.getElementById(state.uniqueGlassPaneId) as HTMLDivElement;
@@ -131,4 +129,11 @@ export namespace WindowStyleHelper {
       glassPane.remove();
     }
 
+    export const syncSilhouetteSize =():void=>{
+      const glassPane = document.getElementById(state.uniqueGlassPaneId) as HTMLDivElement | null;
+      if (!glassPane) return;
+      
+      glassPane.style.width = `${state.windowWidthPx}px`;
+      glassPane.style.height = `${state.windowHeightPx}px`;
+    }
 }
