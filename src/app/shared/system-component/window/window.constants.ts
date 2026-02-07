@@ -11,4 +11,11 @@ export namespace WindowConstants{
     export const TASKBAR_HEIGHT_PX = 40;
     export const EDGE_PAD_PX = 8;
     export const WINDOW = "Window";
+    export const OPEN = "open";
+    export const CLOSE = "close";
+    export const MAXIMIZED = "maximized";
+    export const RESTORE = "restore";
+    export const HIDDEN = "hidden";
+    export const VISIBLE = "visible";
+
 }

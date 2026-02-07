@@ -67,9 +67,9 @@ import { WindowHelper } from '../window.helper';
 
   hideWindow = false;
   disableWindowAnimaion = false;
-  windowOpenCloseAction = 'open';
-  windowHideShowAction = 'visible';
-  windowMaxRestoreAction = 'restore';
+  windowOpenCloseAction = WindowConstants.OPEN;
+  windowHideShowAction = WindowConstants.VISIBLE;
+  windowMaxRestoreAction = WindowConstants.RESTORE;
 
   readonly SECONDS_DELAY = 450;
 
@@ -436,7 +436,7 @@ import { WindowHelper } from '../window.helper';
       if(!ws || ws.pId !== this.processId) return;
 
       this.hideWindow = !this.hideWindow;
-      this.windowHideShowAction = this.hideWindow ? 'hidden' : 'visible';
+      this.windowHideShowAction = this.hideWindow ? WindowConstants.HIDDEN : WindowConstants.VISIBLE;
 
       if(this.hideWindow){
         ws.isVisible = false;
@@ -476,7 +476,7 @@ import { WindowHelper } from '../window.helper';
       this.hideWindow = !this.hideWindow;
 
       if(ws.isVisible && this.hideWindow){
-        //this.windowHideShowAction = this.hideWindow ? 'hidden' : 'visible'; // animation not needed for this case
+        //this.windowHideShowAction = this.hideWindow ? WindowConstants.HIDDEN : WindowConstants.VISIBLE; // animation not needed for this case
 
         ws.isVisible = false;
         ws.zIndex = WindowConstants.HIDDEN_Z_INDEX;
@@ -490,7 +490,7 @@ import { WindowHelper } from '../window.helper';
         const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
 
         if(windowList.includes(this.processId) && !this.hideWindow){
-          //this.windowHideShowAction = this.hideWindow ? 'hidden' : 'visible'; // animation not needed for this case
+          //this.windowHideShowAction = this.hideWindow ? WindowConstants.HIDDEN : WindowConstants.VISIBLE; // animation not needed for this case
 
           if(this.isWindowInFullScreenMode)  // if window was in full screen when hidden, give the proper z-index when unhidden
             this.syncFullScreenWindowZIndexForProcess(this.processId, ws.zIndex);
@@ -529,14 +529,14 @@ import { WindowHelper } from '../window.helper';
       ws.isMaximized = maxWindow;
 
       if(maxWindow){
-        this.windowMaxRestoreAction = 'maximized';
+        this.windowMaxRestoreAction = WindowConstants.MAXIMIZED;
         // keep current zIndex, just ensure it is top visually
         this.syncFullScreenWindowZIndexForProcess(this.processId, ws.zIndex);
 
         this._windowService.addEventOriginator(this.uniqueId);
         this._windowService.maximizeProcessWindowNotify.next();
       } else {
-        this.windowMaxRestoreAction = 'restore';
+        this.windowMaxRestoreAction = WindowConstants.RESTORE;
 
         // Restore to stored service size (or original default)
         this.windowWidthPx  = ws.widthPx || this.windowWidthPx;
@@ -641,10 +641,10 @@ import { WindowHelper } from '../window.helper';
       evt.stopPropagation();
 
       if(!this.turnOffWindowOpenCloseAnimation)
-        this.windowOpenCloseAction = 'close';
+        this.windowOpenCloseAction = WindowConstants.CLOSE;
 
       this._windowService.removeWindowState(this.processId);
-      this.setSilhouetteState();;
+      this.setSilhouetteState();
       WindowStyleHelper.removeSilhouette();
 
       await CommonFunctions.sleep(this.SECONDS_DELAY);
@@ -663,16 +663,11 @@ import { WindowHelper } from '../window.helper';
 
     setFocsuOnThisWindow(pId:number):void{
       const uId = `${this.name}-${pId}`;
-      if(this.uniqueId !== uId) return;
-      /**
-       * If you want to make a non-focusable element focusable, 
-       * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
-       */
-      if(!this.hideWindow){
-        this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
-        this.setWindowToFocusById(pId);
-        this.updateWindowBoundsState();
-      }
+      if(this.uniqueId !== uId || this.hideWindow) return;
+
+      this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
+      this.setFocusOnWindowAndUpdateStates(pId);
+      this.updateWindowBoundsState();
     }
 
     setFocusOnWindowAfterInit(pId:number):void{
@@ -682,10 +677,6 @@ import { WindowHelper } from '../window.helper';
     }
 
     setWindowToFocusOnMouseHover(pId:number):void{
-      /**
-       * If you want to make a non-focusable element focusable, 
-       * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
-       */
       this._windowService.hideOtherProcessesWindowNotify.next(pId);
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
       
@@ -706,12 +697,10 @@ import { WindowHelper } from '../window.helper';
       if(this.processId === pId) return;
 
       const ws = this._windowService.getWindowState(this.processId);
-      if(!ws) return;
+      if(!ws || !ws.isVisible) return;
 
-      if(ws.isVisible){
-        this.setHeaderInActive(ws.pId);
-        this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
-      }
+      this.setHeaderInActive(ws.pId);
+      this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
     }
 
     restorePriorFocusOnWindows():void{
@@ -791,15 +780,13 @@ import { WindowHelper } from '../window.helper';
       if(this.processId !== pId) return;
 
       const ws = this._windowService.getWindowState(this.processId);
-      if(!ws) return;
+      if(!ws || !ws.isVisible) return;
       
-      if(ws.isVisible){
-        this.setWindowToFocusById(ws.pId);
-        this.updateWindowBoundsState();
-      }
+      this.setFocusOnWindowAndUpdateStates(ws.pId);
+      this.updateWindowBoundsState();
     }
 
-    setWindowToFocusById(pId:number):void{
+    setFocusOnWindowAndUpdateStates(pId:number):void{
       const ws = this._windowService.getWindowState(pId);
       if(!ws || ws.pId !== pId) return;
 
@@ -831,9 +818,8 @@ import { WindowHelper } from '../window.helper';
 
     lockScreenIsActive(): void {
       const ws = this._windowService.getWindowState(this.processId);
-      if (ws && ws.isVisible){
+      if (ws && ws.isVisible)
         this.applyOpacityZ(WindowConstants.HIDDEN_Z_INDEX, 0);
-      }
     }
 
     desktopIsActive(): void {
