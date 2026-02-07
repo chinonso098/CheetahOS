@@ -48,7 +48,7 @@ export namespace WindowStyleHelper {
         ...inputStyle,
         left: `${windowLeftPx}px`,
         top: `${windowTopPx}px`,
-        transform: 'translate(0px, 0px)',
+        transform: 'translate(0, 0)',
         'z-index': zIndex,
         opacity
       };

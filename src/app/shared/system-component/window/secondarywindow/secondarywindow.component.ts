@@ -152,16 +152,13 @@ import { WindowConstants } from '../window.constants';
     
       this.uniqueId = `${this.name}-${this.processId}`;
       this._runningProcessService.newProcessNotify.next(this.uniqueId);
-
-      setTimeout(() => { this.setFocusOnWindowInit(this.processId); }, 0);
-
       this._windowService.addProcessWindowToWindows(this.uniqueId); 
       this.resetHideShowWindowsList();
     }
 
     ngAfterViewInit():void{
       this.hideGlassPaneContainer();
-
+      this.setFocusOnWindowAfterInit(this.processId);
 
       // get defaultHeightOnOpen and defaultWidthOnOpen  
       this.windowHeightPx = this.getSecondaryWindowContainerElmnt.offsetHeight;
@@ -232,7 +229,6 @@ import { WindowConstants } from '../window.constants';
       this._windowService.addWindowState(this._originalWindowsState);
       this._windowService.addProcessWindowIDWithHighestZIndex(this.processId);
       this.createSilhouette();
-
     }
 
     private clampToContainer():void{
@@ -244,7 +240,6 @@ import { WindowConstants } from '../window.constants';
     }
 
     private applyOpacityZ(zIndex: number, opacity: number): void {
-
       this.currentWinStyles = WindowStyleHelper.applyStyle(this.currentWinStyles, this.windowLeftPx,
          this.windowTopPx, zIndex, opacity);
     }
@@ -468,7 +463,7 @@ import { WindowConstants } from '../window.constants';
       }
     }
 
-    setFocusOnWindowInit(pId:number):void{
+    setFocusOnWindowAfterInit(pId:number):void{
       this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
       this._windowService.currentProcessInFocusNotify.next(pId);
 

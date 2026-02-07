@@ -24,7 +24,7 @@ import { WindowHelper } from '../window.helper';
  @Component({
    selector: 'cos-primarywindow',
    templateUrl: './primarywindow.component.html',
-   animations: [openCloseAnimation,hideShowAnimation,maximizeRestoreAnimation],
+   animations: [openCloseAnimation, hideShowAnimation, maximizeRestoreAnimation],
    styleUrls: ['./primarywindow.component.css'],
    standalone:false,
  })
@@ -111,7 +111,6 @@ import { WindowHelper } from '../window.helper';
       this._menuService = menuService;
 
       this._renderer = renderer
- 
       this._restoreOrMinSub = this._windowService.restoreOrMinimizeProcessWindowNotify.subscribe((p) => {this.restoreHiddenWindow(p)});
       this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusAndResetWindowBoundsByPid(p)});
       this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p)});
@@ -150,38 +149,34 @@ import { WindowHelper } from '../window.helper';
       this.name = this.processAppName;
       this.retrievePastSessionData();
 
-      // if(!this.turnOffWindowOpenCloseAnimation)
-      //   this.windowOpenCloseAction = 'open';
-
       this.uniqueId = `${this.name}-${this.processId}`;
       this._runningProcessService.newProcessNotify.next(this.uniqueId);
-      setTimeout(() => {this.setFocusOnWindowInit(this.processId) }, 0);
-
       this._windowService.addProcessWindowToWindows(this.uniqueId); 
       this.resetHideShowWindowsList();
     }
 
     ngAfterViewInit():void{
       this.hideGlassPaneContainer();
+      this.setFocusOnWindowAfterInit(this.processId);
       
-      // get defaultHeightOnOpen and defaultWidthOnOpen  
+      // set defaultHeightOnOpen and defaultWidthOnOpen  
       this.windowHeightPx = this.getPrimaryWindowContainerElmnt.offsetHeight;
       this.windowWidthPx = this.getPrimaryWindowContainerElmnt.offsetWidth;
       this.applySizeStyles();
 
-      // if(this.turnOffWindowOpenCloseAnimation)
-      //   this.windowTransform =  'translate(-50%, -50%)';
-      // else
-      //   this.windowTransform =  'translate(0, 0)';
-
       // cascade position after view is ready
-      if (!this.turnOffWindowStacking){
+      if (!this.turnOffWindowStacking)
         this.stackWindow();
-      } else {
-        this.windowLeftPx = WindowConstants.WIN_LEFT_PX;
-        this.windowTopPx = WindowConstants.WIN_TOP_PX;
-        this.applyPositionStyles();
-        this.syncStatePositionSize();
+      
+      else if(this.turnOffWindowOpenCloseAnimation && this.turnOffWindowStacking){ // file tranfer Dialog
+        const rect = WindowHelper.getDesktopRect();
+        if(rect) {
+          console.log('rect:', rect);
+          this.windowLeftPx = rect.width * 0.5;
+          this.windowTopPx = rect.height * 0.5;
+          this.applyPositionStyles();
+          this.syncStatePositionSize();
+        }
       }
 
       this.strWindowZIndex =  String(WindowConstants.MAX_Z_INDEX);
@@ -189,6 +184,21 @@ import { WindowHelper } from '../window.helper';
 
       //tell angular to run additional detection cycle after 
       this.changeDetectorRef.detectChanges();
+    }
+
+    ngOnChanges(changes: SimpleChanges):void{
+      //console.log('WINDOW onCHANGES:',changes);
+      if(this.name === "Window")
+        this.name = this.processAppName;
+
+      this.displayName = this.processAppName;
+      this.icon = this.processAppIcon;
+      this.isWindowMaximizable = this.isMaximizable;
+      this.isWindowMinimizable = this.isMinimizable;
+
+      if(this.turnOffWindowOpenCloseAnimation && this.turnOffWindowStacking){ // file tranfer Dialog
+        this.disableWindowAnimaion = true;
+      }
     }
 
     ngOnDestroy():void{
@@ -207,21 +217,6 @@ import { WindowHelper } from '../window.helper';
       this._showOpenWindowsSub?.unsubscribe();
       this._resizeWindowSub?.unsubscribe();
       this._positionWindowSub?.unsubscribe();
-    }
-
-    ngOnChanges(changes: SimpleChanges):void{
-      //console.log('WINDOW onCHANGES:',changes);
-      if(this.name === "Window")
-          this.name = this.processAppName;
-
-      this.displayName = this.processAppName;
-      this.icon = this.processAppIcon;
-      this.isWindowMaximizable = this.isMaximizable;
-      this.isWindowMinimizable = this.isMinimizable;
-
-      if(this.turnOffWindowOpenCloseAnimation){
-        this.disableWindowAnimaion = true;
-      }
     }
 
     storeWindowStateAfterViewInit():void{
@@ -704,10 +699,9 @@ import { WindowHelper } from '../window.helper';
       }
     }
 
-    setFocusOnWindowInit(pId:number):void{
+    setFocusOnWindowAfterInit(pId:number):void{
       this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
       this._windowService.currentProcessInFocusNotify.next(pId);
-
       this.setHeaderActive(pId);
     }
 
