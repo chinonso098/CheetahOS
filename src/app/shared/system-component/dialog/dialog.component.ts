@@ -92,11 +92,11 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   readonly WARNING_DIALOG = 'warning-dialog';
   readonly INFO_DIALOG = 'info-dialog';
   readonly FILE_TRANSFER_DIALOG = 'fileTransfer-dialog';
-
+  readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
+  
   readonly UPDATE = 'Update';
   readonly UPDATE_0 = 'Update0';
 
-  readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
   private transferAction = Constants.EMPTY_STRING;
   showEsitmateIntervalId!: NodeJS.Timeout;
   isInit = true;

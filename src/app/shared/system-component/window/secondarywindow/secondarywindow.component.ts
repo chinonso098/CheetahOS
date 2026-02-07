@@ -360,7 +360,6 @@ import { WindowConstants } from '../window.constants';
       setTimeout(() => { this.setFocsuOnThisWindow(this.processId); }, 1);
     }
 
-
     setHideAndShowAllVisibleWindows():void{
       const ws = this._windowService.getWindowState(this.processId);
       if(!ws || ws.pId !== this.processId) return;
@@ -410,17 +409,17 @@ import { WindowConstants } from '../window.constants';
       this.setSilhouetteState();
       WindowStyleHelper.removeSilhouette();
 
-      if (this.isDialogContent) {
+      if(this.isDialogContent) //Close dialog or process
         this._userNotificationServices.closeDialogMsgBox(this.processId);
-      } 
       else {
         const process = this._runningProcessService.getProcess(this.processId);
-        if (process) {
+        if(process)
           this._processHandlerService.closeApplicationProcess(process);
-        }
       }
       this._windowService.cleanupWindowDataForApp(this.uniqueId);
       let focusProcessId = 0;
+
+      console.log('callingProcessId:', this.callingProcessId);
 
       // If this was a notification/warning dialog, restore focus to the calling window and stop.
       if (this.callingProcessId === 0) {
@@ -435,7 +434,6 @@ import { WindowConstants } from '../window.constants';
         this._windowService.currentProcessInFocusNotify.next(focusProcessId);
       }
     }
-
 
     setFocsuOnThisWindow(pId:number):void{
       const uId =`${this.name}-${pId}`;
