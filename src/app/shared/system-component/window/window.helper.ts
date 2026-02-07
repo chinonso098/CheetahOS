@@ -70,4 +70,5 @@ export namespace WindowHelper {
       
       winCmpnt.focus();
     }
+
 }

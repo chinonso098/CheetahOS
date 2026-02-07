@@ -175,7 +175,7 @@ import { WindowHelper } from '../window.helper';
         }
       }
       this.storeWindowStateAfterViewInit();
-      this.changeDetectorRef.detectChanges();      //tell angular to run additional detection cycle after 
+      this.changeDetectorRef.detectChanges();  //tell angular to run additional detection cycle after 
     }
 
     ngOnChanges(changes: SimpleChanges):void{
@@ -554,7 +554,6 @@ import { WindowHelper } from '../window.helper';
 
       this._windowService.addWindowState(ws);
     }
-
 
     stackWindow():void{
       const containerRect = WindowHelper.getDesktopRect();
