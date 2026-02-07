@@ -454,7 +454,7 @@ import { WindowConstants } from '../window.constants';
       }else{ 
         this._userNotificationServices.closeDialogMsgBox(this.processId);
       }
-      this._windowService.cleanUp(this.uniqueId);
+      this._windowService.cleanupWindowDataForApp(this.uniqueId);
       const nextProc = this.getNextProcess();
       if(nextProc){
         this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);

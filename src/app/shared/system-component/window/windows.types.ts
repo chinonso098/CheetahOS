@@ -10,7 +10,6 @@ export interface WindowState{
     isMaximized?:boolean,
 }
 
-
 export interface WindowBoundsState{
     xOffset: number,
     yOffset: number,

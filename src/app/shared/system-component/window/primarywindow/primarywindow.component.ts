@@ -857,7 +857,7 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
       const processToClose = this._runningProcessService.getProcess(this.processId);
       if(processToClose){
         this._runningProcessService.closeProcessNotify.next(processToClose);
-        this._windowService.cleanUp(this.uniqueId);
+        this._windowService.cleanupWindowDataForApp(this.uniqueId);
       }
 
       const nextProc = this.getNextProcess();

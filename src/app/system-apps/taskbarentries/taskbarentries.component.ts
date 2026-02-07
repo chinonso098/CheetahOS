@@ -667,7 +667,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     // this removes other window state data
     const falsePid = 0;
     const falseUid = `${process.getProcessName}-${falsePid}`;
-    this._windowServices.cleanUp(falseUid);
+    this._windowServices.cleanupWindowDataForApp(falseUid);
   }
 
   onShowIconContextMenu(evt:MouseEvent, file:TaskBarIconInfo):void{

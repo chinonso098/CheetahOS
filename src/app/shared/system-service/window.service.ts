@@ -261,15 +261,14 @@ export class WindowService implements BaseService{
         this._hiddenOrVisibleWindows = [];
      }
 
-    cleanUp(uId:string):void{
+    cleanupWindowDataForApp(uId:string):void{
         const appName = uId.split(Constants.DASH)[0]; 
         this.removeProcessWindowFromWindows(uId);
 
         // only remove window bound information when there is no more windows for the given app
         const currUids = this._processWindows.get(appName) ?? [];
-        if(currUids.length === 0){
+        if(currUids.length === 0)
             this.removeProcessWindowBounds(uId);
-        }
     }
 
     reset():void{
@@ -279,7 +278,6 @@ export class WindowService implements BaseService{
         this._processWindowStates = [];
         this._hiddenOrVisibleWindows = [];
     }
-
 
     private getProcessDetail():Process{
         return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
