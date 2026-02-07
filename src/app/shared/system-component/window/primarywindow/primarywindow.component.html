@@ -1,17 +1,12 @@
 
-<div [@.disabled]="disableWindowAnimaion"
-[@openClose]="{
-    value: windowOpenCloseAction,
-    params:{ wt0p: windowTransform0p, wt50p: windowTransform50p, wt100p: windowTransform100p }
-}" 
+<div 
+[@.disabled]="disableWindowAnimaion"
+[@openClose]="windowOpenCloseAction"
 
-[@hideShow]="{
-    value: windowHideShowAction,
-    params: { yAxis0p: yAxis0p, yAxis50p: yAxis50p, yAxis100p: yAxis100p }
-  }"
-  (@hideShow.done)="hideShowAnimationDone($event)"
-  [style.z-index]="hsZIndex"
-  [class.non-interactive]="windowHideShowAction === 'hidden'"
+[@hideShow]="windowHideShowAction"
+(@hideShow.done)="hideShowAnimationDone($event)"
+[style.z-index]="hsZIndex"
+[class.non-interactive]="windowHideShowAction === 'hidden'"
 
 [@maximizeRestore]="{
     value: windowMaxRestoreAction,

@@ -189,6 +189,12 @@ export class WindowService implements BaseService{
         this._processWindowStates = this._processWindowStates.filter(p => p.pId !== pId);
     }
 
+    removeProcessIDToHiddenOrVisibleWindows(pId:number):void{
+        if(!this._hiddenOrVisibleWindows.includes(pId)) return;
+
+        this._hiddenOrVisibleWindows = this._hiddenOrVisibleWindows.filter(id => id !== pId);
+    }
+
     getProcessPreviewImages(appName:string):TaskBarPreviewImage[]{
         if(this._processPreviewImages.has(appName))
            return this._processPreviewImages.get(appName) || [];
