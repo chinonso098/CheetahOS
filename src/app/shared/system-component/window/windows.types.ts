@@ -25,7 +25,7 @@ export interface ClampedPosition{
 export interface WindowPositionInfo {
     pId: number;
     leftPx: number;
-    topPx: number;
+    topPx: number; 
 }
 export interface WindowResizeInfo{
     pId:number;
