@@ -37,7 +37,12 @@
 </ng-template>
 
 <ng-template #infoNotice>
-    <cos-secondarywindow [runningProcessID]="processId" [processAppName]="INFO_DIALOG" [isDialog]="isDialog">
+    <cos-secondarywindow 
+    [runningProcessID]="processId" 
+    [processAppName]="INFO_DIALOG" 
+    [isDialog]="isDialog" 
+    [callingProcessUId]="inputCallingProcessUId">
+
         <div  class="info-dialog-main-container">    
             <div class="info-dialog-mid-container" tabindex="0">
                 <div class="info-dialog-mid-section1">
@@ -64,7 +69,13 @@
 </ng-template>
 
 <ng-template #warningNotice>
-    <cos-secondarywindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="isDialog">
+    <cos-secondarywindow 
+    [runningProcessID]="processId" 
+    [displayMessage]="dialogTitle" 
+    [processAppName]="WARNING_DIALOG" 
+    [isDialog]="isDialog"
+    [callingProcessUId]="inputCallingProcessUId">
+    
         <div  class="warning-dialog-main-container"> 
             <div class="warning-dialog-mid-container" tabindex="0">
                 <div class="warning-dialog-mid-section1">

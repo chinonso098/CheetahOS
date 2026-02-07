@@ -53,7 +53,7 @@ export class UserNotificationService implements BaseService{
         ){
           componentRef.setInput('inputMsg', msg);
           componentRef.setInput('inputTitle', title);
-          componentRef.setInput('inputCallingUId', uId);
+          componentRef.setInput('inputCallingProcessUId', uId);
           componentRef.setInput('notificationType', dialogMsgType);
           this.dialogPid = componentRef.instance.processId;
         }
@@ -88,7 +88,7 @@ export class UserNotificationService implements BaseService{
                     resolve(false);
                 }
                 componentRef.setInput('inputFile', fileInfo);
-                componentRef.setInput('inputCallingUId', uId);
+                componentRef.setInput('inputCallingProcessUId', uId);
             }
             this.dialogPid = componentRef.instance.processId;
       

@@ -32,6 +32,7 @@ import { WindowConstants } from '../window.constants';
     @Input() processAppIcon = Constants.EMPTY_STRING;  
     @Input() displayMessage = Constants.EMPTY_STRING;  
     @Input() processAppName = Constants.EMPTY_STRING;  
+    @Input() callingProcessUId = Constants.EMPTY_STRING;    
     @Input() isDialog = false;  
 
     private _runningProcessService!:RunningProcessService;
@@ -74,12 +75,13 @@ import { WindowConstants } from '../window.constants';
     yAxisTmp = 0;
     windowTransform = Constants.EMPTY_STRING;
 
+    callingProcessId = 0;   
     isDialogContent = false;
     currentWinStyles: Record<string, unknown> = {};
     headerActiveStyles: Record<string, unknown> = {}; 
     closeBtnStyles: Record<string, unknown> = {};
 
-    hasWindow = false;
+    readonly hasWindow = false; //The window cmpnt is an exception
     icon = Constants.EMPTY_STRING;
     name = 'Window';
     processId = 0;
@@ -118,11 +120,6 @@ import { WindowConstants } from '../window.constants';
 
       this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
       this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
-
-      this._positionWindowByIdSub = this._windowService.positionProcessWindowByIdNotify.subscribe((p) => {
-        if(Number(p[0]) === this.processId)
-          this.onPositionWindowById(p)
-      });
     }
 
     get getSecondaryWindowContainerElmnt(): HTMLElement {
@@ -151,16 +148,19 @@ import { WindowConstants } from '../window.constants';
       this.strWindowZIndex =  String(WindowConstants.MAX_Z_INDEX);
       this.applySizeStyles();
 
-      if(this.isDialog){ // file Dialog
+      if(this.isDialog && this.callingProcessUId === Constants.EMPTY_STRING){ // file Dialog
         const rect = WindowHelper.getDesktopRect();
         if(rect){
           // top-left position that centers the element
           this.windowLeftPx = Math.round((rect.width - this.windowWidthPx) * 0.5);
           this.windowTopPx  = Math.round((rect.height - this.windowHeightPx) * 0.5);
           this.applyPositionStyles();
-          this.syncStatePositionSize();
         }
+      }else if(this.isDialog && this.callingProcessUId !== Constants.EMPTY_STRING){
+        this.callingProcessId = Number(this.callingProcessUId.split(Constants.DASH)[1]);
+        this.positionWindowWithinCallingProcess();
       }
+
       this.storeWindowStateAfterViewInit();
       this.changeDetectorRef.detectChanges();      //tell angular to run additional detection cycle after 
     }
@@ -349,29 +349,15 @@ import { WindowConstants } from '../window.constants';
       this._windowService.windowDragIsInActive.next();
     }
 
-    onPositionWindowById(input:string[]):void{
-      const callingWindowId = input?.[1];
-      if (!callingWindowId) return;
+    positionWindowWithinCallingProcess():void{
+      const primWindElmnt = document.getElementById(`primWinCmpnt-${this.callingProcessUId}`) as HTMLElement;
+      if(!primWindElmnt) return;
 
-      const windowElmnt = document.getElementById(`primWinCmpnt-${callingWindowId}`) as HTMLElement;
-      const dialogWindowElmnt = document.getElementById(`secWinCmpnt-${this.uniqueId}`) as HTMLElement;
-      //const windowState  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
+      const winRect = primWindElmnt.getBoundingClientRect();
+      this.windowTopPx = winRect.y + (winRect.height * 0.25);
+      this.windowLeftPx = winRect.x + (winRect.width * 0.25);
 
-      if(!windowElmnt || !dialogWindowElmnt) return;
-
-      const winRect = windowElmnt.getBoundingClientRect();
-      this.windowTopPx = winRect.y + (winRect.height /2);
-      this.windowLeftPx = winRect.x + (winRect.width / 2);
-      //this.windowTransform = 'translate(0, 0)';
-
-      /**
-       * in testing, using currentWinStyles was slower, but a minute yet noticeable diff. hence it is not used
-       * Also, This slight delay is added due to timinig issue
-       */
-      // dialogWindowElmnt.style.zIndex = '2';
-      dialogWindowElmnt.style.left = `${this.windowLeftPx}px`;
-      dialogWindowElmnt.style.top = `${this.windowTopPx}px`;
-      //dialogWindowElmnt.style.transform = this.windowTransform;
+      setTimeout(() => { this.setFocsuOnThisWindow(this.processId); }, 1);
     }
 
 
@@ -419,38 +405,44 @@ import { WindowConstants } from '../window.constants';
       this.closeWindow();
     }
 
-    closeWindow():void{
+    closeWindow(): void {
       this._windowService.removeWindowState(this.processId);
       this.setSilhouetteState();
       WindowStyleHelper.removeSilhouette();
 
-      if(!this.isDialogContent){ // if it is visible, then the window is not a dialog box
+      if (this.isDialogContent) {
+        this._userNotificationServices.closeDialogMsgBox(this.processId);
+      } 
+      else {
         const process = this._runningProcessService.getProcess(this.processId);
-        if(process){
+        if (process) {
           this._processHandlerService.closeApplicationProcess(process);
         }
-      }else{ 
-        this._userNotificationServices.closeDialogMsgBox(this.processId);
       }
       this._windowService.cleanupWindowDataForApp(this.uniqueId);
-      const nxtProc = this.getNextProcess();
-      if(nxtProc){
-        this._windowService.focusOnNextProcessWindowNotify.next(nxtProc.getProcessId);
-        this._windowService.currentProcessInFocusNotify.next(nxtProc.getProcessId);
+      let focusProcessId = 0;
+
+      // If this was a notification/warning dialog, restore focus to the calling window and stop.
+      if (this.callingProcessId === 0) {
+        focusProcessId = this.callingProcessId;
+      } else {
+        const nextProc = this.getNextProcess();
+        focusProcessId = nextProc ? nextProc.getProcessId : 0;
+      }
+
+      if (focusProcessId !== 0) {
+        this._windowService.focusOnNextProcessWindowNotify.next(focusProcessId);
+        this._windowService.currentProcessInFocusNotify.next(focusProcessId);
       }
     }
 
+
     setFocsuOnThisWindow(pId:number):void{
-      const uId = `${this.name}-${pId}`;
-      if(this.uniqueId !== uId) return;
-      /**
-       * If you want to make a non-focusable element focusable, 
-       * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
-       */
-      if(!this.windowHide){
-        this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
-        this.setWindowToFocusById(pId);
-      }
+      const uId =`${this.name}-${pId}`;
+      if(this.uniqueId !== uId || this.windowHide) return;
+
+      this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
+      this.setWindowToFocusByPid(pId);
     }
 
     setFocusOnWindowAfterInit(pId:number):void{
@@ -461,10 +453,6 @@ import { WindowConstants } from '../window.constants';
     }
 
     setWindowToFocusOnMouseHover(pId:number):void{
-      /**
-       * If you want to make a non-focusable element focusable, 
-       * you must add a tabindex attribute to it. And divs falls into the category of non-focusable elements .
-       */
       this._windowService.hideOtherProcessesWindowNotify.next(pId);
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
       
@@ -485,12 +473,10 @@ import { WindowConstants } from '../window.constants';
       if(this.processId === pId) return;
 
       const ws = this._windowService.getWindowState(this.processId);
-      if(!ws) return;
+      if(!ws || !ws.isVisible) return;
 
-      if(ws.isVisible){
-        this.setHeaderInActive(ws.pId);
-        this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
-      }
+      this.setHeaderInActive(ws.pId);
+      this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
     }
 
     restorePriorFocusOnWindows():void{
@@ -550,30 +536,25 @@ import { WindowConstants } from '../window.constants';
       }
     }
 
-    //the window positioning is acting wonky, but it is kinda 50% there
     showOrSetProcessWindowToFocusOnClick(pId:number):void{
       if(this.processId !== pId) return;
 
       const ws = this._windowService.getWindowState(pId);
-      if(!ws) return;
+      if(!ws || !ws.isVisible) return;
 
-      if(ws.isVisible){
-        this.setFocsuOnThisWindow(ws.pId);
-      }
+      this.setFocsuOnThisWindow(ws.pId);
     }
 
     setWindowToFocusByPid(pId:number):void{
       if(this.processId !== pId) return;
 
       const ws = this._windowService.getWindowState(this.processId);
-      if(!ws) return;
-      
-      if(ws.isVisible){
-        this.setWindowToFocusById(ws.pId);
-      }
+      if(!ws || !ws.isVisible) return;
+
+      this.setFocusOnWindowAndUpdateStates(ws.pId);
     }
 
-    setWindowToFocusById(pId:number):void{
+    private setFocusOnWindowAndUpdateStates(pId:number):void{
       const ws = this._windowService.getWindowState(pId);
       const winCmpntId =`secWinCmpnt-${this.name}-${this.processId}`;
 

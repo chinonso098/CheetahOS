@@ -45,7 +45,6 @@ export class WindowService implements BaseService{
     showOrSetProcessWindowToFocusOnClickNotify: Subject<number> = new Subject<number>();
  
     resizeProcessWindowNotify: Subject<WindowResizeInfo> = new Subject<WindowResizeInfo>();
-    positionProcessWindowByIdNotify: Subject<string[]> = new Subject<string[]>();
     removeFocusOnOtherProcessesWindowNotify: Subject<number> = new Subject<number>();
     restoreOrMinimizeProcessWindowNotify: Subject<number> = new Subject<number>();
     restoreProcessWindowOnMouseLeaveNotify: Subject<number> = new Subject<number>();

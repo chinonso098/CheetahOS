@@ -10,7 +10,6 @@ import { ProcessIDService } from '../../system-service/process.id.service';
 import { ProcessHandlerService } from '../../system-service/process.handler.service';
 import { RunningProcessService } from '../../system-service/running.process.service';
 import { UserNotificationService } from '../../system-service/user.notification.service';
-import { SessionManagmentService } from '../../system-service/session.management.service';
 import { SystemNotificationService } from '../../system-service/system.notification.service';
 
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -36,14 +35,13 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   @Input() inputMsg = Constants.EMPTY_STRING;
   @Input() inputTitle = Constants.EMPTY_STRING;
   @Input() notificationType = Constants.EMPTY_STRING;
-  @Input() inputCallingUId = Constants.EMPTY_STRING;
+  @Input() inputCallingProcessUId = Constants.EMPTY_STRING;
   @Input() inputFile!:FileInfo; 
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
 
   private _userNotificationServices:UserNotificationService;
   private _windowService!:WindowService;
-  private _sessionManagementService: SessionManagmentService;
   private _processIdService!:ProcessIDService;
   private _systemNotificationService!:SystemNotificationService;
   private _runningProcessService!:RunningProcessService;
@@ -138,12 +136,10 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   displayName = Constants.EMPTY_STRING;
 
   constructor(runningProcessService:RunningProcessService, notificationServices:UserNotificationService,  windowService:WindowService,
-              systemNotificationServices:SystemNotificationService, sessionManagementService:SessionManagmentService, processIdService:ProcessIDService, 
-              processHandlerService:ProcessHandlerService, audioService:AudioService, fileService:FileService,
-              defaultService:DefaultService){
+              systemNotificationServices:SystemNotificationService, processIdService:ProcessIDService,  processHandlerService:ProcessHandlerService, 
+              audioService:AudioService, fileService:FileService, defaultService:DefaultService){
 
     this._userNotificationServices = notificationServices;
-    this._sessionManagementService = sessionManagementService;
     this._processHandlerService = processHandlerService;
     this._processIdService = processIdService;
     this._windowService = windowService;
@@ -210,8 +206,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   async ngAfterViewInit(): Promise<void> {
     const delay = 200; //200ms
-    this.changeDefaultOpeningPostions();
-
     await CommonFunctions.sleep(delay);
     await this.playDialogNotifcationSound();
   }
@@ -478,12 +472,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       }
     }
     
-  }
-
-  changeDefaultOpeningPostions():void{
-    if(this.notificationOption === UserNotificationType.Info){
-      this._windowService.positionProcessWindowByIdNotify.next([String(this.processId), this.inputCallingUId]);
-    }
   }
 
   getRestoreUserOpenedAppDefault(): void{
