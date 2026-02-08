@@ -756,7 +756,7 @@
 .sr-section3-btns{
     padding-top: 4px;
     display: flex;
-    position: fixed;
+    position: absolute;
     width: 170px;
     right:2%;
 }
