@@ -397,14 +397,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async setProperRecycleBinIcon():Promise<void>{
-    if(this.directory === Constants.RECYCLE_BIN_PATH){
+    if(this.directory !== Constants.RECYCLE_BIN_PATH) return;
 
-      const count = await this._fileService.countFolderItems(Constants.RECYCLE_BIN_PATH);
-      this.icon = (count === 0) 
-        ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
-        :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
-  
-    }
+    const count = await this._fileService.countFolderItems(Constants.RECYCLE_BIN_PATH);
+    this.icon = (count === 0) 
+      ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
+      :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
   }
 
   ngOnDestroy(): void {

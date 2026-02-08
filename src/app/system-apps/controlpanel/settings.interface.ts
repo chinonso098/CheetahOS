@@ -8,5 +8,4 @@ export interface ScreenshotSetting{
     useVantaCanvas:boolean, 
     mergeImage : boolean,
     changeBackGrndColor: boolean
-
 }

@@ -35,7 +35,7 @@
     height: 40px;
     position: relative;
     background-color: #00700b;
-    overflow: hidden;          /* clips the sheen */
+    overflow: hidden;      /* clips lighting effect */
 }
 
 @keyframes shine {
@@ -57,7 +57,7 @@
 
   /* box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15),
               0 0 10px rgba(0,112,11,0.4); */
-              
+
   background-size: 200% 200%;
   animation: shine 3s linear infinite;
   pointer-events: none;

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit,  OnDestroy, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -15,6 +15,7 @@ import {basename, extname} from 'path';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { ScreenshotSetting } from './settings.interface';
 import { SettingsHelper } from './settings.helper';
+import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 
 
 @Component({
@@ -24,8 +25,8 @@ import { SettingsHelper } from './settings.helper';
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone:false,
 })
-export class SettingsComponent implements OnInit, OnDestroy {
-
+export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('settingsContainer', {static: true}) settingsContainer!: ElementRef; 
   @Input() priorUId = Constants.EMPTY_STRING;
 
   private _processIdService!:ProcessIDService;
@@ -225,10 +226,30 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.personalizationOptions = this.generatePersonalizationOptions();
   }
 
+  ngAfterViewInit(): void {
+    this.captureComponentImg();
+  }
+
   ngOnDestroy(): void {
     // a wired bug. I shouldn't have to do this.
     this.stopSlideShow();
   }
+
+  captureComponentImg():void{
+    htmlToImage.toPng(this.settingsContainer.nativeElement).then(htmlImg =>{
+
+      const cmpntImg:TaskBarPreviewImage = {
+        pId: this.processId,
+        appName: this.name,
+        displayName: this.name,
+        icon : this.icon,
+        defaultIcon: this.icon,
+        imageData: htmlImg
+      }
+      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
+    })
+  }
+  
 
   toggleLockScreenBkgrndDropdown(evt:MouseEvent): void {
     evt.stopPropagation();
@@ -343,6 +364,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.getDesktopBackgroundData();
       await this.handleDropDownChoiceAndSetBkgrnd();
     }
+
+    this.captureComponentImg();
   }
 
   async handleMenuSelection(selection:string, idx:number, evt:MouseEvent, view:string): Promise<void>{
@@ -383,6 +406,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
       return;
     }
+
+    this.captureComponentImg();
   }
 
   changeSaveClipBoardHisotryState():void{
