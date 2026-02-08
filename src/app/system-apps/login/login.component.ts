@@ -82,6 +82,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   video1 = `${Constants.SCREEN_SAVER_BASE_PATH}falling_leaves.mp4`;
   video2 = `${Constants.SCREEN_SAVER_BASE_PATH}gentle_moments.mp4`;
   video3 = `${Constants.SCREEN_SAVER_BASE_PATH}moon_light_ride.mp4`;
+  video4 = `${Constants.SCREEN_SAVER_BASE_PATH}wishing_stars.mp4`;
+  video5 = `${Constants.SCREEN_SAVER_BASE_PATH}cloud_timelapse.mp4`;
+
 
   userIcon = `${Constants.ACCT_IMAGE_BASE_PATH}default_user.png`;
   pwrBtnIcon = `${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`;
@@ -201,8 +204,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   startScreenSaver():void{
     const elRef = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
-    const videoList = [this.video1, this.video2, this.video3];
-    const videoSelection = CommonFunctions.simpleRandomNumberGen(0, 2);
+    const videoList = [this.video1, this.video2, this.video3, this.video4, this.video5];
+    const videoSelection = CommonFunctions.simpleRandomNumberGen(0, 4);
     const scrnSaverVideo = videoList[videoSelection];
 
     const videoScreenSaver = LoginHelpers.createVideoScreenSaver(elRef, scrnSaverVideo);
