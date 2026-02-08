@@ -859,6 +859,9 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
       (isMerged
         ? processInFocus.getProcessName === processName
         : processInFocus.getProcessId === pId);
+
+    // const isTranferInProgress = (processInFocus.getProcessName === Constants.BLANK_SPACE) ? true : false;
+    // if(isTranferInProgress) return null;
   
     liElement.style.backgroundColor = shouldHighlight ? highlightColor : defaultColor;
 
@@ -883,19 +886,29 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     const elementId = isMerged
       ? `${this.tskbar}-${process.getProcessName}`
       : `${this.tskbar}-${process.getProcessName}-${process.getProcessId}`;
- 
+
     const liElement = document.getElementById(elementId) as HTMLElement | null;
-    if(liElement){
-      liElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+    if (!liElement) return;
+
+    const isTranferInProgress = (process.getProcessName === Constants.BLANK_SPACE) ? true : false;
+    if(isTranferInProgress){
+      // Fancy lighting
+      liElement.classList.add('transfer_lighting');
+      liElement.classList.add('taskbar-item');
+      return;
     }
+
+    liElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
 
     const pillElementId =`${this.tskbar}-pill-${process.getProcessName}`;
     const pillElement = document.getElementById(pillElementId) as HTMLElement | null;
-    if(pillElement){
-      pillElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
-      pillElement.style.borderLeft= '0.5px solid #333';
-    }
+    if(!pillElement) return;
+
+    pillElement.style.backgroundColor = 'hsl(206deg 77% 70%/20%)';
+    pillElement.style.borderLeft= '0.5px solid #333';
+    
   }
+
 
   removeHighlightFromTaskbarIcon(pId?:number):void{
     let process:Process;
@@ -913,16 +926,21 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
       : `${this.tskbar}-${process.getProcessName}-${process.getProcessId}`;
 
     const liElemnt = document.getElementById(elementId) as HTMLElement | null;
-    if(liElemnt){
-      liElemnt.style.backgroundColor = Constants.EMPTY_STRING;
-    }
+    if(!liElemnt) return;
 
+    const isTranferInProgress = (process.getProcessName === Constants.BLANK_SPACE) ? true : false;
+    if(isTranferInProgress)return;
+    //liElemnt.classList.remove('fancy_lighting');
+
+    liElemnt.style.backgroundColor = Constants.EMPTY_STRING;
+    
     const pillElementId =`${this.tskbar}-pill-${process.getProcessName}`;
     const pillElement = document.getElementById(pillElementId) as HTMLElement | null;
-    if(pillElement){
-      pillElement.style.backgroundColor = Constants.EMPTY_STRING;
-      pillElement.style.borderLeft= Constants.EMPTY_STRING;
-    }
+    if(!pillElement) return
+
+    pillElement.style.backgroundColor = Constants.EMPTY_STRING;
+    pillElement.style.borderLeft= Constants.EMPTY_STRING;
+    
   }
 
   restoreOrMinizeWindow(processId:number){

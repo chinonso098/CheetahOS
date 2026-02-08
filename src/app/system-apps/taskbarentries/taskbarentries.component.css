@@ -29,3 +29,39 @@
     border-bottom: 2px solid hsl(207deg 100%  72% / 90%);
     /* border-left: 0.5px solid #333; */
 }
+
+.taskbar-item {
+    width: 48px;
+    height: 40px;
+    position: relative;
+    background-color: #00700b;
+    overflow: hidden;          /* clips the sheen */
+    }
+
+@keyframes shine {
+    0%   { transform: translateX(-150%); }
+    100% { transform: translateX(150%); }
+}
+
+.transfer_lighting::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+
+
+  /* box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15),
+              0 0 10px rgba(0,112,11,0.4); */
+
+
+  background-size: 200% 100%;
+  animation: shine 4s linear infinite;
+
+  pointer-events: none;   /* clicks go through */
+}
