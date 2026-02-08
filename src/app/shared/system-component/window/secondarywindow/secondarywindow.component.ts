@@ -10,7 +10,7 @@ import { SystemNotificationService } from '../../../system-service/system.notifi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 
 import {Subscription } from 'rxjs';
-import { WindowPositionInfo, WindowState  } from '../windows.types';
+import { WindowState  } from '../windows.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowHelper } from '../window.helper';
@@ -350,7 +350,6 @@ import { WindowConstants } from '../window.constants';
     }
 
     centerNotificationWindowWithinCallingProcess():void{
-      console.log('callingProcessUId:', this.callingProcessUId);
       const primWindElmnt = document.getElementById(`primWinCmpnt-${this.callingProcessUId}`) as HTMLElement;
       if(!primWindElmnt) return;
 
