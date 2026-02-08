@@ -24,6 +24,11 @@
     overflow: hidden;  /* ensures inner text doesn’t force width */
 }
 
+.taskBar-Entries-li{
+  will-change: width, transform, opacity;
+}
+
+
 .li-pill-cntnr {
     width: 48px;
     height: 40px;

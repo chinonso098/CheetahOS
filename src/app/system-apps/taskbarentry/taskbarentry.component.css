@@ -35,7 +35,7 @@
     width: 28px;
 }
 
-.taskBar-Entry-figcaption{
+/* .taskBar-Entry-figcaption{
     color: rgba(255, 255, 255, 0.8);
     font-size: 12px;
     margin-left: 4px;
@@ -45,4 +45,30 @@
     white-space: nowrap;
     max-width: 92px;
     min-width: 0;
+} */
+
+/* Caption collapses first */
+.taskBar-Entry-figcaption{
+  margin-left: 4px;
+  padding-top: 4px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  /* make collapse smooth */
+  transition: opacity 240ms ease, max-width 220ms ease, margin-left 220ms ease;
+  max-width: 92px;
+  opacity: 1;
+}
+
+:host-context(.is-compact) .taskBar-Entry-figcaption{
+  max-width: 0;
+  opacity: 0;
+  margin-left: 0;
+  pointer-events: none;
 }

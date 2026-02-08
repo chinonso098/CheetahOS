@@ -11,6 +11,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 import { IconAppCurrentState, RectLite, TaskBarIconInfo } from './taskbar.entries.type';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'cos-taskbarentries',
@@ -18,7 +19,26 @@ import { SessionManagmentService } from 'src/app/shared/system-service/session.m
   styleUrls: ['./taskbarentries.component.css'],
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone:false,
+  animations: [
+    trigger('taskbarEntryAnim', [
+      transition(':enter', [
+        style({ width: '0px', opacity: 0, transform: 'translateX(-6px)' }),
+        animate(
+          '220ms cubic-bezier(.2,.9,.2,1)',
+          style({ width: '*', opacity: 1, transform: 'translateX(0)' })
+        ),
+      ]),
+      transition(':leave', [
+        style({ width: '*', opacity: 1, transform: 'translateX(0)' }),
+        animate(
+          '220ms cubic-bezier(.4,0,.8,.2)',
+          style({ width: '0px', opacity: 0, transform: 'translateX(-6px)' })
+        ),
+      ]),
+    ]),
+  ],
 })
+
 export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   private _processIdService!:ProcessIDService;

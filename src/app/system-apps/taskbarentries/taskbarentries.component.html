@@ -25,7 +25,9 @@
 
 <ng-template #unMergedTskBarIcons>
      <ol class="taskBar-Entries-ol"> 
-          <li class="taskBar-Entries-li unmerged" taskBarEntryHighlight 
+          <li class="taskBar-Entries-li unmerged" 
+          taskBarEntryHighlight 
+          [@taskbarEntryAnim]
                *ngFor="let app of unMergedTaskBarIconList;  let i = index" 
                id="tskbar-{{app.opensWith}}-{{app.pId}}" 
                (mouseenter)="onMouseEnter(app.opensWith, app.pId, app.iconPath)" 
