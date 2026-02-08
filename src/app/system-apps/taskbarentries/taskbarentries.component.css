@@ -14,7 +14,9 @@
     height: 40px;
     display: flex;
     border-bottom: 2px solid transparent;
+}
 
+.taskBar-Entries-li.unmerged{
     flex: 0 1 130px;   /* grow:0, shrink:1, basis:130px */
     width: 130px;      /* optional but helps consistency across browsers */
     min-width: 40px;   /* don’t shrink below 40 */
