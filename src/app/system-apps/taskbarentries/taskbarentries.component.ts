@@ -810,15 +810,11 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     const delay = 400;//400ms
     const data:unknown[] = [rect, opensWith, iconPath];
 
-    if(this._runningProcessService.isProcessRunning(opensWith)){
+    if(!this._runningProcessService.isProcessRunning(opensWith)) return;
 
-      this._windowServices.showProcessPreviewWindowNotify.next(data);
-
-      if(this.taskBarEntriesIconState === this.unMergedIcons){
-        setTimeout(() => {
-          this._systemNotificationService.taskBarPreviewHighlightNotify.next(`${opensWith}-${pId}`);
-        }, delay);
-      }
+    this._windowServices.showProcessPreviewWindowNotify.next(data);
+    if(this.taskBarEntriesIconState === this.unMergedIcons){
+      setTimeout(() => {this._systemNotificationService.taskBarPreviewHighlightNotify.next(`${opensWith}-${pId}`); }, delay);
     }
   }
 

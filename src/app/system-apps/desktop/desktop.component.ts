@@ -1316,6 +1316,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const appName = data[1] as string;
     const iconPath = data[2] as string;
 
+    console.log('rect:', rect);
+
     this.appToPreview = appName;
     this.appToPreviewIcon = iconPath;
     this.hideTaskBarAppIconMenu();
@@ -1339,7 +1341,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.tskBarPrevWindowStyle = {
       'position':'absolute',
-      'transform':`translate(${String(rect.x)}px, ${String(rect.y - 131)}px)`,
+      'transform':`translate(${String(rect.left)}px, ${String(rect.top - 132)}px)`,
       'z-index': 5,
     }
   }
