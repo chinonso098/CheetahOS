@@ -7,7 +7,7 @@ export namespace SettingsHelper {
     export const generateDesktopPictureOptions =(desktopBkgrndOption:string):string[] =>{
         const options:string[] = [];
         const desktopImgPath = Constants.DESKTOP_IMAGE_BASE_PATH;
-        const isDyanmicBkgrnd = (desktopBkgrndOption === Constants.BACKGROUND_DYNAMIC )? true: false;
+        const isDyanmicBkgrnd = (desktopBkgrndOption === Constants.BACKGROUND_DYNAMIC) ? true : false;
     
         const desktopImages = (isDyanmicBkgrnd)
         ? Constants.DESKTOP_DYNAMIC_PICTURE_SET
@@ -49,23 +49,24 @@ export namespace SettingsHelper {
     }
 
     export const getDefaultScreenShot=():ScreenshotSetting =>{
-        return{ imgPath: Constants.EMPTY_STRING, 
-                isImage:false,
-                colorValue:Constants.EMPTY_STRING,
-                isColor:false,
-                onlyBackGround:true, 
-                onlyForeGround:false,
-                useVantaCanvas:false,
-                mergeImage:false,
-                changeBackGrndColor:false
+        return{ 
+            imgPath: Constants.EMPTY_STRING, 
+            isImage:false,
+            colorValue:Constants.EMPTY_STRING,
+            isColor:false,
+            onlyBackGround:true, 
+            onlyForeGround:false,
+            useVantaCanvas:false,
+            mergeImage:false,
+            changeBackGrndColor:false
         }
     }
       
     export const changeMainDkstpBkgrndColor =(color: string): void =>{
         const mainElmnt = document.getElementById('vantaCntnr') as HTMLElement;
-        if (mainElmnt) {
-          mainElmnt.style.backgroundColor = color;
-        }
+        if (!mainElmnt) return;
+
+        mainElmnt.style.backgroundColor = color;
     }
 
     export const  updateTime=():string =>{

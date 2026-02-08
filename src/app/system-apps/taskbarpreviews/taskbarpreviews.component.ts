@@ -102,60 +102,60 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
 
   setCloseBtnColor(pId:number, isBtnHover:boolean):void{
     const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pId}`) as HTMLElement;
-    if(closeBtnElmnt){
-      closeBtnElmnt.style.backgroundColor = (isBtnHover)? 'rgb(232,17,35)' : 'black';
-    }
+    if(!closeBtnElmnt) return;
+
+    closeBtnElmnt.style.backgroundColor = (isBtnHover)? 'rgb(232,17,35)' : 'black';
   }
 
   setSvgIconColor(pId:number):void{
     const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pId}`) as HTMLElement; 
-    if(svgIconElmnt){
-      svgIconElmnt.style.fill = '#ababab';
-    }
+    if(!svgIconElmnt) return;
+
+    svgIconElmnt.style.fill = '#ababab';
   }
 
   removeCloseBtnColor(pId:number):void{
     const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pId}`) as HTMLElement;
-    if(closeBtnElmnt){
-      closeBtnElmnt.style.backgroundColor = '';
-    }
+    if(!closeBtnElmnt) return
+
+    closeBtnElmnt.style.backgroundColor = '';
   }
 
   highLightTasktBarPreview(uId: string): void {
-    const pId = uId.split('-')[1];
+    const pId = uId.split(Constants.DASH)[1];
     const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uId}`) as HTMLElement;
-    if(tskBarPrevElmnt){
-      tskBarPrevElmnt.style.backgroundColor = 'hsla(0,0%,25%,60%)';
+    if(!tskBarPrevElmnt) return;
 
-      const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pId}`) as HTMLElement;
-      if(closeBtnElmnt){
-        closeBtnElmnt.style.backgroundColor = 'black';
-      }
+    tskBarPrevElmnt.style.backgroundColor = 'hsla(0,0%,25%,60%)';
 
-      const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pId}`) as HTMLElement; 
-      if(svgIconElmnt){
-        svgIconElmnt.style.fill = '#ababab';
-      }
-    }
+    const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pId}`) as HTMLElement;
+    if(!closeBtnElmnt) return;
+
+    closeBtnElmnt.style.backgroundColor = 'black';
+
+    const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pId}`) as HTMLElement; 
+    if(!svgIconElmnt) return;
+
+    svgIconElmnt.style.fill = '#ababab';
   }
 
   unHighLightTasktBarPreview(uId:string):void{
     console.log(`highLightTasktBarPreview:${uId}`);
-    const pId = uId.split('-')[1];
+    const pId = uId.split(Constants.DASH)[1];
     const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uId}`) as HTMLElement;
-    if(tskBarPrevElmnt){
-      tskBarPrevElmnt.style.backgroundColor = Constants.EMPTY_STRING;
-    }
+    if(!tskBarPrevElmnt) return;
+
+    tskBarPrevElmnt.style.backgroundColor = Constants.EMPTY_STRING;
 
     const closeBtnElmnt = document.getElementById(`tskBar-prev-closeBtn-${pId}`) as HTMLElement;
-    if(closeBtnElmnt){
-      closeBtnElmnt.style.backgroundColor = Constants.EMPTY_STRING;
-    }
+    if(!closeBtnElmnt) return;
+
+    closeBtnElmnt.style.backgroundColor = Constants.EMPTY_STRING;
 
     const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pId}`) as HTMLElement; 
-    if(svgIconElmnt){
-      svgIconElmnt.style.fill = Constants.EMPTY_STRING;
-    }
+    if(!svgIconElmnt)return;
+    
+    svgIconElmnt.style.fill = Constants.EMPTY_STRING;
   }
 
 }

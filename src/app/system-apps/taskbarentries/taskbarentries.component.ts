@@ -8,7 +8,7 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { IconAppCurrentState, TaskBarIconInfo } from './taskbar.entries.type';
+import { IconAppCurrentState, RectLite, TaskBarIconInfo } from './taskbar.entries.type';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 
@@ -37,6 +37,8 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   selectedFile!:FileInfo
   SECONDS_DELAY = 50; //50 millisecs
+  private readonly PREVIEW_W = 185;
+  private readonly PREVIEW_GAP = 1; // whatever your CSS gap is between preview tiles
 
   readonly mergedIcons = Constants.MERGED_TASKBAR_ENTRIES;
   readonly unMergedIcons = Constants.DISTINCT_TASKBAR_ENTRIES;
@@ -44,6 +46,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   readonly hideLabel = 'hideLabel';
   readonly showLabel = 'showLabel';
   readonly tskbar = 'tskbar';
+  readonly taskBarId = 'the-window-taskbar';
 
   readonly cheetahTskBarKey = 'cheetahTskBarKey';
   readonly pinAction = 'pin';
@@ -151,7 +154,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
   onPinIconToTaskBarIconList(file:FileInfo):void{
     const isMerged = (this.taskBarEntriesIconState === this.mergedIcons);
-    let tskbarFileInfo!:TaskBarIconInfo 
+    let tskbarFileInfo!:TaskBarIconInfo; 
     const tskBarIcons = (isMerged)? this.mergedTaskBarIconList : this.unMergedTaskBarIconList;
 
     if(!tskBarIcons.some(x => x.opensWith === file.getOpensWith)){
@@ -694,33 +697,113 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     evt.preventDefault();
   }
 
-  onMouseEnter(opensWith:string, pId:number, iconPath:string):void{
+  onMouseEnter(opensWith: string, pId: number, iconPath: string): void {
+    const hoveredRect = this.highlightTaskbarIconOnMouseHover(opensWith, pId);
 
-    const rect = this.highlightTaskbarIconOnMouseHover(opensWith, pId);
-    const isAppRunning = this._runningProcessService.getProcesses().some(x => x.getProcessName === opensWith);
-    if(!isAppRunning){
-      const data = [[rect?.left, rect?.top], [opensWith]]; 
+    const isAppRunning = this._runningProcessService
+      .getProcesses()
+      .some(x => x.getProcessName === opensWith);
+
+    if (!isAppRunning) {
+      const data = [[hoveredRect?.left, hoveredRect?.top], [opensWith]];
       this._systemNotificationService.showTaskBarToolTipNotify.next(data);
-
       return;
     }
-    if(rect){
-      if(this.checkForMultipleActiveInstance(opensWith)) {
-        rect.x = this.getAverageOfRectX(opensWith);
-        const cnstnt = 0;
-        const tmpX= (rect.x * 0.5); 
-        const offSet = this.calculateOffset(opensWith);
-        rect.x = tmpX - offSet + cnstnt;
-      }else{
-        // the width of a preivew window is set to 185px
-        const prevWidth = 185;
-        const xOffset = ((prevWidth - rect.width) * 0.5);
-        const tmpX = rect.x - xOffset ;
-        rect.x = tmpX;
-      }
 
-      this.showTaskBarPreviewWindow(rect, opensWith, pId, iconPath);
+    if (!hoveredRect) return;
+
+    const left = this.computePreviewLeft(opensWith, hoveredRect);
+
+    // Build the positioning object you pass to the preview
+    const rectForPreview = {
+      left,
+      top: hoveredRect.top,     // or hoveredRect.top - previewHeight, depending on your UI
+      width: hoveredRect.width,
+      height: hoveredRect.height,
+    };
+
+    this.showTaskBarPreviewWindow(rectForPreview as any, opensWith, pId, iconPath);
+  }
+
+  private computePreviewLeft(processName: string, hoveredRect: DOMRect): number {
+    const taskbarRect = this.getTaskbarRect();
+    const isUnmerged = this.taskBarEntriesIconState === this.unMergedIcons;
+
+    // 1) Anchor X (center point)
+    let anchorX = hoveredRect.left + hoveredRect.width / 2;
+
+    // If unmerged + multiple instances: anchor to the *group* center
+    if (isUnmerged) {
+      const rects = this.getInstanceIconRects(processName);
+      if (rects.length > 1) {
+        const group = this.unionRect(rects);
+        if (group) anchorX = group.left + group.width / 2;
+      }
     }
+
+    // 2) Total preview strip width
+    const instanceCount = this._runningProcessService.getProcessCount(processName);
+    const previewCount = (isUnmerged && instanceCount > 1) ? instanceCount : 1;
+
+    const totalPreviewWidth =
+      previewCount * this.PREVIEW_W + (previewCount - 1) * this.PREVIEW_GAP;
+
+    // 3) Left position from anchor
+    let left = anchorX - totalPreviewWidth / 2;
+
+    // 4) Clamp within taskbar (recommended) or viewport
+    const minLeft = taskbarRect ? taskbarRect.left : 0;
+    const maxLeft = taskbarRect
+      ? (taskbarRect.right - totalPreviewWidth)
+      : (window.innerWidth - totalPreviewWidth);
+
+    left = this.clamp(left, minLeft, maxLeft);
+
+    return Math.round(left);
+  }
+
+
+  private getTaskbarRect(): DOMRect | null {
+    const el = document.getElementById(this.taskBarId); 
+    return el ? el.getBoundingClientRect() : null;
+  }
+
+  private getInstanceIconRects(processName: string): DOMRect[] {
+    const instances = this._runningProcessService
+      .getProcesses()
+      .filter(x => x.getProcessName === processName);
+
+    const rects: DOMRect[] = [];
+
+    for (const p of instances) {
+      const li = document.getElementById(`${this.tskbar}-${processName}-${p.getProcessId}`);
+      if (!li) continue;
+      rects.push(li.getBoundingClientRect());
+    }
+
+    return rects;
+  }
+
+  private unionRect(rects: DOMRect[]): RectLite | null {
+    if (!rects.length) return null;
+
+    let left = rects[0].left;
+    let right = rects[0].right;
+    let top = rects[0].top;
+    let bottom = rects[0].bottom;
+
+    for (const r of rects.slice(1)) {
+      left = Math.min(left, r.left);
+      right = Math.max(right, r.right);
+      top = Math.min(top, r.top);
+      bottom = Math.max(bottom, r.bottom);
+    }
+
+    return { left, right, top, width: right - left, height: bottom - top };
+  }
+
+  private clamp(n: number, min: number, max: number): number {
+    return Math.max(min, Math.min(max, n));
   }
 
   showTaskBarPreviewWindow(rect:DOMRect, opensWith:string, pId:number, iconPath:string):void{
@@ -749,68 +832,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     return false;
   }
 
-  getAverageOfRectX(processName:string):number {
-    let xSum = 0;
-    let xAvg = 0;
 
-    const instanceCount = this._runningProcessService.getProcessCount(processName);
-    const instances = this._runningProcessService.getProcesses().filter( x => x.getProcessName === processName);
-    const instancIds =  instances.map(i => {
-        return i.getProcessId;
-    });
-
-    instancIds.forEach((pId:number) =>{
-      const liElemnt = document.getElementById(`${this.tskbar}-${processName}-${pId}`);
-      if(liElemnt){
-        const liElmntRect = liElemnt.getBoundingClientRect();
-        xSum += liElmntRect.x;
-      }
-    });
-
-    xAvg = (xSum /instanceCount);
-    return xAvg;
-  }
-
-  getCorrectXOffset(processName:string):number {
-    let xSum = 0;
-    const instanceCount = this._runningProcessService.getProcessCount(processName);
-    const instances = this._runningProcessService.getProcesses().filter( x => x.getProcessName === processName);
-    const instancIds =  instances.map(i => {
-        return i.getProcessId;
-    });
-    const prevWidth = 185;
-
-    instancIds.forEach((pId:number) =>{
-      const liElemnt = document.getElementById(`${this.tskbar}-${processName}-${pId}`);
-      if(liElemnt){
-        const liElmntRect = liElemnt.getBoundingClientRect();
-        xSum += liElmntRect.width;
-      }
-    });
-
-    const fixedWidth = (prevWidth * instanceCount);
-    const xOffset = ((fixedWidth - xSum) * 0.5);
-
-    return xOffset;
-  }
-
-  calculateOffset(processName:string):number{
-    const firstInstance = this._runningProcessService.getProcesses().find(x => x.getProcessName === processName);
-    if(firstInstance){
-      const liElemnt = document.getElementById(`${this.tskbar}-${processName}-${firstInstance.getProcessId}`);
-      if(liElemnt){
-        const liElmntRect = liElemnt.getBoundingClientRect();
-        const width = liElmntRect.width;
-
-        // the width of a preivew window is set to 185px
-        const prevWidth = 185;
-        const offSet = Math.round(prevWidth - width);
-        return offSet;
-      }
-    }
-    return 0;
-  }
-  
   updateTaskBarIcon(info:Map<number, string[]>):void{
     if(!info) return;
 
@@ -908,7 +930,6 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     pillElement.style.borderLeft= '0.5px solid #333';
     
   }
-
 
   removeHighlightFromTaskbarIcon(pId?:number):void{
     let process:Process;

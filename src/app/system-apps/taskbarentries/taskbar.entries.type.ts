@@ -18,3 +18,5 @@ export interface IconAppCurrentState{
     showLabel:string,
     isRunning:boolean
 }
+
+export interface RectLite { left: number; top: number; width: number; height: number; right: number };
