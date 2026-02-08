@@ -1316,8 +1316,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const appName = data[1] as string;
     const iconPath = data[2] as string;
 
-    console.log('rect:', rect);
-
     this.appToPreview = appName;
     this.appToPreviewIcon = iconPath;
     this.hideTaskBarAppIconMenu();

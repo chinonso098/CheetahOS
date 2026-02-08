@@ -140,7 +140,7 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
   }
 
   unHighLightTasktBarPreview(uId:string):void{
-    console.log(`highLightTasktBarPreview:${uId}`);
+    //console.log(`highLightTasktBarPreview:${uId}`);
     const pId = uId.split(Constants.DASH)[1];
     const tskBarPrevElmnt = document.getElementById(`tskBar-prev-${uId}`) as HTMLElement;
     if(!tskBarPrevElmnt) return;
@@ -154,7 +154,7 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
 
     const svgIconElmnt = document.getElementById(`tskBar-prev-svgIcon-${pId}`) as HTMLElement; 
     if(!svgIconElmnt)return;
-    
+
     svgIconElmnt.style.fill = Constants.EMPTY_STRING;
   }
 
