@@ -148,6 +148,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.logInCounter = 0;
       this.logOffAndShowLockScreen();
     });
+
+    this._systemNotificationService.lockScreenNotify.subscribe(() => { 
+      this.lockScreen();
+    });
   }
 
   ngOnInit():void {
