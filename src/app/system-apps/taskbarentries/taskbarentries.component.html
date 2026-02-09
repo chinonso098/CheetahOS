@@ -12,13 +12,11 @@
                }
 
                @if(pin.instanceCount > 1){
-                    <li class="taskBar-Entries-li pill"  taskBarEntryHighlight id="tskbar-{{pin.opensWith}}" (mouseenter)="onMouseEnter(pin.opensWith, 0, pin.iconPath)" (mouseleave)="onMouseLeave()"
-                         (click)="onTaskBarIconClick(pin)" (contextmenu)="onShowIconContextMenu($event, pin)">
-
-                         <div class="li-pill-cntnr" id="tskbar-pill-cntnr-{{pin.opensWith}}">
-                              <cos-taskbarentry  [taskBarPid]="pin.pId" [taskBarIconImgUrl]="pin.defaultIconPath" [taskBarIconName]="pin.opensWith" [taskBarEntryType]="hideLabel"> </cos-taskbarentry>
-                              <div class="li-pill-divider" id="tskbar-pill-{{pin.opensWith}}"></div>
+                    <li class="li-pill-cntnr" id="tskbar-pill-cntnr-{{pin.opensWith}}">
+                         <div class="taskBar-Entries-div" taskBarEntryHighlight  id="tskbar-{{pin.opensWith}}" (mouseenter)="onMouseEnter(pin.opensWith, 0, pin.iconPath)" (mouseleave)="onMouseLeave()" (click)="onTaskBarIconClick(pin)" (contextmenu)="onShowIconContextMenu($event, pin)">
+                              <cos-taskbarentry  [taskBarPid]="pin.pId" [taskBarIconImgUrl]="pin.defaultIconPath"  [taskBarIconName]="pin.opensWith" [taskBarEntryType]="hideLabel"> </cos-taskbarentry> 
                          </div>
+                         <div class="div-pill-divider" id="tskbar-pill-{{pin.opensWith}}"> </div>
                     </li>
                }
           </ng-container>
