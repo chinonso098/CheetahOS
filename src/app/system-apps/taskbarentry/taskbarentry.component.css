@@ -35,17 +35,6 @@
     width: 28px;
 }
 
-/* .taskBar-Entry-figcaption{
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 12px;
-    margin-left: 4px;
-    padding-top: 4px;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 92px;
-    min-width: 0;
-} */
 
 /* Caption collapses first */
 .taskBar-Entry-figcaption{
