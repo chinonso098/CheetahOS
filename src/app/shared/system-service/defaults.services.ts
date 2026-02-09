@@ -63,7 +63,7 @@ export class DefaultService implements BaseService{
             [Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE, Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE_VALUE],
             [Constants.DEFAULT_RESTORE_USER_OPENED_APPS, Constants.DEFAULT_RESTORE_USER_OPENED_APPS_VALUE],
             [Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED, Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED_VALUE]
-          ]);
+        ]);
 
         this._sessionManagmentService.addMapBasedSession(this._defaultSettingServiceKey, this._defaultSettingsMap);
     }
@@ -94,6 +94,11 @@ export class DefaultService implements BaseService{
             return;
         }
 
+        this.initializeDefaultSettings();
+    }
+
+    public reset():void{
+        this._defaultSettingsMap.clear();
         this.initializeDefaultSettings();
     }
 

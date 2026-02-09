@@ -224,9 +224,6 @@ export namespace CommonFunctions {
   export const prepareSystemForShutdownOrRestart = (powerAction:string, 
       systemNotificationService:SystemNotificationService, runningProcessService:RunningProcessService,
       processHandlerService:ProcessHandlerService, windowService:WindowService, defaultService:DefaultService ):void =>{
-
-    // if(!this.reOpenWindows)
-    //   this._sessionManagementService.clearAppSession();
     
     const raiseEvent = false;
     const isRestored =  Constants.FALSE;
@@ -234,6 +231,7 @@ export namespace CommonFunctions {
     const restorePriorOpenedApps = defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
     const clearApplicationSessionData = (restorePriorOpenedApps === Constants.TRUE) ? false : true;
 
+    //only set during shutdown or restarts
     systemNotificationService.setSystemPendingAction(powerAction);
 
     const proccesses = runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
@@ -243,11 +241,28 @@ export namespace CommonFunctions {
       if(clearApplicationSessionData)
         processHandlerService.clearSessionData(proccess)
     }
+    
 
     windowService.reset();
     processHandlerService.reset();
     systemNotificationService.setSystemPendingAction(Constants.EMPTY_STRING);
     defaultService.updateDefaultData(Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED, isRestored, raiseEvent);
+  }
+
+  export const logOff = (systemNotificationService:SystemNotificationService, runningProcessService:RunningProcessService,
+    processHandlerService:ProcessHandlerService, windowService:WindowService):void =>{
+
+    //only set during shutdown or restarts
+    systemNotificationService.setSystemPendingAction(Constants.EMPTY_STRING);
+
+    const proccesses = runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
+    for(const proccess of proccesses){
+      runningProcessService.closeProcessNotify.next(proccess);
+    }
+    
+    windowService.reset();
+    processHandlerService.reset();
+    systemNotificationService.setSystemPendingAction(Constants.EMPTY_STRING);
   }
 
 }

@@ -77,6 +77,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   cheetahUnlockAudio = `${Constants.AUDIO_BASE_PATH}cheetah_unlock.wav`;
   cheetahlockAudio = `${Constants.AUDIO_BASE_PATH}cheetah_lock.mp3`;
+  cheetahlogOffAudio = `${Constants.AUDIO_BASE_PATH}cheetah_logoff.wav`;
   cheetahRestartAndShutDownAudio = `${Constants.AUDIO_BASE_PATH}cheetah_shutdown.wav`;
 
   video1 = `${Constants.SCREEN_SAVER_BASE_PATH}falling_leaves.mp4`;
@@ -143,8 +144,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
       }
     });
 
-    this._systemNotificationService.lockScreenNotify.subscribe(() => { 
-      this.lockScreen();
+    this._systemNotificationService.logOffNotify.subscribe(() => { 
+      this.logInCounter = 0;
+      this.logOffAndShowLockScreen();
     });
   }
 
@@ -410,57 +412,82 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   async showDesktop(): Promise<void>{ 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
-    if(lockScreenElmnt){
-      lockScreenElmnt.style.zIndex = '-1';
-      lockScreenElmnt.style.backdropFilter = 'none';
+    if(!lockScreenElmnt) return;
 
-      this.isScreenLocked = false;
-      this._systemNotificationService.showDesktopNotify.next();
-      this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
-      this.startLockScreenTimeOut();
+    lockScreenElmnt.style.zIndex = '-1';
+    lockScreenElmnt.style.backdropFilter = 'none';
 
-      if(this.isUserLogedIn && this.isFirstLogIn)
-        await this._audioService.play(this.cheetahUnlockAudio);
+    this.isScreenLocked = false;
+    this._systemNotificationService.showDesktopNotify.next();
+    this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
+    this.startLockScreenTimeOut();
 
-      this.resetAuthFormState();
-      this.storeState(Constants.SIGNED_IN);
-      this.stopSlideShow();
-    }
+    if(this.isUserLogedIn && this.isFirstLogIn)
+      await this._audioService.play(this.cheetahUnlockAudio);
+
+    this.resetAuthFormState();
+    this.storeState(Constants.SIGNED_IN);
+    this.stopSlideShow();
   }
 
   async showLockScreen(isShtDwnOrRstrt:boolean = false, chgBkgrnd:boolean = false):Promise<void>{
     this.viewOptions = (!isShtDwnOrRstrt)? this.currentDateTime : this.authForm;
 
     const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
-    if(lockScreenElmnt){
-      lockScreenElmnt.style.zIndex = '6';
-      lockScreenElmnt.style.backdropFilter = 'none';
- 
-      if(!isShtDwnOrRstrt && !this.isScreenLocked)
-        await this._audioService.play(this.cheetahlockAudio);
+    if(!lockScreenElmnt) return;
 
-      this.isScreenLocked = true;
-      this.isFirstLogIn = true;
-      this.loginForm.controls[this.formCntrlName].setValue(null);
-      this._systemNotificationService.showLockScreenNotify.next();
-      this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
-      this.storeState(Constants.SIGNED_OUT);
+    lockScreenElmnt.style.zIndex = '6';
+    lockScreenElmnt.style.backdropFilter = 'none';
 
-      this.setLockScreenBackground(isShtDwnOrRstrt, chgBkgrnd);
+    if(!isShtDwnOrRstrt && !this.isScreenLocked)
+      await this._audioService.play(this.cheetahlockAudio);
 
-      if(!isShtDwnOrRstrt && this.isScreenSaverEnabled){
-        this.updateScreenSaverParams();
-        this.startScreenSaver();
-      }
+    this.isScreenLocked = true;
+    this.isFirstLogIn = true;
+    this.loginForm.controls[this.formCntrlName].setValue(null);
+    this._systemNotificationService.showLockScreenNotify.next();
+    this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
+    this.storeState(Constants.SIGNED_OUT);
+
+    this.setLockScreenBackground(isShtDwnOrRstrt, chgBkgrnd);
+
+    if(!isShtDwnOrRstrt && this.isScreenSaverEnabled){
+      this.updateScreenSaverParams();
+      this.startScreenSaver();
     }
   }
 
+
+  async logOffAndShowLockScreen():Promise<void>{
+    const isShtDwnOrRstrt:boolean = false, chgBkgrnd:boolean = false
+    this.viewOptions = (!isShtDwnOrRstrt)? this.currentDateTime : this.authForm;
+
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    if(!lockScreenElmnt) return;
+
+    lockScreenElmnt.style.zIndex = '6';
+    lockScreenElmnt.style.backdropFilter = 'none';
+
+    if(!this.isScreenLocked)
+      await this._audioService.play(this.cheetahlogOffAudio);
+
+    this.isScreenLocked = true;
+    this.isFirstLogIn = true;
+    this.loginForm.controls[this.formCntrlName].setValue(null);
+    this._systemNotificationService.showLockScreenNotify.next();
+    this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
+    this.storeState(Constants.SIGNED_OUT);
+
+    this.setLockScreenBackground(isShtDwnOrRstrt, chgBkgrnd);
+  }
+
+
   startLockScreenTimeOut():void{
-    if(!this.isScreenLocked){
-      const defaultTimeOut = Number(this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT).split(Constants.COLON)[1]);
-      const secondsDelay = defaultTimeOut; 
-      this.lockScreenTimeoutId = setTimeout(async () => { await this.showLockScreen(); }, secondsDelay);
-    }
+    if(this.isScreenLocked) return;
+
+    const defaultTimeOut = Number(this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT).split(Constants.COLON)[1]);
+    const secondsDelay = defaultTimeOut; 
+    this.lockScreenTimeoutId = setTimeout(async () => { await this.showLockScreen(); }, secondsDelay);
   }
 
   lockScreen():void{

@@ -367,7 +367,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
           ptrB--;
         }
         if (ptrB <= ptrA) {
-          break; // safety net
+          break; 
         }
         // Swap values
         [tskBarIcons[ptrA], tskBarIcons[ptrB]] = [tskBarIcons[ptrB], tskBarIcons[ptrA]];

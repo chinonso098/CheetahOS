@@ -269,9 +269,16 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     const delay = 200; //200ms    
     this.onCloseDialogBox();
 
-    if(this.selectedOption === this.LOCK_SCREEN || this.selectedOption === this.LOG_OFF ){
+    if(this.selectedOption === this.LOCK_SCREEN || this.selectedOption === this.LOG_OFF){
       if(this.selectedOption === this.LOCK_SCREEN)
         this._systemNotificationService.lockScreenNotify.next();
+
+      if(this.selectedOption === this.LOG_OFF){
+        CommonFunctions.logOff(this._systemNotificationService, 
+          this._runningProcessService, this._processHandlerService, this._windowService);
+          
+        this._systemNotificationService.logOffNotify.next();
+      }
 
       return;
     }
