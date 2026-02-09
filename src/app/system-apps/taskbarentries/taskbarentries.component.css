@@ -25,7 +25,6 @@
     overflow: hidden;  /* ensures inner text doesn’t force width */
 }
 
-
 .li-pill-cntnr {
     width: 48px;
     height: 40px;

@@ -355,11 +355,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
 
       if(p === Constants.DEFAULT_AUTO_HIDE_TASKBAR){
-        this.setTaskBarVisibilityState();
+        this.setOrUpdateTaskBarVisibilityState();
       }
 
       if(p === Constants.DEFAULT_TASKBAR_COMBINATION){
-        this.setTaskBarCombinationState();
+        this.setOrUpdateTaskBarCombinationState();
       }
     });
 
@@ -382,8 +382,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     
     this.getDesktopMenuData();
     this.getTaskBarContextData();
-    this.setTaskBarVisibilityState();
-    this.setTaskBarCombinationState();
+    this.setOrUpdateTaskBarVisibilityState();
+    this.setOrUpdateTaskBarCombinationState();
   }
 
   loadDefaultVantaBackground():void{
@@ -1063,6 +1063,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.isTaskBarHidden = true;
     this._systemNotificationServices.hideTaskBarNotify.next();
     this.taskBarContextMenuData[2] = menuOption;
+    this.setOrUpdateTaskBarVisibilityState('hideTaskbar');
   }
 
   showTheTaskBar():void{
@@ -1070,18 +1071,21 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.isTaskBarHidden = false;
     this._systemNotificationServices.showTaskBarNotify.next();
     this.taskBarContextMenuData[2] = menuOption;
+    this.setOrUpdateTaskBarVisibilityState('showTaskbar');
   }
 
   mergeTaskBarButton():void{
     const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Unmerge taskbar Icons', action:this.unMergeTaskBarButton.bind(this)}
     this._menuService.mergeTaskBarIcon.next();
     this.taskBarContextMenuData[3] = menuOption;
+    this.setOrUpdateTaskBarCombinationState('mergeTaskbar');
   }
 
   unMergeTaskBarButton():void{
     const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Merge taskbar Icons', action: this.mergeTaskBarButton.bind(this)}
     this._menuService.UnMergeTaskBarIcon.next();
     this.taskBarContextMenuData[3] = menuOption;
+    this.setOrUpdateTaskBarCombinationState('unMergeTaskbar');
   }
 
   buildNewMenu(): NestedMenuItem[]{
@@ -2173,21 +2177,38 @@ OpensWith=${file.getOpensWith}
     }
   }
 
-  setTaskBarVisibilityState():void{
-    const taskbarVisiblityState = this._defaultService.getDefaultSetting(Constants.DEFAULT_AUTO_HIDE_TASKBAR);
-    if(taskbarVisiblityState === Constants.FALSE){
-      this.showTheTaskBar();
-    }else if(taskbarVisiblityState === Constants.TRUE){
-      this.hideTheTaskBar();
+  setOrUpdateTaskBarVisibilityState(actions?:string):void{
+    let taskbarVisiblityState = Constants.EMPTY_STRING;
+    if(!actions){
+      taskbarVisiblityState = this._defaultService.getDefaultSetting(Constants.DEFAULT_AUTO_HIDE_TASKBAR);
+      if(taskbarVisiblityState === Constants.FALSE){
+        this.showTheTaskBar();
+      }else if(taskbarVisiblityState === Constants.TRUE){
+        this.hideTheTaskBar();
+      } 
+    }else{
+      const raiseEvent = false;
+      taskbarVisiblityState = (actions === 'showTaskbar') ? Constants.FALSE : Constants.TRUE;
+      this._defaultService.updateDefaultData(Constants.DEFAULT_AUTO_HIDE_TASKBAR, taskbarVisiblityState, raiseEvent);   
     }
   }
 
-  setTaskBarCombinationState():void{
-    const taskbarCombinationState = this._defaultService.getDefaultSetting(Constants.DEFAULT_TASKBAR_COMBINATION);
-    if(taskbarCombinationState === Constants.TASKBAR_COMBINATION_NEVER){
-      this.unMergeTaskBarButton();
-    }else if (taskbarCombinationState === Constants.TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS){
-      this.mergeTaskBarButton();
+  setOrUpdateTaskBarCombinationState(action?:string):void{
+    let taskbarCombinationState = Constants.EMPTY_STRING;
+    if(!action){
+      taskbarCombinationState = this._defaultService.getDefaultSetting(Constants.DEFAULT_TASKBAR_COMBINATION);
+      if(taskbarCombinationState === Constants.TASKBAR_COMBINATION_NEVER)
+        this.unMergeTaskBarButton();
+      else if (taskbarCombinationState === Constants.TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS)
+        this.mergeTaskBarButton();
+    }
+    else{
+      const raiseEvent = false;
+      taskbarCombinationState = (action === 'mergeTaskbar') 
+      ? Constants.TASKBAR_COMBINATION_ALWAYS_HIDE_LABELS 
+      : Constants.TASKBAR_COMBINATION_NEVER;
+
+      this._defaultService.updateDefaultData(Constants.DEFAULT_TASKBAR_COMBINATION, taskbarCombinationState, raiseEvent);   
     }
   }
 
