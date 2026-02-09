@@ -142,6 +142,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
         this.restartOSFromDesktop()
       }
     });
+
+    this._systemNotificationService.lockScreenNotify.subscribe(() => { 
+      this.lockScreen();
+    });
   }
 
   ngOnInit():void {
@@ -457,6 +461,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
       const secondsDelay = defaultTimeOut; 
       this.lockScreenTimeoutId = setTimeout(async () => { await this.showLockScreen(); }, secondsDelay);
     }
+  }
+
+  lockScreen():void{
+    clearTimeout(this.lockScreenTimeoutId);
+    this.showLockScreen();
   }
 
   resetLockScreenTimeOut():void{

@@ -23,6 +23,7 @@ export class SystemNotificationService implements BaseService{
     private _isScreenLocked = true;
     private _pwrDialogPID = 0;
 
+    lockScreenNotify: Subject<void> = new Subject<void>();
     showLockScreenNotify: Subject<void> = new Subject<void>();
     showDesktopNotify: Subject<void> = new Subject<void>();
     resetLockScreenTimeOutNotify: Subject<void> = new Subject<void>();
