@@ -274,9 +274,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
         this._systemNotificationService.lockScreenNotify.next();
 
       if(this.selectedOption === this.LOG_OFF){
-        CommonFunctions.logOff(this._systemNotificationService, 
-          this._runningProcessService, this._processHandlerService, this._windowService);
-          
+        CommonFunctions.logOff(this._systemNotificationService, this._runningProcessService, this._processHandlerService, this._windowService);
         this._systemNotificationService.logOffNotify.next();
       }
 
