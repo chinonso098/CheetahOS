@@ -158,7 +158,7 @@
     
         <!-- Section 3 -->
         <div class="shutdown-restart-section shutdown-restart-section3">
-            <div class="sr-section3-question">
+            <div class="sr-section3-question" [class.hidden]="isQuestionHidden">
                 <div class="sr-section3-chxbox">
                     <input type="checkbox" [(ngModel)]="reOpenWindows" (change)="onReOpenWindowsCheckboxChange()">
                 </div>

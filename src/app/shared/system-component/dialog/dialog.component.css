@@ -743,6 +743,11 @@
     justify-content: flex-start;
 }
 
+.sr-section3-question.hidden{
+  pointer-events: none;
+  visibility: hidden;
+}
+
 .sr-section3-chxbox{
     padding: 4px;
 }

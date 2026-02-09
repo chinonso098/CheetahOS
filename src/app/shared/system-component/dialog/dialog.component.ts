@@ -104,6 +104,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   showEsitmateIntervalId!: NodeJS.Timeout;
   isInit = true;
   isDialog = true;
+  isQuestionHidden = false;
   isFileTransferInProgress = false;
   isFileDeleteInProgress = false;
   from = Constants.BLANK_SPACE;
@@ -303,6 +304,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     const selectedValue = event.target.value;
     this.selectedOption = selectedValue;
     this.pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
+    this.isQuestionHidden = (selectedValue === 'Shut down' || this.selectedOption === 'Restart') ? false : true;
   }
 
   async playDialogNotifcationSound():Promise<void>{
