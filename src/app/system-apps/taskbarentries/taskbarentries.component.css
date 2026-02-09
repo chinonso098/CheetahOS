@@ -14,6 +14,7 @@
     height: 40px;
     display: flex;
     border-bottom: 2px solid transparent;
+    will-change: width, transform, opacity;
 }
 
 .taskBar-Entries-li.unmerged{
@@ -24,10 +25,12 @@
     overflow: hidden;  /* ensures inner text doesn’t force width */
 }
 
-.taskBar-Entries-li{
-  will-change: width, transform, opacity;
+.taskBar-Entries-li.pill{
+  flex: 0 0 auto;
+  width: auto;
+  min-width: unset;
+  max-width: unset;
 }
-
 
 .li-pill-cntnr {
     width: 48px;

@@ -81,7 +81,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   pwrOnOffOptions = [
     { value: 'Shut down', label: 'Closes all apps and turns off the PC.' },
-    { value: 'Restart', label: 'Closes all apps and turns off the PC, and turns it on again.' }
+    { value: 'Restart', label: 'Closes all apps and turns off the PC, and turns it on again.' },
+    { value: 'Lock screen', label: 'Lock screen. apps and session will persist' },
+    { value: 'Log Off', label: 'Closes all apps and sign out' }
   ];
 
   reOpenWindows = true;
