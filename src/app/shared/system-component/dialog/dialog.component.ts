@@ -75,20 +75,25 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   readonly errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_critical_stop.wav`;
   readonly cheetahBackGroundNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_background.wav`;
 
+  readonly SHUT_DOWN = 'Shut down';
+  readonly RESTART = 'Restart';
+  readonly LOCK_SCREEN = 'Lock screen';
+  readonly LOG_OFF = 'Log Off';
+
   showMoreDetails = false;
   arrowPosition = this.arrowDown;
   detailsAmount = 'More details';
 
   pwrOnOffOptions = [
-    { value: 'Shut down', label: 'Closes all apps and turns off the PC.' },
-    { value: 'Restart', label: 'Closes all apps and turns off the PC, and turns it on again.' },
-    { value: 'Lock screen', label: 'Lock screen. apps and session will persist' },
-    { value: 'Log Off', label: 'Closes all apps and sign out' }
+    { value: this.SHUT_DOWN, label: 'Closes all apps and turns off the PC.' },
+    { value: this.RESTART, label: 'Closes all apps and turns off the PC, and turns it on again.' },
+    { value: this.LOCK_SCREEN, label: 'Lock screen. apps and session will persist' },
+    { value: this.LOG_OFF, label: 'Closes all apps and sign out' }
   ];
 
   reOpenWindows = true;
   showExtraErroMsg = false;
-  selectedOption = 'Shut down';
+  selectedOption = this.SHUT_DOWN;
   pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
 
   readonly ERROR_DIALOG = 'error-dialog';
@@ -263,6 +268,14 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   async onYesPowerDialogBox(): Promise<void>{
     const delay = 200; //200ms    
     this.onCloseDialogBox();
+
+    if(this.selectedOption === this.LOCK_SCREEN || this.selectedOption === this.LOG_OFF ){
+      if(this.selectedOption === this.LOCK_SCREEN)
+          this._systemNotificationService.showLockScreenNotify.next();
+
+      return;
+    }
+  
     CommonFunctions.prepareSystemForShutdownOrRestart(this.selectedOption, this._systemNotificationService, 
       this._runningProcessService, this._processHandlerService, this._windowService, this._defaultService);
    
@@ -303,8 +316,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   onPwrOptionSelect(event: any):void{
     const selectedValue = event.target.value;
     this.selectedOption = selectedValue;
-    this.pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
-    this.isQuestionHidden = (selectedValue === 'Shut down' || this.selectedOption === 'Restart') ? false : true;
+    this.pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === selectedValue)?.label;
+    this.isQuestionHidden = (selectedValue === this.SHUT_DOWN || this.selectedOption === this.RESTART) ? false : true;
   }
 
   async playDialogNotifcationSound():Promise<void>{
