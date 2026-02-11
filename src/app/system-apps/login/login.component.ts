@@ -27,6 +27,9 @@ import { LoginHelpers } from './login.helper';
 
 export class LoginComponent implements OnInit, AfterViewInit {
 
+  // ========================================================================
+  // Dependencies
+  // ========================================================================
   private _audioService!:AudioService;
   private _defaultService!:DefaultService;
   private _windowService!:WindowService;
@@ -37,6 +40,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private _systemNotificationService!:SystemNotificationService;
   private _wss:HTMLVideoElement | undefined;
 
+  // ========================================================================
+  // Form + UI State
+  // ========================================================================
   loginForm!: FormGroup;
   _formBuilder!:FormBuilder
   formCntrlName = 'loginInput';
@@ -75,6 +81,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   currentDateTime = 'DateTime'; 
   viewOptions = Constants.EMPTY_STRING;
 
+  // ========================================================================
+  // Assets / Constants
+  // ========================================================================
   cheetahUnlockAudio = `${Constants.AUDIO_BASE_PATH}cheetah_unlock.wav`;
   cheetahlockAudio = `${Constants.AUDIO_BASE_PATH}cheetah_lock.mp3`;
   cheetahlogOffAudio = `${Constants.AUDIO_BASE_PATH}cheetah_logoff.wav`;
@@ -86,7 +95,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
   video4 = `${Constants.SCREEN_SAVER_BASE_PATH}wishing_stars.mp4`;
   video5 = `${Constants.SCREEN_SAVER_BASE_PATH}cloud_timelapse.mp4`;
 
-
   userIcon = `${Constants.ACCT_IMAGE_BASE_PATH}default_user.png`;
   pwrBtnIcon = `${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`;
   loadingGif = `${Constants.GIF_BASE_PATH}cheetah_loading.gif`;
@@ -97,6 +105,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   lockScreenBackgroundValue = Constants.EMPTY_STRING;
   menuData:GeneralMenu[] = [];
 
+  // ========================================================================
+  // Process metadata
+  // ========================================================================
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'cheetah_authentication';
@@ -105,6 +116,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   displayName = Constants.EMPTY_STRING;
   
 
+  // ========================================================================
+  // Constructor / Setup wiring
+  // ========================================================================
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
               formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, systemNotificationService:SystemNotificationService,
               defaultService:DefaultService, windowService:WindowService, processHandlerService:ProcessHandlerService){
@@ -154,6 +168,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // ========================================================================
+  // Angular lifecycle
+  // ========================================================================
   ngOnInit():void {
     this.getLockScreenBackgroundData();
     this.thingsToDoFirstOnInit();
@@ -172,6 +189,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.syncAndHandleScreenSaver(onlySyncScrnSvrState);
   }
 
+  // ========================================================================
+  // Init helpers (forms / time / menu)
+  // ========================================================================
   thingsToDoFirstOnInit():void{
     this.loginForm = this._formBuilder.nonNullable.group({
       loginInput: Constants.EMPTY_STRING,
@@ -198,6 +218,215 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.currentTime = LoginHelpers.updateTime();
   }
 
+  getPowerMenuData():void{
+    this.menuData = [
+      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`, label: 'Shut down', action: this.shutDownOSFromLockScreen.bind(this) },
+      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_restart.png`, label: 'Restart', action:this.restartOSFromLockScreen.bind(this)}
+    ];
+  }
+
+  // ========================================================================
+  // Input / click handlers (lock screen)
+  // ========================================================================
+  onKeyDown(evt:KeyboardEvent):void{
+    if(evt.key === Constants.BLANK_SPACE){
+      this.showAuthForm();
+      this.updateScreenSaverParams();
+    }
+  }
+
+  onLockScreenViewClick():void{
+    this.showPowerMenu = false;
+    this.showAuthForm();
+    this.updateScreenSaverParams();
+  }
+
+  async onEnteringPassword(evt?:KeyboardEvent): Promise<void>{
+    const secondsDelays = [2500, 3000]; //2.5 & 3 seconds
+    if(evt?.key === "Enter"){
+      const loginTxt = this.loginForm.value.loginInput as string;
+      if(loginTxt === this.defaultPassWord){
+        this.isUserLogedIn = true;
+        this.showPasswordEntry = false;
+        this.showLoading = true;
+        this.logInCounter++;
+
+        this.stopScreenSaver();
+        await CommonFunctions.sleep(secondsDelays[0]);
+        await this.showDesktop(); 
+      }else{
+        this.showPasswordEntry = false;
+        this.showLoading = true;
+
+        await CommonFunctions.sleep(secondsDelays[1]);
+        this.showLoading = false;
+        this.showFailedEntry = true;
+
+        this.loginForm.controls[this.formCntrlName].setValue(null);
+      }
+    }
+    this.resetAuthFormTimeOut();
+  }
+
+  onBtnClick():void{
+    this.resetAuthFormState();
+  }
+
+  // ========================================================================
+  // Auth form display + timeout
+  // ========================================================================
+  showAuthForm():void{
+    this.viewOptions = this.authForm;
+    LoginHelpers
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    if(lockScreenElmnt){
+      if(this.lockScreenBackgroundType === Constants.BACKGROUND_MIRROR){
+        lockScreenElmnt.style.backdropFilter = 'blur(40px)';
+        lockScreenElmnt.style.transition = 'backdrop-filter 0.4s ease';
+      }
+      this.startAuthFormTimeOut();
+    }
+  }
+
+  startAuthFormTimeOut():void{
+    const secondsDelay = 60000; //wait 1 min
+    this.resetAuthFormTimeOutOnly();
+
+    this.authFormTimeoutId = setTimeout(() => {
+      this.loginForm.controls[this.formCntrlName].setValue(null);
+      //console.log('startAuthFormTimeOut fired at:', new Date().toISOString());
+      this.showDateTime();
+    }, secondsDelay);
+  }
+
+  showDateTime():void{
+    if(!this.isScreenLocked) return;
+
+    this.viewOptions = this.currentDateTime;
+    this.updateScreenSaverParams();
+
+    if(this.isScreenSaverEnabled){
+      if(this.isCurrentDateTimeVisibleOnLockScreen() && this.isScreenLocked  && this.logInCounter > 0)
+        this.startScreenSaver();
+    }
+
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    if(lockScreenElmnt){
+      lockScreenElmnt.style.backdropFilter = 'none';
+    }
+  }
+
+  resetAuthFormTimeOut():void{
+    clearTimeout(this.authFormTimeoutId);
+    this.startAuthFormTimeOut();
+  }
+
+  resetAuthFormTimeOutOnly():void{
+    // prevent overlapping timeouts
+    if(this.authFormTimeoutId){
+      clearTimeout(this.authFormTimeoutId);
+    }
+  }
+
+  // ========================================================================
+  // Desktop / lock screen transitions
+  // ========================================================================
+  async showDesktop(): Promise<void>{ 
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    if(!lockScreenElmnt) return;
+
+    lockScreenElmnt.style.zIndex = '-1';
+    lockScreenElmnt.style.backdropFilter = 'none';
+
+    this.isScreenLocked = false;
+    this._systemNotificationService.showDesktopNotify.next();
+    this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
+    this.startLockScreenTimeOut();
+
+    if(this.isUserLogedIn && this.isFirstLogIn)
+      await this._audioService.play(this.cheetahUnlockAudio);
+
+    this.resetAuthFormState();
+    this.storeState(Constants.SIGNED_IN);
+    this.stopSlideShow();
+  }
+
+  async showLockScreen(isShtDwnOrRstrt:boolean = false, chgBkgrnd:boolean = false):Promise<void>{
+    this.viewOptions = (!isShtDwnOrRstrt)? this.currentDateTime : this.authForm;
+
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    if(!lockScreenElmnt) return;
+
+    lockScreenElmnt.style.zIndex = '6';
+    lockScreenElmnt.style.backdropFilter = 'none';
+
+    if(!isShtDwnOrRstrt && !this.isScreenLocked)
+      await this._audioService.play(this.cheetahlockAudio);
+
+    this.isScreenLocked = true;
+    this.isFirstLogIn = true;
+    this.loginForm.controls[this.formCntrlName].setValue(null);
+    this._systemNotificationService.showLockScreenNotify.next();
+    this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
+    this.storeState(Constants.SIGNED_OUT);
+
+    this.setLockScreenBackground(isShtDwnOrRstrt, chgBkgrnd);
+
+    if(!isShtDwnOrRstrt && this.isScreenSaverEnabled){
+      this.updateScreenSaverParams();
+      this.startScreenSaver();
+    }
+  }
+
+  async logOffAndShowLockScreen():Promise<void>{
+    const isShtDwnOrRstrt:boolean = false, chgBkgrnd:boolean = false
+    this.viewOptions = (!isShtDwnOrRstrt)? this.currentDateTime : this.authForm;
+
+    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
+    if(!lockScreenElmnt) return;
+
+    lockScreenElmnt.style.zIndex = '6';
+    lockScreenElmnt.style.backdropFilter = 'none';
+
+    if(!this.isScreenLocked)
+      await this._audioService.play(this.cheetahlogOffAudio);
+
+    this.isScreenLocked = true;
+    this.isFirstLogIn = true;
+    this.loginForm.controls[this.formCntrlName].setValue(null);
+    this._systemNotificationService.showLockScreenNotify.next();
+    this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
+    this.storeState(Constants.SIGNED_OUT);
+
+    this.setLockScreenBackground(isShtDwnOrRstrt, chgBkgrnd);
+  }
+
+  // ========================================================================
+  // Lock screen timeout controls
+  // ========================================================================
+  startLockScreenTimeOut():void{
+    if(this.isScreenLocked) return;
+
+    const defaultTimeOut = Number(this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT).split(Constants.COLON)[1]);
+    const secondsDelay = defaultTimeOut; 
+    this.lockScreenTimeoutId = setTimeout(async () => { await this.showLockScreen(); }, secondsDelay);
+  }
+
+  lockScreen():void{
+    clearTimeout(this.lockScreenTimeoutId);
+    this.showLockScreen();
+  }
+
+  resetLockScreenTimeOut():void{
+    if(!this.isScreenLocked){
+      clearTimeout(this.lockScreenTimeoutId);
+      this.startLockScreenTimeOut();
+    }
+  }
+
+  // ========================================================================
+  // Screen saver
+  // ========================================================================
   syncAndHandleScreenSaver(onlySyncScrnSvrState:boolean = false):void{
     const screenSaverState = this._defaultService.getDefaultSetting(Constants.DEFAULT_SCREEN_SAVER_STATE);
     this.isScreenSaverEnabled = screenSaverState === Constants.ON ? true : false;
@@ -227,6 +456,19 @@ export class LoginComponent implements OnInit, AfterViewInit {
       LoginHelpers.stopWebSceenSaver();
   }
 
+  isCurrentDateTimeVisibleOnLockScreen():boolean{
+    return (this.viewOptions === this.currentDateTime);
+  }
+
+  updateScreenSaverParams():void{
+    LoginHelpers.updateIsCurrentDateTimeOnLogonForm(this.isCurrentDateTimeVisibleOnLockScreen());
+    LoginHelpers.updateIsScreenLocked(this.isScreenLocked);
+    LoginHelpers.updateLogInCounter(this.logInCounter);
+  }
+
+  // ========================================================================
+  // Lock screen background / slideshow
+  // ========================================================================
   getLockScreenBackgroundData():void{
     const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);
     this.lockScreenBackgroundType = defaultBkgrnd[0];
@@ -317,210 +559,22 @@ export class LoginComponent implements OnInit, AfterViewInit {
     CommonFunctions.stopSlideShow(this.slideShowIntervalId);
   }
 
-  onKeyDown(evt:KeyboardEvent):void{
-    if(evt.key === Constants.BLANK_SPACE){
-      this.showAuthForm();
-      this.updateScreenSaverParams();
-    }
+  generateColorOptions():string[]{
+    return Constants.LOCKSCREEN_DESKTOP_COLORS;
   }
 
-  onLockScreenViewClick():void{
-    this.showPowerMenu = false;
-    this.showAuthForm();
-    this.updateScreenSaverParams();
-  }
+  generateLockScreenPictureOptions():string[]{ 
+    const options:string[] = [];
+    const lockScreenImgPath = Constants.LOCK_SCREEN_IMAGE_BASE_PATH;
+    const lockScreenImages = Constants.LOCKSCREEN_PICTURE_SET;
 
-  showAuthForm():void{
-    this.viewOptions = this.authForm;
-    LoginHelpers
-    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
-    if(lockScreenElmnt){
-      if(this.lockScreenBackgroundType === Constants.BACKGROUND_MIRROR){
-        lockScreenElmnt.style.backdropFilter = 'blur(40px)';
-        lockScreenElmnt.style.transition = 'backdrop-filter 0.4s ease';
-      }
-      this.startAuthFormTimeOut();
-    }
-  }
+    lockScreenImages.forEach( imgName =>{ options.push(`${lockScreenImgPath}${imgName}`) });
+    return options;
+}
 
-  startAuthFormTimeOut():void{
-    const secondsDelay = 60000; //wait 1 min
-    this.resetAuthFormTimeOutOnly();
-
-    this.authFormTimeoutId = setTimeout(() => {
-      this.loginForm.controls[this.formCntrlName].setValue(null);
-      //console.log('startAuthFormTimeOut fired at:', new Date().toISOString());
-      this.showDateTime();
-    }, secondsDelay);
-  }
-
-  showDateTime():void{
-    if(!this.isScreenLocked) return;
-
-    this.viewOptions = this.currentDateTime;
-    this.updateScreenSaverParams();
-
-    if(this.isScreenSaverEnabled){
-      if(this.isCurrentDateTimeVisibleOnLockScreen() && this.isScreenLocked  && this.logInCounter > 0)
-        this.startScreenSaver();
-    }
-
-    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
-    if(lockScreenElmnt){
-      lockScreenElmnt.style.backdropFilter = 'none';
-    }
-  }
-
-  async onEnteringPassword(evt?:KeyboardEvent): Promise<void>{
-    const secondsDelays = [2500, 3000]; //2.5 & 3 seconds
-    if(evt?.key === "Enter"){
-      const loginTxt = this.loginForm.value.loginInput as string;
-      if(loginTxt === this.defaultPassWord){
-        this.isUserLogedIn = true;
-        this.showPasswordEntry = false;
-        this.showLoading = true;
-        this.logInCounter++;
-
-        this.stopScreenSaver();
-        await CommonFunctions.sleep(secondsDelays[0]);
-        await this.showDesktop(); 
-      }else{
-        this.showPasswordEntry = false;
-        this.showLoading = true;
-
-        await CommonFunctions.sleep(secondsDelays[1]);
-        this.showLoading = false;
-        this.showFailedEntry = true;
-
-        this.loginForm.controls[this.formCntrlName].setValue(null);
-      }
-    }
-    this.resetAuthFormTimeOut();
-  }
-
-  onBtnClick():void{
-    this.resetAuthFormState();
-  }
-
-  resetAuthFormTimeOut():void{
-    clearTimeout(this.authFormTimeoutId);
-    this.startAuthFormTimeOut();
-  }
-
-  resetAuthFormTimeOutOnly():void{
-    // prevent overlapping timeouts
-    if(this.authFormTimeoutId){
-      clearTimeout(this.authFormTimeoutId);
-    }
-  }
-
-  async showDesktop(): Promise<void>{ 
-    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
-    if(!lockScreenElmnt) return;
-
-    lockScreenElmnt.style.zIndex = '-1';
-    lockScreenElmnt.style.backdropFilter = 'none';
-
-    this.isScreenLocked = false;
-    this._systemNotificationService.showDesktopNotify.next();
-    this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
-    this.startLockScreenTimeOut();
-
-    if(this.isUserLogedIn && this.isFirstLogIn)
-      await this._audioService.play(this.cheetahUnlockAudio);
-
-    this.resetAuthFormState();
-    this.storeState(Constants.SIGNED_IN);
-    this.stopSlideShow();
-  }
-
-  async showLockScreen(isShtDwnOrRstrt:boolean = false, chgBkgrnd:boolean = false):Promise<void>{
-    this.viewOptions = (!isShtDwnOrRstrt)? this.currentDateTime : this.authForm;
-
-    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
-    if(!lockScreenElmnt) return;
-
-    lockScreenElmnt.style.zIndex = '6';
-    lockScreenElmnt.style.backdropFilter = 'none';
-
-    if(!isShtDwnOrRstrt && !this.isScreenLocked)
-      await this._audioService.play(this.cheetahlockAudio);
-
-    this.isScreenLocked = true;
-    this.isFirstLogIn = true;
-    this.loginForm.controls[this.formCntrlName].setValue(null);
-    this._systemNotificationService.showLockScreenNotify.next();
-    this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
-    this.storeState(Constants.SIGNED_OUT);
-
-    this.setLockScreenBackground(isShtDwnOrRstrt, chgBkgrnd);
-
-    if(!isShtDwnOrRstrt && this.isScreenSaverEnabled){
-      this.updateScreenSaverParams();
-      this.startScreenSaver();
-    }
-  }
-
-
-  async logOffAndShowLockScreen():Promise<void>{
-    const isShtDwnOrRstrt:boolean = false, chgBkgrnd:boolean = false
-    this.viewOptions = (!isShtDwnOrRstrt)? this.currentDateTime : this.authForm;
-
-    const lockScreenElmnt = document.getElementById('lockscreenCmpnt') as HTMLDivElement;
-    if(!lockScreenElmnt) return;
-
-    lockScreenElmnt.style.zIndex = '6';
-    lockScreenElmnt.style.backdropFilter = 'none';
-
-    if(!this.isScreenLocked)
-      await this._audioService.play(this.cheetahlogOffAudio);
-
-    this.isScreenLocked = true;
-    this.isFirstLogIn = true;
-    this.loginForm.controls[this.formCntrlName].setValue(null);
-    this._systemNotificationService.showLockScreenNotify.next();
-    this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
-    this.storeState(Constants.SIGNED_OUT);
-
-    this.setLockScreenBackground(isShtDwnOrRstrt, chgBkgrnd);
-  }
-
-
-  startLockScreenTimeOut():void{
-    if(this.isScreenLocked) return;
-
-    const defaultTimeOut = Number(this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT).split(Constants.COLON)[1]);
-    const secondsDelay = defaultTimeOut; 
-    this.lockScreenTimeoutId = setTimeout(async () => { await this.showLockScreen(); }, secondsDelay);
-  }
-
-  lockScreen():void{
-    clearTimeout(this.lockScreenTimeoutId);
-    this.showLockScreen();
-  }
-
-  resetLockScreenTimeOut():void{
-    if(!this.isScreenLocked){
-      clearTimeout(this.lockScreenTimeoutId);
-      this.startLockScreenTimeOut();
-    }
-  }
-
-  resetAuthFormState():void{
-    this.showUserInfo = true;
-    this.showPasswordEntry = true;
-    this.showLoading = false;
-    this.showFailedEntry = false;
-    this.showRestartShutDown = false;
-  }
-
-  getPowerMenuData():void{
-    this.menuData = [
-      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`, label: 'Shut down', action: this.shutDownOSFromLockScreen.bind(this) },
-      {icon:`${Constants.IMAGE_BASE_PATH}cheetah_restart.png`, label: 'Restart', action:this.restartOSFromLockScreen.bind(this)}
-    ];
-  }
-
+  // ========================================================================
+  // Power menu UI handlers
+  // ========================================================================
   async onPowerBtnClick(evt:MouseEvent): Promise<void>{
     evt.preventDefault();
 
@@ -566,44 +620,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  changeLockScreenLogonPosition(top:number):void{
-    const lsLogonElmnt = document.getElementById('lockscreen-logon-container') as HTMLDivElement; 
-    if(lsLogonElmnt){
-      lsLogonElmnt.style.top = `${top}%`;
-    }
-  }
-
-  hidePowerBtn():void{
-    const lsPwrBtn = document.getElementById('lockScreenPowerCntnr') as HTMLDivElement; 
-    if(lsPwrBtn){
-      lsPwrBtn.style.display = 'none';
-    }
-  }
-
-  showPowerBtn():void{
-    const lsPwrBtn = document.getElementById('lockScreenPowerCntnr') as HTMLDivElement; 
-    if(lsPwrBtn){
-      lsPwrBtn.style.display = 'block';
-    }
-  }
-
-  resetFields():void{
-    this.showUserInfo = false;
-    this.showPasswordEntry = false;
-    this.showLoading = false
-    this.showFailedEntry = false;
-  }
-
-  isCurrentDateTimeVisibleOnLockScreen():boolean{
-    return (this.viewOptions === this.currentDateTime);
-  }
-
-  updateScreenSaverParams():void{
-    LoginHelpers.updateIsCurrentDateTimeOnLogonForm(this.isCurrentDateTimeVisibleOnLockScreen());
-    LoginHelpers.updateIsScreenLocked(this.isScreenLocked);
-    LoginHelpers.updateLogInCounter(this.logInCounter);
-  }
-
+  // ========================================================================
+  // Power actions (shutdown / restart)
+  // ========================================================================
   async shutDownOSFromLockScreen():Promise<void>{
     const delay = 6000; // 6 secs
     this.resetFields();
@@ -655,6 +674,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.setLockScreenBackground();
   }
 
+  shutDownRestartPrep(powerAction:string):void{
+    CommonFunctions.prepareSystemForShutdownOrRestart(powerAction, this._systemNotificationService, 
+      this._runningProcessService, this._processHandlerService, this._windowService, this._defaultService);
+  }
+
   showPowerOnOffScreen():void{
     const powerOnOffElmnt = document.getElementById('powerOnOffCmpnt') as HTMLDivElement;
     if(powerOnOffElmnt){
@@ -673,9 +697,28 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  shutDownRestartPrep(powerAction:string):void{
-    CommonFunctions.prepareSystemForShutdownOrRestart(powerAction, this._systemNotificationService, 
-      this._runningProcessService, this._processHandlerService, this._windowService, this._defaultService);
+  // ========================================================================
+  // Small DOM helpers (positioning / visibility / input focus)
+  // ========================================================================
+  changeLockScreenLogonPosition(top:number):void{
+    const lsLogonElmnt = document.getElementById('lockscreen-logon-container') as HTMLDivElement; 
+    if(lsLogonElmnt){
+      lsLogonElmnt.style.top = `${top}%`;
+    }
+  }
+
+  hidePowerBtn():void{
+    const lsPwrBtn = document.getElementById('lockScreenPowerCntnr') as HTMLDivElement; 
+    if(lsPwrBtn){
+      lsPwrBtn.style.display = 'none';
+    }
+  }
+
+  showPowerBtn():void{
+    const lsPwrBtn = document.getElementById('lockScreenPowerCntnr') as HTMLDivElement; 
+    if(lsPwrBtn){
+      lsPwrBtn.style.display = 'block';
+    }
   }
 
   removeLockScreenBackDrop():void{
@@ -703,19 +746,27 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  generateColorOptions():string[]{
-    return Constants.LOCKSCREEN_DESKTOP_COLORS;
+  // ========================================================================
+  // UI state resets
+  // ========================================================================
+  resetAuthFormState():void{
+    this.showUserInfo = true;
+    this.showPasswordEntry = true;
+    this.showLoading = false;
+    this.showFailedEntry = false;
+    this.showRestartShutDown = false;
   }
 
-  generateLockScreenPictureOptions():string[]{ 
-    const options:string[] = [];
-    const lockScreenImgPath = Constants.LOCK_SCREEN_IMAGE_BASE_PATH;
-    const lockScreenImages = Constants.LOCKSCREEN_PICTURE_SET;
+  resetFields():void{
+    this.showUserInfo = false;
+    this.showPasswordEntry = false;
+    this.showLoading = false
+    this.showFailedEntry = false;
+  }
 
-    lockScreenImages.forEach( imgName =>{ options.push(`${lockScreenImgPath}${imgName}`) });
-    return options;
-}
-
+  // ========================================================================
+  // Session storage helpers
+  // ========================================================================
   storeState(state:string):void{
     this._sessionManagmentService.addSession(this.cheetahLogonKey, state);
   }
@@ -735,6 +786,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.isFirstLogIn = false;
     }
   }
+
+  // ========================================================================
+  // Process registration
+  // ========================================================================
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }
