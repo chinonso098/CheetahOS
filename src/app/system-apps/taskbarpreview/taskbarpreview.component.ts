@@ -3,6 +3,8 @@ import { TaskBarPreviewImage } from './taskbar.preview';
 import { trigger, state, style, animate, transition } from '@angular/animations'
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { Constants } from 'src/app/system-files/constants';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 @Component({
   selector: 'cos-taskbarpreview',
@@ -27,9 +29,9 @@ export class TaskBarPreviewComponent implements OnInit, AfterViewInit {
   private _systemNotificationService:SystemNotificationService
   private _windowServices:WindowService;
 
-  @Input() name = '';
-  @Input() icon = '';
-  @Input() fadeState = '';
+  @Input() name = Constants.EMPTY_STRING;
+  @Input() icon = Constants.EMPTY_STRING;
+  @Input() fadeState = Constants.EMPTY_STRING;
 
   componentImages:TaskBarPreviewImage[] = [];
 
@@ -43,11 +45,10 @@ export class TaskBarPreviewComponent implements OnInit, AfterViewInit {
     this.componentImages = this._windowServices.getProcessPreviewImages(this.name);
   }
 
-  ngAfterViewInit():void{
+  async ngAfterViewInit(): Promise<void>{
     const delay = 5;
-    setTimeout(() => {
-      this.checkForUpdatedTaskBarPrevInfo();
-    }, delay);
+    await CommonFunctions.sleep(delay);
+    this.checkForUpdatedTaskBarPrevInfo();
   }
 
   keepTaskBarPreviewWindow():void{

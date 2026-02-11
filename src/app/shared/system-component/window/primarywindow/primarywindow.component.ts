@@ -249,6 +249,12 @@ import { WindowHelper } from '../window.helper';
          this.windowTopPx, zIndex, opacity);
     }
 
+    private applyOpacityZOnHiddenWindows(zIndex: number, opacity: number): void {
+      const isVisible = false;
+      this.currentStyles = WindowStyleHelper.applyStyle(this.currentStyles, this.windowLeftPx,
+         this.windowTopPx, zIndex, opacity, isVisible);
+    }
+
     private applyPositionStyles(): void {
       const zIndex = this.hideWindow ? WindowConstants.HIDDEN_Z_INDEX : this.strWindowZIndex;
       const opacity = this.hideWindow ? 0 : 1;
@@ -676,13 +682,13 @@ import { WindowHelper } from '../window.helper';
       this._windowService.hideOtherProcessesWindowNotify.next(pId);
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
       
-      if(this.processId === pId){
-        if(pId === pid_with_highest_z_index)
-            this.setHeaderActive(pId);
+      if(this.processId !== pId) return;
 
-        this.hideSilhouette(pId);
-        this.showOnlyWindowById(pId);
-      }
+      if(pId === pid_with_highest_z_index)
+        this.setHeaderActive(pId);
+
+      this.hideSilhouette(pId);
+      this.showOnlyWindowById(pId);
     }
 
     /**
@@ -809,7 +815,10 @@ import { WindowHelper } from '../window.helper';
       if (!ws || ws.pId !== pId) return;
 
       const z = WindowConstants.TMP_MAX_Z_INDEX;
-      this.applyOpacityZ(z, 1);
+      if(ws.isVisible)
+        this.applyOpacityZ(z, 1);
+      else
+        this.applyOpacityZOnHiddenWindows(z, 1);
     }
 
     lockScreenIsActive(): void {

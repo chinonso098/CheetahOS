@@ -43,13 +43,13 @@ export namespace WindowStyleHelper {
     };
 
     export const applyStyle = (inputStyle:Record<string, unknown>, windowLeftPx:number, windowTopPx:number,
-        zIndex: number, opacity: number):Record<string, unknown> => {
+        zIndex: number, opacity: number, isVisible:boolean = true):Record<string, unknown> => {
           
       const style= {
         ...inputStyle,
         left: `${windowLeftPx}px`,
         top: `${windowTopPx}px`,
-        transform: 'translate(0, 0)',
+        transform: isVisible ? 'translate(0, 0)' : 'translate(0, 0) scale(1)',
         'z-index': zIndex,
         opacity
       };

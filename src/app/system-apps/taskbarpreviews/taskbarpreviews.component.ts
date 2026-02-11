@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { Constants } from 'src/app/system-files/constants';
 
 @Component({
@@ -39,11 +40,9 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
     this._unHighLightTaskBarPreviewSub = this._systemNotificationService.taskBarPreviewUnHighlightNotify.subscribe((p) => {this.unHighLightTasktBarPreview(p)});
   }
 
-  ngAfterViewInit(): void {
-    
-    setTimeout(() => {
-      this.shortAppInfo();
-    }, this.SECONDS_DELAY);
+  async ngAfterViewInit(): Promise<void>{
+    await CommonFunctions.sleep(this.SECONDS_DELAY);
+    this.shortAppInfo();
   }
 
   ngOnDestroy(): void {
@@ -88,15 +87,13 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
     this.removeCloseBtnColor(pId);
   }
 
-  showOrSetWindowToFocusOnClick(pId:number):void{
+  async showOrSetWindowToFocusOnClick(pId:number): Promise<void>{
     const delay = 100; //100ms
     this.restoreWindowOnMouseLeave(pId);
-
     this.hideTaskBarPreviewWindowAndRestoreDesktop();
 
-    setTimeout(() => {
-      this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pId);
-    }, delay);
+    await CommonFunctions.sleep(delay);
+    this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pId);
   }
 
 
