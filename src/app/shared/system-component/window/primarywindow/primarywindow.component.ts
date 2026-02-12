@@ -243,16 +243,14 @@ import { WindowHelper } from '../window.helper';
       this.windowTopPx  = clampData.topPx;
     }
 
-    private applyOpacityZ(zIndex: number, opacity: number): void {
+    private applyOpacityZ(zIndex: number, opacity: number, isWindowVisible:boolean = true): void {
 
-      this.currentStyles = WindowStyleHelper.applyStyle(this.currentStyles, this.windowLeftPx,
-         this.windowTopPx, zIndex, opacity);
-    }
-
-    private applyOpacityZOnHiddenWindows(zIndex: number, opacity: number): void {
-      const isVisible = false;
-      this.currentStyles = WindowStyleHelper.applyStyle(this.currentStyles, this.windowLeftPx,
-         this.windowTopPx, zIndex, opacity, isVisible);
+      if(isWindowVisible)
+        this.currentStyles = WindowStyleHelper.applyStyle(this.currentStyles, this.windowLeftPx,
+          this.windowTopPx, zIndex, opacity);
+      else
+        this.currentStyles = WindowStyleHelper.applyStyle(this.currentStyles, this.windowLeftPx,
+          this.windowTopPx, zIndex, opacity, isWindowVisible);
     }
 
     private applyPositionStyles(): void {
@@ -818,7 +816,7 @@ import { WindowHelper } from '../window.helper';
       if(ws.isVisible)
         this.applyOpacityZ(z, 1);
       else
-        this.applyOpacityZOnHiddenWindows(z, 1);
+        this.applyOpacityZ(z, 1, ws.isVisible);
     }
 
     lockScreenIsActive(): void {

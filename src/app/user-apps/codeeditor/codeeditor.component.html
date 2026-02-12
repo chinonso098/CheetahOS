@@ -1,3 +1,26 @@
-<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId" >
-    <ngx-monaco-editor class="my-code-editor" [options]="editorOptions" [(ngModel)]="code"  #monacoContent  (click)="focusWindow($event)"></ngx-monaco-editor>
+<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
+
+  <div class="code-editor-shell" (click)="focusWindow($event)" #monacoContent >
+    <ngx-monaco-editor  class="my-code-editor"] [options]="editorOptions" [(ngModel)]="code" (onInit)="onEditorInit($event)">
+    </ngx-monaco-editor>
+
+    <div class="editor-statusbar">
+      <div class="sb-left">
+        <span>Ln {{cursorLine}}, Col {{cursorCol}}</span>
+        <span class="sep">•</span>
+        <span *ngIf="selectedCount > 0">{{selectedCount}} selected</span>
+      </div>
+
+      <div class="sb-right">
+        <span>{{fileEncoding}}</span>
+        <span class="sep">•</span>
+        <span>{{displayLanguage}}</span>
+        <span class="sep">•</span>
+        <span class="save-indicator" [class.dirty]="isDirty">
+          {{ isDirty ? 'Unsaved' : 'Saved' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
 </cos-primarywindow>

@@ -513,7 +513,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
         fileTransferTailElmnt.style.bottom = '0';
       }
     }
-    
   }
 
   getRestoreUserOpenedAppDefault():void{

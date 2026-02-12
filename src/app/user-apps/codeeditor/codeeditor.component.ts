@@ -15,6 +15,8 @@ import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
 import { AppState } from 'src/app/system-files/state/state.interface';
+import { FileInfo } from 'src/app/system-files/file.info';
+import { FileService } from 'src/app/shared/system-service/file.service';
 
 // import { DiffEditorModel } from 'ngx-monaco-editor-v2';
 
@@ -34,21 +36,29 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   private _runningProcessService!:RunningProcessService;
   private _processHandlerService!:ProcessHandlerService;
   private _windowService!:WindowService;
+  private _fileService!:FileService;
   private _sessionManagmentService!:SessionManagmentService
 
 
   private _maximizeWindowSub!: Subscription;
+  private _appState!:AppState;
+  private _fileInfo!:FileInfo;
+  private _editor: any;   // monaco.editor.IStandaloneCodeEditor
+  private _model: any;    // monaco.editor.ITextModel
+  private _languageType = Constants.EMPTY_STRING;
+  private _isApplyingFileLoad = false;
+
   SECONDS_DELAY = 250;
 
-  private _appState!:AppState;
-    
-  editorOptions = {
-    language: 'javascript', // java, javascript, python, csharp, html, markdown, ruby
-    theme: 'vs-dark', // vs, vs-dark, hc-black
-    automaticLayout: true,
-  };
-  code = this.getCode();
+  editorOptions = {}
+  code = Constants.EMPTY_STRING;
+  cursorLine = 1;
+  cursorCol = 1;
+  selectedCount = 0;
 
+  fileEncoding = 'UTF-8';           // replace if you can read from FileInfo
+  displayLanguage = 'Plain Text';   // human label
+  isDirty = false;
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}vs_code.png`;
@@ -59,13 +69,14 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   displayName = Constants.EMPTY_STRING;
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-               sessionManagmentService:SessionManagmentService ,windowService:WindowService){
+               sessionManagmentService:SessionManagmentService ,windowService:WindowService, fileService:FileService, ){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService = runningProcessService;
     this._sessionManagmentService = sessionManagmentService;
     this._processHandlerService = triggerProcessService;
     this._windowService = windowService;
+    this._fileService = fileService;
 
 
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -73,17 +84,51 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
 
   ngOnInit(): void {
     this.retrievePastSessionData();
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
-  ngAfterViewInit(): void {
-    1
-    //this.setCodeEditorWindowToFocus(this.processId); 
 
-    // setTimeout(()=>{
-    //   this.captureComponentImg();
-    // },this.SECONDS_DELAY) 
+  async ngAfterViewInit(): Promise<void> {
+    const fileExt = this._fileInfo.getFileExtension;
+    this._languageType = this.getFileTypeMap(fileExt);
 
-    //this.storeAppState();
+    this.editorOptions = {
+      language: this._languageType,
+      theme: 'vs-dark',
+      automaticLayout: true,
+
+      // scrolling & layout
+      wordWrap: 'on',                 // enables horizontal scrolling when needed
+      scrollBeyondLastLine: false,
+      minimap: { enabled: true },
+      scrollbar: {
+        vertical: 'auto',
+        horizontal: 'auto',
+        verticalScrollbarSize: 10,
+        horizontalScrollbarSize: 10,
+        alwaysConsumeMouseWheel: false,
+      },
+
+      // editor UX
+      readOnly: false,
+      renderLineHighlight: 'line',
+      cursorSmoothCaretAnimation: 'on',
+    };
+
+    // Load file text
+    this._isApplyingFileLoad = true;
+    this.code = await this._fileService.getFileAsTextAsync(this._fileInfo.getCurrentPath);
+    this._isApplyingFileLoad = false;
+
+    // Status bar labels
+    this.displayLanguage = this.getLanguageLabel(this._languageType);
+    this.fileEncoding = this.getFileEncodingLabel();
+
+    setTimeout(()=>{
+        this.captureComponentImg();
+    },this.SECONDS_DELAY) 
+
+      //this.storeAppState();
   }
 
   ngOnDestroy():void{
@@ -103,6 +148,141 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
       this._windowService.addProcessPreviewImage(this.name, cmpntImg);
     })
   }
+
+  onEditorInit(editor: any): void {
+    this._editor = editor;
+    this._model = editor.getModel();
+
+    // Ensure language is applied even if model already existed
+    this.applyModelLanguage(this._languageType);
+
+    // Cursor position -> Ln/Col
+    editor.onDidChangeCursorPosition((e: any) => {
+      this.cursorLine = e.position.lineNumber;
+      this.cursorCol = e.position.column;
+    });
+
+    // Selection -> selected char count
+    editor.onDidChangeCursorSelection(() => {
+      this.selectedCount = this.getSelectionCharCount();
+    });
+
+    // Dirty tracking (don’t mark dirty during initial file load)
+    this._model.onDidChangeContent(() => {
+      if (this._isApplyingFileLoad) return;
+      this.isDirty = true;
+    });
+
+    // Ctrl+S to save
+    // editor.addCommand(this.getMonacoKeyModCtrlCmd() | this.getMonacoKeyCodeS(), async () => {
+    //   await this.saveFile();
+    // });
+
+    // editor.addCommand(
+    //   monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+    //   async () => {
+    //     await this.saveFile();
+    //   },
+    //     ''
+    // );
+
+  }
+
+  onKeyDown(evt: KeyboardEvent):void{
+    if ((evt.ctrlKey || evt.metaKey) && evt.key.toLowerCase() === 's') {
+      evt.preventDefault();
+    }
+  }
+
+
+  private getSelectionCharCount(): number {
+    if (!this._editor || !this._model) return 0;
+
+    const selection = this._editor.getSelection();
+    if (!selection || selection.isEmpty()) return 0;
+
+    const selectedText = this._model.getValueInRange(selection);
+    return selectedText?.length ?? 0;
+  }
+
+  async saveFile(): Promise<void> {
+    if (!this._fileInfo) return;
+
+    const path = this._fileInfo.getCurrentPath;
+
+    // Prefer pulling from the model (source of truth)
+    const text = this._model ? this._model.getValue() : this.code;
+
+    // You need a write method on FileService.
+    // Implement one like: writeTextFileAsync(path: string, content: string): Promise<void>
+    //await this._fileService.writeTextFileAsync(path, text);
+
+    this.isDirty = false;
+  }
+
+  private applyModelLanguage(language: string): void {
+    // ngx-monaco-editor typically exposes monaco globally
+    const monacoAny = (window as any).monaco;
+    if (!monacoAny || !this._model) return;
+
+    // Monaco expects ids like 'javascript', 'typescript', 'csharp', 'html', etc.
+    // Your map currently returns 'C', 'C++', 'HTML' (these will NOT work as-is).
+    const normalized = this.normalizeMonacoLanguageId(language);
+    monacoAny.editor.setModelLanguage(this._model, normalized);
+
+    this.displayLanguage = this.getLanguageLabel(normalized);
+  }
+
+  private normalizeMonacoLanguageId(lang: string): string {
+    const l = (lang || '').toLowerCase();
+    if (l === 'c') return 'c';
+    if (l === 'c++' || l === 'cpp') return 'cpp';
+    if (l === 'html') return 'html';
+    if (l === 'unknown file' || !l) return 'plaintext';
+    return l;
+  }
+
+  private getLanguageLabel(languageId: string): string {
+    const id = this.normalizeMonacoLanguageId(languageId);
+    const map: Record<string, string> = {
+      plaintext: 'Plain Text',
+      javascript: 'JavaScript',
+      typescript: 'TypeScript',
+      csharp: 'C#',
+      java: 'Java',
+      python: 'Python',
+      c: 'C',
+      cpp: 'C++',
+      html: 'HTML',
+    };
+    return map[id] ?? id;
+  }
+
+  private getFileEncodingLabel(): string {
+    // If your FileInfo carries encoding, use it here.
+    // Otherwise default:
+    return 'UTF-8';
+  }
+
+  getFileTypeMap(fileExt: string): string {
+    const FileExtensionLanguageMap = [
+      ['.js', 'javascript'],
+      ['.js.map', 'javascript'],
+      ['.ts', 'typescript'],
+      ['.cs', 'csharp'],
+      ['.java', 'java'],
+      ['.py', 'python'],
+      ['.c', 'c'],
+      ['.cpp', 'cpp'],
+      ['.html', 'html'],
+    ];
+
+    for (const map of FileExtensionLanguageMap) {
+      if (map[0] === fileExt) return map[1];
+    }
+    return 'plaintext';
+  }
+
 
   maximizeWindow():void{
 
@@ -140,14 +320,6 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
     }
   }
 
-  getCode():string{
-    // return (
-    //   '<html><!-- // !!! Tokens can be inspected using F1 > Developer: Inspect Tokens !!! -->\n<head>\n	<!-- HTML comment -->\n	<style type="text/css">\n		/* CSS comment */\n	</style>\n	<script type="javascript">\n		// JavaScript comment\n	</' +
-    //   'script>\n</head>\n<body></body>\n</html>'
-    // );
-
-    return 'function x() {\nconsole.log("Hello world!");\n}';
-  }
 
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
