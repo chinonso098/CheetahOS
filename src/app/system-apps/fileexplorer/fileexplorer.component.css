@@ -32,7 +32,7 @@
 }
 
 /* Common text primitives */
-:is(
+/* :is(
   .span-tab-view-pane,
   .span-tab-view-pane1,
   .span-tab-view-pane-cntnt,
@@ -53,38 +53,32 @@
   color: var(--fx-text);
   font-size: var(--fx-font);
   font-weight: 200;
-}
+} */
 
+.file_explrorer_root_container{
+    display: flex;
+    flex-direction: column;
+}
 
 /* A sane baseline */
 .fileexp-main-container{
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0; /* critical for nested scroll */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    /* flex-direction: column;
+    min-height: 0; 
 
-  color: var(--fx-text);
-  font-size: var(--fx-font);
-   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--fx-text);
+    font-size: var(--fx-font); */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
 
 .fileexp-content-container{
-  width: 100%;
-  display: flex;
-  background-color: var(--fx-bg);
-  min-height: 0;     /* critical for nested scrolling */
-  min-width: 0;
+    width: 100%;
+    display: flex;
+    background-color: #202020;
 }
-
-
-/* Any flex child that scrolls should allow shrinking */
-.navigation-content-container,
-.file-content-container{
-  min-height: 0;
-  min-width: 0;
-}
-
 
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Header Tabs View Started@@@@@@@@@@@@@@@@@@@@@@@@@@*/
 /* Styles for the tabbed window container */
@@ -95,20 +89,10 @@
 }
   
 /* Styles for the tab navigation */
-.fileexp-header-tabs{
-  display: flex;
-  align-items: center;
-  background-color: var(--fx-header);
+.fileexp-header-tabs {
+    display: flex;
+    background-color: #080404;
 }
-
-/* Create a right-side slot inside header tabs */
-.fileexp-header-tabs .header-tabs-spacer{
-  margin-left: auto;
-  display: inline-flex;
-  gap: var(--fx-gap-md);
-  align-items: center;
-}
-
 
 .fileexp-tab {
     /* flex: 1; */
@@ -133,7 +117,7 @@
 .fileexp-tab.active {
     border:0.3px solid #2d2d2d;
     border-bottom: none;
-    background-color: var(--fx-hover);
+    background-color: #202020;
     color: white;
 }
 
@@ -151,12 +135,12 @@
     display: flex;
 }
 
-/* TBD .figure-header-toggle{
+.figure-header-toggle{
     position: fixed;
     height: 25px;
     width: 15px;
     right: 4%;
-} */
+}
 
 .figure-header-tab{
     position: relative;
@@ -171,18 +155,11 @@
     width: 10px;
 }
 
-/* TBD .question-header-cntnr{
+.question-header-cntnr{
     position: fixed;
     height: 25px;
     width: 15px;
     right: 1%;
-} */
-
-.figure-header-toggle,
-.question-header-cntnr{
-  position: static;
-  width: auto;
-  height: auto;
 }
 
 .question-figure-header-tab{
@@ -236,11 +213,11 @@
     border: 0.5px solid transparent;
 }
 
-/* .figure-tab-view-pane{
+.figure-tab-view-pane{
     position: relative;
     min-width: 8px;
     place-items:center;
-} */
+}
 
 .img-tab-view-pane{
     height: 25px; 
@@ -287,22 +264,11 @@
     padding: 2px 2px;
 }
 
-/* .figure-tab-view-pane1{
+.figure-tab-view-pane1{
     position: relative;
     height: 16px; 
     width: 17px;
     place-items:center;
-} */
-
-.figure-detailsview,
-.figure-listview,
-.figure-contentview,
-.figure-tab-view-pane,
-.figure-tab-view-pane1,
-.figure-tab-view-layout{
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .img-tab-view-pane1{
@@ -381,12 +347,12 @@
     padding: 0px 2px;
 }
 
-/* .figure-tab-view-layout{
+.figure-tab-view-layout{
     position: relative;
     height: 16px; 
     width: 20px;
     place-items:center;
-} */
+}
 
 .img-tab-view-layout{
     height: 16px; 
@@ -509,50 +475,10 @@
 /*++++++++++++++++++++++++++++++++Header navigation btn section Ended++++++++++++++++++++++++++++++++*/
 
 /*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxHeader navigation path box Startedxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
-.header-nav-path-container{ width: 100%; padding-left: var(--fx-gap-xs); }
-
-.nav-path-container{
-  display: flex;
-  width: 100%;
-  align-items: center;
-  min-width: 0;
+.header-nav-path-container{
+    width:100%;
+    padding: 0 0 0 2px;
 }
-
-.nav-path-gen-main-container{
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  height: var(--fx-row);
-  border: 0.5px solid var(--fx-border-light);
-  border-left: none;
-  border-right: none;
-  background-color: var(--fx-panel);
-}
-
-.path-input{
-  flex: 1;
-  min-width: 0;
-  height: var(--fx-row);
-  border: 0.5px solid var(--fx-border-light);
-  border-left: none;
-  border-right: none;
-  color: var(--fx-text);
-  background-color: var(--fx-panel);
-  display: none;
-}
-
-/* dropdown: clamp to reasonable range instead of hard-coded 405px */
-.nav-path-containter1{
-  position: absolute;
-  width: clamp(260px, 40vw, 520px);
-  border: 1px solid var(--fx-border-light);
-  max-height: 180px;
-  overflow-y: auto;
-  background-color: var(--fx-panel);
-  z-index: 2;
-  display: none;
-}
-
 
 .nav-path-container{
     display:flex;
@@ -582,7 +508,7 @@ span.head-nav-path-cntnr{
 .nav-path-gen-main-container{
     display:flex;
     height: 24px;
-   /* width: 450px; this was min-width before*/
+    width: 450px; /*this was min-width before*/
     width: 100%;
     border: 0.5px solid #9d9d9d;
     border-left: none;
@@ -597,7 +523,7 @@ span.head-nav-path-cntnr{
 .nav-path-gen-container:hover{
     display:inline-flex;
     width: fit-content;
-    background-color: var(--fx-hover);
+    background-color: #3f3e3e;
 }
 
 span.head-nav-path-gen-cntnr0{
@@ -608,7 +534,7 @@ span.head-nav-path-gen-cntnr0{
 span.head-nav-path-gen-cntnr0:hover{
     align-items: center;
     display:inline-flex;
-    background-color: var(--fx-hover);
+    background-color: #3f3e3e;
 }
 
 span.head-nav-path-gen-cntnr{
@@ -620,7 +546,6 @@ span.head-nav-path-gen-cntnr.active{
     align-items: center;
     display:inline-flex;
     border: 0.5px solid #9d9d9d;
-    background-color: var(--fx-hover);
 }
 
 .nav-path-gen-container:hover span.head-nav-path-gen-cntnr{
@@ -677,7 +602,7 @@ span.head-nav-path-cntnr1.active{
     align-items: center;
     display:inline-flex;
     border: 0.5px solid #9d9d9d;
-    background-color: var(--fx-hover);
+    background-color: #3f3e3e;
 }
 
 span.head-nav-path-cntnr1:hover{
@@ -710,7 +635,7 @@ span.head-nav-path-cntnr2.active{
     align-items: center;
     display:inline-flex;
     border: 0.5px solid #9d9d9d;
-    background-color: var(--fx-hover);
+    background-color: #3f3e3e;
 }
 
 span.head-nav-path-cntnr2:hover{
@@ -903,7 +828,7 @@ span.mid-search-entry{
 /*****************************navigation pane view Started*****************************/
 
 .navigation-content-container{
-    width: 180px;
+    min-width: 180px;
     background-color: #191919;
     overflow-y: auto;
     height: 440px;
@@ -914,8 +839,8 @@ span.mid-search-entry{
 
 .file-content-container{
     border-left: 0.5px solid #5a5a5a;
-    width: 720px; /*This was 100px before, change it when you've got window resize working properly*/
-   /*  width: 100%; */ /* Set a maximum width for the responsive container */
+    min-width: 720px; /*This was 100px before, change it when you've got window resize working properly*/
+    width: 100%; /* Set a maximum width for the responsive container */
     overflow-y: auto;
     height: 440px;
 }
@@ -949,7 +874,7 @@ span.mid-search-entry{
 .fileexlpr-frequent-folders-heading, .fileexlpr-recent-files-heading {
     display: flex;
     align-items: center;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: sans-serif;
     font-size: 13px;
     font-weight: 300;
     color: #fff;
@@ -1059,25 +984,16 @@ span.mid-search-entry{
     height: 22px;
 }
 
-/* focus visibility (keyboard) */
-.iconview-button:focus-visible,
-.button-listview:focus-visible,
-.button-tilesview:focus-visible,
-.button-contentview:focus-visible{
-  outline: 1px solid rgb(18, 107, 240);
-  outline-offset: 2px;
-}
-
 .iconview-button {
     background-color: transparent;
     border: 0.5px solid transparent;
     width: 90px;
     height: min-content;
-    /* transition: transform 0.1s ease-in-out; */
+    transition: transform 0.1s ease-in-out;
     display: inline-flex;
     flex-direction: column;
     align-items: center;
-   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: sans-serif;
 }
 
 .iconview-shortcut-img{
@@ -1232,14 +1148,13 @@ th[fxplrColumnResize]::after {
     height: 25px;
 }
 
-
-/* .figure-detailsview{
+.figure-detailsview{
     display: flex;
     position: relative;
     height: 20px; 
     width: 20px;
     place-items:center;
-} */
+}
 
 .img-detailsview{
     height: 20px; 
@@ -1344,13 +1259,13 @@ th[fxplrColumnResize]::after {
     width: 90%;
 }
 
-/* .figure-listview{
+.figure-listview{
     display: flex;
     position: relative;
     height: 20px; 
     width: 20px;
     place-items:center;
-} */
+}
 
 .img-listview{
     height: 20px; 
@@ -1541,14 +1456,15 @@ th[fxplrColumnResize]::after {
     height: 40px;
 }
 
-/* .figure-contentview{
+.figure-contentview{
     display: flex;
     position: relative;
+    /* min-width: 8px; */
     place-items:center;
     height: 40px;
     width: 40px;
     margin-top: 1px;
-} */
+}
 
 .img-contentview{
     position: relative;
@@ -1641,12 +1557,13 @@ th[fxplrColumnResize]::after {
 
 /*-----################################---Footer View Started-----################################---*/
 
-/* .fileexp-footer-container{
+.fileexp-footer-container{
     width: 100%;
     height: 24px ;
     display: inline-flex;
+    /* background-color: #383434; */ 
     background-color: #303438;
-} */
+}
 
 .span-footer{
     color: white;
@@ -1656,7 +1573,7 @@ th[fxplrColumnResize]::after {
 }
 
 
-/* .fileexp-footer-img-cntnr-1{
+.fileexp-footer-img-cntnr-1{
     position: fixed;
     height: 24px;
     right: 4%;
@@ -1665,28 +1582,6 @@ th[fxplrColumnResize]::after {
     position: fixed;
     height: 24px;
     right: 1%;
-} */
-
-/* Footer: make it a real flex layout */
-.fileexp-footer-container{
-  width: 100%;
-  height: var(--fx-row);
-  display: flex;
-  align-items: center;
-  background-color: #303438;
-  gap: var(--fx-gap-md);
-}
-
-.fileexp-footer-img-cntnr-1,
-.fileexp-footer-img-cntnr-2{
-  position: static;
-  height: auto;
-  right: auto;
-  margin-left: auto; /* first one pushes right */
-}
-
-.fileexp-footer-img-cntnr-2{
-  margin-left: 0; /* keep next to previous */
 }
 
 .fileexp-footer-figure{
@@ -1717,11 +1612,10 @@ th[fxplrColumnResize]::after {
  }
 
 input{
-  text-align: left;      /* or center if you want it centered */
-  font-size: 11.5px;
-  padding-left: 4px;
+    text-align: left;      /* or center if you want it centered */
+    font-size: 11.5px;
+    padding-left: 4px;
 }
-
 
 input::selection{
     background-color: #0056b3;
@@ -1742,10 +1636,10 @@ input::selection{
 }
 
 .tool-tip-container.visible{
-  opacity: 1;
-  z-index: 2;
-  visibility: visible;
-  transition: opacity 0.25s ease;
+    opacity: 1;
+    z-index: 2;
+    visibility: visible;
+    transition: opacity 0.25s ease;
 }
 
 
@@ -1819,4 +1713,3 @@ input::selection{
     background-color: #4c4c4c;
     border: 0.5px solid #3c3c3c;
 }
-

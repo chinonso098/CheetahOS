@@ -4,7 +4,7 @@
     [processAppName]="displayName" 
     [isMaximizable]="isMaximizable" [priorUId]="priorUId">
 
-    <div #fileExplorerRootContainer tabindex="0" (click)="focusWindow($event)">
+    <div #fileExplorerRootContainer class="file_explrorer_root_container" tabindex="0" (click)="focusWindow($event)">
         <div class="fileexp-header-tab-container" >
             <div class="fileexp-header-tabs">
               <div class="fileexp-tab highlight-default">File</div>
@@ -282,8 +282,7 @@
 
                     <div class="fileexplr-default-view-cntnr" *ngIf="directory === ROOT && showDefaultView" 
                         (contextmenu) = "supressPropagation($event)"
-                        (click)="hideIconContextMenu($event, name)" 
-                        (click)="handleIconHighLightState()" > 
+                        (click)="hideIconContextMenu($event, name); handleIconHighLightState()" > 
                         <div *ngIf="fileTreeNavToPath === QUICK_ACCESS && showDefaultView" class="fileexlpr-frequent-folders-section">
                                 <div class="fileexlpr-frequent-folders-heading">
                                     <span><p> Frequent folders ({{frequentFolders.length}})</p></span>
@@ -328,8 +327,7 @@
                         
                         <div class="fileexlpr-recent-files-section" *ngIf="fileTreeNavToPath === QUICK_ACCESS && showDefaultView"
                             (contextmenu) = "supressPropagation($event)"
-                            (click)="hideIconContextMenu($event, name)" 
-                            (click)="handleIconHighLightState()" > 
+                            (click)="hideIconContextMenu($event, name); handleIconHighLightState()" > 
                             <div class="fileexlpr-recent-files-heading">
                                 <span><p> Recent files ({{recentFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
@@ -373,8 +371,7 @@
 
                         <div class="fileexlpr-frequent-folders-section" *ngIf="(fileTreeNavToPath === THIS_PC  && showDefaultView)||(directory === ROOT && showDefaultView && fileTreeNavToPath !== QUICK_ACCESS)"
                             (contextmenu) = "supressPropagation($event)"
-                            (click)="hideIconContextMenu($event, name)" 
-                            (click)="handleIconHighLightState()" > 
+                            (click)="hideIconContextMenu($event, name); handleIconHighLightState()" > 
                             <div class="fileexlpr-frequent-folders-heading">
                                 <span><p>Folders ({{fetchedFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
@@ -415,8 +412,7 @@
                         
                         <div class="fileexlpr-recent-files-section" *ngIf="(fileTreeNavToPath === THIS_PC  && showDefaultView) || (directory === ROOT && showDefaultView && fileTreeNavToPath !== QUICK_ACCESS)" 
                             (contextmenu) = "supressPropagation($event)"
-                            (click)="hideIconContextMenu($event, name)" 
-                            (click)="handleIconHighLightState()" > 
+                            (click)="hideIconContextMenu($event, name); handleIconHighLightState()" > 
                             <div class="fileexlpr-recent-files-heading">
                                 <span><p> Devices and drives ({{devicesAndDrivesFiles.length}})</p></span>
                                 <span class="fileexlpr-nested-line-container"><span class="fileexlpr-nested-line"></span></span>
@@ -472,8 +468,7 @@
                         [ngClass]="olClassName" 
                         (dragover)="onDragOver($event)"  
                         (drop)="onDrop($event)" 
-                        (click)="hideIconContextMenu($event, name)" 
-                        (click)="handleIconHighLightState()" 
+                        (click)="hideIconContextMenu($event, name); handleIconHighLightState()" 
                         (contextmenu)="onShowFileExplorerContextMenu($event)" 
                         (mousedown)="activateMultiSelect($event)"
                         (mouseup)="deActivateMultiSelect()"

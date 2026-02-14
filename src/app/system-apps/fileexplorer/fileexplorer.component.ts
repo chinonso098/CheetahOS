@@ -27,6 +27,7 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types'
 import { file } from 'jszip';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
 
@@ -355,7 +356,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async ngAfterViewInit():Promise<void>{
- 
     this.hidePathTextBoxOnload();
     this.changeFileExplorerLayoutCSS(this.currentViewOption);
     this.changeTabLayoutIconCntnrCSS(this.currentViewOptionId,false);
@@ -374,6 +374,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       await CommonFunctions.sleep(this.SECONDS_DELAY[4])
       this.captureComponentImg();
     });
+
+    this.updateFileExplorerWindoAfterViewInit();
   }
 
   ngOnDestroy(): void {
@@ -390,6 +392,24 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._fetchDirectoryDataSub?.unsubscribe();
     this._goToDirectoryDataSub?.unsubscribe();
     this._creatShortCutOnDesktopSub?.unsubscribe();
+  }
+
+
+
+    get getFileExplorerRootContainerElmnt(): HTMLElement {
+      return this.fileExplorerRootContainer.nativeElement;
+    }
+
+  updateFileExplorerWindoAfterViewInit():void{
+
+    if(!this.fileExplorerRootContainer) return;
+
+    const windowHeightPx = this.getFileExplorerRootContainerElmnt.offsetHeight;
+    const windowWidthPx = this.getFileExplorerRootContainerElmnt.offsetWidth;
+    const titleBar = 30;
+
+    const resize:WindowResizeInfo = {pId:this.processId, widthPx:windowWidthPx, heightPx:windowHeightPx + titleBar}
+    this._windowService.resizeProcessWindowNotify.next(resize);
   }
 
   setIsBtnClickEvt(val: boolean, who:string) {
