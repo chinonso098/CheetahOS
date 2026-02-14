@@ -47,7 +47,7 @@ export class FileExplorerColumnResizeDirective {
           }else if(this.columnIndex === 1){
             minimumWidth = minimumWidths[1];
           }else{
-            minimumWidth = minimumWidths[3];
+            minimumWidth = minimumWidths[2];
           }
 
           const deltaX = moveEvent.pageX - this.startX;

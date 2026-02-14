@@ -268,6 +268,8 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
     const FileExtensionLanguageMap = [
       ['.js', 'javascript'],
       ['.js.map', 'javascript'],
+      ['.xml', 'xml'],
+      ['.json', 'json'],
       ['.ts', 'typescript'],
       ['.cs', 'csharp'],
       ['.java', 'java'],
@@ -280,7 +282,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
     for (const map of FileExtensionLanguageMap) {
       if (map[0] === fileExt) return map[1];
     }
-    return 'plaintext';
+    return 'text/plain';
   }
 
 

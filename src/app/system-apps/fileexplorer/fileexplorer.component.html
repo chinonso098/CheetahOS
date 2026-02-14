@@ -718,7 +718,7 @@
                             </li>
                         </ng-template>
                     
-                        <div class="tool-tip-container" id="invalidChars-{{processId}}">
+                        <div class="tool-tip-container"  [class.visible]="isShowFileNameWarning" id="invalidChars-{{processId}}">
                             <div class="tool-tip-arrow"> </div>
                             <div class="tool-tip-base"> A file name can't contain any of the following characters: <br /><br />
                                  \ / : * ? " < > |'
