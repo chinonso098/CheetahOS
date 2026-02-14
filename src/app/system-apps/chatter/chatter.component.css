@@ -314,7 +314,7 @@ span.chatter-online-tail{
 }
 
 .chat-username {
-    font-family: monospace;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bold;
     font-size: 10px;
     color: #fff;
@@ -322,14 +322,14 @@ span.chatter-online-tail{
 }
 
 .chat-date {
-    font-family: monospace;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: 200;
     font-size: 10px;
     color: #fff;
 }
 
 .chat-content, .chat-content-sys {
-    font-family: monospace;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 11.5px;
     color: #848ada;
     padding: 1px 2px;
@@ -389,7 +389,7 @@ span.chatter-online-tail{
 .chatter-area {
     position: relative;
     left: 1.5%;
-    font-family: monospace;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #ccc;
     background: transparent;
     border: 0;
@@ -439,7 +439,7 @@ span.chatter-online-tail{
 .chatter-msg {
     position: relative;
     color: #ccc;
-    font-family: monospace;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bold;
     display: flex;
     top: -2px;
@@ -450,7 +450,7 @@ span.chatter-online-tail{
 .prev-chatter-msg {
     position: relative;
     color: #ccc;
-    font-family: monospace;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bold;
     margin-bottom: 3px;
 }
@@ -462,7 +462,7 @@ span.chatter-online-tail{
     width: 100%;
     height: 100%;
     color: #ccc;
-    font-family: monospace;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bold;
     white-space: pre;
 }
@@ -474,7 +474,7 @@ span.chatter-online-tail{
     color: white;
     font-size: 10px;
     font-weight: normal;
-    font-family: monospace;
+     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding: 4px 4px;
 }
 

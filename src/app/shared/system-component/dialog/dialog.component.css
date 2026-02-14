@@ -550,7 +550,7 @@
     display: flex;
     flex-direction: column;
     min-width: 500px;
-    font-family: Arial, sans-serif;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #fff;
     box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%);
     position: absolute;
@@ -664,7 +664,7 @@
     border: 1px solid #ccc; /* Add a border */
     border-radius: 0%;
     padding: 1px; /* Add padding */
-    font-family: sans-serif; /* Set font family */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;/* Set font family */
     font-size: 12px; /* Set font size */
     color: #333; /* Set text color */
     width: 360px;
