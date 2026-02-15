@@ -596,14 +596,6 @@ span.mid-search-entry{
     height: 440px;
 }
 
-.previewOrdetails-content-container{
-    min-width: 200px;
-    border-left: 0.5px solid #5a5a5a;
-    background-color: #202020;
-    /* display: none; */
-}
-
-
 /*****************************icon view and layout Started*****************************/
 
 .fileexplr-default-view-cntnr{

@@ -194,9 +194,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   showExpandTreeIcon = false;
   showNavigationPane = true;
-  showPreviewPane = false;
-  showDetailsPane = false;
-  showDefaultView = true;
 
   renameForm!: FormGroup;
   pathForm!: FormGroup;
@@ -322,7 +319,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(this._fileInfo){
       // is this a URL or and Actual Folder
       if(this._fileInfo.getOpensWith === Constants.FILE_EXPLORER && !this._fileInfo.getIsFile){ //Actual Folder
-        this.showDefaultView = false;
         this.directory = this._fileInfo.getCurrentPath;
         const fileName = (this._fileInfo.getFileName === Constants.EMPTY_STRING)? Constants.NEW_FOLDER : this._fileInfo.getFileName;
 
@@ -356,7 +352,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       pathInput: (this.directory !== Constants.ROOT)? this.directory : Constants.ROOT
     })
 
-    await this.loadDevciesAndDrives();
     await this.loadFileTreeAsync();
     await this.setProperRecycleBinIcon();
     await this.loadFiles().then(async()=>{
@@ -364,7 +359,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.captureComponentImg();
     });
 
-    this.updateFileExplorerWindoAfterViewInit();
+    //this.updateFileExplorerWindoAfterViewInit();
   }
 
   ngOnDestroy(): void {
@@ -675,138 +670,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.showNavigationPane = !this.showNavigationPane;
   }
 
-  onNavPaneBtnEnter():void{
-    const btnElement = document.getElementById(`navPaneIconCntnr-${this.processId}`) as HTMLDivElement;
-    if(btnElement){
-      btnElement.style.borderColor = '#ccc';
-      btnElement.style.backgroundColor = '#807c7c';
-    }
-  }
-
-  onNavPaneBtnLeave():void{
-    const btnElement = document.getElementById(`navPaneIconCntnr-${this.processId}`) as HTMLDivElement;
-    if(btnElement){
-      btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-      btnElement.style.borderColor = Constants.EMPTY_STRING;
-    }
-  }
-
-  onPrevPaneBtnClick():void{
-    this.showPreviewPane = !this.showPreviewPane;
-    this.showDetailsPane = false;
-
-    this.removePaneBtnStyle(`detailsPaneIconCntnr-${this.processId}`);
-    this.setPaneBtnStyle(`prevPaneIconCntnr-${this.processId}`);
-  }
-
-  onPrevPaneBtnEnter():void{
-    const btnElement = document.getElementById(`prevPaneIconCntnr-${this.processId}`) as HTMLDivElement;
-    if(btnElement){
-      if(!this.showPreviewPane){
-        btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#605c5c ';
-      }else{
-        btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#807c7c';
-      }
-    }
-  }
-
-  onPrevPaneBtnLeave():void{
-    const btnElement = document.getElementById(`prevPaneIconCntnr-${this.processId}`) as HTMLDivElement;
-    if(btnElement){
-      if(!this.showPreviewPane){
-        btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-        btnElement.style.borderColor = Constants.EMPTY_STRING;
-      }else{
-        btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#605c5c';
-      }
-    }
-  }
-
-  onDetailPaneBtnClick():void{
-    this.showDetailsPane = !this.showDetailsPane;
-    this.showPreviewPane = false;
-
-    this.removePaneBtnStyle(`prevPaneIconCntnr-${this.processId}`);
-    this.setPaneBtnStyle(`detailsPaneIconCntnr-${this.processId}`);
-  }
-
-  onDetailPaneBtnEnter():void{
-    const btnElement = document.getElementById(`detailsPaneIconCntnr-${this.processId}`) as HTMLDivElement;
-    if(btnElement){
-      if(!this.showDetailsPane){
-        btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#605c5c';
-      }else{
-        btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#807c7c';
-      }
-    }
-  }
-
-  onDetailPaneBtnLeave():void{
-    const btnElement = document.getElementById(`detailsPaneIconCntnr-${this.processId}`) as HTMLDivElement;
-    if(btnElement){
-      if(!this.showDetailsPane){
-        btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-        btnElement.style.borderColor = Constants.EMPTY_STRING;
-      }else{
-        btnElement.style.borderColor = '#ccc';
-        btnElement.style.backgroundColor = '#605c5c';
-      }
-    }
-  }
-
-  removePaneBtnStyle(id:string):void{
-    const btnElement = document.getElementById(id) as HTMLDivElement;
-    if(btnElement){
-      btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-      btnElement.style.borderColor = Constants.EMPTY_STRING;
-    }
-  }
-
-  setPaneBtnStyle(id:string):void{
-    const btnElement = document.getElementById(id) as HTMLDivElement;
-    if(btnElement){
-      btnElement.style.borderColor = '#ccc';
-      btnElement.style.backgroundColor = '#807c7c';
-    }
-  }
-
   showExpandTreeIconBtn():void{
     this.showExpandTreeIcon = true;
   }
 
   hideExpandTreeIconBtn():void{
     this.showExpandTreeIcon = false;
-  }
-
-  private async loadDevciesAndDrives(): Promise<void>{
-    const delay = 25; //25ms
-    await CommonFunctions.sleep(delay);
-
-    const file1 = new FileInfo();
-      file1.setIconPath = "osdrive/Cheetah/System/Imageres/os_disk_2.png";
-      file1.setCurrentPath = Constants.ROOT;
-      file1.setFileName = Constants.OSDISK;
-      file1.setFileType = Constants.FOLDER;
-      file1.setIsFile = false;
-      file1.setOpensWith = "fileexplorer";
-
-    this.devicesAndDrivesFiles.push(file1);
-
-    //const folderSizeInBytes = await this._fileService.getFolderSizeAsync(file1.getCurrentPath);
-    const folderSizeInBytes = this._fileService.getUsedStorage();
-    this.usedCapacity = ((folderSizeInBytes/this.capacity) * 100);
-    const availableCapacity = this.capacity - folderSizeInBytes;
-    const availableCapacity2 = CommonFunctions.getReadableFileSizeValue(availableCapacity);
-    const availableCapacityUnit = CommonFunctions.getFileSizeUnit(availableCapacity);
-    const capacity2 =  CommonFunctions.getReadableFileSizeValue(this.capacity);
-    const folderUnit = CommonFunctions.getFileSizeUnit(folderSizeInBytes);
-
-    this.availableCapacityText = `${availableCapacity2.toFixed(0)} ${availableCapacityUnit} free of  ${capacity2.toFixed(0)} ${folderUnit}`
   }
 
   private async loadFileTreeAsync():Promise<void>{
@@ -928,16 +797,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // fileTreeNavToPath appears to be a "highlight in tree" target
     this.fileTreeNavToPath = (rawPath === Constants.ROOT) ? Constants.EMPTY_STRING : rawPath;
 
-    if (isSpecialRoot) {
-      this.showDefaultView = true;
-    } else if (rawPath === Constants.ROOT) {
-      this.showDefaultView = false;
+    if (rawPath === Constants.ROOT) {
       this.fileTreeNavToPath = Constants.EMPTY_STRING;
     } 
-    // else {
-    //   this.showDefaultView = false;
-    // }
-
     // --- Apply navigation ---
     this.directory = targetDir;
 
@@ -1312,7 +1174,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       this.isPrevBtnActive = true;
-      this.showDefaultView = false;
 
       if(file.getCurrentPath.includes(Constants.URL)){
         this.directory = file.getContentPath;
