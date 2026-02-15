@@ -76,15 +76,15 @@
 
                     <div class="fileexp-header__nav-path-display" id="pathIconBox-{{processId}}" >
                         <span class="span fileexp-header__nav-root-cntnr">
-                            <figure class="fileexp-header__nav-figure">
-                                <img class="fileexp-header__nav-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/>
+                            <figure class="fileexp-header__nav-static-figure">
+                                <img class="fileexp-header__nav-static-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/>
                             </figure> 
                         </span>
 
-                        <div class="nav-path-gen-container" *ngFor="let dirTraversal of _directoryTraversalList let j = index">
+                        <div class="fileexp-header__nav-dynamic-container" *ngFor="let dirTraversal of _directoryTraversalList let j = index">
                             <span *ngIf="j > 0" class="span fileexp-header__nav-repeat-cntnr">
-                                <figure class="fileexp-header__nav-figure">
-                                    <img class="fileexp-header__nav-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/>
+                                <figure class="fileexp-header__nav-static-figure">
+                                    <img class="fileexp-header__nav-static-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/>
                                 </figure> 
                             </span>
                             <span class="span mid-nav-path-gen-cntnr">{{dirTraversal}}</span>
