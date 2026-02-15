@@ -1,23 +1,17 @@
 
 .window-container{
-  font-size: 1rem;
-  text-align: center;
   background-color: #808080;
-  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%);
   position: absolute;
-  width: fit-content;
-  height: fit-content;
-  outline: 1px hsl(0deg 0% 20%/70%);
   overflow: hidden;
 
+  width: auto;
+  height: auto;
 
   /* IMPORTANT: all animations happen here */
   will-change: transform, opacity;
   transform-origin: bottom center;
   /* transform-origin: top center; */
-  
 }
-
 
 .header-container{
   width: 100%;
@@ -26,14 +20,14 @@
 }
 
 .left-header-section{
-  width:calc(100% - 135px);
+  flex: 1 1 auto;
   height: 30px;
-  left: 0;
+  min-width: 0; /* critical so figcaption ellipsis works */
 }
 
 .right-header-section{
+  flex: 0 0 auto;
   height: 30px;
-  right: 0;
 }
 
 .window-content-container{
@@ -46,11 +40,13 @@
   justify-content: center;
   align-items: center;
   background: rgb(18, 18, 18);
+  outline: 1px hsl(0deg 0% 20%/70%);
   /* border-radius: 4px; */
   transition: box-shadow 200ms cubic-bezier(0, 0, 0.2, 1);
   box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2),
               0 2px 2px 0 rgba(0, 0, 0, 0.14),
               0 1px 5px 0 rgba(0, 0, 0, 0.12);
+  /* box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%); */
 }
 
 .window-dd-box:active {
@@ -59,37 +55,43 @@
               0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }
 
-h1{
+.header-container h1{
+  margin: 0;
+  padding: 0;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
   color: #fff;
   font-size: 12px;
   font-weight: normal;
-  height: 29px;
-  border-bottom: 1px transparent #183c7c;  
-  width: fit-content;
-  flex-grow: 1;
-  display: flex;
-  left: 0;
 }
 
-img{
+.header-container img{
   height: 18px;
   width: 18px;
   margin: 0 6px 0 8px; 
 }
 
-figure{
+.header-container figure{
   display: flex;
   align-items: center;
   height: 30px;
+  /* gap: 6px; */
+  min-width: 0; /* enables ellipsis */
+  width: 100%;
 }
 
-figcaption{
+.header-container figcaption{
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-button{
+.header-container button{
   border-left: 1px transparent #183c7c;
   box-sizing: content-box;
   color: #fff;
@@ -101,7 +103,7 @@ button{
 }
 
 
-svg{
+.header-container svg{
   fill: #fff;
   margin-bottom: 2px;
   /* width: 10px; */
@@ -109,7 +111,7 @@ svg{
 
 nav{
   display: flex;
-  position: absolute;
+  /* position: absolute; */
   width: fit-content;
   right: 0;
   height: 30px;
