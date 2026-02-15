@@ -543,48 +543,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  async goUpAlevel():Promise<void>{
-    this.fileTreeNavToPath = Constants.EMPTY_STRING;
-    if(this.upPathEntries.length > 0){
-      const currentDirPath =  this.directory;
-
-      if(!this.isNavigatedBefore){
-        this.isNavigatedBefore = true;
-        this.prevPathEntries.push(currentDirPath);
-        this.isPrevBtnActive = true;
-        this.prevNavBtnStyle ={
-          'fill': '#fff'
-        }
-      }
-
-      let nextDirPath = this.upPathEntries.pop() ?? Constants.EMPTY_STRING;
-      if(currentDirPath === nextDirPath){
-        nextDirPath = this.upPathEntries.pop() ?? Constants.EMPTY_STRING;
-        this.directory = nextDirPath;
-        this.prevPathEntries.push(nextDirPath);
-      }else{
-        this.directory = nextDirPath;
-        this.prevPathEntries.push(nextDirPath);
-      }
-
-      const folderName = basename(this.directory);
-
-      if(this.upPathEntries.length === 0){
-        this.isUpBtnActive = false;
-        this.upNavBtnStyle ={
-          'fill': '#ccc'
-        }
-      }
-
-      await this._audioService.play(this.cheetahNavAudio);
-      this.populateTraversalList();
-      this.setNavPathIcon(folderName,this.directory);
-      await this.loadFiles();
-      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
-      this.captureComponentImg(); 
-    }
-  }
-
   colorPrevNavBtn():void{
     if(!this.isPrevBtnActive){
       this.prevNavBtnStyle ={
@@ -603,7 +561,111 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  async goBackAlevel():Promise<void>{
+  private normalizePath(path: string): string {
+    // normalize slashes + remove trailing root (except if it's the root itself)
+    const root = Constants.ROOT;
+    let p = path.replace(/\\/g, root); // if you mix slashes
+    if (p.length > 1 && p.endsWith(root)) p = p.slice(0, -1);
+    return p;
+  }
+
+  private getParentPath(path: string): string {
+    const root = Constants.ROOT;
+    const p = this.normalizePath(path);
+    const lastSep = p.lastIndexOf(root);
+    if (lastSep <= 0) return root;          // parent of "/x" -> "/"
+    return p.substring(0, lastSep);
+  }
+
+  private rebuildUpStackFromCurrent(): void {
+    // "Up" should take you to parent, then parent's parent, etc.
+    const root = Constants.ROOT;
+    let cur = this.normalizePath(this.directory);
+
+    const parents: string[] = [];
+    while (cur !== root && cur !== Constants.RECYCLE_BIN_PATH) {
+      cur = this.getParentPath(cur);
+      parents.push(cur);
+      if (cur === root) break;
+    }
+
+    // We want pop() to return the immediate parent first:
+    // if parents = ["/Users/me", "/Users", "/"]
+    // we should store it as ["/", "/Users", "/Users/me"] so pop() => "/Users/me"
+    this.upPathEntries = parents.reverse();
+
+    this.isUpBtnActive = this.upPathEntries.length > 0;
+    this.upNavBtnStyle = { fill: this.isUpBtnActive ? '#fff' : '#ccc' };
+  }
+
+  private async navigateTo(targetPath: string, kind: string): Promise<void> {
+    const next = this.normalizePath(targetPath);
+    const cur  = this.normalizePath(this.directory);
+
+    if (!next || next === cur) return;
+
+    // Stack updates
+    if (kind === 'push') {
+      this.prevPathEntries.push(cur);
+      this.nextPathEntries = []; // important: new nav invalidates forward stack
+    } else if (kind === 'back') {
+      this.nextPathEntries.push(cur);
+    } else if (kind === 'forward') {
+      this.prevPathEntries.push(cur);
+    } else if (kind === 'up') {
+      // treat Up as a "push" nav (it’s a new location)
+      this.prevPathEntries.push(cur);
+      this.nextPathEntries = [];
+    }
+
+    // Apply directory
+    this.directory = next;
+
+    // UI state for back/forward
+    this.isPrevBtnActive = this.prevPathEntries.length > 0;
+    this.prevNavBtnStyle = { fill: this.isPrevBtnActive ? '#fff' : '#ccc' };
+
+    this.isNextBtnActive = this.nextPathEntries.length > 0;
+    this.nextNavBtnStyle = { fill: this.isNextBtnActive ? '#fff' : '#ccc' };
+
+    // Up state based on actual parents
+    this.rebuildUpStackFromCurrent();
+
+    // Downstream work
+    const folderName = basename(this.directory);
+    await this._audioService.play(this.cheetahNavAudio);
+    this.populateTraversalList();
+    this.setNavPathIcon(folderName, this.directory);
+    await this.loadFiles();
+    await CommonFunctions.sleep(this.SECONDS_DELAY[4]);
+    this.captureComponentImg();
+  }
+
+  async goForwardAlevel(): Promise<void> {
+    this.fileTreeNavToPath = Constants.EMPTY_STRING;
+    if (this.nextPathEntries.length === 0) return;
+
+    const next = this.nextPathEntries.pop() ?? Constants.EMPTY_STRING;
+    await this.navigateTo(next, 'forward');
+  }
+
+  async goBackAlevel(): Promise<void> {
+    this.fileTreeNavToPath = Constants.EMPTY_STRING;
+    if (this.prevPathEntries.length === 0) return;
+
+    const prev = this.prevPathEntries.pop() ?? Constants.EMPTY_STRING;
+    await this.navigateTo(prev, 'back');
+  }
+
+  async goUpAlevel(): Promise<void> {
+    this.fileTreeNavToPath = Constants.EMPTY_STRING;
+    if (this.upPathEntries.length === 0) return;
+
+    const parent = this.upPathEntries.pop() ?? Constants.EMPTY_STRING;
+    await this.navigateTo(parent, 'up');
+  }
+
+  async goBackAlevel_old():Promise<void>{
     this.fileTreeNavToPath = Constants.EMPTY_STRING;
     if(this.prevPathEntries.length > 0){
       const currentDirPath =  this.directory;
@@ -673,7 +735,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  async goForwardAlevel():Promise<void>{
+  async goForwardAlevel_old():Promise<void>{
     this.fileTreeNavToPath = Constants.EMPTY_STRING;
     if(this.nextPathEntries.length > 0){
 
@@ -714,6 +776,48 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       await this.loadFiles();
       await CommonFunctions.sleep(this.SECONDS_DELAY[4])
       this.captureComponentImg();
+    }
+  }
+
+    async goUpAlevel_old():Promise<void>{
+    this.fileTreeNavToPath = Constants.EMPTY_STRING;
+    if(this.upPathEntries.length > 0){
+      const currentDirPath =  this.directory;
+
+      if(!this.isNavigatedBefore){
+        this.isNavigatedBefore = true;
+        this.prevPathEntries.push(currentDirPath);
+        this.isPrevBtnActive = true;
+        this.prevNavBtnStyle ={
+          'fill': '#fff'
+        }
+      }
+
+      let nextDirPath = this.upPathEntries.pop() ?? Constants.EMPTY_STRING;
+      if(currentDirPath === nextDirPath){
+        nextDirPath = this.upPathEntries.pop() ?? Constants.EMPTY_STRING;
+        this.directory = nextDirPath;
+        this.prevPathEntries.push(nextDirPath);
+      }else{
+        this.directory = nextDirPath;
+        this.prevPathEntries.push(nextDirPath);
+      }
+
+      const folderName = basename(this.directory);
+
+      if(this.upPathEntries.length === 0){
+        this.isUpBtnActive = false;
+        this.upNavBtnStyle ={
+          'fill': '#ccc'
+        }
+      }
+
+      await this._audioService.play(this.cheetahNavAudio);
+      this.populateTraversalList();
+      this.setNavPathIcon(folderName,this.directory);
+      await this.loadFiles();
+      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
+      this.captureComponentImg(); 
     }
   }
 
@@ -945,7 +1049,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     return updatedTreeData;
   }
 
-  async navigateToFolder(data:string[]):Promise<void>{
+  async navigateToFolder_old(data:string[]):Promise<void>{
     console.log('navigateToFolder:', data); 
     
     const quickAccess = 'Quick access';
@@ -996,6 +1100,87 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     await CommonFunctions.sleep(this.SECONDS_DELAY[4])
     this.captureComponentImg();
   }
+
+  async navigateToFolder(data: string[]): Promise<void> {
+    console.log('navigateToFolder:', data);
+
+    const quickAccess = 'Quick access';
+    const thisPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
+
+    const fileName = data[0];
+    const rawPath = data[1];
+
+    // Resolve "special" paths to a real directory target
+    const isSpecialRoot = (rawPath === thisPC || rawPath === quickAccess);
+    const targetDir = isSpecialRoot ? Constants.ROOT : rawPath;
+
+    // --- HISTORY: push CURRENT once, clear forward stack ---
+    const curDir = this.directory;
+
+    // Only add to back stack if this is a true navigation to a different target
+    if (targetDir !== curDir) {
+      this.prevPathEntries.push(curDir);
+      this.nextPathEntries = []; // new branch => forward is invalid
+    }
+
+    // --- UI state ---
+    this.isPrevBtnActive = this.prevPathEntries.length > 0;
+    this.displayName = fileName;
+
+    // fileTreeNavToPath appears to be a "highlight in tree" target
+    this.fileTreeNavToPath = (rawPath === Constants.ROOT) ? Constants.EMPTY_STRING : rawPath;
+
+    if (isSpecialRoot) {
+      this.showDefaultView = true;
+    } else if (rawPath === Constants.ROOT) {
+      this.showDefaultView = false;
+      this.fileTreeNavToPath = Constants.EMPTY_STRING;
+    } 
+    // else {
+    //   this.showDefaultView = false;
+    // }
+
+    // --- Apply navigation ---
+    this.directory = targetDir;
+
+    // --- Icon ---
+    if (rawPath === `/Users/${fileName}`) {
+      this.icon = `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png`;
+    } else {
+      this.icon = `${Constants.IMAGE_BASE_PATH}folder.png`;
+    }
+
+    // --- Recent paths ---
+    if (this.recentPathEntries.indexOf(this.directory) === -1) {
+      this.recentPathEntries.push(this.directory);
+    }
+
+    // --- Up stack: rebuild from actual directory (recommended) ---
+    this.rebuildUpStackFromCurrent(); // <- from prior message
+
+    // --- Refresh breadcrumb / UI ---
+    this.populateTraversalList();
+    this.setNavPathIcon(fileName, this.directory);
+    this.storeAppState(this.directory);
+
+    // --- Load content based on resolved directory ---
+    if (this.directory === Constants.ROOT) {
+      await this.loadFiles(false);
+    } else {
+      await this.loadFiles();
+    }
+
+    if(rawPath === thisPC || rawPath !== Constants.ROOT)
+      await this.loadFiles();
+    else if(rawPath === Constants.ROOT)
+      await this.loadFiles(false);
+
+    await CommonFunctions.sleep(this.SECONDS_DELAY[4]);
+    this.captureComponentImg();
+  }
+
+
+
 
   setNavPathIcon(fileName:string, directory:string):void{
     console.log(`fileexplorer - setNavPathIcon: fileName:${fileName} -----  directory:${directory}`)
