@@ -174,7 +174,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   readonly mediumIconsView = ViewOptions.MEDIUM_ICON_VIEW;
   readonly largeIconsView = ViewOptions.LARGE_ICON_VIEW;
   readonly extraLargeIconsView = ViewOptions.EXTRA_LARGE_ICON_VIEW;
+  readonly listView = ViewOptions.LIST_VIEW;
   readonly detailsView = ViewOptions.DETAILS_VIEW;
+  readonly contentView = ViewOptions.CONTENT_VIEW;
+  readonly tilesView = ViewOptions.TILES_VIEW;
 
   readonly sortByName = SortBys.NAME;
   readonly sortByItemType = SortBys.ITEM_TYPE;
@@ -185,7 +188,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   isLargeIcon = false;
   isMediumIcon = true;
   isSmallIcon = false;
+  isListIcon = false;
   isDetailsIcon = false;
+  isContentIcon = false;
+  isTitleIcon = false;
+   
 
   isSortByName = false;
   isSortByItemType = false;
@@ -196,6 +203,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   showNavigationPane = true;
   showPreviewPane = false;
   showDetailsPane = false;
+  showRibbonMenu = false;
   showDefaultView = true;
 
   renameForm!: FormGroup;
@@ -355,6 +363,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.pathForm.setValue({
       pathInput: (this.directory !== Constants.ROOT)? this.directory : Constants.ROOT
     })
+  
+    this.loadFalseFrequentFolders();
+    this.loadFalseRecentFiles();
 
     await this.loadDevciesAndDrives();
     await this.loadFileTreeAsync();
@@ -654,6 +665,58 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     await this.navigateTo(parent, 'up');
   }
 
+  async goBackAlevel_old():Promise<void>{
+    this.fileTreeNavToPath = Constants.EMPTY_STRING;
+    if(this.prevPathEntries.length > 0){
+      const currentDirPath =  this.directory;
+
+      if(this.recentPathEntries.indexOf(currentDirPath) === -1){
+        this.recentPathEntries.push(currentDirPath);
+      }
+
+      const idx = this.upPathEntries.indexOf(currentDirPath);
+      if(idx !== -1){
+        this.upPathEntries.splice(idx, 1);
+      }else{
+        this.upPathEntries.push(currentDirPath);
+      }
+
+      this.nextPathEntries.push(currentDirPath);
+      this.isNextBtnActive = true;
+      this.isUpBtnActive = true;
+      this.nextNavBtnStyle ={
+        'fill': '#fff'
+      }
+      this.upNavBtnStyle ={
+        'fill': '#fff'
+      }
+
+      let nextDirPath = this.prevPathEntries.pop() ?? Constants.EMPTY_STRING;
+      if(currentDirPath === nextDirPath){
+        nextDirPath = this.prevPathEntries.pop() ?? Constants.EMPTY_STRING;
+        this.directory = nextDirPath;
+      }else{
+        this.directory = nextDirPath;
+      }
+
+      const folderName = basename(this.directory);
+
+      if(this.prevPathEntries.length === 0){
+        this.isPrevBtnActive = false;
+        this.prevNavBtnStyle ={
+          'fill': '#ccc'
+        }
+      }
+
+      await this._audioService.play(this.cheetahNavAudio);
+      this.populateTraversalList();
+      this.setNavPathIcon(folderName,this.directory);
+      await this.loadFiles();
+      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
+      this.captureComponentImg();   
+    }
+  }
+
   colorNextNavBtn():void{
     if(!this.isNextBtnActive){
       this.nextNavBtnStyle ={
@@ -671,6 +734,93 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       'fill': '#ccc'
     }
   }
+
+  async goForwardAlevel_old():Promise<void>{
+    this.fileTreeNavToPath = Constants.EMPTY_STRING;
+    if(this.nextPathEntries.length > 0){
+
+      const currentDirPath =  this.directory;
+      this.prevPathEntries.push(currentDirPath);
+      this.isPrevBtnActive = true;
+      this.prevNavBtnStyle ={
+        'fill': '#fff'
+      }
+
+      const nextDirPath = this.directory = this.nextPathEntries.pop() ?? Constants.EMPTY_STRING;
+      const idx = this.upPathEntries.indexOf(nextDirPath)
+
+      if (idx !== -1) {
+           this.upPathEntries.splice(idx, 1);
+      }else{
+        this.upPathEntries.push(nextDirPath);
+      }
+
+      if(this.upPathEntries.length == 0){
+        this.isUpBtnActive = false;
+        this.upNavBtnStyle ={
+          'fill': '#ccc'
+        }
+      }
+
+      const folderName = basename(this.directory);
+      if(this.nextPathEntries.length === 0){
+        this.isNextBtnActive = false;
+        this.nextNavBtnStyle ={
+          'fill': '#ccc'
+        }
+      }
+
+      await this._audioService.play(this.cheetahNavAudio);
+      this.populateTraversalList();
+      this.setNavPathIcon(folderName, this.directory);
+      await this.loadFiles();
+      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
+      this.captureComponentImg();
+    }
+  }
+
+    async goUpAlevel_old():Promise<void>{
+    this.fileTreeNavToPath = Constants.EMPTY_STRING;
+    if(this.upPathEntries.length > 0){
+      const currentDirPath =  this.directory;
+
+      if(!this.isNavigatedBefore){
+        this.isNavigatedBefore = true;
+        this.prevPathEntries.push(currentDirPath);
+        this.isPrevBtnActive = true;
+        this.prevNavBtnStyle ={
+          'fill': '#fff'
+        }
+      }
+
+      let nextDirPath = this.upPathEntries.pop() ?? Constants.EMPTY_STRING;
+      if(currentDirPath === nextDirPath){
+        nextDirPath = this.upPathEntries.pop() ?? Constants.EMPTY_STRING;
+        this.directory = nextDirPath;
+        this.prevPathEntries.push(nextDirPath);
+      }else{
+        this.directory = nextDirPath;
+        this.prevPathEntries.push(nextDirPath);
+      }
+
+      const folderName = basename(this.directory);
+
+      if(this.upPathEntries.length === 0){
+        this.isUpBtnActive = false;
+        this.upNavBtnStyle ={
+          'fill': '#ccc'
+        }
+      }
+
+      await this._audioService.play(this.cheetahNavAudio);
+      this.populateTraversalList();
+      this.setNavPathIcon(folderName,this.directory);
+      await this.loadFiles();
+      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
+      this.captureComponentImg(); 
+    }
+  }
+
   onNavPaneBtnClick():void{
     this.showNavigationPane = !this.showNavigationPane;
   }
@@ -899,6 +1049,58 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     return updatedTreeData;
   }
 
+  async navigateToFolder_old(data:string[]):Promise<void>{
+    console.log('navigateToFolder:', data); 
+    
+    const quickAccess = 'Quick access';
+    const thisPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
+    const fileName = data[0];
+    const path = data[1];
+
+    if(!this.isNavigatedBefore){
+      this.prevPathEntries.push(this.directory);
+      this.upPathEntries.push(this.directory);
+      this.isNavigatedBefore = true;
+    }
+
+    this.isPrevBtnActive = true;
+    this.displayName = fileName;
+    this.fileTreeNavToPath = path;
+
+    if (path === thisPC || path === quickAccess){
+      this.showDefaultView = true;
+    }else if(path === Constants.ROOT){
+      this.showDefaultView = false;
+      this.fileTreeNavToPath = Constants.EMPTY_STRING;
+    }
+
+    this.directory = (path === thisPC || path === quickAccess)? Constants.ROOT : path;
+
+    if(path === `/Users/${fileName}`)
+      this.icon = `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png`;
+    else
+      this.icon = `${Constants.IMAGE_BASE_PATH}folder.png`;
+
+    this.prevPathEntries.push(this.directory);
+    this.upPathEntries.push(this.directory);
+
+    if(this.recentPathEntries.indexOf(this.directory) === -1){
+      this.recentPathEntries.push(this.directory);
+    }
+
+    this.populateTraversalList();
+    this.setNavPathIcon(fileName, path);
+    this.storeAppState(path);
+
+    if(path === thisPC || path !== Constants.ROOT)
+      await this.loadFiles();
+    else if(path === Constants.ROOT)
+      await this.loadFiles(false);
+
+    await CommonFunctions.sleep(this.SECONDS_DELAY[4])
+    this.captureComponentImg();
+  }
+
   async navigateToFolder(data: string[]): Promise<void> {
     console.log('navigateToFolder:', data);
 
@@ -1105,6 +1307,44 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     })
   }
   
+  colorTabLayoutContainer():void{
+    this.tabLayoutCntnrStyle ={
+      'background-color': '#403c3c'
+    }
+  }
+
+  unColorTabLayoutContainer():void{
+    this.tabLayoutCntnrStyle ={
+      'background-color': Constants.EMPTY_STRING
+    }
+  }
+
+  onMouseEnterTabLayoutBtn(iconView:ViewOptions, id:number):void{
+    this.changeTabLayoutIconCntnrCSS(id,true);
+    this.changeFileExplorerLayoutCSS(iconView);
+
+    // this should be an update of the menuData, rather than a re-generation
+    this.getFileExplorerMenuData()
+  }
+
+  onMouseLeaveTabLayoutBtn(id:number):void{
+    this.changeTabLayoutIconCntnrCSS(id,false);
+    this.changeFileExplorerLayoutCSS(this.defaultviewOption);
+  }
+
+  onClickTabLayoutBtn(iconView:ViewOptions, id:number):void{
+    this.currentViewOptionId = id;
+    this.currentViewOption = iconView;
+    this.defaultviewOption = iconView;
+
+    this.changeTabLayoutIconCntnrCSS(id,true);
+
+    for(let i = 1; i <= 8; i++){
+      if(i !== id){
+        this.changeTabLayoutIconCntnrCSS(i, false);
+      }
+    }
+  }
 
   toggleLargeIconsView():void{
     this.currentViewOption = ViewOptions.LARGE_ICON_VIEW;
@@ -1129,7 +1369,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.changeIconViewBtnSize(inputViewOption);
     }
 
-    if(inputViewOption === ViewOptions.DETAILS_VIEW){
+    if(inputViewOption === ViewOptions.LIST_VIEW || inputViewOption === ViewOptions.DETAILS_VIEW || 
+      inputViewOption === ViewOptions.TILES_VIEW || inputViewOption === ViewOptions.CONTENT_VIEW){
       this.currentViewOption = inputViewOption;
       this.changeLayoutCss(inputViewOption);
       this.changeOrderedlistStyle(inputViewOption);
@@ -1165,15 +1406,21 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   changeLayoutCss(iconSize:ViewOptions):void{
     const layoutOptions:ViewOptions[] = [ViewOptions.SMALL_ICON_VIEW, ViewOptions.MEDIUM_ICON_VIEW, ViewOptions.LARGE_ICON_VIEW, 
-                                        ViewOptions.EXTRA_LARGE_ICON_VIEW, ViewOptions.DETAILS_VIEW];
+                                        ViewOptions.EXTRA_LARGE_ICON_VIEW, ViewOptions.LIST_VIEW, ViewOptions.DETAILS_VIEW,
+                                        ViewOptions.TILES_VIEW, ViewOptions.CONTENT_VIEW];
 
-    const LayoutOptionsCSS:ViewOptionsCSS[] = [ViewOptionsCSS.ICONS_VIEW_CSS, ViewOptionsCSS.DETAILS_VIEW_CSS];
+    const LayoutOptionsCSS:ViewOptionsCSS[] = [ViewOptionsCSS.ICONS_VIEW_CSS, ViewOptionsCSS.LIST_VIEW_CSS, 
+                                              ViewOptionsCSS.DETAILS_VIEW_CSS, ViewOptionsCSS.TITLES_VIEW_CSS,
+                                              ViewOptionsCSS.CONTENT_VIEW_CSS];
 
     const layoutIdx = layoutOptions.indexOf(iconSize);
     if(layoutIdx <= 3){
       this.olClassName = LayoutOptionsCSS[0];
     } else if (layoutIdx >= 4){
-      this.olClassName = LayoutOptionsCSS[1];
+      /* the icon-views has various sizes, but it is still treated as one distinct layout. 
+         So, options 0 - 3 in the layoutOptions = option 0 in the cssLayoutOptions */
+      const idx = layoutIdx - 3;
+      this.olClassName = LayoutOptionsCSS[idx];
     }
   }
 
@@ -1248,6 +1495,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         olElmnt.style.gridTemplateRows = 'repeat(auto-fill, 43px)'; 
       }
     }
+  }
+
+  toggleRibbonMenu():void{
+    //this.showRibbonMenu = !this.showRibbonMenu
   }
 
   questionBtn():void{
@@ -1687,12 +1938,19 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const smallIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Small icons', action: this.showSmallIconsM, 
       variables:this.isSmallIcon, emptyline:false, styleOption:'A' }
 
+    const listIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'List icons', action: this.showListIconsM,
+     variables:this.isListIcon,  emptyline:false, styleOption:'A' }
 
     const detailsIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Details icons', action:this.showDetailsIconsM,
      variables:this.isDetailsIcon, emptyline:false, styleOption:'A' }
 
+    const titlesIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Titles icons', action: this.showTilesIconsM, 
+      variables:this.isTitleIcon,  emptyline:false, styleOption:'A' }
 
-    const viewByMenu = [extraLargeIcon, largeIcon, mediumIcon, smallIcon, detailsIcon];
+    const contentIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Content icons', action: (evt:MouseEvent) =>  this.showContentIconsM(evt), 
+      variables:this.isContentIcon,  emptyline:false, styleOption:'A' }
+
+    const viewByMenu = [extraLargeIcon, largeIcon, mediumIcon, smallIcon, listIcon, detailsIcon, titlesIcon, contentIcon];
 
     return viewByMenu;
   }
@@ -2561,6 +2819,95 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     //console.log('Fetched files:', this.fetchedFiles);
   }
 
+  private loadFalseFrequentFolders():void{
+
+    const desktopFile = new FileInfo();
+      desktopFile.setIconPath = "osdrive/Cheetah/System/Imageres/desktop_folder.png";
+      desktopFile.setContentPath = "Desktop";
+      desktopFile.setCurrentPath = "/Users/Desktop";
+      desktopFile.setFileName = "Desktop"
+      desktopFile.setFileType = Constants.FOLDER;
+      desktopFile.setIsFile = false;
+      desktopFile.setOpensWith = "fileexplorer";
+
+    const musicFile = new FileInfo();
+      musicFile.setIconPath = "osdrive/Cheetah/System/Imageres/music_folder.png";
+      musicFile.setContentPath = "Music";
+      musicFile.setCurrentPath = "/Users/Music";
+      musicFile.setFileName = "Music"
+      musicFile.setFileType = Constants.FOLDER;
+      musicFile.setIsFile = false;
+      musicFile.setOpensWith = "fileexplorer";
+
+
+    const documentFile = new FileInfo();
+      documentFile.setIconPath = "osdrive/Cheetah/System/Imageres/documents_folder.png";
+      documentFile.setContentPath = "Documents";
+      documentFile.setCurrentPath = "/Users/Documents";
+      documentFile.setFileName = "Documents";
+      documentFile.setFileType = Constants.FOLDER;
+      documentFile.setIsFile = false;
+      documentFile.setOpensWith = "fileexplorer";
+
+    const pictureFile = new FileInfo();
+      pictureFile.setIconPath = "osdrive/Cheetah/System/Imageres/pictures_folder.png";
+      pictureFile.setContentPath = "Pictures";
+      pictureFile.setCurrentPath = "/Users/Pictures";
+      pictureFile.setFileName = "Pictures";
+      pictureFile.setFileType = Constants.FOLDER;
+      pictureFile.setIsFile = false;
+      pictureFile.setOpensWith = "fileexplorer";
+
+    this.frequentFolders.push(desktopFile, musicFile, documentFile, pictureFile);
+  }
+
+  private loadFalseRecentFiles():void{
+
+    const file1 = new FileInfo();
+      file1.setIconPath = "osdrive/Cheetah/System/Imageres/file.png";
+      file1.setCurrentPath = "/Users/Documents/starting a new proj in VSCode.txt";
+      file1.setFileName = "starting a new proj in VSCode";
+      file1.setFileType = ".txt";
+      file1.setIsFile = true;
+      file1.setOpensWith = "texteditor";
+
+    const file2 = new FileInfo();
+      file2.setIconPath ="osdrive/Cheetah/System/Imageres/file.png";
+      file2.setCurrentPath = "/Users/Documents/Dynamic Programming.txt";
+      file2.setFileName = "Dynamic Programming";
+      file2.setFileType = ".txt";
+      file2.setIsFile = true;
+      file2.setOpensWith = "texteditor";
+
+
+    const file3 = new FileInfo();
+      file3.setIconPath ="osdrive/Cheetah/System/Imageres/pdf_file.png";
+      file3.setCurrentPath = "/Users/Documents/PDFs/MotherBoard/PRO-B650-P-WIFI.pdf";
+      file3.setFileName = "PRO-B650-P-WIFI";
+      file3.setFileType = ".pdf";
+      file3.setIsFile = true;
+      file3.setOpensWith = "pdfviewer";
+
+    const file4 = new FileInfo();
+      file4.setIconPath ="osdrive/Cheetah/System/Imageres/music_file.png";
+      file4.setCurrentPath = "/Users/Music/Farrgol-Msg My Future.mp3";
+      file4.setFileName = "Farrgol-Msg My Future";
+      file4.setFileType = ".mp3";
+      file4.setIsFile = true;
+      file4.setOpensWith = "audioplayer";
+
+
+    const file5 = new FileInfo();
+      file5.setIconPath ="osdrive/Cheetah/System/Imageres/video_file.png"
+      file5.setCurrentPath = "/Users/Videos/My 2024-Spotify-Wrapped.mp4"
+      file5.setFileName = "My 2024-Spotify-Wrapped";
+      file5.setFileType = ".mp4";
+      file5.setIsFile = true;
+      file5.setOpensWith = "videoplayer";
+
+    this.recentFiles.push(file1, file2, file3, file4, file5);
+  }
+
   async refresh(evt?:MouseEvent):Promise<void>{
     console.log('Refresh Called !!!!!!!')
     this.isIconInFocusDueToPriorAction = false;
@@ -2777,46 +3124,60 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private showExtraLargeIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isExtraLargeIcon = true;
-    this.onMenuSelectLayout(ViewOptions.EXTRA_LARGE_ICON_VIEW);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.EXTRA_LARGE_ICON_VIEW, 1);
   }
 
   private showLargeIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isLargeIcon = true;
-    this.onMenuSelectLayout(ViewOptions.LARGE_ICON_VIEW);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.LARGE_ICON_VIEW, 2);
   }
 
   private showMediumIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isMediumIcon = true;
-    this.onMenuSelectLayout(ViewOptions.MEDIUM_ICON_VIEW);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.MEDIUM_ICON_VIEW, 3);
   }
 
   private showSmallIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isSmallIcon = true;
-    this.onMenuSelectLayout(ViewOptions.SMALL_ICON_VIEW);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.SMALL_ICON_VIEW, 4);
+  }
+
+  private showListIconsM = ():void=>{
+    this.setViewFlagsToFalse();
+    this.isListIcon = true;
+    this.onMouseEnterTabLayoutBtn(ViewOptions.LIST_VIEW, 5);
   }
 
   private showDetailsIconsM = ():void=>{
     this.setViewFlagsToFalse();
     this.isDetailsIcon = true;
-    this.onMenuSelectLayout(ViewOptions.DETAILS_VIEW);
+    this.onMouseEnterTabLayoutBtn(ViewOptions.DETAILS_VIEW, 6);
   }
 
-  onMenuSelectLayout(inputViewOption:ViewOptions):void{
-    this.changeLayoutCss( inputViewOption);
-    this.changeOrderedlistStyle( inputViewOption );
-    this.changeIconViewBtnSize( inputViewOption);
+  private showTilesIconsM = ():void=>{
+    this.setViewFlagsToFalse();
+    this.isTitleIcon = true;
+    this.onMouseEnterTabLayoutBtn(ViewOptions.TILES_VIEW, 7);
   }
-  
+
+  private showContentIconsM = (evt:MouseEvent):void=>{
+    this.setViewFlagsToFalse();
+    this.isContentIcon = true;
+    this.onMouseEnterTabLayoutBtn(ViewOptions.CONTENT_VIEW, 8);
+  }
 
   setViewFlagsToFalse():void{
     this.isExtraLargeIcon = false;
     this.isLargeIcon = false;
     this.isMediumIcon = false;
     this.isSmallIcon = false;
+    this.isListIcon = false;
     this.isDetailsIcon = false;
+    this.isTitleIcon = false;
+    this.isContentIcon = false;
   }
 
   async createShortCut(): Promise<void>{
