@@ -5,24 +5,27 @@
     [isMaximizable]="isMaximizable" [priorUId]="priorUId">
 
     <div #fileExplorerRootContainer class="file_explrorer_root_container" tabindex="0" (click)="focusWindow($event)">
-        <div class="fileexp-header-tab-container" >
-            <div class="fileexp-header-tabs">
-              <div class="fileexp-tab highlight-default">File</div>
-              <div class="fileexp-tab">Home</div>
-              <div class="fileexp-tab active">View</div>
+        <div class="fileexp-header__tab-container" >
+            <div class="fileexp-header__tabs">
+              <div class="fileexp-header__tab highlight-default">File</div>
+              <div class="fileexp-header__tab">Home</div>
+              <div class="fileexp-header__tab active">View</div>
 
-              <div class="question-header-cntnr" (click)="questionBtn()" (mouseenter)="colorBtnCntnr('fileMngr-QuestionBtn-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeRibbon, 'fileMngr-QuestionBtn-'+processId)" id="fileMngr-QuestionBtn-{{processId}}">
-                <figure class="question-figure-header-tab">  
-                    <img class="question-img-header-tab" [src]="'osdrive/Cheetah/System/Imageres/question.png'"/>
+              <div class="fileexp-header__question-cntnr" (click)="questionBtn()" (mouseenter)="colorBtnCntnr('fileMngr-QuestionBtn-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeRibbon, 'fileMngr-QuestionBtn-'+processId)" id="fileMngr-QuestionBtn-{{processId}}">
+                <figure class="fileexp-header__question-figure">  
+                    <img class="fileexp-header__question-img" [src]="'osdrive/Cheetah/System/Imageres/question.png'"/>
                 </figure>
               </div>
             </div>
         </div>  
+
         <div class="header-empty-line-container"></div>
-        <div class="fileexp-header-container">
-            <div class="header-nav-btn-container">
-                <figure class="figure-alt">  
-                    <div class="img-alt-left-right">
+
+        <div class="fileexp-header__container">
+
+            <div class="fileexp-header__nav-btns-container">
+                <figure class="fileexp-header__nav-figure">  
+                    <div class="fileexp-header__nav-img">
                         <svg xmlns="http://www.w3.org/2000/svg" (click)="goBackAlevel()" (mouseenter)="colorPrevNavBtn()" (mouseleave)="uncolorPrevNavBtn()" [style]="prevNavBtnStyle"
                             height="16" width="16" 
                             viewBox="0 0 512 512">
@@ -31,8 +34,8 @@
                     </div>
                 </figure>
     
-                <figure class="figure-alt">
-                    <div class="img-alt-left-right">
+                <figure class="fileexp-header__nav-figure">
+                    <div class="fileexp-header__nav-img">
                         <svg xmlns="http://www.w3.org/2000/svg" (click)="goForwardAlevel()" (mouseenter)="colorNextNavBtn()" (mouseleave)="uncolorNextNavBtn()"  [style]="nextNavBtnStyle"
                             height="16" width="16" 
                             viewBox="0 0 512 512">
@@ -41,18 +44,18 @@
                     </div>
                 </figure>
     
-                <figure class="figure-alt-chevron">
-                    <div class="img-alt-chevron">
+                <figure class="fileexp-header__nav-figure-chevron">
+                    <div class="fileexp-header__nav-img-chevron">
                         <svg xmlns="http://www.w3.org/2000/svg" (mouseenter)="colorChevron()" (mouseleave)="unColorChevron()"  [style]="recentNavBtnStyle"
-                            height="9" width="9" 
+                            height="10" width="10" 
                             viewBox="0 200 512 512">
                             <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
                         </svg>
                     </div>
                 </figure>
     
-                <figure class="figure-alt-up" (click)="goUpAlevel()" (mouseenter)="colorUpNavBtn()" (mouseleave)="uncolorUpNavBtn()" [style]="upNavBtnCntnrStyle">
-                    <div class="img-alt-up">
+                <figure class="fileexp-header__nav-figure-up" (click)="goUpAlevel()" (mouseenter)="colorUpNavBtn()" (mouseleave)="uncolorUpNavBtn()" [style]="upNavBtnCntnrStyle">
+                    <div class="fileexp-header__nav-img-up">
                         <svg xmlns="http://www.w3.org/2000/svg" [style]="upNavBtnStyle"
                             height="16" width="16" 
                             viewBox="0 0 512 512">
@@ -62,7 +65,7 @@
                 </figure>
             </div>
     
-            <div class="header-nav-path-container" id="hdrNavPathCntnr-{{processId}}">
+            <div class="fileexp-header__nav-path-container" id="hdrNavPathCntnr-{{processId}}">
                 <form [formGroup]="pathForm"  (ngSubmit)="isFormDirty()">
                     <div class="nav-path-container" (click)="showPathTextBox($event)" (focusout)="hidePathTextBox()">
                         <span class="span head-nav-path-cntnr"><figure class="figure-nav-path-cntnr"><img class="img-nav-path-cntnr" [src]="navPathIcon | safeResourceUrl"/></figure></span>

@@ -82,19 +82,19 @@
 
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Header Tabs View Started@@@@@@@@@@@@@@@@@@@@@@@@@@*/
 /* Styles for the tabbed window container */
-.fileexp-header-tab-container {
+.fileexp-header__tab-container {
     width: 100%;
     min-width: 700px;
     /* border:0.5px solid var(--fx-border-light); */
 }
   
 /* Styles for the tab navigation */
-.fileexp-header-tabs {
+.fileexp-header__tabs {
     display: flex;
     background-color: var(--fx-header);
 }
 
-.fileexp-tab {
+.fileexp-header__tab {
     /* flex: 1; */
     width: 55px;
     padding: 4px 8px;
@@ -108,13 +108,13 @@
     transition: background-color 0.3s;
 }
 
-.fileexp-tab.highlight-default {
+.fileexp-header__tab.highlight-default {
     margin: 0px 0px;
     background-color: #0464ac;
     color: var( --fx-text);
 }
 
-.fileexp-tab.active {
+.fileexp-header__tab.active {
     border:0.3px solid var(--fx-border-soft);
     border-bottom: none;
     background-color: var(--fx-bg);
@@ -129,32 +129,31 @@
     width: 10px;
 }
 
-.question-header-cntnr{
+.fileexp-header__question-cntnr{
     position: fixed;
     height: 25px;
     width: 15px;
     right: 1%;
 }
 
-.question-figure-header-tab{
+.fileexp-header__question-figure{
     position: relative;
     height: 15px; 
     width: 15px;
     top: 5px;
 }
 
-.question-img-header-tab{
+.fileexp-header__question-img{
     height: 15px; 
     width: 15px;
 }
-
   
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Header Tabs View Ended@@@@@@@@@@@@@@@@@@@@@@@@@@*/
 
 
 /*****************************Header navigation view Started*****************************/
 
-.fileexp-header-container{
+.fileexp-header__container{
     width: 100%;
     display: flex;
     background-color: var(--fx-panel);
@@ -172,14 +171,14 @@
 
 /*++++++++++++++++++++++++++++++++Header navigation btn section Started++++++++++++++++++++++++++++++++*/
 
-.header-nav-btn-container{
+.fileexp-header__nav-btns-container{
     left: 0;
     height: 24px;
     width: fit-content;
     display: flex;
 }
 
-.img-alt-left-right{
+.fileexp-header__nav-img{
     height: 16px;
     width: 16px;
     top:5px;
@@ -187,46 +186,44 @@
     position: relative;
 }
 
-.figure-alt{
+.fileexp-header__nav-figure{
     position: relative;
     align-items: center;
     width: fit-content;
     margin: 0 10px;
 }
 
-.img-alt-chevron{
-    height: 9px;
-    width: 9px;
-
+.fileexp-header__nav-img-chevron{
+    height: 10px;
+    width: 10px;
     position: relative;
-    top: 5px
+    top: 12px
 }
 
-.figure-alt-chevron{
+.fileexp-header__nav-figure-chevron{
     position: relative;
     align-items: center;
     width: fit-content;
     margin: 0 1px;
 }
 
-.figure-alt-up{
+.fileexp-header__nav-figure-up{
     position: relative;
     align-items: center;
     width: fit-content;
     padding: 0 0 0 5px;
 }
 
-.img-alt-up{
+.fileexp-header__nav-img-up{
     height: 16px;
     width: 16px;
-    top:6px;
-
+    top:4px;
     position: relative;
 }
 /*++++++++++++++++++++++++++++++++Header navigation btn section Ended++++++++++++++++++++++++++++++++*/
 
 /*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxHeader navigation path box Startedxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
-.header-nav-path-container{
+.fileexp-header__nav-path-container{
     width:100%;
     padding: 0 0 0 2px;
 }
