@@ -726,12 +726,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     for (let i = 0; i < treeData.length; i++) {
       const node = treeData[i];
-      const updatedNode: FileTreeNode = {
-        name: node.name,
-        path: node.path,
-        isFolder: node.isFolder,
-        children: node.children || []
-      };
+      const updatedNode: FileTreeNode = { name: node.name, path: node.path, isFolder: node.isFolder, children: node.children || [] };
 
       // If the current node matches the nodeName, add the new children
       if (node.path === nodePath) {
@@ -741,10 +736,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       // If the node has children, recursively call this function on the children
-      if(node.children){
+      if(node.children)
         updatedNode.children = this.addChildrenToNode(node.children, nodePath, newChildren);
-      }
-
+      
       // Add the updated node to the new treeData array
       updatedTreeData.push(updatedNode);
     }
@@ -823,9 +817,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.captureComponentImg();
   }
 
-
-
-
   setNavPathIcon(fileName:string, directory:string):void{
     console.log(`fileexplorer - setNavPathIcon: fileName:${fileName} -----  directory:${directory}`)
 
@@ -849,39 +840,28 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   showPathTextBox(evt:MouseEvent):void{
+    evt.stopPropagation();
     this.focusWindow();
 
     const pathTxtBoxCntrElement = document.getElementById(`pathTxtBoxCntr-${this.processId}`) as HTMLElement;
     const pathTxtBoxElement = document.getElementById(`pathTxtBox-${this.processId}`) as HTMLInputElement;
     const pathIconBoxElement = document.getElementById(`pathIconBox-${this.processId}`) as HTMLElement;
 
-    if(pathTxtBoxCntrElement){
-      pathTxtBoxCntrElement.style.display = 'flex';
+    if(!pathTxtBoxCntrElement || !pathTxtBoxElement || !pathIconBoxElement) return;
+
+    pathTxtBoxCntrElement.style.display = 'flex';
+    pathTxtBoxElement.style.display = 'block';
+
+    if(this.showPathHistory){
+      if(this.directory === Constants.ROOT)
+        this.pathForm.setValue({ pathInput:Constants.ROOT })
     }
+    else
+      this.pathForm.setValue({ pathInput:this.directory })
 
-    if(pathTxtBoxElement){
-      pathTxtBoxElement.style.display = 'block';
-
-      if(this.showPathHistory){
-        if(this.directory === Constants.ROOT){
-          this.pathForm.setValue({
-            pathInput:Constants.ROOT
-          })
-        }
-      }else{
-        this.pathForm.setValue({
-          pathInput:this.directory
-        })
-      }
-      pathTxtBoxElement?.focus();
-      pathTxtBoxElement?.select();
-    }
-
-    if(pathIconBoxElement){
-      pathIconBoxElement.style.display = 'none';
-    }
-
-    evt.stopPropagation();
+    pathTxtBoxElement?.focus();
+    pathTxtBoxElement?.select();
+    pathIconBoxElement.style.display = 'none';
   }
 
   hidePathTextBox():void{
@@ -889,17 +869,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const pathTxtBoxElement = document.getElementById(`pathTxtBox-${this.processId}`) as HTMLElement;
     const pathIconBoxElement = document.getElementById(`pathIconBox-${this.processId}`) as HTMLElement;
 
-    if(pathTxtBoxElement){
-      pathTxtBoxElement.style.display = 'none';
-    }
+    if(!pathTxtBoxCntrElement || !pathTxtBoxElement || !pathIconBoxElement) return;
 
-    if(pathTxtBoxCntrElement){
-      pathTxtBoxCntrElement.style.display = 'none';
-    }
-
-    if(pathIconBoxElement){
-      pathIconBoxElement.style.display = 'flex';
-    }
+    pathTxtBoxElement.style.display = 'none';
+    pathTxtBoxCntrElement.style.display = 'none';
+    pathIconBoxElement.style.display = 'flex';
   }
 
   hidePathTextBoxOnload():void{
