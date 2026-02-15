@@ -115,6 +115,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   isShowFileNameWarning = false;
   isSearchBoxNotEmpty = false;
+  isShowOnlyURLFilesInRootDir = true;
   showPathHistory = false;
   onClearSearchIconHover = false;
   onSearchIconHover = false;
@@ -322,21 +323,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this.directory = this._fileInfo.getCurrentPath;
         const fileName = (this._fileInfo.getFileName === Constants.EMPTY_STRING)? Constants.NEW_FOLDER : this._fileInfo.getFileName;
 
-        this.populateTraversalList();
+        this.generateBreadCrumbs();
         this.checkAndSetIfRecycleBin();
         this.setNavPathIcon(fileName, this._fileInfo.getCurrentPath);
       }
     }
 
-    this.renameForm = this._formBuilder.nonNullable.group({
-      renameInput: Constants.EMPTY_STRING,
-    });
-    this.pathForm = this._formBuilder.nonNullable.group({
-      pathInput: Constants.EMPTY_STRING,
-    });
-    this.searchForm = this._formBuilder.nonNullable.group({
-      searchInput: Constants.EMPTY_STRING,
-    });
+    this.renameForm = this._formBuilder.nonNullable.group({ renameInput: Constants.EMPTY_STRING, });
+    this.pathForm = this._formBuilder.nonNullable.group({ pathInput: Constants.EMPTY_STRING, });
+    this.searchForm = this._formBuilder.nonNullable.group({ searchInput: Constants.EMPTY_STRING, });
 
     this.setNavButtonsColor();
     this.getFileExplorerMenuData();
@@ -378,11 +373,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._creatShortCutOnDesktopSub?.unsubscribe();
   }
 
-
-
-    get getFileExplorerRootContainerElmnt(): HTMLElement {
-      return this.fileExplorerRootContainer.nativeElement;
-    }
+  get getFileExplorerRootContainerElmnt(): HTMLElement {
+    return this.fileExplorerRootContainer.nativeElement;
+  }
 
   updateFileExplorerWindoAfterViewInit():void{
 
@@ -578,6 +571,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // we should store it as ["/", "/Users", "/Users/me"] so pop() => "/Users/me"
     this.upPathEntries = parents.reverse();
 
+    console.log('this.upPathEntries:', this.upPathEntries);
+
     this.isUpBtnActive = this.upPathEntries.length > 0;
     this.upNavBtnStyle = { fill: this.isUpBtnActive ? '#fff' : '#ccc' };
   }
@@ -618,7 +613,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // Downstream work
     const folderName = basename(this.directory);
     await this._audioService.play(this.cheetahNavAudio);
-    this.populateTraversalList();
+    this.generateBreadCrumbs();
     this.setNavPathIcon(folderName, this.directory);
     await this.loadFiles();
     await CommonFunctions.sleep(this.SECONDS_DELAY[4]);
@@ -684,10 +679,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.fileTreeNode = [];
     //this._fileService.resetDirectoryFiles();
     const directoryEntries  = await this._fileService.readDirectory(Constants.USER_BASE_PATH);
-
-    const osDrive:FileTreeNode = {
-      name:Constants.OSDISK, path: Constants.ROOT, isFolder: true, children:[]
-    }
+    const osDrive:FileTreeNode = {name:Constants.OSDISK, path: Constants.ROOT, isFolder: true, children:[]}
 
     // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
@@ -717,20 +709,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       // this.directory, will not be correct for all cases. Make sure to check
       for(const dirEntry of directoryEntries){
         const entryPath = `${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
-        const isFile =  await this._fileService.isDirectory(entryPath);
-        const ftn:FileTreeNode = {
-          name : dirEntry,
-          path: entryPath,
-          isFolder: isFile,
-          children: []
-        }
-  
-        //console.log('update-ftn:', ftn); //TBD
+        const isDir =  await this._fileService.isDirectory(entryPath);
+        const ftn:FileTreeNode = { name: dirEntry,  path: entryPath, isFolder: isDir, children: [] }
         tmpFileTreeNode.push(ftn);
       }
   
       const res =  this.addChildrenToNode(this.fileTreeNode, path, tmpFileTreeNode);
-      //console.log('updatedTreeData:', res);
       this.fileTreeNode = res;
       this.fileTreeHistory.push(path);
     }
@@ -819,7 +803,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.rebuildUpStackFromCurrent(); // <- from prior message
 
     // --- Refresh breadcrumb / UI ---
-    this.populateTraversalList();
+    this.generateBreadCrumbs();
     this.setNavPathIcon(fileName, this.directory);
     this.storeAppState(this.directory);
 
@@ -922,34 +906,54 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const pathTxtBoxCntrElement = document.getElementById(`pathTxtBoxCntr-${this.processId}`) as HTMLElement;
     const pathTxtBoxElement = document.getElementById(`pathTxtBox-${this.processId}`) as HTMLElement;  
 
-    if(pathTxtBoxElement){
-      pathTxtBoxElement.style.display = 'none';
-    }
+    if(!pathTxtBoxCntrElement || ! pathTxtBoxElement) return;
 
-    if(pathTxtBoxCntrElement){
-      pathTxtBoxCntrElement.style.display = 'none';
-    }
+    pathTxtBoxElement.style.display = 'none';
+    pathTxtBoxCntrElement.style.display = 'none';
   }
 
-  populateTraversalList():void{
-    const tmpArray = this.directory.split(Constants.ROOT).filter(x => x !== Constants.EMPTY_STRING);
-    if(tmpArray.length === 0){ 
-      tmpArray[0]= Constants.THISPC; 
-    }
-    else{ tmpArray.unshift(Constants.THISPC); }
+  /**
+   * popluates a List with path traversal
+   * RECYCLE_BIN_PATH → [RECYCLE_BIN]
+   * user path like /Users/Bob/Documents → [THISPC, Users, Bob, Documents]
+   * non-user path like /System/Library → [THISPC, System, Library]
+   * root / → [THISPC, OSDISK] (stable breadcrumb)
+   * @returns 
+   */
+  generateBreadCrumbs(): void {
+    // Split directory into segments (ignore empty from leading/trailing slashes)
+    const segments = this.directory
+      .split(Constants.ROOT)
+      .filter(x => x !== Constants.EMPTY_STRING);
 
-    if(this.directory === Constants.RECYCLE_BIN_PATH){
-      this._directoryTraversalList = [];
-      this._directoryTraversalList.push(Constants.RECYCLE_BIN);
-    }else  if(this.directory.includes(Constants.USER_BASE_PATH)){
-      this._directoryTraversalList = tmpArray;
-    }else{
-      tmpArray[1] = Constants.OSDISK;
-      this._directoryTraversalList = tmpArray;
+    // Breadcrumb trail always starts at THISPC
+    const trail: string[] = [Constants.THISPC, ...segments];
+
+    // Special case: Recycle Bin
+    if (this.directory === Constants.RECYCLE_BIN_PATH) {
+      this._directoryTraversalList = [Constants.RECYCLE_BIN];
+      return;
     }
 
+    // User base path: show the real segments as-is (THISPC + /Users/...)
+    if (this.directory.includes(Constants.USER_BASE_PATH)) {
+      this._directoryTraversalList = trail;
+      return;
+    }
+
+    // Non-user paths: show a stable disk label after THISPC
+    // Ensure slot exists for the disk label (index 1).
+    if (trail.length === 1) {
+      trail.push(Constants.OSDISK);
+    } else {
+      if(this.directory === Constants.ROOT)
+        trail[1] = Constants.OSDISK;
+    }
+
+    this._directoryTraversalList = trail;
     console.log('this._directoryTraversalList:', this._directoryTraversalList);
   }
+
 
   captureComponentImg():void{
     htmlToImage.toPng(this.fileExplorerRootContainer.nativeElement).then(htmlImg =>{
@@ -1192,7 +1196,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this.recentPathEntries.push(this.directory);
       }
 
-      this.populateTraversalList();
+      this.generateBreadCrumbs();
       this.setNavPathIcon(file.getFileName, file.getCurrentPath);
       this.storeAppState(file.getCurrentPath);
   
@@ -2398,19 +2402,23 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const count = await this._fileService.countFolderItems(Constants.RECYCLE_BIN_PATH);
     this.icon = (count === 0) 
       ? `${Constants.IMAGE_BASE_PATH}empty_bin.png`
-      :`${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
+      : `${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
   }
 
   onFileExplrCntntClick():void{
     this.hidePathTextBox();
   }
 
-  private async loadFiles(showUrlFiles=true):Promise<void>{
+  /**
+   * loadFiles by default, when the path is root, will only fetch url files
+   * @param showOnlyUrlFiles 
+   */
+  private async loadFiles(showOnlyUrlFiles=true):Promise<void>{
     this.fetchedFiles = [];
     const directoryFiles  = await this._fileService.loadDirectoryFiles(this.directory);
 
     if(this.directory === Constants.ROOT){
-      if(!showUrlFiles){
+      if(!showOnlyUrlFiles){
         this.fetchedFiles.push(...directoryFiles.filter(x => x.getFileExtension !== Constants.URL))
       }else{
         this.fetchedFiles.push(...directoryFiles.filter(x => x.getFileExtension === Constants.URL));
