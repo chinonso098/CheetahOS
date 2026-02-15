@@ -68,11 +68,11 @@
             <div class="fileexp-header__nav-path-container" id="hdrNavPathCntnr-{{processId}}">
 
                 <div class="fileexp-header__nav-anchor" (click)="showPathTextBox($event)" (focusout)="hidePathTextBox()">
-                    <span class="span fileexp-header__nav-folder-img-container">
+                    <div class="fileexp-header__nav-folder-img-container">
                         <figure class="fileexp-header__nav-folder-figure">
                             <img class="fileexp-header__nav-folder-img" [src]="navPathIcon | safeResourceUrl"/>
                         </figure>
-                    </span>
+                    </div>
 
                     <div class="fileexp-header__nav-path-display" id="pathIconBox-{{processId}}" >
                         <span class="span fileexp-header__nav-root-cntnr">
@@ -104,16 +104,16 @@
                     </form>
 
                 
-                    <span class="span fileexp-header__nav-show-cntnr" [class.active]="showPathHistory" (click)="hideshowPathHistory()">
+                    <div class="fileexp-header__nav-show-cntnr" [class.active]="showPathHistory" (click)="hideshowPathHistory()">
                         <figure class="fileexp-header__nav-show-figure">
                             <img class="fileexp-header__nav-show-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_expand_32.png' | safeResourceUrl"/>
                         </figure>
-                    </span>
-                    <span class="span head-nav-path-cntnr2" (click)="refresh($event)">
-                        <figure class="figure-nav-path-cntnr2">
-                            <img class="img-nav-path-cntnr2" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_refresh_32.png' | safeResourceUrl"/>
+                    </div>
+                    <div class="fileexp-header__nav-refresh-cntnr" (click)="refresh($event)">
+                        <figure class="fileexp-header__nav-refresh-figure">
+                            <img class="fileexp-header__nav-refresh-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_refresh_32.png' | safeResourceUrl"/>
                         </figure>
-                    </span>
+                    </div>
                 </div>
         
     

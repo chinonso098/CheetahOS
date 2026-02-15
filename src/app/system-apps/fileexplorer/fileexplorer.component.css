@@ -149,7 +149,7 @@
 
 .fileexp-header__nav-btns-container{
     left: 0;
-    height: 24px;
+    height: var(--fx-row);
     width: fit-content;
     display: flex;
 }
@@ -208,6 +208,8 @@
 .fileexp-header__nav-anchor{
     display:flex;
     width: 100%;
+    align-items: center;
+    min-width: 0;
 }
 
 .fileexp-header__nav-folder-figure{
@@ -223,7 +225,8 @@
     position: relative;
 }
 
-span.fileexp-header__nav-folder-img-container{
+.fileexp-header__nav-folder-img-container{
+    height: var(--fx-row);
     align-items: center;
     display:inline-flex;
     border: 0.5px solid var(--fx-border-light);
@@ -232,9 +235,10 @@ span.fileexp-header__nav-folder-img-container{
 
 .fileexp-header__nav-path-form, .fileexp-header__nav-path-display{
     display:flex;
-    height: 24px;
-    width: 450px; /*this was min-width before*/
-    width: 100%;
+    height: var(--fx-row);
+    /* width: 450px; this was min-width before*/
+    flex: 1;
+    min-width: 0;
     border: 0.5px solid var(--fx-border-light);
     border-left: none;
     border-right: none;
@@ -312,34 +316,35 @@ span.mid-nav-path-gen-cntnr{
     position: relative;
 }
 
-span.fileexp-header__nav-show-cntnr{
+.fileexp-header__nav-show-cntnr{
     align-items: center;
     display:inline-flex;
+    height: var(--fx-row);
     border: 0.5px solid var(--fx-border-light);
     border-left: none;
     border-right: none;
 }
 
-span.fileexp-header__nav-show-cntnr.active{
+.fileexp-header__nav-show-cntnr.active{
     align-items: center;
     display:inline-flex;
     border: 0.5px solid var(--fx-border-light);
     background-color: #3f3e3e;
 }
 
-span.fileexp-header__nav-show-cntnr:hover{
+.fileexp-header__nav-show-cntnr:hover{
     align-items: center;
     display:inline-flex;
     border: 0.5px solid rgb(18, 107, 240);
     transition: border-color 0.3s ease;
 }
 
-.figure-nav-path-cntnr2{
+.fileexp-header__nav-refresh-figure{
     position: relative;
     min-width: 20px;
 }
 
-.img-nav-path-cntnr2{
+.fileexp-header__nav-refresh-img{
     height: 12px;
     width: 12px;
     margin: 0 6px;
@@ -347,20 +352,21 @@ span.fileexp-header__nav-show-cntnr:hover{
     position: relative;
 }
 
-span.head-nav-path-cntnr2{
+.fileexp-header__nav-refresh-cntnr{
     align-items: center;
     display:inline-flex;
+    height: var(--fx-row);
     border: 0.5px solid var(--fx-border-light);
 }
 
-span.head-nav-path-cntnr2.active{
+.fileexp-header__nav-refresh-cntnr.active{
     align-items: center;
     display:inline-flex;
     border: 0.5px solid var(--fx-border-light);
     background-color: #3f3e3e;
 }
 
-span.head-nav-path-cntnr2:hover{
+.fileexp-header__nav-refresh-cntnr:hover{
     align-items: center;
     display:inline-flex;
     border: 0.5px solid rgb(18, 107, 240);
@@ -369,9 +375,11 @@ span.head-nav-path-cntnr2:hover{
 
 .fileexp-header__nav-input{
     position: relative;
-    width: 440px; /*this was min-width before*/
-    width: 100%;
-    height: 24px;
+    /*width: 440px; this was min-width before*/
+
+    flex: 1;
+    min-width: 0;
+    height: var(--fx-row);
     border: 0.5px solid var(--fx-border-light);
     border-left: none;
     border-right: none;
@@ -382,7 +390,8 @@ span.head-nav-path-cntnr2:hover{
 
 .fileexp-header__nav-history-container{
     position: absolute;
-    width: 405px; /*this was min-width before*/
+   /* width: 405px; this was min-width before*/
+    width: clamp(260px, 40vw, 520px);
     border: 1px solid var(--fx-border-light);
     margin-right: 10px;
     max-height: 180px;
@@ -442,7 +451,7 @@ span.mid-nav-path-entry{
     position: relative;
     min-width: 105px;
     max-width: 100%;
-    height: 24px;
+    height: var(--fx-row);
     border: 0.5px solid var(--fx-border-light);
     border-left: none;
     border-right: none;
@@ -941,12 +950,12 @@ th[fxplrColumnResize]::after {
 
 .fileexp-footer__details-cntnr{
     position: fixed;
-    height: 24px;
+    height: var(--fx-row);
     right: 4%;
 }
 .fileexp-footer__large-icon-cntnr{
     position: fixed;
-    height: 24px;
+    height: var(--fx-row);
     right: 1%;
 }
 
@@ -1032,7 +1041,7 @@ input::selection{
     height: 0;
     border-width: 10px;
     border-style: solid;
-    border-color: var(--fx-text)FFF transparent transparent transparent; 
+    border-color: var(--fx-text) transparent transparent transparent; 
     left: 20px;
     transform: rotate(180deg);
 }
