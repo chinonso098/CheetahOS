@@ -66,40 +66,58 @@
             </div>
     
             <div class="fileexp-header__nav-path-container" id="hdrNavPathCntnr-{{processId}}">
-                <form [formGroup]="pathForm"  (ngSubmit)="isFormDirty()">
-                    <div class="nav-path-container" (click)="showPathTextBox($event)" (focusout)="hidePathTextBox()">
-                        <span class="span head-nav-path-cntnr"><figure class="figure-nav-path-cntnr"><img class="img-nav-path-cntnr" [src]="navPathIcon | safeResourceUrl"/></figure></span>
-    
-                        <div class="nav-path-gen-main-container" id="pathIconBox-{{processId}}" >
-                            <span class="span head-nav-path-gen-cntnr0"><figure class="figure-nav-path-gen-cntnr"><img class="img-nav-path-gen-cntnr" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/></figure> </span>
-                            <div class="nav-path-gen-container" *ngFor="let dirTraversal of _directoryTraversalList let j = index">
-                                <span *ngIf="j > 0" class="span head-nav-path-gen-cntnr">
-                                    <figure class="figure-nav-path-gen-cntnr">
-                                        <img class="img-nav-path-gen-cntnr" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/>
-                                    </figure> 
-                                </span>
-                                <span class="span mid-nav-path-gen-cntnr">{{dirTraversal}}</span>
-                            </div>
+
+                <div class="fileexp-header__nav-anchor" (click)="showPathTextBox($event)" (focusout)="hidePathTextBox()">
+                    <span class="span fileexp-header__nav-folder-img-container">
+                        <figure class="fileexp-header__nav-folder-figure">
+                            <img class="fileexp-header__nav-folder-img" [src]="navPathIcon | safeResourceUrl"/>
+                        </figure>
+                    </span>
+
+                    <div class="fileexp-header__nav-path-display" id="pathIconBox-{{processId}}" >
+                        <span class="span fileexp-header__nav-root-cntnr">
+                            <figure class="fileexp-header__nav-figure">
+                                <img class="fileexp-header__nav-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/>
+                            </figure> 
+                        </span>
+
+                        <div class="nav-path-gen-container" *ngFor="let dirTraversal of _directoryTraversalList let j = index">
+                            <span *ngIf="j > 0" class="span fileexp-header__nav-repeat-cntnr">
+                                <figure class="fileexp-header__nav-figure">
+                                    <img class="fileexp-header__nav-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/>
+                                </figure> 
+                            </span>
+                            <span class="span mid-nav-path-gen-cntnr">{{dirTraversal}}</span>
                         </div>
-    
-                        <div class="nav-path-gen-main-container" id="pathTxtBoxCntr-{{processId}}">
-                            <input class="path-input" type="text" placeholder="{{directory}}" formControlName="pathInput"  autofocus spellcheck="false" id="pathTxtBox-{{processId}}" />
-                        </div> 
-                   
-                        <span class="span head-nav-path-cntnr1" [class.active]="showPathHistory" (click)="hideshowPathHistory()">
-                            <figure class="figure-nav-path-cntnr1">
-                                <img class="img-nav-path-cntnr1" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_expand_32.png' | safeResourceUrl"/>
-                            </figure>
-                        </span>
-                        <span class="span head-nav-path-cntnr2" (click)="refresh($event)">
-                            <figure class="figure-nav-path-cntnr2">
-                                <img class="img-nav-path-cntnr2" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_refresh_32.png' | safeResourceUrl"/>
-                            </figure>
-                        </span>
                     </div>
-                </form>
+
+                    <form 
+                        [formGroup]="pathForm"  
+                        class="fileexp-header__nav-path-form"
+                        (ngSubmit)="isFormDirty()" id="pathTxtBoxCntr-{{processId}}">
+
+                        <input class="fileexp-header__nav-input" 
+                            type="text" placeholder="{{directory}}" 
+                            formControlName="pathInput"  
+                            autofocus spellcheck="false"
+                            id="pathTxtBox-{{processId}}" />
+                    </form>
+
+                
+                    <span class="span fileexp-header__nav-show-cntnr" [class.active]="showPathHistory" (click)="hideshowPathHistory()">
+                        <figure class="fileexp-header__nav-show-figure">
+                            <img class="fileexp-header__nav-show-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_expand_32.png' | safeResourceUrl"/>
+                        </figure>
+                    </span>
+                    <span class="span head-nav-path-cntnr2" (click)="refresh($event)">
+                        <figure class="figure-nav-path-cntnr2">
+                            <img class="img-nav-path-cntnr2" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_refresh_32.png' | safeResourceUrl"/>
+                        </figure>
+                    </span>
+                </div>
+        
     
-                <div class="nav-path-containter1" id="pathHistory-{{processId}}">
+                <div class="fileexp-header__nav-history-container" id="pathHistory-{{processId}}">
                     <div class="nav-path-entry-containter" *ngFor="let entry1 of pathHistory; let k = index">
                         <span class="span"><figure class="figure-nav-path-entry"><img class="img-nav-path-entry" [src]="'osdrive/Cheetah/System/Imageres/white_history_32.png' | safeResourceUrl"/></figure></span>
                         <span class="span mid-nav-path-entry">{{entry1}}</span>
@@ -287,34 +305,34 @@
                 </div>
             </div>
         </div>
-        <div class="fileexp-footer-container">
-            <span class="span-footer"> </span>
-            <span class="span-footer">{{fetchedFiles.length}} items</span>
-            <span class="span-footer">|</span>
+        <div class="fileexp-footer__container">
+            <span class="fileexp-footer__span"> </span>
+            <span class="fileexp-footer__span">{{fetchedFiles.length}} items</span>
+            <span class="fileexp-footer__span">|</span>
 
             <ng-container *ngIf="markedBtnIds.length > 0 || showFileSizeAndUnit">
                 <ng-container *ngIf="markedBtnIds.length > 0">
-                    <span class="span-footer">{{markedBtnIds.length}} items selected</span>
-                    <span class="span-footer"> {{selectFilesSizeSum}} {{selectFilesSizeUnit}}</span>
-                    <span class="span-footer">|</span>
+                    <span class="fileexp-footer__span">{{markedBtnIds.length}} items selected</span>
+                    <span class="fileexp-footer__span"> {{selectFilesSizeSum}} {{selectFilesSizeUnit}}</span>
+                    <span class="fileexp-footer__span">|</span>
                 </ng-container>
 
                 <ng-container *ngIf="showFileSizeAndUnit">
-                    <span class="span-footer">1 items selected</span>
-                    <span class="span-footer"> {{selectFilesSizeSum}} {{selectFilesSizeUnit}}</span>
-                    <span class="span-footer">|</span>
+                    <span class="fileexp-footer__span">1 items selected</span>
+                    <span class="fileexp-footer__span"> {{selectFilesSizeSum}} {{selectFilesSizeUnit}}</span>
+                    <span class="fileexp-footer__span">|</span>
                 </ng-container>
             </ng-container>
 
-            <div class="fileexp-footer-img-cntnr-1" (click)="toggleDetailsView()" (mouseenter)="colorBtnCntnr('fileMngr-detailsViewToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-detailsViewToggle-'+processId)" id="fileMngr-detailsViewToggle-{{processId}}">
-                <figure class="fileexp-footer-figure">  
-                    <img class="fileexp-footer-img" [src]="'osdrive/Cheetah/System/Imageres/details_view.png'"/>
+            <div class="fileexp-footer__details-cntnr" (click)="toggleDetailsView()" (mouseenter)="colorBtnCntnr('fileMngr-detailsViewToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-detailsViewToggle-'+processId)" id="fileMngr-detailsViewToggle-{{processId}}">
+                <figure class="fileexp-footer__large-icon-figure">  
+                    <img class="fileexp-footer__img" [src]="'osdrive/Cheetah/System/Imageres/details_view.png'"/>
                 </figure>
             </div>
 
-            <div class="fileexp-footer-img-cntnr-2" (click)="toggleLargeIconsView()" (mouseenter)="colorBtnCntnr('fileMngr-largeIconToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-largeIconToggle-'+processId)" id="fileMngr-largeIconToggle-{{processId}}">
-                <figure class="fileexp-footer-figure">  
-                    <img class="fileexp-footer-img" [src]="'osdrive/Cheetah/System/Imageres/large_image.png'"/>
+            <div class="fileexp-footer__large-icon-cntnr" (click)="toggleLargeIconsView()" (mouseenter)="colorBtnCntnr('fileMngr-largeIconToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-largeIconToggle-'+processId)" id="fileMngr-largeIconToggle-{{processId}}">
+                <figure class="fileexp-footer__large-icon-figure">  
+                    <img class="fileexp-footer__img" [src]="'osdrive/Cheetah/System/Imageres/large_image.png'"/>
                 </figure>
             </div> 
         </div>
