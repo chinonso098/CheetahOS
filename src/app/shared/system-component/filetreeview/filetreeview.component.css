@@ -1,117 +1,118 @@
-  /* Remove default bullets */
-  /* ul, #fileExplrTreeView {
-      list-style-type: none;
-  } */
-  
-  .file-tree-view-main{
-    height: 100%;
-    width: 100%;
-  }
+  /* ── Layout ── */
 
-  /* Remove margins and padding from the parent ul */
-  .ul-file-tree-view{
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .li-file-tree-view0{
-    margin:0;
-    padding:0 0 0 0; /* Each nested li will be padded incrementally */
-  }
+.file-tree-view-main {
+  height: 100%;
+  width: 100%;
+}
 
-  .li-file-tree-view{
-    margin:0;
-    padding:0 0 0 10px; /* Each nested li will be padded incrementally */
-  }
-    
-  /* Hide the nested list */
-  .nested {
-    display: none;
-  }
+.ul-file-tree-view {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
 
-  /* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
-  .active {
-    display: block;
-  }
+.li-file-tree-view0 {
+  margin: 0;
+  padding: 0;
+}
 
+.li-file-tree-view {
+  margin: 0;
+  padding: 0 0 0 10px;
+}
 
-  .root-caret-active{
-    position: 'relative';
-    transform: rotate(0deg);
-  }
+/* ── Visibility toggling ── */
 
-  .caret-active {
-    position: 'relative';
-    transform: rotate(90deg);
-  }
+.nested {
+  display: none;
+}
 
-  .root-caret-nested{
-    position: 'relative';
-    transform: rotate(270deg);
-  }
+.active {
+  display: block;
+}
 
-  .caret-nested {
-    position: 'relative';
-    transform: rotate(0);
-  }
+/* ── Caret rotation states ── */
 
-  .tree-view-cntnr{
-    display: inline-flex;
-    width: 100%;
-    padding: 2px 0px;
-  }
+.root-caret-active {
+  position: relative;
+  transform: rotate(0deg);
+}
 
-  .fxtreeview-nested-p{
-    position: relative;
-    top: 10%;
-  }
+.caret-active {
+  position: relative;
+  transform: rotate(90deg);
+}
 
-  .fxtreeview-head{
-    padding-left: 5px;
-  }
+.root-caret-nested {
+  position: relative;
+  transform: rotate(270deg);
+}
 
-  .fxtreeview-mid{
-    padding-left: 2px;
-    padding-right: 3px;
-  }
+.caret-nested {
+  position: relative;
+  transform: rotate(0deg);
+}
 
-  .fxtreeview-tail{
-    padding: 0 5px;
-    color: white;
-    text-align: left;
-    font-size: 12px;
-    font-weight:200;
-  }
+/* ── Tree-view row ── */
 
-  .fxtreeview-img{
-    height: 10px;
-    width: 10px;
+.tree-view-cntnr {
+  display: inline-flex;
+  width: 100%;
+  padding: 2px 0;
+}
 
-    position: relative;
-  }
+.fxtreeview-nested-p {
+  position: relative;
+  top: 10%;
+}
 
-  .fxtreeview-figure{
-    position: relative;
-    align-items: center;
-    display: inline-flex;
-    min-width: 10px;
-    top: 0;
-    left: 15%;
-  }
+.fxtreeview-head {
+  padding-left: 5px;
+}
 
-  .fxtreeview-img1{
-    height: 17px;
-    width: 17px;
+.fxtreeview-mid {
+  padding-left: 2px;
+  padding-right: 3px;
+}
 
-    position: relative;
-  }
+.fxtreeview-tail {
+  padding: 0 5px;
+  color: white;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 200;
+}
 
-  .fxtreeview-figure1{
-    position: relative;
-    align-items: center;
-    display: inline-flex;
-    min-width: 17px;
-    top: 0;
-    left: 15%;
-  }
+/* ── Chevron icon (10×10) ── */
+
+.fxtreeview-img {
+  height: 10px;
+  width: 10px;
+  position: relative;
+}
+
+.fxtreeview-figure {
+  position: relative;
+  align-items: center;
+  display: inline-flex;
+  min-width: 10px;
+  top: 0;
+  left: 15%;
+}
+
+/* ── Node icon (17×17) ── */
+
+.fxtreeview-img1 {
+  height: 17px;
+  width: 17px;
+  position: relative;
+}
+
+.fxtreeview-figure1 {
+  position: relative;
+  align-items: center;
+  display: inline-flex;
+  min-width: 17px;
+  top: 0;
+  left: 15%;
+}

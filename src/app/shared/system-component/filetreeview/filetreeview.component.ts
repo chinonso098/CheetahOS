@@ -1,11 +1,8 @@
+
 /* eslint-disable @angular-eslint/prefer-standalone */
-//Option A
-
-import { Component, Input, OnInit, OnChanges, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { FileTreeNode } from 'src/app/system-files/common.interfaces';
-
 import { Constants } from 'src/app/system-files/constants';
-
 import { AudioService } from '../../system-service/audio.services';
 import { FileService } from '../../system-service/file.service';
 import { MenuService } from '../../system-service/menu.services';
@@ -13,466 +10,231 @@ import { GeneralMenu } from '../menu/menu.types';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { ProcessHandlerService } from '../../system-service/process.handler.service';
 
+/** Map of known folder names/paths to their icon filenames */
+const ICON_MAP: Record<string, string> = {
+  '3D-Objects:/Users/3D-Objects': '3d-objects_folder_small.png',
+  'Desktop:/Users/Desktop':       'desktop_folder_small.png',
+  'Documents:/Users/Documents':   'documents_folder_small.png',
+  'Downloads:/Users/Downloads':   'downloads_folder_small.png',
+  'Games:/Users/Games':           'games_folder_small.png',
+  'Music:/Users/Music':           'music_folder_small.png',
+  'Pictures:/Users/Pictures':     'pictures_folder_small.png',
+  'Videos:/Users/Videos':         'videos_folder_small.png',
+  [`${Constants.OSDISK}:${Constants.ROOT}`]: 'os_disk.png',
+};
+
+const ICON_BASE = 'osdrive/Cheetah/System/Imageres/';
+const DEFAULT_FOLDER_ICON = `${ICON_BASE}folder_folder_small.png`;
+
 @Component({
   selector: 'cos-filetreeview',
   templateUrl: './filetreeview.component.html',
   styleUrl: './filetreeview.component.css',
-  standalone:false,
+  standalone: false,
 })
 export class FileTreeViewComponent implements OnInit, OnChanges {
+
+  // ── Inputs ──
   @Input() pId = 0;
   @Input() level = 0;
   @Input() showRoot = true;
   @Input() isHoverActive = false;
   @Input() levelSrcId = Constants.EMPTY_STRING;
   @Input() treeData: FileTreeNode[] = [];
- 
+
+  // ── Template-bound state ──
   quickAccessData: FileTreeNode[] = [];
-  selectedFileTreeNode!:FileTreeNode;
-  private _fileService!:FileService;
-  private _audioService!:AudioService;
-  private _menuService!:MenuService;
-  private _processHandlerService!:ProcessHandlerService;
-
-  readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
-
-  chevronBtnStyle:Record<string, unknown> = {};
-  fileExplrTreeCntxtMenuStyle:Record<string, unknown> = {};
-  rect!:DOMRect;
-
-  expandedViews:string[]= [];
-  selectedElementId = Constants.EMPTY_STRING;
-  isClicked = false;
+  selectedFileTreeNode!: FileTreeNode;
+  chevronBtnStyle: Record<string, unknown> = {};
+  fileExplrTreeCntxtMenuStyle: Record<string, unknown> = {};
+  showIconCntxtMenu = false;
   processId = 0;
   nextLevel = 0;
   nextLevelSrcId = Constants.EMPTY_STRING;
-  negTen = 10;
-  name = 'filetreeview';
 
-  readonly Quick_ACCESS = 'Quick access';
+  // ── Constants exposed to template ──
+  readonly QUICK_ACCESS_SENTINEL = 10;
+  readonly QUICK_ACCESS = 'Quick access';
   readonly THIS_PC = Constants.THISPC;
   readonly thisPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
-  SECONDS_DELAY = 350;
+  readonly fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
+  readonly menuOrder = Constants.EMPTY_STRING;
 
-  showIconCntxtMenu = false;
-  fileExplrMngrMenuOption = Constants.FILE_EXPLORER_FILE_MANAGER_MENU_OPTION;
-  fileExplrMenuOption = Constants.NESTED_MENU_OPTION;
-  menuOrder = Constants.EMPTY_STRING;
-
-  sourceData:GeneralMenu[] = [
-    {icon:Constants.EMPTY_STRING, label: 'Open', action: this.navigateToSelectedPath2.bind(this) },
-    {icon:Constants.EMPTY_STRING, label: 'Open in new window', action: this.openFolderPath.bind(this) },
-    {icon:Constants.EMPTY_STRING, label: 'Properties', action: this.showPropertiesWindow.bind(this) }
+  sourceData: GeneralMenu[] = [
+    { icon: Constants.EMPTY_STRING, label: 'Open',              action: this.onContextOpen.bind(this) },
+    { icon: Constants.EMPTY_STRING, label: 'Open in new window', action: this.openFolderPath.bind(this) },
+    { icon: Constants.EMPTY_STRING, label: 'Properties',         action: this.showPropertiesWindow.bind(this) },
   ];
 
-  constructor(fileService:FileService, audioService:AudioService, menuService:MenuService,
-              processHandlerService:ProcessHandlerService){
-    this._fileService = fileService;
-    this._audioService = audioService;
-    this._menuService = menuService;
-    this._processHandlerService = processHandlerService;
+  // ── Internal state ──
+  private readonly name = 'filetreeview';
+  private readonly NAV_AUDIO = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
+  private readonly EXPAND_DELAY_MS = 350;
+  private expandedViewKeys: Set<string> = new Set();
+  private selectedElementId = Constants.EMPTY_STRING;
+  private isClicked = false;
+  private rect!: DOMRect;
+
+  constructor(
+    private _fileService: FileService,
+    private _audioService: AudioService,
+    private _menuService: MenuService,
+    private _processHandlerService: ProcessHandlerService,
+  ) {}
+
+  // ────────────────────────────────────────────
+  // Lifecycle
+  // ────────────────────────────────────────────
+
+  ngOnInit(): void {
+    this.updateChevronFill(this.isHoverActive);
+    this.quickAccessData = this.buildQuickAccessData();
   }
 
-  ngOnInit():void{
-    this.setcolorChevron(this.isHoverActive);
-    this.quickAccessData = this.genStaticData();
-  }
-
-  genStaticData():FileTreeNode[]{
-    const ftn:FileTreeNode = {name:'Pictures', path:'/Users/Pictures', isFolder:true, children:[]}
-    const ftn1:FileTreeNode = {name:'Videos', path:'/Users/Videos', isFolder:true, children:[]}
-    const ftn2:FileTreeNode = {name:'PDFs', path:'/Users/Documents/PDFs', isFolder:true, children:[]}
-
-    return [ftn, ftn1, ftn2];
-  }
-
-  ngOnChanges():void{
-    //console.log('FILETREE onCHANGES:',this.isHoverActive);//TBD
-    // console.log('isHoverActive:', this.isHoverActive); //TBD
-    // console.log('fileTreeViewPid:', this.pId); //TBD
-    // console.log('fileTreeViewLvl:', this.level); //TBD
-
+  ngOnChanges(): void {
     this.processId = this.pId;
     this.nextLevel = this.level + 1;
     this.nextLevelSrcId = this.levelSrcId;
-
-    // if(!this.isClicked)
-     this.setcolorChevron(this.isHoverActive);
-    // else if(this.isClicked && !this.isHoverActive){
-    //   this.setcolorChevron(this.isHoverActive);
-    // }
+    this.updateChevronFill(this.isHoverActive);
   }
 
-  hasClass(el:HTMLElement, className:string) {
-    const re = new RegExp('(^|\\s+)' + className + '(\\s+|$)');
-    return re.test(el.className);
+  // ────────────────────────────────────────────
+  // Toggle helpers (shared logic)
+  // ────────────────────────────────────────────
+
+  /**
+   * Toggle CSS classes for expand/collapse on a root-level section (Quick Access or This PC).
+   */
+  showChildren(prefix: string): void {
+    const isThisPC = prefix === 'tp-fileExplrTreeView';
+    const ulId  = isThisPC ? `ul-${this.pId}-0` : `qa-ul-${this.pId}`;
+    const imgId = isThisPC
+      ? `tp-fileExplrTreeView-img-${this.pId}-${this.level}`
+      : `qa-fileExplrTreeView-img-${this.pId}`;
+
+    this.toggleRootVisibility(ulId, imgId);
   }
 
-  showChildren(name:string):void{
-    let ulId = Constants.EMPTY_STRING;   let imgId = Constants.EMPTY_STRING; const lvl = 0;
+  /**
+   * Toggle a grandchild node (first-level expansion under This PC).
+   */
+  showGrandChildren(path: string, id: number): void {
+    const baseId  = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}`;
+    const imgId   = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}`;
+    const contentId = `ul-${this.pId}-${this.level}-${id}`;
 
-    if(name === 'tp-fileExplrTreeView'){
-      ulId = `ul-${this.pId}-${lvl}`;
-      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}`;
-    }else{
-      ulId = `qa-ul-${this.pId}`;
-      imgId = `qa-fileExplrTreeView-img-${this.pId}`;
-    }
+    const toggler  = document.getElementById(baseId) as HTMLElement;
+    const imgDiv   = document.getElementById(imgId)  as HTMLElement;
+    const contentUl = document.getElementById(contentId) as HTMLElement;
 
-    const toggler =  document.getElementById(ulId) as HTMLElement;
-    const imgDiv =  document.getElementById(imgId) as HTMLElement;
-
-    if(toggler && imgDiv){
-      const hasNestedClass = this.hasClass(toggler,'nested');
-      const hasActiveClass = this.hasClass(toggler,'active');
-
-      if(!hasActiveClass && !hasNestedClass){
-        toggler.classList.add('nested');
-        imgDiv.classList.add('root-caret-nested');
-      }else if(hasActiveClass && !hasNestedClass){
-        toggler.classList.remove('active');
-        imgDiv.classList.remove('root-caret-active');
-        toggler.classList.add('nested');
-        imgDiv.classList.add('root-caret-nested');
-      }else{
-        toggler.classList.remove('nested');
-        imgDiv.classList.remove('root-caret-nested');
-        toggler.classList.add('active');
-        imgDiv.classList.add('root-caret-active');
-      }
+    if (toggler && imgDiv) {
+      this.toggleChildVisibility(toggler, imgDiv, contentUl);
+      this.fetchIfFirstExpand(`SGC-${this.pId}-${this.level}-${id}`, path);
     }
   }
 
-  showGrandChildren(path:string, id:number,):void{
-    const ulId = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}`;
-    const imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}`;
-    const cntntId =`ul-${this.pId}-${this.level}-${id}`;
+  /**
+   * Toggle a great-grandchild node (second-level expansion).
+   */
+  showGreatGrandChildren(path: string, id: number, id1: number): void {
+    const baseId  = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}-${id1}`;
+    const imgId   = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}-${id1}`;
+    const treeId  = `newtree-${this.pId}-${this.level}-${id}-${id1}`;
 
-    // console.log('SGC--passed id:', ulId);//TBD
-    // console.log('SGC--passed imgId:', imgId);//TBD
+    const toggler = document.getElementById(baseId) as HTMLElement;
+    const imgDiv  = document.getElementById(imgId)  as HTMLElement;
+    const newTree = document.getElementById(treeId)  as HTMLElement;
 
-    const toggler =  document.getElementById(ulId) as HTMLElement;
-    const imgDiv =  document.getElementById(imgId) as HTMLElement;
-    const cntntUl =  document.getElementById(cntntId) as HTMLElement;
+    if (newTree) {
+      this.toggleSimpleVisibility(newTree);
+    }
 
-    if(toggler  && imgDiv){
-      // console.log('SGC--toggler:', toggler);//TBD
-
-      const hasNestedClass = this.hasClass(toggler,'nested');
-      const hasActiveClass = this.hasClass(toggler,'active');
-
-      if(!hasActiveClass && !hasNestedClass){
-        toggler.classList.add('active');
-        imgDiv.classList.add('caret-active');
-      }else if(hasActiveClass && !hasNestedClass){
-        toggler.classList.remove('active');
-        imgDiv.classList.remove('caret-active');
-        toggler.classList.add('nested');
-        imgDiv.classList.add('caret-nested');
-
-        if(cntntUl){
-          cntntUl.classList.remove('active');
-          cntntUl.classList.add('nested');
-        }
-      }else{
-        toggler.classList.remove('nested');
-        imgDiv.classList.remove('caret-nested');
-        toggler.classList.add('active');
-        imgDiv.classList.add('caret-active');
-
-        if(cntntUl){
-          cntntUl.classList.remove('nested');
-          toggler.classList.add('active');
-        }
-      }
-
-      if(!this.expandedViews.includes(`SGC-${this.pId}-${this.level}-${id}`)){
-        this.expandedViews.push(`SGC-${this.pId}-${this.level}-${id}`);
-
-        //pass event to the parent
-        const uId = `${this.name}-${this.pId}`;
-        this._fileService.addEventOriginator(uId);
-        this._fileService.fetchDirectoryDataNotify.next(path);
-        setTimeout(()=>{ this.showExpandedViews();}, this.SECONDS_DELAY);
-      }
+    if (toggler && imgDiv) {
+      this.toggleChildVisibility(toggler, imgDiv);
+      this.fetchIfFirstExpand(`SGGC-${this.pId}-${this.level}-${id}-${id1}`, path);
     }
   }
 
-  showGrandChildren_B(id:number):void{
+  // ────────────────────────────────────────────
+  // Navigation
+  // ────────────────────────────────────────────
 
-    // console.log('SGC--treeData:', this.treeData);//TBD
-    const ulId = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}`;
-    const imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}`;
-
-    const toggler =  document.getElementById(ulId) as HTMLElement;
-    const imgDiv =  document.getElementById(imgId) as HTMLElement;
-
-    // console.log('SGC_B toggler:', toggler);//TBD
-    // console.log('SGC_B imgDiv:', imgDiv);//TBD
-    if(toggler && imgDiv){
-      toggler.classList.add('active');
-      imgDiv.classList.add('caret-active');
-    }
-  }
-
-  showGreatGrandChildren( path:string, id:number, id1:number):void{
-
-    const ulId = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}-${id1}`;
-    const imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}-${id1}`;
-    const ulId1 =`newtree-${this.pId}-${this.level}-${id}-${id1}`;
-
-    // console.log('SGGC--passed id:', ulId);//TBD
-    // console.log('SGGC--passed imgId:', imgId);//TBD
-
-    const toggler =  document.getElementById(ulId) as HTMLElement;
-    const imgDiv =  document.getElementById(imgId) as HTMLElement;
-    const newTree =  document.getElementById(ulId1) as HTMLElement;
-
-    if(newTree){
-      const hasNestedClass = this.hasClass(newTree,'nested');
-      const hasActiveClass = this.hasClass(newTree,'active');
-      if(!hasActiveClass && !hasNestedClass){
-        newTree.classList.add('nested');
-      }else if(hasActiveClass && !hasNestedClass){
-        newTree.classList.remove('active');
-        newTree.classList.add('nested');
-      }else{
-        newTree.classList.remove('nested');
-        newTree.classList.add('active');
-      }
-    }
-
-    if(toggler && imgDiv){
-      //console.log('SGGC--toggler:', toggler);
-
-      const hasNestedClass = this.hasClass(toggler,'nested');
-      const hasActiveClass = this.hasClass(toggler,'active');
-
-      if(!hasActiveClass && !hasNestedClass){
-        toggler.classList.add('active');
-        imgDiv.classList.add('caret-active');
-      }else if(hasActiveClass && !hasNestedClass){
-        toggler.classList.remove('active');
-        imgDiv.classList.remove('caret-active');
-        toggler.classList.add('nested');
-        imgDiv.classList.add('caret-nested');
-      }else{
-        toggler.classList.remove('nested');
-        imgDiv.classList.remove('caret-nested');
-        toggler.classList.add('active');
-        imgDiv.classList.add('caret-active');
-      }
-
-      if(!this.expandedViews.includes(`SGGC-${this.pId}-${this.level}-${id}-${id1}`)){
-        this.expandedViews.push(`SGGC-${this.pId}-${this.level}-${id}-${id1}`);
-
-        //pass event to the parent
-        const uId = `${this.name}-${this.pId}`;
-        this._fileService.addEventOriginator(uId);
-        this._fileService.fetchDirectoryDataNotify.next(path);
-        setTimeout(()=>{ this.showExpandedViews();}, this.SECONDS_DELAY);
-      }
-    }
-    
-  }
-
-  showGreatGrandChildren_B(id:number, id1:number):void{
-
-    const ulId = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}-${id1}`;
-    const imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}-${id1}`;
-
-    const toggler =  document.getElementById(ulId) as HTMLElement;
-    const imgDiv =  document.getElementById(imgId) as HTMLElement;
-
-    // console.log('SGGC_B toggler:', toggler); //TBD
-    // console.log('SGGC_B imgDiv:', imgDiv); //TBD
-
-    if(toggler && imgDiv){
-      toggler.classList.add('active');
-      imgDiv.classList.add('caret-active');
-    }
-  }
-
-  showExpandedViews():void{
-    for(const el of this.expandedViews){
-      const arr = el.split('-');
-      console.log('arr:', arr);
-      if(arr[0] === 'SGC'){
-        const id = Number(arr[3]);
-        this.showGrandChildren_B(id);
-      }else{
-        const id = Number(arr[3]);
-        const id1 = Number(arr[4]);
-        this.showGreatGrandChildren_B(id, id1);
-      }
-    }
-  }
-
-  navigateToSelectedPath2():void{
-    this.showIconCntxtMenu  = false;
-
-    const data:string[] = [this.selectedFileTreeNode.name, this.selectedFileTreeNode.path];
-    const uId = `filetreeview-1-${this.pId}`;
-    this._fileService.addEventOriginator(uId);
-    this._fileService.goToDirectoryNotify.next(data);
-  }
-
-  async navigateToSelectedPath(evt:MouseEvent, name:string, path:string):Promise<void>{
-    console.log(`name:${name}, path:${path}`)
-    const data:string[] = [name, path];
-
-    const uId = `filetreeview-1-${this.pId}`;
-    this._fileService.addEventOriginator(uId);
-
+  async navigateToSelectedPath(evt: MouseEvent, name: string, path: string): Promise<void> {
     evt.stopPropagation();
-    await this._audioService.play(this.cheetahNavAudio);
-    this._fileService.goToDirectoryNotify.next(data);
+    const uId = `filetreeview-1-${this.pId}`;
+    this._fileService.addEventOriginator(uId);
+    await this._audioService.play(this.NAV_AUDIO);
+    this._fileService.goToDirectoryNotify.next([name, path]);
   }
 
-  setcolorChevron(isActive:boolean):void{
-    if(!isActive){
-      this.chevronBtnStyle ={
-        'fill': '#191919',
-        'transition': 'fill 0.75s ease'
-     }
-    }else{
-      this.chevronBtnStyle ={
-        'fill': '#ccc',
-        'transition': 'fill 0.5s ease'
-     }
-    }
+  // ────────────────────────────────────────────
+  // Chevron colour on hover
+  // ────────────────────────────────────────────
+
+  colorChevron(id?: number, id1?: number): void {
+    this.setChevronFillById(this.resolveChevronImgId(id, id1), 'rgb(18, 107, 240)');
   }
 
-  colorChevron(id?:number, id1?:number):void{
-    let imgId = Constants.EMPTY_STRING;
-
-    if(id === this.negTen && id1 === this.negTen ){
-      imgId = `qa-fileExplrTreeView-img-${this.pId}`;
-    }
-
-    if(id === undefined && id1 === undefined ){
-      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}`;
-    }
-
-    if(id !== undefined && id1 === undefined )
-      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}`;
-
-    if(id !== undefined && id1 !== undefined )
-      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}-${id1}`;
-
-    const imgDiv =  document.getElementById(imgId) as HTMLElement;
-    if(imgDiv){
-      imgDiv.style.fill = 'rgb(18, 107, 240)';
-    }
+  unColorChevron(id?: number, id1?: number): void {
+    this.setChevronFillById(this.resolveChevronImgId(id, id1), '#ccc');
   }
 
-  unColorChevron(id?:number, id1?:number):void{
-    let imgId = Constants.EMPTY_STRING;
+  // ────────────────────────────────────────────
+  // Row highlight (click / hover)
+  // ────────────────────────────────────────────
 
-    if(id === this.negTen && id1 === this.negTen ){
-      imgId = `qa-fileExplrTreeView-img-${this.pId}`;
-    }
-
-    if(id === undefined && id1 === undefined ){
-      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}`;
-    }
-
-    if(id !== undefined && id1 === undefined )
-      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}`;
-
-    if(id !== undefined && id1 !== undefined )
-      imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}-${id1}`;
-
-    const imgDiv =  document.getElementById(imgId) as HTMLElement;
-
-    if(imgDiv){
-      imgDiv.style.fill = '#ccc';
-    }
-  }
-
-  onBtnClick(evt:MouseEvent, elmntId:string):void{
-    // remove style on previous btn
+  onBtnClick(evt: MouseEvent, elmntId: string): void {
     this.removeBtnStyle(this.selectedElementId);
-    // update id
     this.selectedElementId = elmntId;
     this.isClicked = true;
     this.setBtnStyle(elmntId, true);
-
     evt.stopPropagation();
   }
 
-  onMouseEnter(elmntId:string):void{
-    console.log('onMouseEnter-elmntId:',elmntId);
+  onMouseEnter(elmntId: string): void {
     this.setBtnStyle(elmntId, true);
   }
 
-  onMouseLeave(elmntId:string):void{
-    console.log('onMouseLeave-elmntId:',elmntId);
-    if(elmntId !== this.selectedElementId){
+  onMouseLeave(elmntId: string): void {
+    if (elmntId !== this.selectedElementId) {
       this.removeBtnStyle(elmntId);
-    }
-    else if((elmntId == this.selectedElementId)){
-      this.setBtnStyle(elmntId,false);
+    } else {
+      this.setBtnStyle(elmntId, false);
     }
   }
 
-  onFileTreeContextMenu(evt:MouseEvent, node:FileTreeNode):void{
+  // ────────────────────────────────────────────
+  // Context menu
+  // ────────────────────────────────────────────
+
+  onFileTreeContextMenu(evt: MouseEvent, node: FileTreeNode): void {
     evt.preventDefault();
     evt.stopPropagation();
 
-    // looking at what Windows does, at any given time. there is only one context window open
-    this._menuService.hideContextMenus.next(this.name); 
+    this._menuService.hideContextMenus.next(this.name);
 
-    if(!this.rect){
-      const navCntnrElement = document.getElementById(`qa-FileExplrTreeView-main-${this.processId}`) as HTMLElement;
-
-      if(navCntnrElement){
-        this.rect = navCntnrElement.getBoundingClientRect();
-      }
+    if (!this.rect) {
+      const el = document.getElementById(`qa-FileExplrTreeView-main-${this.processId}`) as HTMLElement;
+      if (el) { this.rect = el.getBoundingClientRect(); }
     }
 
     this.showIconCntxtMenu = true;
     this.selectedFileTreeNode = node;
 
     const x = evt.clientX - this.rect.left;
-    const y  = evt.clientY- this.rect.top;
+    const y = evt.clientY - this.rect.top;
     this.fileExplrTreeCntxtMenuStyle = {
-      'position': 'absolute', 
-      'transform':`translate(${x - 90}px, ${y - 115}px)`,
+      'position': 'absolute',
+      'transform': `translate(${x - 90}px, ${y - 115}px)`,
       'z-index': 2,
-    }
+    };
   }
 
-  setBtnStyle(elmntId:string, isMouseHover:boolean):void{
-    const btnElement = document.getElementById(elmntId) as HTMLElement;
-    
-    if(btnElement){
-      btnElement.style.backgroundColor = '#4c4c4c';
-      if(this.selectedElementId == elmntId){
-        if(isMouseHover){
-          btnElement.style.backgroundColor ='#787474'
-        }
+  // ────────────────────────────────────────────
+  // Context menu actions
+  // ────────────────────────────────────────────
 
-        if(!isMouseHover){
-          btnElement.style.backgroundColor = '#4c4c4c';
-        }
-      }
-    }
-  }
-
-  removeBtnStyle(elmntId:string):void{
-    const btnElement = document.getElementById(elmntId) as HTMLElement;
-    if(btnElement){
-      btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-      btnElement.style.border = 'none'
-    }
-  }
-
-  doNothing():void{/** */}
-
-
-
-  openFolderPath():void{
+  openFolderPath(): void {
     this.showIconCntxtMenu = false;
 
     const file = new FileInfo();
@@ -484,9 +246,10 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     this._processHandlerService.runApplication(file);
   }
 
-  showPropertiesWindow():void{
+  showPropertiesWindow(): void {
     this.showIconCntxtMenu = false;
-    const file = new FileInfo()
+
+    const file = new FileInfo();
     file.setFileName = this.selectedFileTreeNode.name;
     file.setCurrentPath = this.selectedFileTreeNode.path;
     file.setIsFile = false;
@@ -496,17 +259,186 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     this._menuService.showPropertiesView.next(file);
   }
 
-  getIconPath(nodeName:string, nodePath:string):string{
-    const imgPath = (nodeName ==='3D-Objects' && nodePath === '/Users/3D-Objects') ? 'osdrive/Cheetah/System/Imageres/3d-objects_folder_small.png' : 
-                    (nodeName === 'Desktop' && nodePath === '/Users/Desktop') ? 'osdrive/Cheetah/System/Imageres/desktop_folder_small.png' :  
-                    (nodeName === 'Documents' && nodePath === '/Users/Documents') ? 'osdrive/Cheetah/System/Imageres/documents_folder_small.png' :
-                    (nodeName === 'Downloads' && nodePath === '/Users/Downloads') ? 'osdrive/Cheetah/System/Imageres/downloads_folder_small.png' :
-                    (nodeName === 'Games' && nodePath === '/Users/Games') ? 'osdrive/Cheetah/System/Imageres/games_folder_small.png' :
-                    (nodeName === 'Music' && nodePath === '/Users/Music') ? 'osdrive/Cheetah/System/Imageres/music_folder_small.png' : 
-                    (nodeName === 'Pictures' && nodePath === '/Users/Pictures') ? 'osdrive/Cheetah/System/Imageres/pictures_folder_small.png' :
-                    (nodeName === 'Videos' && nodePath === '/Users/Videos') ? 'osdrive/Cheetah/System/Imageres/videos_folder_small.png' : 
-                    (nodeName === Constants.OSDISK && nodePath === Constants.ROOT) ? 'osdrive/Cheetah/System/Imageres/os_disk.png' : 'osdrive/Cheetah/System/Imageres/folder_folder_small.png'
+  // ────────────────────────────────────────────
+  // Icon resolution
+  // ────────────────────────────────────────────
 
-    return imgPath;                                                                                                                    
+  getIconPath(nodeName: string, nodePath: string): string {
+    const key = `${nodeName}:${nodePath}`;
+    const fileName = ICON_MAP[key];
+    return fileName ? `${ICON_BASE}${fileName}` : DEFAULT_FOLDER_ICON;
+  }
+
+  // ────────────────────────────────────────────
+  // Private helpers
+  // ────────────────────────────────────────────
+
+  private buildQuickAccessData(): FileTreeNode[] {
+    return [
+      { name: 'Pictures', path: '/Users/Pictures',       isFolder: true, children: [] },
+      { name: 'Videos',   path: '/Users/Videos',         isFolder: true, children: [] },
+      { name: 'PDFs',     path: '/Users/Documents/PDFs', isFolder: true, children: [] },
+    ];
+  }
+
+  /** Navigate from the context-menu "Open" action. */
+  private onContextOpen(): void {
+    this.showIconCntxtMenu = false;
+    const uId = `filetreeview-1-${this.pId}`;
+    this._fileService.addEventOriginator(uId);
+    this._fileService.goToDirectoryNotify.next([
+      this.selectedFileTreeNode.name,
+      this.selectedFileTreeNode.path,
+    ]);
+  }
+
+  /** Toggle root-level (Quick Access / This PC) expand/collapse. */
+  private toggleRootVisibility(ulId: string, imgId: string): void {
+    const toggler = document.getElementById(ulId)  as HTMLElement;
+    const imgDiv  = document.getElementById(imgId) as HTMLElement;
+    if (!toggler || !imgDiv) { return; }
+
+    const isActive = toggler.classList.contains('active');
+    const isNested = toggler.classList.contains('nested');
+
+    if (isActive || (!isActive && !isNested)) {
+      // collapse
+      toggler.classList.remove('active');
+      imgDiv.classList.remove('root-caret-active');
+      toggler.classList.add('nested');
+      imgDiv.classList.add('root-caret-nested');
+    } else {
+      // expand
+      toggler.classList.remove('nested');
+      imgDiv.classList.remove('root-caret-nested');
+      toggler.classList.add('active');
+      imgDiv.classList.add('root-caret-active');
+    }
+  }
+
+  /** Toggle child-level expand/collapse with optional content list. */
+  private toggleChildVisibility(toggler: HTMLElement, imgDiv: HTMLElement, contentUl?: HTMLElement): void {
+    const isActive = toggler.classList.contains('active');
+    const isNested = toggler.classList.contains('nested');
+
+    if (!isActive && !isNested) {
+      // first click → expand
+      toggler.classList.add('active');
+      imgDiv.classList.add('caret-active');
+    } else if (isActive) {
+      // collapse
+      toggler.classList.remove('active');
+      imgDiv.classList.remove('caret-active');
+      toggler.classList.add('nested');
+      imgDiv.classList.add('caret-nested');
+      if (contentUl) {
+        contentUl.classList.remove('active');
+        contentUl.classList.add('nested');
+      }
+    } else {
+      // re-expand from nested
+      toggler.classList.remove('nested');
+      imgDiv.classList.remove('caret-nested');
+      toggler.classList.add('active');
+      imgDiv.classList.add('caret-active');
+      if (contentUl) {
+        contentUl.classList.remove('nested');
+        toggler.classList.add('active');
+      }
+    }
+  }
+
+  /** Simple toggle for subtree containers without caret logic. */
+  private toggleSimpleVisibility(el: HTMLElement): void {
+    const isActive = el.classList.contains('active');
+    const isNested = el.classList.contains('nested');
+
+    if (!isActive && !isNested) {
+      el.classList.add('nested');
+    } else if (isActive) {
+      el.classList.remove('active');
+      el.classList.add('nested');
+    } else {
+      el.classList.remove('nested');
+      el.classList.add('active');
+    }
+  }
+
+  /** Force-expand a node by id segments (used to restore expanded state). */
+  private forceExpand(...ids: number[]): void {
+    const suffix = ids.join('-');
+    const ulId  = `tp-fileExplrTreeView-${this.pId}-${this.level}-${suffix}`;
+    const imgId = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${suffix}`;
+
+    const toggler = document.getElementById(ulId)  as HTMLElement;
+    const imgDiv  = document.getElementById(imgId) as HTMLElement;
+    if (toggler && imgDiv) {
+      toggler.classList.add('active');
+      imgDiv.classList.add('caret-active');
+    }
+  }
+
+  /** Fetch directory data on first expansion, then re-apply expanded states. */
+  private fetchIfFirstExpand(key: string, path: string): void {
+    if (this.expandedViewKeys.has(key)) { return; }
+    this.expandedViewKeys.add(key);
+
+    const uId = `${this.name}-${this.pId}`;
+    this._fileService.addEventOriginator(uId);
+    this._fileService.fetchDirectoryDataNotify.next(path);
+    setTimeout(() => this.restoreExpandedViews(), this.EXPAND_DELAY_MS);
+  }
+
+  /** Re-apply 'active' state for all previously expanded nodes. */
+  private restoreExpandedViews(): void {
+    for (const key of this.expandedViewKeys) {
+      const parts = key.split('-');
+      if (parts[0] === 'SGC') {
+        this.forceExpand(Number(parts[3]));
+      } else {
+        this.forceExpand(Number(parts[3]), Number(parts[4]));
+      }
+    }
+  }
+
+  /** Resolve the chevron SVG element id from optional index params. */
+  private resolveChevronImgId(id?: number, id1?: number): string {
+    if (id === this.QUICK_ACCESS_SENTINEL && id1 === this.QUICK_ACCESS_SENTINEL) {
+      return `qa-fileExplrTreeView-img-${this.pId}`;
+    }
+    const base = `tp-fileExplrTreeView-img-${this.pId}-${this.level}`;
+    if (id === undefined) { return base; }
+    if (id1 === undefined) { return `${base}-${id}`; }
+    return `${base}-${id}-${id1}`;
+  }
+
+  /** Set the fill colour on a chevron SVG element. */
+  private setChevronFillById(imgId: string, color: string): void {
+    const el = document.getElementById(imgId) as HTMLElement;
+    if (el) { el.style.fill = color; }
+  }
+
+  /** Update the default chevron fill based on hover state. */
+  private updateChevronFill(isActive: boolean): void {
+    this.chevronBtnStyle = isActive
+      ? { 'fill': '#ccc',    'transition': 'fill 0.5s ease' }
+      : { 'fill': '#191919', 'transition': 'fill 0.75s ease' };
+  }
+
+  private setBtnStyle(elmntId: string, isMouseHover: boolean): void {
+    const el = document.getElementById(elmntId) as HTMLElement;
+    if (!el) { return; }
+
+    el.style.backgroundColor = (this.selectedElementId === elmntId && isMouseHover)
+      ? '#787474'
+      : '#4c4c4c';
+  }
+
+  private removeBtnStyle(elmntId: string): void {
+    const el = document.getElementById(elmntId) as HTMLElement;
+    if (el) {
+      el.style.backgroundColor = Constants.EMPTY_STRING;
+      el.style.border = 'none';
+    }
   }
 }
