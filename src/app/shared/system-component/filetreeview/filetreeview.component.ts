@@ -9,22 +9,7 @@ import { MenuService } from '../../system-service/menu.services';
 import { GeneralMenu } from '../menu/menu.types';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { ProcessHandlerService } from '../../system-service/process.handler.service';
-
-/** Map of known folder names/paths to their icon filenames */
-const ICON_MAP: Record<string, string> = {
-  '3D-Objects:/Users/3D-Objects': '3d-objects_folder_small.png',
-  'Desktop:/Users/Desktop':       'desktop_folder_small.png',
-  'Documents:/Users/Documents':   'documents_folder_small.png',
-  'Downloads:/Users/Downloads':   'downloads_folder_small.png',
-  'Games:/Users/Games':           'games_folder_small.png',
-  'Music:/Users/Music':           'music_folder_small.png',
-  'Pictures:/Users/Pictures':     'pictures_folder_small.png',
-  'Videos:/Users/Videos':         'videos_folder_small.png',
-  [`${Constants.OSDISK}:${Constants.ROOT}`]: 'os_disk.png',
-};
-
-const ICON_BASE = 'osdrive/Cheetah/System/Imageres/';
-const DEFAULT_FOLDER_ICON = `${ICON_BASE}folder_folder_small.png`;
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 @Component({
   selector: 'cos-filetreeview',
@@ -41,6 +26,11 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   @Input() isHoverActive = false;
   @Input() levelSrcId = Constants.EMPTY_STRING;
   @Input() treeData: FileTreeNode[] = [];
+
+  private _fileService!:FileService;
+  private _audioService!:AudioService;
+  private _menuService!:MenuService;
+  private _processHandlerService!:ProcessHandlerService;
 
   // ── Template-bound state ──
   quickAccessData: FileTreeNode[] = [];
@@ -75,23 +65,24 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   private isClicked = false;
   private rect!: DOMRect;
 
-  constructor(
-    private _fileService: FileService,
-    private _audioService: AudioService,
-    private _menuService: MenuService,
-    private _processHandlerService: ProcessHandlerService,
-  ) {}
+  constructor(fileService:FileService, audioService:AudioService, menuService:MenuService,
+              processHandlerService:ProcessHandlerService){
+    this._fileService = fileService;
+    this._audioService = audioService;
+    this._menuService = menuService;
+    this._processHandlerService = processHandlerService;
+  }
 
   // ────────────────────────────────────────────
   // Lifecycle
   // ────────────────────────────────────────────
 
-  ngOnInit(): void {
+  ngOnInit():void{
     this.updateChevronFill(this.isHoverActive);
     this.quickAccessData = this.buildQuickAccessData();
   }
 
-  ngOnChanges(): void {
+  ngOnChanges():void{
     this.processId = this.pId;
     this.nextLevel = this.level + 1;
     this.nextLevelSrcId = this.levelSrcId;
@@ -105,7 +96,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   /**
    * Toggle CSS classes for expand/collapse on a root-level section (Quick Access or This PC).
    */
-  showChildren(prefix: string): void {
+  showRootLevel(prefix: string):void{
     const isThisPC = prefix === 'tp-fileExplrTreeView';
     const ulId  = isThisPC ? `ul-${this.pId}-0` : `qa-ul-${this.pId}`;
     const imgId = isThisPC
@@ -118,7 +109,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   /**
    * Toggle a grandchild node (first-level expansion under This PC).
    */
-  showGrandChildren(path: string, id: number): void {
+  async showFirstLevel(path: string, id: number):Promise<void>{
     const baseId  = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}`;
     const imgId   = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}`;
     const contentId = `ul-${this.pId}-${this.level}-${id}`;
@@ -127,16 +118,16 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const imgDiv   = document.getElementById(imgId)  as HTMLElement;
     const contentUl = document.getElementById(contentId) as HTMLElement;
 
-    if (toggler && imgDiv) {
+    if(toggler && imgDiv){
       this.toggleChildVisibility(toggler, imgDiv, contentUl);
-      this.fetchIfFirstExpand(`SGC-${this.pId}-${this.level}-${id}`, path);
+      await this.fetchIfFirstExpand(`SGC-${this.pId}-${this.level}-${id}`, path);
     }
   }
 
   /**
    * Toggle a great-grandchild node (second-level expansion).
    */
-  showGreatGrandChildren(path: string, id: number, id1: number): void {
+  async showSecondLevel(path: string, id: number, id1: number):Promise<void>{
     const baseId  = `tp-fileExplrTreeView-${this.pId}-${this.level}-${id}-${id1}`;
     const imgId   = `tp-fileExplrTreeView-img-${this.pId}-${this.level}-${id}-${id1}`;
     const treeId  = `newtree-${this.pId}-${this.level}-${id}-${id1}`;
@@ -145,13 +136,13 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const imgDiv  = document.getElementById(imgId)  as HTMLElement;
     const newTree = document.getElementById(treeId)  as HTMLElement;
 
-    if (newTree) {
+    if(newTree){
       this.toggleSimpleVisibility(newTree);
     }
 
     if (toggler && imgDiv) {
       this.toggleChildVisibility(toggler, imgDiv);
-      this.fetchIfFirstExpand(`SGGC-${this.pId}-${this.level}-${id}-${id1}`, path);
+      await this.fetchIfFirstExpand(`SGGC-${this.pId}-${this.level}-${id}-${id1}`, path);
     }
   }
 
@@ -159,7 +150,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   // Navigation
   // ────────────────────────────────────────────
 
-  async navigateToSelectedPath(evt: MouseEvent, name: string, path: string): Promise<void> {
+  async navigateToSelectedPath(evt: MouseEvent, name: string, path: string):Promise<void>{
     evt.stopPropagation();
     const uId = `filetreeview-1-${this.pId}`;
     this._fileService.addEventOriginator(uId);
@@ -183,7 +174,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   // Row highlight (click / hover)
   // ────────────────────────────────────────────
 
-  onBtnClick(evt: MouseEvent, elmntId: string): void {
+  onBtnClick(evt: MouseEvent, elmntId: string):void{
     this.removeBtnStyle(this.selectedElementId);
     this.selectedElementId = elmntId;
     this.isClicked = true;
@@ -195,7 +186,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     this.setBtnStyle(elmntId, true);
   }
 
-  onMouseLeave(elmntId: string): void {
+  onMouseLeave(elmntId: string):void{
     if (elmntId !== this.selectedElementId) {
       this.removeBtnStyle(elmntId);
     } else {
@@ -207,7 +198,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
   // Context menu
   // ────────────────────────────────────────────
 
-  onFileTreeContextMenu(evt: MouseEvent, node: FileTreeNode): void {
+  onFileTreeContextMenu(evt: MouseEvent, node: FileTreeNode):void{
     evt.preventDefault();
     evt.stopPropagation();
 
@@ -259,14 +250,18 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     this._menuService.showPropertiesView.next(file);
   }
 
-  // ────────────────────────────────────────────
-  // Icon resolution
-  // ────────────────────────────────────────────
+  getIconPath(nodeName:string, nodePath:string):string{
+    const imgPath = (nodeName ==='3D-Objects' && nodePath === '/Users/3D-Objects') ? `${Constants.IMAGE_BASE_PATH}3d-objects_folder_small.png` : 
+                    (nodeName === 'Desktop' && nodePath === '/Users/Desktop') ? `${Constants.IMAGE_BASE_PATH}desktop_folder_small.png` :  
+                    (nodeName === 'Documents' && nodePath === '/Users/Documents') ? `${Constants.IMAGE_BASE_PATH}documents_folder_small.png` :
+                    (nodeName === 'Downloads' && nodePath === '/Users/Downloads') ? `${Constants.IMAGE_BASE_PATH}downloads_folder_small.png` :
+                    (nodeName === 'Games' && nodePath === '/Users/Games') ? `${Constants.IMAGE_BASE_PATH}games_folder_small.png` :
+                    (nodeName === 'Music' && nodePath === '/Users/Music') ? `${Constants.IMAGE_BASE_PATH}music_folder_small.png` : 
+                    (nodeName === 'Pictures' && nodePath === '/Users/Pictures') ? `${Constants.IMAGE_BASE_PATH}pictures_folder_small.png` :
+                    (nodeName === 'Videos' && nodePath === '/Users/Videos') ? `${Constants.IMAGE_BASE_PATH}videos_folder_small.png` : 
+                    (nodeName === Constants.OSDISK && nodePath === Constants.ROOT) ? `${Constants.IMAGE_BASE_PATH}os_disk.png` : `${Constants.IMAGE_BASE_PATH}folder_folder_small.png`
 
-  getIconPath(nodeName: string, nodePath: string): string {
-    const key = `${nodeName}:${nodePath}`;
-    const fileName = ICON_MAP[key];
-    return fileName ? `${ICON_BASE}${fileName}` : DEFAULT_FOLDER_ICON;
+    return imgPath;                                                                                                                    
   }
 
   // ────────────────────────────────────────────
@@ -321,27 +316,27 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const isActive = toggler.classList.contains('active');
     const isNested = toggler.classList.contains('nested');
 
-    if (!isActive && !isNested) {
+    if(!isActive && !isNested){
       // first click → expand
       toggler.classList.add('active');
       imgDiv.classList.add('caret-active');
-    } else if (isActive) {
+    }else if (isActive){
       // collapse
       toggler.classList.remove('active');
       imgDiv.classList.remove('caret-active');
       toggler.classList.add('nested');
       imgDiv.classList.add('caret-nested');
-      if (contentUl) {
+      if(contentUl){
         contentUl.classList.remove('active');
         contentUl.classList.add('nested');
       }
-    } else {
+    }else{
       // re-expand from nested
       toggler.classList.remove('nested');
       imgDiv.classList.remove('caret-nested');
       toggler.classList.add('active');
       imgDiv.classList.add('caret-active');
-      if (contentUl) {
+      if(contentUl){
         contentUl.classList.remove('nested');
         toggler.classList.add('active');
       }
@@ -353,7 +348,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const isActive = el.classList.contains('active');
     const isNested = el.classList.contains('nested');
 
-    if (!isActive && !isNested) {
+    if(!isActive && !isNested){
       el.classList.add('nested');
     } else if (isActive) {
       el.classList.remove('active');
@@ -372,21 +367,23 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
     const toggler = document.getElementById(ulId)  as HTMLElement;
     const imgDiv  = document.getElementById(imgId) as HTMLElement;
-    if (toggler && imgDiv) {
+    if(toggler && imgDiv){
       toggler.classList.add('active');
       imgDiv.classList.add('caret-active');
     }
   }
 
   /** Fetch directory data on first expansion, then re-apply expanded states. */
-  private fetchIfFirstExpand(key: string, path: string): void {
+  private async fetchIfFirstExpand(key: string, path: string): Promise<void> {
     if (this.expandedViewKeys.has(key)) { return; }
     this.expandedViewKeys.add(key);
 
     const uId = `${this.name}-${this.pId}`;
     this._fileService.addEventOriginator(uId);
     this._fileService.fetchDirectoryDataNotify.next(path);
-    setTimeout(() => this.restoreExpandedViews(), this.EXPAND_DELAY_MS);
+
+    await CommonFunctions.sleep(this.EXPAND_DELAY_MS);
+    this.restoreExpandedViews();
   }
 
   /** Re-apply 'active' state for all previously expanded nodes. */
@@ -436,9 +433,9 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
   private removeBtnStyle(elmntId: string): void {
     const el = document.getElementById(elmntId) as HTMLElement;
-    if (el) {
-      el.style.backgroundColor = Constants.EMPTY_STRING;
-      el.style.border = 'none';
-    }
+    if (!el) return;
+
+    el.style.backgroundColor = Constants.EMPTY_STRING;
+    el.style.border = 'none';
   }
 }
