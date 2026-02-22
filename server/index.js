@@ -5,6 +5,21 @@ const socketIo = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 
+/** @type {import('./server/user.types').IUserList} */
+  const onlineUserList = {
+    timeStamp: Date.now(),
+    onlineUsers: []
+  };
+
+/** @type {import('./server/chat.types').Message} */
+  const messageList = {
+    timeStamp: Date.now(),
+    messages: []
+  };
+
+/** @type {Map<string, string>} */
+const socketUserMap = new Map(); // socket.id -> userId
+
 const io = socketIo(server, {
   cors: {
     // origin: "http://localhost:4200", // Allow frontend running on 42000, * will allow any
@@ -19,7 +34,28 @@ io.on('connection', (socket) => {
 
   // Listening for newUserInfo from the client
   socket.on('newUserInfo', (msg) => {
-    console.log('Received(newUserInfo) message:', msg);
+    //console.log('Received(newUserInfo) message:', msg);
+
+    /** @type {import('./server/user.types').IUserData} */
+    const user = {
+      userId: msg.userId,
+      userName: msg.userName,
+      userNameAcronym: msg.userNameAcronym,
+      color: msg.color,
+      isTyping: msg.isTyping
+    };
+
+     console.log('Received(newUserInfo) message:', user);
+
+    // Prevent duplicates (important)
+    const exists = onlineUserList.onlineUsers.some(u => u.userId === user.userId);
+    if (!exists) {
+      onlineUserList.onlineUsers.push(user);
+    }
+
+    // Track which socket owns this user
+    socketUserMap.set(socket.id, user.userId);
+
     io.emit('newUserInfo', msg); // Broadcasting message to all clients
   });
 
@@ -45,6 +81,12 @@ io.on('connection', (socket) => {
     // Listening for removeUserInfo from the client
   socket.on('removeUserInfo', (msg) => {
       console.log('Received(removeUserInfo) message:', msg);
+
+        // Remove from list
+      list.onlineUsers = list.onlineUsers.filter(
+        user => user.userId !== msg.userId
+      );
+
       io.emit('removeUserInfo', msg); // Broadcasting message to all clients
   });
 
@@ -56,6 +98,12 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     io.emit('userDisconnected','-'); 
+
+    const userId = socketUserMap.get(socket.id);
+    if (!userId) return;
+    
+    // Cleanup map
+    socketUserMap.delete(socket.id);
     console.log('User disconnected:', socket.id);
   });
 
