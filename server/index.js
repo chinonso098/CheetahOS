@@ -49,10 +49,9 @@ io.on('connection', (socket) => {
 
     // Prevent duplicates (important)
     const exists = onlineUserList.onlineUsers.some(u => u.userId === user.userId);
-    if (!exists) {
+    if (!exists)
       onlineUserList.onlineUsers.push(user);
-    }
-
+  
     // Track which socket owns this user
     socketUserMap.set(socket.id, user.userId);
 
@@ -62,6 +61,13 @@ io.on('connection', (socket) => {
   // Listening for updateUserName from the client
   socket.on('updateUserName', (msg) => {
     console.log('Received(updateUserName) message:', msg);
+
+    const user = onlineUserList.onlineUsers.find(u => u.userId === msg.userId);
+    if(!user) return;
+
+    user.userName = msg.userName
+    user.userNameAcronym = msg.userNameAcronym
+
     io.emit('updateUserName', msg); // Broadcasting message to all clients
   });
 
@@ -101,21 +107,27 @@ io.on('connection', (socket) => {
 
     const userId = socketUserMap.get(socket.id);
     if (!userId) return;
-    
+
     // Cleanup map
     socketUserMap.delete(socket.id);
     console.log('User disconnected:', socket.id);
   });
 
-  // Listening for removeUserInfo from the client
-  socket.on('removeUserInfo', (msg) => {
-    console.log('Received(removeUserInfo) message:', msg);
-    io.emit('removeUserInfo', msg); // Broadcasting message to all clients
-  });
+  // // Listening for removeUserInfo from the client
+  // socket.on('removeUserInfo', (msg) => {
+  //   console.log('Received(removeUserInfo) message:', msg);
+  //   io.emit('removeUserInfo', msg); // Broadcasting message to all clients
+  // });
 
   // Listening for userIsTyping from the client
   socket.on('userIsTyping', (msg) => {
     console.log('Received(userIsTyping) message:', msg);
+
+    const user = onlineUserList.onlineUsers.find(u => u.userId === msg.userId);
+    if(!user) return;
+
+    user.isTyping = msg.isTyping
+
     io.emit('userIsTyping', msg); // Broadcasting message to all clients
   });
   
