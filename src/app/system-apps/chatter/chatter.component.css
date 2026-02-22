@@ -14,6 +14,19 @@ span {
     background: #ccc;
 }
 
+/* Improve keyboard usability (tabIndex="0" elements) */
+.chatter-main-container :is([tabindex="0"], button, textarea, input):focus-visible {
+  outline-offset:0;
+}
+
+/* Slightly smoother scrolling on WebKit */
+.chatter-online-section,
+.chatter-chat-window-content,
+.chatter-area {
+  -webkit-overflow-scrolling: touch;
+}
+
+
 /* Content Layout */
 .chatter-content-container {
    width: 100%;
@@ -480,32 +493,31 @@ span.chatter-online-tail{
 
 .chatter-div-footer-lm{
     width:225px; 
-    position: fixed;
-    left: 0px;
+    position: relative;
+    left: 0;
 }
 
 .chatter-div-footer-online{
     width:150px; 
-    position: fixed;
-    left:320px;
-    bottom: 3px;
+    position: relative;
+    left:5%;
 }
 
 .chatter-div-footer-fig{
-    position: fixed;
+    position: relative;
     height: fit-content;
     width: fit-content;
-    right: 7%;
-    bottom: -2px;
+    left: 8%;
+    top: 2px;
     /* background-color: #302c2c; */
 }
 
 .chatter-div-footer-fig1{
-    position: fixed;
+    position: relative;
     height: fit-content;
     width: fit-content;
-    right: 60%;
-    bottom: -1px;
+    left: 5%;
+    top: 2px;
     /* background-color: #302c2c; */
 }
 
