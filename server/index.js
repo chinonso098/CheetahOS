@@ -1,25 +1,14 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
+// @ts-check
+import express from 'express';
+import { createServer } from 'http';
+import socketIo from 'socket.io';
 
+// @ts-ignore
+const PORT = 3000;
 const app = express();
-const server = http.createServer(app);
+const server = createServer(app);
 
-/** @type {import('./server/user.types').IUserList} */
-  const onlineUserList = {
-    timeStamp: Date.now(),
-    onlineUsers: []
-  };
-
-/** @type {import('./server/chat.types').Message} */
-  const messageList = {
-    timeStamp: Date.now(),
-    messages: []
-  };
-
-/** @type {Map<string, string>} */
-const socketUserMap = new Map(); // socket.id -> userId
-
+// @ts-ignore
 const io = socketIo(server, {
   cors: {
     // origin: "http://localhost:4200", // Allow frontend running on 42000, * will allow any
@@ -28,15 +17,33 @@ const io = socketIo(server, {
   }
 });
 
+/** @type {import('../server/chat.types').UserList} */
+  const onlineUserList = {
+    timeStamp: Date.now(),
+    onlineUsers: []
+  };
+
+/** @type {import('../server/chat.types').ChatMessage[]} */
+const messageList = [];
+
+/** @type {Map<string, string>} */
+// @ts-ignore
+const socketUserMap = new Map(); // socket.id -> userId
+
+/** @type {Set<string>} */
+const initializedSockets = new Set();
+
+
+// @ts-ignore
 io.on('connection', (socket) => {
   io.emit('userConnected','+'); 
   console.log('A user connected:', socket.id);
+  initializedSockets.add(socket.id);
 
   // Listening for newUserInfo from the client
+  // @ts-ignore
   socket.on('newUserInfo', (msg) => {
-    //console.log('Received(newUserInfo) message:', msg);
-
-    /** @type {import('./server/user.types').IUserData} */
+    /** @type {import('../server/chat.types').UserData} */
     const user = {
       userId: msg.userId,
       userName: msg.userName,
@@ -45,60 +52,93 @@ io.on('connection', (socket) => {
       isTyping: msg.isTyping
     };
 
-     console.log('Received(newUserInfo) message:', user);
-
     // Prevent duplicates (important)
     const exists = onlineUserList.onlineUsers.some(u => u.userId === user.userId);
     if (!exists)
       onlineUserList.onlineUsers.push(user);
-  
-    // Track which socket owns this user
-    socketUserMap.set(socket.id, user.userId);
 
+    const isSocketIdPresent = socketUserMap.has(socket.id);
+    if(!isSocketIdPresent){
+      // Match socket id to user id
+      socketUserMap.set(socket.id, user.userId);
+
+      console.log('full list for new user:', onlineUserList.onlineUsers);
+      ///If it is a new user joining for the first time, then the new user get the onlineUsers list.
+      io.emit('onlineUserList', onlineUserList.onlineUsers); // Broadcasting message to all clients
+    }
+  
+
+    console.log('Received(newUserInfo) message:', user);
+    // for other existing users, they only get the new user
     io.emit('newUserInfo', msg); // Broadcasting message to all clients
   });
 
   // Listening for updateUserName from the client
+  // @ts-ignore
   socket.on('updateUserName', (msg) => {
-    console.log('Received(updateUserName) message:', msg);
-
     const user = onlineUserList.onlineUsers.find(u => u.userId === msg.userId);
     if(!user) return;
 
     user.userName = msg.userName
     user.userNameAcronym = msg.userNameAcronym
 
+    console.log('Received(updateUserName) message:', user);
+
     io.emit('updateUserName', msg); // Broadcasting message to all clients
   });
 
 
   // Listening for updateOnlineUserCount from the client
+  // @ts-ignore
   socket.on('updateOnlineUserCount', (msg) => {
+    /** @type {import('../server/chat.types').UserCount} */
+    const usrCount = {
+      timeStamp: Date.now(),
+      userCount: onlineUserList.onlineUsers.length
+    }
+
     console.log('Received(updateOnlineUserCount) message:', msg);
     io.emit('updateOnlineUserCount', msg); // Broadcasting message to all clients
   });
 
   //updateOnlineUseList
+  // @ts-ignore
   socket.on('updateOnlineUserList', (msg) => {
     console.log('Received(updateOnlineUserList) message:', msg);
     io.emit('updateOnlineUserList', msg); // Broadcasting message to all clients
   });
 
-    // Listening for removeUserInfo from the client
+  // Listening for removeUserInfo from the client
+  // @ts-ignore
   socket.on('removeUserInfo', (msg) => {
       console.log('Received(removeUserInfo) message:', msg);
 
-        // Remove from list
-      list.onlineUsers = list.onlineUsers.filter(
-        user => user.userId !== msg.userId
-      );
+      // Remove from list
+      // @ts-ignore
+      list.onlineUsers = list.onlineUsers.filter(user => user.userId !== msg.userId);
 
       io.emit('removeUserInfo', msg); // Broadcasting message to all clients
   });
 
   // Listening for chatMessage from the client
+  // @ts-ignore
   socket.on('chatMessage', (msg) => {
+    /** @type {import('../server/chat.types').ChatMessage} */
+    const chat = {
+      msg: msg.msg,
+      userId: msg.userId,
+      userName: msg.userName,
+      userNameAcronym: msg.userNameAcronym,
+      timestamp: Date.now(),
+      iconColor: '',
+      isAppMsg: msg.isAppMsg,
+      isUserNameEdit: msg.isUserNameEdit
+    }
+
+    messageList.push(chat);
     console.log('Received(chatMessage) message:', msg);
+
+
     io.emit('chatMessage', msg); // Broadcasting message to all clients
   });
 
@@ -113,26 +153,29 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
 
-  // // Listening for removeUserInfo from the client
-  // socket.on('removeUserInfo', (msg) => {
-  //   console.log('Received(removeUserInfo) message:', msg);
-  //   io.emit('removeUserInfo', msg); // Broadcasting message to all clients
-  // });
 
   // Listening for userIsTyping from the client
+  // @ts-ignore
   socket.on('userIsTyping', (msg) => {
-    console.log('Received(userIsTyping) message:', msg);
+    //console.log('Received(userIsTyping) message:', msg);
 
     const user = onlineUserList.onlineUsers.find(u => u.userId === msg.userId);
     if(!user) return;
 
     user.isTyping = msg.isTyping
-
+    console.log('Received(userIsTyping) message:', user);
     io.emit('userIsTyping', msg); // Broadcasting message to all clients
   });
   
 });
 
-server.listen(3000, () => {
-  console.log('listening on *:3000');
+/**
+ * =========================
+ * Start server
+ * =========================
+ */
+
+server.listen(PORT, () => {
+  console.log(`listening on *:${PORT}`);
+  console.log(`socket namespace: /chat`);
 });
