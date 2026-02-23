@@ -15,7 +15,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 
 import { ChatMessage } from './model/chat.message';
-import { IUser, IUserData, IUserList } from './model/chat.interfaces';
+import { IUser, IUserData } from './model/chat.interfaces';
 import { Subscription } from 'rxjs';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
@@ -57,9 +57,6 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   userNameAcronymStyle:Record<string, unknown> = {};
 
   private _appState!:AppState;
-
-  ADD_AND_BROADCAST = 'Add&Broadcast';
-  UPDATE = 'Update';
   A_NEW_USER_HAS_JOINED_THE_CHAT_MSG = 0;
   USER_HAS_LEFT_THE_CHAT_MSG = 1;
   USER_CHANGED_NAME_MSG = 2;
@@ -123,21 +120,15 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
     this._newChatMessageSub = this._chatService.newMessageNotify.subscribe(()=> this.updateChatData());
     this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe((p)=> this.updateOnlineUserCount(p));
-    this._newUserInfomationSub = this._chatService.newUserInformationNotify.subscribe(()=> this.updateOnlineUserList(this.ADD_AND_BROADCAST));
-    this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList(this.UPDATE));
-    this._updateUserNameOrStatusSub =  this._chatService.updateUserNameOrStateNotify.subscribe(()=> this.updateOnlineUserList(this.UPDATE));
+    this._newUserInfomationSub = this._chatService.newUserInformationNotify.subscribe(()=> this.updateOnlineUserList());
+    this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList());
+    this._updateUserNameOrStatusSub =  this._chatService.updateUserNameOrStateNotify.subscribe(()=> this.updateOnlineUserList());
   }
 
   async ngOnInit(): Promise<void> {
-    const delay = 200; //200ms
-    this.userNameAcronymStyle = {
-      'background-color': this.bkgrndIconColor
-    };
+    this.userNameAcronymStyle = { 'background-color': this.bkgrndIconColor };
 
-    this.chatterForm = this._formBuilder.nonNullable.group({
-      msgText: '',
-    });
-
+    this.chatterForm = this._formBuilder.nonNullable.group({ msgText: Constants.EMPTY_STRING });
     this.chatUserForm = this._formBuilder.group({
       firstName: ["",[Validators.required,Validators.minLength(1),Validators.maxLength(10),]],
       lastName: ["",[Validators.required,Validators.minLength(1),Validators.maxLength(10),]],
@@ -145,44 +136,42 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
     // set as my timestamp for when i came online
     this._chatService.setComeOnlineTS(Date.now());
-    
-  
-    await CommonFunctions.sleep(delay);
-    await this._audioService.play(this.logonAudio);
-    this.retrieveEarlierMessages();
   }
 
-  ngAfterViewInit(): void {
+  async ngAfterViewInit(): Promise<void> {
     const delay = 50;
-    setTimeout(() => {
-      this._chatService.sendUserOnlineAddInfoMessage(this.chatUserData);
+    const audioDelay = 200; //200ms
 
-      this.generateAndSendAppMessages(this.A_NEW_USER_HAS_JOINED_THE_CHAT_MSG);
-    }, delay);
+    await CommonFunctions.sleep(audioDelay);
+    await this._audioService.play(this.logonAudio);
 
-  setTimeout(()=>{
-      this.captureComponentImg();
-    },this.SECONDS_DELAY) 
+    await CommonFunctions.sleep(delay);
+    this._chatService.sendUserOnlineAddInfoMessage(this.chatUserData);
+    this.generateAndSendAppMessages(this.A_NEW_USER_HAS_JOINED_THE_CHAT_MSG);
+
+    this.retrieveEarlierMessages();
+
+    await CommonFunctions.sleep(this.SECONDS_DELAY)
+    this.captureComponentImg();
   }
 
-  ngOnDestroy():void{
+  async ngOnDestroy(): Promise<void>{
     const delay = 25;
     this._chatService.sendUserOfflineRemoveInfoMessage(this.chatUserData);
     this.generateAndSendAppMessages(this.USER_HAS_LEFT_THE_CHAT_MSG);
 
-    setTimeout(() => {
-      this._newChatMessageSub?.unsubscribe();
-      this._userCountChangeSub?.unsubscribe();
-      this._newUserInfomationSub?.unsubscribe();
-      this._updateOnlineUserListSub?.unsubscribe();
-      this._updateUserNameOrStatusSub?.unsubscribe();
-  
-      this._socketService.disconnect();
-      
-      const ssPid = this._socketService.processId;
-      const socketProccess = this._runningProcessService.getProcess(ssPid);
-      this._runningProcessService.removeProcess(socketProccess);
-    }, delay);
+    await CommonFunctions.sleep(delay);
+    this._newChatMessageSub?.unsubscribe();
+    this._userCountChangeSub?.unsubscribe();
+    this._newUserInfomationSub?.unsubscribe();
+    this._updateOnlineUserListSub?.unsubscribe();
+    this._updateUserNameOrStatusSub?.unsubscribe();
+
+    this._socketService.disconnect();
+    
+    const ssPid = this._socketService.processId;
+    const socketProccess = this._runningProcessService.getProcess(ssPid);
+    this._runningProcessService.removeProcess(socketProccess);
   }
 
   async updateChatData():Promise<void>{
@@ -220,10 +209,6 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     if(value === 0){
       //subtract 1 to account for yourself
       this.userCount = currentUserCount - 1;
-      const timeout = this.getTimeOut();
-      setTimeout(() => {
-        this._chatService.sendUpdateOnlineUserCountMessage();
-      }, timeout);
     }else{
       //subtract 1 to account for yourself
       this.userCount = currentUserCount - 1;
@@ -252,37 +237,16 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
   }
 
-  updateOnlineUserList(intent:string):void{
-
-    if(intent === this.ADD_AND_BROADCAST){
-      if(this.isFirstOnlineUserUpdateResponse){
-        // skip the first update. It is most likely the echoing effect of coming online
-        console.log('skip the first update. echoing effect of coming online:', this.userId + '-' + this.userName )
-        this.isFirstOnlineUserUpdateResponse = false;
-        return;
-      }else{
-        const data = this._chatService.getListOfOnlineUsers();
-        this.onlineUsers = data;
-        const myList:IUserList = {timeStamp:this.onlineUsersListFirstUpdateTS, onlineUsers:this.onlineUsers};
-  
-        const timeout = this.getTimeOut();
-        console.log('timeout-sendMyOnlineUserList:',timeout);
-        setTimeout(() => {
-          this._chatService.sendMyOnlineUsersListMessage(myList);
-        }, timeout);
-      }
-    }else{
-      const data = this._chatService.getListOfOnlineUsers();
-      //console.log('updateOnlineUserList:',data);
-      this.onlineUsers = data;
-    }
+  updateOnlineUserList():void{
+    const data = this._chatService.getListOfOnlineUsers();
+    this.onlineUsers = data;
   }
 
-  getTimeOut():number{
-    const delays = [100, 175, 250, 325, 400, 475, 550, 525, 700, 775, 850, 925];
-    const timeout = delays[Math.floor(Math.random() * delays.length)];
-    return timeout;
-  }
+  // getTimeOut():number{
+  //   const delays = [100, 175, 250, 325, 400, 475, 550, 525, 700, 775, 850, 925];
+  //   const timeout = delays[Math.floor(Math.random() * delays.length)];
+  //   return timeout;
+  // }
 
   setDefaults():void{
     const uData = this._chatService.getUserData() as IUserData;
@@ -377,16 +341,16 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
         this.isTyping = true;
         this.chatUserData.isTyping = true
-        this._chatService.sendUserIsTypingMessage(this.chatUserData)
+        this._chatService.sendUserTypingStateMessage(this.isTyping)
       }else if(chatInput!== null &&  chatInput.trim().length === 0) {
         this.isTyping = false;
         this.chatUserData.isTyping = false
-        this._chatService.sendUserIsTypingMessage(this.chatUserData)
+        this._chatService.sendUserTypingStateMessage(this.isTyping)
       }
     }
   }
 
-  createChat():void{
+  async createChat():Promise<void>{
     const chatInput = this.chatterForm.value.msgText as string;
     const delay = 10;
 
@@ -396,20 +360,21 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }
 
     const chatObj = new ChatMessage(chatInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor);
+    this.chatData.push(chatObj);
     this._chatService.sendChatMessage(chatObj);
     this.chatterForm.reset();
 
-    setTimeout(() => {
-      this.chatterForm.controls[this.formCntrlName].setValue(null);
-      this.chatterForm.controls[this.formCntrlName].markAsUntouched();
-    }, delay);
+    await CommonFunctions.sleep(delay);
+    this.chatterForm.controls[this.formCntrlName].setValue(null);
+    this.chatterForm.controls[this.formCntrlName].markAsUntouched();
 
     this.isTyping = false;
     this.chatUserData.isTyping = false
-    this._chatService.sendUserIsTypingMessage(this.chatUserData)
+    this._chatService.sendUserTypingStateMessage(this.isTyping);
 
-      // Scroll to bottom
-    setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
+    // Scroll to bottom
+    await CommonFunctions.sleep(this.SCROLL_DELAY);
+    this.scrollToBottom();
   }
   
   getRandomNum(min?:number, max?:number):number {

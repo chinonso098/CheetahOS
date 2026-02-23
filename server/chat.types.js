@@ -2,7 +2,7 @@
 export {};
 
 /**
- * @typedef {Object} ChatMessage
+ * @typedef {Object} NewMessage
  * @property {string} msg
  * @property {string} userId
  * @property {string} userName

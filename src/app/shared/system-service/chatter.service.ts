@@ -37,14 +37,15 @@ export class ChatterService implements BaseService{
     private _updateUserCountSub!:Subscription;
     private _userOfflineRemoveUserInfoSub!:Subscription;
     private _userIsTypingSub!:Subscription;  
+    private _userStoppedTypingSub!:Subscription;  
 
-    private readonly CHAT_MSG_EVT ='chatMessage';
-    private readonly USER_CONNECT_EVT ='userConnected';
+    private readonly NEW_MSG_EVT ='newMessage';
     private readonly NEW_USER_INFO_EVT ='newUserInfo';
     private readonly UPDATE_USER_NAME_EVT ='updateUserName';
     private readonly REMOVE_USER_INFO_EVT ='removeUserInfo';
-    private readonly USER_DISCONNECT_EVT ='userDisconnected';
+    private readonly USER_TYPING_STATE_EVT = 'userTypingState'; 
     private readonly USER_IS_TYPING_EVT = 'userIsTyping'; 
+    private readonly USER_STOPPED_TYPING_EVT = 'userStoppedTyping'; 
     private readonly UPDATE_ONLINE_USER_COUNT_EVT = 'updateOnlineUserCount'; 
     private readonly UPDATE_ONLINE_USER_LIST_EVT = 'updateOnlineUserList'; 
 
@@ -83,7 +84,7 @@ export class ChatterService implements BaseService{
     }
 
     sendChatMessage(data:ChatMessage) {
-       this._socketService.sendMessage(this.CHAT_MSG_EVT, data);
+       this._socketService.sendMessage(this.NEW_MSG_EVT, data);
     }
 
     sendUserOnlineAddInfoMessage(data:IUserData) {
@@ -102,20 +103,13 @@ export class ChatterService implements BaseService{
         this._socketService.sendMessage(this.UPDATE_USER_NAME_EVT, data);
     }
 
-    sendMyOnlineUsersListMessage(data:IUserList) {
-        if(this._listTS === -1){
-            this._listTS = data.timeStamp;
-        }
-        this._socketService.sendMessage(this.UPDATE_ONLINE_USER_LIST_EVT, data);
-    }
-
     sendUpdateOnlineUserCountMessage() {
         const data = {'timeStamp':this._comeOnlineTS, 'userCount':this._connectedUserCounter}
         this._socketService.sendMessage(this.UPDATE_ONLINE_USER_COUNT_EVT, data);
     }
 
-    sendUserIsTypingMessage(data: IUserData) {
-        this._socketService.sendMessage(this.USER_IS_TYPING_EVT, data);
+    sendUserTypingStateMessage(isTyping: boolean) {
+        this._socketService.sendMessage(this.USER_TYPING_STATE_EVT, isTyping);
     }
  
     saveUserData(value: IUserData) { // re-examine
@@ -142,26 +136,13 @@ export class ChatterService implements BaseService{
         this._comeOnlineTS = timeStamp;
     }
 
-    private updateUserCount(update:string){
-        console.log('updateUserCount:', update)
-        if(update === '+'){
-            this._connectedUserCounter++;            
-        }else if(update === '-'){
-            this._connectedUserCounter--;
-        }
-
-        this.userCountChangeNotify.next(0);
-    }
 
     private updateUserCountAfterComparing(userCount:any){
         if(userCount){
-            const tStamp =  userCount.timeStamp as number;
+            //const tStamp =  userCount.timeStamp as number;
             const uCount =  userCount.userCount as number;
-
-            if(tStamp < this._comeOnlineTS &&  uCount > this._connectedUserCounter){
-                this._connectedUserCounter = uCount;
-                this.userCountChangeNotify.next(1);
-            }
+            this._connectedUserCounter = uCount;
+            this.userCountChangeNotify.next(1);
         }
     }
 
@@ -202,28 +183,28 @@ export class ChatterService implements BaseService{
     }
 
     private raiseUpdateOnlineUserListRecieved(onlinerUserList: any):void{
-        if(onlinerUserList){
-            const userList: IUserList = {
-                timeStamp: onlinerUserList.timeStamp,
-                onlineUsers: onlinerUserList.onlineUsers.map((user: IUserData) => ({
-                  userId: user.userId,
-                  userName: user.userName,
-                  userNameAcronym: user.userNameAcronym,
-                  color: user.color
-                }))
-              };
 
-            if(userList.timeStamp > this._listTS){                
-                // combined both lists
-                const  mergeList = [...this._onlineUsers, ...userList.onlineUsers];
+        console.log('raiseUpdateOnlineUserListRecieved:', onlinerUserList);
+        
+        if(!onlinerUserList) return
+        const onlineList = onlinerUserList as IUserData[];
 
-                this._onlineUsers = this.removeDuplicates(mergeList);
-                this.updateOnlineUserListNotify.next();
-            }
-        }
+        if(onlineList.length === 0) return;
+
+        console.log('raiseUpdateOnlineUserListRecieved:', onlineList);
+
+        // const l:IUserData[] = onlineList.map((user: IUserData) => ({
+        //         userId: user.userId,
+        //         userName: user.userName,
+        //         userNameAcronym: user.userNameAcronym,
+        //         color: user.color
+        // }))
+
+        this._onlineUsers = onlineList;
+        this.updateOnlineUserListNotify.next();
     }
 
-    private raiseUpdateUserNameOrStateRecieved(userInfo:any):void{
+    private raiseUpdateUserNameRecieved(userInfo:any):void{
         if(userInfo){
             const newUserInfo:IUserData = {
                 userId: userInfo.userId as string,
@@ -247,19 +228,30 @@ export class ChatterService implements BaseService{
         }
     }
 
+    private raiseUserTypingStateRecieved(userInfo:any, isTyping:boolean):void{
+
+        console.log('raiseUserTypingStateRecieved - userInfo:', userInfo);
+        console.log('raiseUserTypingStateRecieved - isTyping:', isTyping);
+
+        if(!userInfo) return;
+
+        const userId = userInfo as string;
+        const currUserInfo = this._onlineUsers.find(x => x.userId === userId);
+        //const currUserInfoIdx = this._onlineUsers.findIndex(x => x.userId === userId);
+
+        if(!currUserInfo) return;
+        currUserInfo.isTyping = isTyping;
+        //this._onlineUsers[currUserInfoIdx] = currUserInfo;
+            
+        this.updateUserNameOrStateNotify.next();
+    }
+
     private raiseRemoveUserFromOnlineListRecieved(userInfo:any):void{
         if(!userInfo) return;
 
-        const offlineUser:IUserData = {
-            userId: userInfo.userId as string,
-            userName: userInfo.userName as string,
-            userNameAcronym: userInfo.userNameAcronym as string,
-            color:userInfo.color as string,
-            isTyping:userInfo.isTyping as boolean,
-        }
-
+        const userId = userInfo as string;
         const originalLength = this._onlineUsers.length;
-        this._onlineUsers = this._onlineUsers.filter(x => x.userId !== offlineUser.userId);
+        this._onlineUsers = this._onlineUsers.filter(x => x.userId !== userId);
 
         if(this._onlineUsers.length < originalLength){
             this.updateOnlineUserListNotify.next();
@@ -276,6 +268,7 @@ export class ChatterService implements BaseService{
         this._updateUserCountSub?.unsubscribe();
         this._userOfflineRemoveUserInfoSub?.unsubscribe();
         this._userIsTypingSub?.unsubscribe();
+        this._userStoppedTypingSub?.unsubscribe();
     }
 
     private removeDuplicates(arr:IUserData[]):IUserData[]{
@@ -292,13 +285,12 @@ export class ChatterService implements BaseService{
     }
 
     setSubscriptions():void{
-        this._newMessagRecievedSub = this._socketService.onMessageEvent(this.CHAT_MSG_EVT).subscribe((p)=>{this.raiseNewMessageReceived(p)});
-        this._userConnectSub = this._socketService.onMessageEvent(this.USER_CONNECT_EVT).subscribe((i)=>{this.updateUserCount(i)});
-        this._userDisconnectSub = this._socketService.onMessageEvent(this.USER_DISCONNECT_EVT).subscribe((j)=>{this.updateUserCount(j)});
+        this._newMessagRecievedSub = this._socketService.onMessageEvent(this.NEW_MSG_EVT).subscribe((p)=>{this.raiseNewMessageReceived(p)});
         this._newUserInformationSub = this._socketService.onMessageEvent(this.NEW_USER_INFO_EVT).subscribe((t)=>{this.raiseNewUserInformationRecieved(t)});
         this._updateOnlineUserListSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_LIST_EVT).subscribe((t)=>{this.raiseUpdateOnlineUserListRecieved(t)});
-        this._updateUserNameSub = this._socketService.onMessageEvent(this.UPDATE_USER_NAME_EVT).subscribe((t)=>{this.raiseUpdateUserNameOrStateRecieved(t)});
-        this._userIsTypingSub = this._socketService.onMessageEvent(this.USER_IS_TYPING_EVT).subscribe((t)=>{this.raiseUpdateUserNameOrStateRecieved(t)});
+        this._updateUserNameSub = this._socketService.onMessageEvent(this.UPDATE_USER_NAME_EVT).subscribe((t)=>{this.raiseUpdateUserNameRecieved(t)});
+        this._userIsTypingSub = this._socketService.onMessageEvent(this.USER_IS_TYPING_EVT).subscribe((t)=>{this.raiseUserTypingStateRecieved(t, true)});
+        this._userStoppedTypingSub = this._socketService.onMessageEvent(this.USER_STOPPED_TYPING_EVT).subscribe((t)=>{this.raiseUserTypingStateRecieved(t, false)});
         this._updateUserCountSub = this._socketService.onMessageEvent(this.UPDATE_ONLINE_USER_COUNT_EVT).subscribe((j)=>{this.updateUserCountAfterComparing(j)});
         this._userOfflineRemoveUserInfoSub = this._socketService.onMessageEvent(this.REMOVE_USER_INFO_EVT).subscribe((t)=>{this.raiseRemoveUserFromOnlineListRecieved(t)});
     }
