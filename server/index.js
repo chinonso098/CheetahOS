@@ -3,165 +3,239 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 
-// @ts-ignore
 const PORT = 3000;
+
 const app = express();
 const server = http.createServer(app);
 
-// @ts-ignore
 const io = new Server(server, {
+      // origin: "http://localhost:4200", // Allow frontend running on 42000, * will allow any
   cors: {
-    // origin: "http://localhost:4200", // Allow frontend running on 42000, * will allow any
-    origin: "*", 
-    methods: ["GET", "POST"]
-  }
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
 });
 
+/** =========================
+ * Runtime helpers (tiny, fast)
+ * ========================= */
+
+/**
+ * @param {unknown} v
+ * @returns {v is Record<string, unknown>}
+ */
+function isPlainObject(v) {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+/**
+ * @param {unknown} v
+ * @returns {string}
+ */
+function asString(v) {
+  return typeof v === 'string' ? v : '';
+}
+
+/**
+ * @param {unknown} v
+ * @returns {string}
+ */
+function asNonEmptyString(v) {
+  const s = asString(v).trim();
+  return s.length ? s : '';
+}
+
+/**
+ * @param {unknown} v
+ * @returns {boolean}
+ */
+function asBool(v) {
+  return typeof v === 'boolean' ? v : false;
+}
+
+/**
+ * @param {unknown} v
+ * @returns {number}
+ */
+function asNumber(v) {
+  return typeof v === 'number' && Number.isFinite(v) ? v : 0;
+}
+
+/** =========================
+ * In-memory state
+ * ========================= */
+
 /** @type {import('../server/chat.types').UserList} */
-  const onlineUserList = {
-    timeStamp: Date.now(),
-    onlineUsers: []
-  };
+const onlineUserList = {
+  timeStamp: Date.now(),
+  onlineUsers: [],
+};
 
 /** @type {import('../server/chat.types').NewMessage[]} */
 const messageList = [];
 
 /** @type {Map<string, string>} */
-// @ts-ignore
 const socketUserMap = new Map(); // socket.id -> userId
 
+/** =========================
+ * Socket events
+ * ========================= */
 
-// @ts-ignore
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+  //console.log('A user connected:', socket.id);
   socketUserMap.set(socket.id, '');
 
-  // Listening for newUserInfo from the client
-  // @ts-ignore
+  /**
+   * newUserInfo
+   * Expected: { userId, userName, userNameAcronym, color }
+   */
   socket.on('newUserInfo', (msg) => {
-    if (!msg || typeof msg !== 'object' || !msg.userId || !msg.userName) return;
+    if (!isPlainObject(msg)) return;
+
+    const userId = asNonEmptyString(msg.userId);
+    const userName = asNonEmptyString(msg.userName);
+    if (!userId || !userName) return;
 
     /** @type {import('../server/chat.types').UserData} */
     const user = {
-      userId: msg.userId,
-      userName: msg.userName,
-      userNameAcronym: msg.userNameAcronym,
-      color: msg.color,
-      isTyping: false // Best to initialize as false
+      userId,
+      userName,
+      userNameAcronym: asString(msg.userNameAcronym),
+      color: asString(msg.color),
+      isTyping: false,
     };
 
-    // 1. Update the Global List
-    const exists = onlineUserList.onlineUsers.some(u => u.userId === user.userId);
-    if(!exists)
-      onlineUserList.onlineUsers.push(user);
-    
-    // 2. Map the current socket to this user
-    if(socketUserMap.has(socket.id)){
-      socketUserMap.set(socket.id, user.userId);
+    // 1) Update the global list (idempotent)
+    const exists = onlineUserList.onlineUsers.some((u) => u.userId === user.userId);
+    if (!exists) onlineUserList.onlineUsers.push(user);
 
-      console.log('full list for new user:', onlineUserList.onlineUsers);
-      // 3. To the NEW user: Send the full list of everyone ELSE
-      const others = onlineUserList.onlineUsers.filter(u => u.userId !== user.userId);
-      socket.emit('updateOnlineUserList', others); 
+    // 2) Map socket -> userId
+    socketUserMap.set(socket.id, user.userId);
 
-      // 4. To EVERYONE ELSE: Send only the new user info
-      console.log('Received(newUserInfo) message:', user);
-      socket.broadcast.emit('newUserInfo', user); 
-    }
+    // 3) To the NEW user: send the list of everyone ELSE
+    const others = onlineUserList.onlineUsers.filter((u) => u.userId !== user.userId);
+    socket.emit('updateOnlineUserList', others);
 
-    // 5. To EVERYONE: Update the total count
+    // 4) To EVERYONE ELSE: send only the new user info
+    socket.broadcast.emit('newUserInfo', user);
+
+    // 5) To EVERYONE: update total count
     io.emit('updateOnlineUserCount', {
       timeStamp: Date.now(),
-      userCount: onlineUserList.onlineUsers.length
+      userCount: onlineUserList.onlineUsers.length,
     });
   });
 
-  // Listening for updateUserName from the client
-  // @ts-ignore
+  /**
+   * updateUserName
+   * Expected: { userId, userName, userNameAcronym }
+   */
   socket.on('updateUserName', (msg) => {
-    const user = onlineUserList.onlineUsers.find(u => u.userId === msg.userId);
-    if(!user) return;
+    if (!isPlainObject(msg)) return;
 
-    user.userName = msg.userName
-    user.userNameAcronym = msg.userNameAcronym
+    const userId = asNonEmptyString(msg.userId);
+    const userName = asNonEmptyString(msg.userName);
+    const userNameAcronym = asString(msg.userNameAcronym);
 
-    console.log('Received(updateUserName) message:', user);
+    if (!userId || !userName) return;
 
-    socket.broadcast.emit('updateUserName', msg); // Broadcasting message to all clients
+    const user = onlineUserList.onlineUsers.find((u) => u.userId === userId);
+    if (!user) return;
+
+    user.userName = userName;
+    user.userNameAcronym = userNameAcronym;
+
+    socket.broadcast.emit('updateUserName', {
+      userId,
+      userName,
+      userNameAcronym,
+      color: user.color,
+      isTyping: user.isTyping,
+    });
   });
 
-  // Listening for newMessage from the client
-  // @ts-ignore
+  /**
+   * newMessage
+   * Client currently sends underscore fields (ChatMessage instance-like).
+   * We ACCEPT:
+   * - msg._msg style (current)
+   * - msg.msg style (optional)
+   *
+   * IMPORTANT: To avoid breaking clients, we KEEP broadcasting the original msg.
+   */
   socket.on('newMessage', (msg) => {
+    if (!isPlainObject(msg)) return;
+
+    // Accept both styles: underscore or flat.
+    const rawMsg = asNonEmptyString(msg._msg);
+    const rawUserId = asNonEmptyString(msg._userId);
+    const rawUserName = asNonEmptyString(msg._userName);
+
+    // Minimal validity; avoid poisoning history with garbage.
+    if (!rawMsg || !rawUserId || !rawUserName) return;
+
     /** @type {import('../server/chat.types').NewMessage} */
     const chat = {
-      msg: msg._msg,
-      userId: msg._userId,
-      userName: msg._userName,
-      userNameAcronym: msg._userNameAcronym,
+      msg: rawMsg,
+      userId: rawUserId,
+      userName: rawUserName,
+      userNameAcronym: asString(msg._userNameAcronym),
       timestamp: Date.now(),
-      iconColor: '',
-      isAppMsg: msg._isAppMsg,
-      isUserNameEdit: msg._isUserNameEdit
-    }
+      iconColor: asString(msg._iconColor),
+      isAppMsg: asBool(msg._isAppMsg),
+      isUserNameEdit: asBool(msg._isUserNameEdit),
+    };
 
     messageList.push(chat);
-    console.log('Received(newMessage) message:', msg);
-    console.log('messageList:', messageList);
-    socket.broadcast.emit('newMessage', msg); // Broadcasting message to all other client
+    
+    // Keep your existing contract: broadcast original msg object (underscore shape)
+    socket.broadcast.emit('newMessage', msg);
   });
 
-  socket.on('disconnect', () =>{
-    const userId = socketUserMap.get(socket.id);
-    if (!userId) return;
-
-    // Remove from onlineUserList
-    // @ts-ignore
-    onlineUserList.onlineUsers = onlineUserList.onlineUsers.filter(user => user.userId !== userId);
-
-    // Cleanup map
-    socketUserMap.delete(socket.id);
-
-    io.emit('removeUserInfo', userId); // Broadcasting message to all clients
-
-    //To EVERYONE: Update the total count
-    io.emit('updateOnlineUserCount', {
-      timeStamp: Date.now(),
-      userCount: onlineUserList.onlineUsers.length
-    });
-
-    console.log('User disconnected:', socket.id);
-  });
-
-
-  // Listening for userTypingState from the client
-  // @ts-ignore
+  /**
+   * userTypingState
+   * Expected: boolean (true/false)
+   */
   socket.on('userTypingState', (msg) => {
     const userId = socketUserMap.get(socket.id);
     if (!userId) return;
 
-    const user = onlineUserList.onlineUsers.find(u => u.userId === userId);
-    if(!user) return;
+    const user = onlineUserList.onlineUsers.find((u) => u.userId === userId);
+    if (!user) return;
 
-    console.log('userTypingState:', msg);
+    const isTyping = typeof msg === 'boolean' ? msg : false;
+    user.isTyping = isTyping;
 
-    user.isTyping = msg ;
-    console.log('Received(userTypingState) message:', user);
-
-    if(msg === true)
-      socket.broadcast.emit('userIsTyping', userId); // Broadcast message to all other clients
-    else
-      socket.broadcast.emit('userStoppedTyping', userId); // Broadcast message to all other clients
+    if (isTyping) socket.broadcast.emit('userIsTyping', userId);
+    else socket.broadcast.emit('userStoppedTyping', userId);
   });
-  
+
+  socket.on('disconnect', () => {
+    const userId = socketUserMap.get(socket.id);
+    socketUserMap.delete(socket.id);
+
+    if (!userId) {
+      console.log('User disconnected (no mapped user):', socket.id);
+      return;
+    }
+
+    // Remove from online list
+    onlineUserList.onlineUsers = onlineUserList.onlineUsers.filter((u) => u.userId !== userId);
+
+    io.emit('removeUserInfo', userId);
+
+    io.emit('updateOnlineUserCount', {
+      timeStamp: Date.now(),
+      userCount: onlineUserList.onlineUsers.length,
+    });
+
+    //console.log('User disconnected:', socket.id);
+  });
 });
 
-/**
- * =========================
+/** =========================
  * Start server
- * =========================
- */
-
+ * ========================= */
 server.listen(PORT, () => {
   console.log(`listening on *:${PORT}`);
   console.log(`socket namespace: /chat`);

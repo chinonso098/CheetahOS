@@ -10,8 +10,3 @@ export interface IUserData{
     color:string;
     isTyping:boolean;
 }
-
-export interface IUserList{
-    timeStamp:number;
-    onlineUsers: IUserData[];
-}
