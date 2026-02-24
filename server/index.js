@@ -8,10 +8,17 @@ const PORT = 3000;
 const app = express();
 const server = http.createServer(app);
 
+const ALLOWED_ORIGINS = new Set([
+  'https://chinonso098.github.io',
+  'http://localhost:4200'
+]);
+
 const io = new Server(server, {
-      // origin: "http://localhost:4200", // Allow frontend running on 42000, * will allow any
   cors: {
-    origin: '*',
+    origin(origin, cb) {
+      if (!origin) return cb(null, true); // allow non-browser clients
+      cb(null, ALLOWED_ORIGINS.has(origin));
+    },
     methods: ['GET', 'POST'],
   },
 });
@@ -187,7 +194,7 @@ io.on('connection', (socket) => {
     };
 
     messageList.push(chat);
-    
+
     // Keep your existing contract: broadcast original msg object (underscore shape)
     socket.broadcast.emit('newMessage', msg);
   });
