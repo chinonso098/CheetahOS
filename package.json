@@ -39,6 +39,7 @@
     "@angular/router": "^19.1.6",
     "@types/socket.io-client": "^1.4.36",
     "angular2-draggable": "^16.0.0",
+    "fflate": "^0.8.2",
     "html-to-image": "^1.11.11",
     "ini": "^5.0.0",
     "jszip": "^3.10.1",

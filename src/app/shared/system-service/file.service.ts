@@ -26,11 +26,11 @@ import { SessionManagmentService } from "./session.management.service";
 import { SystemNotificationService } from "./system.notification.service";
 
 import { OpensWith } from "src/app/system-files/common.interfaces";
-import JSZip from "jszip";
+import { zipSync, unzipSync } from "fflate";
 import { CommonFunctions } from "src/app/system-files/common.functions";
 import { FileTransferUpdate, FileTransferCopyOptions, FileTransferCount, FileTransferMoveOptions } from "src/app/system-files/file.system.types";
 import { UserNotificationType } from "src/app/system-files/common.enums";
-import { Console } from "console";
+
 @Injectable({
     providedIn: 'root'
 })
@@ -44,6 +44,7 @@ export class FileService implements BaseService{
     private _restorePoint!:Map<string,string>; 
     private _fileDragAndDrop!:FileInfo[];
     private _eventOriginator = Constants.EMPTY_STRING;
+    private _mountedZips:Map<string, string> = new Map<string, string>(); // mountPoint -> srcPath
 
     private _runningProcessService!:RunningProcessService;
     private _processIdService!:ProcessIDService;
@@ -1363,7 +1364,7 @@ OpensWith=${shortCutData.opensWith}
     }
 
     private async deleteEmptyFolders(folders:string[]):Promise<void>{
-        for(let i = 0; i <= folders.length; i++){
+        while(folders.length > 0){
             const path = folders.pop();
             if(path){
                 await this.deleteFolderAsync(path);                    
@@ -1460,22 +1461,37 @@ OpensWith=${shortCutData.opensWith}
         return this.traverseAndSumFolderSize(queue, sizes);
     }
 
-    private async zipEntity(srcPath: string, isDirectory: boolean): Promise<boolean> {
-        const directory = dirname(srcPath);
-        const zipFileName = this.changeExtToZip(this.getNameFromPath(srcPath));
-        const zipFilePath = `${directory}/${zipFileName}`;
+    /**
+     * Compresses a file or folder into a .cab archive and writes it alongside the source.
+     * @param srcPath  Full virtual-filesystem path of the file or folder to zip.
+     * @param isDirectory  true when srcPath points to a folder.
+     * @returns true when the archive was created successfully.
+     */
+    public async zipEntityAsync(srcPath: string, isDirectory: boolean): Promise<boolean> {
+        try {
+            const directory = dirname(srcPath);
+            const zipFileName = this.changeExtToZip(this.getNameFromPath(srcPath));
+            const zipFilePath = `${directory}/${zipFileName}`;
 
-        const zip = new JSZip();
-        const result = isDirectory
-            ? await this.zipEntityHandlerAsync(srcPath, zip)
-            : await this.zipFile(srcPath, zip);
+            const zippable: Record<string, Uint8Array> = {};
+            const result = isDirectory
+                ? await this.collectFolderForZip(srcPath, Constants.EMPTY_STRING, zippable)
+                : await this.collectFileForZip(srcPath, Constants.EMPTY_STRING, zippable);
 
-        if (!result) return false;
+            if (!result) return false;
 
-        const data = await zip.generateAsync({ type: "blob" });
-        const writeResult = await this.writeRawAsync(zipFilePath, data);
+            const zipped = zipSync(zippable, { level: 6 });
+            const writeResult = await this.writeRawAsync(zipFilePath, Buffer.from(zipped));
 
-        return writeResult === 0;
+            if (writeResult === 0) {
+                await this.recalculateUsedStorage();
+                return true;
+            }
+            return false;
+        } catch (err) {
+            console.error('zipEntityAsync error:', err);
+            return false;
+        }
     }
 
     private changeExtToZip(filename: string): string {
@@ -1485,56 +1501,65 @@ OpensWith=${shortCutData.opensWith}
             : `${filename.slice(0, lastDotIndex)}.cab`;
     }
 
-    private async zipFile(srcPath: string, zip: JSZip): Promise<boolean> {
-        const extension = extname(srcPath);
-        const contents = await this.readRawAsync(srcPath); // Returns Uint8Array or null/undefined
-
+    /**
+     * Reads a single file and adds it to the zippable record.
+     * Media files stored as data-URLs are decoded from base64 back to binary.
+     * @param srcPath  Full virtual path of the file.
+     * @param prefix   Relative directory prefix inside the archive (empty for root).
+     * @param out      Accumulator record that fflate's zipSync will consume.
+     */
+    private async collectFileForZip(srcPath: string, prefix: string, out: Record<string, Uint8Array>): Promise<boolean> {
+        const contents = await this.readRawAsync(srcPath);
         if (!contents) return false;
 
         const fileName = this.getNameFromPath(srcPath);
+        const key = prefix ? `${prefix}/${fileName}` : fileName;
+        const extension = extname(srcPath);
 
+        // Media files may be stored as base64 data-URLs; decode them back to binary
         if (Constants.AUDIO_FILE_EXTENSIONS.includes(extension) ||
             Constants.IMAGE_FILE_EXTENSIONS.includes(extension) ||
             Constants.VIDEO_FILE_EXTENSIONS.includes(extension)) {
-            const utf8Data = new TextDecoder("utf-8").decode(contents);
 
-            const isBase64 = this.isDataUrl(utf8Data);
-            const data = isBase64
-                ? utf8Data.split(Constants.COMMA)[1]
-                : contents;
-
-            zip.file(fileName, data, isBase64 ? { base64: true } : { binary: true });
+            const utf8Data = new TextDecoder('utf-8').decode(contents);
+            if (this.isDataUrl(utf8Data)) {
+                const raw = atob(utf8Data.split(Constants.COMMA)[1]);
+                const bytes = new Uint8Array(raw.length);
+                for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+                out[key] = bytes;
+            } else {
+                out[key] = new Uint8Array(contents);
+            }
         } else {
-            zip.file(fileName, contents, { binary: true });
+            out[key] = new Uint8Array(contents);
         }
 
         return true;
     }
 
-    private async zipEntityHandlerAsync(srcPath: string, zip: JSZip): Promise<boolean> {
+    /**
+     * Recursively collects every file inside a folder tree into a flat
+     * `Record<string, Uint8Array>` keyed by relative path, ready for fflate's `zipSync`.
+     */
+    private async collectFolderForZip(srcPath: string, prefix: string, out: Record<string, Uint8Array>): Promise<boolean> {
         const entries = await this.readDirectory(srcPath);
+        const folderName = this.getNameFromPath(srcPath);
+        const currentPrefix = prefix ? `${prefix}/${folderName}` : folderName;
 
         for (const entry of entries) {
             const entryPath = `${srcPath}/${entry}`;
             const isDir = await this.isDirectory(entryPath);
-            const entryName = this.getNameFromPath(entryPath);
 
             if (isDir) {
-                const subfolder = zip.folder(entryName);
-                if (!subfolder) {
-                    console.error(`Failed to create subfolder in zip: ${entryPath}`);
-                    return false;
-                }
-
-                const success = await this.zipEntityHandlerAsync(entryPath, subfolder);
+                const success = await this.collectFolderForZip(entryPath, currentPrefix, out);
                 if (!success) {
-                    console.error(`Failed to zip directory: ${entryPath}`);
+                    console.error(`Failed to collect directory for zip: ${entryPath}`);
                     return false;
                 }
             } else {
-                const success = await this.zipFile(entryPath, zip);
+                const success = await this.collectFileForZip(entryPath, currentPrefix, out);
                 if (!success) {
-                    console.error(`Failed to zip file: ${entryPath}`);
+                    console.error(`Failed to collect file for zip: ${entryPath}`);
                     return false;
                 }
             }
@@ -1543,20 +1568,170 @@ OpensWith=${shortCutData.opensWith}
         return true;
     }
 
-    // private async zipFolder(srcPath:string, zip:JSZip): Promise<boolean>{
+    /**
+     * Extracts a .cab / .zip archive into the same directory, creating a folder
+     * named after the archive (minus extension).
+     * @param srcPath  Full virtual-filesystem path of the archive.
+     * @returns true when extraction completed successfully.
+     */
+    public async unzipEntityAsync(srcPath: string): Promise<boolean> {
+        try {
+            const zipBuffer = await this.readRawAsync(srcPath);
+            if (!zipBuffer) {
+                console.error('unzipEntityAsync: could not read archive:', srcPath);
+                return false;
+            }
 
-    // }
+            const decompressed = unzipSync(new Uint8Array(zipBuffer));
+            const parentDir = dirname(srcPath);
+            const folderName = basename(srcPath, extname(srcPath));
 
-    private async unZipEntity(srcPath: string): Promise<void>{
-        const zipFile = await this.readRawAsync(srcPath);
-        
-        if(zipFile){
-            const zip = await JSZip.loadAsync(zipFile); // zipFile is a Blob or ArrayBuffer
+            // Create root extraction folder
+            const createResult = await this.createFolderAsync(parentDir, folderName);
+            if (!createResult) {
+                console.error('unzipEntityAsync: could not create extraction folder');
+                return false;
+            }
 
-            const file = zip.file('hello.txt');
-            // const content = await file.async('text');
-            // console.log(content);
+            const extractionRoot = `${parentDir}/${folderName}`;
+
+            for (const [relativePath, data] of Object.entries(decompressed)) {
+                // Skip directory-only entries (fflate marks them with a trailing /)
+                if (relativePath.endsWith(Constants.ROOT)) {
+                    const dirPath = `${extractionRoot}/${relativePath.slice(0, -1)}`;
+                    await this.createNestedFolders(dirPath);
+                    continue;
+                }
+
+                // Ensure parent directories exist
+                const entryDir = dirname(`${extractionRoot}/${relativePath}`);
+                await this.createNestedFolders(entryDir);
+
+                // Write the file
+                const destPath = `${extractionRoot}/${relativePath}`;
+                const writeResult = await this.writeRawAsync(destPath, Buffer.from(data));
+                if (writeResult !== 0) {
+                    console.error(`unzipEntityAsync: failed to write: ${destPath}`);
+                    return false;
+                }
+            }
+
+            await this.recalculateUsedStorage();
+            return true;
+        } catch (err) {
+            console.error('unzipEntityAsync error:', err);
+            return false;
         }
+    }
+
+    /**
+     * Mounts a zip/cab archive as a read-only virtual folder using BrowserFS ZipFS.
+     * The archive is accessible at `<parentDir>/<archiveName>` (extension stripped).
+     * @param srcPath  Full virtual-filesystem path of the archive.
+     * @returns The mount point path, or empty string on failure.
+     */
+    public async mountZipAsync(srcPath: string): Promise<string> {
+        try {
+            const zipBuffer = await this.readRawAsync(srcPath);
+            if (!zipBuffer) {
+                console.error('mountZipAsync: could not read archive:', srcPath);
+                return Constants.EMPTY_STRING;
+            }
+
+            const parentDir = dirname(srcPath);
+            const archiveName = basename(srcPath, extname(srcPath));
+            const mountPoint = `${parentDir}/${archiveName}`;
+
+            // Prevent double-mount
+            if (this._mountedZips.has(mountPoint)) {
+                console.warn('mountZipAsync: already mounted at', mountPoint);
+                return mountPoint;
+            }
+
+            const rootFS = this._fileSystem.getRootFS() as any;
+            if (!rootFS || typeof rootFS.mount !== 'function') {
+                console.error('mountZipAsync: root FS is not a MountableFileSystem');
+                return Constants.EMPTY_STRING;
+            }
+
+            return new Promise<string>((resolve) => {
+                BrowserFS.FileSystem.ZipFS.Create({ zipData: Buffer.from(zipBuffer), name: archiveName }, (err: any, zipFs: any) => {
+                    if (err || !zipFs) {
+                        console.error('mountZipAsync: ZipFS.Create failed:', err);
+                        resolve(Constants.EMPTY_STRING);
+                        return;
+                    }
+
+                    try {
+                        rootFS.mount(mountPoint, zipFs);
+                        this._mountedZips.set(mountPoint, srcPath);
+                        resolve(mountPoint);
+                    } catch (mountErr) {
+                        console.error('mountZipAsync: mount failed:', mountErr);
+                        resolve(Constants.EMPTY_STRING);
+                    }
+                });
+            });
+        } catch (err) {
+            console.error('mountZipAsync error:', err);
+            return Constants.EMPTY_STRING;
+        }
+    }
+
+    /**
+     * Unmounts a previously mounted zip archive.
+     * @param mountPoint  The mount point returned by mountZipAsync.
+     * @returns true if unmounted successfully.
+     */
+    public unmountZip(mountPoint: string): boolean {
+        try {
+            if (!this._mountedZips.has(mountPoint)) {
+                console.warn('unmountZip: not mounted:', mountPoint);
+                return false;
+            }
+
+            const rootFS = this._fileSystem.getRootFS() as any;
+            if (!rootFS || typeof rootFS.umount !== 'function') {
+                console.error('unmountZip: root FS is not a MountableFileSystem');
+                return false;
+            }
+
+            rootFS.umount(mountPoint);
+            this._mountedZips.delete(mountPoint);
+            return true;
+        } catch (err) {
+            console.error('unmountZip error:', err);
+            return false;
+        }
+    }
+
+    /**
+     * Returns true when the given mount point has a zip archive mounted.
+     */
+    public isZipMounted(mountPoint: string): boolean {
+        return this._mountedZips.has(mountPoint);
+    }
+
+    /**
+     * Recursively creates folders for a given path if they don't already exist.
+     * e.g. "/a/b/c/d" will create /a, /a/b, /a/b/c, /a/b/c/d as needed.
+     */
+    private async createNestedFolders(folderPath: string): Promise<boolean> {
+        const parts = folderPath.split(Constants.ROOT).filter(p => p.length > 0);
+        let current = Constants.EMPTY_STRING;
+
+        for (const part of parts) {
+            current = `${current}/${part}`;
+            const exists = await this.exists(current);
+            if (!exists) {
+                const result = await this.createFolderRawAsync(current);
+                if (result === 2) { // error (not "already exists")
+                    console.error(`createNestedFolders: failed to create ${current}`);
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 
