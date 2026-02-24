@@ -327,6 +327,7 @@ var UnlockedOverlayFS = (function (_super) {
             if (err && err.errno === api_error_1.ErrorCode.ENOENT) {
                 if (_this._deletedFiles[p]) {
                     cb(api_error_1.ApiError.ENOENT(p));
+                    return;
                 }
                 _this._readable.stat(p, isLstat, function (err, stat) {
                     if (stat) {

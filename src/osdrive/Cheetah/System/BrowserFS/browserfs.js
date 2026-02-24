@@ -10965,6 +10965,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (err && err.errno === ErrorCode.ENOENT) {
 	                if (this$1._deletedFiles[p]) {
 	                    cb(ApiError.ENOENT(p));
+	                    return;
 	                }
 	                this$1._readable.stat(p, isLstat, function (err, stat) {
 	                    if (stat) {
