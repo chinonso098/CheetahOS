@@ -27,7 +27,7 @@ export class SocketService implements BaseService {
 
   constructor(processIDService: ProcessIDService, runningProcessService: RunningProcessService) {
     //this.socket = io('http://chinonsosnas.local:3000');
-    this.socket = io('http://localhost:3000', {
+    this.socket = io('http://18.117.88.37:3000', {
       transports: ['websocket', 'polling'], // safe default; socket.io decides best
       autoConnect: true,
     });
