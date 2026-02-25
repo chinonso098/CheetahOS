@@ -1103,7 +1103,7 @@ export class FileService implements BaseService{
         let destinationPath = Constants.EMPTY_STRING;
         if (generatePath === undefined || generatePath){
             const fileName = (isRecycleBin)
-                ? this.appendToFileName(this.getNameFromPath(srcPath), "_rst") 
+                ? this.getNameFromPath(srcPath) //this.appendToFileName(this.getNameFromPath(srcPath), "_rst") 
                 : this.getNameFromPath(srcPath);
 
             destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
@@ -1538,8 +1538,8 @@ OpensWith=${shortCutData.opensWith}
     private changeExtToZip(filename: string): string {
         const lastDotIndex = filename.lastIndexOf(Constants.DOT);
         return lastDotIndex === -1
-            ? `${filename}.cab`
-            : `${filename.slice(0, lastDotIndex)}.cab`;
+            ? `${filename}.zip`
+            : `${filename.slice(0, lastDotIndex)}.zip`;
     }
 
     /**

@@ -209,7 +209,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     {icon:Constants.EMPTY_STRING, label: 'Pin to Quick access', action: this.doNothing.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Open in Terminal', action: this.doNothing.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Pin to Start', action: this.doNothing.bind(this) },
-    //{icon:Constants.EMPTY_STRING, label: 'Send to', action: this.doNothing.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Send to Zip', action: this.onZip.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Mount', action: this.onMountZipFile.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Cut', action: this.onCut.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Copy', action: this.onCopy.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Create shortcut', action: this.createShortCut.bind(this) },
@@ -244,6 +245,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   markedBtnIds:string[] = [];
   movedBtnIds:string[] = [];
+
+  mounthPath:string = Constants.EMPTY_STRING;
 
   icon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
   navPathIcon = `${Constants.IMAGE_BASE_PATH}this_pc.png`;
@@ -1899,6 +1902,29 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+  async onZip(): Promise<void>{
+    const srcPath = this.selectedFile.getCurrentPath;
+    const isDir = !this.selectedFile.getIsFile;
+    const delay = 50; //50ms
+
+    const result = await this._fileService.zipEntityAsync(srcPath, isDir);
+    if(result){
+      await CommonFunctions.sleep(delay);
+      this.refresh();
+    }
+  }
+
+  async onMountZipFile(): Promise<void>{
+    const srcPath = this.selectedFile.getCurrentPath;
+    const delay = 50; //50ms
+
+    const result = await this._fileService.mountZipAsync(srcPath);
+    if(result){
+      await CommonFunctions.sleep(delay);
+      this.refresh();
+    }
+  }
+
   onCopy():void{
     const action = MenuAction.COPY;
     const path = this.selectedFile.getCurrentPath;
@@ -2038,7 +2064,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   onDragEnd(evt:any):void{
-
     this.isDragFromFileExplorerActive = false;
   }
 
