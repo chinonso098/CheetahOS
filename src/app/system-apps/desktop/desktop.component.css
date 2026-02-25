@@ -160,9 +160,17 @@
     font-family: sans-serif;
 }
 
-.desktopIcon-img-section {
+/* .desktopIcon-img-section {
     margin-bottom: -2px; 
     place-items:center;
+    display: block;
+    margin: 0 auto;
+    position: relative;
+} */
+
+
+.desktopIcon-img-section {
+    width: fit-content;
     display: block;
     margin: 0 auto;
     position: relative;
