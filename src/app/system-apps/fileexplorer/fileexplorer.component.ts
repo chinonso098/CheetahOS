@@ -589,7 +589,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // this works for cases when i click go back in file explorer
     // If i change my mind and click forward, the mountPath has already been cleared
     if(this.mounthPath !== Constants.EMPTY_STRING  &&  !targetPath.includes(this.mounthPath)){
-        this.mounthPath = Constants.EMPTY_STRING
+        this._fileService.unmountZip(this.mounthPath);
+        this.mounthPath = Constants.EMPTY_STRING;
     }
 
     const next = this.normalizePath(targetPath);
