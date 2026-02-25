@@ -129,6 +129,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   selectFilesSizeSum = Constants.EMPTY_STRING;
   selectFilesSizeUnit = Constants.EMPTY_STRING;
 
+  readonly ZIP = '.zip';
   readonly ROOT = Constants.ROOT;
   readonly THIS_PC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
   readonly EMPTY_STRING = Constants.EMPTY_STRING
@@ -361,6 +362,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   ngOnDestroy(): void {
+    if(this.mounthPath !== Constants.EMPTY_STRING)
+      this._fileService.unmountZip(this.mounthPath);
+
     this._systemNotificationService.removeAppIconNotication(this.processId);
     this._viewByNotifySub?.unsubscribe();
     this._sortByNotifySub?.unsubscribe();
@@ -580,7 +584,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.upNavBtnStyle = { fill: this.isUpBtnActive ? '#fff' : '#ccc' };
   }
 
-  private async navigateTo(targetPath: string, kind: string): Promise<void> {
+  private async navigateTo(targetPath: string, kind: string): Promise<void>{
+
+    // this works for cases when i click go back in file explorer
+    // If i change my mind and click forward, the mountPath has already been cleared
+    if(this.mounthPath !== Constants.EMPTY_STRING  &&  !targetPath.includes(this.mounthPath)){
+        this.mounthPath = Constants.EMPTY_STRING
+    }
+
     const next = this.normalizePath(targetPath);
     const cur  = this.normalizePath(this.directory);
 
@@ -727,15 +738,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // Create a new array for the updated treeData
     const updatedTreeData: FileTreeNode[] = [];
 
-    for (let i = 0; i < treeData.length; i++) {
+    for(let i = 0; i < treeData.length; i++){
       const node = treeData[i];
       const updatedNode: FileTreeNode = { name: node.name, path: node.path, isFolder: node.isFolder, children: node.children || [] };
 
       // If the current node matches the nodeName, add the new children
-      if (node.path === nodePath) {
-        for(const child of newChildren){
-          updatedNode.children.push(child)
-        }
+      if(node.path === nodePath){
+        for(const child of newChildren)
+          updatedNode.children.push(child);
       }
 
       // If the node has children, recursively call this function on the children
@@ -758,6 +768,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const fileName = data[0];
     const rawPath = data[1];
 
+    if(this.mounthPath !== Constants.EMPTY_STRING){
+      this._fileService.unmountZip(this.mounthPath);
+      this.mounthPath = Constants.EMPTY_STRING;
+    }
+
+
     // Resolve "special" paths to a real directory target
     const isSpecialRoot = (rawPath === thisPC || rawPath === quickAccess);
     const targetDir = isSpecialRoot ? Constants.ROOT : rawPath;
@@ -766,7 +782,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const curDir = this.directory;
 
     // Only add to back stack if this is a true navigation to a different target
-    if (targetDir !== curDir) {
+    if(targetDir !== curDir){
       this.prevPathEntries.push(curDir);
       this.nextPathEntries = []; // new branch => forward is invalid
     }
@@ -778,14 +794,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // fileTreeNavToPath appears to be a "highlight in tree" target
     this.fileTreeNavToPath = (rawPath === Constants.ROOT) ? Constants.EMPTY_STRING : rawPath;
 
-    if (rawPath === Constants.ROOT) {
+    if(rawPath === Constants.ROOT)
       this.fileTreeNavToPath = Constants.EMPTY_STRING;
-    } 
+     
     // --- Apply navigation ---
     this.directory = targetDir;
 
     // --- Icon ---
-    if (rawPath === `/Users/${fileName}`) {
+    if(rawPath === `/Users/${fileName}`){
       this.icon = `${Constants.IMAGE_BASE_PATH}${fileName.toLocaleLowerCase()}_folder.png`;
     } else {
       this.icon = `${Constants.IMAGE_BASE_PATH}folder.png`;
@@ -1145,8 +1161,26 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       return;
     }
 
+    const isFolder = (file.getOpensWith === Constants.FILE_EXPLORER 
+      && file.getFileName !== Constants.FILE_EXPLORER) 
+      && file.getFileType === Constants.FOLDER;
+
+    const isZipFile = (file.getOpensWith === Constants.FILE_EXPLORER 
+      && file.getFileType === this.ZIP)
+
     // console.log('what was clicked:',file.getFileName +'-----' + file.getOpensWith +'---'+ file.getCurrentPath +'----'+ file.getIcon) TBD
-    if((file.getOpensWith === Constants.FILE_EXPLORER && file.getFileName !== Constants.FILE_EXPLORER) && file.getFileType === Constants.FOLDER){
+    if(isFolder || isZipFile){
+      //Check if i am in the mouth path. If i am, then do not un-mount
+      if((isFolder && this.mounthPath !== Constants.EMPTY_STRING) && !this.directory.includes(this.mounthPath)){
+        this._fileService.unmountZip(this.mounthPath);
+        this.mounthPath = Constants.EMPTY_STRING;
+      }
+
+      if(isZipFile && this.mounthPath === Constants.EMPTY_STRING){
+        const mountPath = await this.getZipFileMountPath(file.getCurrentPath);
+        this.directory = mountPath; this.mounthPath = mountPath;
+      }
+
       if(!this.isNavigatedBefore){
         this.prevPathEntries.push(this.directory);
         this.upPathEntries.push(this.directory);
@@ -1175,7 +1209,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
       await this.loadFiles();
       await CommonFunctions.sleep(this.SECONDS_DELAY[4])
-      this.captureComponentImg(); 
+      this.captureComponentImg();
+      
+      return;
     }else{
       //APPS opened from the fileexplore do not have their windows in focus,
       // and this is due to the mouse click event that causes fileexplorer to trigger setFocusOnWindow event
@@ -1914,17 +1950,25 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+  async getZipFileMountPath(srcPath:string): Promise<string>{
+    const mountPath = await this._fileService.mountZipAsync(srcPath);
+    if(mountPath) return mountPath;
+    
+    return Constants.EMPTY_STRING;
+  }
+
   async onMountZipFile(): Promise<void>{
     const srcPath = this.selectedFile.getCurrentPath;
     const delay = 50; //50ms
 
-    const path = await this._fileService.mountZipAsync(srcPath);
-    if(path){
+    const mountPath = await this._fileService.mountZipAsync(srcPath);
+    if(mountPath){
       await CommonFunctions.sleep(delay);
       //this.refresh();
 
-      console.log('mount path:', path);
-      this.directory = path;
+      console.log('mount path:', mountPath);
+      this.directory = mountPath;
+      this.mounthPath = mountPath;
 
       this.displayName = this.selectedFile.getFileName;
       this.icon = this.selectedFile.getIconPath;
@@ -1937,7 +1981,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       this.generateBreadCrumbs();
-      this.setNavPathIcon(this.selectedFile.getFileName, path);
+      this.setNavPathIcon(this.selectedFile.getFileName, mountPath);
       //this.storeAppState(file.getCurrentPath);
   
       await this.loadFiles();
@@ -2335,16 +2379,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   resetSearchIconHiglight():void{
-
     if(this.isSearchBoxNotEmpty){
-      this.searchStyle = {
-        'background-color': 'blue',
-      }
+      this.searchStyle = { 'background-color': 'blue'}
     }else{
-      this.searchStyle = {
-        'background-color': '#191919',
-      }
-
+      this.searchStyle = { 'background-color': '#191919'}
       this.onSearchIconHover = false;
     }
   }
@@ -2354,8 +2392,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   isFormDirty(): void {
-    if (this.renameForm.dirty == true){
-        this.onRenameFileTxtBoxDataSave();
+    if(this.renameForm.dirty == true){
+      this.onRenameFileTxtBoxDataSave();
   
     }else if(this.renameForm.dirty == false){
       this.renameFileTriggerCnt ++;

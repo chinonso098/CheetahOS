@@ -648,7 +648,7 @@ export class FileService implements BaseService{
 			'.jsdos': { fileType: cleanedExt, appName: 'jsdos', appIcon: 'js-dos_file.png' },
 			'.swf': { fileType: cleanedExt, appName: 'ruffle', appIcon: 'swf_file.png' },
 			'.pdf': { fileType: cleanedExt, appName: 'pdfviewer', appIcon: 'pdf_file.png' },
-            '.zip': { fileType: cleanedExt, appName: 'fileexlporer', appIcon: 'zip_file.png' },
+            '.zip': { fileType: cleanedExt, appName: 'fileexplorer', appIcon: 'zip_file.png' },
 		};
 
 		if (Constants.KNOWN_FILE_EXTENSIONS.includes(extension) && knownFileHandlers[extension]) {
@@ -1667,7 +1667,8 @@ OpensWith=${shortCutData.opensWith}
 
     /**
      * Mounts a zip/cab archive as a read-only virtual folder using BrowserFS ZipFS.
-     * The archive is accessible at `<parentDir>/<archiveName>` (extension stripped).
+     * The archive becomes browsable at its own path (e.g. navigating into
+     * `/Users/Documents/Flash-Games.zip` lists the archive contents as a directory).
      * @param srcPath  Full virtual-filesystem path of the archive.
      * @returns The mount point path, or empty string on failure.
      */
@@ -1679,9 +1680,10 @@ OpensWith=${shortCutData.opensWith}
                 return Constants.EMPTY_STRING;
             }
 
-            const parentDir = dirname(srcPath);
             const archiveName = basename(srcPath, extname(srcPath));
-            const mountPoint = `${parentDir}/${archiveName}`;
+            // Mount at the archive's own path so it behaves like a folder
+            // without creating a separate directory that looks like an extraction.
+            const mountPoint = srcPath;
 
             // Prevent double-mount
             if (this._mountedZips.has(mountPoint)) {
