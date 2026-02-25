@@ -1848,7 +1848,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     if(this.confirmDelete && this.markedBtnIds.length === 1){
       const msg = Constants.EMPTY_STRING;
-      const title = this.selectedFile.getIsFile && this.selectedFile.getFileType === Constants.URL
+      const title = (this.selectedFile.getIsFile && this.selectedFile.getFileType === Constants.URL)
       ? 'Delete Shortcut'
       : `Delete ${this.selectedFile.getIsFile ? 'File' : 'Folder'}`;
     

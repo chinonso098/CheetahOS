@@ -31,6 +31,7 @@ import { CommonFunctions } from "src/app/system-files/common.functions";
 import { FileTransferUpdate, FileTransferCopyOptions, FileTransferCount, FileTransferMoveOptions } from "src/app/system-files/file.system.types";
 import { UserNotificationType } from "src/app/system-files/common.enums";
 
+
 @Injectable({
     providedIn: 'root'
 })
@@ -71,6 +72,8 @@ export class FileService implements BaseService{
 
     // Concurrency limit (adjust as needed)
     private readonly CONCURRENCY_LIMIT = 4;
+    // Maximum number of retries when generating unique file/folder names
+    private readonly MAX_DUPLICATE_RETRIES = 10;
 
     name = 'file_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -340,7 +343,7 @@ export class FileService implements BaseService{
     }
 
     public async createFolderAsync(directory: string, folderName: string): Promise<boolean> {
-        const folderPath = `${directory}/${folderName}`;
+        const folderPath = `${directory}/${folderName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
         const result =  await this.createFolderHandlerAsync(folderPath);
 
         if(result){
@@ -373,19 +376,29 @@ export class FileService implements BaseService{
 
         if (createResult === 1) {
             this._isDuplicate = true;
-            const uniqueFolderPath = this.IncrementFileName(folderPath);
-            const retryResult = await this.createFolderRawAsync(uniqueFolderPath);
 
-            if (retryResult === 0) {
-                this._generatedName = uniqueFolderPath;
-                // Folder created successfully after name iteration
-                this._fileExistsMap.set(uniqueFolderPath, String(0));
-                this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
-                return true;
-            } else {
-                console.error(`createFolderAsync Iterate Error`);
-                return false;
+            for (let attempt = 0; attempt < this.MAX_DUPLICATE_RETRIES; attempt++) {
+                const uniqueFolderPath = this.IncrementFileName(folderPath).replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+                const retryResult = await this.createFolderRawAsync(uniqueFolderPath);
+
+                if (retryResult === 0) {
+                    this._generatedName = uniqueFolderPath;
+                    // Folder created successfully after name iteration
+                    this._fileExistsMap.set(uniqueFolderPath, String(0));
+                    this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
+                    return true;
+                }
+
+                if (retryResult !== 1) {
+                    // Non-duplicate error, abort
+                    console.error(`createFolderAsync: unexpected error on retry ${attempt + 1}`);
+                    return false;
+                }
+                // retryResult === 1 means this name also exists, try next
             }
+
+            console.error(`createFolderAsync: exceeded ${this.MAX_DUPLICATE_RETRIES} retries`);
+            return false;
         }
 
         // Other errors
@@ -417,6 +430,18 @@ export class FileService implements BaseService{
         });
     }
 
+    private async updateAccessTimeAsync(path: string, mtime: Date): Promise<void> {
+        return new Promise<void>((resolve) => {
+            const now = new Date();
+            this._fileSystem.utimes(path, now, mtime, (err) => {
+                if (err) {
+                    console.error('updateAccessTimeAsync error:', err);
+                }
+                resolve();
+            });
+        });
+    }
+
     public async geFileMetaData(path: string): Promise<FileMetaData> {
         return new Promise((resolve) =>{
             this._fileSystem.exists(path, (exits)=>{
@@ -430,7 +455,7 @@ export class FileService implements BaseService{
                         console.error('getExtraFileMetaDataAsync error:',err)
                         resolve(new FileMetaData());
                     }
-                    resolve(new FileMetaData(stats?.atime, stats?.birthtime, stats?.mtime, stats?.size, stats?.blksize, stats?.mode, stats?.isDirectory()));
+                    resolve(new FileMetaData(stats?.atime, stats?.ctime, stats?.mtime, stats?.size, stats?.blksize, stats?.mode, stats?.isDirectory()));
                 });
            });
         });
@@ -544,6 +569,8 @@ export class FileService implements BaseService{
 		const isFile = true;
         const extension = extname(path);
         const fileMetaData = await this.geFileMetaData(path);
+        //await this.updateAccessTimeAsync(path, fileMetaData.getModifiedDate); //##.
+        fileMetaData.setAccessDate = new Date();
         
         if(!extension){
             const fc = await this.setOtherFolderProps(path, fileMetaData.getIsDirectory) as FileContent;
@@ -835,7 +862,7 @@ export class FileService implements BaseService{
         }
 
         const result = await this.createFolderAsync(directoryPath, newName);
-        if(!result){ return result }
+        if(!result) return result;
 
         this.abortController = new AbortController();
         const signal = this.abortController.signal;
@@ -1129,7 +1156,6 @@ export class FileService implements BaseService{
     private async writeRawHandlerAsync(destPath:string, cntnt:any):Promise<boolean>{
         const writeResult = await this.writeRawAsync(destPath, cntnt, 'wx');
         if(writeResult === 0){
-            // console.log('writeFileAsync: file successfully written');
             this._fileExistsMap.set(destPath, String(0));
             this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
 
@@ -1138,25 +1164,34 @@ export class FileService implements BaseService{
         }
 
         if(writeResult === 1){
-            console.warn('writeFileAsync: file already exists');
+            console.warn('writeRawHandlerAsync: file already exists, generating unique name');
             this._isDuplicate = true;
-            const newFileName = this.IncrementFileName(destPath);
-            const writeRetry = await this.writeRawAsync(newFileName, cntnt, 'wx');
 
-            if(writeRetry === 0){
-                // console.log('writeFileAsync: file successfully written');
-                this._fileExistsMap.set(newFileName, String(0));
-                this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
-                this._generatedName = newFileName;
-                await this.recalculateUsedStorage();
-                return true;
-            }else{
-                console.error('writeFileAsync Iterate Error:',);
-                return false;
+            for (let attempt = 0; attempt < this.MAX_DUPLICATE_RETRIES; attempt++) {
+                const newFileName = this.IncrementFileName(destPath);
+                const writeRetry = await this.writeRawAsync(newFileName, cntnt, 'wx');
+
+                if(writeRetry === 0){
+                    this._fileExistsMap.set(newFileName, String(0));
+                    this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
+                    this._generatedName = newFileName;
+                    await this.recalculateUsedStorage();
+                    return true;
+                }
+
+                if (writeRetry !== 1) {
+                    // Non-duplicate error, abort
+                    console.error(`writeRawHandlerAsync: unexpected error on retry ${attempt + 1}`);
+                    return false;
+                }
+                // writeRetry === 1 means this name also exists, try next
             }
-        }
-        else
+
+            console.error(`writeRawHandlerAsync: exceeded ${this.MAX_DUPLICATE_RETRIES} retries`);
             return false;
+        }
+
+        return false;
     }
 
     public async writeFilesAsync(directory: string, files: File[]): Promise<boolean> {
@@ -1199,12 +1234,14 @@ export class FileService implements BaseService{
 
     public async writeFileAsync(path:string, file:FileInfo):Promise<boolean>{
         const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
-        const destPath = `${this.pathCorrection(path)}/${file.getFileName}`;
+        const destPath = `${this.pathCorrection(path)}/${file.getFileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
 
         const result =  await this.writeRawHandlerAsync(destPath, cntnt);
         if(result){
             const isFile = true;
-            const fPath = (this._isDuplicate) ? `${this.pathCorrection(path)}/${this._generatedName}` : destPath;
+            const fPath = (this._isDuplicate) 
+            ? `${this.pathCorrection(path)}/${this._generatedName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT) 
+            : destPath;
             await  this._fileIndexerService.addNotify(fPath, isFile);
 
             this._isDuplicate = false;
@@ -1215,7 +1252,7 @@ export class FileService implements BaseService{
     }
 
     public async renameAsync(path:string, newFileName:string, isFile?:boolean): Promise<boolean> {
-        const rename = `${dirname(path)}/${newFileName}`;
+        const rename = `${dirname(path)}/${newFileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
         const isDirectory = (isFile === undefined) ? await this.isDirectory(path) : !isFile;
 
         return isDirectory
@@ -1271,13 +1308,17 @@ OpensWith=${shortCutData.opensWith}
         const sendToRecycleBin = this.getMoveToRecycleBinState();
         if(!path.includes(Constants.RECYCLE_BIN_PATH) && sendToRecycleBin){
             const name = this.getNameFromPath(path);
-            this._restorePoint.set(`${Constants.RECYCLE_BIN_PATH}/${name}`, path);
-            this.addAndUpdateSessionData(this.fileServiceRestoreKey, this._restorePoint);
 
-            this.DecrementFileName(path);
-            this.removeAndUpdateSessionData(this.fileServiceIterateKey, path, this._fileExistsMap);
-            //move to rbin
-            return await this.moveAsync(path, Constants.RECYCLE_BIN_PATH, isFile);
+            // Move first — only update map/session on success.
+            // DecrementFileName is already called inside moveAsync → deleteFileAsync,
+            // so calling it here would cause a double-decrement bug.
+            const moveResult = await this.moveAsync(path, Constants.RECYCLE_BIN_PATH, isFile);
+            if (moveResult) {
+                this._restorePoint.set(`${Constants.RECYCLE_BIN_PATH}/${name}`, path);
+                this.addAndUpdateSessionData(this.fileServiceRestoreKey, this._restorePoint);
+                this.persistIterateMapToSession();
+            }
+            return moveResult;
         }else{
             this.removeAndUpdateSessionData(this.fileServiceRestoreKey, path, this._restorePoint);
             const isDirectory = (isFile === undefined) ? await this.isDirectory(path) : !isFile;
@@ -1748,31 +1789,65 @@ OpensWith=${shortCutData.opensWith}
     }
 
     /**
-     *if file exists, increment it simple.txt, simple(1).txt ... 
-     * @param path 
-     * @returns 
+     * If a file/folder already exists, generates a unique name by appending a counter.
+     * e.g. simple.txt → simple (1).txt → simple (2).txt
+     *
+     * The counter is tracked per original path in `_fileExistsMap`.
+     * @param path - The original file or folder path.
+     * @returns The new unique path with an incremented counter suffix.
      */
     public IncrementFileName(path:string):string{
         const extension = extname(path);
         const filename = basename(path, extension);
 
         let count = Number(this._fileExistsMap.get(path) ?? 0);
-        count = count + 1;
+        if (isNaN(count) || count < 0) count = 0;
+        count += 1;
         this._fileExistsMap.set(path, String(count));
 
         return `${dirname(path)}/${filename} (${count})${extension}`;
     }
 
+    /**
+     * Decrements the duplicate counter for a file/folder path.
+     * If the path is a generated duplicate (e.g. "name (2).txt"), the counter
+     * on the original base path ("name.txt") is decremented instead, and the
+     * generated entry is cleaned up.
+     * @param path - The file or folder path being removed.
+     */
     public DecrementFileName(path:string):void{
+        // Resolve the base path if this is a generated duplicate name
+        const originalPath = this.getOriginalPathFromGenerated(path);
+        const targetPath = originalPath ?? path;
 
-        let count  = Number(this._fileExistsMap.get(path) ?? 0);
+        let count = Number(this._fileExistsMap.get(targetPath) ?? 0);
+        if (isNaN(count)) count = 0;
+
         if(count > 0){
-            count = count - 1;
-            this._fileExistsMap.set(path, String(count));
+            count -= 1;
+            this._fileExistsMap.set(targetPath, String(count));
         }else{
-            if(this._fileExistsMap.get(path))
-                this._fileExistsMap.delete(path);
+            // Counter is already 0 — remove the entry entirely
+            this._fileExistsMap.delete(targetPath);
         }
+
+        // Also clean up the generated path's own entry if it differs from the target
+        if(originalPath && this._fileExistsMap.has(path)){
+            this._fileExistsMap.delete(path);
+        }
+    }
+
+    /**
+     * Extracts the original (non-generated) path from a duplicate filename.
+     * e.g. "/dir/name (2).txt" → "/dir/name.txt",  "/dir/Folder (1)" → "/dir/Folder"
+     * @returns The original path, or null if the path does not match the generated pattern.
+     */
+    private getOriginalPathFromGenerated(path: string): string | null {
+        const extension = extname(path);
+        const filename = basename(path, extension);
+        const match = filename.match(/^(.+)\s\(\d+\)$/);
+        if (!match) return null;
+        return `${dirname(path)}/${match[1]}${extension}`;
     }
 
     private addAppAssociaton(appname:string, img:string):void{
@@ -1939,22 +2014,40 @@ OpensWith=${shortCutData.opensWith}
     }
 
     private removeAndUpdateSessionData(key:string, path:string, map:Map<string, string>):void{
-        if(key === this.fileServiceRestoreKey && map.has(path)){
+        if(map.has(path)){
             map.delete(path);
-            this._sessionManagmentService.addMapBasedSession(key, map);
-        }else{
-            this._sessionManagmentService.addMapBasedSession(key, map);
         }
+        this._sessionManagmentService.addMapBasedSession(key, map);
+    }
+
+    /**
+     * Persists the current state of `_fileExistsMap` to session storage
+     * without modifying any entries.
+     */
+    private persistIterateMapToSession():void{
+        this._sessionManagmentService.addMapBasedSession(this.fileServiceIterateKey, this._fileExistsMap);
     }
 
     private retrievePastSessionData(key:string):void{
         const sessionData = this._sessionManagmentService.getMapBasedSession(key) as Map<string, string>;
         console.log(`${key} sessionData:`, sessionData);
-        if(sessionData){
-            if(key === this.fileServiceRestoreKey)
-                this._restorePoint = sessionData;
-            else
-                this._fileExistsMap = sessionData;
+
+        if(!sessionData || !(sessionData instanceof Map)){
+            return;
+        }
+
+        if(key === this.fileServiceRestoreKey){
+            this._restorePoint = sessionData;
+        }else{
+            // Sanitize: drop entries with non-numeric or negative values
+            for(const [k, v] of sessionData){
+                const num = Number(v);
+                if(isNaN(num) || num < 0){
+                    console.warn(`retrievePastSessionData: dropping invalid entry [${k}]=${v}`);
+                    sessionData.delete(k);
+                }
+            }
+            this._fileExistsMap = sessionData;
         }
     }
 
