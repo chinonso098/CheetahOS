@@ -1368,12 +1368,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   adjustIconContextMenuData(file:FileInfo):void{
     this.menuData = [];
     const editNotAllowed:string[] = ['3D-Objects.url', 'Desktop.url', 'Documents.url', 'Downloads.url', 'Games.url', 'Music.url', 'Pictures.url', 'Videos.url'];
-
+    const isZipFile = (file.getFileExtension === '.zip');
+    
    if(file.getIsFile){
       if(editNotAllowed.includes(file.getCurrentPath.replace(Constants.ROOT, Constants.EMPTY_STRING))){
         this.menuOrder = Constants.FILE_EXPLORER_UNIQUE_MENU_ORDER;
         for(const x of this.sourceData) {
-          if(x.label === 'Cut' || x.label === 'Delete' || x.label === 'Rename'){ /*nothing*/}
+          if(x.label === 'Cut' || x.label === 'Delete' || x.label === 'Rename' || x.label === 'Mount'){ /*nothing*/}
           else{
             this.menuData.push(x);
           }
@@ -1388,10 +1389,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }else{
         //files can not be opened in terminal, pinned to start, opened in new window, pin to Quick access
         this.menuOrder = Constants.FILE_EXPLORER_FILE_MENU_ORDER;
-        for(const x of this.sourceData) {
-          if(x.label === 'Open in Terminal' || x.label === 'Pin to Quick access' || x.label === 'Open in new window' || x.label === 'Pin to Start' || x.label === 'Restore'){ /*nothing*/}
+        for(const x of this.sourceData){
+          if(x.label === 'Open in Terminal' 
+            || x.label === 'Pin to Quick access' || x.label === 'Open in new window' 
+            || x.label === 'Pin to Start' || x.label === 'Restore'){ /*nothing*/}
           else{
-            this.menuData.push(x);
+            if(x.label === 'Mount' && !isZipFile) { /*nothing*/}
+            else
+              this.menuData.push(x);
           }
         }
       }
@@ -1405,10 +1410,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }else{
         this.menuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;
-        this.menuData = this.sourceData.filter(x => x.label !== 'Restore');
+        this.menuData = this.sourceData.filter(x => x.label !== 'Restore').filter(x => x.label !== 'Mount');
       }
     }
   }
+
 
   onShowFileExplorerContextMenu(evt:MouseEvent):void{
     this.showExpandTreeIcon = false;
