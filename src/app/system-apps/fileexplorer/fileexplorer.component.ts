@@ -1374,17 +1374,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(editNotAllowed.includes(file.getCurrentPath.replace(Constants.ROOT, Constants.EMPTY_STRING))){
         this.menuOrder = Constants.FILE_EXPLORER_UNIQUE_MENU_ORDER;
         for(const x of this.sourceData) {
-          if(x.label === 'Cut' || x.label === 'Delete' || x.label === 'Rename' || x.label === 'Mount'){ /*nothing*/}
-          else{
+          if(x.label === 'Cut' || x.label === 'Delete' || x.label === 'Rename' || x.label === 'Mount') continue;
+          else
             this.menuData.push(x);
-          }
         }
       }else if(this.isRecycleBinFolder){
         this.menuOrder = Constants.FILE_EXPLORER_RECYCLE_BIN_MENU_ORDER;
         for(const x of this.sourceData) {
-          if(x.label === 'Restore' || x.label === 'Cut' || x.label === 'Delete' || x.label === 'Properties'){
+          if(x.label === 'Restore' || x.label === 'Cut' || x.label === 'Delete' || x.label === 'Properties')
             this.menuData.push(x);
-          }
         }
       }else{
         //files can not be opened in terminal, pinned to start, opened in new window, pin to Quick access
@@ -1392,9 +1390,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         for(const x of this.sourceData){
           if(x.label === 'Open in Terminal' 
             || x.label === 'Pin to Quick access' || x.label === 'Open in new window' 
-            || x.label === 'Pin to Start' || x.label === 'Restore'){ /*nothing*/}
+            || x.label === 'Pin to Start' || x.label === 'Restore') continue;
           else{
-            if(x.label === 'Mount' && !isZipFile) { /*nothing*/}
+            if(x.label === 'Mount' && !isZipFile) continue;
             else
               this.menuData.push(x);
           }
@@ -1410,7 +1408,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }else{
         this.menuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;
-        this.menuData = this.sourceData.filter(x => x.label !== 'Restore').filter(x => x.label !== 'Mount');
+        this.menuData = this.sourceData.filter(x => x.label !== 'Restore' &&  x.label !== 'Mount');
       }
     }
   }
