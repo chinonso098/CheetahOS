@@ -1129,8 +1129,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  async runApplication(file:FileInfo, evt?:MouseEvent, ):Promise<void>{
-
+  async runApplication(file:FileInfo, evt?:MouseEvent):Promise<void>{
     if(evt)
       evt.stopPropagation();
 
@@ -1155,14 +1154,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
 
       this.isPrevBtnActive = true;
-
-      if(file.getCurrentPath.includes(Constants.URL)){
+      if(file.getCurrentPath.includes(Constants.URL))
         this.directory = file.getContentPath;
-      }
-      else{
+      else
         this.directory = file.getCurrentPath;
-      }
-
+    
       this.displayName = file.getFileName;
       this.icon = file.getIconPath;
 
@@ -1380,7 +1376,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }else if(this.isRecycleBinFolder){
         this.menuOrder = Constants.FILE_EXPLORER_RECYCLE_BIN_MENU_ORDER;
-        for(const x of this.sourceData) {
+        for(const x of this.sourceData){
           if(x.label === 'Restore' || x.label === 'Cut' || x.label === 'Delete' || x.label === 'Properties')
             this.menuData.push(x);
         }
@@ -1401,7 +1397,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }else{
       if(this.isRecycleBinFolder){
         this.menuOrder = Constants.FILE_EXPLORER_RECYCLE_BIN_MENU_ORDER;
-        for(const x of this.sourceData) {
+        for(const x of this.sourceData){
           if(x.label === 'Restore' || x.label === 'Cut' || x.label === 'Delete' || x.label === 'Properties'){
             this.menuData.push(x);
           }
@@ -1922,10 +1918,31 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const srcPath = this.selectedFile.getCurrentPath;
     const delay = 50; //50ms
 
-    const result = await this._fileService.mountZipAsync(srcPath);
-    if(result){
+    const path = await this._fileService.mountZipAsync(srcPath);
+    if(path){
       await CommonFunctions.sleep(delay);
-      this.refresh();
+      //this.refresh();
+
+      console.log('mount path:', path);
+      this.directory = path;
+
+      this.displayName = this.selectedFile.getFileName;
+      this.icon = this.selectedFile.getIconPath;
+
+      this.prevPathEntries.push(this.directory);
+      this.upPathEntries.push(this.directory);
+
+      if(this.recentPathEntries.indexOf(this.directory) === -1){
+        this.recentPathEntries.push(this.directory);
+      }
+
+      this.generateBreadCrumbs();
+      this.setNavPathIcon(this.selectedFile.getFileName, path);
+      //this.storeAppState(file.getCurrentPath);
+  
+      await this.loadFiles();
+      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
+      this.captureComponentImg(); 
     }
   }
 
@@ -1953,8 +1970,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(action === MenuAction.COPY){
       const result = await this._fileService.copyAsync(cntntPath, this.directory);
       if(result){
-          await CommonFunctions.sleep(delay);
-          this.refresh();
+        await CommonFunctions.sleep(delay);
+        this.refresh();
       }
     }
     else if(action === MenuAction.CUT){
