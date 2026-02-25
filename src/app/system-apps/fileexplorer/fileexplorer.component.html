@@ -13,7 +13,7 @@
 
               <div class="fileexp-header__question-cntnr" (click)="questionBtn()" (mouseenter)="colorBtnCntnr('fileMngr-QuestionBtn-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeRibbon, 'fileMngr-QuestionBtn-'+processId)" id="fileMngr-QuestionBtn-{{processId}}">
                 <figure class="fileexp-header__question-figure">  
-                    <img class="fileexp-header__question-img" [src]="'osdrive/Cheetah/System/Imageres/question.png'"/>
+                    <img class="fileexp-header__question-img" [src]="'osdrive/Cheetah/System/Imageres/question.png'" alt="Help"/>
                 </figure>
               </div>
             </div>
@@ -70,21 +70,21 @@
                 <div class="fileexp-header__nav-anchor" (click)="showPathTextBox($event)" (focusout)="hidePathTextBox()">
                     <div class="fileexp-header__nav-folder-img-container">
                         <figure class="fileexp-header__nav-folder-figure">
-                            <img class="fileexp-header__nav-folder-img" [src]="navPathIcon | safeResourceUrl"/>
+                            <img class="fileexp-header__nav-folder-img" [src]="navPathIcon | safeResourceUrl" alt="Folder"/>
                         </figure>
                     </div>
 
                     <div class="fileexp-header__nav-path-display" id="pathIconBox-{{processId}}" >
                         <span class="span fileexp-header__nav-root-cntnr">
                             <figure class="fileexp-header__nav-static-figure">
-                                <img class="fileexp-header__nav-static-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/>
+                                <img class="fileexp-header__nav-static-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl" alt=""/>
                             </figure> 
                         </span>
 
                         <div class="fileexp-header__nav-dynamic-container" *ngFor="let dirTraversal of _directoryTraversalList let j = index">
                             <span *ngIf="j > 0" class="span fileexp-header__nav-repeat-cntnr">
                                 <figure class="fileexp-header__nav-static-figure">
-                                    <img class="fileexp-header__nav-static-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl"/>
+                                    <img class="fileexp-header__nav-static-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_forward_32.png' | safeResourceUrl" alt=""/>
                                 </figure> 
                             </span>
                             <span class="span mid-nav-path-gen-cntnr">{{dirTraversal}}</span>
@@ -106,20 +106,20 @@
                 
                     <div class="fileexp-header__nav-show-cntnr" [class.active]="showPathHistory" (click)="hideshowPathHistory()">
                         <figure class="fileexp-header__nav-show-figure">
-                            <img class="fileexp-header__nav-show-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_expand_32.png' | safeResourceUrl"/>
+                            <img class="fileexp-header__nav-show-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_expand_32.png' | safeResourceUrl" alt="Show history"/>
                         </figure>
                     </div>
                     <div class="fileexp-header__nav-refresh-cntnr" (click)="refresh($event)">
                         <figure class="fileexp-header__nav-refresh-figure">
-                            <img class="fileexp-header__nav-refresh-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_refresh_32.png' | safeResourceUrl"/>
+                            <img class="fileexp-header__nav-refresh-img" [src]="'osdrive/Cheetah/System/Imageres/grey_nav_refresh_32.png' | safeResourceUrl" alt="Refresh"/>
                         </figure>
                     </div>
                 </div>
         
     
                 <div class="fileexp-header__nav-history-container" id="pathHistory-{{processId}}">
-                    <div class="nav-path-entry-containter" *ngFor="let entry1 of pathHistory; let k = index">
-                        <span class="span"><figure class="figure-nav-path-entry"><img class="img-nav-path-entry" [src]="'osdrive/Cheetah/System/Imageres/white_history_32.png' | safeResourceUrl"/></figure></span>
+                    <div class="nav-path-entry-container" *ngFor="let entry1 of pathHistory; let k = index">
+                        <span class="span"><figure class="figure-nav-path-entry"><img class="img-nav-path-entry" [src]="'osdrive/Cheetah/System/Imageres/white_history_32.png' | safeResourceUrl" alt=""/></figure></span>
                         <span class="span mid-nav-path-entry">{{entry1}}</span>
                     </div>
                 </div>
@@ -128,16 +128,16 @@
             <div class="header-nav-search-container">
                 <form [formGroup]="searchForm"  (ngSubmit)="isFormDirty()">
                     <div class="search-container">
-                        <span class="span head-search-cntnr"><figure class="figure-search-cntnr"><img class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/search_32.png' | safeResourceUrl"/></figure></span>
+                        <span class="span head-search-cntnr"><figure class="figure-search-cntnr"><img class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/search_32.png' | safeResourceUrl" alt="Search"/></figure></span>
                         <input class="search-input" type="text" placeholder="Search OSDisk(C:)" formControlName="searchInput" (click)="showSearchHistory($event)"  (focusout)="hideSearchHistory()" (input)="onInputChange()"  spellcheck="false" id="searchTxtBox-{{processId}}"/>
-                        <span class="span head-search-cntnr1" (click)="onClearSearchTextBox()" [style]="clearSearchStyle" (mouseenter)="handleClearSearchIconHighlights()" (mouseleave)="handleClearSearchIconHighlights()"><figure class="figure-search-cntnr"><img *ngIf="isSearchBoxNotEmpty" class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/cross_mark_32.png' | safeResourceUrl"/></figure></span>
-                        <span class="span head-search-cntnr2" [class.active]="isSearchBoxNotEmpty" (click)="onSearch()" [style]="searchStyle" (mouseenter)="handleSearchIconHighlights()" (mouseleave)="handleSearchIconHighlights()"><figure class="figure-search-cntnr"><img *ngIf="isSearchBoxNotEmpty" class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/nav_right_32.png' | safeResourceUrl"/></figure></span>
+                        <span class="span head-search-cntnr1" (click)="onClearSearchTextBox()" [style]="clearSearchStyle" (mouseenter)="handleClearSearchIconHighlights()" (mouseleave)="handleClearSearchIconHighlights()"><figure class="figure-search-cntnr"><img *ngIf="isSearchBoxNotEmpty" class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/cross_mark_32.png' | safeResourceUrl" alt="Clear"/></figure></span>
+                        <span class="span head-search-cntnr2" [class.active]="isSearchBoxNotEmpty" (click)="onSearch()" [style]="searchStyle" (mouseenter)="handleSearchIconHighlights()" (mouseleave)="handleSearchIconHighlights()"><figure class="figure-search-cntnr"><img *ngIf="isSearchBoxNotEmpty" class="img-search-cntnr" [src]="'osdrive/Cheetah/System/Imageres/nav_right_32.png' | safeResourceUrl" alt="Go"/></figure></span>
                     </div>
                 </form>
     
-                <div class="search-history-containter" id="searchHistory-{{processId}}">
-                    <div class="search-entry-containter" *ngFor="let entry of searchHistory; let i = index">
-                        <span class="span"><figure class="figure-search-entry"><img class="img-search-entry" [src]="'osdrive/Cheetah/System/Imageres/white_history_32.png' | safeResourceUrl"/></figure></span>
+                <div class="search-history-container" id="searchHistory-{{processId}}">
+                    <div class="search-entry-container" *ngFor="let entry of searchHistory; let i = index">
+                        <span class="span"><figure class="figure-search-entry"><img class="img-search-entry" [src]="'osdrive/Cheetah/System/Imageres/white_history_32.png' | safeResourceUrl" alt=""/></figure></span>
                         <span class="span mid-search-entry">{{entry}}</span>
                     </div>
                 </div>
@@ -151,7 +151,7 @@
                         (mouseenter)="showExpandTreeIconBtn()" 
                         (mouseleave)="hideExpandTreeIconBtn()" id="navExplorerContainer-{{processId}}"
                         #navExplorerContainer>
-                        <div style="height: 10px; width: 100%;"></div>
+                        <div class="nav-tree-spacer"></div>
                         <cos-filetreeview [pId] ="processId" [isHoverActive]="showExpandTreeIcon" [treeData]="fileTreeNode"></cos-filetreeview>
                     </div>
                 </ng-container>
@@ -194,7 +194,7 @@
                                             <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}"/>
                                         </div>
                                         <div class="iconview-shortcut-wrapper" *ngIf="file.getIsShortCut">
-                                            <img class="iconview-shortcut-img" [src]="shortCutImg"  id="shortCut-{{processId}}{{i}}"/>
+                                            <img class="iconview-shortcut-img" [src]="shortCutImg" alt="Shortcut" id="shortCut-{{processId}}-{{i}}"/>
                                         </div>
                                     </div>
                                     <div class="iconview-caption-container">
@@ -208,6 +208,7 @@
                                                 formControlName="renameInput"  
                                                 (keydown)="onKeyPress($event)" 
                                                 autofocus spellcheck="false" 
+                                                title="Rename"
                                                 id="renameTxtBox-{{processId}}-{{i}}">
                                             </textarea>
                                         </form>
@@ -260,12 +261,13 @@
                                                         class="detailsview-rename-textbox"
                                                         (keydown)="onKeyPress($event)" 
                                                         autofocus spellcheck="false" 
+                                                        title="Rename"
                                                         id="renameTxtBox-{{processId}}-{{i}}"
                                                     />
                                                 </form>
                                             </div>
                                         </td>
-                                        <td><p class="detailsview-ptag">{{ file.getDateModifiedUS }}</td>
+                                        <td><p class="detailsview-ptag">{{ file.getDateModifiedUS }}</p></td>
                                         <td>
                                             @if(file.getIsFile){
                                                 <p class="detailsview-ptag">{{ getFileTypeName(file.getFileType) }}</p>
@@ -318,7 +320,7 @@
                 </ng-container>
 
                 <ng-container *ngIf="showFileSizeAndUnit">
-                    <span class="fileexp-footer__span">1 items selected</span>
+                    <span class="fileexp-footer__span">1 item selected</span>
                     <span class="fileexp-footer__span"> {{selectFilesSizeSum}} {{selectFilesSizeUnit}}</span>
                     <span class="fileexp-footer__span">|</span>
                 </ng-container>
@@ -326,13 +328,13 @@
 
             <div class="fileexp-footer__details-cntnr" (click)="toggleDetailsView()" (mouseenter)="colorBtnCntnr('fileMngr-detailsViewToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-detailsViewToggle-'+processId)" id="fileMngr-detailsViewToggle-{{processId}}">
                 <figure class="fileexp-footer__large-icon-figure">  
-                    <img class="fileexp-footer__img" [src]="'osdrive/Cheetah/System/Imageres/details_view.png'"/>
+                    <img class="fileexp-footer__img" [src]="'osdrive/Cheetah/System/Imageres/details_view.png'" alt="Details view"/>
                 </figure>
             </div>
 
             <div class="fileexp-footer__large-icon-cntnr" (click)="toggleLargeIconsView()" (mouseenter)="colorBtnCntnr('fileMngr-largeIconToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-largeIconToggle-'+processId)" id="fileMngr-largeIconToggle-{{processId}}">
                 <figure class="fileexp-footer__large-icon-figure">  
-                    <img class="fileexp-footer__img" [src]="'osdrive/Cheetah/System/Imageres/large_image.png'"/>
+                    <img class="fileexp-footer__img" [src]="'osdrive/Cheetah/System/Imageres/large_image.png'" alt="Large icons view"/>
                 </figure>
             </div> 
         </div>

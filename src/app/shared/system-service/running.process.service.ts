@@ -57,6 +57,16 @@ export class RunningProcessService implements BaseService{
         this._eventOriginator = eventOrig;
     }
 
+    updateProccess(process:Process):void{
+        const proccessToUpdt = this._runningProcesses.find((p) => {
+            return p.getProcessId === process.getProcessId;
+        });
+
+        if(!proccessToUpdt || !process.getProcessTrigger) return;
+
+        proccessToUpdt.setProcessTrigger = process.getProcessTrigger
+    }
+
     removeProcess(proccessToRemove:Process):void{
         this._runningProcesses = this._runningProcesses.filter(process => process.getProcessId !== proccessToRemove.getProcessId);
     }
@@ -70,7 +80,6 @@ export class RunningProcessService implements BaseService{
             return process.getProcessId === processId;
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return process!;
     }
 

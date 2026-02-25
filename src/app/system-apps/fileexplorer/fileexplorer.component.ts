@@ -27,8 +27,7 @@ import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types'
-import { file } from 'jszip';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
 
 @Component({
@@ -233,7 +232,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileType = Constants.EMPTY_STRING;
   fileAuthor = Constants.EMPTY_STRING;
   fileSize = Constants.EMPTY_STRING;
-  fileDimesions = Constants.EMPTY_STRING;
   fileDateModified = Constants.EMPTY_STRING;
   currentTooltipFileId = Constants.EMPTY_STRING;
 
@@ -318,7 +316,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   ngOnInit():void{
-    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
     this.retrievePastSessionData();
     
     if(this._fileInfo){
@@ -426,7 +423,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   retrievePastSessionData():void{
     const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
 
-    if(appSessionData !== null  && appSessionData.appData != Constants.EMPTY_STRING){
+    if(appSessionData !== null  && appSessionData.appData !== Constants.EMPTY_STRING){
       this.directory = appSessionData.appData as string;
     }
   }
@@ -585,13 +582,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   private async navigateTo(targetPath: string, kind: string): Promise<void>{
-
-    // this works for cases when i click go back in file explorer
-    // If i change my mind and click forward, the mountPath has already been cleared
-    if(this.mounthPath !== Constants.EMPTY_STRING  &&  !targetPath.includes(this.mounthPath)){
-        this._fileService.unmountZip(this.mounthPath);
-        this.mounthPath = Constants.EMPTY_STRING;
-    }
 
     const next = this.normalizePath(targetPath);
     const cur  = this.normalizePath(this.directory);
@@ -769,12 +759,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const fileName = data[0];
     const rawPath = data[1];
 
-    if(this.mounthPath !== Constants.EMPTY_STRING){
-      this._fileService.unmountZip(this.mounthPath);
-      this.mounthPath = Constants.EMPTY_STRING;
-    }
-
-
     // Resolve "special" paths to a real directory target
     const isSpecialRoot = (rawPath === thisPC || rawPath === quickAccess);
     const targetDir = isSpecialRoot ? Constants.ROOT : rawPath;
@@ -822,12 +806,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.storeAppState(this.directory);
 
     // --- Load content based on resolved directory ---
-    if (this.directory === Constants.ROOT) {
-      await this.loadFiles(false);
-    } else {
-      await this.loadFiles();
-    }
-
     if(rawPath === thisPC || rawPath !== Constants.ROOT)
       await this.loadFiles();
     else if(rawPath === Constants.ROOT)
@@ -907,7 +885,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   /**
-   * popluates a List with path traversal
+   * Populates a List with path traversal
    * RECYCLE_BIN_PATH → [RECYCLE_BIN]
    * user path like /Users/Bob/Documents → [THISPC, Users, Bob, Documents]
    * non-user path like /System/Library → [THISPC, System, Library]
@@ -1111,7 +1089,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   questionBtn():void{
-   console.log('do somthing');
+   // no-op
   }
 
   colorRibbonMenuCntnr():void{
@@ -1171,12 +1149,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // console.log('what was clicked:',file.getFileName +'-----' + file.getOpensWith +'---'+ file.getCurrentPath +'----'+ file.getIcon) TBD
     if(isFolder || isZipFile){
-      //Check if i am in the mouth path. If i am, then do not un-mount
-      if((isFolder && this.mounthPath !== Constants.EMPTY_STRING) && !this.directory.includes(this.mounthPath)){
-        this._fileService.unmountZip(this.mounthPath);
-        this.mounthPath = Constants.EMPTY_STRING;
-      }
-
       if(isZipFile && this.mounthPath === Constants.EMPTY_STRING){
         const mountPath = await this.getZipFileMountPath(file.getCurrentPath);
         this.directory = mountPath; this.mounthPath = mountPath;
@@ -1273,10 +1245,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     const quickAccesBtnElmnt = document.getElementById(`${quickAcessSection}-${this.processId}-${id}`) as HTMLDivElement;
     if(!this.isMultiSelectActive){
-      if(id != this.selectedElementId){
+      if(id !== this.selectedElementId){
         this.removeBtnStyle(id, quickAccesBtnElmnt);
       }
-      else if((id == this.selectedElementId) && this.isIconInFocusDueToPriorAction){
+      else if((id === this.selectedElementId) && this.isIconInFocusDueToPriorAction){
         this.setBtnStyle(id,false, quickAccesBtnElmnt);
       }
     }
@@ -1286,10 +1258,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.hideFileExplorerToolTip();
 
     if(!this.isMultiSelectActive){
-      if(id != this.selectedElementId){
+      if(id !== this.selectedElementId){
         this.removeBtnStyle(id);
       }
-      else if((id == this.selectedElementId) && this.isIconInFocusDueToPriorAction){
+      else if((id === this.selectedElementId) && this.isIconInFocusDueToPriorAction){
         this.setBtnStyle(id,false);
       }
     }
@@ -1298,23 +1270,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   doNothing():void{/** */}
 
   updateTableFieldSize(data:string[]) {
-    const tdId = data[0];
-    // for(let i =0; i <= this.fileExplrFiles.length; i++){    
-    //   if(tdId === 'th-1') {
-    //     const fileName =  document.getElementById(`fileName-${i}`) as HTMLElement;
-    //     if(fileName){
-    //       const px_offSet = 25;
-    //       fileName.style.width = `${Number(data[1]) - px_offSet}px`;
-    //     }
-    //   }
-    //   // else if(tdId === 'th-1'){
-    //   //   const procType =  document.getElementById(`procType-${i}`) as HTMLElement;
-    //   //   if(procType){
-    //   //     const px_offSet = 10;
-    //   //     procType.style.width =`${Number(data[1]) - px_offSet}px`;
-    //   //   }
-    //   // }
-    // }
+    // Column-resize events are handled by the directive;
+    // reserved for future per-cell width synchronization.
   }
 
   onProcessSelected(rowIndex:number, btnId:number):void{
@@ -1887,7 +1844,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       for(const id of this.markedBtnIds){
         const file = this.fetchedFiles[Number(id)];
         if(file.getIsFile){
-          sum += sum + file.getSizeInBytes;
+          sum += file.getSizeInBytes;
         }else{
           this.hideShowFileSizeAndUnit();
           return;
@@ -2121,7 +2078,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  onDragStart(evt:any):void{
+  onDragStart(_evt:DragEvent):void{
     this.isDragFromFileExplorerActive = true;
     const uId = `${this.name}-${this.processId}`;
 
@@ -2129,7 +2086,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._systemNotificationService.setDropEventInfo(dragEvtInfo);
   }
 
-  onDragEnd(evt:any):void{
+  onDragEnd(_evt:DragEvent):void{
     this.isDragFromFileExplorerActive = false;
   }
 
@@ -2193,7 +2150,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async setInformationTipInfo(file:FileInfo):Promise<void>{
-    const infoTipFields = ['Author:', 'Item type:','Date created:','Date modified:', 'Dimesions:', 'General', 'Size:','Type:', 'Original location:'];
+    const infoTipFields = ['Author:', 'Item type:','Date created:','Date modified:', 'Dimensions:', 'General', 'Size:','Type:', 'Original location:'];
     const specialFolders: Record<string, string> = {
       'Music': 'Contains music and other audio files',
       'Videos': 'Contains movies and other video files',
@@ -2393,10 +2350,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   isFormDirty(): void {
-    if(this.renameForm.dirty == true){
+    if(this.renameForm.dirty === true){
       this.onRenameFileTxtBoxDataSave();
   
-    }else if(this.renameForm.dirty == false){
+    }else if(this.renameForm.dirty === false){
       this.renameFileTriggerCnt ++;
       if(this.renameFileTriggerCnt > 1){
         this.onRenameFileTxtBoxHide();
@@ -2420,7 +2377,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   hideSearchHistory():void{
     const searchHistoryElement = document.getElementById(`searchHistory-${this.processId}`) as HTMLElement;
-    searchHistoryElement.style.display = 'none';
+    if(searchHistoryElement)
+      searchHistoryElement.style.display = 'none';
   }
 
   hideshowPathHistory():void{
@@ -2438,13 +2396,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }
     }else if(!this.showPathHistory){
-      pathHistoryElement.style.display = 'none';
+      if(pathHistoryElement)
+        pathHistoryElement.style.display = 'none';
     }
   }
   
   hidePathHistory():void{
     const pathHistoryElement = document.getElementById(`pathHistory-${this.processId}`) as HTMLElement;
-    pathHistoryElement.style.display = 'none';
+    if(pathHistoryElement)
+      pathHistoryElement.style.display = 'none';
     this.showPathHistory = false;
   }
 
@@ -2503,6 +2463,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const desktopRefreshDelay = 1000;
     let result = false;
 
+    const isInUse = this._processHandlerService.isFileInUse(this.selectedFile.getCurrentPath);
+
     result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
     if(result){
       this._menuService.resetStoreData();
@@ -2539,13 +2501,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  autoResize_old() {
-    const renameTxtBoxElmt = document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLTextAreaElement;
-    if(renameTxtBoxElmt){
-      renameTxtBoxElmt.style.height = 'auto'; // Reset the height
-      renameTxtBoxElmt.style.height = `${renameTxtBoxElmt.scrollHeight}px`; // Set new height
-    }
-  }
   autoResize() {
     const renameTxtBoxElmt = document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLTextAreaElement;
 
@@ -2603,8 +2558,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const renameResult = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText,  this.selectedFile.getIsFile);
       if(renameResult){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
-        //const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));
-        const fileIdx = this.fetchedFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getCurrentPath) && (f.getFileName == this.selectedFile.getFileName));
+        //const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath === this.selectedFile.getContentPath) && (f.getFileName === this.selectedFile.getFileName));
+        const fileIdx = this.fetchedFiles.findIndex(f => (f.getCurrentPath === this.selectedFile.getCurrentPath) && (f.getFileName === this.selectedFile.getFileName));
         this.selectedFile.setContentPath = renameText;
         this.selectedFile.setCurrentPath = `${dirname(this.selectedFile.getCurrentPath)}/${renameText}`;
         this.selectedFile.setFileName = renameText;
@@ -2802,6 +2757,7 @@ OpensWith=${file.getOpensWith}
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type);
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
   }
 }

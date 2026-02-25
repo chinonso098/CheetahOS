@@ -80,7 +80,6 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
 
   ngOnInit(): void {
     this.retrievePastSessionData();
-    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -326,7 +325,8 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
   }
 
 }

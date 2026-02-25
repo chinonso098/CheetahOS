@@ -394,6 +394,6 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }
 }

@@ -1,3 +1,5 @@
+import { FileInfo } from "./file.info";
+
 export class Process{
 
     private _processId:number;
@@ -12,15 +14,15 @@ export class Process{
     private _diskUsage:number;
     private _gpuUsage:number;
     private _networkUsage:number;
-    private _processTrigger:unknown;
+    private _processTrigger:FileInfo | undefined;
 
-    constructor(processId:number, processName:string, icon:string, hasWindow:boolean, type:string, processTrigger?:unknown){
+    constructor(processId:number, processName:string, icon:string, hasWindow:boolean, type:string, processTrigger?:FileInfo){
         this._processId = processId;
         this._processName = processName;
         this._icon = icon;
         this._hasWindow = hasWindow;
         this._type = type;
-        this._processTrigger = processTrigger || null;
+        this._processTrigger = processTrigger;
         this._memoryUsage = 0;
         this._cpuUsage = 0;
         this._gpuUsage = 0;
@@ -30,55 +32,55 @@ export class Process{
         this._powerUsage = '';
     }
 
-    public get getProcessId(){
+    public get getProcessId():number{
         return this._processId;
     }
 
-    public get getProcessName(){
+    public get getProcessName():string{
         return this._processName;
     }
 
-    public get getIcon(){
+    public get getIcon():string{
         return this._icon;
     }
 
-    public get getCpuUsage(){
+    public get getCpuUsage():number{
         return this._cpuUsage;
     }
 
-    public get getGpuUsage(){
+    public get getGpuUsage():number{
         return this._gpuUsage;
     }
 
-    public get getMemoryUsage(){
+    public get getMemoryUsage():number{
         return this._memoryUsage;
     }
 
-    public get getHasWindow(){
+    public get getHasWindow():boolean{
         return this._hasWindow;
     }
 
-    public get getType(){
+    public get getType():string{
         return this._type;
     }
 
-    public get getProcessTrigger(){
+    public get getProcessTrigger():FileInfo | undefined{
         return this._processTrigger;
     }
 
-    public get getDiskUsage(){
+    public get getDiskUsage():number{
         return this._diskUsage;
     }
 
-    public get getNetworkUsage(){
+    public get getNetworkUsage():number{
         return this._networkUsage;
     }
 
-    public get getProcessStatus(){
+    public get getProcessStatus():string{
         return this._status;
     }
 
-    public get getPowerUsage(){
+    public get getPowerUsage():string{
         return this._powerUsage;
     }
 
@@ -92,6 +94,10 @@ export class Process{
     
     public set setMemoryUsage(memoryUsage:number){
         this._memoryUsage = memoryUsage;
+    }
+
+    public set setProcessTrigger(trigger:FileInfo){
+        this._processTrigger = trigger;
     }
 
     public set setDiskUsage(diskUsage:number){

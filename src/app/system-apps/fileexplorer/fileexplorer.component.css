@@ -86,21 +86,21 @@
     text-align: center;
     cursor:default;
     background-color: #000;
-    color: var( --fx-text);
+    color: var(--fx-text);
     transition: background-color 0.3s;
 }
 
 .fileexp-header__tab.highlight-default {
     margin: 0px 0px;
-    background-color: #0464ac;
-    color: var( --fx-text);
+    background-color: var(--fx-accent);
+    color: var(--fx-text);
 }
 
 .fileexp-header__tab.active {
     border:0.3px solid var(--fx-border-soft);
     border-bottom: none;
     background-color: var(--fx-bg);
-    color: var( --fx-text);
+    color: var(--fx-text);
 }
 
 /* Styles for tab content */
@@ -179,7 +179,7 @@
     height: 10px;
     width: 10px;
     position: relative;
-    top: 12px
+    top: 12px;
 }
 
 .fileexp-header__nav-figure-chevron{
@@ -276,9 +276,7 @@
 }
 
 .fileexp-header__nav-dynamic-container:hover{
-    display:inline-flex;
-    width: fit-content;
-    background-color: #3f3e3e;
+    background-color: var(--fx-hover);
 }
 
 span.fileexp-header__nav-root-cntnr{
@@ -287,9 +285,7 @@ span.fileexp-header__nav-root-cntnr{
 }
 
 span.fileexp-header__nav-root-cntnr:hover{
-    align-items: center;
-    display:inline-flex;
-    background-color: #3f3e3e;
+    background-color: var(--fx-hover);
 }
 
 span.fileexp-header__nav-repeat-cntnr{
@@ -352,15 +348,11 @@ span.mid-nav-path-gen-cntnr{
 }
 
 .fileexp-header__nav-show-cntnr.active{
-    align-items: center;
-    display:inline-flex;
     border: 0.5px solid var(--fx-border-light);
-    background-color: #3f3e3e;
+    background-color: var(--fx-hover);
 }
 
 .fileexp-header__nav-show-cntnr:hover{
-    align-items: center;
-    display:inline-flex;
     border: 0.5px solid rgb(18, 107, 240);
     transition: border-color 0.3s ease;
 }
@@ -386,15 +378,11 @@ span.mid-nav-path-gen-cntnr{
 }
 
 .fileexp-header__nav-refresh-cntnr.active{
-    align-items: center;
-    display:inline-flex;
     border: 0.5px solid var(--fx-border-light);
-    background-color: #3f3e3e;
+    background-color: var(--fx-hover);
 }
 
 .fileexp-header__nav-refresh-cntnr:hover{
-    align-items: center;
-    display:inline-flex;
     border: 0.5px solid rgb(18, 107, 240);
     transition: border-color 0.3s ease;
 }
@@ -428,7 +416,7 @@ span.mid-nav-path-gen-cntnr{
     display: none;
 }
 
-.nav-path-entry-containter{
+.nav-path-entry-container{
     display: inline-flex;
     width: 100%;
     margin: 8px 8px 8px 0;
@@ -452,7 +440,7 @@ span.mid-nav-path-gen-cntnr{
 
 span.mid-nav-path-entry{
     padding: 0 2px;
-    color: var( --fx-text); /* white text color */
+    color: var(--fx-text);
     text-align: left;
     font-size: 10px;
     font-weight: normal;
@@ -532,19 +520,19 @@ span.head-search-cntnr2.active{
     background-color: blue;
 }
 
-.search-history-containter{
+.search-history-container{
     position: absolute;
     width: inherit;
     border: 1px solid var(--fx-border-light);
     margin-right: 10px;
     max-height: 180px;
-    overflow-y: hidden;
+    overflow-y: auto;
     background-color: var(--fx-panel);
     z-index: 2;
     display: none;
 }
 
-.search-entry-containter{
+.search-entry-container{
     display: inline-flex;
     width: 100%;
     margin: 8px 8px 8px 0;
@@ -568,7 +556,7 @@ span.head-search-cntnr2.active{
 
 span.mid-search-entry{
     padding: 0 2px;
-    color: var( --fx-text); /* white text color */
+    color: var(--fx-text);
     text-align: left;
     font-size: 10px;
     font-weight: normal;
@@ -761,7 +749,8 @@ span.mid-search-entry{
     color: var(--fx-text);
     font-size: 12px;
     letter-spacing: 0.1px;
-    -webkit-line-clamp:4;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
     position: relative;
     text-align:center;
     padding: 2px 0;
@@ -811,7 +800,6 @@ span.mid-search-entry{
     z-index: 1;
 }
 
-/* src/app/app.component.css */
 .detailsview-data-table {
   width: 100%;
   border-collapse: collapse; /* Collapses the borders between cells */
@@ -855,7 +843,7 @@ span.mid-search-entry{
 
 
 .detailsview-data-table tr.active td {
-  background-color:#d0ecfc !important;
+  background-color:#d0ecfc;
 }
 
 /* Add this to your component's CSS or global styles */
@@ -911,7 +899,7 @@ th[fxplrColumnResize]::after {
 .figcaption-detailsview-p, .detailsview-ptag, .detailsview-ptag-right{
     position: relative;
     text-align: left;
-    color: var( --fx-text);
+    color: var(--fx-text);
     font-size: 12px;
     font-weight:200;
     top: 0px;
@@ -952,7 +940,7 @@ th[fxplrColumnResize]::after {
     overflow:hidden;
     font-size: 12px;
     font-weight:200;
-    background-color: var( --fx-text);
+    background-color: var(--fx-text);
     color: black;
  }
 /*-------------------------Details Icon View End ----------------------------------*/
@@ -972,7 +960,7 @@ th[fxplrColumnResize]::after {
 }
 
 .fileexp-footer__span{
-    color: var( --fx-text);
+    color: var(--fx-text);
     font-size: 11px;
     font-weight: normal;
     margin: 5px 4px;
@@ -1017,15 +1005,15 @@ th[fxplrColumnResize]::after {
     z-index: 2;
  }
 
-input{
+.file_explrorer_root_container input{
     text-align: left;      /* or center if you want it centered */
     font-size: 11.5px;
     padding-left: 4px;
 }
 
-input::selection{
+.file_explrorer_root_container input::selection{
     background-color: #0056b3;
-    color: var( --fx-text);
+    color: var(--fx-text);
 }
 
 
@@ -1058,8 +1046,8 @@ input::selection{
     font-weight: normal;
     text-align: center;
     color: black;
-    background: var( --fx-text);
-    border: 4px solid var( --fx-text);
+    background: var(--fx-text);
+    border: 4px solid var(--fx-text);
     border-radius: 5px;
     /* text-shadow: rgba(0, 0, 0, 0.1) 1px 1px 1px;
     box-shadow: rgba(0, 0, 0, 0.1) 1px 1px 2px 0px; */
@@ -1104,7 +1092,7 @@ input::selection{
     padding: 2px 2px;
     font-size: 11px;
     text-align: left;
-    color: var( --fx-text);
+    color: var(--fx-text);
 }
 
 .fileexplr-clone-container{
@@ -1117,4 +1105,9 @@ input::selection{
 .fileexplr-multi-select-highlight {
     background-color: #4c4c4c;
     border: 0.5px solid #3c3c3c;
+}
+
+.nav-tree-spacer {
+    height: 10px;
+    width: 100%;
 }

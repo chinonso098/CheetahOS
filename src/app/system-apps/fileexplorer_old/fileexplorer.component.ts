@@ -324,7 +324,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   ngOnInit():void{
-    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
     this.retrievePastSessionData();
     
     if(this._fileInfo){
@@ -3235,6 +3234,7 @@ OpensWith=${file.getOpensWith}
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type);
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
   }
 }

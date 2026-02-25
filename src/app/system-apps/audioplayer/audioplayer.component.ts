@@ -109,7 +109,6 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   ngOnInit(): void {
     this.retrievePastSessionData();
-    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
   ngAfterViewInit():void{  
@@ -187,7 +186,10 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.audioSrc = Constants.EMPTY_STRING;
     console.log('previous audio source-1:',  this.audioSrc);
     if(this._runningProcessService.getEventOriginator() === uId){
-      this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+
+      //this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+      const updatedProcesss = this.getComponentDetail();
+      this._runningProcessService.updateProccess(updatedProcesss);
 
       this.audioSrc = (this.audioSrc !== Constants.EMPTY_STRING)? 
       this.audioSrc :this.getAudioSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
@@ -561,7 +563,8 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
   }
 
 }

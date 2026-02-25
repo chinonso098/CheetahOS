@@ -188,9 +188,10 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
       //
     }
   }
+  
   private getComponentDetail():Process{
-  return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
-}
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
+  }
 }
 
 

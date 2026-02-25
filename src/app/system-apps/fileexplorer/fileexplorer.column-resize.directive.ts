@@ -23,8 +23,7 @@ export class FileExplorerColumnResizeDirective {
     this.startX = event.pageX;
     this.isResizing = true;
     this.initialWidth = this.el.nativeElement.offsetWidth;
-    const minimumWidths:number[] = [70, 90, 90];
-    let minimumWidth = 0;
+    const minimumWidths: readonly number[] = [70, 90, 90];
 
     // Find the index of the current column
     const row = this.el.nativeElement.parentElement;
@@ -40,15 +39,7 @@ export class FileExplorerColumnResizeDirective {
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         if(this.isResizing) {
-          minimumWidth = (this.columnIndex === 0)? minimumWidths[0] : minimumWidths[1]
-
-          if(this.columnIndex === 0){
-            minimumWidth =  minimumWidths[0];
-          }else if(this.columnIndex === 1){
-            minimumWidth = minimumWidths[1];
-          }else{
-            minimumWidth = minimumWidths[2];
-          }
+          const minimumWidth = minimumWidths[this.columnIndex] ?? minimumWidths[minimumWidths.length - 1];
 
           const deltaX = moveEvent.pageX - this.startX;
           const newWidth = this.initialWidth + deltaX;
@@ -105,11 +96,12 @@ export class FileExplorerColumnResizeDirective {
   }
 
   private findParentTable(element: HTMLElement): HTMLElement | null {
-    while (element) {
-      if (element.tagName === 'TABLE') {
-        return element;
+    let current: HTMLElement | null = element;
+    while (current) {
+      if (current.tagName === 'TABLE') {
+        return current;
       }
-      if (element?.parentElement) element = element.parentElement;
+      current = current.parentElement;
     }
     return null;
   }

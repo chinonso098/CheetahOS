@@ -85,7 +85,6 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
 
   ngOnInit():void{
     this.retrievePastSessionData();
-    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
   ngAfterViewInit(): void{
@@ -202,7 +201,8 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
   }
 
 }

@@ -79,7 +79,6 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   ngOnInit(): void {
     this.retrievePastSessionData();
-    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
   ngOnDestroy(): void {
@@ -215,7 +214,8 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
   }
 
 }

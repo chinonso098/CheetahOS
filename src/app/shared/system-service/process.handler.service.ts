@@ -197,7 +197,7 @@ export class ProcessHandlerService implements BaseService{
         return new FileInfo;
     }
 
-    async loadApps(appName:string, priorUId?:string):Promise<void>{
+    private async loadApps(appName:string, priorUId?:string):Promise<void>{
         this.lazyLoadComponment(this._appDirectory.getAppPosition(appName), priorUId);
     }
 
@@ -327,6 +327,14 @@ export class ProcessHandlerService implements BaseService{
         this.openedAppInstanceUId = [];
         this.priorUserOpenedAppsList = [];
         this.priorOpenedAppInstanceUId= [];
+    }
+
+    public isFileInUse(fPath:string): boolean{
+        const processes = this._runningProcessService.getProcesses();
+        return processes.some( process => {
+            const trigger = process.getProcessTrigger as FileInfo
+            return trigger?.getCurrentPath === fPath;
+        });
     }
 
     private shouldRestoreUserOpenedApps(): boolean{

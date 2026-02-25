@@ -185,7 +185,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     if(this._skipOnInit) return;
 
-    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    //this._fileInfo = this._processHandlerService.getLastProcessTrigger();
     await this.getImageData(this._fileInfo);
     this.setFirstView(this._fileInfo);
 
@@ -724,7 +724,8 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
   }
 
 }

@@ -87,7 +87,6 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   ngOnInit(): void {
     this.retrievePastSessionData();
-    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
   }
 
   showMenu(): void{
@@ -164,8 +163,10 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.fileType = Constants.EMPTY_STRING;
 
     if(this._runningProcessService.getEventOriginator() === uId){
-      this._fileInfo = this._processHandlerService.getLastProcessTrigger();
       //console.log('new this._fileInfo:',  this._fileInfo);
+      //this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+      const updatedProcesss = this.getComponentDetail();
+      this._runningProcessService.updateProccess(updatedProcesss);
 
       this.player.pause(); // Pause the video
       this.player.currentTime(0); // Reset to the start (optional)
@@ -313,7 +314,8 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._processHandlerService.getLastProcessTrigger)
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
   }
 
 }
