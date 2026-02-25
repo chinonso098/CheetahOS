@@ -148,8 +148,10 @@ export class ProcessHandlerService implements BaseService{
             if(!this._runningProcessService.isProcessRunning(file.getOpensWith) 
                 || (this._runningProcessService.isProcessRunning(file.getOpensWith) 
                     && !this._onlyOneInstanceAllowed.includes(file.getOpensWith))){
-                this.loadApps(file.getOpensWith);
+                        
                 this._TriggerList.push(file);
+                this.loadApps(file.getOpensWith);
+
                 return;
             }else{
                 if(this._onlyOneInstanceAllowed.includes(file.getOpensWith)){

@@ -2464,6 +2464,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     let result = false;
 
     const isInUse = this._processHandlerService.isFileInUse(this.selectedFile.getCurrentPath);
+    if(isInUse){
+      const result = await this.fileOrFolderInUseNotifcation(this.selectedFile.getIsFile);
+      return;
+    }
+
+    //## confirm delete with user
 
     result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
     if(result){
@@ -2475,6 +2481,23 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this._fileService.dirFilesUpdateNotify.next();
     }
   }
+
+  async fileOrFolderInUseNotifcation(isDir:boolean):Promise<boolean>{
+
+    const title = !isDir? 'Folder In Use' : 'File In Use';
+    const msg = `The action can't be completed because the ${isDir ? 'folder' : 'file'} is open in
+another program`;
+
+      const uId = `${this.name}-${this.processId}`;
+      const confirm = await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.Warning,  undefined, uId);
+
+      return false;
+  }
+
+
+
+
+
 
   onKeyPress(evt:KeyboardEvent):boolean{
     const regexStr = '^[a-zA-Z0-9_.\\s-]+$';
