@@ -1883,11 +1883,6 @@ OpensWith=${shortCutData.opensWith}
        return URL.createObjectURL(new Blob([new Uint8Array(buffer)]));
     }
 
-    // private uint8ToBase64(arr:Uint8Array):string{
-    //     const base64String = btoa(String.fromCharCode(...new Uint8Array(arr)));
-    //     return base64String;
-    // }
-
     getUsedStorage():number{
         return this._usedStorageSizeInBytes;
     }
