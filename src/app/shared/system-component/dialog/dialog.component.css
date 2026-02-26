@@ -830,9 +830,9 @@
 
 
 
-/*Delete Warning Dialog Start*/
+/*Delete / In Use Warning Dialog Start*/
 
-.delete-warning__dialog-container {
+.delete-warning__dialog-container, .in-use-warning__dialog-container {
     inset: 0;
     display: flex;
     align-items: center;
@@ -841,68 +841,93 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
   
-.delete-warning__dialog {
+.delete-warning__dialog , .in-use-warning__dialog {
     width: 480px;
     height: 208px;
     background-color: #eee;
     padding: 20px 24px 16px 24px;
 }
 
-.delete-warning__dialog-body {
+.delete-warning__dialog-body, .in-use-warning__dialog-body {
     display: flex;
     align-items: flex-start;
     gap: 16px;
 }
 
-.delete-warning__icon {
+.delete-warning__icon, .in-use-warning__icon {
     width: 40px;
     height: 40px;
     /* background: #e0e0e0; */
     border-radius: 4px;
 }
 
-.delete-warning__dialog-content {
+.delete-warning__dialog-content, .in-use-warning__dialog-content {
     flex: 1;
 }
 
-.delete-warning__dialog-question {
+.delete-warning__dialog-question, .in-use-warning__dialog-question  {
     margin: 0;
     margin-bottom: 16px;
     font-size: 12px;
     color: #000;
 }
 
-.delete-warning__folder-info {
+.in-use-warning__dialog-warning{
+    margin: 0;
+    margin-bottom: 8px;
+    font-size: 12px;
+    text-align: left;
+    color: #000;
+}
+
+.in-use-warning__dialog-suggestion{
+    margin: 0;
+    margin-bottom: 2px;
+    font-size: 12px;
+    text-align: left;
+    color: #000;
+}
+
+.delete-warning__folder-info, .in-use-warning__folder-info {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 8px 10px;
 }
 
-.delete-warning__folder-metadata{
+.delete-warning__folder-metadata, .in-use-warning__folder-metadata{
     position: relative;
     top: -2px;
 }
 
-.delete-warning__folder-icon {
+.delete-warning__folder-icon, .in-use-warning__folder-icon {
     width: 72px;
     height: 72px;
 }
 
-.delete-warning__folder-name, .delete-warning__folder-date {
+.delete-warning__folder-name, .delete-warning__folder-date, .in-use-warning__folder-name, .in-use-warning__folder-date {
     text-align: left;
     font-size: 12px;
     color: #000;
 }
 
-.delete-warning__dialog-buttons {
+.delete-warning__dialog-buttons, .in-use-warning__dialog-buttons {
     position: relative;
     display: flex;
     justify-content: flex-end;
     bottom: -30px;
 }
+
+.in-use-warning__dialog-buttons {
+    top: 14px;
+}
+
+.in-use-warning__dialog-buttons.folder {
+    /* bottom: 0; */
+    top: 0;
+}
   
-/*Delete Warning Dialog End*/
+/*Delete / In Use Warning Dialog End*/
 
 .footer-btn {
     position: absolute;

@@ -60,6 +60,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   infoNotification =  UserNotificationType.Info;
   pwrOnOffNotification =  UserNotificationType.PowerOnOff;
   deleteWarnNotification = UserNotificationType.DeleteWarning;
+  inUseWarnNotification = UserNotificationType.InUseWarning;
   fileTransferProgressNotification =  UserNotificationType.FileTransferProgress;
   deleteProgressNotification = UserNotificationType.FileDeleteProgress;
 
@@ -112,6 +113,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   isQuestionHidden = false;
   isFileTransferInProgress = false;
   isFileDeleteInProgress = false;
+  isFolder = false;
   from = Constants.BLANK_SPACE;
   to = Constants.BLANK_SPACE;
   srcToDestPart1 = Constants.BLANK_SPACE;
@@ -133,6 +135,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   dialogTitle = Constants.EMPTY_STRING;
   type = ComponentType.System;
   dialogMgs = Constants.EMPTY_STRING;
+  inUseSuggestion = Constants.EMPTY_STRING;
   displayAdditionalMsg ='Application not found';
   name = Constants.EMPTY_STRING;
   hasWindow = false;
@@ -208,12 +211,14 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       this.setFileTransferDialogComponentDetail(action);
     }
 
-    if(this.notificationType === UserNotificationType.DeleteWarning){
+    if(this.notificationType === UserNotificationType.DeleteWarning || this.notificationType === UserNotificationType.InUseWarning){
       this.fIcon = this.inputFile.getIconPath;
       this.fName = this.inputFile.getFileName;
       this.fType = this.inputFile.getFileType;
       this.fPath = this.inputFile.getCurrentPath;
       this.fDateCreated = this.inputFile.getDateCreated;
+      this.inUseSuggestion = this.inputFile.getIsFile ? 'Close the file and try again ' : 'Close the folder or file and try again ';
+      this.isFolder = !this.inputFile.getIsFile;
     }
   }
 
@@ -230,7 +235,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
 
   onYesDialogBox():void{
-    if(this.notificationOption === UserNotificationType.Warning || this.notificationOption === UserNotificationType.DeleteWarning){
+    if(this.notificationOption === UserNotificationType.Warning 
+      || this.notificationOption === UserNotificationType.DeleteWarning
+      || this.notificationOption === UserNotificationType.InUseWarning){
       this.confirm.emit();
     }
     

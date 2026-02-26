@@ -10,6 +10,7 @@ export enum UserNotificationType {
     Info = "Info",
     Warning = "Warning",
     DeleteWarning = "DeleteWarning",
+    InUseWarning = "InUseWarning",
     PowerOnOff = "ShutdownRestart",
     FileTransferProgress = "FileTransferProgress",
     FileDeleteProgress = "FileDeleteProgress",

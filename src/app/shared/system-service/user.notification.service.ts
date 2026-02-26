@@ -87,7 +87,7 @@ export class UserNotificationService implements BaseService{
             componentRef.setInput('notificationType', warningType);
             componentRef.setInput('inputCallingProcessUId', uId);
 
-            if(warningType === UserNotificationType.DeleteWarning){
+            if(warningType === UserNotificationType.DeleteWarning || warningType === UserNotificationType.InUseWarning){
                 if(!fileInfo){
                     console.error('File Information can not be undefined or null');
                     resolve(false);

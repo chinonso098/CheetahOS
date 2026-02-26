@@ -2,7 +2,8 @@
                                   notificationOption === warnNotification ? warningNotice :
                                   notificationOption === infoNotification ? infoNotice :
                                   notificationOption === pwrOnOffNotification ? shutDownRestartNotice : 
-                                  notificationOption === deleteWarnNotification ? deleteWarning : fileTransfer">
+                                  notificationOption === deleteWarnNotification ? deleteWarning :
+                                  notificationOption === inUseWarnNotification ? inUseWarning : fileTransfer">
 </ng-container>
 
 <ng-template #errorNotice>
@@ -61,43 +62,6 @@
                 <span class="footer-btn">
                     <button class="btn btn-primary" (click)="onCloseDialogBox($event)" >
                         OK
-                    </button>
-                </span>
-            </div>
-        </div>
-    </cos-secondarywindow>
-</ng-template>
-
-<ng-template #warningNotice>
-    <cos-secondarywindow 
-    [runningProcessID]="processId" 
-    [displayMessage]="dialogTitle" 
-    [processAppName]="WARNING_DIALOG" 
-    [isDialog]="isDialog"
-    [callingProcessUId]="inputCallingProcessUId">
-    
-        <div  class="warning-dialog-main-container"> 
-            <div class="warning-dialog-mid-container" tabindex="0">
-                <div class="warning-dialog-mid-section1">
-                    <div class="warning-dialog-mid-img1">
-                        <figure class="warning-dialog-figure1">
-                            <img class="warning-dialog-img1" [src]="warningIcon"/>
-                        </figure>
-                    </div>
-                    <div class="warning-dialog-mid-txt1">
-                        <p class="warning-dialog-mid-section1-msg">{{dialogMgs}}</p>
-                    </div>
-                </div>
-            </div>
-        
-            <div class="warning-dialog-tail-container">
-                <span class="footer-btn">
-                    <button class="btn btn-primary" (click)="onYesDialogBox()" >
-                        Yes
-                    </button>
-                    <div style="padding-left: 5px; display: inline;"></div>
-                    <button class="btn btn-secondary" (click)="onCloseDialogBox($event)" >
-                        No
                     </button>
                 </span>
             </div>
@@ -248,10 +212,50 @@
     </cos-primarywindow>
 </ng-template>
 
+<ng-template #warningNotice>
+    <cos-secondarywindow 
+    [runningProcessID]="processId" 
+    [displayMessage]="dialogTitle" 
+    [processAppName]="WARNING_DIALOG" 
+    [isDialog]="isDialog"
+    [callingProcessUId]="inputCallingProcessUId">
+    
+        <div  class="warning-dialog-main-container"> 
+            <div class="warning-dialog-mid-container" tabindex="0">
+                <div class="warning-dialog-mid-section1">
+                    <div class="warning-dialog-mid-img1">
+                        <figure class="warning-dialog-figure1">
+                            <img class="warning-dialog-img1" [src]="warningIcon"/>
+                        </figure>
+                    </div>
+                    <div class="warning-dialog-mid-txt1">
+                        <p class="warning-dialog-mid-section1-msg">{{dialogMgs}}</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="warning-dialog-tail-container">
+                <span class="footer-btn">
+                    <button class="btn btn-primary" (click)="onYesDialogBox()" >
+                        Yes
+                    </button>
+                    <div style="padding-left: 5px; display: inline;"></div>
+                    <button class="btn btn-secondary" (click)="onCloseDialogBox($event)" >
+                        No
+                    </button>
+                </span>
+            </div>
+        </div>
+    </cos-secondarywindow>
+</ng-template>
+
 <ng-template #deleteWarning>
-    <cos-secondarywindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="WARNING_DIALOG" [isDialog]="isDialog">
-        <div class="delete-warning__dialog-container">
-            <div class="delete-warning__dialog">          
+    <cos-secondarywindow 
+    [runningProcessID]="processId" 
+    [displayMessage]="dialogTitle" 
+    [processAppName]="WARNING_DIALOG" [isDialog]="isDialog" [callingProcessUId]="inputCallingProcessUId">
+        <div class="delete-warning__dialog-container"> 
+            <div class="delete-warning__dialog" tabindex="0">          
               <div class="delete-warning__dialog-body">
                 <img [src]="contentInRecycleBin" alt="Recycle Bin" class="delete-warning__icon" />
           
@@ -276,6 +280,47 @@
                 <span class="footer-btn1">
                     <button class="btn btn-primary" (click)="onYesDialogBox()" >
                         Yes
+                    </button>
+                    <div style="padding-left: 10px; display: inline;"></div>
+                    <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
+                        No
+                    </button>
+                </span>
+              </div>
+            </div>
+        </div> 
+    </cos-secondarywindow>
+</ng-template>
+
+<ng-template #inUseWarning>
+    <cos-secondarywindow [
+        runningProcessID]="processId"  
+        [processAppIcon]="fileTransferIcon"  
+        [displayMessage]="dialogTitle" 
+        [processAppName]="WARNING_DIALOG" [isDialog]="isDialog" [callingProcessUId]="inputCallingProcessUId">
+        <div class="in-use-warning__dialog-container" > 
+            <div class="in-use-warning__dialog" tabindex="0">          
+              <div class="in-use-warning__dialog-body">
+                <div class="in-use-warning__dialog-content">
+                  <p class="in-use-warning__dialog-warning"> {{dialogMgs}} </p>
+                  <p class="in-use-warning__dialog-suggestion"> {{inUseSuggestion}}</p>
+          
+                  <div class="in-use-warning__folder-info">
+                    <img [src]="fIcon" alt="Folder" class="in-use-warning__folder-icon" />
+                    <div class="in-use-warning__folder-metadata">
+                      <div class="in-use-warning__folder-name">Name:{{fName}}</div>
+                      <div class="in-use-warning__folder-date">Type:{{fType}}</div>
+                      <div class="in-use-warning__folder-date">Path:{{fPath}}</div>
+                      <div class="in-use-warning__folder-date"> Date created:{{fDateCreated | date: 'dd MMM yyyy HH:mm' }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          
+              <div class="in-use-warning__dialog-buttons" [class.folder]="isFolder">
+                <span class="footer-btn1">
+                    <button class="btn btn-primary" (click)="onYesDialogBox()" >
+                        Retry
                     </button>
                     <div style="padding-left: 10px; display: inline;"></div>
                     <button class="btn btn-secondary" (click)="onCloseDialogBox()" >

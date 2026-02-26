@@ -2465,7 +2465,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     const isInUse = this._processHandlerService.isFileInUse(this.selectedFile.getCurrentPath);
     if(isInUse){
-      const result = await this.fileOrFolderInUseNotifcation(this.selectedFile.getIsFile);
+      const result = await this.fileOrFolderInUseNotifcation(!this.selectedFile.getIsFile);
       return;
     }
 
@@ -2484,19 +2484,20 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async fileOrFolderInUseNotifcation(isDir:boolean):Promise<boolean>{
 
-    const title = !isDir? 'Folder In Use' : 'File In Use';
-    const msg = `The action can't be completed because the ${isDir ? 'folder' : 'file'} is open in
+    const title = isDir ? 'Folder In Use' : 'File In Use';
+    const folderMsg = `The action can't be completed because the folder or a file in it is open in 
 another program`;
 
+      const fileMsg = `The action can't be completed because the file is open in
+another program`;
+
+    const msg = isDir ?  folderMsg : fileMsg;
+
       const uId = `${this.name}-${this.processId}`;
-      const confirm = await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.Warning,  undefined, uId);
+      const confirm = await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.InUseWarning,  this.selectedFile, uId);
 
       return false;
   }
-
-
-
-
 
 
   onKeyPress(evt:KeyboardEvent):boolean{
