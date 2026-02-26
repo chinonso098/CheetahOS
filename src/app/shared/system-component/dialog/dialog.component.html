@@ -251,26 +251,26 @@
 
 <ng-template #deleteWarning>
     <cos-secondarywindow 
-    [runningProcessID]="processId" 
-    [displayMessage]="dialogTitle" 
-    [processAppName]="WARNING_DIALOG" [isDialog]="isDialog" [callingProcessUId]="inputCallingProcessUId">
+        [runningProcessID]="processId" 
+        [displayMessage]="dialogTitle" 
+        [processAppName]="WARNING_DIALOG" [isDialog]="isDialog" [callingProcessUId]="inputCallingProcessUId">
         <div class="delete-warning__dialog-container"> 
             <div class="delete-warning__dialog" tabindex="0">          
               <div class="delete-warning__dialog-body">
-                <img [src]="contentInRecycleBin" alt="Recycle Bin" class="delete-warning__icon" />
+                <img [src]="deleteDialogIcon" alt="Recycle Bin" class="delete-warning__icon" />
           
                 <div class="delete-warning__dialog-content">
                   <p class="delete-warning__dialog-question">
-                    Are you sure that you want to move this folder to the Recycle Bin?
+                     {{dialogMgs}}
                   </p>
           
                   <div class="delete-warning__folder-info">
                     <img [src]="fIcon" alt="Folder" class="delete-warning__folder-icon" />
                     <div class="delete-warning__folder-metadata">
-                      <div class="delete-warning__folder-name">Name:{{fName}}</div>
-                      <div class="delete-warning__folder-date">Type:{{fType}}</div>
-                      <div class="delete-warning__folder-date">Path:{{fPath}}</div>
-                      <div class="delete-warning__folder-date"> Date created:{{fDateCreated | date: 'dd MMM yyyy HH:mm' }}</div>
+                      <div class="delete-warning__folder-name">Name: {{fName}}</div>
+                      <div class="delete-warning__folder-date">Type: {{fType}}</div>
+                      <div class="delete-warning__folder-date">Size: {{fSize}}</div>
+                      <div class="delete-warning__folder-date"> Date created: {{fDateCreated | date: 'dd MMM yyyy HH:mm' }}</div>
                     </div>
                   </div>
                 </div>
@@ -293,8 +293,8 @@
 </ng-template>
 
 <ng-template #inUseWarning>
-    <cos-secondarywindow [
-        runningProcessID]="processId"  
+    <cos-secondarywindow 
+       [runningProcessID]="processId"  
         [processAppIcon]="fileTransferIcon"  
         [displayMessage]="dialogTitle" 
         [processAppName]="WARNING_DIALOG" [isDialog]="isDialog" [callingProcessUId]="inputCallingProcessUId">
@@ -308,10 +308,10 @@
                   <div class="in-use-warning__folder-info">
                     <img [src]="fIcon" alt="Folder" class="in-use-warning__folder-icon" />
                     <div class="in-use-warning__folder-metadata">
-                      <div class="in-use-warning__folder-name">Name:{{fName}}</div>
-                      <div class="in-use-warning__folder-date">Type:{{fType}}</div>
-                      <div class="in-use-warning__folder-date">Path:{{fPath}}</div>
-                      <div class="in-use-warning__folder-date"> Date created:{{fDateCreated | date: 'dd MMM yyyy HH:mm' }}</div>
+                      <div class="in-use-warning__folder-name">Name: {{fName}}</div>
+                      <div class="in-use-warning__folder-date">Type: {{fType}}</div>
+                      <div class="in-use-warning__folder-date">Size: {{fSize}}</div>
+                      <div class="in-use-warning__folder-date"> Date created: {{fDateCreated | date: 'dd MMM yyyy HH:mm' }}</div>
                     </div>
                   </div>
                 </div>

@@ -29,6 +29,7 @@ import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
+import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -57,6 +58,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _audioService!:AudioService;
   private _systemNotificationService!:SystemNotificationService;
   private _activityHistoryService!:ActivityHistoryService;
+  private _defaultService!: DefaultService;
   private _formBuilder;
   private _appState!:AppState;
 
@@ -74,7 +76,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _minimizeWindowSub!: Subscription;
   private _creatShortCutOnDesktopSub!: Subscription;
   
-
+  private isActive = false;
+  private isFocus = false;
   private isPrevBtnActive = false;
   private isNextBtnActive = false;
   private isUpBtnActive = true;
@@ -87,8 +90,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isRecycleBinFolder = false;
   private isDragFromFileExplorerActive = false;
 
-  private isActive = false;
-  private isFocus = false;
+  private confirmDelete = false;
 
   isDetailsView = false;
   isNotDetailsView = true;
@@ -261,7 +263,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, 
               triggerProcessService:ProcessHandlerService, formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, 
               menuService:MenuService, notificationService:UserNotificationService, windowService:WindowService, 
-              audioService:AudioService, systemNotificationService:SystemNotificationService, activityHistoryService:ActivityHistoryService) { 
+              audioService:AudioService, systemNotificationService:SystemNotificationService, activityHistoryService:ActivityHistoryService,
+              defaultService: DefaultService) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -275,7 +278,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._systemNotificationService = systemNotificationService;
     this._activityHistoryService = activityHistoryService;
     this._formBuilder = formBuilder;
-
+    this._defaultService = defaultService;
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
 
@@ -586,6 +589,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const next = this.normalizePath(targetPath);
     const cur  = this.normalizePath(this.directory);
 
+    if(this.mounthPath !== Constants.EMPTY_STRING && !next.includes(this.mounthPath)){
+      this.mounthPath = Constants.EMPTY_STRING;
+    }
+
     if (!next || next === cur) return;
 
     // Stack updates
@@ -602,8 +609,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.nextPathEntries = [];
     }
 
-    // Apply directory
-    this.directory = next;
+    const detectedMount = this._fileService.findMountPointForPath(next);
+    if(detectedMount !== Constants.EMPTY_STRING){
+      this.mounthPath = detectedMount;
+      this.directory = detectedMount;
+    }else{
+      // Apply directory
+      this.directory = next;
+    }
+
 
     // UI state for back/forward
     this.isPrevBtnActive = this.prevPathEntries.length > 0;
@@ -752,6 +766,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async navigateToFolder(data: string[]): Promise<void> {
     console.log('navigateToFolder:', data);
+
+    this.mounthPath === Constants.EMPTY_STRING; // reset any prior mounted zip path when navigating via file tree
 
     const quickAccess = 'Quick access';
     const thisPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
@@ -1149,9 +1165,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // console.log('what was clicked:',file.getFileName +'-----' + file.getOpensWith +'---'+ file.getCurrentPath +'----'+ file.getIcon) TBD
     if(isFolder || isZipFile){
+
       if(isZipFile && this.mounthPath === Constants.EMPTY_STRING){
-        const mountPath = await this.getZipFileMountPath(file.getCurrentPath);
-        this.directory = mountPath; this.mounthPath = mountPath;
+        const detectedMount = this._fileService.findMountPointForPath(file.getCurrentPath);
+        if(detectedMount !== Constants.EMPTY_STRING){
+          this.mounthPath = detectedMount;
+          this.directory = detectedMount;
+        }else{
+          const mountPath = await this.getZipFileMountPath(file.getCurrentPath);
+          this.directory = mountPath; this.mounthPath = mountPath;
+        }
       }
 
       if(!this.isNavigatedBefore){
@@ -2204,7 +2227,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         };
       });
     }else if(isFile && !isFolder){
-      const fileTypeName = (fileType !== Constants.FOLDER)? this.getFileTypeName(fileType) : this.getFileTypeName(Constants.URL);
+      const fileTypeName = (fileType !== Constants.FOLDER)?  CommonFunctions.getFileTypeName(fileType) : CommonFunctions.getFileTypeName(Constants.URL);
       this.fileInfoTipData.push({label:infoTipFields[7], data:fileTypeName});
       this.fileInfoTipData.push({label:infoTipFields[3], data: fileDateModified });
       this.fileInfoTipData.push({ label: infoTipFields[6], data: fileSize });
@@ -2240,13 +2263,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   getFileTypeName(fileExt:string):string{
-    for(const map of Constants.FILE_EXTENSION_MAP){
-      if(map[0] === fileExt) {
-         return map[1];
-      }
-    }
-
-    return 'Unknown File';
+    return  CommonFunctions.getFileTypeName(fileExt);
   }
 
   showInvalidCharsToolTip():void{
@@ -2460,18 +2477,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async onDeleteFile():Promise<void>{
+
     const desktopRefreshDelay = 1000;
-    let result = false;
+    const callerUId = `${this.name}-${this.processId}`;
 
-    const isInUse = this._processHandlerService.isFileInUse(this.selectedFile.getCurrentPath);
-    if(isInUse){
-      const result = await this.fileOrFolderInUseNotifcation(!this.selectedFile.getIsFile);
-      return;
-    }
+    const result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile, false,
+      { file: this.selectedFile, callerUId }
+    );
 
-    //## confirm delete with user
-
-    result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
     if(result){
       this._menuService.resetStoreData();
       await this.loadFiles();
@@ -2480,23 +2493,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this._fileService.addEventOriginator(Constants.DESKTOP);
       this._fileService.dirFilesUpdateNotify.next();
     }
-  }
-
-  async fileOrFolderInUseNotifcation(isDir:boolean):Promise<boolean>{
-
-    const title = isDir ? 'Folder In Use' : 'File In Use';
-    const folderMsg = `The action can't be completed because the folder or a file in it is open in 
-another program`;
-
-      const fileMsg = `The action can't be completed because the file is open in
-another program`;
-
-    const msg = isDir ?  folderMsg : fileMsg;
-
-      const uId = `${this.name}-${this.processId}`;
-      const confirm = await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.InUseWarning,  this.selectedFile, uId);
-
-      return false;
   }
 
 
@@ -2579,7 +2575,10 @@ another program`;
 
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName){
 
-      const renameResult = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText,  this.selectedFile.getIsFile);
+      const callerUId = `${this.name}-${this.processId}`;
+      const renameResult = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText,  this.selectedFile.getIsFile,
+        { file: this.selectedFile, callerUId }
+      );
       if(renameResult){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         //const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath === this.selectedFile.getContentPath) && (f.getFileName === this.selectedFile.getFileName));

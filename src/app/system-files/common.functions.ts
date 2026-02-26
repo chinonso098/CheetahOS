@@ -265,4 +265,14 @@ export namespace CommonFunctions {
     systemNotificationService.setSystemPendingAction(Constants.EMPTY_STRING);
   }
 
+  export const getFileTypeName = (fileExt:string):string => {
+    for(const map of Constants.FILE_EXTENSION_MAP){
+      if(map[0] === fileExt) {
+         return map[1];
+      }
+    }
+
+    return 'Unknown File';
+  }
+
 }

@@ -35,3 +35,9 @@ export interface FileTransferMoveOptions {
     moveFolderItself?: boolean; // true = move folder, false = move only contents
     skipCounter?: number;
 }
+
+export interface FileOperationCheck {
+    file: import('./file.info').FileInfo;
+    callerUId?: string;
+    skipConfirmDialog?: boolean;
+}

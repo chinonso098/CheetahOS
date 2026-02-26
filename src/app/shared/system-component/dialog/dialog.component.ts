@@ -73,6 +73,11 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   readonly warningIcon = `${Constants.IMAGE_BASE_PATH}warning.png`;
   readonly errorIcon = `${Constants.IMAGE_BASE_PATH}red_x.png`;
   readonly fileTransferIcon = `${Constants.IMAGE_BASE_PATH}file_transfer.png`;
+  readonly fileDeleteIcon = `${Constants.IMAGE_BASE_PATH}file_delete.png`;
+  readonly folderDeleteIcon = `${Constants.IMAGE_BASE_PATH}folder_delete.png`;
+
+  deleteDialogIcon = Constants.EMPTY_STRING;
+
   readonly errorNotificationAudio = `${Constants.AUDIO_BASE_PATH}cheetah_critical_stop.wav`;
   readonly cheetahBackGroundNotifyAudio = `${Constants.AUDIO_BASE_PATH}cheetah_background.wav`;
 
@@ -130,6 +135,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   fName = Constants.EMPTY_STRING;
   fType = Constants.EMPTY_STRING;
   fPath = Constants.EMPTY_STRING;
+  fSize = Constants.EMPTY_STRING;
   fDateCreated!:Date;
 
   dialogTitle = Constants.EMPTY_STRING;
@@ -214,12 +220,29 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     if(this.notificationType === UserNotificationType.DeleteWarning || this.notificationType === UserNotificationType.InUseWarning){
       this.fIcon = this.inputFile.getIconPath;
       this.fName = this.inputFile.getFileName;
-      this.fType = this.inputFile.getFileType;
-      this.fPath = this.inputFile.getCurrentPath;
+      this.fType = this.inputFile.getIsFile ? CommonFunctions.getFileTypeName(this.inputFile.getFileType) : 'Folder';
+      //this.fPath = this.inputFile.getCurrentPath;
+      this.fSize = `${this.inputFile.getSize} ${this.inputFile.getFileSizeUnit}`;
       this.fDateCreated = this.inputFile.getDateCreated;
-      this.inUseSuggestion = this.inputFile.getIsFile ? 'Close the file and try again ' : 'Close the folder or file and try again ';
-      this.isFolder = !this.inputFile.getIsFile;
+
+      this.deleteDialogIconChange();
+
+      if(this.notificationType === UserNotificationType.InUseWarning){
+        this.inUseSuggestion = this.inputFile.getIsFile ? 'Close the file and try again' : 'Close the folder or file and try again';
+        this.isFolder = !this.inputFile.getIsFile;
+      }
     }
+  }
+
+  deleteDialogIconChange():void{
+    if(this.notificationOption !== UserNotificationType.DeleteWarning) return;
+
+    if(this.inputFile.getCurrentPath.includes(Constants.RECYCLE_BIN_PATH)){
+      this.deleteDialogIcon = this.inputFile.getIsFile ? this.fileDeleteIcon : this.folderDeleteIcon;
+      return;
+    }
+
+    this.deleteDialogIcon = this.contentInRecycleBin;
   }
 
   async ngAfterViewInit(): Promise<void> {

@@ -844,7 +844,7 @@
 .delete-warning__dialog , .in-use-warning__dialog {
     width: 480px;
     height: 208px;
-    background-color: #eee;
+    background-color: #f0f0f0;
     padding: 20px 24px 16px 24px;
 }
 
@@ -900,15 +900,24 @@
     top: -2px;
 }
 
-.delete-warning__folder-icon, .in-use-warning__folder-icon {
+.delete-warning__folder-icon {
     width: 72px;
     height: 72px;
+}
+
+.in-use-warning__folder-icon {
+    width: 62px;
+    height: 62px;
 }
 
 .delete-warning__folder-name, .delete-warning__folder-date, .in-use-warning__folder-name, .in-use-warning__folder-date {
     text-align: left;
     font-size: 12px;
     color: #000;
+}
+
+.in-use-warning__folder-name, .in-use-warning__folder-date {
+    font-size: 11px;
 }
 
 .delete-warning__dialog-buttons, .in-use-warning__dialog-buttons {

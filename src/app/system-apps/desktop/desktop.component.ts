@@ -3,7 +3,7 @@ import { AfterViewInit, OnInit,OnDestroy, Component, ElementRef, ViewChild} from
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { BIRDS, GLOBE, HALO, RINGS, WAVE } from './vanta-object/vanta.interfaces';
-import { ActivityType, SortBys, UserNotificationType } from 'src/app/system-files/common.enums';
+import { ActivityType, SortBys } from 'src/app/system-files/common.enums';
 import { Colors } from './colorutil/colors';
 import { FileInfo } from 'src/app/system-files/file.info';
 
@@ -1846,24 +1846,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async onDelete(): Promise<void> {
 
-    if(this.confirmDelete && this.markedBtnIds.length === 1){
-      const msg = Constants.EMPTY_STRING;
-      const title = (this.selectedFile.getIsFile && this.selectedFile.getFileType === Constants.URL)
-      ? 'Delete Shortcut'
-      : `Delete ${this.selectedFile.getIsFile ? 'File' : 'Folder'}`;
-    
-      const confirmed = await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.DeleteWarning, this.selectedFile);
-      if(!confirmed) return;
-    }
-
     // Determine which files to delete
     const filesToDelete = (this.areMultipleIconsHighlighted)
       ? this.markedBtnIds.map(id => this.files[Number(id)])
       : [this.selectedFile];
 
-    // Run deletions concurrently
+    // Run deletions concurrently — the service handles confirm-delete (first file only) and file-in-use checks
     const results = await Promise.all(
-      filesToDelete.map(f => this._fileService.deleteAsync(f.getCurrentPath, f.getIsFile))
+      filesToDelete.map((f, i) => this._fileService.deleteAsync(f.getCurrentPath, f.getIsFile, false,
+        { file: f, skipConfirmDialog: i > 0 }
+      ))
     );
 
     // If all deletions succeeded
@@ -2033,7 +2025,9 @@ OpensWith=${file.getOpensWith}
     const oldFileName = this.selectedFile.getFileName;
  
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName ){
-      const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile);
+      const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile,
+        { file: this.selectedFile }
+      );
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         const fileIdx = this.files.findIndex(f => (dirname(f.getCurrentPath) === dirname(this.selectedFile.getCurrentPath)) && (f.getFileName === this.selectedFile.getFileName));

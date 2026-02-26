@@ -331,14 +331,6 @@ export class ProcessHandlerService implements BaseService{
         this.priorOpenedAppInstanceUId= [];
     }
 
-    public isFileInUse(fPath:string): boolean{
-        const processes = this._runningProcessService.getProcesses();
-        return processes.some( process => {
-            const trigger = process.getProcessTrigger as FileInfo
-            return trigger?.getCurrentPath === fPath;
-        });
-    }
-
     private shouldRestoreUserOpenedApps(): boolean{
         const restorePriorOpenedAppsState = this._defaultService.getDefaultSetting(Constants.DEFAULT_RESTORE_USER_OPENED_APPS);
         const restorePriorOpenedApps = (restorePriorOpenedAppsState === Constants.TRUE) ? true : false;

@@ -2919,9 +2919,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   async onDeleteFile():Promise<void>{
     const desktopRefreshDelay = 1000;
-    let result = false;
+    const callerUId = `${this.name}-${this.processId}`;
 
-    result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile);
+    const result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile, false,
+      { file: this.selectedFile, callerUId }
+    );
+
     if(result){
       this._menuService.resetStoreData();
       await this.loadFiles();
@@ -3018,7 +3021,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName){
 
-      const renameResult = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText,  this.selectedFile.getIsFile);
+      const callerUId = `${this.name}-${this.processId}`;
+      const renameResult = await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText,  this.selectedFile.getIsFile,
+        { file: this.selectedFile, callerUId }
+      );
       if(renameResult){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         //const fileIdx = this.fileExplrFiles.findIndex(f => (f.getCurrentPath == this.selectedFile.getContentPath) && (f.getFileName == this.selectedFile.getFileName));

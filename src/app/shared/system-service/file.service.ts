@@ -28,7 +28,7 @@ import { SystemNotificationService } from "./system.notification.service";
 import { OpensWith } from "src/app/system-files/common.interfaces";
 import { zipSync, unzipSync } from "fflate";
 import { CommonFunctions } from "src/app/system-files/common.functions";
-import { FileTransferUpdate, FileTransferCopyOptions, FileTransferCount, FileTransferMoveOptions } from "src/app/system-files/file.system.types";
+import { FileTransferUpdate, FileTransferCopyOptions, FileTransferCount, FileTransferMoveOptions, FileOperationCheck } from "src/app/system-files/file.system.types";
 import { UserNotificationType } from "src/app/system-files/common.enums";
 
 
@@ -895,7 +895,13 @@ export class FileService implements BaseService{
     }
 
     //virtual filesystem, use copy and then delete
-    public async moveAsync(srcPath: string, destPath: string, isFile?: boolean, isRecycleBin?: boolean): Promise<boolean> {
+    public async moveAsync(srcPath: string, destPath: string, isFile?: boolean, isRecycleBin?: boolean, check?:FileOperationCheck): Promise<boolean> {
+        // When a FileOperationCheck is provided, the service handles the file-in-use check
+        if(check && this.isFileInUse(check.file.getCurrentPath)){
+            await this.showFileInUseNotification(check.file, check.callerUId);
+            return false;
+        }
+
         const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
 
         this.abortController = new AbortController();
@@ -1244,7 +1250,13 @@ export class FileService implements BaseService{
         return result;
     }
 
-    public async renameAsync(path:string, newFileName:string, isFile?:boolean): Promise<boolean> {
+    public async renameAsync(path:string, newFileName:string, isFile?:boolean, check?:FileOperationCheck): Promise<boolean> {
+        // When a FileOperationCheck is provided, the service handles the file-in-use check
+        if(check && this.isFileInUse(check.file.getCurrentPath)){
+            await this.showFileInUseNotification(check.file, check.callerUId);
+            return false;
+        }
+
         const rename = `${dirname(path)}/${newFileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
         const isDirectory = (isFile === undefined) ? await this.isDirectory(path) : !isFile;
 
@@ -1292,7 +1304,20 @@ OpensWith=${shortCutData.opensWith}
         return await this.deleteFileAsync(srcPath);
     }
 
-    public async deleteAsync(path:string, isFile?:boolean, isRecycleBin?:boolean):Promise<boolean> {
+    public async deleteAsync(path:string, isFile?:boolean, isRecycleBin?:boolean, check?:FileOperationCheck):Promise<boolean> {
+        // When a FileOperationCheck is provided, the service handles confirm-delete and file-in-use checks
+        if(check){
+            if(!check.skipConfirmDialog && this.getConfirmDeleteState()){
+                const confirmed = await this.showDeleteConfirmation(check.file);
+                if(!confirmed) return false;
+            }
+
+            if(this.isFileInUse(check.file.getCurrentPath)){
+                await this.showFileInUseNotification(check.file, check.callerUId);
+                return false;
+            }
+        }
+
         // is file or folder not currently in the bin, move it to the bin if option is allow, or delete it right away
         if(isRecycleBin){
             return await this.deleteFolderHandlerAsync(path, isRecycleBin);
@@ -1410,7 +1435,52 @@ OpensWith=${shortCutData.opensWith}
         const confirmationState = this._defaultService.getDefaultSetting(Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE);
         return confirmationState === Constants.TRUE;
     }
-    
+
+    getConfirmDeleteState():boolean{
+        const confirmationState = this._defaultService.getDefaultSetting(Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG);
+        return confirmationState === Constants.TRUE;
+    }
+
+    isFileInUse(filePath:string):boolean{
+        const processes = this._runningProcessService.getProcesses();
+        return processes.some(process => {
+            const trigger = process.getProcessTrigger as FileInfo;
+            return trigger?.getCurrentPath === filePath;
+        });
+    }
+
+    async showDeleteConfirmation(file:FileInfo):Promise<boolean>{
+        let msg = Constants.EMPTY_STRING;
+
+        if((file.getCurrentPath.includes(Constants.RECYCLE_BIN_PATH))) { // is file or folder in recycle bin
+            msg = (file.getIsFile) 
+            ? 'Are you sure that you want to permanently delete this file?' 
+            : ' Are you sure that you want to permanently delete this folder ?' 
+        }
+        else{
+            msg = (file.getIsFile) 
+            ? 'Are you sure that you want to move this file to the Recycle Bin?' 
+            : ' Are you sure that you want to move this folder to the Recycle Bin?' 
+        }
+
+        const title = (file.getIsFile && file.getFileType === Constants.URL)
+            ? 'Delete Shortcut'
+            : `Delete ${file.getIsFile ? 'File' : 'Folder'}`;
+
+        return await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.DeleteWarning, file);
+    }
+
+    async showFileInUseNotification(file:FileInfo, callerUId:string = Constants.EMPTY_STRING):Promise<boolean>{
+        const isDir = !file.getIsFile;
+        const title = isDir ? 'Folder In Use' : 'File In Use';
+        const msg = isDir
+            ? `The action can't be completed because the folder or a file in it is open in another program`
+            : `The action can't be completed because the file is open in another program`;
+
+        await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.InUseWarning, file, callerUId);
+        return false;
+    }
+
     public  async countFolderItems(path:string): Promise<number> {
         return new Promise<number>((resolve) =>{
             this._fileSystem.readdir(path, (readDirErr, files) =>{

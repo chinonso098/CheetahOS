@@ -279,7 +279,7 @@ export namespace Constants{
         ['.c', 'C File'],
         ['.cpp', 'C++ File'],
         ['.html', 'HTML File'],
-        ['.zip', 'ZIP File'],
+        ['.zip', 'Compressed (zipped) Folder'],
         ['.cab', 'CAB File']
 
     ]
