@@ -618,6 +618,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.directory = next;
     }
 
+    this.generateFileAndUpdateProcess(); // this must happen after directory is set;
 
     // UI state for back/forward
     this.isPrevBtnActive = this.prevPathEntries.length > 0;
@@ -800,6 +801,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
      
     // --- Apply navigation ---
     this.directory = targetDir;
+    this.generateFileAndUpdateProcess(); // this must happen after directory is set;
 
     // --- Icon ---
     if(rawPath === `/Users/${fileName}`){
@@ -1202,6 +1204,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.generateBreadCrumbs();
       this.setNavPathIcon(file.getFileName, file.getCurrentPath);
       this.storeAppState(file.getCurrentPath);
+      this.updatedProcesss(file);
   
       await this.loadFiles();
       await CommonFunctions.sleep(this.SECONDS_DELAY[4])
@@ -2777,6 +2780,19 @@ OpensWith=${file.getOpensWith}
       if(result)
         await this.loadFiles();
     }
+  }
+
+  private generateFileAndUpdateProcess():void{
+    const updateFile = new FileInfo();
+    updateFile.setOpensWith = Constants.FILE_EXPLORER 
+    updateFile.setCurrentPath = this.directory;
+    updateFile.setIsFile = false;
+    this.updatedProcesss(updateFile);
+  }
+
+  private updatedProcesss(file:FileInfo):void{
+    const updtProcesss =  new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, file);
+    this._runningProcessService.updateProccess(updtProcesss);
   }
 
   private getComponentDetail():Process{
