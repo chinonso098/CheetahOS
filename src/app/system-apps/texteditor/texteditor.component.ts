@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
@@ -31,7 +31,8 @@ declare const Quill:any;
 
 export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterViewInit, OnInit  {
 
-  @ViewChild('editorContainer', {static: true}) editorContainer!: ElementRef;
+  @ViewChild('editorSurface', { static: true }) editorSurface!: ElementRef<HTMLElement>;
+  @ViewChild('editorRoot', { static: true }) editorRoot!: ElementRef<HTMLElement>;
   @Input() priorUId = Constants.EMPTY_STRING;
   
   private _processIdService!:ProcessIDService;
@@ -47,6 +48,20 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   private _maximizeWindowSub!: Subscription;
   private fileSrc = Constants.EMPTY_STRING;
   private quill: any;
+
+  isReady = false;
+  isDirty = false;
+  isSaving = false;
+
+  cursorLine = 1;
+  cursorCol = 1;
+  selectedCount = 0;
+
+  private quillSelectionHandler?: (range: any, oldRange: any, source: any) => void;
+  private quillTextChangeHandler?: (delta: any, oldDelta: any, source: any) => void;
+
+  private saveInFlight = false;
+  private destroyed = false;
 
   SECONDS_DELAY = 250;
 
@@ -81,43 +96,114 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   }
 
 
-  ngAfterViewInit(): void {
-    //this.setTextEditorWindowToFocus(this.processId); 
+  // ngAfterViewInit(): void {
+  //   //this.setTextEditorWindowToFocus(this.processId); 
 
-    this.fileSrc = (this.fileSrc !== Constants.EMPTY_STRING)? 
-    this.fileSrc : this.getFileSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+  //   this.fileSrc = (this.fileSrc !== Constants.EMPTY_STRING)? 
+  //   this.fileSrc : this.getFileSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    const options = {
-      debug: 'info',
-      modules: {
-        toolbar: true,
-      },
-      placeholder: 'Compose an epic...',
-      theme: 'snow'
-    };
-    this._scriptService.loadScript("quilljs","osdrive/Program-Files/Quill/quill.js").then( async() =>{
+  //   const options = {
+  //     debug: 'info',
+  //     modules: {
+  //       toolbar: true,
+  //     },
+  //     placeholder: 'Compose an epic...',
+  //     theme: 'snow'
+  //   };
+  //   this._scriptService.loadScript("quilljs","osdrive/Program-Files/Quill/quill.js").then( async() =>{
   
-      const textCntnt = await this._fileService.getFileAsTextAsync(this.fileSrc);
-      const index = 0;
+  //     const textCntnt = await this._fileService.getFileAsTextAsync(this.fileSrc);
+  //     const index = 0;
 
-      this.quill = new Quill(this.editorContainer.nativeElement, options)
-      this.quill.insertText(index, textCntnt, {
-        color: '#ffff00',
-        italic: false,
-      });
-    })
+  //     this.quill = new Quill(this.editorContainer.nativeElement, options)
+  //     this.quill.insertText(index, textCntnt, {
+  //       color: '#ffff00',
+  //       italic: false,
+  //     });
+  //   })
 
-    setTimeout(()=>{
-      this.captureComponentImg();
-    },this.SECONDS_DELAY) 
+  //   setTimeout(()=>{
+  //     this.captureComponentImg();
+  //   },this.SECONDS_DELAY) 
+  // }
+
+  async ngAfterViewInit(): Promise<void> {
+    try {
+      this.fileSrc = (this.fileSrc !== Constants.EMPTY_STRING)
+        ? this.fileSrc
+        : this.getFileSrc(this._fileInfo?.getContentPath ?? Constants.EMPTY_STRING, this._fileInfo?.getCurrentPath ?? Constants.EMPTY_STRING);
+
+      if (!this.fileSrc || this.fileSrc === Constants.EMPTY_STRING) {
+        // No file path available; still allow an empty editor.
+        this.fileSrc = Constants.EMPTY_STRING;
+      }
+
+      const options = {
+        debug: 'info',
+        modules: { toolbar: true },
+        placeholder: 'Start typing...',
+        theme: 'snow'
+      };
+
+      await this._scriptService.loadScript("quilljs", "osdrive/Program-Files/Quill/quill.js");
+
+      // Initialize Quill
+      this.quill = new Quill(this.editorSurface.nativeElement, options);
+
+      // Load file contents (if we have a real path)
+      if (this.fileSrc !== Constants.EMPTY_STRING) {
+        const textCntnt = await this._fileService.getFileAsTextAsync(this.fileSrc);
+        // Set as plain text; keeps things predictable for line/col math
+        this.quill.setText(textCntnt ?? '');
+      } else {
+        this.quill.setText('');
+      }
+
+      // Mark ready and compute initial status
+      this.isReady = true;
+      this.isDirty = false;
+      this.updateCursorAndSelection();
+
+      // Track selection changes (cursor position + selected length)
+      this.quillSelectionHandler = () => this.updateCursorAndSelection();
+      this.quill.on('selection-change', this.quillSelectionHandler);
+
+      // Track text changes (dirty flag)
+      this.quillTextChangeHandler = (_delta: any, _oldDelta: any, source: any) => {
+        if (source === 'user') {
+          this.isDirty = true;
+          this.updateCursorAndSelection();
+        }
+      };
+      this.quill.on('text-change', this.quillTextChangeHandler);
+
+      // Snapshot for taskbar preview
+      setTimeout(() => {
+        if (!this.destroyed) this.captureComponentImg();
+      }, this.SECONDS_DELAY);
+
+    } catch (err) {
+      console.warn('TextEditor init failed:', err);
+      this.isReady = false;
+    }
   }
 
-  ngOnDestroy():void{
-    this._maximizeWindowSub?.unsubscribe();
+ngOnDestroy(): void {
+  this.destroyed = true;
+
+  this._maximizeWindowSub?.unsubscribe();
+
+  // Detach Quill handlers if initialized
+  if (this.quill && this.quillSelectionHandler) {
+    this.quill.off('selection-change', this.quillSelectionHandler);
   }
+  if (this.quill && this.quillTextChangeHandler) {
+    this.quill.off('text-change', this.quillTextChangeHandler);
+  }
+}
 
   captureComponentImg():void{
-    htmlToImage.toPng(this.editorContainer.nativeElement).then(htmlImg =>{
+    htmlToImage.toPng(this.editorRoot.nativeElement).then(htmlImg =>{
       //console.log('img data:',htmlImg);
 
       const cmpntImg:TaskBarPreviewImage = {
@@ -132,6 +218,82 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     })
   }
 
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(evt: KeyboardEvent): void {
+    if (!this.isReady) return;
+
+    const key = evt.key?.toLowerCase();
+    const isSave = (evt.ctrlKey || evt.metaKey) && key === 's';
+
+    if (isSave) {
+      evt.preventDefault();
+      void this.saveFile();
+    }
+  }
+
+  async saveFile(): Promise<void> {
+    if (!this.isReady) return;
+    if (this.isSaving || this.saveInFlight) return;
+    if (!this.isDirty) return;
+
+    // You need a real path to save. If your editor can be “untitled”,
+    // you must implement “Save As” elsewhere.
+    if (!this.fileSrc || this.fileSrc === Constants.EMPTY_STRING) {
+      console.warn('No fileSrc available. Implement Save As for untitled docs.');
+      return;
+    }
+
+    try {
+      this.isSaving = true;
+      this.saveInFlight = true;
+
+      // Quill always has a trailing newline; remove it for file output.
+      const raw = this.quill.getText(0, this.quill.getLength());
+      const normalized = raw.endsWith('\n') ? raw.slice(0, -1) : raw;
+
+      // REQUIRED: implement this method in FileService (see section 4)
+      await this._fileService.writeFileAsync(this.fileSrc, normalized);
+
+      this.isDirty = false;
+      this.storeAppState(this.fileSrc);
+
+      // Optional: refresh preview after save
+      this.captureComponentImg();
+    } catch (err) {
+      console.warn('Save failed:', err);
+    } finally {
+      this.isSaving = false;
+      this.saveInFlight = false;
+    }
+  }
+
+  private updateCursorAndSelection(): void {
+    if (!this.quill) return;
+
+    const range = this.quill.getSelection();
+    if (!range) {
+      // When editor loses focus, keep last known line/col, but clear selection count
+      this.selectedCount = 0;
+      return;
+    }
+
+    const index = Math.max(0, range.index ?? 0);
+    const length = Math.max(0, range.length ?? 0);
+
+    this.selectedCount = length;
+
+    // Compute line/col from plain text prefix
+    // NOTE: getText returns a trailing newline for the doc; prefix math still works.
+    const prefix = this.quill.getText(0, index);
+    const lastNewline = prefix.lastIndexOf('\n');
+
+    const line = prefix.split('\n').length; // 1-based
+    const col = (lastNewline === -1) ? (index + 1) : (index - lastNewline);
+
+    this.cursorLine = Math.max(1, line);
+    this.cursorCol = Math.max(1, col);
+  }
+
   maximizeWindow():void{
 
     const uId = `${this.name}-${this.processId}`;
@@ -143,8 +305,8 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
       const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
       //window title and button bar, and windows taskbar height
       const pixelTosubtract = 30 + 40;
-      this.editorContainer.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
-      this.editorContainer.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      this.editorRoot.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
+      this.editorRoot.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
 
     }
   }

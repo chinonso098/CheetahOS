@@ -1,6 +1,89 @@
-.editor-main-container {
+/* .editor-main-container {
     min-width: 800px;
     width: 100%;
     min-height: 600px;
-    /* height: 100%; */
-  }
+ 
+  } */
+
+
+/* Root: responsive, no hard min-width that breaks small screens */
+.editor-main-container {
+  /* width: 100%;
+  height: 100%; */
+  width: 720px;     /* critical for flex layouts, set to 0 */
+  height: 600px;    /* critical for scroll containers, set to 0 */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden; /* keeps status bar clean */
+}
+
+/* Quill mount surface: becomes the scroll container */
+.editor-surface {
+  flex: 1 1 auto;
+  height: 100%;
+  width: 100%;
+  overflow: auto;   /* vertical + horizontal scroll when needed */
+  background-color: #fff;
+}
+
+/* Ensure Quill fills the surface */
+.editor-surface .ql-container {
+  height: 100%;
+}
+
+/* Make horizontal scroll actually possible on long lines */
+.editor-surface .ql-editor {
+  white-space: pre;     /* no forced wrapping; enables horizontal scroll */
+  overflow-wrap: normal;
+  word-break: normal;
+  tab-size: 2;
+}
+
+/* Fixed bottom bar inside editor area */
+.editor-statusbar {
+  flex: 0 0 auto;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
+  user-select: none;
+  font-size: 12px;
+}
+
+/* Bar layout */
+.editor-statusbar__left,
+.editor-statusbar__right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sb-sep {
+  opacity: 0.6;
+}
+
+.sb-item {
+  opacity: 0.9;
+}
+
+.sb-item.is-dirty {
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* Small button */
+.sb-btn {
+  height: 20px;
+  padding: 0 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sb-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
