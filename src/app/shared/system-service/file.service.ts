@@ -1445,7 +1445,7 @@ OpensWith=${shortCutData.opensWith}
         const processes = this._runningProcessService.getProcesses();
         return processes.some(process => {
             const trigger = process.getProcessTrigger as FileInfo;
-            return trigger?.getCurrentPath === filePath;
+            return trigger?.getCurrentPath === filePath  || trigger?.getCurrentPath.includes(filePath);
         });
     }
 
