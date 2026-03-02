@@ -1304,11 +1304,13 @@ OpensWith=${shortCutData.opensWith}
         return await this.deleteFileAsync(srcPath);
     }
 
-    public async deleteAsync(path:string, isFile?:boolean, isRecycleBin?:boolean, check?:FileOperationCheck):Promise<boolean> {
+    public async deleteAsync(path:string, isFile:boolean, isAlreadyInRecycleBin:boolean = false, check?:FileOperationCheck):Promise<boolean> {
         // When a FileOperationCheck is provided, the service handles confirm-delete and file-in-use checks
+        // is file or folder not currently in the bin, move it to the bin if option is allow, or delete it right away
+
         if(check){
             if(!check.skipConfirmDialog && this.getConfirmDeleteState()){
-                const confirmed = await this.showDeleteConfirmation(check.file);
+                const confirmed = await this.showDeleteConfirmation(check.file, check.callerUId);
                 if(!confirmed) return false;
             }
 
@@ -1318,9 +1320,9 @@ OpensWith=${shortCutData.opensWith}
             }
         }
 
-        // is file or folder not currently in the bin, move it to the bin if option is allow, or delete it right away
-        if(isRecycleBin){
-            return await this.deleteFolderHandlerAsync(path, isRecycleBin);
+
+        if(isAlreadyInRecycleBin){
+            return await this.deleteFolderHandlerAsync(path, isAlreadyInRecycleBin);
         }
 
         const sendToRecycleBin = this.getMoveToRecycleBinState();
@@ -1339,9 +1341,10 @@ OpensWith=${shortCutData.opensWith}
             return moveResult;
         }else{
             this.removeAndUpdateSessionData(this.fileServiceRestoreKey, path, this._restorePoint);
-            const isDirectory = (isFile === undefined) ? await this.isDirectory(path) : !isFile;
+            // const isDirectory = (isFile === undefined) ? await this.isDirectory(path) : !isFile;
+            const isDirectory = !isFile;
             const result = isDirectory
-                ? await this.deleteFolderHandlerAsync(path, isRecycleBin)
+                ? await this.deleteFolderHandlerAsync(path, isAlreadyInRecycleBin)
                 : await this.deleteFileAsync(path);
 
             await this.recalculateUsedStorage();
@@ -1374,14 +1377,14 @@ OpensWith=${shortCutData.opensWith}
                 }
 
                 this.DecrementFileName(srcPath);
-                 this.removeAndUpdateSessionData(this.fileServiceIterateKey, srcPath, this._fileExistsMap);
+                this.removeAndUpdateSessionData(this.fileServiceIterateKey, srcPath, this._fileExistsMap);
                 //console.log('[unlink] Success, applying short delay...');
                 resolve(true);
             });
         });
     }
 
-    private async deleteFolderHandlerAsync(srcPath: string, isRecycleBin?:boolean): Promise<boolean> {
+    private async deleteFolderHandlerAsync(srcPath: string, isAlreadyInRecycleBin?:boolean): Promise<boolean> {
         const loadedDirectoryEntries = await this.readDirectory(srcPath);
     
         for (const directoryEntry of loadedDirectoryEntries) {
@@ -1408,7 +1411,7 @@ OpensWith=${shortCutData.opensWith}
         }
     
 
-        if(srcPath === Constants.RECYCLE_BIN_PATH && isRecycleBin)
+        if(srcPath === Constants.RECYCLE_BIN_PATH && isAlreadyInRecycleBin)
             return true;
         // Delete the current directory after all its contents have been deleted
         // console.log(`folder to delete: ${sourceArg}`);
@@ -1449,25 +1452,25 @@ OpensWith=${shortCutData.opensWith}
         });
     }
 
-    async showDeleteConfirmation(file:FileInfo):Promise<boolean>{
+    async showDeleteConfirmation(file:FileInfo, callerUId:string = Constants.EMPTY_STRING):Promise<boolean>{
         let msg = Constants.EMPTY_STRING;
 
         if((file.getCurrentPath.includes(Constants.RECYCLE_BIN_PATH))) { // is file or folder in recycle bin
             msg = (file.getIsFile) 
             ? 'Are you sure that you want to permanently delete this file?' 
-            : ' Are you sure that you want to permanently delete this folder ?' 
+            : 'Are you sure that you want to permanently delete this folder ?' 
         }
         else{
             msg = (file.getIsFile) 
             ? 'Are you sure that you want to move this file to the Recycle Bin?' 
-            : ' Are you sure that you want to move this folder to the Recycle Bin?' 
+            : 'Are you sure that you want to move this folder to the Recycle Bin?' 
         }
 
         const title = (file.getIsFile && file.getFileType === Constants.URL)
             ? 'Delete Shortcut'
             : `Delete ${file.getIsFile ? 'File' : 'Folder'}`;
 
-        return await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.DeleteWarning, file);
+        return await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.DeleteWarning, file, callerUId);
     }
 
     async showFileInUseNotification(file:FileInfo, callerUId:string = Constants.EMPTY_STRING):Promise<boolean>{
