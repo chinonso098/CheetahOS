@@ -1,3 +1,5 @@
+import { FileInfo } from "./file.info";
+
 export interface FileTransferUpdate {
     srcPath: string;
     destPath: string;
@@ -37,7 +39,7 @@ export interface FileTransferMoveOptions {
 }
 
 export interface FileOperationCheck {
-    file: import('./file.info').FileInfo;
+    file: FileInfo;
     callerUId?: string;
     skipConfirmDialog?: boolean;
 }

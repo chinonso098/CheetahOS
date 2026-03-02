@@ -2920,8 +2920,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   async onDeleteFile():Promise<void>{
     const desktopRefreshDelay = 1000;
     const callerUId = `${this.name}-${this.processId}`;
+    const isAlreadyInRecycleBin = false;
+    
 
-    const result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile, false,
+    const result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile, isAlreadyInRecycleBin,
       { file: this.selectedFile, callerUId }
     );
 
@@ -3240,7 +3242,7 @@ OpensWith=${file.getOpensWith}
   }
 
   private getComponentDetail():Process{
-    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger(this.name);
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
   }
 }

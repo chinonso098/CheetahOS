@@ -331,7 +331,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   }
 
   private getComponentDetail():Process{
-    this._fileInfo = this._processHandlerService.getLastProcessTrigger();
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger(this.name);
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
   }
 

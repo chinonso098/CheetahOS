@@ -61,7 +61,7 @@ export class ProcessHandlerService implements BaseService{
     private _systemNotificationService!:SystemNotificationService;
 
     private _appDirectory:AppDirectory;
-    private _TriggerList:FileInfo[];
+    private _triggerMap:Map<string, FileInfo[]>;
 
     private _onlyOneInstanceAllowed:string[] = ["audioplayer", "chatter", "cheetah", "jsdos", "photoviewer", 
         "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow", "settings"];
@@ -121,7 +121,7 @@ export class ProcessHandlerService implements BaseService{
         userNotificationService:UserNotificationService, systemNotificationService:SystemNotificationService, defaultService: DefaultService){
 
         this._appDirectory = new AppDirectory();
-        this._TriggerList = [];
+        this._triggerMap = new Map<string, FileInfo[]>();
      
         this._runningProcessService = runningProcessService;
         this._processIdService = processIdService;
@@ -149,7 +149,7 @@ export class ProcessHandlerService implements BaseService{
                 || (this._runningProcessService.isProcessRunning(file.getOpensWith) 
                     && !this._onlyOneInstanceAllowed.includes(file.getOpensWith))){
                         
-                this._TriggerList.push(file);
+                this.addTrigger(file.getOpensWith, file);
                 this.loadApps(file.getOpensWith);
 
                 return;
@@ -169,7 +169,7 @@ export class ProcessHandlerService implements BaseService{
                             runningProcess.getProcessName === this.PARTICLE_FLOW ){
                             this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
                         }else{
-                            this._TriggerList.push(file);
+                            this.addTrigger(file.getOpensWith, file);
                             this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
 
                             const uId = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
@@ -189,11 +189,28 @@ export class ProcessHandlerService implements BaseService{
     }
 
     /**
-     * Getting the last process from the Trigger, will remove it the TriggerList.
+     * Add a file trigger keyed by app name, so only the intended app can retrieve it.
      */
-    public getLastProcessTrigger():FileInfo{
-        if(this._TriggerList.length > 0){
-           return this._TriggerList.pop() || new FileInfo;
+    private addTrigger(appName:string, file:FileInfo):void{
+        if(!this._triggerMap.has(appName)){
+            this._triggerMap.set(appName, []);
+        }
+        this._triggerMap.get(appName)!.push(file);
+    }
+
+    /**
+     * Getting the next process trigger for the given app name.
+     * Only returns a FileInfo that was placed for that specific app,
+     * preventing a fast-loading app from picking up another app's file.
+     */
+    public getLastProcessTrigger(appName:string):FileInfo{
+        const queue = this._triggerMap.get(appName);
+        if(queue && queue.length > 0){
+            const file = queue.shift()!;
+            if(queue.length === 0){
+                this._triggerMap.delete(appName);
+            }
+            return file;
         }
 
         return new FileInfo;

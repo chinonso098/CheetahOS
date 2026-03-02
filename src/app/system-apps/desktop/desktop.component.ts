@@ -1845,6 +1845,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async onDelete(): Promise<void> {
+    const isAlreadyInRecycleBin = false;
 
     // Determine which files to delete
     const filesToDelete = (this.areMultipleIconsHighlighted)
@@ -1853,7 +1854,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     // Run deletions concurrently — the service handles confirm-delete (first file only) and file-in-use checks
     const results = await Promise.all(
-      filesToDelete.map((f, i) => this._fileService.deleteAsync(f.getCurrentPath, f.getIsFile, false,
+      filesToDelete.map((f, i) => this._fileService.deleteAsync(f.getCurrentPath, f.getIsFile, isAlreadyInRecycleBin,
         { file: f, skipConfirmDialog: i > 0 }
       ))
     );
@@ -1912,11 +1913,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   async onEmptyRecyleBinHelper():Promise<void>{
     let result = false;
-    const isRecycleBin = true;
+    const isAlreadyInRecycleBin = true;
     const isFile = false;
 
     await this._audioService.play(this.emptyTrashAudio);
-    result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, isFile, isRecycleBin);
+    result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, isFile, isAlreadyInRecycleBin);
     if(result){
       this._menuService.resetStoreData();
       await this.loadFiles();
