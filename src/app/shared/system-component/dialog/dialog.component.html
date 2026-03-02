@@ -7,13 +7,18 @@
 </ng-container>
 
 <ng-template #errorNotice>
-    <cos-secondarywindow [runningProcessID]="processId" [displayMessage]="dialogTitle" [processAppName]="ERROR_DIALOG" [isDialog]="isDialog">
+    <cos-secondarywindow 
+    [runningProcessID]="processId"
+    [displayMessage]="dialogTitle" 
+    [processAppName]="ERROR_DIALOG" 
+    [isDialog]="isDialog">
+
         <div ngDraggable class="error-dialog-main-container">
             <div class="error-dialog-mid-container">
                 <div class="error-dialog-mid-section1">
                     <div class="error-dialog-mid-img1">
                         <figure class="error-dialog-figure1">
-                            <img class="error-dialog-img1" [src]="errorIcon"/>
+                            <img class="error-dialog-img1" [src]="errorIcon" alt="Error icon"/>
                         </figure>
                     </div>
                     <div class="error-dialog-mid-txt1">
@@ -39,17 +44,17 @@
 
 <ng-template #infoNotice>
     <cos-secondarywindow 
-    [runningProcessID]="processId" 
-    [processAppName]="INFO_DIALOG" 
-    [isDialog]="isDialog" 
-    [callingProcessUId]="inputCallingProcessUId">
+        [runningProcessID]="processId" 
+        [processAppName]="INFO_DIALOG" 
+        [isDialog]="isDialog" 
+        [callingProcessUId]="inputCallingProcessUId">
 
         <div  class="info-dialog-main-container">    
             <div class="info-dialog-mid-container" tabindex="0">
                 <div class="info-dialog-mid-section1">
                     <div class="info-dialog-mid-img1">
                         <figure class="info-dialog-figure1">
-                            <img class="info-dialog-img1" [src]="infoIcon"/>
+                            <img class="info-dialog-img1" [src]="infoIcon" alt="Info icon"/>
                         </figure>
                     </div>
                     <div class="info-dialog-mid-txt1">
@@ -85,7 +90,7 @@
         <!-- Section 1 -->
         <div class="shutdown-restart-section shutdown-restart-section1">
           <div class="sr-section1-img">
-            <img [src]="cheetahOS" class="sr-section1-img">
+            <img [src]="cheetahOS" class="sr-section1-img" alt="CheetahOS logo">
           </div>
           <div class="sr-section1-text-container">
             <span>CheetahOS</span>
@@ -95,13 +100,13 @@
         <!-- Section 2 -->
         <div class="shutdown-restart-section shutdown-restart-section2">
           <div class="shutdown-restart-section2-left-part">
-            <img [src]="myComputer" class="sr-section2-img">
+            <img [src]="myComputer" class="sr-section2-img" alt="Computer">
           </div>
           <div class="right-part">
             <div class="top-text">What do you want the computer to do?</div>
 
             <div class="custom-select">
-                <select class="shutdown-restart-select" [(ngModel)]="selectedOption" (change)="onPwrOptionSelect($event)">
+                <select class="shutdown-restart-select" title="Power options" [(ngModel)]="selectedOption" (change)="onPwrOptionSelect($event)">
                     <option class="shutdown-restart-option" *ngFor="let option of pwrOnOffOptions" [value]="option.value">
                         {{ option.value }}
                     </option>
@@ -124,7 +129,7 @@
         <div class="shutdown-restart-section shutdown-restart-section3">
             <div class="sr-section3-question" [class.hidden]="isQuestionHidden">
                 <div class="sr-section3-chxbox">
-                    <input type="checkbox" [(ngModel)]="reOpenWindows" (change)="onReOpenWindowsCheckboxChange()">
+                    <input type="checkbox" [(ngModel)]="reOpenWindows" (change)="onReOpenWindowsCheckboxChange()" title="Reopen windows when logging back in">
                 </div>
                 <div class="sr-section3-txt">
                     Reopen windows when loggin back in
@@ -146,8 +151,8 @@
         [processAppName]="isInit? dialogTitle: progressUpdateText" 
         [isMaximizable]="isMaximizable"
         [turnOffWindowOpenCloseAnimation]="turnOffWindowOpenCloseAnimation"
-        [turnOffWindowStacking]="turnOffWindowStacking"
-        >
+        [turnOffWindowStacking]="turnOffWindowStacking">
+        
         <div class="file-transfer-dialog-main-container" tabindex="0">
             <div class="file-transfer-dialog-content-container" id="fileTransferDialog-{{processId}}"> 
 
@@ -201,7 +206,7 @@
             </div>
             <div class="file-transfer-dialog-tail-container" id="fileTransferDialogTail-{{processId}}">
                 <div class="file-tranfer__details-option">
-                    <div class="file-tranfer__icon" (click)="changeDetailsAmount()"><img [src]="this.arrowPosition"></div>
+                    <div class="file-tranfer__icon" (click)="changeDetailsAmount()"><img [src]="this.arrowPosition" alt="Details toggle"></div>
                     <div class="file-tranfer__info">{{detailsAmount}}</div>
                 </div>
                 <button class="btn btn-secondary file-transfer-btn-cancel" (click)="onCloseDialogBox()">
@@ -225,7 +230,7 @@
                 <div class="warning-dialog-mid-section1">
                     <div class="warning-dialog-mid-img1">
                         <figure class="warning-dialog-figure1">
-                            <img class="warning-dialog-img1" [src]="warningIcon"/>
+                            <img class="warning-dialog-img1" [src]="warningIcon" alt="Warning icon"/>
                         </figure>
                     </div>
                     <div class="warning-dialog-mid-txt1">
@@ -253,7 +258,8 @@
     <cos-secondarywindow 
         [runningProcessID]="processId" 
         [displayMessage]="dialogTitle" 
-        [processAppName]="WARNING_DIALOG" [isDialog]="isDialog" [callingProcessUId]="inputCallingProcessUId">
+        [processAppName]="WARNING_DIALOG" 
+        [isDialog]="isDialog" [callingProcessUId]="inputCallingProcessUId">
         <div class="delete-warning__dialog-container"> 
             <div class="delete-warning__dialog" tabindex="0">          
               <div class="delete-warning__dialog-body">
@@ -294,10 +300,11 @@
 
 <ng-template #inUseWarning>
     <cos-secondarywindow 
-       [runningProcessID]="processId"  
+        [runningProcessID]="processId"  
         [processAppIcon]="fileTransferIcon"  
         [displayMessage]="dialogTitle" 
-        [processAppName]="WARNING_DIALOG" [isDialog]="isDialog" [callingProcessUId]="inputCallingProcessUId">
+        [processAppName]="WARNING_DIALOG" 
+        [isDialog]="isDialog" [callingProcessUId]="inputCallingProcessUId" [showTitleBarImg]="showTitleBarImg">
         <div class="in-use-warning__dialog-container" > 
             <div class="in-use-warning__dialog" tabindex="0">          
               <div class="in-use-warning__dialog-body">

@@ -33,7 +33,8 @@ import { WindowConstants } from '../window.constants';
     @Input() displayMessage = Constants.EMPTY_STRING;  
     @Input() processAppName = Constants.EMPTY_STRING;  
     @Input() callingProcessUId = Constants.EMPTY_STRING;    
-    @Input() isDialog = false;  
+    @Input() isDialog = false; 
+    @Input() showTitleBarImg = false; 
 
     private _runningProcessService!:RunningProcessService;
     private _systemNotificationServices!:SystemNotificationService;
@@ -77,6 +78,7 @@ import { WindowConstants } from '../window.constants';
 
     callingProcessId = 0;   
     isDialogContent = false;
+    showTitleBarIcon = false
     currentWinStyles: Record<string, unknown> = {};
     headerActiveStyles: Record<string, unknown> = {}; 
     closeBtnStyles: Record<string, unknown> = {};
@@ -131,6 +133,7 @@ import { WindowConstants } from '../window.constants';
       this.icon = this.processAppIcon;
       this.name = this.processAppName;
       this.isDialogContent = this.isDialog;
+      this.showTitleBarIcon = this.showTitleBarImg;
     
       this.uniqueId = `${this.name}-${this.processId}`;
       this._runningProcessService.newProcessNotify.next(this.uniqueId);

@@ -16,8 +16,8 @@
         <div class="left-header-section" cdkDragHandle>
             <h1>
                 <figure>
-                    @if(!isDialogContent){<img [src]="this.icon" [alt]="this.name"/>}
-                    @if(isDialogContent){<p class="img-padding"> </p>}
+                    @if(!isDialogContent || (isDialogContent && showTitleBarIcon)){<img [src]="this.icon" [alt]="this.name" title="Icon" role="img"/>}
+                    @if(isDialogContent && !showTitleBarIcon){<p class="img-padding"> </p>}
                     <figcaption> {{this.displayName}} </figcaption>
                 </figure>
             </h1>

@@ -119,6 +119,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   isFileTransferInProgress = false;
   isFileDeleteInProgress = false;
   isFolder = false;
+  showTitleBarImg = false;
   from = Constants.BLANK_SPACE;
   to = Constants.BLANK_SPACE;
   srcToDestPart1 = Constants.BLANK_SPACE;
@@ -198,6 +199,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
     if(this.notificationType === UserNotificationType.FileTransferProgress || this.notificationType === UserNotificationType.FileDeleteProgress){
       let action = Constants.EMPTY_STRING;
+      this.showTitleBarImg = true;
+      
       if(this.notificationType === UserNotificationType.FileTransferProgress){ 
         this.isFileTransferInProgress = true;
         this.progressUpdateText = this.dialogMgs;
@@ -228,6 +231,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       this.deleteDialogIconChange();
 
       if(this.notificationType === UserNotificationType.InUseWarning){
+        this.showTitleBarImg = true;
         this.inUseSuggestion = this.inputFile.getIsFile ? 'Close the file and try again' : 'Close the folder or file and try again';
         this.isFolder = !this.inputFile.getIsFile;
       }
@@ -325,7 +329,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   onCloseDialogBox(evt?:MouseEvent):void{
     evt?.stopImmediatePropagation();
 
-    if(this.notificationOption === UserNotificationType.Warning || this.notificationOption === UserNotificationType.DeleteWarning){
+    if(this.notificationOption === UserNotificationType.Warning 
+      || this.notificationOption === UserNotificationType.DeleteWarning
+      || this.notificationOption === UserNotificationType.InUseWarning){
       this.cancel.emit();
     }
 
