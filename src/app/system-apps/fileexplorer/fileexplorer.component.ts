@@ -1499,7 +1499,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     return {xAxis, yAxis};
   }
 
-  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
+  checkAndHandleMenuBounds_original(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
     let xAxis = 0;
     let yAxis = 0;
     let horizontalShift = false;
@@ -1531,6 +1531,31 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     
     xAxis = (horizontalShift)? xAxis : evt.clientX - rect.left;
     yAxis = (verticalShift)? yAxis : evt.clientY - rect.top;
+ 
+    return {xAxis, yAxis};
+  }
+
+
+  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
+    let xAxis = evt.clientX - rect.left;
+    let yAxis = evt.clientY - rect.top;
+
+    let horizontalShift = false;
+    let verticalShift = false;
+
+    const cntnrWidth = rect.width
+    const cntnrHeight = rect.height;
+    const menuWidth = 210;
+    const subMenuWidth = 205;
+    const taskBarHeight = 5;
+
+    const maxX = Math.max(cntnrWidth - menuWidth, 0);
+    const maxY = Math.max(cntnrHeight - menuHeight, 0);
+    xAxis = Math.min(Math.max(xAxis, 0), maxX);
+    yAxis = Math.min(Math.max(yAxis, 0), maxY);
+
+    const spaceToRight = cntnrWidth - xAxis;
+    this.isShiftSubMenuLeft = spaceToRight < (menuWidth + subMenuWidth);
  
     return {xAxis, yAxis};
   }
