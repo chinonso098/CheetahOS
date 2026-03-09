@@ -82,9 +82,10 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
 
   slideState = 'slideDown';
 
-  txtOverlayMenuStyle:Record<string, unknown> = {};
-  delayStartMenuOverlayHideTimeoutId!: NodeJS.Timeout;
-  delayStartMenuOverlayShowTimeoutId!: NodeJS.Timeout;
+  isOverlayExpanded = false;
+  delayStartMenuOverlayHideTimeoutId!: ReturnType<typeof setTimeout>;
+  delayStartMenuOverlayShowTimeoutId!: ReturnType<typeof setTimeout>;
+  private hasAppliedRevealEffects = false;
 
   startMenuFiles:FileInfo[] = [];
   private SECONDS_DELAY = 250;
@@ -93,6 +94,11 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   readonly Pictures = 'Pictures'
   readonly Music = 'Music';
 
+  hamburgerMenuImg = `${Constants.IMAGE_BASE_PATH}sm_hamburger_menu.png`;
+  fileImg = `${Constants.IMAGE_BASE_PATH}sm_file.png`;
+  pictureImg = `${Constants.IMAGE_BASE_PATH}sm_picture.png`;
+  musicImg = `${Constants.IMAGE_BASE_PATH}sm_music.png`;
+  powerImg = `${Constants.IMAGE_BASE_PATH}sm_power.png`;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
@@ -158,14 +164,36 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     this.slideState = 'slideDown';
   }
 
-  // Store listener for removal
-  private overlaySlideOutListener = () => {
-    const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
-    if (smIconTxtOverlay) {
-        smIconTxtOverlay.style.boxShadow = '0px 2px 4px rgba(0, 0, 0, 0.6)';
-        this.txtOverlayMenuStyle = { display: 'flex' };
-    }
-  };
+  private applyHighlighEffects(): void {
+
+    // App list reveal: subtle Windows 10 style
+    applyEffect('.start-menu-list-ol', {
+      clickEffect: true,
+      lightColor: 'rgba(255,255,255,0.10)',
+      gradientSize: 56,
+      isContainer: true,
+      children: {
+        borderSelector: '.start-menu-list-li',
+        elementSelector: '.start-menu-list-btn',
+        lightColor: 'rgba(255,255,255,0.22)',
+        gradientSize: 120
+      }
+    });
+
+    // Left rail reveal: highlight corners/edges when pointer is near
+    applyEffect('.start-menu-main-overlay-icon-text-container', {
+      clickEffect: false,
+      lightColor: 'rgba(255,255,255,0.10)',
+      gradientSize: 64,
+      isContainer: true,
+      children: {
+        borderSelector: '.start-menu-main-overlay-icon-text-content',
+        elementSelector: '.start-menu-main-overlay-icon-text-content',
+        lightColor: 'rgba(255,255,255,0.20)',
+        gradientSize: 110
+      }
+    });
+  }
 
   // Show Overlay Function
   startMenuOverlaySlideOut(): void {
@@ -176,15 +204,10 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     if (!smIconTxtOverlay) return;
 
     this.delayStartMenuOverlayShowTimeoutId = setTimeout(() => {
-        smIconTxtOverlay.style.width = '48px';
-        smIconTxtOverlay.style.transition = 'width 0.3s ease';
-        smIconTxtOverlay.style.width = '248px';
-        smIconTxtOverlay.style.transitionDelay = '0.75s';
-
-        // Remove any existing listener before adding a new one
-        smIconTxtOverlay.removeEventListener('transitionend', this.overlaySlideOutListener);
-        smIconTxtOverlay.addEventListener('transitionend', this.overlaySlideOutListener, { once: true });
-    }, 500);
+      smIconTxtOverlay.style.boxShadow = '2px 0 12px rgba(0, 0, 0, 0.18)';
+      smIconTxtOverlay.style.width = '248px';
+      this.isOverlayExpanded = true;
+    }, 120);
   }
 
   lockScreenIsActive():void{
@@ -212,61 +235,32 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     const smIconTxtOverlay = document.getElementById('sm-IconText-Overlay-Cntnr') as HTMLElement;
     if (!smIconTxtOverlay) return;
 
-    // Ensure we remove any transition listeners to prevent race conditions
-    smIconTxtOverlay.removeEventListener('transitionend', this.overlaySlideOutListener);
-
     this.delayStartMenuOverlayHideTimeoutId = setTimeout(() => {
-        smIconTxtOverlay.style.transition = 'width 0.3s ease';
-        smIconTxtOverlay.style.width = '48px';
-        smIconTxtOverlay.style.boxShadow = 'none';
-
-        // Ensure text hides after transition completes
-        smIconTxtOverlay.addEventListener('transitionend', () => {
-            this.txtOverlayMenuStyle = { display: 'none' };
-        }, { once: true });
-    }, 250);
+      this.isOverlayExpanded = false;
+      smIconTxtOverlay.style.width = '48px';
+      smIconTxtOverlay.style.boxShadow = 'none';
+    }, 90);
   }
 
 
 
   onBtnHover():void{
 
-    // applyEffect('.start-menu-main-overlay-content', {
-    //   lightColor: 'rgba(255,255,255,0.1)',
-    //   gradientSize: 150,
-    // });
-
-    // applyEffect('.start-menu-main-overlay-content', {
-    //   lightColor: 'rgba(255,255,255,0.1)',
-    //   gradientSize: 150,
-    // });
-
-    applyEffect('.start-menu-list-ol', {
-      clickEffect: true,
-      lightColor: 'rgba(255,255,255,0.1)',
-      gradientSize: 35,
-      isContainer: true,
-      children: {
-        borderSelector: '.start-menu-list-li',
-        elementSelector: '.start-menu-list-btn',
-        lightColor: 'rgba(255,255,255,0.3)',
-        gradientSize: 150
-      }
-    })
-
-
-    // applyEffect('.start-menu-main-overlay-container', {
+    // applyEffect('.start-menu-list-ol', {
     //   clickEffect: true,
-    //   lightColor: 'rgba(255,255,255,0.6)',
-    //   gradientSize: 80,
+    //   lightColor: 'rgba(255,255,255,0.1)',
+    //   gradientSize: 35,
     //   isContainer: true,
     //   children: {
-    //     borderSelector: '.start-menu-main-overlay-icon-text-content',
-    //     elementSelector: '.start-menu-overlay-icon',
+    //     borderSelector: '.start-menu-list-li',
+    //     elementSelector: '.start-menu-list-btn',
     //     lightColor: 'rgba(255,255,255,0.3)',
     //     gradientSize: 150
     //   }
     // })
+
+    this.applyHighlighEffects();
+
   }
 
   private async loadFilesInfoAsync():Promise<void>{

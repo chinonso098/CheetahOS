@@ -11,9 +11,6 @@
 
 .start-menu-main-overlay-container{
     z-index: 3;
-}
-
-.start-menu-main-overlay-container{
     bottom: 0%;
 }
 
@@ -27,18 +24,39 @@
     width: 48px;
     display: block;
     backdrop-filter: blur(10px);
+    overflow: hidden;
+    background-color: rgba(32, 32, 32, 0.78);
+    transition:
+        width 220ms cubic-bezier(0.2, 0, 0, 1),
+        box-shadow 180ms ease,
+        background-color 180ms ease;
+    will-change: width, box-shadow;
 }
 
 .start-menu-main-overlay-icon-text-content{ 
     width: 100%;
     height: 44px;
     display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    transition: background-color 140ms ease;
+    border-radius: 0;
+}
+
+/* soft Windows-like hover base */
+.start-menu-main-overlay-icon-text-content:hover{
+    background-color: rgba(255,255,255,0.06);
 }
 
 .start-menu-overlay-icon{
     width: 48px;
+    min-width: 48px;
     padding: 12px 12px;
     border: 2px solid transparent;
+    position: relative;
+    z-index: 1;
 }
 
 .start-menu-overlay-figure{
@@ -54,20 +72,46 @@
 }
 
 .start-menu-overlay-text{
-    display: none;
+    display: flex;
+    align-items: center;
     width: 200px;
+    max-width: 0;
+    opacity: 0;
+    visibility: hidden;
+    overflow: hidden;
+    white-space: nowrap;
     padding: 12px 0px;
     border: 2px solid transparent;
+    transform: translateX(-8px);
+    transition:
+        opacity 150ms ease,
+        transform 180ms cubic-bezier(0.2, 0, 0, 1),
+        max-width 220ms cubic-bezier(0.2, 0, 0, 1),
+        visibility 0s linear 180ms;
+    will-change: opacity, transform, max-width;
+}
+
+.start-menu-overlay-text--visible{
+    max-width: 200px;
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+    transition:
+        opacity 170ms ease 40ms,
+        transform 200ms cubic-bezier(0.2, 0, 0, 1) 40ms,
+        max-width 220ms cubic-bezier(0.2, 0, 0, 1),
+        visibility 0s linear 0s;
 }
 
 .start-menu-overlay-text-p{
     position: relative;
     color: white;
     font-size: 14px;
-    font-weight:300;
+    font-weight: 300;
     top: 0px;
+    margin: 0;
+    user-select: none;
 }
-
 
 .start-menu-main-content-container{
     display:flex;
@@ -111,18 +155,35 @@
     display: flex;
     justify-content: center;
     border: 2px solid transparent;
+    position: relative;
+    transition: background-color 140ms ease;
+}
+
+/* base hover fill under the reveal light */
+.start-menu-list-li:hover{
+    background-color: rgba(255,255,255,0.055);
 }
 
 .start-menu-list-btn{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    /* padding: 1rem 2rem; */
-    /* background-color: rgba(51, 51, 51, 0); */
     color: #fff;
     border: 0;
-    transition: all 200ms ease;
+    background-color: transparent;
+    transition:
+        background-color 140ms ease,
+        transform 120ms ease;
     display: flex;
     width: 100%;
     height: 32px;
+    align-items: center;
+}
+
+.start-menu-list-btn:hover{
+    background-color: rgba(255,255,255,0.035);
+}
+
+.start-menu-list-btn:active{
+    transform: scale(0.995);
 }
 
 .start-menu-list-fig{
@@ -139,7 +200,6 @@
     position: relative;
 }
 
-/*Star Menu List CSS*/
 .start-menu-list-head{
     width: 32px;
     height: 32px;
@@ -155,12 +215,26 @@
     position: relative;
     top: 8px;
     font-size: 12px;
-    color: white; /* Black text color */
+    color: white;
     text-align: left;
     font-weight: normal;
+    margin: 0;
 }
 
 .start-menu-list-tail{
     width: 32px;
     height: 32px;
+}
+
+
+.start-menu-main-container,
+.start-menu-main-overlay-container,
+.start-menu-main-overlay-icon-text-container,
+.start-menu-main-overlay-icon-text-content,
+.start-menu-list-li,
+.start-menu-list-btn,
+.start-menu-overlay-text{
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    transform: translateZ(0);
 }
