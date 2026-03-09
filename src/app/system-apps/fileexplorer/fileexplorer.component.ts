@@ -1461,101 +1461,44 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  checkAndHandleMenuBounds_(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
+  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
     let xAxis = 0;
     let yAxis = 0;
-    let horizontalShift = false;
-    let verticalShift = false;
+    let shiftMenuXPosition = false;
+    let shiftMenuYPosition = false;
 
-    const horizontalMax = rect.right;
-    const verticalMax = rect.bottom;
-    const horizontalDiff = horizontalMax - evt.clientX;
-    const verticalDiff = verticalMax - evt.clientY;
     const menuWidth = 210;
     const subMenuWidth = 205;
+    const xOffSet = 180;
+    const yOffSet = 65;
+    const fileExplorerFooterHeight = 24;
 
-    if(horizontalDiff < menuWidth){
-      horizontalShift = true;
-      const diff = menuWidth - horizontalDiff;
-      xAxis = evt.clientX - rect.left - diff;
+    const distanceToRightBoundary =  rect.right - evt.clientX; // horizontalMax - clientX
+    const distanceToBottomBoundary = rect.bottom - evt.clientY ; // verticalMax - clientY
+
+    const mousePositionX = evt.clientX - rect.left;
+    const mousePositionY = evt.clientY - rect.top;
+
+    if(distanceToRightBoundary < menuWidth){
+      shiftMenuXPosition = true;
+      const diff = menuWidth - distanceToRightBoundary;
+      xAxis = mousePositionX - diff;
     }
 
-    this.isShiftSubMenuLeft = horizontalDiff <= (menuWidth + subMenuWidth);
+    this.isShiftSubMenuLeft = distanceToRightBoundary <= (menuWidth + subMenuWidth)
 
-    // Preserve prior behavior near bottom, but also handle very-bottom clicks.
-    if(verticalDiff <= menuHeight){
-      const shiftMenuUpBy = menuHeight - verticalDiff;
-      verticalShift = true;
-      yAxis = evt.clientY - rect.top - shiftMenuUpBy;
+    if((distanceToBottomBoundary) <= menuHeight + fileExplorerFooterHeight){
+      const shifMenuUpBy = menuHeight - distanceToBottomBoundary;
+      shiftMenuYPosition = true;
+      yAxis = mousePositionY - shifMenuUpBy;
     }
-
-    xAxis = horizontalShift ? xAxis : evt.clientX - rect.left;
-    yAxis = verticalShift ? yAxis : evt.clientY - rect.top;
+    
+    xAxis = (shiftMenuXPosition) ? xAxis + xOffSet : mousePositionX + xOffSet;
+    yAxis = (shiftMenuYPosition) ? yAxis + yOffSet - fileExplorerFooterHeight : mousePositionY + yOffSet;
 
     // Keep values non-negative without changing normal placement behavior.
     xAxis = Math.max(0, xAxis);
     yAxis = Math.max(0, yAxis);
- 
-    return {xAxis, yAxis};
-  }
-
-  checkAndHandleMenuBounds_original(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
-    let xAxis = 0;
-    let yAxis = 0;
-    let horizontalShift = false;
-    let verticalShift = false;
-
-    const horizontalMax = rect.right
-    const verticalMax = rect.bottom;
-    const horizontalDiff =  horizontalMax - evt.clientX;
-    const verticalDiff = verticalMax - evt.clientY;
-    const menuWidth = 210;
-    const subMenuWidth = 205;
-    const taskBarHeight = 5;
-
-    if(horizontalDiff < menuWidth){
-      horizontalShift = true;
-      const diff = menuWidth - horizontalDiff;
-      xAxis = evt.clientX - rect.left - diff;
-    }
-
-    if((horizontalDiff <= menuWidth) || (horizontalDiff <= (menuWidth + subMenuWidth))){
-      this.isShiftSubMenuLeft = true;
-    }
-
-    if((verticalDiff) >= taskBarHeight && (verticalDiff) <= menuHeight){
-      const shifMenuUpBy = menuHeight - verticalDiff;
-      verticalShift = true;
-      yAxis = evt.clientY - rect.top - shifMenuUpBy;
-    }
-    
-    xAxis = (horizontalShift)? xAxis : evt.clientX - rect.left;
-    yAxis = (verticalShift)? yAxis : evt.clientY - rect.top;
- 
-    return {xAxis, yAxis};
-  }
-
-
-  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
-    let xAxis = evt.clientX - rect.left;
-    let yAxis = evt.clientY - rect.top;
-
-    let horizontalShift = false;
-    let verticalShift = false;
-
-    const cntnrWidth = rect.width
-    const cntnrHeight = rect.height;
-    const menuWidth = 210;
-    const subMenuWidth = 205;
-    const taskBarHeight = 5;
-
-    const maxX = Math.max(cntnrWidth - menuWidth, 0);
-    const maxY = Math.max(cntnrHeight - menuHeight, 0);
-    xAxis = Math.min(Math.max(xAxis, 0), maxX);
-    yAxis = Math.min(Math.max(yAxis, 0), maxY);
-
-    const spaceToRight = cntnrWidth - xAxis;
-    this.isShiftSubMenuLeft = spaceToRight < (menuWidth + subMenuWidth);
  
     return {xAxis, yAxis};
   }
