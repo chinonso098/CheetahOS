@@ -36,7 +36,6 @@ import { DefaultService } from 'src/app/shared/system-service/defaults.services'
   templateUrl: './fileexplorer.component.html',
   styleUrls: ['./fileexplorer.component.css'],
   standalone:false,
-  encapsulation: ViewEncapsulation.None,
 })
 
 export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewInit, OnDestroy {
@@ -212,7 +211,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     {icon:Constants.EMPTY_STRING, label: 'Open in Terminal', action: this.doNothing.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Pin to Start', action: this.doNothing.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Send to Zip', action: this.onZip.bind(this) },
-    {icon:Constants.EMPTY_STRING, label: 'Mount', action: this.onMountZipFile.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Extract All...', action: this.onUnZip.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Cut', action: this.onCut.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Copy', action: this.onCopy.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Create shortcut', action: this.createShortCut.bind(this) },
@@ -1328,6 +1327,61 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number, rectInput?:DOMRect, isFileSection?:boolean):void{
+    evt.preventDefault();
+    evt.stopPropagation();
+
+    // looking at what Windows does, at any given time. there is only one context window open
+    this._menuService.hideContextMenus.next(this.name); 
+    this.hideFileExplorerToolTip();
+
+    const menuHeight = (file.getIsFile)? 225 : 344; //this is not ideal.. menu height should be gotten dynmically
+    this.iconCntxtCntr++;
+    const contentRect:DOMRect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+
+    let axis:MenuPosition = {xAxis:0, yAxis:0}
+    if(this.currentViewOption === ViewOptions.DETAILS_VIEW){
+      this.isDetailsView = true;
+      this.isNotDetailsView = false;
+
+      axis = this.checkAndHandleMenuBounds(contentRect, evt, menuHeight);
+    }else{
+      this.isDetailsView = false;
+      this.isNotDetailsView = true;
+
+      if(rectInput){
+        const tmpAxis = this.checkAndHandleMenuBounds(rectInput, evt, menuHeight);
+        axis = (isFileSection)? {xAxis:tmpAxis.xAxis - 10, yAxis: tmpAxis.yAxis + 200} :
+         {xAxis:tmpAxis.xAxis - 10, yAxis: tmpAxis.yAxis + 300};
+      }else{
+        axis = this.checkAndHandleMenuBounds(contentRect, evt, menuHeight);
+      }
+    }
+    
+    const uId = `${this.name}-${this.processId}`;
+    this._runningProcessService.addEventOriginator(uId);
+
+    this.adjustIconContextMenuData(file);
+    this.selectedFile = file;
+    this.propertiesViewFile = file
+    this.isIconInFocusDueToPriorAction = false;
+
+    if(!this.showIconCntxtMenu)
+      this.showIconCntxtMenu = !this.showIconCntxtMenu;
+
+    // show IconContexMenu is still a btn click, just a different type
+    this.doBtnClickThings(id);
+    this.setBtnStyle(id, true);
+
+    this.fileExplrCntxtMenuStyle = {
+      'position': 'absolute', 
+      'left':`${Math.round(axis.xAxis)}px`,
+      'top':`${Math.round(axis.yAxis)}px`,
+      'z-index': 2,
+    }
+
+  }
+
+    onShowIconContextMenu_old(evt:MouseEvent, file:FileInfo, id:number, rectInput?:DOMRect, isFileSection?:boolean):void{
     // looking at what Windows does, at any given time. there is only one context window open
     this._menuService.hideContextMenus.next(this.name); 
     this.hideFileExplorerToolTip();
@@ -1390,7 +1444,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(editNotAllowed.includes(file.getCurrentPath.replace(Constants.ROOT, Constants.EMPTY_STRING))){
         this.menuOrder = Constants.FILE_EXPLORER_UNIQUE_MENU_ORDER;
         for(const x of this.sourceData) {
-          if(x.label === 'Cut' || x.label === 'Delete' || x.label === 'Rename' || x.label === 'Mount') continue;
+          if(x.label === 'Cut' || x.label === 'Delete' || x.label === 'Rename' || x.label === 'Extract All...') continue;
           else
             this.menuData.push(x);
         }
@@ -1408,7 +1462,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
             || x.label === 'Pin to Quick access' || x.label === 'Open in new window' 
             || x.label === 'Pin to Start' || x.label === 'Restore') continue;
           else{
-            if(x.label === 'Mount' && !isZipFile) continue;
+            if(x.label === 'Extract All...' && !isZipFile) continue;
             else
               this.menuData.push(x);
           }
@@ -1424,13 +1478,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         }
       }else{
         this.menuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;
-        this.menuData = this.sourceData.filter(x => x.label !== 'Restore' &&  x.label !== 'Mount');
+        this.menuData = this.sourceData.filter(x => x.label !== 'Restore' &&  x.label !== 'Extract All...');
       }
     }
   }
 
 
   onShowFileExplorerContextMenu(evt:MouseEvent):void{
+    evt.preventDefault();
+    evt.stopPropagation();
+
     this.showExpandTreeIcon = false;
     this.fileExplrCntxtCntr++;
     if(this.iconCntxtCntr >= this.fileExplrCntxtCntr)
@@ -1451,12 +1508,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.fileExplrCntxtMenuStyle = {
       'position': 'absolute', 
-      'transform':`translate(${String(axis.xAxis)}px, ${String(axis.yAxis)}px)`,
+      'left':`${Math.round(axis.xAxis)}px`,
+      'top':`${Math.round(axis.yAxis)}px`,
       'z-index': 2,
     }
-
-    evt.preventDefault();
-    evt.stopPropagation();
   }
 
   showPropertiesWindow():void{
@@ -1486,6 +1541,44 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
+    let xAxis = 0;
+    let yAxis = 0;
+    let horizontalShift = false;
+    let verticalShift = false;
+
+    const horizontalMax = rect.right;
+    const verticalMax = rect.bottom;
+    const horizontalDiff = horizontalMax - evt.clientX;
+    const verticalDiff = verticalMax - evt.clientY;
+    const menuWidth = 210;
+    const subMenuWidth = 205;
+
+    if(horizontalDiff < menuWidth){
+      horizontalShift = true;
+      const diff = menuWidth - horizontalDiff;
+      xAxis = evt.clientX - rect.left - diff;
+    }
+
+    this.isShiftSubMenuLeft = horizontalDiff <= (menuWidth + subMenuWidth);
+
+    // Preserve prior behavior near bottom, but also handle very-bottom clicks.
+    if(verticalDiff <= menuHeight){
+      const shiftMenuUpBy = menuHeight - verticalDiff;
+      verticalShift = true;
+      yAxis = evt.clientY - rect.top - shiftMenuUpBy;
+    }
+
+    xAxis = horizontalShift ? xAxis : evt.clientX - rect.left;
+    yAxis = verticalShift ? yAxis : evt.clientY - rect.top;
+
+    // Keep values non-negative without changing normal placement behavior.
+    xAxis = Math.max(0, xAxis);
+    yAxis = Math.max(0, yAxis);
+ 
+    return {xAxis, yAxis};
+  }
+
+  checkAndHandleMenuBounds_old(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
     let xAxis = 0;
     let yAxis = 0;
     let horizontalShift = false;
@@ -1934,44 +2027,22 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+  async onUnZip(): Promise<void>{
+    const srcPath = this.selectedFile.getCurrentPath;
+    const delay = 50; //50ms
+
+    const result = await this._fileService.unzipEntityAsync(srcPath);
+    if(result){
+      await CommonFunctions.sleep(delay);
+      this.refresh();
+    }
+  }
+
   async getZipFileMountPath(srcPath:string): Promise<string>{
     const mountPath = await this._fileService.mountZipAsync(srcPath);
     if(mountPath) return mountPath;
     
     return Constants.EMPTY_STRING;
-  }
-
-  async onMountZipFile(): Promise<void>{
-    const srcPath = this.selectedFile.getCurrentPath;
-    const delay = 50; //50ms
-
-    const mountPath = await this._fileService.mountZipAsync(srcPath);
-    if(mountPath){
-      await CommonFunctions.sleep(delay);
-      //this.refresh();
-
-      console.log('mount path:', mountPath);
-      this.directory = mountPath;
-      this.mounthPath = mountPath;
-
-      this.displayName = this.selectedFile.getFileName;
-      this.icon = this.selectedFile.getIconPath;
-
-      this.prevPathEntries.push(this.directory);
-      this.upPathEntries.push(this.directory);
-
-      if(this.recentPathEntries.indexOf(this.directory) === -1){
-        this.recentPathEntries.push(this.directory);
-      }
-
-      this.generateBreadCrumbs();
-      this.setNavPathIcon(this.selectedFile.getFileName, mountPath);
-      //this.storeAppState(file.getCurrentPath);
-  
-      await this.loadFiles();
-      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
-      this.captureComponentImg(); 
-    }
   }
 
   onCopy():void{

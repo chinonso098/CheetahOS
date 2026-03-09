@@ -1681,7 +1681,7 @@ OpensWith=${shortCutData.opensWith}
      * @param srcPath  Full virtual-filesystem path of the archive.
      * @returns true when extraction completed successfully.
      */
-    public async unzipEntityAsync(srcPath: string): Promise<boolean> {
+    public async unzipEntityAsync(srcPath: string, destPath: string = Constants.EMPTY_STRING): Promise<boolean> {
         try {
             const zipBuffer = await this.readRawAsync(srcPath);
             if (!zipBuffer) {
@@ -1690,7 +1690,7 @@ OpensWith=${shortCutData.opensWith}
             }
 
             const decompressed = unzipSync(new Uint8Array(zipBuffer));
-            const parentDir = dirname(srcPath);
+            const parentDir = dirname(destPath || srcPath);
             const folderName = basename(srcPath, extname(srcPath));
 
             // Create root extraction folder

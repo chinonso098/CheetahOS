@@ -1,4 +1,4 @@
-:root{
+:host{
   /* surfaces */
   --fx-bg: #202020;
   --fx-panel: #191919;
@@ -587,13 +587,15 @@ span.mid-search-entry{
 
 .file-content-container{
     border-left: 0.5px solid var(--fx-border);
-    width: 100%;
-    min-width: 0;     /* critical: allow shrinking */
+    width: 680px; /*Change back to 100%*/
+   /*  min-width: 0;     critical: allow shrinking */
+    position: relative;
     overflow: auto;
     /*  height: auto;    set back to auto when resize added*/
     height: 440px ;
-    flex: 1 1 auto;
-    min-height: 0;
+
+    /* flex: 1 1 auto;
+    min-height: 0; */
 }
 
 /*****************************icon view and layout Started*****************************/
