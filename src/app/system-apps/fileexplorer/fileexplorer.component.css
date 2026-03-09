@@ -589,7 +589,7 @@ span.mid-search-entry{
     border-left: 0.5px solid var(--fx-border);
     width: 680px; /*Change back to 100%*/
    /*  min-width: 0;     critical: allow shrinking */
-    position: relative;
+    /* position: relative; */
     overflow: auto;
     /*  height: auto;    set back to auto when resize added*/
     height: 440px ;

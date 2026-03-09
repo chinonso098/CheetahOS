@@ -89,11 +89,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isRecycleBinFolder = false;
   private isDragFromFileExplorerActive = false;
 
-  private confirmDelete = false;
-
-  isDetailsView = false;
-  isNotDetailsView = true;
-
   _isBtnClickEvt= false;
   isMultiSelectEnabled = true;
   isMultiSelectActive = false;
@@ -1320,13 +1315,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
 
     const quickAccesFileElmnt = document.getElementById(`${quickAcessSection}-${this.processId}`) as HTMLDivElement;
-    if(quickAccesFileElmnt){
-      const rect = quickAccesFileElmnt.getBoundingClientRect();
-      this.onShowIconContextMenu(evt, file, id, rect, isFileSection);
-    }
+    // if(quickAccesFileElmnt){
+    //   const rect = quickAccesFileElmnt.getBoundingClientRect();
+    //   this.onShowIconContextMenu(evt, file, id, rect, isFileSection);
+    // }
   }
 
-  onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number, rectInput?:DOMRect, isFileSection?:boolean):void{
+  onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
     evt.preventDefault();
     evt.stopPropagation();
 
@@ -1336,26 +1331,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     const menuHeight = (file.getIsFile)? 225 : 344; //this is not ideal.. menu height should be gotten dynmically
     this.iconCntxtCntr++;
+
     const contentRect:DOMRect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-
-    let axis:MenuPosition = {xAxis:0, yAxis:0}
-    if(this.currentViewOption === ViewOptions.DETAILS_VIEW){
-      this.isDetailsView = true;
-      this.isNotDetailsView = false;
-
-      axis = this.checkAndHandleMenuBounds(contentRect, evt, menuHeight);
-    }else{
-      this.isDetailsView = false;
-      this.isNotDetailsView = true;
-
-      if(rectInput){
-        const tmpAxis = this.checkAndHandleMenuBounds(rectInput, evt, menuHeight);
-        axis = (isFileSection)? {xAxis:tmpAxis.xAxis - 10, yAxis: tmpAxis.yAxis + 200} :
-         {xAxis:tmpAxis.xAxis - 10, yAxis: tmpAxis.yAxis + 300};
-      }else{
-        axis = this.checkAndHandleMenuBounds(contentRect, evt, menuHeight);
-      }
-    }
+    const axis = this.checkAndHandleMenuBounds(contentRect, evt, menuHeight);
     
     const uId = `${this.name}-${this.processId}`;
     this._runningProcessService.addEventOriginator(uId);
@@ -1378,61 +1356,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       'top':`${Math.round(axis.yAxis)}px`,
       'z-index': 2,
     }
-
-  }
-
-    onShowIconContextMenu_old(evt:MouseEvent, file:FileInfo, id:number, rectInput?:DOMRect, isFileSection?:boolean):void{
-    // looking at what Windows does, at any given time. there is only one context window open
-    this._menuService.hideContextMenus.next(this.name); 
-    this.hideFileExplorerToolTip();
-
-    const menuHeight = (file.getIsFile)? 225 : 344; //this is not ideal.. menu height should be gotten dynmically
-    this.iconCntxtCntr++;
-
-    let axis:MenuPosition = {xAxis:0, yAxis:0}
-    if(this.currentViewOption === ViewOptions.DETAILS_VIEW){
-      this.isDetailsView = true;
-      this.isNotDetailsView = false;
-
-      const tblBodyElmnt = document.getElementById(`tblBody-${this.processId}`) as HTMLTableCellElement;
-      const rect = tblBodyElmnt.getBoundingClientRect();
-      axis =  {xAxis: evt.clientX  - rect.left - 75, yAxis:evt.clientY - rect.top - 50}
-    }else{
-      this.isDetailsView = false;
-      this.isNotDetailsView = true;
-
-      if(rectInput){
-        const tmpAxis = this.checkAndHandleMenuBounds(rectInput, evt, menuHeight);
-        axis = (isFileSection)? {xAxis:tmpAxis.xAxis - 10, yAxis: tmpAxis.yAxis + 200} :
-         {xAxis:tmpAxis.xAxis - 10, yAxis: tmpAxis.yAxis + 300};
-      }else{
-        const rect:DOMRect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-        axis = this.checkAndHandleMenuBounds(rect, evt, menuHeight);
-      }
-    }
-    
-    const uId = `${this.name}-${this.processId}`;
-    this._runningProcessService.addEventOriginator(uId);
-
-    this.adjustIconContextMenuData(file);
-    this.selectedFile = file;
-    this.propertiesViewFile = file
-    this.isIconInFocusDueToPriorAction = false;
-
-    if(!this.showIconCntxtMenu)
-      this.showIconCntxtMenu = !this.showIconCntxtMenu;
-
-    // show IconContexMenu is still a btn click, just a different type
-    this.doBtnClickThings(id);
-    this.setBtnStyle(id, true);
-
-    this.fileExplrCntxtMenuStyle = {
-      'position': 'absolute', 
-      'transform':`translate(${axis.xAxis}px, ${axis.yAxis}px)`,
-      'z-index': 2,
-    }
-
-    evt.preventDefault();
   }
 
   adjustIconContextMenuData(file:FileInfo):void{
@@ -1485,8 +1408,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
 
   onShowFileExplorerContextMenu(evt:MouseEvent):void{
-    evt.preventDefault();
     evt.stopPropagation();
+    evt.preventDefault();
 
     this.showExpandTreeIcon = false;
     this.fileExplrCntxtCntr++;
@@ -1520,8 +1443,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   hideIconContextMenu(evt?:MouseEvent, caller?:string):void{
     this.showIconCntxtMenu = false;
-    this.isDetailsView = false;
-    this.isNotDetailsView = true;
     this.showFileExplrCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
     this.iconCntxtCntr = 0;
@@ -1540,7 +1461,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
+  checkAndHandleMenuBounds_(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
     let xAxis = 0;
     let yAxis = 0;
     let horizontalShift = false;
@@ -1578,7 +1499,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     return {xAxis, yAxis};
   }
 
-  checkAndHandleMenuBounds_old(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
+  checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
     let xAxis = 0;
     let yAxis = 0;
     let horizontalShift = false;
