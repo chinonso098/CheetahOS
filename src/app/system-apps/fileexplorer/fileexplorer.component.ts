@@ -1442,6 +1442,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   hideIconContextMenu(evt?:MouseEvent, caller?:string):void{
+    if(evt){
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
+
     this.showIconCntxtMenu = false;
     this.showFileExplrCntxtMenu = false;
     this.isShiftSubMenuLeft = false;
@@ -1453,11 +1458,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(caller !== undefined && caller === this.name){
       this.focusWindow();
       this._menuService.hideContextMenus.next(this.name);
-    }
-
-    if(evt){
-      evt.preventDefault();
-      evt.stopPropagation();
     }
   }
 
@@ -1480,19 +1480,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const mousePositionY = evt.clientY - rect.top;
 
     if(distanceToRightBoundary < menuWidth){
+      const shifMenuLeftBy = menuWidth - distanceToRightBoundary;
+      xAxis = mousePositionX - shifMenuLeftBy;
       shiftMenuXPosition = true;
-      const diff = menuWidth - distanceToRightBoundary;
-      xAxis = mousePositionX - diff;
     }
 
-    this.isShiftSubMenuLeft = distanceToRightBoundary <= (menuWidth + subMenuWidth)
-
-    if((distanceToBottomBoundary) <= menuHeight + fileExplorerFooterHeight){
+    if(distanceToBottomBoundary < (menuHeight + fileExplorerFooterHeight)){
       const shifMenuUpBy = menuHeight - distanceToBottomBoundary;
-      shiftMenuYPosition = true;
       yAxis = mousePositionY - shifMenuUpBy;
+      shiftMenuYPosition = true;
     }
     
+    this.isShiftSubMenuLeft = distanceToRightBoundary <= (menuWidth + subMenuWidth)
     xAxis = (shiftMenuXPosition) ? xAxis + xOffSet : mousePositionX + xOffSet;
     yAxis = (shiftMenuYPosition) ? yAxis + yOffSet - fileExplorerFooterHeight : mousePositionY + yOffSet;
 
