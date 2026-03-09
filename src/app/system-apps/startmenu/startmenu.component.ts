@@ -170,7 +170,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     applyEffect('.start-menu-list-ol', {
       clickEffect: true,
       lightColor: 'rgba(255,255,255,0.10)',
-      gradientSize: 56,
+      gradientSize: 35,
       isContainer: true,
       children: {
         borderSelector: '.start-menu-list-li',
@@ -184,7 +184,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     applyEffect('.start-menu-main-overlay-icon-text-container', {
       clickEffect: false,
       lightColor: 'rgba(255,255,255,0.10)',
-      gradientSize: 64,
+      gradientSize: 45,
       isContainer: true,
       children: {
         borderSelector: '.start-menu-main-overlay-icon-text-content',
