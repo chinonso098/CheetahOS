@@ -306,7 +306,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
     this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)});
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe((p) => {
-      if(p !== this.name)
+      if(p !== this.name) // don't answer your own call
         this.hideIconContextMenu();
     });
 
@@ -762,6 +762,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   async navigateToFolder(data: string[]): Promise<void> {
     console.log('navigateToFolder:', data);
 
+    this.hideIconContextMenu(undefined, this.name);
     this.mounthPath === Constants.EMPTY_STRING; // reset any prior mounted zip path when navigating via file tree
 
     const quickAccess = 'Quick access';
@@ -1342,6 +1343,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.selectedFile = file;
     this.propertiesViewFile = file
     this.isIconInFocusDueToPriorAction = false;
+    this.showFileExplrCntxtMenu = false;
 
     if(!this.showIconCntxtMenu)
       this.showIconCntxtMenu = !this.showIconCntxtMenu;
@@ -1412,6 +1414,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     evt.preventDefault();
 
     this.showExpandTreeIcon = false;
+    this.showIconCntxtMenu = false;
     this.fileExplrCntxtCntr++;
     if(this.iconCntxtCntr >= this.fileExplrCntxtCntr)
         return;
