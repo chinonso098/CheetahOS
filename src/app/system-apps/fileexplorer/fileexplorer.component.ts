@@ -1245,7 +1245,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       if(quickAccesUlElmnt){
         const rect = quickAccesUlElmnt.getBoundingClientRect();
-        this.showFileExplorerToolTip(evt, file, rect, isFileSection);
+        this.showFileExplorerToolTip(evt, file);
       }
     }
   }
@@ -1275,6 +1275,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
     }
   }
+  
   onMouseLeave(id:number):void{
     this.isMultiSelectEnabled = true;
     this.hideFileExplorerToolTip();
@@ -2085,7 +2086,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isDragFromFileExplorerActive = false;
   }
 
-  async showFileExplorerToolTip(evt: MouseEvent, file: FileInfo, rectInput?:DOMRect, isFileSection?:boolean): Promise<void> {
+  async showFileExplorerToolTip__(evt: MouseEvent, file: FileInfo, rectInput?:DOMRect, isFileSection?:boolean): Promise<void> {
     if (this.currentViewOption === ViewOptions.CONTENT_VIEW) return;
 
     const rect:DOMRect = (rectInput)
@@ -2123,25 +2124,84 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     });
   }
 
+  async showFileExplorerToolTip(evt: MouseEvent, file: FileInfo): Promise<void> {
+    const delay = 350; //350ms
+    const rect:DOMRect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    const mousePoistionX = evt.clientX - rect.left;
+    const mousePositionY = evt.clientY - rect.top;
+
+    let infoTip:HTMLDivElement|null = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
+    if (!infoTip) return;
+
+    //this.fileInfoTipData = [];
+    this.currentTooltipFileId = file.getCurrentPath;
+    await this.setInformationTipInfo(file);
+
+    if (this.fileInfoTipData.length === 0) return;
+
+    await CommonFunctions.sleep(delay);
+
+    requestAnimationFrame(() => {
+      const offsetX = 180;
+      const offsetY =  60;
+
+      infoTip.style.position = 'absolute';
+      infoTip.style.zIndex = '4';
+      infoTip.style.left =  `${Math.round(mousePoistionX + offsetX)}px`, 
+      infoTip.style.top =  `${Math.round(mousePositionY + offsetY)}px`,
+      infoTip.classList.add('visible');
+    });
+  }
+
+  checkAndHandleToolTipBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
+    let xAxis = 0;
+    let yAxis = 0;
+    let shiftTipXPosition = false;
+    let shiftTipYPosition = false;
+
+    const menuWidth = 210;
+    const subMenuWidth = 205;
+    const xOffSet = 180;
+    const yOffSet = 65;
+    const fileExplorerFooterHeight = 24;
+
+    const distanceToRightBoundary =  rect.right - evt.clientX; // horizontalMax - clientX
+    const distanceToBottomBoundary = rect.bottom - evt.clientY ; // verticalMax - clientY
+
+    const mousePositionX = evt.clientX - rect.left;
+    const mousePositionY = evt.clientY - rect.top;
+
+    if(distanceToRightBoundary < menuWidth){
+      const shifMenuLeftBy = menuWidth - distanceToRightBoundary;
+      xAxis = mousePositionX - shifMenuLeftBy;
+      shiftTipXPosition = true;
+    }
+
+    if(distanceToBottomBoundary < (menuHeight + fileExplorerFooterHeight)){
+      const shifMenuUpBy = menuHeight - distanceToBottomBoundary;
+      yAxis = mousePositionY - shifMenuUpBy;
+      shiftTipYPosition = true;
+    }
+    
+    xAxis = (shiftTipXPosition) ? xAxis + xOffSet : mousePositionX + xOffSet;
+    yAxis = (shiftTipYPosition) ? yAxis + yOffSet - fileExplorerFooterHeight : mousePositionY + yOffSet;
+
+    // Keep values non-negative without changing normal placement behavior.
+    xAxis = Math.max(0, xAxis);
+    yAxis = Math.max(0, yAxis);
+ 
+    return {xAxis, yAxis};
+  }
+
+
   hideFileExplorerToolTip():void {
     this.currentTooltipFileId = Constants.EMPTY_STRING;
     this.fileInfoTipData = [];
-
     const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
-    const infoTip1 = document.getElementById(`fx-information-tip-qa-files-${this.processId}`) as HTMLDivElement;
-    const infoTip2 = document.getElementById(`fx-information-tip-qa-folder-${this.processId}`) as HTMLDivElement;
     
-    if (infoTip) {
-      infoTip.classList.remove('visible');
-    }
+    if(!infoTip) return;
 
-    if (infoTip1) {
-      infoTip1.classList.remove('visible');
-    }
-
-    if (infoTip2) {
-      infoTip2.classList.remove('visible');
-    }
+    infoTip.classList.remove('visible');
   }
 
   async setInformationTipInfo(file:FileInfo):Promise<void>{

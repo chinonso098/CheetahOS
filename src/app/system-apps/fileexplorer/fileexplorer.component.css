@@ -1067,7 +1067,7 @@ th[fxplrColumnResize]::after {
     transform: rotate(180deg);
 }
 
-.fx-information-tip-container, .fx-information-tip-container-qa-files, .fx-information-tip-container-qa-folder{
+.fx-information-tip-container{
     position: absolute;
     z-index: -3;
     width: fit-content;
@@ -1079,9 +1079,9 @@ th[fxplrColumnResize]::after {
     pointer-events: none; /* makes it non-interactive */
 }
 
-.fx-information-tip-container.visible, .fx-information-tip-container-qa-files.visible, .fx-information-tip-container-qa-folder.visible {
+.fx-information-tip-container.visible{
     opacity: 1;
-    z-index: 4;
+    z-index: 2;
     visibility: visible;
 }
 

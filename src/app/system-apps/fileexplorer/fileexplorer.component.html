@@ -293,15 +293,15 @@
 
                        <cos-menu [generalMenu]="menuData" *ngIf="showIconCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
                        <cos-menu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
-    
-                        <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
-                            <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
-                                <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
-                            </div>
-                        </div>
 
                         <div #selectPaneContainer id="fileExplrMultiSelectPane"></div>
                     </ol>
+
+                    <div class="fx-information-tip-container" id="fx-information-tip-{{processId}}">
+                        <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
+                            <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
