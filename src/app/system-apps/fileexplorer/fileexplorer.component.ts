@@ -119,6 +119,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   quickAccessFolderSection = false;
   quickAccessFilesSection = false;
   showFileSizeAndUnit = false;
+  showAFolderSelected = false;
   iconCntxtCntr = 0;
   fileExplrCntxtCntr = 0;
   selectFilesSizeSum = Constants.EMPTY_STRING;
@@ -1221,7 +1222,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   onBtnClick(evt:MouseEvent, id:number):void{
     this.doBtnClickThings(id);
     this.setBtnStyle(id, true);
-    this.getSelectFileSizeSumAndUnit();
+    this.getSelectFileSizeSumAndUnitOrFolders();
 
     evt.stopPropagation();
   }
@@ -1589,6 +1590,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   handleIconHighLightState():void{
     this.hideShowFileSizeAndUnit();
+    this.showAFolderSelected = false;
 
     //First case - I'm clicking only on the folder icons
     if((this.getIsBtnClickEvt() && this.btnClickCnt >= 1) && (!this.isHideCntxtMenuEvt && this.hideCntxtMenuEvtCnt === 0)){  
@@ -1754,7 +1756,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.areMultipleIconsHighlighted = true;
       this.getIDsOfAllTheMarkedButtons();
     }
-    this.getSelectFileSizeSumAndUnit();
+    this.getSelectFileSizeSumAndUnitOrFolders();
   }
 
   updateDivWithAndSize(evt:MouseEvent):void{
@@ -1847,8 +1849,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     });
   }
   
-  getSelectFileSizeSumAndUnit():void{
-    let sum = 0;
+  getSelectFileSizeSumAndUnitOrFolders():void{
+    let sum = 0; let aFolderIsSelected = false;
 
     if(this.markedBtnIds.length > 0){
       for(const id of this.markedBtnIds){
@@ -1857,6 +1859,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           sum += file.getSizeInBytes;
         }else{
           this.hideShowFileSizeAndUnit();
+          if(!aFolderIsSelected){
+            aFolderIsSelected = true;
+            this.showAFolderSelected = true;
+          }
           return;
         }
       }
@@ -1870,6 +1876,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const file = this.fetchedFiles[this.selectedElementId];
       if(file && file.getIsFile){
         this.showFileSizeAndUnit = true;
+        this.showAFolderSelected = false;
         this.selectFilesSizeSum = String(file.getSize);
         this.selectFilesSizeUnit = file.getFileSizeUnit
       }else{

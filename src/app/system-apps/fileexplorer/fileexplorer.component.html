@@ -322,6 +322,10 @@
                     <span class="fileexp-footer__span"> {{selectFilesSizeSum}} {{selectFilesSizeUnit}}</span>
                     <span class="fileexp-footer__span">|</span>
                 </ng-container>
+
+                <ng-container *ngIf="showAFolderSelected">
+                    <span class="fileexp-footer__span">{{markedBtnIds.length}} item selected</span>
+                </ng-container>
             </ng-container>
 
             <div class="fileexp-footer__details-cntnr" (click)="toggleDetailsView()" (mouseenter)="colorBtnCntnr('fileMngr-detailsViewToggle-'+processId)" (mouseleave)="uncolorBtnCntnr(btnTypeFooter, 'fileMngr-detailsViewToggle-'+processId)" id="fileMngr-detailsViewToggle-{{processId}}">

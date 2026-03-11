@@ -59,6 +59,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   warnNotification = UserNotificationType.Warning;
   infoNotification =  UserNotificationType.Info;
   pwrOnOffNotification =  UserNotificationType.PowerOnOff;
+  zipExtractNotification = UserNotificationType.ZipExtract;
   deleteWarnNotification = UserNotificationType.DeleteWarning;
   inUseWarnNotification = UserNotificationType.InUseWarning;
   fileTransferProgressNotification =  UserNotificationType.FileTransferProgress;
@@ -144,6 +145,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   dialogMgs = Constants.EMPTY_STRING;
   inUseSuggestion = Constants.EMPTY_STRING;
   displayAdditionalMsg ='Application not found';
+  zipExtractDestination = Constants.EMPTY_STRING;
+  zipExtractShowOnComplete = true;
   name = Constants.EMPTY_STRING;
   hasWindow = false;
   isMaximizable = false;
@@ -195,6 +198,11 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     if(this.notificationType === UserNotificationType.Error){
       if(this.dialogMgs === this.dialogTitle)
         this.showExtraErroMsg = true;
+    }
+
+    if(this.notificationType === UserNotificationType.ZipExtract){
+      this.zipExtractDestination = this.dialogMgs || '/Users/Documents/New folder';
+      this.zipExtractShowOnComplete = true;
     }
 
     if(this.notificationType === UserNotificationType.FileTransferProgress || this.notificationType === UserNotificationType.FileDeleteProgress){
@@ -359,6 +367,14 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this.selectedOption = selectedValue;
     this.pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === selectedValue)?.label;
     this.isQuestionHidden = (selectedValue === this.SHUT_DOWN || this.selectedOption === this.RESTART) ? false : true;
+  }
+
+  onZipExtract():void{
+    this.onYesDialogBox();
+  }
+
+  onZipExtractBrowse():void{
+    // Placeholder for folder-picker integration.
   }
 
   async playDialogNotifcationSound():Promise<void>{

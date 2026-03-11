@@ -30,19 +30,19 @@ export namespace DesktopGeneralHelper {
     file.setOpensWith = arg0;
 
     if(arg0 ===  MARKDOWN_VIEWER_APP){
-    file.setCurrentPath = Constants.DESKTOP_PATH;
-    file.setContentPath = '/Users/Documents/Credits.md';
+      file.setCurrentPath = Constants.DESKTOP_PATH;
+      file.setContentPath = '/Users/Documents/Credits.md';
     }
 
     if(arg0 !== CLIPPY_APP){
-    const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
-    CommonFunctions.trackActivity(activityHistoryService, activity);
+      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
+      CommonFunctions.trackActivity(activityHistoryService, activity);
     }
 
     if(arg0 === PHOTOS_APP){
-    file = (screenShot)? screenShot : new FileInfo();
-    const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
-    CommonFunctions.trackActivity(activityHistoryService, activity);
+      file = (screenShot)? screenShot : new FileInfo();
+      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
+      CommonFunctions.trackActivity(activityHistoryService, activity);
     }
 
     processHandlerService.runApplication(file);

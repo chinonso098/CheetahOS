@@ -949,3 +949,82 @@
     position: relative;
     right: 0%;
 }
+
+/* Zip Extract Dialog Start */
+
+.zip-extract-dialog-main-container {
+    width: 520px;
+    background-color: #fff;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+}
+
+.zip-extract-dialog-content-container {
+    padding: 20px 14px 12px;
+}
+
+.zip-extract-dialog-title {
+    margin: 0 0 16px;
+    color: #003c9b;
+    font-size: 30px;
+    font-weight: 300;
+    line-height: 1.05;
+}
+
+.zip-extract-dialog-label {
+    margin: 0 0 8px;
+    color: #000;
+    font-size: 23px;
+    font-weight: 300;
+    line-height: 1.2;
+}
+
+.zip-extract-dialog-path-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.zip-extract-dialog-path-input {
+    flex: 1;
+    height: 24px;
+    border: 1px solid #0078d7;
+    padding: 1px 6px;
+    font-size: 12px;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    color: #000;
+    box-sizing: border-box;
+}
+
+.zip-extract-dialog-browse-btn {
+    width: 88px;
+    min-width: 88px;
+    padding: 3px 8px;
+}
+
+.zip-extract-dialog-checkbox-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #000;
+}
+
+.zip-extract-dialog-footer-container {
+    height: 44px;
+    background-color: #e5e5e5;
+    position: relative;
+}
+
+.zip-extract-dialog-footer-btns {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.zip-extract-dialog-cancel-btn {
+    margin-left: 6px;
+}
+
+/* Zip Extract Dialog End */

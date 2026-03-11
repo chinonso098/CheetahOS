@@ -2,6 +2,7 @@
                                   notificationOption === warnNotification ? warningNotice :
                                   notificationOption === infoNotification ? infoNotice :
                                   notificationOption === pwrOnOffNotification ? shutDownRestartNotice : 
+                                  notificationOption === zipExtractNotification ? zipExtract :
                                   notificationOption === deleteWarnNotification ? deleteWarning :
                                   notificationOption === inUseWarnNotification ? inUseWarning : fileTransfer">
 </ng-container>
@@ -215,6 +216,51 @@
             </div>
         </div>
     </cos-primarywindow>
+</ng-template>
+
+<ng-template #zipExtract>
+    <cos-secondarywindow 
+        [runningProcessID]="processId" 
+        [displayMessage]="dialogTitle"
+        [processAppName]="INFO_DIALOG"
+        [isDialog]="isDialog"
+        [callingProcessUId]="inputCallingProcessUId">
+
+        <div class="zip-extract-dialog-main-container" tabindex="0">
+            <div class="zip-extract-dialog-content-container">
+                <p class="zip-extract-dialog-title">Select a Destination and Extract Files</p>
+
+                <p class="zip-extract-dialog-label">Files will be extracted to this folder:</p>
+
+                <div class="zip-extract-dialog-path-row">
+                    <input
+                        class="zip-extract-dialog-path-input"
+                        type="text"
+                        [(ngModel)]="zipExtractDestination"
+                        aria-label="Destination path" />
+                    <button class="btn btn-secondary zip-extract-dialog-browse-btn" (click)="onZipExtractBrowse()">
+                        Browse...
+                    </button>
+                </div>
+
+                <label class="zip-extract-dialog-checkbox-row">
+                    <input type="checkbox" [(ngModel)]="zipExtractShowOnComplete" />
+                    <span>Show extracted files when complete</span>
+                </label>
+            </div>
+
+            <div class="zip-extract-dialog-footer-container">
+                <span class="zip-extract-dialog-footer-btns">
+                    <button class="btn btn-primary" (click)="onZipExtract()">
+                        Extract
+                    </button>
+                    <button class="btn btn-secondary zip-extract-dialog-cancel-btn" (click)="onCloseDialogBox($event)">
+                        Cancel
+                    </button>
+                </span>
+            </div>
+        </div>
+    </cos-secondarywindow>
 </ng-template>
 
 <ng-template #warningNotice>
