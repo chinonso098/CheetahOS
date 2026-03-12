@@ -1091,10 +1091,15 @@ th[fxplrColumnResize]::after {
 }
 
 .fx-information-tip-item {
+    max-width: 200px;
+    min-width: 0;
     padding: 2px 2px;
     font-size: 11px;
     text-align: left;
     color: var(--fx-text);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .fileexplr-clone-container{

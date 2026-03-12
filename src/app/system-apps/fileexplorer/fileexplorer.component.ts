@@ -985,7 +985,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(inputViewOption === ViewOptions.DETAILS_VIEW){
       this.currentViewOption = inputViewOption;
       this.changeLayoutCss(inputViewOption);
-      this.changeOrderedlistStyle(inputViewOption);
+      //this.changeOrderedlistStyle(inputViewOption);
     }
   }
 
@@ -1033,7 +1033,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   changeIconViewBtnSize(iconSize:ViewOptions):void{
 
     const icon_sizes:ViewOptions[] = [ViewOptions.SMALL_ICON_VIEW, ViewOptions.MEDIUM_ICON_VIEW, ViewOptions.LARGE_ICON_VIEW, 
-                                      ViewOptions.EXTRA_LARGE_ICON_VIEW];
+                                      ViewOptions.EXTRA_LARGE_ICON_VIEW, ViewOptions.DETAILS_VIEW];
 
     const fig_img_sizes:string[] = ['30px', '45px', '80px', '96px']; //small, med, large, ext large
     const btn_width_height_sizes:string[][] = [['70px', '50px'], ['90px', '70px'], ['120px', '100px'], ['140px', '120px']];
@@ -1091,14 +1091,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         olElmnt.style.columnGap = '5px';
         olElmnt.style.padding = '5px 10px';
         olElmnt.style.gridAutoFlow = 'row';
-      }
-    }
-    
-    else if(iconView === ViewOptions.CONTENT_VIEW){
-      const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-      if(olElmnt){
-        olElmnt.style.gridTemplateColumns = `repeat(auto-fill, minmax(50px, ${rect.width}px)`;
-        olElmnt.style.gridTemplateRows = 'repeat(auto-fill, 43px)'; 
       }
     }
   }
@@ -1244,20 +1236,22 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const quickAccesUlElmnt = document.getElementById(`${quickAcessSection2}-${this.processId}`) as HTMLUListElement;
       this.setBtnStyle(id, true, quickAccesBtnElmnt);
 
-      if(quickAccesUlElmnt){
-        const rect = quickAccesUlElmnt.getBoundingClientRect();
-        this.showFileExplorerToolTip(evt, file);
-      }
+      // if(quickAccesUlElmnt){
+      //   const rect = quickAccesUlElmnt.getBoundingClientRect();
+      //   this.showFileExplorerToolTip(evt, file);
+      // }
     }
   }
 
-  onMouseEnter(evt:MouseEvent, file:FileInfo, id:number):void{
+  onMouseEnter(id:number):void{
     if(!this.isMultiSelectActive){
       this.isMultiSelectEnabled = false;
-
       this.setBtnStyle(id, true);
-      this.showFileExplorerToolTip(evt, file);
     }
+  }
+
+  async showToolTip(evt:MouseEvent, file:FileInfo):Promise<void>{
+    await this.showFileExplorerToolTip(evt, file);
   }
 
   onQuickAccessMouseLeave(id:number, isFileSection:boolean):void{
@@ -2087,87 +2081,42 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isDragFromFileExplorerActive = false;
   }
 
-  async showFileExplorerToolTip(evt:MouseEvent, file: FileInfo): Promise<void> {
+  private async showFileExplorerToolTip(evt:MouseEvent, file: FileInfo): Promise<void> {
     const rect:DOMRect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const mousePoistionX = evt.clientX - rect.left;
     const mousePositionY = evt.clientY - rect.top;
 
-    let infoTip:HTMLDivElement|null = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
+    const infoTip:HTMLDivElement|null = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
     if (!infoTip) return;
 
-    //this.fileInfoTipData = [];
     this.currentTooltipFileId = file.getCurrentPath;
     await this.setInformationTipInfo(file);
 
-    if (this.fileInfoTipData.length === 0) return;
-
-    //await CommonFunctions.sleep(delay);
+    if(this.fileInfoTipData.length === 0) return;
 
     requestAnimationFrame(() => {
       const offsetX = 180;
-      const offsetY =  60;
+      const offsetY =  80;
 
       infoTip.style.position = 'absolute';
-      infoTip.style.zIndex = '4';
       infoTip.style.left =  `${Math.round(mousePoistionX + offsetX)}px`, 
       infoTip.style.top =  `${Math.round(mousePositionY + offsetY)}px`,
       infoTip.classList.add('visible');
     });
   }
 
-  checkAndHandleToolTipBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
-    let xAxis = 0;
-    let yAxis = 0;
-    let shiftTipXPosition = false;
-    let shiftTipYPosition = false;
-
-    const menuWidth = 210;
-    const subMenuWidth = 205;
-    const xOffSet = 180;
-    const yOffSet = 65;
-    const fileExplorerFooterHeight = 24;
-
-    const distanceToRightBoundary =  rect.right - evt.clientX; // horizontalMax - clientX
-    const distanceToBottomBoundary = rect.bottom - evt.clientY ; // verticalMax - clientY
-
-    const mousePositionX = evt.clientX - rect.left;
-    const mousePositionY = evt.clientY - rect.top;
-
-    if(distanceToRightBoundary < menuWidth){
-      const shifMenuLeftBy = menuWidth - distanceToRightBoundary;
-      xAxis = mousePositionX - shifMenuLeftBy;
-      shiftTipXPosition = true;
-    }
-
-    if(distanceToBottomBoundary < (menuHeight + fileExplorerFooterHeight)){
-      const shifMenuUpBy = menuHeight - distanceToBottomBoundary;
-      yAxis = mousePositionY - shifMenuUpBy;
-      shiftTipYPosition = true;
-    }
-    
-    xAxis = (shiftTipXPosition) ? xAxis + xOffSet : mousePositionX + xOffSet;
-    yAxis = (shiftTipYPosition) ? yAxis + yOffSet - fileExplorerFooterHeight : mousePositionY + yOffSet;
-
-    // Keep values non-negative without changing normal placement behavior.
-    xAxis = Math.max(0, xAxis);
-    yAxis = Math.max(0, yAxis);
- 
-    return {xAxis, yAxis};
-  }
-
-
   hideFileExplorerToolTip():void {
     this.currentTooltipFileId = Constants.EMPTY_STRING;
     this.fileInfoTipData = [];
+
     const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
-    
     if(!infoTip) return;
 
     infoTip.classList.remove('visible');
   }
 
   async setInformationTipInfo(file:FileInfo):Promise<void>{
-    const infoTipFields = ['Author:', 'Item type:','Date created:','Date modified:', 'Dimensions:', 'General', 'Size:','Type:', 'Original location:'];
+    const infoTipFields = ['Author:', 'Item type:', 'Date created:', 'Date modified:', 'Dimensions:', 'General', 'Size:', 'Type:', 'Original location:', 'Files:', 'Folders:'];
     const specialFolders: Record<string, string> = {
       'Music': 'Contains music and other audio files',
       'Videos': 'Contains movies and other video files',
@@ -2183,7 +2132,6 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const isFile = file.getIsFile;
     const currentPath = dirname(file.getCurrentPath);
     const isRoot = currentPath === Constants.ROOT;
-    const localFileId = file.getCurrentPath;
 
     let isFolder = fileType === Constants.FOLDER;
 
@@ -2232,26 +2180,29 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }else if((isRoot && specialFolders[fileName])){
         this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:specialFolders[fileName]})
       }else{
-        this.fileInfoTipData.push({label:infoTipFields[7], data:fileType });
+        //this.fileInfoTipData.push({label:infoTipFields[7], data:fileType });
         this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified });
 
         const folderSizeInBytes = await this._fileService.getFolderSizeAsync(file.getCurrentPath);
-        if (this.currentTooltipFileId !== localFileId) {
-          // User has hovered over a different file before this resolved
-          return;
-        }
         const folderSize = CommonFunctions.getReadableFileSizeValue(folderSizeInBytes);
         const folderUnit = CommonFunctions.getFileSizeUnit(folderSizeInBytes);
+
         const sizeLabelExists = this.fileInfoTipData.some(x => x.label === infoTipFields[6]);
-        if (!sizeLabelExists) {
+        if(!sizeLabelExists){
           this.fileInfoTipData.push({label:infoTipFields[6], data:`${String(folderSize)} ${folderUnit}`});
         }
-
 
         if(this.isRecycleBinFolder){
           const originalLocation = this._fileService.getFolderOrigin(file.getCurrentPath);
           this.fileInfoTipData.push({label:infoTipFields[8], data:originalLocation });
         }
+
+        const filesAndFolders = await this.getAListOfFilesAndFoldersInCurrentDirectory(file.getCurrentPath);
+        if(filesAndFolders[0] !== Constants.EMPTY_STRING)
+          this.fileInfoTipData.push({label:infoTipFields[9], data:filesAndFolders[0] });
+        
+        if(filesAndFolders[1] !== Constants.EMPTY_STRING)
+          this.fileInfoTipData.push({label:infoTipFields[10], data:filesAndFolders[1] });
       }
     }
   }
@@ -2435,6 +2386,42 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       : `${Constants.IMAGE_BASE_PATH}non_empty_bin.png`;
   }
 
+
+  async getAListOfFilesAndFoldersInCurrentDirectory(fPath:string):Promise<string[]>{
+    let fileCounter = 0;
+    let folderCounter = 0;
+    let filesList = Constants.EMPTY_STRING;
+    let foldersList = Constants.EMPTY_STRING;
+
+    const MaxItemsToFetch = 10;
+    const files:string[] = [];
+    const folders:string[] = [];
+    const directoryFiles = await this._fileService.loadDirectoryFiles(fPath);
+
+    for(const file of directoryFiles){
+      if(file.getIsFile){
+        if(fileCounter < MaxItemsToFetch){
+          files.push(file.getFileName);
+          fileCounter++;
+        }
+      }else{
+        if(folderCounter < MaxItemsToFetch){
+          folders.push(file.getFileName);
+          folderCounter++;
+        }
+      }
+
+      if(fileCounter >= MaxItemsToFetch && folderCounter >= MaxItemsToFetch){
+        break;
+      }
+    }
+
+    filesList = (files.length > 0)? `${files.join(', ')}` : Constants.EMPTY_STRING;
+    foldersList = (folders.length > 0)? `${folders.join(', ')}` : Constants.EMPTY_STRING;
+
+    return [filesList, foldersList];
+  }
+
   onFileExplrCntntClick():void{
     this.hidePathTextBox();
   }
@@ -2498,6 +2485,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.isFormDirty(); // trigger form submit logic
 
       return true;
+    }else if(evt.key.length > 1){
+      // non-printable keys (ArrowRight, Home, Shift, etc.) — allow but skip resize
+      return true;
     }else{
       const res = new RegExp(regexStr).test(evt.key)
       if(res){
@@ -2520,17 +2510,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const renameTxtBoxElmt = document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLTextAreaElement;
 
     if (renameTxtBoxElmt) {
-      const cursorPosition = renameTxtBoxElmt.selectionStart;
-      const textValue = renameTxtBoxElmt.value;
-      const lines = textValue.substring(0, cursorPosition).split(Constants.NEW_LINE);
-      const currentLineNumber = lines.length;
-
-      if (currentLineNumber > 1) {
-        const currentHeight = renameTxtBoxElmt.clientHeight;
-        renameTxtBoxElmt.style.height = `${currentHeight * 2}px`;
-      } else {
-        renameTxtBoxElmt.style.height = 'auto';
-      }
+      renameTxtBoxElmt.style.height = 'auto';
+      renameTxtBoxElmt.style.height = `${renameTxtBoxElmt.scrollHeight}px`;
     }
   }
 

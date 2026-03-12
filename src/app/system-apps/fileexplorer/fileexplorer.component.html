@@ -186,8 +186,8 @@
 
                                     MouseStop
                                     [mouseStopDelay]="TOOL_TIP_DELAY"
-                                    (mouseStop)="onMouseEnter($event, file, i)"
-
+                                    (mouseStop)=" showToolTip($event, file)"
+                                    (mouseenter)="onMouseEnter(i)"
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
                                     (click)="onBtnClick($event, i)" 
@@ -244,7 +244,10 @@
                                 <tbody id="tblBody-{{processId}}">
                                     <tr class="li-detailsview-container" *ngFor='let file of fetchedFiles; let i = index' (click)="onProcessSelected(i,i)" [class.active]="i === selectedRow"  id="trElmnt-{{processId}}-{{i}}">
                                         <td
-                                            (mouseenter)="onMouseEnter($event, file, i)" 
+                                            MouseStop
+                                            [mouseStopDelay]="TOOL_TIP_DELAY"
+                                            (mouseStop)=" showToolTip($event, file)"
+                                            (mouseenter)="onMouseEnter(i)" 
                                             (mouseleave)="onMouseLeave(i)"
                                             (contextmenu)="onShowIconContextMenu($event, file, i)" 
                                             (click)="onBtnClick($event, i)">
