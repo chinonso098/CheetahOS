@@ -163,6 +163,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   _directoryTraversalList:string[] = ['This PC'];
   fileTreeHistory:string[] = [];
   SECONDS_DELAY:number[] = [100, 1500, 6000, 12000, 500];
+  TOOL_TIP_DELAY:number = 450; //450ms
   
   defaultviewOption = ViewOptions.MEDIUM_ICON_VIEW;
   currentViewOption = ViewOptions.MEDIUM_ICON_VIEW;
@@ -2086,46 +2087,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isDragFromFileExplorerActive = false;
   }
 
-  async showFileExplorerToolTip__(evt: MouseEvent, file: FileInfo, rectInput?:DOMRect, isFileSection?:boolean): Promise<void> {
-    if (this.currentViewOption === ViewOptions.CONTENT_VIEW) return;
-
-    const rect:DOMRect = (rectInput)
-    ? rectInput 
-    : this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-
-    const x = evt.clientX - rect.left;
-    const y = evt.clientY - rect.top;
-
-    let infoTip:HTMLDivElement|null = null;
-    if(rectInput){
-      infoTip = (isFileSection)
-        ? document.getElementById(`fx-information-tip-qa-files-${this.processId}`) as HTMLDivElement 
-        : document.getElementById(`fx-information-tip-qa-folder-${this.processId}`) as HTMLDivElement;
-    }else{
-      infoTip =  document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
-    }
-    if (!infoTip) return;
-
-    //this.fileInfoTipData = [];
-    this.currentTooltipFileId = file.getCurrentPath;
-    await this.setInformationTipInfo(file);
-
-    if (this.fileInfoTipData.length === 0) return;
-
-    requestAnimationFrame(() => {
-      const offsetX = this.currentViewOption === ViewOptions.DETAILS_VIEW ? -25 : -15;
-      const offsetY = this.currentViewOption === ViewOptions.DETAILS_VIEW ? -50 : 10;
-      if(rectInput){
-        infoTip.style.transform =`translate(${x + -30}px, ${y + 2}px)`;
-      }else{
-        infoTip.style.transform = `translate(${x + offsetX}px, ${y + offsetY}px)`;
-      }
-      infoTip.classList.add('visible');
-    });
-  }
-
-  async showFileExplorerToolTip(evt: MouseEvent, file: FileInfo): Promise<void> {
-    const delay = 350; //350ms
+  async showFileExplorerToolTip(evt:MouseEvent, file: FileInfo): Promise<void> {
     const rect:DOMRect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const mousePoistionX = evt.clientX - rect.left;
     const mousePositionY = evt.clientY - rect.top;
@@ -2139,7 +2101,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if (this.fileInfoTipData.length === 0) return;
 
-    await CommonFunctions.sleep(delay);
+    //await CommonFunctions.sleep(delay);
 
     requestAnimationFrame(() => {
       const offsetX = 180;

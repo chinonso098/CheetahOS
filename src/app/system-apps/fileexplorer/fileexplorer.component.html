@@ -183,7 +183,11 @@
                         <ng-template #iconsView>
                             <li class="li-iconview-container" *ngFor="let file of fetchedFiles; let i = index" id="ilElmnt-{{processId}}" >
                                 <div class="iconview-button" role="button" tabindex="0" (dblclick)="runApplication(file, $event)"
-                                    (mouseenter)="onMouseEnter($event, file, i)" 
+
+                                    MouseStop
+                                    [mouseStopDelay]="TOOL_TIP_DELAY"
+                                    (mouseStop)="onMouseEnter($event, file, i)"
+
                                     (mouseleave)="onMouseLeave(i)"
                                     (contextmenu)="onShowIconContextMenu($event, file, i)" 
                                     (click)="onBtnClick($event, i)" 

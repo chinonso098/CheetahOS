@@ -55,6 +55,7 @@ import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
 
 import { HighlightDirective } from './shared/system-component/window/window.btn.highlight.directives';
+import { MouseStopDirective } from './system-apps/fileexplorer/mouse.stop.directive';
 import { TaskBarEntryHighlightDirective } from './system-apps/taskbarentries/taskbar.entries.highlight.directives';
 import { LongPressDirective } from './system-apps/audioplayer/long.press.directive';
 import { ColumnResizeDirective } from './system-apps/taskmanager/taskmanager.column-resize.directive';
@@ -117,6 +118,7 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     KeyPressCaptureDirective,
     AlphaNumericDirective,
     FileExplorerColumnResizeDirective,
+    MouseStopDirective,
 
     SafeUrlPipe,
     TruncatePipe
