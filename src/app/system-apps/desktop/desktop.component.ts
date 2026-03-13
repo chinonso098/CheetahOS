@@ -1683,6 +1683,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   handleIconHighLightState():void{
+    console.log('desktopClickCounter:', this.desktopClickCounter);
     this.hideDesktopContextMenuAndOthers(this.isDesktopTheCaller);
 
     if(!this.isRenameActive){
@@ -1706,6 +1707,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   
         if(!this.isRenameActive)
           this.resetIconBtnClick();
+      }
+
+      if(this.isIconInFocusDueToPriorAction){
+        console.log('prior action')
+        DesktopStyleHelper.setBtnStyle(this.currIconId, false, this.currIconId, this.isIconInFocusDueToPriorAction);
+        this.isIconInFocusDueToPriorAction = false;
+        return;
       }
     }
   }
@@ -1974,14 +1982,12 @@ OpensWith=${file.getOpensWith}
       if(isValid){
         DesktopStyleHelper.hideInvalidCharsToolTip();
 
-        if(this.shouldAutoResize()){
+        if(this.shouldAutoResize())
           DesktopGeneralHelper.autoResize(this.currIconId);
-        }
-
-        if(this.shouldMoveCursorToNextLine()){
+        
+        if(this.shouldMoveCursorToNextLine())
           this.moveCursorToNextLine();
-        }
-
+        
         return isValid;
       }else{
         DesktopStyleHelper.showInvalidCharsToolTip(this.currIconId);
@@ -2084,8 +2090,8 @@ OpensWith=${file.getOpensWith}
  
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName ){
       const result =   await this._fileService.renameAsync(this.selectedFile.getCurrentPath, renameText, this.selectedFile.getIsFile,
-        { file: this.selectedFile }
-      );
+        { file: this.selectedFile });
+
       if(result){
         // renamFileAsync, doesn't trigger a reload of the file directory, so to give the user the impression that the file has been updated, the code below
         const fileIdx = this.files.findIndex(f => (dirname(f.getCurrentPath) === dirname(this.selectedFile.getCurrentPath)) && (f.getFileName === this.selectedFile.getFileName));
@@ -2093,7 +2099,7 @@ OpensWith=${file.getOpensWith}
         this.selectedFile.setCurrentPath = `${dirname(this.selectedFile.getCurrentPath)}/${renameText}`;
         this.selectedFile.setFileName = renameText;
         this.selectedFile.setDateModified = Date.now().toString();
-        this.files[fileIdx] = this.selectedFile;
+        this.files[fileIdx] = this.selectedFile; //## this line may not be needed.
 
         this.renameForm.reset();
         this._menuService.resetStoreData();
@@ -2101,20 +2107,18 @@ OpensWith=${file.getOpensWith}
         const activity = CommonFunctions.getTrackingActivity(ActivityType.FILE, renameText, this.selectedFile.getCurrentPath, oldFileName, isRename);
         CommonFunctions.trackActivity(this._activityHistoryService, activity);
       }
-    }else{
+    }
+    else{
       this.renameForm.reset();
     }
 
     DesktopStyleHelper.setBtnStyle(this.currIconId, false, this.currIconId, this.isIconInFocusDueToPriorAction);
     this.renameFileTriggerCnt = 0;
     
-    if(figCapElement){
-      figCapElement.style.display = 'block';
-    }
+    if(!figCapElement || !renameContainerElement) return;
 
-    if(renameContainerElement){
-      renameContainerElement.style.display = 'none';
-    }
+    figCapElement.style.display = 'block';
+    renameContainerElement.style.display = 'none';
   }
   
   onRenameFileTxtBoxHide():void{
@@ -2123,14 +2127,10 @@ OpensWith=${file.getOpensWith}
     const figCapElement= document.getElementById(`figCap${this.currIconId}`) as HTMLElement;
     const renameContainerElement= document.getElementById(`renameContainer${this.currIconId}`) as HTMLElement;
 
-    if(figCapElement){
-      figCapElement.style.display = 'block';
-    }
+    if(!figCapElement || !renameContainerElement)  return;
 
-    if(renameContainerElement){
-      renameContainerElement.style.display = 'none';
-    }
-
+    figCapElement.style.display = 'block';
+    renameContainerElement.style.display = 'none';
     this.isIconInFocusDueToPriorAction = true;
   }
 
