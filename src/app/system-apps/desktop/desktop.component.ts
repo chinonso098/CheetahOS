@@ -1950,34 +1950,87 @@ OpensWith=${file.getOpensWith}
 `;
     return fileContent;
   }
-  
-  onInputChange(evt: KeyboardEvent): boolean {
+
+  onInputChange(evt:KeyboardEvent):boolean{
     const regexStr = '^[a-zA-Z0-9_.\\s-]+$';
-    const key = evt.key;
 
     if(this.invalidCharTimeOutId){
       clearTimeout(this.invalidCharTimeOutId);
     }
 
-    // Block enter
-    if (key === 'Enter') {
-      evt.preventDefault();
-      evt.stopPropagation();
-      this.isFormDirty();
+    if(evt.key === 'Enter'){
+      evt.preventDefault(); // prevent newline in textarea
+      this.isFormDirty(); // trigger form submit logic
       return true;
     }
 
-    const isValid = new RegExp(regexStr).test(key);
-    if (isValid) {
-      DesktopStyleHelper.hideInvalidCharsToolTip();
-      DesktopGeneralHelper.autoResize(this.currIconId);
-      return true;
-    } else {
-      DesktopStyleHelper.showInvalidCharsToolTip(this.currIconId);
-      this.invalidCharTimeOutId = setTimeout(() => DesktopStyleHelper.hideInvalidCharsToolTip(), this.SECONDS_DELAY[0]);
-      return false;
+    // else if(evt.key.length > 1){
+    //   // non-printable keys (ArrowRight, Home, Shift, etc.) — allow but skip resize
+    //   return true;
+    // }
+
+    else{
+      const isValid = new RegExp(regexStr).test(evt.key)
+      if(isValid){
+        DesktopStyleHelper.hideInvalidCharsToolTip();
+
+        if(this.shouldAutoResize()){
+          DesktopGeneralHelper.autoResize(this.currIconId);
+        }
+
+        if(this.shouldMoveCursorToNextLine()){
+          this.moveCursorToNextLine();
+        }
+
+        return isValid;
+      }else{
+        DesktopStyleHelper.showInvalidCharsToolTip(this.currIconId);
+        // hide after 6 secs
+        this.invalidCharTimeOutId = setTimeout(() => DesktopStyleHelper.hideInvalidCharsToolTip(), this.SECONDS_DELAY[0]);
+        return isValid;
+      }
     }
   }
+
+  shouldAutoResize():boolean{
+    const MAX_CHAR_PER_LINE = 11;
+    const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.currIconId}`) as HTMLTextAreaElement;
+    if (!renameTxtBoxElmt) return false;
+
+    // only auto-resize when the first line exceeds the max char limit
+    const lines = renameTxtBoxElmt.value.split('\n');
+    return lines[0].length >= MAX_CHAR_PER_LINE;
+  }
+
+  shouldMoveCursorToNextLine():boolean{
+    const MAX_CHAR_PER_LINE = 11;
+    const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.currIconId}`) as HTMLTextAreaElement;
+    if (!renameTxtBoxElmt) return false;
+
+    const cursorPos = renameTxtBoxElmt.selectionStart;
+    const textBeforeCursor = renameTxtBoxElmt.value.substring(0, cursorPos);
+    const lines = textBeforeCursor.split('\n');
+    const currentLine = lines[lines.length - 1];
+
+    return currentLine.length >= MAX_CHAR_PER_LINE;
+  }
+
+  moveCursorToNextLine():void {
+    const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.currIconId}`) as HTMLTextAreaElement;
+    if (!renameTxtBoxElmt) return;
+
+    const currentPos = renameTxtBoxElmt.selectionStart;
+
+    // Insert a newline at the cursor position
+    const textBefore = renameTxtBoxElmt.value.substring(0, currentPos);
+    const textAfter = renameTxtBoxElmt.value.substring(currentPos);
+    renameTxtBoxElmt.value = textBefore + '\n' + textAfter;
+
+    // Move the cursor to the position after the newline
+    const newPos = currentPos + 1;
+    renameTxtBoxElmt.setSelectionRange(newPos, newPos);
+  }
+
 
   isFormDirty():void{
     if (this.renameForm.dirty){
@@ -2010,6 +2063,10 @@ OpensWith=${file.getOpensWith}
       this.renameForm.setValue({
         renameInput:this.currentIconName
       })
+
+      if(this.shouldAutoResize()){
+        DesktopGeneralHelper.autoResize(this.currIconId);
+      }
 
       renameTxtBoxElement.focus();
       renameTxtBoxElement.select();

@@ -21,10 +21,14 @@ export namespace DesktopStyleHelper {
             figCapElement.style.overflowWrap = 'unset'
             figCapElement.style.webkitLineClamp = '2';
             figCapElement.style.zIndex = 'unset';
+            figCapElement.style.removeProperty('display');
         }
     }
 
     export const  setBtnStyle =(id:number, isMouseHover:boolean, selectedElementId:number, isIconInFocusDueToPriorAction:boolean):void =>{
+
+        console.log('isMouseHover', isMouseHover, 'isIconInFocusDueToPriorAction', isIconInFocusDueToPriorAction);
+
         const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
         const figCapElement = document.getElementById(`figCap${id}`) as HTMLElement;
 
@@ -42,6 +46,7 @@ export namespace DesktopStyleHelper {
             }
     
             if(!isMouseHover && isIconInFocusDueToPriorAction){
+                console.log('setting focus style on btn due to prior action')
                 btnElement.style.backgroundColor = Constants.EMPTY_STRING;
                 btnElement.style.border = '1px solid white'
             }
@@ -49,10 +54,10 @@ export namespace DesktopStyleHelper {
     
         if(figCapElement){
             if(selectedElementId === id){
-            figCapElement.style.overflow = 'unset'; 
-            figCapElement.style.overflowWrap = 'break-word';
-            figCapElement.style.webkitLineClamp = 'unset'
-            figCapElement.style.zIndex = '1';
+                figCapElement.style.overflow = 'unset'; 
+                figCapElement.style.overflowWrap = 'break-word';
+                figCapElement.style.webkitLineClamp = 'unset'
+                figCapElement.style.zIndex = '1';
             }
         }
     }

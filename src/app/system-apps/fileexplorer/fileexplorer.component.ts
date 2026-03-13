@@ -2489,11 +2489,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       // non-printable keys (ArrowRight, Home, Shift, etc.) — allow but skip resize
       return true;
     }else{
-      const res = new RegExp(regexStr).test(evt.key)
-      if(res){
+      const isValid = new RegExp(regexStr).test(evt.key)
+      if(isValid){
         this.hideInvalidCharsToolTip();
         this.autoResize();
-        return res
+        return isValid
       }else{
         this.showInvalidCharsToolTip();
 
@@ -2501,7 +2501,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           this.hideInvalidCharsToolTip();
         },this.SECONDS_DELAY[2]) 
 
-        return res;
+        return isValid;
       }
     }
   }

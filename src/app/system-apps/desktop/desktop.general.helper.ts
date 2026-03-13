@@ -16,8 +16,8 @@ export namespace DesktopGeneralHelper {
   export const autoResize=(selectedElementId:number):void=> { //##
     const renameTxtBoxElmt = document.getElementById(`renameTxtBox${selectedElementId}`) as HTMLTextAreaElement;
     if(renameTxtBoxElmt){
-    renameTxtBoxElmt.style.height = 'auto'; // Reset the height
-    renameTxtBoxElmt.style.height = renameTxtBoxElmt.scrollHeight + 'px'; // Set new height
+      renameTxtBoxElmt.style.height = 'auto'; // Reset the height
+      renameTxtBoxElmt.style.height = `${renameTxtBoxElmt.scrollHeight}px`; // Set new height
     }
   }
 
