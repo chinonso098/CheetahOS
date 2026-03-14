@@ -27,8 +27,6 @@ export namespace DesktopStyleHelper {
 
     export const  setBtnStyle =(id:number, isMouseHover:boolean, selectedElementId:number, isIconInFocusDueToPriorAction:boolean):void =>{
 
-        console.log('isMouseHover', isMouseHover, 'isIconInFocusDueToPriorAction', isIconInFocusDueToPriorAction);
-
         const btnElement = document.getElementById(`iconBtn${id}`) as HTMLElement;
         const figCapElement = document.getElementById(`figCap${id}`) as HTMLElement;
 
@@ -46,7 +44,6 @@ export namespace DesktopStyleHelper {
             }
     
             if(!isMouseHover && isIconInFocusDueToPriorAction){
-                console.log('setting focus style on btn due to prior action')
                 btnElement.style.backgroundColor = Constants.EMPTY_STRING;
                 btnElement.style.border = '1px solid white'
             }

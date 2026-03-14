@@ -1683,7 +1683,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   handleIconHighLightState():void{
-    console.log('desktopClickCounter:', this.desktopClickCounter);
     this.hideDesktopContextMenuAndOthers(this.isDesktopTheCaller);
 
     if(!this.isRenameActive){
@@ -1710,7 +1709,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       }
 
       if(this.isIconInFocusDueToPriorAction){
-        console.log('prior action')
         DesktopStyleHelper.setBtnStyle(this.currIconId, false, this.currIconId, this.isIconInFocusDueToPriorAction);
         this.isIconInFocusDueToPriorAction = false;
         return;
