@@ -953,29 +953,34 @@
 /* Zip Extract Dialog Start */
 
 .zip-extract-dialog-main-container {
-    width: 520px;
+    width: 600px;
+    height: 400px;
     background-color: #fff;
-    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .zip-extract-dialog-content-container {
+    height: 356px;
     padding: 20px 14px 12px;
 }
 
 .zip-extract-dialog-title {
     margin: 0 0 16px;
-    color: #003c9b;
-    font-size: 30px;
-    font-weight: 300;
-    line-height: 1.05;
+    color: #237ad0;
+    font-size: 16px;
+    font-weight: lighter;
+    line-height: 1.5;
+    text-align: left;
 }
 
 .zip-extract-dialog-label {
     margin: 0 0 8px;
     color: #000;
-    font-size: 23px;
+    font-size: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: 300;
     line-height: 1.2;
+    text-align: left;
 }
 
 .zip-extract-dialog-path-row {
@@ -987,10 +992,10 @@
 .zip-extract-dialog-path-input {
     flex: 1;
     height: 24px;
-    border: 1px solid #0078d7;
+    border: 1px solid #237ad0;
     padding: 1px 6px;
     font-size: 12px;
-    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #000;
     box-sizing: border-box;
 }
@@ -1008,6 +1013,9 @@
     margin-top: 10px;
     font-size: 12px;
     color: #000;
+    position: absolute;
+    left: 15px;
+    padding: 10px 0;
 }
 
 .zip-extract-dialog-footer-container {
