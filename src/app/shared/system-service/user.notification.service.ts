@@ -106,6 +106,32 @@ export class UserNotificationService implements BaseService{
             });
         });
     }
+
+
+    async showZipExtractNotification(filePath:string, uId:string = Constants.EMPTY_STRING): Promise<boolean> {
+        return new Promise((resolve) => {
+            const componentRef = this._componentReferenceService.createComponent(DialogComponent);
+            componentRef.setInput('notificationType', UserNotificationType.ZipExtract);
+            componentRef.setInput('inputCallingProcessUId', uId);
+
+            if(!filePath){
+                console.error('File Information can not be undefined or null');
+                resolve(false);
+            }
+            componentRef.setInput('inputMsg', filePath);
+
+            this.dialogPid = componentRef.instance.processId;
+      
+            // hook up close events
+            componentRef.instance.confirm.subscribe(() => {
+              resolve(true);
+            });
+      
+            componentRef.instance.cancel.subscribe(() => {
+              resolve(false);
+            });
+        });
+    }
     
 
     showPowerOnOffNotification(msg:string){

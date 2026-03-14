@@ -1925,10 +1925,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const srcPath = this.selectedFile.getCurrentPath;
     const delay = 50; //50ms
 
-    const result = await this._fileService.unzipEntityAsync(srcPath);
-    if(result){
-      await CommonFunctions.sleep(delay);
-      this.refresh();
+    const uId = `${this.name}-${this.processId}`;
+    const confirm = await this._userNotificationService.showZipExtractNotification(dirname(srcPath), uId);
+    if(confirm){
+      const result = await this._fileService.unzipEntityAsync(srcPath);
+      if(result){
+        await CommonFunctions.sleep(delay);
+        this.refresh();
+      }
     }
   }
 
@@ -2506,13 +2510,14 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  autoResize() {
+  autoResize():void{
     const renameTxtBoxElmt = document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLTextAreaElement;
 
-    if (renameTxtBoxElmt) {
-      renameTxtBoxElmt.style.height = 'auto';
-      renameTxtBoxElmt.style.height = `${renameTxtBoxElmt.scrollHeight}px`;
-    }
+    if (!renameTxtBoxElmt) return;
+
+    renameTxtBoxElmt.style.height = 'auto';
+    renameTxtBoxElmt.style.height = `${renameTxtBoxElmt.scrollHeight}px`;
+    
   }
 
   onRenameFileTxtBoxShow():void{
@@ -2522,21 +2527,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const renameContainerElement= document.getElementById(`renameForm-${this.processId}-${this.selectedElementId}`) as HTMLElement;
     const renameTxtBoxElement= document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLInputElement;
 
-    if((figCapElement && renameContainerElement && renameTxtBoxElement)) {
-      figCapElement.style.display = 'none';
-      renameContainerElement.style.display = 'block';
-      
-      renameTxtBoxElement.style.display = 'block';
-      renameTxtBoxElement.style.zIndex = '3'; // ensure it's on top
+    if(!figCapElement || !renameContainerElement || !renameTxtBoxElement) return;
 
-      this.currentIconName = this.selectedFile.getFileName;
-      this.renameForm.setValue({
-        renameInput: this.currentIconName
-      });
+    figCapElement.style.display = 'none';
+    renameContainerElement.style.display = 'block';
+    renameTxtBoxElement.style.display = 'block';
+    renameTxtBoxElement.style.zIndex = '3'; // ensure it's on top
 
-      renameTxtBoxElement.focus();
-      renameTxtBoxElement.select();
-    }
+    this.currentIconName = this.selectedFile.getFileName;
+    this.renameForm.setValue({ renameInput: this.currentIconName });
+    renameTxtBoxElement.focus();
+    renameTxtBoxElement.select();
   }
 
   async onRenameFileTxtBoxDataSave():Promise<void>{ //##

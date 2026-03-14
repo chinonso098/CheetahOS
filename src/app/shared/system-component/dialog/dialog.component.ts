@@ -201,7 +201,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
 
     if(this.notificationType === UserNotificationType.ZipExtract){
-      this.zipExtractDestination = this.dialogMgs || '/Users/Documents/New folder';
+      this.zipExtractDestination =   this.inputMsg;
       this.zipExtractShowOnComplete = true;
     }
 
