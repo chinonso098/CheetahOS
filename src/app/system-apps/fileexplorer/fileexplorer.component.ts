@@ -1138,7 +1138,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     console.log('fileexplorer-runApplication:',file)
     this.fileTreeNavToPath = Constants.EMPTY_STRING;
 
-    this.hideFileExplorerToolTip();
+    this.hideToolTip();
     CommonFunctions.handleTracking(this._activityHistoryService, file);
     await this._audioService.play(this.cheetahNavAudio);
 
@@ -1258,7 +1258,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const quickAcessSection = (isFileSection)? 'btnElmnt-file': 'btnElmnt-folder';
 
     this.isMultiSelectEnabled = true;
-    this.hideFileExplorerToolTip();
+    this.hideToolTip();
 
     const quickAccesBtnElmnt = document.getElementById(`${quickAcessSection}-${this.processId}-${id}`) as HTMLDivElement;
     if(!this.isMultiSelectActive){
@@ -1273,7 +1273,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
   onMouseLeave(id:number):void{
     this.isMultiSelectEnabled = true;
-    this.hideFileExplorerToolTip();
+    this.hideToolTip();
 
     if(!this.isMultiSelectActive){
       if(id !== this.selectedElementId){
@@ -1325,7 +1325,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // looking at what Windows does, at any given time. there is only one context window open
     this._menuService.hideContextMenus.next(this.name); 
-    this.hideFileExplorerToolTip();
+    this.hideToolTip();
 
     const menuHeight = (file.getIsFile)? 225 : 344; //this is not ideal.. menu height should be gotten dynmically
     this.iconCntxtCntr++;
@@ -2109,13 +2109,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     });
   }
 
-  hideFileExplorerToolTip():void {
+  hideToolTip():void {
     this.currentTooltipFileId = Constants.EMPTY_STRING;
     this.fileInfoTipData = [];
 
     const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
     if(!infoTip) return;
 
+    infoTip.style.removeProperty('position');
+    infoTip.style.removeProperty('left');
+    infoTip.style.removeProperty('top');
     infoTip.classList.remove('visible');
   }
 
