@@ -16,8 +16,6 @@ import { Process } from 'src/app/system-files/process';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { LoginHelpers } from './login.helper';
 
-//declare const WebScreensaver:any;
-
 @Component({
   selector: 'cos-login',
   templateUrl: './login.component.html',
@@ -154,7 +152,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this._systemNotificationService.restartSystemNotify.subscribe((p) => { 
       this.logInCounter = 0;
       if(p === Constants.RSTRT_ORDER_LOCK_SCREEN){
-        this.restartOSFromDesktop()
+        this.restartOSFromDesktop();
       }
     });
 
@@ -203,7 +201,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.getDate(); // Set initial Date
 
     setInterval(() => { this.getTime(); }, secondsDelay[0]); 
-    setInterval(() => { this.getDate();  }, secondsDelay[1]); 
+    setInterval(() => { this.getDate(); }, secondsDelay[1]); 
 
     this._systemNotificationService.showLockScreenNotify.next();
     this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
