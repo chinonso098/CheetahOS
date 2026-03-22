@@ -2464,7 +2464,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     await this.loadFiles();
   }
 
-  async onDeleteFile():Promise<void>{
+  async onDeleteFile___():Promise<void>{
 
     const desktopRefreshDelay = 1000;
     const callerUId = `${this.name}-${this.processId}`;
@@ -2483,6 +2483,47 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this._fileService.dirFilesUpdateNotify.next();
     }
   }
+
+  async onDeleteFile(): Promise<void> {
+    const isAlreadyInRecycleBin = false;
+    const callerUId = `${this.name}-${this.processId}`;
+
+    // Determine which files to delete
+    const filesToDelete = (this.areMultipleIconsHighlighted)
+      ? this.markedBtnIds.map(id => this.fetchedFiles[Number(id)])
+      : [this.selectedFile];
+
+    // Run deletions concurrently — the service handles confirm-delete (first file only) and file-in-use checks
+    const results = await Promise.all(
+      filesToDelete.map((f, i) => this._fileService.deleteAsync(f.getCurrentPath, f.getIsFile, isAlreadyInRecycleBin,
+        { file: f, skipConfirmDialog: i > 0, callerUId }
+      ))
+    );
+
+    // If all deletions succeeded
+    if (!results.every(Boolean)) return; 
+
+    this.removeDeletedFiles(filesToDelete);
+    if (this.areMultipleIconsHighlighted) 
+      this._fileService.removeDragAndDropFile();
+    else 
+      this._menuService.resetStoreData();
+  }
+
+  removeDeletedFiles(deletedFiles: FileInfo[]): void {
+    this.fetchedFiles = this.fetchedFiles.filter(file =>
+      !deletedFiles.some(
+        del => del.getFileName === file.getFileName && del.getCurrentPath === file.getCurrentPath
+      )
+    );
+  }
+
+
+
+
+
+
+
 
 
   onKeyPress(evt:KeyboardEvent):boolean{

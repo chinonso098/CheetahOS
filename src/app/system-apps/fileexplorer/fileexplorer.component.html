@@ -312,7 +312,8 @@
                 </div>
             </div>
         </div>
-        <div class="fileexp-footer__container">
+        
+        <div class="fileexp-footer__container"  #defaultFooterContainer>
             <span class="fileexp-footer__span"> </span>
             <span class="fileexp-footer__span">{{fetchedFiles.length}} items</span>
             <span class="fileexp-footer__span">|</span>
@@ -347,6 +348,51 @@
                 </figure>
             </div> 
         </div>
+
+        <!-- <div class="fileexp-footer__container fileexp-footer__folder-bar" #folderBarFooterContainer>
+            <div class="fileexp-footer__folder-bar-section">
+                <label class="fileexp-footer__folder-label" for="folderPathInput-{{processId}}">Folder:</label>
+                <input class="fileexp-footer__folder-input" id="folderPathInput-{{processId}}" type="text" spellcheck="false" />
+            </div>
+            <div class="fileexp-footer__folder-btn-section">
+                <button class="fileexp-footer__folder-btn fileexp-footer__folder-btn--primary" type="button">Select Folder</button>
+                <button class="fileexp-footer__folder-btn" type="button">Cancel</button>
+            </div>
+        </div>
+
+        <div class="fileexp-footer__container fileexp-footer__folder-bar" #saveFileBarFooterContainer>
+            <div class="fileexp-footer__folder-bar-section">
+                <label class="fileexp-footer__folder-label" for="folderPathInput-{{processId}}">File name:</label>
+                <input class="fileexp-footer__folder-input" id="folderPathInput-{{processId}}" type="text" spellcheck="false" />
+            </div>
+            <div class="fileexp-footer__file-input-group">
+                <label class="fileexp-footer__file-label" for="fileTypeInput-{{processId}}">Save as type:</label>
+                <input class="fileexp-footer__file-input" id="fileTypeInput-{{processId}}" type="text" spellcheck="false" />
+            </div>
+
+            <div class="fileexp-footer__folder-btn-section">
+                <button class="fileexp-footer__folder-btn fileexp-footer__folder-btn--primary" type="button">Save</button>
+                <button class="fileexp-footer__folder-btn" type="button">Cancel</button>
+            </div>
+        </div>
+
+        <div class="fileexp-footer__container fileexp-footer__file-bar" #fileBarFooterContainer>
+            <div class="fileexp-footer__file-main-row">
+                <div class="fileexp-footer__file-input-group">
+                    <label class="fileexp-footer__file-label" for="fileNameInput-{{processId}}">File name:</label>
+                    <input class="fileexp-footer__file-input" id="fileNameInput-{{processId}}" type="text" spellcheck="false" />
+                </div>
+
+                <select class="fileexp-footer__file-select" aria-label="File type">
+                    <option>All Picture Files</option>
+                </select>
+            </div>
+
+            <div class="fileexp-footer__file-btn-group">
+                <button class="fileexp-footer__file-btn fileexp-footer__file-btn--primary" type="button">Open</button>
+                <button class="fileexp-footer__file-btn" type="button">Cancel</button>
+            </div>
+        </div> -->
     </div>
 
 </cos-primarywindow>
