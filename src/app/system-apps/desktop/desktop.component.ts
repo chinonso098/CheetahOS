@@ -259,18 +259,18 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   files:FileInfo[] = [];
 
   sourceData:GeneralMenu[] = [
-    {icon:'', label: 'Open', action: this.onTriggerRunApplication.bind(this) },
-    {icon:`${Constants.IMAGE_BASE_PATH}recycle bin_folder_small.png`, label: 'Empty Recycle Bin', action:this.onEmptyRecyleBin.bind(this) },
-    {icon:'', label: 'Pin to Quick access', action: this.doNothing.bind(this) },
-    {icon:'', label: 'Open in Terminal', action: this.doNothing.bind(this) },
-    {icon:'', label: 'Pin to Start', action: this.doNothing.bind(this) },
-    {icon:'', label: 'Pin to Taskbar', action: this.pinIconToTaskBar.bind(this) },
-    {icon:'', label: 'Cut', action: this.onCut.bind(this) },
+    {icon:'', label: 'Open', action: this.onTriggerRunApplication.bind(this)},
+    {icon:`${Constants.IMAGE_BASE_PATH}recycle bin_folder_small.png`, label: 'Empty Recycle Bin', action:this.onEmptyRecyleBin.bind(this)},
+    {icon:'', label: 'Pin to Quick access', action: this.doNothing.bind(this)},
+    {icon:'', label: 'Open in Terminal', action: this.doNothing.bind(this)},
+    {icon:'', label: 'Pin to Start', action: this.doNothing.bind(this)},
+    {icon:'', label: 'Pin to Taskbar', action: this.pinIconToTaskBar.bind(this)},
+    {icon:'', label: 'Cut', action: this.onCut.bind(this)},
     {icon:'', label: 'Copy', action: this.onCopy.bind(this)},
     {icon:'', label: 'Create shortcut', action: this.createShortCut.bind(this)},
-    {icon:'', label: 'Delete', action: this.onDelete.bind(this) },
-    {icon:'', label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this) },
-    {icon:'', label: 'Properties', action: this.showPropertiesWindow.bind(this) },
+    {icon:'', label: 'Delete', action: this.onDelete.bind(this)},
+    {icon:'', label: 'Rename', action: this.onRenameFileTxtBoxShow.bind(this)},
+    {icon:'', label: 'Properties', action: this.showPropertiesWindow.bind(this)},
     {icon:'', label: 'Confirm Delete', action: this.onConfirmDelete.bind(this)},
     {icon:'', label: 'Recycle on Delete', action: this.onDeleteMoveToRecycleBin.bind(this)},
   ];
@@ -1921,11 +1921,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     let result = false;
     const isAlreadyInRecycleBin = true;
     const isFile = false;
+    const delay = 50; //50ms
 
     await this._audioService.play(this.emptyTrashAudio);
     result = await this._fileService.deleteAsync(Constants.RECYCLE_BIN_PATH, isFile, isAlreadyInRecycleBin);
     if(result){
       this._menuService.resetStoreData();
+      await CommonFunctions.sleep(delay);
       await this.loadFiles();
     }
   }
