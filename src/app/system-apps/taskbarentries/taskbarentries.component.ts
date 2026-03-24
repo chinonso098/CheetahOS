@@ -718,19 +718,20 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   }
 
   onMouseEnter(opensWith: string, pId: number, iconPath: string): void {
-    const hoveredRect = this.highlightTaskbarIconOnMouseHover(opensWith, pId);
 
     const isAppRunning = this._runningProcessService
       .getProcesses()
       .some(x => x.getProcessName === opensWith);
 
-    if (!isAppRunning) {
+    const hoveredRect = this.highlightTaskbarIconOnMouseHover(opensWith, pId, isAppRunning);
+
+    if(!isAppRunning){
       const data = [[hoveredRect?.left, hoveredRect?.top], [opensWith]];
       this._systemNotificationService.showTaskBarToolTipNotify.next(data);
       return;
     }
 
-    if (!hoveredRect) return;
+    if(!hoveredRect)return;
 
     const left = this.computePreviewLeft(opensWith, hoveredRect);
 
@@ -871,14 +872,28 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   onMouseLeave(processName?:string, pId?:number):void{
     this._windowServices.hideProcessPreviewWindowNotify.next();
     this._systemNotificationService.hideTaskBarToolTipNotify.next();
-    
+
+    if(processName && processName !== Constants.BLANK_SPACE){
+      const isMerged = this.taskBarEntriesIconState === this.mergedIcons;
+      const isAppRunning = this._runningProcessService
+        .getProcesses()
+        .some(x => x.getProcessName === processName);
+
+      if(!isAppRunning && !isMerged){
+        const elementId = `${this.tskbar}-${processName}-${pId}`;
+        const liElement = document.getElementById(elementId) as HTMLElement | null;
+        if(liElement)
+              liElement.classList.add('unmerged');
+      }
+    }
+
     if(processName && pId)
       this._systemNotificationService.taskBarPreviewUnHighlightNotify.next(`${processName}-${pId}`);
     
     this.highlightTaskbarIcon();
   }
 
-  highlightTaskbarIconOnMouseHover(processName: string, pId: number): DOMRect | null {
+  highlightTaskbarIconOnMouseHover(processName: string, pId: number, isAppRunning: boolean): DOMRect | null {
     const processInFocus = this._runningProcessService.getProcess(this.windowInFocusPid);
   
     const isMerged = this.taskBarEntriesIconState === this.mergedIcons;
@@ -891,6 +906,12 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   
     const highlightColor = 'hsl(206deg 77% 95%/20%)';
     const defaultColor = 'hsl(206deg 77% 40%/20%)';
+
+    if(!isAppRunning){
+      liElement.classList.remove('unmerged');
+      liElement.style.backgroundColor = highlightColor;
+      return liElement.getBoundingClientRect();
+    }
   
     const shouldHighlight =
       processInFocus &&
