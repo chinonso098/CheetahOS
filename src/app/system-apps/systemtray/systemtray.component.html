@@ -1,21 +1,28 @@
 <div class="main-taskbar-system-tray">
 
-    <div class="main-taskbar-arrow-div" [class.show]="isShowOverFlowMenuPane"> 
+    <div class="main-taskbar-arrow-div" [class.show]="isShowOverFlowMenuPane"
+        id="cheetah_overflowmenu_btn"
+        (mouseenter)="showOverFlowToolTip()"
+        (mouseleave)="hideToolTip()"> 
         <figure  class="taskbar-arrow-fig" [class.show]="isShowOverFlowMenuPane" (click)="showOverFlowMenuPane()">
             <img class="taskbar-arrow-img" [src]="taskBarArrowIcon">
         </figure>
     </div>
 
-    <div class="main-taskbar-volume-div" [class.active]="isShowVolumeControl"> 
+    <div class="main-taskbar-volume-div" [class.active]="isShowVolumeControl"
+        id="cheetah_volume_btn"
+        (mouseenter)="showVolumeToolTip()"
+        (mouseleave)="hideToolTip()"> 
         <figure  class="taskbar-volume-fig" (click)="showVolumeControl()" id="taskBarVolumeFig">
             <img class="taskbar-volume-img" [src]="audioIcon" [alt]="name"  [title]="currentVolumeTxt">
         </figure>
     </div>
     
     <div class="main-taskbar-date-and-time-cntnr"
+        id="cheetah_datetime_btn"
         [ngStyle]=" hover ? 
         {'background-color': 'hsla(0,0%,25%,60%)'}:
-        {'color': 'white'}"  (mouseover)="hover=true" (mouseleave)="hover=false">
+        {'color': 'white'}"  (mouseenter)="hover=true; showUSDateToolTip()" (mouseleave)="hover=false; hideToolTip()">
         <span class="taskbar-time-cntnr">
             {{subscribeTime}}
         </span>
@@ -24,7 +31,10 @@
         </span>
     </div>
 
-    <div class="main-taskbar-notification-div">
+    <div class="main-taskbar-notification-div"
+        id="cheetah_notification_btn"
+        (mouseenter)="showNotificationToolTip()"
+        (mouseleave)="hideToolTip()">
         <figure  class="taskbar-notification-fig">
             <img class="taskbar-notification-img" [src]="taskBarNotificationIcon">
         </figure>

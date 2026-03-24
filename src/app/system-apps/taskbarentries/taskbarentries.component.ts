@@ -707,10 +707,9 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     if(liElemnt){
       const rect =  liElemnt.getBoundingClientRect();
       const data:unknown[] = [rect, file];
-  
       const uId = `${this.name}-${this.processId}`;
+      
       this._runningProcessService.addEventOriginator(uId);
-  
       this._menuService.showTaskBarAppIconMenu.next(data);
     }
 
@@ -718,11 +717,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   }
 
   onMouseEnter(opensWith: string, pId: number, iconPath: string): void {
-
-    const isAppRunning = this._runningProcessService
-      .getProcesses()
-      .some(x => x.getProcessName === opensWith);
-
+    const isAppRunning = this._runningProcessService.getProcesses().some(x => x.getProcessName === opensWith);
     const hoveredRect = this.highlightTaskbarIconOnMouseHover(opensWith, pId, isAppRunning);
 
     if(!isAppRunning){

@@ -34,7 +34,7 @@ export class TaskbarComponent implements AfterViewInit{
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _menuService!:MenuService;
-  private _systemNotificationServices!:SystemNotificationService;
+  private _systemNotificationService!:SystemNotificationService;
   private _el: ElementRef;
 
   isStartMenuVisible = false;
@@ -58,17 +58,17 @@ export class TaskbarComponent implements AfterViewInit{
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._menuService = menuService;
-    this._systemNotificationServices = systemNotificationServices;
+    this._systemNotificationService = systemNotificationServices;
     this._el = el;
     
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
 
      // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
-    this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
-    this._systemNotificationServices.showTaskBarNotify.subscribe(() => {this.showTaskBar()});
-    this._systemNotificationServices.hideTaskBarNotify.subscribe(() => {this.hideTaskBar()});
+    this._systemNotificationService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._systemNotificationService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    this._systemNotificationService.showTaskBarNotify.subscribe(() => {this.showTaskBar()});
+    this._systemNotificationService.hideTaskBarNotify.subscribe(() => {this.hideTaskBar()});
 
     this._menuService.hideStartMenu.subscribe(() => { this.changeStartMenuFlag()});
     this._menuService.hideSearchBox.subscribe(() => { this.changeSearchFlag()});
@@ -168,6 +168,28 @@ export class TaskbarComponent implements AfterViewInit{
 
   changeSearchFlag():void{
     this.isSearchWindowVisible = false
+  }
+
+  public showSearchWindowToolTip(): void {
+    this.showTaskbarToolTip('cheetah_search_btn', -30, 'type here to search');
+  }
+
+  public showStartMenuToolTip(): void {
+    this.showTaskbarToolTip('cheetah_start_btn', 12, 'start');
+  }
+
+  private showTaskbarToolTip(elementId: string, xOffset: number, text: string): void {
+    const elmt = document.getElementById(elementId) as HTMLElement | null;
+    if (!elmt) return;
+
+    const rect = elmt.getBoundingClientRect();
+    const data: unknown[] = [[rect.left + xOffset, rect.top], text];
+
+    this._systemNotificationService.showTaskBarToolTipNotify.next(data);
+  }
+
+  public hideToolTip():void{
+    this._systemNotificationService.hideTaskBarToolTipNotify.next();
   }
 
   private getComponentDetail():Process{

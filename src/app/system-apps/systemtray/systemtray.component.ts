@@ -24,7 +24,7 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   private _menuService!:MenuService;
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
-  private _systemNotificationServices!:SystemNotificationService;
+  private _systemNotificationService!:SystemNotificationService;
 
   private currentVolume = 0;
   isShowVolumeControl = false;
@@ -50,7 +50,7 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._audioService = audioService;
-    this._systemNotificationServices = systemNotificationServices;
+    this._systemNotificationService = systemNotificationServices;
     this._menuService = menuService;
 
     this.processId = this._processIdService.getNewProcessId()
@@ -58,7 +58,7 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
 
     // these are subs, but since this cmpnt will not be closed, it doesn't need to be destoryed
     this._audioService.changeVolumeNotify.pipe(concatMap(() =>  this.upadateVolume())).subscribe(); 
-    this._systemNotificationServices.showDesktopNotify.pipe(concatMap(() =>  this.upadateVolume())).subscribe();
+    this._systemNotificationService.showDesktopNotify.pipe(concatMap(() =>  this.upadateVolume())).subscribe();
     
     this._audioService.hideVolumeControlNotify.subscribe((p) => {
       if(p === Constants.EMPTY_STRING){
@@ -101,6 +101,20 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   getDate():void{
     const dateTime = new Date();  
     this.subscribeDate = `${dateTime.getMonth() + 1}/${dateTime.getDate()}/${dateTime.getFullYear()}`;
+  }
+
+  getUSDate():string{
+    const dateTime = new Date();  
+
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+
+    const formattedDate = dateTime.toLocaleDateString('en-US', options);
+    return `${formattedDate}`;
   }
 
   setVolumeIcon():void{
@@ -160,6 +174,37 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   hideOverFlowMenuPane():void{
     this.isShowOverFlowMenuPane = false;
     this._menuService.hideOverFlowMenu.next(this.name);
+  }
+
+  public showOverFlowToolTip(): void {
+    const txt = this.isShowOverFlowMenuPane ? 'hide' : 'show hidden icons';
+    this.showTaskbarToolTip('cheetah_overflowmenu_btn', -45, txt);
+  }
+
+  public showVolumeToolTip(): void {
+    this.showTaskbarToolTip('cheetah_volume_btn', -45, this.currentVolumeTxt);
+  }
+
+  public showUSDateToolTip(): void {
+    this.showTaskbarToolTip('cheetah_datetime_btn', -45, this.getUSDate());
+  }
+
+  public showNotificationToolTip(): void {
+    this.showTaskbarToolTip('cheetah_notification_btn', -85, 'No new notifications');
+  }
+
+  private showTaskbarToolTip(elementId: string, xOffset: number, text: string): void {
+    const elmt = document.getElementById(elementId) as HTMLElement | null;
+    if (!elmt) return;
+
+    const rect = elmt.getBoundingClientRect();
+    const data: unknown[] = [[rect.left + xOffset, rect.top], text];
+
+    this._systemNotificationService.showTaskBarToolTipNotify.next(data);
+  }
+
+  public hideToolTip():void{
+    this._systemNotificationService.hideTaskBarToolTipNotify.next();
   }
 
   private getComponentDetail():Process{
