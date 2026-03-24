@@ -1387,12 +1387,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   hideTaskBarToolTip():void{
-    const delay = 200; //200msecs
+    const delay = 20; //20msecs
 
     clearTimeout(this.showTskBarToolTipTimeoutId);
-    setTimeout(() => {
-      this.showTaskBarIconToolTip = false;
-    }, delay);
+    setTimeout(() => { this.showTaskBarIconToolTip = false; }, delay);
   }
 
   removeOldTaskBarPreviewWindowNow():void{
