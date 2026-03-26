@@ -1,5 +1,6 @@
 <div class="task-bar-nav" [@tskBarSlideStatusAnimation]="slideState" (click)="hideContextMenus()" (contextmenu)="showTaskBarContextMenu($event)" id="the-window-taskbar"> 
-    <button  
+    <button 
+        type="button"
         id="cheetah_start_btn"
         class="cheetah-start-button"
         [style]=" hover ?  {'background-color': 'hsla(0,0%,30%,60%)'}: {'color': ''}" 
@@ -20,7 +21,7 @@
         (mouseenter)="showSearchWindowToolTip()"
         (mouseleave)="hideToolTip()" > 
         <figure  class="taskbar-search-fig" (click)="hideShowSearch($event)">
-            <img class="taskbar-search-img" [src]="searchIcon">
+            <img alt="search-img" class="taskbar-search-img" [src]="searchIcon">
         </figure>
     </div>
 

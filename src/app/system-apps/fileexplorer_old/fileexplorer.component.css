@@ -1023,6 +1023,7 @@ span.mid-search-entry{
     font-size: 12px;
     letter-spacing: 0.1px;
     -webkit-line-clamp:4;
+    line-clamp: 4;
     position: relative;
     text-align:center;
     padding: 2px 0;

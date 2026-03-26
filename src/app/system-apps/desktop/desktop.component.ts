@@ -151,6 +151,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   removeTskBarPrevWindowFromDOMTimeoutId!: NodeJS.Timeout;
   hideTskBarPrevWindowTimeoutId!: NodeJS.Timeout;
   showTskBarToolTipTimeoutId!: NodeJS.Timeout;
+  autoHideTskBarToolTipTimeoutId!: NodeJS.Timeout;
   clippyIntervalId!: NodeJS.Timeout;
   colorChgIntervalId!: NodeJS.Timeout;
   invalidCharTimeOutId!: NodeJS.Timeout;
@@ -1365,7 +1366,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   showTaskBarToolTip(data:unknown[]):void{
-    const delay = 1500; //1.5secs
+    const delay = 1000; //1secs
     const rect = data[0] as number[];
     const xAxis = rect[0]; const yAxis = rect[1];
     const appName = data[1] as string;
@@ -1383,14 +1384,24 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         'z-index': 5,
         'transform': `translate(${xAxis}px, ${yAxis - 20}px)`
       }
+
+      this.autoHideTaskBarToolTip();
     }, delay);
   }
 
   hideTaskBarToolTip():void{
-    const delay = 20; //20msecs
+    if(this.showTskBarToolTipTimeoutId)
+      clearTimeout(this.showTskBarToolTipTimeoutId);
 
-    clearTimeout(this.showTskBarToolTipTimeoutId);
-    setTimeout(() => { this.showTaskBarIconToolTip = false; }, delay);
+    if(this.autoHideTskBarToolTipTimeoutId)      
+      clearTimeout(this.autoHideTskBarToolTipTimeoutId);
+
+    this.showTaskBarIconToolTip = false;
+  }
+
+  autoHideTaskBarToolTip():void{
+    const delay = 5000; //5secs
+    this.autoHideTskBarToolTipTimeoutId = setTimeout(() => { this.hideTaskBarToolTip(); }, delay);
   }
 
   removeOldTaskBarPreviewWindowNow():void{

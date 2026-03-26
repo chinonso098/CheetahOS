@@ -221,6 +221,7 @@
     font-size: 12px;
     letter-spacing: 0.1px;
     -webkit-line-clamp:2;
+    line-clamp: 2;
     position: relative;
     text-align:center;
     padding: 2px 0;
@@ -254,6 +255,7 @@
     top: 2px;
     font-size: 12px;
     font-weight:200;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin-bottom: 1px;
     width: 90px;
     height: 20px;
@@ -301,6 +303,7 @@
     font-size: 10px;
     font-weight: normal;
     text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: black;
     background: rgb(255, 255, 255);
     border: 4px solid rgb(255, 255, 255);
@@ -336,6 +339,7 @@
     font-weight: 200;
     background-color: #F5F5DC;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    white-space: pre;
 }
 
 .desktop_background_solid_color{

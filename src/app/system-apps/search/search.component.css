@@ -548,6 +548,7 @@
 .mid-cntnt-p0{
     word-wrap: break-word;
     -webkit-line-clamp:3;
+    line-clamp: 3;
 }
 
 .mid-cntnt-p{

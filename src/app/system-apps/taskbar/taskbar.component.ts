@@ -125,6 +125,7 @@ export class TaskbarComponent implements AfterViewInit{
 
   async showStartMenu(evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
+    this._systemNotificationService.hideTaskBarToolTipNotify.next();
     const delay = 100;
 
     if(!this.isStartMenuVisible){
@@ -148,6 +149,7 @@ export class TaskbarComponent implements AfterViewInit{
 
   async hideShowSearch(evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
+    this._systemNotificationService.hideTaskBarToolTipNotify.next();
 
     if(this.isSearchWindowVisible){
       this._menuService.hideContextMenus.next(this.name);
@@ -171,11 +173,11 @@ export class TaskbarComponent implements AfterViewInit{
   }
 
   public showSearchWindowToolTip(): void {
-    this.showTaskbarToolTip('cheetah_search_btn', -30, 'type here to search');
+    this.showTaskbarToolTip('cheetah_search_btn', -30, 'Type here to search');
   }
 
   public showStartMenuToolTip(): void {
-    this.showTaskbarToolTip('cheetah_start_btn', 12, 'start');
+    this.showTaskbarToolTip('cheetah_start_btn', 0, '  Start  ');
   }
 
   private showTaskbarToolTip(elementId: string, xOffset: number, text: string): void {

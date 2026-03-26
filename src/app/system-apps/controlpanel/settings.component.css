@@ -426,6 +426,7 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   word-wrap: break-word;
   -webkit-line-clamp:3;
+  line-clamp: 2;
   white-space: pre;
   width: fit-content;
   height: fit-content;
@@ -439,6 +440,7 @@
 .clipboard-block-text__p{
   font-size: 13px;
   -webkit-line-clamp:2;
+  line-clamp: 2;
 }
 
 .clipboard-block__button, .lockscreen-block__button, .taskbar-block__button{
@@ -458,6 +460,7 @@
   top: -1px;
   font-size: 13px;
   -webkit-line-clamp:2;
+  line-clamp: 2;
 }
 
 /*System Clipboard End*/

@@ -137,7 +137,7 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
         tskBarVolumeElmnt.style.left = '4.5px';
       }
 
-      this.currentVolumeTxt = `speaker:${(this.currentVolume * 100)}%`;
+      this.currentVolumeTxt = `Speaker: ${(this.currentVolume * 100)}%`;
     }
   }
 
@@ -149,6 +149,8 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   }
 
   showVolumeControl():void{
+    this._systemNotificationService.hideTaskBarToolTipNotify.next();
+    
     if(!this.isShowVolumeControl){
       this.isShowVolumeControl = true
       this._audioService.showVolumeControlNotify.next();
@@ -158,6 +160,8 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   }
 
   showOverFlowMenuPane():void{
+    this._systemNotificationService.hideTaskBarToolTipNotify.next();
+
     if(!this.isShowOverFlowMenuPane){
       this.isShowOverFlowMenuPane = true
       this._menuService.showOverFlowMenu.next();
@@ -177,16 +181,16 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   }
 
   public showOverFlowToolTip(): void {
-    const txt = this.isShowOverFlowMenuPane ? 'hide' : 'show hidden icons';
+    const txt = this.isShowOverFlowMenuPane ? 'Hide' : 'Show hidden icons';
     this.showTaskbarToolTip('cheetah_overflowmenu_btn', -45, txt);
   }
 
   public showVolumeToolTip(): void {
-    this.showTaskbarToolTip('cheetah_volume_btn', -45, this.currentVolumeTxt);
+    this.showTaskbarToolTip('cheetah_volume_btn', -30, this.currentVolumeTxt);
   }
 
   public showUSDateToolTip(): void {
-    this.showTaskbarToolTip('cheetah_datetime_btn', -45, this.getUSDate());
+    this.showTaskbarToolTip('cheetah_datetime_btn', -60, this.getUSDate());
   }
 
   public showNotificationToolTip(): void {
