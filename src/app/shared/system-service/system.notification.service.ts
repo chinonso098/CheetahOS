@@ -8,6 +8,7 @@ import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { BaseService } from "./base.service.interface";
 import { DragEventInfo, InformationUpdate } from "src/app/system-files/common.interfaces";
+import { TooltipPositionInfo } from "src/app/system-apps/taskbarentries/taskbar.entries.type";
 
 @Injectable({
     providedIn: 'root'
@@ -33,7 +34,7 @@ export class SystemNotificationService implements BaseService{
 
     hideTaskBarNotify: Subject<void> = new Subject<void>();
     showTaskBarNotify: Subject<void> = new Subject<void>();
-    showTaskBarToolTipNotify: Subject<unknown[]> = new Subject<unknown[]>();
+    showTaskBarToolTipNotify: Subject<TooltipPositionInfo> = new Subject<TooltipPositionInfo>();
     hideTaskBarToolTipNotify: Subject<void> = new Subject<void>();
     taskBarIconInfoChangeNotify: Subject<Map<number, string[]>> = new Subject<Map<number, string[]>>();
     taskBarPreviewHighlightNotify: Subject<string> = new Subject<string>();

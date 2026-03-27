@@ -8,7 +8,7 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { IconAppCurrentState, RectLite, TaskBarIconInfo } from './taskbar.entries.type';
+import { IconAppCurrentState, RectLite, TaskBarIconInfo, TaskBarPreviewPositionInfo, TooltipPositionInfo } from './taskbar.entries.type';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -720,8 +720,8 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     const isAppRunning = this._runningProcessService.getProcesses().some(x => x.getProcessName === opensWith);
     const hoveredRect = this.highlightTaskbarIconOnMouseHover(opensWith, pId, isAppRunning);
 
-    if(!isAppRunning){
-      const data = [[hoveredRect?.left, hoveredRect?.top], [opensWith]];
+    if(!isAppRunning  && hoveredRect){
+      const data: TooltipPositionInfo = { left: hoveredRect.left, top: hoveredRect.top, appName: opensWith };
       this._systemNotificationService.showTaskBarToolTipNotify.next(data);
       return;
     }
@@ -823,8 +823,9 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   }
 
   showTaskBarPreviewWindow(rect:DOMRect, opensWith:string, pId:number, iconPath:string):void{
-    const delay = 400;//400ms
-    const data:unknown[] = [rect, opensWith, iconPath];
+    const delay = 400;//400ms To allow the preview window to render before we send the highlight notification (350ms delay on the desktop),
+    //  which ensures the highlight is applied correctly on the preview thumbnail
+    const data:TaskBarPreviewPositionInfo = { rect, iconPath, appName: opensWith };
 
     if(!this._runningProcessService.isProcessRunning(opensWith)) return;
 

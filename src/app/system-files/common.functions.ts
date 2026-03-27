@@ -62,7 +62,6 @@ export namespace CommonFunctions {
     return sortedFiles;
   }
 
-
   export const formatDuration=(ms:number):string=>{
     let totalSeconds = Math.floor(ms / 1000);
     const hours = Math.floor(totalSeconds / 3600);
@@ -220,7 +219,6 @@ export namespace CommonFunctions {
     return{type:type, name:name, path:path, oldFileName:oldFileName, isRename:isRename }
   }
 
-
   export const prepareSystemForShutdownOrRestart = (powerAction:string, 
       systemNotificationService:SystemNotificationService, runningProcessService:RunningProcessService,
       processHandlerService:ProcessHandlerService, windowService:WindowService, defaultService:DefaultService ):void =>{
@@ -273,6 +271,53 @@ export namespace CommonFunctions {
     }
 
     return 'Unknown File';
+  }
+
+  export const autoResize=(elmntId:string):void=> { //##
+    const renameTxtBoxElmt = document.getElementById(elmntId) as HTMLTextAreaElement;
+    if(renameTxtBoxElmt){
+      renameTxtBoxElmt.style.height = 'auto'; // Reset the height
+      renameTxtBoxElmt.style.height = `${renameTxtBoxElmt.scrollHeight}px`; // Set new height
+    }
+  }
+
+  export const shouldAutoResize = (elmntId:string):boolean=>{
+    const MAX_CHAR_PER_LINE = 11;
+    const renameTxtBoxElmt = document.getElementById(elmntId) as HTMLTextAreaElement;
+    if (!renameTxtBoxElmt) return false;
+
+    // only auto-resize when the first line exceeds the max char limit
+    const lines = renameTxtBoxElmt.value.split('\n');
+    return lines[0].length >= MAX_CHAR_PER_LINE;
+  }
+
+  export const shouldMoveCursorToNextLine = (elmntId:string):boolean=>{
+    const MAX_CHAR_PER_LINE = 11;
+    const renameTxtBoxElmt = document.getElementById(elmntId) as HTMLTextAreaElement;
+    if (!renameTxtBoxElmt) return false;
+
+    const cursorPos = renameTxtBoxElmt.selectionStart;
+    const textBeforeCursor = renameTxtBoxElmt.value.substring(0, cursorPos);
+    const lines = textBeforeCursor.split('\n');
+    const currentLine = lines[lines.length - 1];
+
+    return currentLine.length >= MAX_CHAR_PER_LINE;
+  }
+
+  export const moveCursorToNextLine = (elmntId:string):void => {
+    const renameTxtBoxElmt = document.getElementById(elmntId) as HTMLTextAreaElement;
+    if (!renameTxtBoxElmt) return;
+
+    const currentPos = renameTxtBoxElmt.selectionStart;
+
+    // Insert a newline at the cursor position
+    const textBefore = renameTxtBoxElmt.value.substring(0, currentPos);
+    const textAfter = renameTxtBoxElmt.value.substring(currentPos);
+    renameTxtBoxElmt.value = textBefore + '\n' + textAfter;
+
+    // Move the cursor to the position after the newline
+    const newPos = currentPos + 1;
+    renameTxtBoxElmt.setSelectionRange(newPos, newPos);
   }
 
 }

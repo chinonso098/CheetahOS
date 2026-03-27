@@ -13,14 +13,6 @@ export namespace DesktopGeneralHelper {
     const CLIPPY_APP = "clippy";
     const PHOTOS_APP = "photoviewer";
 
-  export const autoResize=(selectedElementId:number):void=> { //##
-    const renameTxtBoxElmt = document.getElementById(`renameTxtBox${selectedElementId}`) as HTMLTextAreaElement;
-    if(renameTxtBoxElmt){
-      renameTxtBoxElmt.style.height = 'auto'; // Reset the height
-      renameTxtBoxElmt.style.height = `${renameTxtBoxElmt.scrollHeight}px`; // Set new height
-    }
-  }
-
   export const  initializeApplication =(arg0:string, 
     processHandlerService:ProcessHandlerService, 
     activityHistoryService:ActivityHistoryService, screenShot?: FileInfo):void=>{

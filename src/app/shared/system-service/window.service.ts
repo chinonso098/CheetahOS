@@ -9,6 +9,7 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { BaseService } from "./base.service.interface";
 import { WindowState, WindowBoundsState, WindowPositionInfo, WindowResizeInfo} from "../system-component/window/windows.types";
+import { TaskBarPreviewPositionInfo } from "src/app/system-apps/taskbarentries/taskbar.entries.type";
 
 @Injectable({
     providedIn: 'root'
@@ -41,7 +42,7 @@ export class WindowService implements BaseService{
     minimizeProcessWindowNotify: Subject<number[]> = new Subject<number[]>();
 
     setProcessWindowToFocusOnMouseHoverNotify: Subject<number> = new Subject<number>();
-    showProcessPreviewWindowNotify: Subject<unknown[]> = new Subject<unknown[]>();
+    showProcessPreviewWindowNotify: Subject<TaskBarPreviewPositionInfo> = new Subject<TaskBarPreviewPositionInfo>();
     showOrSetProcessWindowToFocusOnClickNotify: Subject<number> = new Subject<number>();
  
     resizeProcessWindowNotify: Subject<WindowResizeInfo> = new Subject<WindowResizeInfo>();

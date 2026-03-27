@@ -13,6 +13,18 @@ export interface TaskBarIconInfo{
     instanceCount:number
 }
 
+export interface TooltipPositionInfo{
+    left: number; 
+    top: number; 
+    appName:string
+}
+
+export interface TaskBarPreviewPositionInfo{
+    rect:DOMRect;
+    iconPath:string,
+    appName:string,
+}
+
 export interface IconAppCurrentState{
     showLabel:string,
     isRunning:boolean

@@ -8,6 +8,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { TooltipPositionInfo } from '../taskbarentries/taskbar.entries.type';
 
 @Component({
   selector: 'cos-taskbar',
@@ -173,11 +174,13 @@ export class TaskbarComponent implements AfterViewInit{
   }
 
   public showSearchWindowToolTip(): void {
-    this.showTaskbarToolTip('cheetah_search_btn', -30, 'Type here to search');
+    const elmntId = 'cheetah_search_btn';
+    this.showTaskbarToolTip(elmntId, -30, 'Type here to search');
   }
 
   public showStartMenuToolTip(): void {
-    this.showTaskbarToolTip('cheetah_start_btn', 0, '  Start  ');
+    const elmntId = 'cheetah_start_btn';
+    this.showTaskbarToolTip(elmntId, 0, '  Start  ');
   }
 
   private showTaskbarToolTip(elementId: string, xOffset: number, text: string): void {
@@ -185,7 +188,7 @@ export class TaskbarComponent implements AfterViewInit{
     if (!elmt) return;
 
     const rect = elmt.getBoundingClientRect();
-    const data: unknown[] = [[rect.left + xOffset, rect.top], text];
+    const data: TooltipPositionInfo = { left: rect.left + xOffset, top: rect.top, appName: text };
 
     this._systemNotificationService.showTaskBarToolTipNotify.next(data);
   }

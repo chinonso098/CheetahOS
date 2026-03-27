@@ -26,7 +26,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { dirname} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 
-import { TaskBarIconInfo } from '../taskbarentries/taskbar.entries.type';
+import { TaskBarIconInfo, TaskBarPreviewPositionInfo, TooltipPositionInfo } from '../taskbarentries/taskbar.entries.type';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { mousePosition, IconsSizes} from './desktop.types';
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
@@ -1315,11 +1315,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._menuService.unPinFromTaskBar.next(file);
   }
 
-  showTaskBarPreviewWindow(data:unknown[]):void{
+  showTaskBarPreviewWindow(data:TaskBarPreviewPositionInfo):void{
     const taskbarHideDelay = 350;
-    const rect = data[0] as DOMRect;
-    const appName = data[1] as string;
-    const iconPath = data[2] as string;
+    const rect = data.rect;
+    const appName = data.appName;
+    const iconPath = data.iconPath;
 
     this.appToPreview = appName;
     this.appToPreviewIcon = iconPath;
@@ -1344,7 +1344,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this.tskBarPrevWindowStyle = {
       'position':'absolute',
-      'transform':`translate(${String(rect.left)}px, ${String(rect.top - 132)}px)`,
+      'transform':`translate(${rect.left}px, ${rect.top - 132}px)`,
       'z-index': 5,
     }
   }
@@ -1365,11 +1365,11 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.clearTskBarRelatedTimeout();
   }
 
-  showTaskBarToolTip(data:unknown[]):void{
+  showTaskBarToolTip(data:TooltipPositionInfo):void{
     const delay = 1000; //1secs
-    const rect = data[0] as number[];
-    const xAxis = rect[0]; const yAxis = rect[1];
-    const appName = data[1] as string;
+    const xAxis = data.left; 
+    const yAxis = data.top;
+    const appName = data.appName;
 
     this.tskBarToolTipText = appName;
 
@@ -1990,12 +1990,14 @@ OpensWith=${file.getOpensWith}
       const isValid = new RegExp(regexStr).test(evt.key)
       if(isValid){
         DesktopStyleHelper.hideInvalidCharsToolTip();
+        //const inputElement = evt.target as HTMLInputElement;
+        const elmntId = `renameTxtBox${this.currIconId}`
 
-        if(this.shouldAutoResize())
-          DesktopGeneralHelper.autoResize(this.currIconId);
+        if(CommonFunctions.shouldAutoResize(elmntId))
+          CommonFunctions.autoResize(elmntId);
         
-        if(this.shouldMoveCursorToNextLine())
-          this.moveCursorToNextLine();
+        if(CommonFunctions.shouldMoveCursorToNextLine(elmntId))
+          CommonFunctions.moveCursorToNextLine(elmntId);
         
         return isValid;
       }else{
@@ -2006,46 +2008,6 @@ OpensWith=${file.getOpensWith}
       }
     }
   }
-
-  shouldAutoResize():boolean{
-    const MAX_CHAR_PER_LINE = 11;
-    const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.currIconId}`) as HTMLTextAreaElement;
-    if (!renameTxtBoxElmt) return false;
-
-    // only auto-resize when the first line exceeds the max char limit
-    const lines = renameTxtBoxElmt.value.split('\n');
-    return lines[0].length >= MAX_CHAR_PER_LINE;
-  }
-
-  shouldMoveCursorToNextLine():boolean{
-    const MAX_CHAR_PER_LINE = 11;
-    const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.currIconId}`) as HTMLTextAreaElement;
-    if (!renameTxtBoxElmt) return false;
-
-    const cursorPos = renameTxtBoxElmt.selectionStart;
-    const textBeforeCursor = renameTxtBoxElmt.value.substring(0, cursorPos);
-    const lines = textBeforeCursor.split('\n');
-    const currentLine = lines[lines.length - 1];
-
-    return currentLine.length >= MAX_CHAR_PER_LINE;
-  }
-
-  moveCursorToNextLine():void {
-    const renameTxtBoxElmt = document.getElementById(`renameTxtBox${this.currIconId}`) as HTMLTextAreaElement;
-    if (!renameTxtBoxElmt) return;
-
-    const currentPos = renameTxtBoxElmt.selectionStart;
-
-    // Insert a newline at the cursor position
-    const textBefore = renameTxtBoxElmt.value.substring(0, currentPos);
-    const textAfter = renameTxtBoxElmt.value.substring(currentPos);
-    renameTxtBoxElmt.value = textBefore + '\n' + textAfter;
-
-    // Move the cursor to the position after the newline
-    const newPos = currentPos + 1;
-    renameTxtBoxElmt.setSelectionRange(newPos, newPos);
-  }
-
 
   isFormDirty():void{
     if (this.renameForm.dirty){
@@ -2067,25 +2029,24 @@ OpensWith=${file.getOpensWith}
     const renameTxtBoxElement= document.getElementById(`renameTxtBox${this.currIconId}`) as HTMLInputElement;
     DesktopStyleHelper.removeBtnStyle(this.currIconId);
 
-    if((figCapElement && renameContainerElement && renameTxtBoxElement)) {
-      figCapElement.style.display = 'none';
-      renameContainerElement.style.display = 'block';
-      
-      renameTxtBoxElement.style.display = 'block';
-      renameTxtBoxElement.style.zIndex = '3'; // ensure it's on top
+    if(!figCapElement && !renameContainerElement && !renameTxtBoxElement) return;
 
-      this.currentIconName = this.selectedFile.getFileName;
-      this.renameForm.setValue({
-        renameInput:this.currentIconName
-      })
+    figCapElement.style.display = 'none';
+    renameContainerElement.style.display = 'block';
+    
+    renameTxtBoxElement.style.display = 'block';
+    renameTxtBoxElement.style.zIndex = '3'; // ensure it's on top
 
-      if(this.shouldAutoResize()){
-        DesktopGeneralHelper.autoResize(this.currIconId);
-      }
+    this.currentIconName = this.selectedFile.getFileName;
+    this.renameForm.setValue({ renameInput:this.currentIconName })
 
-      renameTxtBoxElement.focus();
-      renameTxtBoxElement.select();
+    const elmntId = `renameTxtBox${this.currIconId}`;
+    if(CommonFunctions.shouldAutoResize(elmntId)){
+      CommonFunctions.autoResize(elmntId);
     }
+
+    renameTxtBoxElement.focus();
+    renameTxtBoxElement.select();
   }
   
   async onRenameFileTxtBoxDataSave():Promise<void>{ //##. if rename successful, do not re-load

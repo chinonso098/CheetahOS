@@ -89,6 +89,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private isRecycleBinFolder = false;
   private isDragFromFileExplorerActive = false;
 
+  invalidCharTimeOutId!: NodeJS.Timeout;
+
   _isBtnClickEvt= false;
   isMultiSelectEnabled = true;
   isMultiSelectActive = false;
@@ -2519,49 +2521,44 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
 
-
-
-
-
-
-
-
   onKeyPress(evt:KeyboardEvent):boolean{
     const regexStr = '^[a-zA-Z0-9_.\\s-]+$';
+
+    if(this.invalidCharTimeOutId){
+      clearTimeout(this.invalidCharTimeOutId);
+    }
+
     if(evt.key === 'Enter'){
       evt.preventDefault(); // prevent newline in textarea
       this.isFormDirty(); // trigger form submit logic
 
       return true;
-    }else if(evt.key.length > 1){
-      // non-printable keys (ArrowRight, Home, Shift, etc.) — allow but skip resize
-      return true;
-    }else{
+    }
+    
+    // else if(evt.key.length > 1){
+    //   // non-printable keys (ArrowRight, Home, Shift, etc.) — allow but skip resize
+    //   return true;
+    // }
+    
+    else{
       const isValid = new RegExp(regexStr).test(evt.key)
       if(isValid){
         this.hideInvalidCharsToolTip();
-        this.autoResize();
+        const elmntId = `renameTxtBox-${this.processId}-${this.selectedElementId}`
+
+        if(CommonFunctions.shouldAutoResize(elmntId))
+          CommonFunctions.autoResize(elmntId);
+        
+        if(CommonFunctions.shouldMoveCursorToNextLine(elmntId))
+          CommonFunctions.moveCursorToNextLine(elmntId);
+
         return isValid
       }else{
         this.showInvalidCharsToolTip();
-
-        setTimeout(()=>{ // hide after 6 secs
-          this.hideInvalidCharsToolTip();
-        },this.SECONDS_DELAY[2]) 
-
+        this.invalidCharTimeOutId = setTimeout(()=>{  this.hideInvalidCharsToolTip(); },this.SECONDS_DELAY[2])  // hide after 6 secs
         return isValid;
       }
     }
-  }
-
-  autoResize():void{
-    const renameTxtBoxElmt = document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLTextAreaElement;
-
-    if (!renameTxtBoxElmt) return;
-
-    renameTxtBoxElmt.style.height = 'auto';
-    renameTxtBoxElmt.style.height = `${renameTxtBoxElmt.scrollHeight}px`;
-    
   }
 
   onRenameFileTxtBoxShow():void{
@@ -2580,6 +2577,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.currentIconName = this.selectedFile.getFileName;
     this.renameForm.setValue({ renameInput: this.currentIconName });
+
+    const elmntId =`renameTxtBox-${this.processId}-${this.selectedElementId}`;
+    if(CommonFunctions.shouldAutoResize(elmntId)){
+      CommonFunctions.autoResize(elmntId);
+    }
+
     renameTxtBoxElement.focus();
     renameTxtBoxElement.select();
   }

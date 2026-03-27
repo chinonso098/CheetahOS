@@ -426,7 +426,7 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   word-wrap: break-word;
   -webkit-line-clamp:3;
-  line-clamp: 2;
+  line-clamp: 3;
   white-space: pre;
   width: fit-content;
   height: fit-content;

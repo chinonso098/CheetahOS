@@ -10,6 +10,7 @@ import { SystemNotificationService } from 'src/app/shared/system-service/system.
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { concatMap } from 'rxjs';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
+import { TooltipPositionInfo } from '../taskbarentries/taskbar.entries.type';
 
 @Component({
   selector: 'cos-systemtray',
@@ -181,20 +182,24 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   }
 
   public showOverFlowToolTip(): void {
+    const elmntId = 'cheetah_overflowmenu_btn';
     const txt = this.isShowOverFlowMenuPane ? 'Hide' : 'Show hidden icons';
-    this.showTaskbarToolTip('cheetah_overflowmenu_btn', -45, txt);
+    this.showTaskbarToolTip(elmntId, -45, txt);
   }
 
   public showVolumeToolTip(): void {
-    this.showTaskbarToolTip('cheetah_volume_btn', -30, this.currentVolumeTxt);
+    const elmntId = 'cheetah_volume_btn';
+    this.showTaskbarToolTip(elmntId, -30, this.currentVolumeTxt);
   }
 
   public showUSDateToolTip(): void {
-    this.showTaskbarToolTip('cheetah_datetime_btn', -60, this.getUSDate());
+    const elmntId = 'cheetah_datetime_btn';
+    this.showTaskbarToolTip(elmntId, -60, this.getUSDate());
   }
 
   public showNotificationToolTip(): void {
-    this.showTaskbarToolTip('cheetah_notification_btn', -85, 'No new notifications');
+    const elmntId = 'cheetah_notification_btn';
+    this.showTaskbarToolTip(elmntId, -85, 'No new notifications');
   }
 
   private showTaskbarToolTip(elementId: string, xOffset: number, text: string): void {
@@ -202,7 +207,7 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
     if (!elmt) return;
 
     const rect = elmt.getBoundingClientRect();
-    const data: unknown[] = [[rect.left + xOffset, rect.top], text];
+    const data: TooltipPositionInfo = { left: rect.left + xOffset, top: rect.top, appName: text };
 
     this._systemNotificationService.showTaskBarToolTipNotify.next(data);
   }
