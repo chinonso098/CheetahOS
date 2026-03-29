@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, effect } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { GeneralMenu } from 'src/app/shared/system-component/menu/menu.types';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
@@ -134,34 +134,41 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
-    this._systemNotificationService.resetLockScreenTimeOutNotify.subscribe(() => { this.resetLockScreenTimeOut()});
+    effect(() => { if (this._systemNotificationService.resetLockScreenTimeOutNotify() > 0) this.resetLockScreenTimeOut(); });
 
-    this._defaultService.defaultSettingsChangeNotify.subscribe((p) => {
+    effect(() => {
+      const p = this._defaultService.defaultSettingsChangeNotify();
+      if(p === null) return;
       if(p === Constants.DEFAULT_LOCK_SCREEN_TIMEOUT){  this.resetLockScreenTimeOut(); }
 
       if(p === Constants.DEFAULT_LOCK_SCREEN_BACKGROUND){  this.getLockScreenBackgroundData(); }
 
       if(p === Constants.DEFAULT_SCREEN_SAVER_STATE){  this.syncAndHandleScreenSaver();  }
-    })
-
-    this._systemNotificationService.shutDownSystemNotify.subscribe(() => { 
-      this.logInCounter = 0;
-      this.shutDownOSFromDesktop();
     });
 
-    this._systemNotificationService.restartSystemNotify.subscribe((p) => { 
+    effect(() => {
+      if(this._systemNotificationService.shutDownSystemNotify() > 0){
+        this.logInCounter = 0;
+        this.shutDownOSFromDesktop();
+      }
+    });
+
+    effect(() => {
+      const p = this._systemNotificationService.restartSystemNotify();
       this.logInCounter = 0;
       if(p === Constants.RSTRT_ORDER_LOCK_SCREEN){
         this.restartOSFromDesktop();
       }
     });
 
-    this._systemNotificationService.logOffNotify.subscribe(() => { 
+    effect(() => {
+      this._systemNotificationService.logOffNotify();
       this.logInCounter = 0;
       this.logOffAndShowLockScreen();
     });
 
-    this._systemNotificationService.lockScreenNotify.subscribe(() => { 
+    effect(() => {
+      this._systemNotificationService.lockScreenNotify();
       this.lockScreen();
     });
   }
@@ -203,7 +210,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     setInterval(() => { this.getTime(); }, secondsDelay[0]); 
     setInterval(() => { this.getDate(); }, secondsDelay[1]); 
 
-    this._systemNotificationService.showLockScreenNotify.next();
+    this._systemNotificationService.showLockScreenNotify.update(v => v + 1);
     this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
     this.getPowerMenuData();
   }
@@ -337,7 +344,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     lockScreenElmnt.style.backdropFilter = 'none';
 
     this.isScreenLocked = false;
-    this._systemNotificationService.showDesktopNotify.next();
+    this._systemNotificationService.showDesktopNotify.update(v => v + 1);
     this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
     this.startLockScreenTimeOut();
 
@@ -364,7 +371,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.isScreenLocked = true;
     this.isFirstLogIn = true;
     this.loginForm.controls[this.formCntrlName].setValue(null);
-    this._systemNotificationService.showLockScreenNotify.next();
+    this._systemNotificationService.showLockScreenNotify.update(v => v + 1);
     this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
     this.storeState(Constants.SIGNED_OUT);
 
@@ -392,7 +399,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.isScreenLocked = true;
     this.isFirstLogIn = true;
     this.loginForm.controls[this.formCntrlName].setValue(null);
-    this._systemNotificationService.showLockScreenNotify.next();
+    this._systemNotificationService.showLockScreenNotify.update(v => v + 1);
     this._systemNotificationService.setIsScreenLocked(this.isScreenLocked);
     this.storeState(Constants.SIGNED_OUT);
 
@@ -661,7 +668,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
     await CommonFunctions.sleep(delay);
     this.showPowerOnOffScreen();
-    this._systemNotificationService.restartSystemNotify.next(Constants.RSTRT_ORDER_PWR_ON_OFF_SCREEN);
+    this._systemNotificationService.restartSystemNotify.set(Constants.RSTRT_ORDER_PWR_ON_OFF_SCREEN);
   }
 
   async restartOSFromDesktop():Promise<void>{

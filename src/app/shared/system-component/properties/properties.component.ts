@@ -197,7 +197,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   }
 
   onClosePropertyView():void{
-    this._windowService.closeWindowProcessNotify.next(this.processId);
+    this._windowService.closeWindowProcessNotify.set(this.processId);
   }
 
   private getRandomNumber(x:number): number{
@@ -210,7 +210,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges{
   }
 
   setPropertyWindowToFocus(pId:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(pId);
   }
 
   private getComponentDetail():Process{

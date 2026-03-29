@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild, ElementRef, ViewEncapsulation, Input} from '@angular/core';
+import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild, ElementRef, ViewEncapsulation, Input, effect} from '@angular/core';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -67,12 +67,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _refreshNotifySub!:Subscription;
   private _autoArrangeIconsNotifySub!:Subscription;
   private _autoAlignIconsNotifyBySub!:Subscription;
-  private _dirFilesUpdatedSub!: Subscription;
-  private _fetchDirectoryDataSub!: Subscription;
-  private _goToDirectoryDataSub!: Subscription;
-  private _hideContextMenuSub!:Subscription;
-  private _maximizeWindowSub!: Subscription;
-  private _minimizeWindowSub!: Subscription;
+
   private _creatShortCutOnDesktopSub!: Subscription;
   
   private isActive = false;
@@ -280,39 +275,42 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    this._dirFilesUpdatedSub = this._fileService.dirFilesUpdateNotify.subscribe(() =>{
-      if(this._fileService.getEventOriginator() === this.name){
+    effect(() => {
+      if (this._fileService.dirFilesUpdateNotify() > 0 && this._fileService.getEventOriginator() === this.name) {
         this.loadFiles();
         this._fileService.removeEventOriginator();
       }
     });
 
-    this._fetchDirectoryDataSub = this._fileService.fetchDirectoryDataNotify.subscribe((p) => {
-      const name = 'filetreeview';
-      const uId = `${name}-${this.processId}`;
-      if(this._fileService.getEventOriginator() === uId){
-        this.updateFileTreeAsync(p);
-        this._fileService.removeEventOriginator();
-      }
-    });
-
-    this._goToDirectoryDataSub = this._fileService.goToDirectoryNotify.subscribe((p) => {
-      const name = 'filetreeview-1';
-      const uId = `${name}-${this.processId}`;
-      if(this._fileService.getEventOriginator() === uId){
-        if(!this.isRecycleBinFolder){
-          this.navigateToFolder(p);
+    effect(() => {
+      const p = this._fileService.fetchDirectoryDataNotify();
+      if (p !== null) {
+        const name = 'filetreeview';
+        const uId = `${name}-${this.processId}`;
+        if(this._fileService.getEventOriginator() === uId){
+          this.updateFileTreeAsync(p);
           this._fileService.removeEventOriginator();
         }
       }
     });
 
-    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
-    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)});
-    this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe((p) => {
-      if(p !== this.name) // don't answer your own call
-        this.hideIconContextMenu();
+    effect(() => {
+      const p = this._fileService.goToDirectoryNotify();
+      if (p !== null) {
+        const name = 'filetreeview-1';
+        const uId = `${name}-${this.processId}`;
+        if(this._fileService.getEventOriginator() === uId){
+          if(!this.isRecycleBinFolder){
+            this.navigateToFolder(p);
+            this._fileService.removeEventOriginator();
+          }
+        }
+      }
     });
+
+    effect(() => { if (this._windowService.maximizeProcessWindowNotify() > 0) this.maximizeWindow(); });
+    effect(() => { const p = this._windowService.minimizeProcessWindowNotify(); if (p !== null) this.minimizeWindow(p); });
+    effect(() => { const p = this._menuService.hideContextMenus(); if (p !== null && p !== this.name) this.hideIconContextMenu(); });
 
   }
 
@@ -369,12 +367,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._refreshNotifySub?.unsubscribe();
     this._autoArrangeIconsNotifySub?.unsubscribe();
     this._autoAlignIconsNotifyBySub?.unsubscribe();
-    this._dirFilesUpdatedSub?.unsubscribe();
-    this._hideContextMenuSub?.unsubscribe();
-    this._maximizeWindowSub?.unsubscribe();
-    this._minimizeWindowSub?.unsubscribe();
-    this._fetchDirectoryDataSub?.unsubscribe();
-    this._goToDirectoryDataSub?.unsubscribe();
+
     this._creatShortCutOnDesktopSub?.unsubscribe();
   }
 
@@ -391,7 +384,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const titleBar = 30;
 
     const resize:WindowResizeInfo = {pId:this.processId, widthPx:windowWidthPx, heightPx:windowHeightPx + titleBar}
-    this._windowService.resizeProcessWindowNotify.next(resize);
+    this._windowService.resizeProcessWindowNotify.set(resize);
   }
 
   setIsBtnClickEvt(val: boolean, who:string) {
@@ -433,7 +426,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     evt?.stopPropagation();
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   maximizeWindow():void{
@@ -851,7 +844,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     taskBarAppIconInfo.set(this.processId, [fileName, this.navPathIcon]);
     this._systemNotificationService.setAppIconNotication(this.processId, [fileName, this.navPathIcon])
 
-    this._systemNotificationService.taskBarIconInfoChangeNotify.next(taskBarAppIconInfo);
+    this._systemNotificationService.taskBarIconInfoChangeNotify.set(taskBarAppIconInfo);
   }
 
   showPathTextBox(evt:MouseEvent):void{
@@ -1145,7 +1138,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     await this._audioService.play(this.cheetahNavAudio);
 
     if(this.isRecycleBinFolder){
-      this._menuService.showPropertiesView.next(file);
+      this._menuService.showPropertiesView.set(file);
       return;
     }
 
@@ -1326,7 +1319,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     evt.stopPropagation();
 
     // looking at what Windows does, at any given time. there is only one context window open
-    this._menuService.hideContextMenus.next(this.name); 
+    this._menuService.hideContextMenus.set(this.name); 
     this.hideToolTip();
 
     const menuHeight = (file.getIsFile)? 225 : 344; //this is not ideal.. menu height should be gotten dynmically
@@ -1419,7 +1412,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         return;
 
     // looking at what Windows does, at any given time. there is only one context window open
-    this._menuService.hideContextMenus.next(this.name);
+    this._menuService.hideContextMenus.set(this.name);
     const menuHeight = 230; //this is not ideal.. menu height should be gotten dynmically
 
     const rect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
@@ -1440,7 +1433,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   showPropertiesWindow():void{
-    this._menuService.showPropertiesView.next(this.propertiesViewFile);
+    this._menuService.showPropertiesView.set(this.propertiesViewFile);
   }
 
   hideIconContextMenu(evt?:MouseEvent, caller?:string):void{
@@ -1459,7 +1452,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // to prevent an endless loop of calls,
     if(caller !== undefined && caller === this.name){
       this.focusWindow();
-      this._menuService.hideContextMenus.next(this.name);
+      this._menuService.hideContextMenus.set(this.name);
     }
   }
 
@@ -1978,7 +1971,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       if(result){
         if(cntntPath.includes(Constants.DESKTOP_PATH)){
           this._fileService.addEventOriginator(Constants.DESKTOP);
-          this._fileService.dirFilesUpdateNotify.next();
+          this._fileService.dirFilesUpdateNotify.update(v => v + 1);
 
           await CommonFunctions.sleep(delay);
           this.refresh();
@@ -2000,11 +1993,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(result){
       await CommonFunctions.sleep(delay0);
       this._fileService.addEventOriginator(Constants.DESKTOP);
-      this._fileService.dirFilesUpdateNotify.next();
+      this._fileService.dirFilesUpdateNotify.update(v => v + 1);
 
       await CommonFunctions.sleep(delay);
       this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
-      this._fileService.dirFilesUpdateNotify.next();
+      this._fileService.dirFilesUpdateNotify.update(v => v + 1);
     }
   }
 
@@ -2047,7 +2040,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       const cameFromFileExplr = files.some(f => !f.getCurrentPath.includes(Constants.DESKTOP_PATH));
       if(cameFromFileExplr){
         this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
-        this._fileService.dirFilesUpdateNotify.next();
+        this._fileService.dirFilesUpdateNotify.update(v => v + 1);
         await CommonFunctions.sleep(delay)
       }
 
@@ -2482,7 +2475,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
       await CommonFunctions.sleep(desktopRefreshDelay)
       this._fileService.addEventOriginator(Constants.DESKTOP);
-      this._fileService.dirFilesUpdateNotify.next();
+      this._fileService.dirFilesUpdateNotify.update(v => v + 1);
     }
   }
 
@@ -2793,7 +2786,7 @@ OpensWith=${file.getOpensWith}
       result = await this._fileService.writeFileAsync(Constants.DESKTOP_PATH, shortCut);
       if(result){
         this._fileService.addEventOriginator(Constants.DESKTOP);
-        this._fileService.dirFilesUpdateNotify.next();
+        this._fileService.dirFilesUpdateNotify.update(v => v + 1);
       }
     }
     else{ 

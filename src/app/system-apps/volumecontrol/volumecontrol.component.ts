@@ -57,7 +57,7 @@ export class VolumeControlComponent implements AfterViewInit {
     this.setVolumeIcon();
 
     this._audioService.changeVolume(newVolume);
-    this._audioService.changeVolumeNotify.next();
+    this._audioService.changeVolumeNotify.update(v => v + 1);
   }
 
 }

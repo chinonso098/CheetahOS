@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, OnInit, AfterViewInit, effect } from '@angular/core';
 //import { animate, style, transition, trigger } from '@angular/animations';
 
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -124,11 +124,11 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
       this._runningProcessService.addProcess(this.getComponentDetail());
     }
 
-    this._menuService.showStartMenu.subscribe(() => {this.showStartMenu()});
-    this._menuService.hideStartMenu.subscribe(() => {this.hideStartMenu()});
+    effect(() => { if (this._menuService.showStartMenu() > 0) this.showStartMenu(); });
+    effect(() => { if (this._menuService.hideStartMenu() > 0) this.hideStartMenu(); });
 
-    this._systemNotificationService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._systemNotificationService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    effect(() => { if(this._systemNotificationService.showLockScreenNotify() > 0) this.lockScreenIsActive(); });
+    effect(() => { if(this._systemNotificationService.showDesktopNotify() > 0) this.desktopIsActive(); });
   }
 
   ngOnInit(): void {
@@ -270,16 +270,19 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     this.startMenuFiles.push(...directoryEntries)
   }
 
-  runProcess(file:FileInfo, evt:MouseEvent):void{
+  async runProcess(file:FileInfo, evt:MouseEvent):Promise<void>{
     evt.stopPropagation();
     console.log('startmanager-runProcess:',file);
+    const delay = 80; // to allow any click animations to play before the start menu closes
+    this._menuService.hideStartMenu.update(v => v + 1);
 
     this.hideStartMenu();
+    await CommonFunctions.sleep(delay);
     this._processHandlerService.runApplication(file);
   }
 
 
-  openFolderPath(folderName:string, evt:MouseEvent):void{
+  async openFolderPath(folderName:string, evt:MouseEvent):Promise<void>{
    const path = `/Users/${folderName}`;
 
    const file = new FileInfo();
@@ -288,7 +291,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
    file.setIsFile = false;
    file.setCurrentPath = path;
 
-    this.runProcess(file, evt);
+   await this.runProcess(file, evt);
   }
 
   power(evt:MouseEvent):void{

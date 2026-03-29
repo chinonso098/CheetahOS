@@ -1,4 +1,4 @@
-import { AfterViewInit, OnInit,OnDestroy, Component, ElementRef, ViewChild} from '@angular/core';
+import { AfterViewInit, OnInit,OnDestroy, Component, ElementRef, ViewChild, effect} from '@angular/core';
 
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
@@ -38,7 +38,6 @@ import { DesktopContextMenuHelper } from './desktop.context.menu.helper';
 import { DesktopIconAlignmentHelper } from './desktop.icon.alignment.helper';
 import { DesktopStyleHelper } from './desktop.style.helper';
 import { DragEventInfo } from 'src/app/system-files/common.interfaces';
-import { concatMap } from 'rxjs';
 
 declare let VANTA: { HALO: any; BIRDS: any;  WAVES: any;   GLOBE: any;  RINGS: any;};
 @Component({
@@ -311,45 +310,43 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this._formBuilder = formBuilder;
     this._elRef = elRef;
 
-    // these are subs, but the desktop cmpnt is not going to be destoryed
-    this._menuService.showTaskBarAppIconMenu.pipe(concatMap((p) =>this.onShowTaskBarAppIconMenu(p))).subscribe();
-    this._menuService.showTaskBarConextMenu.pipe(concatMap((p) =>this.onShowTaskBarContextMenu(p))).subscribe();
-    this._audioService.showVolumeControlNotify.pipe(concatMap(() => this.showVolumeControl())).subscribe();
-    this._menuService.showOverFlowMenu.pipe(concatMap(() => this.showSysTrayOverFlowPane())).subscribe();
+    // these are effects, but the desktop cmpnt is not going to be destoryed
+    effect(() => { const p = this._menuService.showTaskBarAppIconMenu(); if (p !== null) this.onShowTaskBarAppIconMenu(p); });
+    effect(() => { const p = this._menuService.showTaskBarConextMenu(); if (p !== null) this.onShowTaskBarContextMenu(p); });
+    effect(() => { if (this._audioService.showVolumeControlNotify() > 0) this.showVolumeControl(); });
+    effect(() => { if (this._menuService.showOverFlowMenu() > 0) this.showSysTrayOverFlowPane(); });
 
-    this._menuService.hideContextMenus.subscribe((p) => { 
-      if(p !== this.name)
+    effect(() => {
+      const p = this._menuService.hideContextMenus();
+      if (p !== null && p !== this.name)
         this.resetIconBtnsAndContextMenus();
     });
 
-    this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.hideTaskBarPreviewWindow()});
-    this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.keepTaskBarPreviewWindow()});
-    this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;});
-    this._windowService.windowDragIsInActive.subscribe(() => {this.isWindowDragActive = false;}); 
-    this._audioService.hideVolumeControlNotify.subscribe(() => { this.hideVolumeControl()});
-    this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.showTaskBarPreviewWindow(p)});
+    effect(() => { if (this._windowService.hideProcessPreviewWindowNotify() > 0) this.hideTaskBarPreviewWindow(); });
+    effect(() => { if (this._windowService.keepProcessPreviewWindowNotify() > 0) this.keepTaskBarPreviewWindow(); });
+    effect(() => { if (this._windowService.windowDragIsActive() > 0) this.isWindowDragActive = true; });
+    effect(() => { if (this._windowService.windowDragIsInActive() > 0) this.isWindowDragActive = false; });
+    effect(() => { if (this._audioService.hideVolumeControlNotify() !== null) this.hideVolumeControl(); });
+    effect(() => { const p = this._windowService.showProcessPreviewWindowNotify(); if (p !== null) this.showTaskBarPreviewWindow(p); });
 
-    this._fileService.dirFilesUpdateNotify.subscribe(async () =>{
-      if(this._fileService.getEventOriginator() === this.name){
-        await this.loadFiles();
-        this._fileService.removeEventOriginator();
+    effect(() => {
+      if (this._fileService.dirFilesUpdateNotify() > 0 && this._fileService.getEventOriginator() === this.name) {
+        this.loadFiles().then(() => this._fileService.removeEventOriginator());
       }
     });
 
-    // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destroyed
-    this._systemNotificationServices.showDesktopNotify.subscribe(() => {
-      this.desktopIsActive();
-    })
+    // this is an effect, but since this cmpnt will not be closed, it doesn't need to be destroyed
+    effect(() => { if (this._systemNotificationServices.showDesktopNotify() > 0) this.desktopIsActive(); });
 
-    this._systemNotificationServices.showLockScreenNotify.subscribe(() => {
-      this.lockScreenIsActive();
-    });
+    effect(() => { if (this._systemNotificationServices.showLockScreenNotify() > 0) this.lockScreenIsActive(); });
 
-    this._menuService.updateTaskBarContextMenu.subscribe(() =>{this.resetMenuOption()});
-    this._systemNotificationServices.showTaskBarToolTipNotify.subscribe((p)=>{this.showTaskBarToolTip(p)});
-    this._systemNotificationServices.hideTaskBarToolTipNotify.subscribe(() => {this.hideTaskBarToolTip()});
+    effect(() => { if (this._menuService.updateTaskBarContextMenu() > 0) this.resetMenuOption(); });
+    effect(() => { const p = this._systemNotificationServices.showTaskBarToolTipNotify(); if (p !== null) this.showTaskBarToolTip(p); });
+    effect(() => { if (this._systemNotificationServices.hideTaskBarToolTipNotify() > 0) this.hideTaskBarToolTip(); });
 
-    this._defaultService.defaultSettingsChangeNotify.subscribe((p) =>{
+    effect(() => {
+      const p = this._defaultService.defaultSettingsChangeNotify();
+      if (p === null) return;
       if(p === Constants.DEFAULT_DESKTOP_BACKGROUND){
         this.getDesktopBackgroundData();
         this.setDesktopBackgroundData();
@@ -491,7 +488,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     //check if clippy is running, and end it
     const clippy = this._runningProcessService.getProcessByName(this.CLIPPY_APP);
     if(clippy)
-      this._runningProcessService.closeProcessNotify.next(clippy);
+      this._runningProcessService.closeProcessNotify.set(clippy);
 
     clearInterval(this.clippyIntervalId);
     this.showClippy = false;
@@ -544,7 +541,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this._runningProcessService.removeEventOriginator();
     }
 
-    this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
+    this._systemNotificationServices.resetLockScreenTimeOutNotify.update(v => v + 1);
   }
 
   shiftViewSubMenu():void{ this.shiftNestedMenuPosition(0); }
@@ -601,7 +598,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       await this.saveGeneratedImage(finalImg);
 
       await CommonFunctions.sleep(storeImgDelay);
-      this._fileService.dirFilesUpdateNotify.next();
+      this._fileService.dirFilesUpdateNotify.update(v => v + 1);
 
       await CommonFunctions.sleep(slideOutDelay);
       this.slideState = 'slideOut';
@@ -696,23 +693,23 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     if(this.showVolumeCntrl){
       this.showVolumeCntrl = false;
-      this._audioService.hideVolumeControlNotify.next(Constants.EMPTY_STRING);
+      this._audioService.hideVolumeControlNotify.set(Constants.EMPTY_STRING);
     }
 
     if(this.showOverflowPane){
       this.showOverflowPane = false;
-      this._menuService.hideOverFlowMenu.next(Constants.EMPTY_STRING);
+      this._menuService.hideOverFlowMenu.set(Constants.EMPTY_STRING);
     }
 
-    this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
-    this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
-    this._menuService.hideStartMenu.next();
+    this._systemNotificationServices.resetLockScreenTimeOutNotify.update(v => v + 1);
+    this._menuService.hideSearchBox.set(Constants.EMPTY_STRING);
+    this._menuService.hideStartMenu.update(v => v + 1);
 
     this.closePwrDialogBox();
 
     // to prevent an endless loop of calls,
     if(isDesktopTheCaller)
-      this._menuService.hideContextMenus.next(this.name);
+      this._menuService.hideContextMenus.set(this.name);
   }
 
   performTasks(evt:MouseEvent):void{
@@ -724,7 +721,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   resetLockScreenTimeOut():void{
-    this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
+    this._systemNotificationServices.resetLockScreenTimeOutNotify.update(v => v + 1);
   }
 
   closePwrDialogBox():void{
@@ -743,7 +740,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(!this.isTaskBarTemporarilyVisible){
         if(diff <= 5){
           this.isTaskBarTemporarilyVisible = true;
-          this._systemNotificationServices.showTaskBarNotify.next();
+          this._systemNotificationServices.showTaskBarNotify.update(v => v + 1);
           this.showTaskBarTemporarilyHelper();
         }
       }else if(this.isTaskBarTemporarilyVisible){
@@ -751,7 +748,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
           this.isTaskBarTemporarilyVisible = true;
         }else{
           this.isTaskBarTemporarilyVisible = false;
-          this._systemNotificationServices.hideTaskBarNotify.next();
+          this._systemNotificationServices.hideTaskBarNotify.update(v => v + 1);
         }
       }
     }
@@ -1044,7 +1041,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showTheDesktop():void{
     const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Show open windows', action:this.showOpenWindows.bind(this)}
     // raise show the destop evt
-    this._menuService.showTheDesktop.next();
+    this._menuService.showTheDesktop.update(v => v + 1);
     this.taskBarContextMenuData[0] = menuOption;
   }
 
@@ -1055,14 +1052,14 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
   showOpenWindows():void{
     const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Show the desktop', action: this.showTheDesktop.bind(this)}
-    this._menuService.showOpenWindows.next();
+    this._menuService.showOpenWindows.update(v => v + 1);
     this.taskBarContextMenuData[0] = menuOption;
   }
 
   hideTheTaskBar():void{
     const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Show the taskbar', action:this.showTheTaskBar.bind(this)}
     this.isTaskBarHidden = true;
-    this._systemNotificationServices.hideTaskBarNotify.next();
+    this._systemNotificationServices.hideTaskBarNotify.update(v => v + 1);
     this.taskBarContextMenuData[2] = menuOption;
     this.setOrUpdateTaskBarVisibilityState('hideTaskbar');
   }
@@ -1070,21 +1067,21 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   showTheTaskBar():void{
     const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Hide the taskbar', action:this.hideTheTaskBar.bind(this)}
     this.isTaskBarHidden = false;
-    this._systemNotificationServices.showTaskBarNotify.next();
+    this._systemNotificationServices.showTaskBarNotify.update(v => v + 1);
     this.taskBarContextMenuData[2] = menuOption;
     this.setOrUpdateTaskBarVisibilityState('showTaskbar');
   }
 
   mergeTaskBarButton():void{
     const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Unmerge taskbar Icons', action:this.unMergeTaskBarButton.bind(this)}
-    this._menuService.mergeTaskBarIcon.next();
+    this._menuService.mergeTaskBarIcon.update(v => v + 1);
     this.taskBarContextMenuData[3] = menuOption;
     this.setOrUpdateTaskBarCombinationState('mergeTaskbar');
   }
 
   unMergeTaskBarButton():void{
     const menuOption:GeneralMenu = {icon:Constants.EMPTY_STRING, label: 'Merge taskbar Icons', action: this.mergeTaskBarButton.bind(this)}
-    this._menuService.UnMergeTaskBarIcon.next();
+    this._menuService.UnMergeTaskBarIcon.update(v => v + 1);
     this.taskBarContextMenuData[3] = menuOption;
     this.setOrUpdateTaskBarCombinationState('unMergeTaskbar');
   }
@@ -1300,19 +1297,19 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     const proccesses = this._runningProcessService.getProcesses()
       .filter(p => p.getProcessName === file.getOpensWith);
 
-    this._menuService.closeApplicationFromTaskBar.next(proccesses);
+    this._menuService.closeApplicationFromTaskBar.set(proccesses);
   }
 
   pinApplicationFromTaskBar():void{
     this.showTskBarAppIconCntxtMenu = false;
     const file = this.selectedTaskBarFile;
-    this._menuService.pinToTaskBar.next(file);
+    this._menuService.pinToTaskBar.set(file);
   }
 
   unPinApplicationFromTaskBar():void{
     this.showTskBarAppIconCntxtMenu = false;
     const file = this.selectedTaskBarFile;
-    this._menuService.unPinFromTaskBar.next(file);
+    this._menuService.unPinFromTaskBar.set(file);
   }
 
   showTaskBarPreviewWindow(data:TaskBarPreviewPositionInfo):void{
@@ -1448,7 +1445,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       const cameFromFileExplr = files.some(f => !f.getCurrentPath.includes(Constants.DESKTOP_PATH));
       if(cameFromFileExplr){
         this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
-        this._fileService.dirFilesUpdateNotify.next();
+        this._fileService.dirFilesUpdateNotify.update(v => v + 1);
         await CommonFunctions.sleep(delay)
       }
 
@@ -1536,7 +1533,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   showPropertiesWindow():void{
-    this._menuService.showPropertiesView.next(this.propertiesViewFile);
+    this._menuService.showPropertiesView.set(this.propertiesViewFile);
   }
   
   doNothing():void{
@@ -1576,7 +1573,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       if(result){
         if(cntntPath.includes(Constants.FILE_EXPLORER)){
           this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
-          this._fileService.dirFilesUpdateNotify.next();
+          this._fileService.dirFilesUpdateNotify.update(v => v + 1);
 
           await CommonFunctions.sleep(delay)
           await this.refresh();
@@ -1589,7 +1586,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   pinIconToTaskBar():void{
-    this._menuService.pinToTaskBar.next(this.selectedFile);
+    this._menuService.pinToTaskBar.set(this.selectedFile);
   }
 
   onMouseDown(evt:MouseEvent, i: number):void{

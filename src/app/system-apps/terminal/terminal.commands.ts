@@ -312,7 +312,7 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             if(this.closingNotAllowed.includes(processToClose.getProcessName)){
                 return `The app: ${processToClose.getProcessName} is not allowed to be closed`;
             }else{
-                this._runningProcessService.closeProcessNotify.next(processToClose);
+                this._runningProcessService.closeProcessNotify.set(processToClose);
                 return `closing app, app name: ${processToClose.getProcessName}  app id: ${processToClose.getProcessId}`;
             }
 
@@ -326,7 +326,7 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
         const pId = arg0
         const processToClose = this._runningProcessService.getProcess(pId);
         if(processToClose){
-            this._runningProcessService.closeProcessNotify.next(processToClose);
+            this._runningProcessService.closeProcessNotify.set(processToClose);
         }
     }
 
@@ -1019,7 +1019,7 @@ Mandatory argument to long options are mandotory for short options too.
         }else{
             this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
         }
-        this._fileService.dirFilesUpdateNotify.next();
+        this._fileService.dirFilesUpdateNotify.update(v => v + 1);
     }
 
     private async loadFilesInfoAsync(directory:string):Promise<void>{

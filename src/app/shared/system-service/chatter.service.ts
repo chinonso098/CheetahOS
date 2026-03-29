@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { BaseService } from './base.service.interface';
 import { Constants } from 'src/app/system-files/constants';
 import { ProcessType } from 'src/app/system-files/system.types';
@@ -63,13 +63,13 @@ export class ChatterService implements BaseService {
   private readonly UPDATE_ONLINE_USER_COUNT_EVT = 'updateOnlineUserCount';
   private readonly UPDATE_ONLINE_USER_LIST_EVT = 'updateOnlineUserList';
 
-  newMessageNotify: Subject<void> = new Subject<void>();
-  userCountChangeNotify: Subject<number> = new Subject<number>();
-  newUserInformationNotify: Subject<void> = new Subject<void>();
-  updateOnlineUserListNotify: Subject<void> = new Subject<void>();
-  updateOnlineUserCountNotify: Subject<void> = new Subject<void>(); // kept for compatibility
-  updateUserNameOrStateNotify: Subject<void> = new Subject<void>();
-  updateUserCountNotify: Subject<void> = new Subject<void>(); // kept for compatibility
+  newMessageNotify = signal(0);
+  userCountChangeNotify = signal<number | null>(null, { equal: () => false });
+  newUserInformationNotify = signal(0);
+  updateOnlineUserListNotify = signal(0);
+  updateOnlineUserCountNotify = signal(0); // kept for compatibility
+  updateUserNameOrStateNotify = signal(0);
+  updateUserCountNotify = signal(0); // kept for compatibility
 
   name = 'chatter_msg_svc';
   icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
@@ -153,7 +153,7 @@ export class ChatterService implements BaseService {
     this._connectedUserCounter = uCount;
 
     // preserve your existing signal
-    this.userCountChangeNotify.next(1);
+    this.userCountChangeNotify.set(1);
   }
 
   private raiseNewMessageReceived(chatMsg: any): void {
@@ -177,7 +177,7 @@ export class ChatterService implements BaseService {
     newChatData.setIsUserNameEdit = isUserNameEdit;
 
     this._chatData.push(newChatData);
-    this.newMessageNotify.next();
+    this.newMessageNotify.update(v => v + 1);
   }
 
   private upsertOnlineUser(user: IUserData): boolean {
@@ -213,7 +213,7 @@ export class ChatterService implements BaseService {
 
     const wasAdded = this.upsertOnlineUser(newUser);
     // Keep your old behavior: notify on new info; safe for both add/update
-    this.newUserInformationNotify.next();
+    this.newUserInformationNotify.update(v => v + 1);
 
     // If you ever want “only on add”, you can gate on wasAdded later (not doing it now).
     void wasAdded;
@@ -242,7 +242,7 @@ export class ChatterService implements BaseService {
 
     // Replace list (your existing behavior)
     this._onlineUsers = cleaned;
-    this.updateOnlineUserListNotify.next();
+    this.updateOnlineUserListNotify.update(v => v + 1);
   }
 
   private raiseUpdateUserNameRecieved(userInfo: any): void {
@@ -261,7 +261,7 @@ export class ChatterService implements BaseService {
     };
 
     this.upsertOnlineUser(newUserInfo);
-    this.updateUserNameOrStateNotify.next();
+    this.updateUserNameOrStateNotify.update(v => v + 1);
   }
 
   private raiseUserTypingStateRecieved(userInfo: any, isTyping: boolean): void {
@@ -272,7 +272,7 @@ export class ChatterService implements BaseService {
     if (idx === -1) return;
 
     this._onlineUsers[idx].isTyping = isTyping;
-    this.updateUserNameOrStateNotify.next();
+    this.updateUserNameOrStateNotify.update(v => v + 1);
   }
 
   private raiseRemoveUserFromOnlineListRecieved(userInfo: any): void {
@@ -283,7 +283,7 @@ export class ChatterService implements BaseService {
     this._onlineUsers = this._onlineUsers.filter((x) => x.userId !== userId);
 
     if (this._onlineUsers.length < originalLength) {
-      this.updateOnlineUserListNotify.next();
+      this.updateOnlineUserListNotify.update(v => v + 1);
     }
   }
 

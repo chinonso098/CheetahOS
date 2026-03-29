@@ -455,14 +455,14 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
         /* original content height of 630, carousel height of 52, title bar of 30 */
         const sum = 630 + 52 + 30;
         const resize:WindowResizeInfo = {pId:this.processId, widthPx:1000, heightPx:sum}
-        this._windowService.resizeProcessWindowNotify.next(resize);
+        this._windowService.resizeProcessWindowNotify.set(resize);
       }
       else{
         photosElmnt.style.height = '630px';
         /* original content height of 630, title bar of 30 */
         const sum = 630 + 30;
         const resize:WindowResizeInfo = {pId:this.processId, widthPx:1000, heightPx:sum}
-        this._windowService.resizeProcessWindowNotify.next(resize);
+        this._windowService.resizeProcessWindowNotify.set(resize);
       }
     }
   }
@@ -641,7 +641,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.onOutsideClick();
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   getPictureSrc(file:FileInfo):string{   

@@ -1,5 +1,4 @@
-import { Injectable } from "@angular/core";
-import { Subject } from "rxjs";
+import { Injectable, signal } from "@angular/core";
 import { TaskBarPreviewImage } from "src/app/system-apps/taskbarpreview/taskbar.preview";
 import { Constants } from "src/app/system-files/constants";
 import { Process } from "src/app/system-files/process";
@@ -28,33 +27,33 @@ export class WindowService implements BaseService{
     private _eventOriginator = Constants.EMPTY_STRING;
     private _processWindowWithTheHighestZIndex = 0;
 
-    focusOnCurrentProcessWindowNotify: Subject<number> = new Subject<number>();
-    focusOnNextProcessWindowNotify: Subject<number> = new Subject<number>();
+    focusOnCurrentProcessWindowNotify = signal<number | null>(null, { equal: () => false });
+    focusOnNextProcessWindowNotify = signal<number | null>(null, { equal: () => false });
 
-    currentProcessInFocusNotify: Subject<number> = new Subject<number>();
-    noProcessInFocusNotify: Subject<void> = new Subject<void>();
+    currentProcessInFocusNotify = signal<number | null>(null, { equal: () => false });
+    noProcessInFocusNotify = signal(0);
   
-    hideProcessPreviewWindowNotify: Subject<void> = new Subject<void>();
-    hideOtherProcessesWindowNotify: Subject<number> = new Subject<number>();
-    keepProcessPreviewWindowNotify: Subject<void> = new Subject<void>();
+    hideProcessPreviewWindowNotify = signal(0);
+    hideOtherProcessesWindowNotify = signal<number | null>(null, { equal: () => false });
+    keepProcessPreviewWindowNotify = signal(0);
 
-    maximizeProcessWindowNotify: Subject<void> = new Subject<void>();
-    minimizeProcessWindowNotify: Subject<number[]> = new Subject<number[]>();
+    maximizeProcessWindowNotify = signal(0);
+    minimizeProcessWindowNotify = signal<number[] | null>(null, { equal: () => false });
 
-    setProcessWindowToFocusOnMouseHoverNotify: Subject<number> = new Subject<number>();
-    showProcessPreviewWindowNotify: Subject<TaskBarPreviewPositionInfo> = new Subject<TaskBarPreviewPositionInfo>();
-    showOrSetProcessWindowToFocusOnClickNotify: Subject<number> = new Subject<number>();
+    setProcessWindowToFocusOnMouseHoverNotify = signal<number | null>(null, { equal: () => false });
+    showProcessPreviewWindowNotify = signal<TaskBarPreviewPositionInfo | null>(null, { equal: () => false });
+    showOrSetProcessWindowToFocusOnClickNotify = signal<number | null>(null, { equal: () => false });
  
-    resizeProcessWindowNotify: Subject<WindowResizeInfo> = new Subject<WindowResizeInfo>();
-    removeFocusOnOtherProcessesWindowNotify: Subject<number> = new Subject<number>();
-    restoreOrMinimizeProcessWindowNotify: Subject<number> = new Subject<number>();
-    restoreProcessWindowOnMouseLeaveNotify: Subject<number> = new Subject<number>();
-    restoreProcessesWindowNotify: Subject<void> = new Subject<void>();
+    resizeProcessWindowNotify = signal<WindowResizeInfo | null>(null, { equal: () => false });
+    removeFocusOnOtherProcessesWindowNotify = signal<number | null>(null, { equal: () => false });
+    restoreOrMinimizeProcessWindowNotify = signal<number | null>(null, { equal: () => false });
+    restoreProcessWindowOnMouseLeaveNotify = signal<number | null>(null, { equal: () => false });
+    restoreProcessesWindowNotify = signal(0);
 
-    windowDragIsActive: Subject<void> = new Subject<void>();
-    windowDragIsInActive: Subject<void> = new Subject<void>();
+    windowDragIsActive = signal(0);
+    windowDragIsInActive = signal(0);
 
-    closeWindowProcessNotify:Subject<number> = new Subject<number>();
+    closeWindowProcessNotify = signal<number | null>(null, { equal: () => false });
 
     
     name = 'window_mgmt_svc';

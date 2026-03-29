@@ -316,7 +316,7 @@ ngOnDestroy(): void {
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   getFileSrc(pathOne:string, pathTwo:string):string{

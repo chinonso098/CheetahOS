@@ -234,7 +234,7 @@ export namespace CommonFunctions {
 
     const proccesses = runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
     for(const proccess of proccesses){
-      runningProcessService.closeProcessNotify.next(proccess);
+      runningProcessService.closeProcessNotify.set(proccess);
 
       if(clearApplicationSessionData)
         processHandlerService.clearSessionData(proccess)
@@ -255,7 +255,7 @@ export namespace CommonFunctions {
 
     const proccesses = runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
     for(const proccess of proccesses){
-      runningProcessService.closeProcessNotify.next(proccess);
+      runningProcessService.closeProcessNotify.set(proccess);
     }
     
     windowService.reset();

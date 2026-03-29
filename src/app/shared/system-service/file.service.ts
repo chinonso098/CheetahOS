@@ -6,7 +6,7 @@ import { Constants } from "src/app/system-files/constants";
 import { FSModule } from "src/osdrive/Cheetah/System/BrowserFS/node/core/FS";
 import { FileMetaData } from "src/app/system-files/file.metadata";
 
-import { Subject } from "rxjs";
+import { signal, effect } from '@angular/core';
 import * as BrowserFS from 'src/osdrive/Cheetah/System/BrowserFS/browserfs'
 import { Buffer} from 'buffer';
 import osDriveFileSystemIndex from '../../../osdrive.json';
@@ -60,10 +60,10 @@ export class FileService implements BaseService{
     private _usedStorageSizeInBytes = 0;
     private _dialogPIdToCancel = 0;
 
-    dirFilesUpdateNotify: Subject<void> = new Subject<void>();
-    fetchDirectoryDataNotify: Subject<string> = new Subject<string>();
-    goToDirectoryNotify: Subject<string[]> = new Subject<string[]>();
-    cancelFileTransferNotify: Subject<number> = new Subject<number>();
+    dirFilesUpdateNotify = signal(0);
+    fetchDirectoryDataNotify = signal<string | null>(null, { equal: () => false });
+    goToDirectoryNotify = signal<string[] | null>(null, { equal: () => false });
+    cancelFileTransferNotify = signal<number | null>(null, { equal: () => false });
 
     readonly fileServiceRestoreKey = Constants.FILE_SVC_RESTORE_KEY;
     readonly fileServiceIterateKey = Constants.FILE_SVC_FILE_ITERATE_KEY;
@@ -97,9 +97,12 @@ export class FileService implements BaseService{
         this._systemNotificationService = systemNotificationService;
         this._defaultService = defaultService;
 
-        this.cancelFileTransferNotify.subscribe((p) =>{
-            this.terminateTransfer();
-            this.pIdToTerminate(p);
+        effect(() => {
+            const p = this.cancelFileTransferNotify();
+            if (p !== null) {
+                this.terminateTransfer();
+                this.pIdToTerminate(p);
+            }
         });
 
         this.processId = this._processIdService.getNewProcessId();
@@ -2043,7 +2046,7 @@ OpensWith=${shortCutData.opensWith}
 
     private sendUpdate(dialogPId:number):void{
         const firstUpdate:InformationUpdate = {pId:dialogPId, appName:this.FILE_TRANSFER_DIALOG_APP_NAME, info:[`initInformation:0`]};
-        this._systemNotificationService.updateInformationNotify.next(firstUpdate);
+        this._systemNotificationService.updateInformationNotify.set(firstUpdate);
     }
 
     private sendFileTransferUpdate(dialogPId:number, update:FileTransferUpdate):void{
@@ -2058,7 +2061,7 @@ OpensWith=${shortCutData.opensWith}
                   `fileName:${update.fileName}`
             ]}
 
-        this._systemNotificationService.updateInformationNotify.next(newUpdate);
+        this._systemNotificationService.updateInformationNotify.set(newUpdate);
     }
 
     removeExtensionFromName(name:string):string{

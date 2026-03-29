@@ -1,5 +1,4 @@
-import { Component, Input, AfterViewInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, Input, AfterViewInit, OnDestroy, effect } from '@angular/core';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
@@ -19,8 +18,6 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
   private _systemNotificationService!:SystemNotificationService
   private _windowServices:WindowService;
 
-  private _highLightTaskBarPreviewSub!: Subscription;
-  private _unHighLightTaskBarPreviewSub!: Subscription;
 
   @Input() icon = Constants.EMPTY_STRING;
   @Input() name = Constants.EMPTY_STRING;
@@ -36,8 +33,19 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
     this._windowServices = windowServices;
     this._systemNotificationService = systemNotificationService;
 
-    this._highLightTaskBarPreviewSub = this._systemNotificationService.taskBarPreviewHighlightNotify.subscribe((p) => {this.highLightTasktBarPreview(p)});
-    this._unHighLightTaskBarPreviewSub = this._systemNotificationService.taskBarPreviewUnHighlightNotify.subscribe((p) => {this.unHighLightTasktBarPreview(p)});
+    effect(() => {
+      const p = this._systemNotificationService.taskBarPreviewHighlightNotify();
+      if (p !== null) {
+        this.highLightTasktBarPreview(p);
+      }
+    });
+
+    effect(() => {
+      const p = this._systemNotificationService.taskBarPreviewUnHighlightNotify();
+      if (p !== null) {
+        this.unHighLightTasktBarPreview(p);
+      }
+    });
   }
 
   async ngAfterViewInit(): Promise<void>{
@@ -46,8 +54,6 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._highLightTaskBarPreviewSub?.unsubscribe();
-    this._unHighLightTaskBarPreviewSub?.unsubscribe();
   }
 
   shortAppInfo():void{
@@ -60,16 +66,16 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
 
   onClosePreviewWindow(pId:number):void{
     const processToClose = this._runningProcessService.getProcess(pId);
-    this._runningProcessService.closeProcessNotify.next(processToClose);
+    this._runningProcessService.closeProcessNotify.set(processToClose);
   }
 
   keepTaskBarPreviewWindow():void{
-    this._windowServices.keepProcessPreviewWindowNotify.next();
+    this._windowServices.keepProcessPreviewWindowNotify.update(v => v + 1);
   }
 
   hideTaskBarPreviewWindowAndRestoreDesktop():void{
-    this._windowServices.hideProcessPreviewWindowNotify.next();
-    this._windowServices.restoreProcessesWindowNotify.next();
+    this._windowServices.hideProcessPreviewWindowNotify.update(v => v + 1);
+    this._windowServices.restoreProcessesWindowNotify.update(v => v + 1);
   }
 
   showTaskBarPreviewContextMenu(evt:MouseEvent, pId:number):void{
@@ -77,13 +83,13 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
   }
 
   setWindowToFocusOnMouseHover(pId:number):void{
-    this._windowServices.setProcessWindowToFocusOnMouseHoverNotify.next(pId);
+    this._windowServices.setProcessWindowToFocusOnMouseHoverNotify.set(pId);
     this.setCloseBtnColor(pId, false);
     this.setSvgIconColor(pId);
   }
 
   restoreWindowOnMouseLeave(pId:number):void{
-    this._windowServices.restoreProcessWindowOnMouseLeaveNotify.next(pId);
+    this._windowServices.restoreProcessWindowOnMouseLeaveNotify.set(pId);
     this.removeCloseBtnColor(pId);
   }
 
@@ -93,7 +99,7 @@ export class TaskbarpreviewsComponent implements AfterViewInit, OnDestroy {
     this.hideTaskBarPreviewWindowAndRestoreDesktop();
 
     await CommonFunctions.sleep(delay);
-    this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.next(pId);
+    this._windowServices.showOrSetProcessWindowToFocusOnClickNotify.set(pId);
   }
 
 

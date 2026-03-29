@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, effect } from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -8,7 +8,6 @@ import { Constants } from 'src/app/system-files/constants';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { concatMap } from 'rxjs';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { TooltipPositionInfo } from '../taskbarentries/taskbar.entries.type';
 
@@ -57,19 +56,24 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    // these are subs, but since this cmpnt will not be closed, it doesn't need to be destoryed
-    this._audioService.changeVolumeNotify.pipe(concatMap(() =>  this.upadateVolume())).subscribe(); 
-    this._systemNotificationService.showDesktopNotify.pipe(concatMap(() =>  this.upadateVolume())).subscribe();
+    effect(() => { if (this._audioService.changeVolumeNotify() > 0) this.upadateVolume(); });
+    effect(() => { if (this._systemNotificationService.showDesktopNotify() > 0) this.upadateVolume(); });
     
-    this._audioService.hideVolumeControlNotify.subscribe((p) => {
-      if(p === Constants.EMPTY_STRING){
-        this.hideVolumeControl();
+    effect(() => {
+      const p = this._audioService.hideVolumeControlNotify();
+      if (p !== null) {
+        if(p === Constants.EMPTY_STRING){
+          this.hideVolumeControl();
+        }
       }
     });
 
-    this._menuService.hideOverFlowMenu.subscribe((p) => {
-      if(p === Constants.EMPTY_STRING){
-        this.hideOverFlowMenuPane();
+    effect(() => {
+      const p = this._menuService.hideOverFlowMenu();
+      if (p !== null) {
+        if(p === Constants.EMPTY_STRING){
+          this.hideOverFlowMenuPane();
+        }
       }
     });
   }
@@ -150,22 +154,22 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   }
 
   showVolumeControl():void{
-    this._systemNotificationService.hideTaskBarToolTipNotify.next();
+    this._systemNotificationService.hideTaskBarToolTipNotify.update(v => v + 1);
     
     if(!this.isShowVolumeControl){
       this.isShowVolumeControl = true
-      this._audioService.showVolumeControlNotify.next();
+      this._audioService.showVolumeControlNotify.update(v => v + 1);
     }else{
       this.hideVolumeControl();
     }
   }
 
   showOverFlowMenuPane():void{
-    this._systemNotificationService.hideTaskBarToolTipNotify.next();
+    this._systemNotificationService.hideTaskBarToolTipNotify.update(v => v + 1);
 
     if(!this.isShowOverFlowMenuPane){
       this.isShowOverFlowMenuPane = true
-      this._menuService.showOverFlowMenu.next();
+      this._menuService.showOverFlowMenu.update(v => v + 1);
     }else{
       this.hideOverFlowMenuPane();
     }
@@ -173,12 +177,12 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
 
   hideVolumeControl():void{
     this.isShowVolumeControl = false;
-    this._audioService.hideVolumeControlNotify.next(this.name);
+    this._audioService.hideVolumeControlNotify.set(this.name);
   }
 
   hideOverFlowMenuPane():void{
     this.isShowOverFlowMenuPane = false;
-    this._menuService.hideOverFlowMenu.next(this.name);
+    this._menuService.hideOverFlowMenu.set(this.name);
   }
 
   public showOverFlowToolTip(): void {
@@ -209,11 +213,11 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
     const rect = elmt.getBoundingClientRect();
     const data: TooltipPositionInfo = { left: rect.left + xOffset, top: rect.top, appName: text };
 
-    this._systemNotificationService.showTaskBarToolTipNotify.next(data);
+    this._systemNotificationService.showTaskBarToolTipNotify.set(data);
   }
 
   public hideToolTip():void{
-    this._systemNotificationService.hideTaskBarToolTipNotify.next();
+    this._systemNotificationService.hideTaskBarToolTipNotify.update(v => v + 1);
   }
 
   private getComponentDetail():Process{

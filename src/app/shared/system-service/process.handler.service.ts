@@ -1,4 +1,4 @@
-import { ComponentRef, Injectable, Type} from "@angular/core";
+import { ComponentRef, Injectable, Type, effect} from "@angular/core";
 
 import { AppDirectory } from "src/app/system-files/app.directory";
 import { FileInfo } from "src/app/system-files/file.info";
@@ -137,8 +137,8 @@ export class ProcessHandlerService implements BaseService{
         this._runningProcessService.addProcess(this.getProcessDetail());
         this._runningProcessService.addService(this.getServiceDetail());
 
-        this._menuService.showPropertiesView.subscribe((p) => this.showPropertiesWindow(p));
-        this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.closeApplicationProcess(p)})
+        effect(() => { const p = this._menuService.showPropertiesView(); if (p !== null) this.showPropertiesWindow(p); });
+        effect(() => { const p = this._runningProcessService.closeProcessNotify(); if (p !== null) this.closeApplicationProcess(p); });
     }
 
     public runApplication(file:FileInfo):void{
@@ -167,14 +167,14 @@ export class ProcessHandlerService implements BaseService{
                             runningProcess.getProcessName === this.RUN_SYSTEM || 
                             runningProcess.getProcessName === this.TASK_MANAGER || 
                             runningProcess.getProcessName === this.PARTICLE_FLOW ){
-                            this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
+                            this._windowService.focusOnCurrentProcessWindowNotify.set(runningProcess.getProcessId);
                         }else{
                             this.addTrigger(file.getOpensWith, file);
-                            this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
+                            this._windowService.focusOnCurrentProcessWindowNotify.set(runningProcess.getProcessId);
 
                             const uId = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
                             this._runningProcessService.addEventOriginator(uId);
-                            this._runningProcessService.changeProcessContentNotify.next();
+                            this._runningProcessService.changeProcessContentNotify.update(v => v + 1);
                         }
                     }
                     return;
@@ -234,7 +234,7 @@ export class ProcessHandlerService implements BaseService{
             this.addEntryFromUserOpenedAppssAndSession(cmpntRef);
             //alert subscribers
             if(this._runningProcessService !== undefined){
-                this._runningProcessService.processListChangeNotify.next();
+                this._runningProcessService.processListChangeNotify.update(v => v + 1);
             }
         }
     }
@@ -246,7 +246,7 @@ export class ProcessHandlerService implements BaseService{
             const cmpntRef =  this._componentReferenceService.createComponent(PropertiesComponent);
             cmpntRef.setInput('fileInput',fileInput);
         }else{
-            this._windowService.focusOnCurrentProcessWindowNotify.next(process.getProcessId);
+            this._windowService.focusOnCurrentProcessWindowNotify.set(process.getProcessId);
         }
     }
 
@@ -262,7 +262,7 @@ export class ProcessHandlerService implements BaseService{
             this.clearSessionData(process);
 
         this._runningProcessService.removeProcess(process);
-        this._runningProcessService.processListChangeNotify.next();
+        this._runningProcessService.processListChangeNotify.update(v => v + 1);
     }
 
     public clearSessionData(process:Process){

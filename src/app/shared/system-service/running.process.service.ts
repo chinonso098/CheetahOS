@@ -1,5 +1,4 @@
-import { Injectable } from "@angular/core";
-import { Subject } from "rxjs";
+import { Injectable, signal } from "@angular/core";
 import { Constants } from "src/app/system-files/constants";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
@@ -19,10 +18,10 @@ export class RunningProcessService implements BaseService{
      * This  notify the app component  to removes process that have window componenets
      * Calling this on a process without one, will throw an error
      */
-    closeProcessNotify: Subject<Process> = new Subject<Process>();
-    newProcessNotify: Subject<string> = new Subject<string>(); 
-    changeProcessContentNotify:Subject<void> = new Subject<void>();
-    processListChangeNotify: Subject<void> = new Subject<void>();
+    closeProcessNotify = signal<Process | null>(null, { equal: () => false });
+    newProcessNotify = signal<string | null>(null, { equal: () => false }); 
+    changeProcessContentNotify = signal(0);
+    processListChangeNotify = signal(0);
     
     name = 'rning_proc_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;

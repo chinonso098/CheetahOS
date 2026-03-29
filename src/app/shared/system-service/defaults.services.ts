@@ -10,7 +10,7 @@ import { BaseService } from "./base.service.interface";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { SessionManagmentService } from "./session.management.service";
-import { Subject } from "rxjs";
+import { signal } from '@angular/core';
 
 @Injectable({
     providedIn: 'root'
@@ -24,7 +24,7 @@ export class DefaultService implements BaseService{
     private _defaultSettingsMap!:Map<string, string>; 
     private readonly _defaultSettingServiceKey = Constants.CHEETAH_DEFAULT_SETTINGS_KEY;
 
-    defaultSettingsChangeNotify: Subject<string> = new Subject<string>();
+    defaultSettingsChangeNotify = signal<string | null>(null, { equal: () => false });
 
     name = 'defaults_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -81,7 +81,7 @@ export class DefaultService implements BaseService{
         this._sessionManagmentService.addMapBasedSession(this._defaultSettingServiceKey, this._defaultSettingsMap);
         
         if(raiseEvent)
-            this.defaultSettingsChangeNotify.next(key);
+            this.defaultSettingsChangeNotify.set(key);
     }
 
     private retrievePastSessionData(key:string):void{

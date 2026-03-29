@@ -1,5 +1,4 @@
 import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, Input, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -33,7 +32,6 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
   private _windowService!:WindowService;
   private _sessionManagmentService!:SessionManagmentService;
 
-  private _maximizeWindowSub!: Subscription;
   private _appState!:AppState;
    
   private _renderer!: any;
@@ -92,8 +90,6 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
     if (this._intervalId) {
       clearInterval(this._intervalId);
     }
-
-    this._maximizeWindowSub?.unsubscribe();
   }
 
   updateComponentImg():void{
@@ -231,7 +227,7 @@ export class WarpingstarfieldComponent implements BaseComponent, OnDestroy, Afte
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   async captureCanvasStill(): Promise<string> {

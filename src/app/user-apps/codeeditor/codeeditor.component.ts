@@ -1,6 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, OnInit, Input } from '@angular/core';
-import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
@@ -40,7 +39,6 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   private _sessionManagmentService!:SessionManagmentService
 
 
-  private _maximizeWindowSub!: Subscription;
   private _appState!:AppState;
   private _fileInfo!:FileInfo;
   private _editor: any;   // monaco.editor.IStandaloneCodeEditor
@@ -131,7 +129,6 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   }
 
   ngOnDestroy():void{
-    this._maximizeWindowSub?.unsubscribe();
   }
 
   captureComponentImg():void{
@@ -327,7 +324,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   private getComponentDetail():Process{

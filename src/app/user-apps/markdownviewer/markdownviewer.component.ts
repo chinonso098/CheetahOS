@@ -2,7 +2,6 @@
 import { Component, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit, Renderer2, Input} from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
-import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
@@ -49,7 +48,6 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
 
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
-  private _maximizeWindowSub!: Subscription;
   private fileSrc = Constants.EMPTY_STRING;
   mkdDwnHtml:SafeHtml = Constants.EMPTY_STRING;
 
@@ -111,7 +109,6 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   }
 
   ngOnDestroy():void{
-    this._maximizeWindowSub?.unsubscribe();
   }
 
   captureComponentImg():void{
@@ -152,7 +149,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   getFileSrc(pathOne:string, pathTwo:string):string{

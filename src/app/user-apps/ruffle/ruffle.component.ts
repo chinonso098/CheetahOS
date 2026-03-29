@@ -112,7 +112,7 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   async captureComponentImg():Promise<void>{

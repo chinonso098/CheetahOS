@@ -1,9 +1,8 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { AfterViewInit, OnDestroy, Component } from '@angular/core';
+import { AfterViewInit, Component, effect } from '@angular/core';
 import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
-import { Subscription } from 'rxjs';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { InformationUpdate } from 'src/app/system-files/common.interfaces';
 import { FileIndexerService } from 'src/app/shared/system-service/file.indexer.services';
@@ -14,14 +13,10 @@ import { FileIndexerService } from 'src/app/shared/system-service/file.indexer.s
   styleUrl: './overflow.component.css',
   standalone:false,
 })
-export class OverFlowComponent implements AfterViewInit, OnDestroy {
+export class OverFlowComponent implements AfterViewInit {
   private _runningProcessService!:RunningProcessService;
   private _systemNotificationService:SystemNotificationService;
   private _fileIndexerService!:FileIndexerService;
-
-  private _processListChangeSub!:Subscription;
-  private _updateInformationSub!:Subscription;
-  private _indexingInProgressSub!:Subscription;
 
   chatterIcon =`${Constants.IMAGE_BASE_PATH}chatter.png`;
   taskManagerIcon =`${Constants.IMAGE_BASE_PATH}taskmanager_grid.png`;
@@ -39,17 +34,17 @@ export class OverFlowComponent implements AfterViewInit, OnDestroy {
     this._systemNotificationService = systemNotificationService;
     this._fileIndexerService = fileIndexerService;
 
-    this._processListChangeSub = this._runningProcessService.processListChangeNotify.subscribe(() =>{
-      this.hideShowTaskManagerUtil();
-      this.hideShowChatter();
+    effect(() => { if (this._runningProcessService.processListChangeNotify() > 0) { this.hideShowTaskManagerUtil(); this.hideShowChatter(); } });
+
+    effect(() => {
+      const p = this._systemNotificationService.updateInformationNotify();
+      if (p !== null) {
+        if(p.appName === this.TASK_MANAGER)
+          this.updateTaskManager(p);
+      }
     });
 
-    this._updateInformationSub = this._systemNotificationService.updateInformationNotify.subscribe((p) =>{
-      if(p.appName === this.TASK_MANAGER)
-        this.updateTaskManager(p);
-    });
-
-    this._indexingInProgressSub = this._fileIndexerService.IndexingInProgress.subscribe((p) =>{ this.showIndexingIcon = p});
+    effect(() => { const p = this._fileIndexerService.IndexingInProgress(); if (p !== null) this.showIndexingIcon = p; });
   }
 
   async ngAfterViewInit():Promise<void>{  
@@ -59,11 +54,7 @@ export class OverFlowComponent implements AfterViewInit, OnDestroy {
     this.hideShowChatter();
   }
 
-  ngOnDestroy(): void {
-    this._processListChangeSub?.unsubscribe();
-    this._updateInformationSub?.unsubscribe();
-    this._indexingInProgressSub?.unsubscribe();
-  }
+
 
   async hideShowTaskManagerUtil():Promise<void>{
     const isRunning = this._runningProcessService.isProcessRunning(this.TASK_MANAGER);

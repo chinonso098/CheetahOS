@@ -144,7 +144,7 @@ Other trademarks and logos are property of their respective owners
     evt?.stopPropagation();
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   private getComponentDetail():Process{

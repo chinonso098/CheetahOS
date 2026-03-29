@@ -38,7 +38,7 @@ export class RunSystemComponent implements BaseComponent {
 
   onClosePropertyView():void{
     const processToClose = this._runningProcessService.getProcess(this.processId);
-    this._runningProcessService.closeProcessNotify.next(processToClose);
+    this._runningProcessService.closeProcessNotify.set(processToClose);
   }
 
   private getComponentDetail():Process{

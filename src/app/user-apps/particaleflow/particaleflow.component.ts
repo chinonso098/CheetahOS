@@ -363,7 +363,7 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
   }
 
   setParticleFlowWindowToFocus(pId:number):void{
-    this._windowService.focusOnCurrentProcessWindowNotify.next(pId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(pId);
   }
 
   focusWindow(evt:MouseEvent):void{
@@ -371,7 +371,7 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
   
   storeAppState(app_data:unknown):void{

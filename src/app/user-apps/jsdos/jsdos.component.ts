@@ -158,7 +158,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
     this.dosWindow.nativeElement.focus();
   }
 

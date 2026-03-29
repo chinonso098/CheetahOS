@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -16,7 +16,7 @@ import { Process } from 'src/app/system-files/process';
 
 import { ChatMessage } from './model/chat.message';
 import { IUser, IUserData } from './model/chat.interfaces';
-import { Subscription } from 'rxjs';
+
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import * as htmlToImage from 'html-to-image';
@@ -43,11 +43,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _audioService!:AudioService;
   private _sessionManagmentService: SessionManagmentService;
 
-  private _newChatMessageSub!: Subscription;
-  private _userCountChangeSub!: Subscription;
-  private _newUserInfomationSub!: Subscription;
-  private _updateOnlineUserListSub!: Subscription;
-  private _updateUserNameOrStatusSub!: Subscription;
+
 
   private _formBuilder;
   chatterForm!: FormGroup;
@@ -118,11 +114,11 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.setDefaults();
 
 
-    this._newChatMessageSub = this._chatService.newMessageNotify.subscribe(()=> this.updateChatData());
-    this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe((p)=> this.updateOnlineUserCount(p));
-    this._newUserInfomationSub = this._chatService.newUserInformationNotify.subscribe(()=> this.updateOnlineUserList());
-    this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList());
-    this._updateUserNameOrStatusSub =  this._chatService.updateUserNameOrStateNotify.subscribe(()=> this.updateOnlineUserList());
+    effect(() => { if (this._chatService.newMessageNotify() > 0) this.updateChatData(); });
+    effect(() => { const p = this._chatService.userCountChangeNotify(); if (p !== null) this.updateOnlineUserCount(p); });
+    effect(() => { if (this._chatService.newUserInformationNotify() > 0) this.updateOnlineUserList(); });
+    effect(() => { if (this._chatService.updateOnlineUserListNotify() > 0) this.updateOnlineUserList(); });
+    effect(() => { if (this._chatService.updateUserNameOrStateNotify() > 0) this.updateOnlineUserList(); });
   }
 
   async ngOnInit(): Promise<void> {
@@ -161,11 +157,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.generateAndSendAppMessages(this.USER_HAS_LEFT_THE_CHAT_MSG);
 
     await CommonFunctions.sleep(delay);
-    this._newChatMessageSub?.unsubscribe();
-    this._userCountChangeSub?.unsubscribe();
-    this._newUserInfomationSub?.unsubscribe();
-    this._updateOnlineUserListSub?.unsubscribe();
-    this._updateUserNameOrStatusSub?.unsubscribe();
+
 
     this._socketService.disconnect();
     
@@ -482,7 +474,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   storeAppState(app_data:unknown):void{

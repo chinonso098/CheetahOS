@@ -1,5 +1,4 @@
-import { Injectable } from "@angular/core";
-import { Subject } from "rxjs";
+import { Injectable, signal } from "@angular/core";
 import { Constants } from "src/app/system-files/constants";
 import { ProcessType } from "src/app/system-files/system.types";
 import { ProcessIDService } from "./process.id.service";
@@ -24,24 +23,24 @@ export class SystemNotificationService implements BaseService{
     private _isScreenLocked = true;
     private _pwrDialogPID = 0;
 
-    lockScreenNotify: Subject<void> = new Subject<void>();
-    logOffNotify: Subject<void> = new Subject<void>();
-    showLockScreenNotify: Subject<void> = new Subject<void>();
-    showDesktopNotify: Subject<void> = new Subject<void>();
-    resetLockScreenTimeOutNotify: Subject<void> = new Subject<void>();
-    restartSystemNotify: Subject<number> = new Subject<number>();
-    shutDownSystemNotify: Subject<void> = new Subject<void>();
+    lockScreenNotify = signal(0);
+    logOffNotify = signal(0);
+    showLockScreenNotify = signal(0);
+    showDesktopNotify = signal(0);
+    resetLockScreenTimeOutNotify = signal(0);
+    restartSystemNotify = signal<number | null>(null, { equal: () => false });
+    shutDownSystemNotify = signal(0);
 
-    hideTaskBarNotify: Subject<void> = new Subject<void>();
-    showTaskBarNotify: Subject<void> = new Subject<void>();
-    showTaskBarToolTipNotify: Subject<TooltipPositionInfo> = new Subject<TooltipPositionInfo>();
-    hideTaskBarToolTipNotify: Subject<void> = new Subject<void>();
-    taskBarIconInfoChangeNotify: Subject<Map<number, string[]>> = new Subject<Map<number, string[]>>();
-    taskBarPreviewHighlightNotify: Subject<string> = new Subject<string>();
-    taskBarPreviewUnHighlightNotify: Subject<string> = new Subject<string>();
+    hideTaskBarNotify = signal(0);
+    showTaskBarNotify = signal(0);
+    showTaskBarToolTipNotify = signal<TooltipPositionInfo | null>(null, { equal: () => false });
+    hideTaskBarToolTipNotify = signal(0);
+    taskBarIconInfoChangeNotify = signal<Map<number, string[]> | null>(null, { equal: () => false });
+    taskBarPreviewHighlightNotify = signal<string | null>(null, { equal: () => false });
+    taskBarPreviewUnHighlightNotify = signal<string | null>(null, { equal: () => false });
 
-    updateInformationNotify: Subject<InformationUpdate> = new Subject<InformationUpdate>();
-    autoCloseDialogNotify:Subject<number> =  new Subject<number>(); 
+    updateInformationNotify = signal<InformationUpdate | null>(null, { equal: () => false });
+    autoCloseDialogNotify = signal<number | null>(null, { equal: () => false }); 
 
     name = 'sys_notification_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;

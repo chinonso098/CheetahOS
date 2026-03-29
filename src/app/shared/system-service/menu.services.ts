@@ -1,5 +1,4 @@
-import { Injectable } from "@angular/core";
-import { Subject } from "rxjs";
+import { Injectable, signal } from "@angular/core";
 import { Constants } from "src/app/system-files/constants";
 import { FileInfo } from "src/app/system-files/file.info";
 import { FileTreeNode } from "src/app/system-files/common.interfaces";
@@ -20,33 +19,33 @@ export class MenuService implements BaseService{
     private _runningProcessService!:RunningProcessService;
     private _processIdService!:ProcessIDService;
 
-    pinToTaskBar: Subject<FileInfo> = new Subject<FileInfo>();
-    unPinFromTaskBar: Subject<FileInfo> = new Subject<FileInfo>();
+    pinToTaskBar = signal<FileInfo | null>(null, { equal: () => false });
+    unPinFromTaskBar = signal<FileInfo | null>(null, { equal: () => false });
 
-    openApplicationFromTaskBar: Subject<FileInfo> = new Subject<FileInfo>();
-    closeApplicationFromTaskBar: Subject<Process[]> = new Subject<Process[]>();
-    showTaskBarAppIconMenu: Subject<unknown[]> = new Subject<unknown[]>();
-    showTaskBarConextMenu: Subject<MouseEvent> = new Subject<MouseEvent>();
+    openApplicationFromTaskBar = signal<FileInfo | null>(null, { equal: () => false });
+    closeApplicationFromTaskBar = signal<Process[] | null>(null, { equal: () => false });
+    showTaskBarAppIconMenu = signal<unknown[] | null>(null, { equal: () => false });
+    showTaskBarConextMenu = signal<MouseEvent | null>(null, { equal: () => false });
 
-    hideStartMenu: Subject<void> = new Subject<void>();
-    showStartMenu: Subject<void> = new Subject<void>();
-    hideContextMenus: Subject<string> = new Subject<string>();
-    addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();
-    showPropertiesView: Subject<FileInfo> = new Subject<FileInfo>();
+    hideStartMenu = signal(0);
+    showStartMenu = signal(0);
+    hideContextMenus = signal<string | null>(null, { equal: () => false });
+    addToQuickAccess = signal<FileTreeNode[] | null>(null, { equal: () => false });
+    showPropertiesView = signal<FileInfo | null>(null, { equal: () => false });
 
-    hideShowTaskBar: Subject<void> = new Subject<void>();
-    UnMergeTaskBarIcon: Subject<void> = new Subject<void>();
-    mergeTaskBarIcon: Subject<void> = new Subject<void>();
-    tiggerTaskManager: Subject<void> = new Subject<void>();
-    showTheDesktop: Subject<void> = new Subject<void>();
-    showOpenWindows: Subject<void> = new Subject<void>();
-    updateTaskBarContextMenu:Subject<void> = new Subject<void>();
+    hideShowTaskBar = signal(0);
+    UnMergeTaskBarIcon = signal(0);
+    mergeTaskBarIcon = signal(0);
+    tiggerTaskManager = signal(0);
+    showTheDesktop = signal(0);
+    showOpenWindows = signal(0);
+    updateTaskBarContextMenu = signal(0);
 
-    hideSearchBox: Subject<string> = new Subject<string>();
-    showSearchBox: Subject<void> = new Subject<void>();
+    hideSearchBox = signal<string | null>(null, { equal: () => false });
+    showSearchBox = signal(0);
 
-    hideOverFlowMenu: Subject<string> = new Subject<string>();
-    showOverFlowMenu: Subject<void> = new Subject<void>();
+    hideOverFlowMenu = signal<string | null>(null, { equal: () => false });
+    showOverFlowMenu = signal(0);
 
     private storeData:string[] = []
     private _isPasteActive = false;

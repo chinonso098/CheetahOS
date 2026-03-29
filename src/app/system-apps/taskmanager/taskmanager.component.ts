@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { Component, OnInit,OnDestroy, AfterViewInit, ViewChild, ElementRef, Renderer2, Input} from '@angular/core';
+import { Component, OnInit,OnDestroy, AfterViewInit, ViewChild, ElementRef, Renderer2, Input, effect} from '@angular/core';
 import { Subject, Subscription, interval, switchMap } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -36,9 +36,6 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   @ViewChild('tskMgrTableBodyCntnt') tskMgrTableBodyCntnt!: ElementRef;  
   @Input() priorUId = Constants.EMPTY_STRING;
 
-  private _maximizeWindowSub!: Subscription;
-  private _minimizeWindowSub!: Subscription;
-
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _notificationService!:UserNotificationService;
@@ -49,7 +46,6 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   private _appState!:AppState;
 
 
-  private _processListChangeSub!: Subscription;
   private _taskmgrRefreshIntervalSub!: Subscription;
   private _chnageTaskmgrRefreshIntervalSub!:Subject<number>;
   private _currentSortingOrder!:any;
@@ -131,9 +127,9 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
-    this._processListChangeSub = this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess();})
-    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow();})
-    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
+    effect(() => { if (this._runningProcessService.processListChangeNotify() > 0) this.updateRunningProcess(); });
+    effect(() => { if (this._windowService.maximizeProcessWindowNotify() > 0) this.maximizeWindow(); });
+    effect(() => { const p = this._windowService.minimizeProcessWindowNotify(); if (p !== null) this.minimizeWindow(p); });
     this._currentSortingOrder = this._sorting.order;
 
     this._chnageTaskmgrRefreshIntervalSub = new Subject<number>();
@@ -151,10 +147,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   ngOnDestroy(): void {
-    this._processListChangeSub?.unsubscribe();
     this._taskmgrRefreshIntervalSub?.unsubscribe();
     this._chnageTaskmgrRefreshIntervalSub?.unsubscribe();
-    this._maximizeWindowSub?.unsubscribe();
     
     this.sleepCounter = 0;
     this.processNumberToSuspend = 0;
@@ -227,7 +221,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
     this.hideContextMenu();
   }
 
@@ -681,7 +675,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       info:[`cpu:${this.cpuUtil}`, `memory:${this.memUtil}`, `disk:${this.diskUtil}`, `gpu:${this.gpuUtil}`]
     }
 
-    this._systemNotificationService.updateInformationNotify.next(update);
+    this._systemNotificationService.updateInformationNotify.set(update);
   }
 
 
@@ -723,7 +717,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
     const processToClose = this._runningProcessService.getProcess(this.processIdToClose);
     if(!this.closingNotAllowed.includes(processToClose.getProcessName)){
-      this._runningProcessService.closeProcessNotify.next(processToClose);
+      this._runningProcessService.closeProcessNotify.set(processToClose);
     }else{
       const uId = `${this.name}-${this.processId}`;
       const msg = `The proccess '${processToClose.getProcessName}' can't to be closed`;

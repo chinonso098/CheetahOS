@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import {Component, Input, OnChanges, SimpleChanges, AfterViewInit, EventEmitter, Output, OnDestroy} from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges, AfterViewInit, EventEmitter, Output, OnDestroy, effect} from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { UserNotificationType } from 'src/app/system-files/common.enums';
 
@@ -18,7 +18,6 @@ import { AudioService } from '../../system-service/audio.services';
 import { basename} from 'path';
 import { Constants } from 'src/app/system-files/constants';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { Subscription } from 'rxjs';
 import { InformationUpdate } from 'src/app/system-files/common.interfaces';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { WindowResizeInfo } from '../window/windows.types';
@@ -50,9 +49,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   private _audioService!:AudioService;
   private _fileService!:FileService;
   private _defaultService!:DefaultService;
-
-  private _updateInformationSub!:Subscription;
-  private _autoCloseDialogSub!:Subscription;
 
   notificationOption = Constants.EMPTY_STRING;
   errorNotification = UserNotificationType.Error;
@@ -173,13 +169,15 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
     this.processId = this._processIdService.getNewProcessId();
 
-    this._updateInformationSub = this._systemNotificationService.updateInformationNotify.subscribe((p) =>{
-      if(p.appName === this.FILE_TRANSFER_DIALOG_APP_NAME && p.pId === this.processId)
+    effect(() => {
+      const p = this._systemNotificationService.updateInformationNotify();
+      if(p !== null && p.appName === this.FILE_TRANSFER_DIALOG_APP_NAME && p.pId === this.processId)
         this.updateFileTransferDialog(p);
     });
 
-    this._autoCloseDialogSub = this._systemNotificationService.autoCloseDialogNotify.subscribe((p) =>{
-      if(p === this.processId)
+    effect(() => {
+      const p = this._systemNotificationService.autoCloseDialogNotify();
+      if(p !== null && p === this.processId)
         this._userNotificationServices.closeDialogMsgBox(this.processId);
     });
   }
@@ -265,8 +263,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   ngOnDestroy(): void {
     //console.log('Dialog was destroyed')
-    this._updateInformationSub?.unsubscribe();
-    this._autoCloseDialogSub?.unsubscribe();
   }
 
   onYesDialogBox():void{
@@ -313,11 +309,11 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
     if(this.selectedOption === this.LOCK_SCREEN || this.selectedOption === this.LOG_OFF){
       if(this.selectedOption === this.LOCK_SCREEN)
-        this._systemNotificationService.lockScreenNotify.next();
+        this._systemNotificationService.lockScreenNotify.update(v => v + 1);
 
       if(this.selectedOption === this.LOG_OFF){
         CommonFunctions.logOff(this._systemNotificationService, this._runningProcessService, this._processHandlerService, this._windowService);
-        this._systemNotificationService.logOffNotify.next();
+        this._systemNotificationService.logOffNotify.update(v => v + 1);
       }
 
       return;
@@ -328,9 +324,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
    
     await CommonFunctions.sleep(delay);
     if(this.selectedOption === Constants.SYSTEM_RESTART){
-      this._systemNotificationService.restartSystemNotify.next(Constants.RSTRT_ORDER_LOCK_SCREEN);
+      this._systemNotificationService.restartSystemNotify.set(Constants.RSTRT_ORDER_LOCK_SCREEN);
     }else{
-      this._systemNotificationService.shutDownSystemNotify.next();
+      this._systemNotificationService.shutDownSystemNotify.update(v => v + 1);
     }
   }
 
@@ -344,7 +340,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
 
     if(this.notificationOption === UserNotificationType.FileTransferProgress){
-      this._fileService.cancelFileTransferNotify.next(this.processId);
+      this._fileService.cancelFileTransferNotify.set(this.processId);
     }
 
     if(this.notificationOption !== UserNotificationType.PowerOnOff){
@@ -558,7 +554,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
         pId: this.processId,  widthPx: 450, heightPx: totalHeight
       };
     
-      this._windowService.resizeProcessWindowNotify.next(resize);
+      this._windowService.resizeProcessWindowNotify.set(resize);
     
       if(fileTransferTailElmnt){
         fileTransferTailElmnt.style.position = 'fixed';
@@ -579,7 +575,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
     const process = new Process(this.processId, dialogName, folderIcon, hasWindow, this.type);
     this._runningProcessService.addProcess(process);
-    this._runningProcessService.processListChangeNotify.next();
+    this._runningProcessService.processListChangeNotify.update(v => v + 1);
   }
 
 }

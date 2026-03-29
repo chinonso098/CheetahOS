@@ -61,14 +61,14 @@ export class ScriptService implements BaseService {
   async loadScript(name: string, src: string, isModule = true): Promise<void> {
     const key = this.buildAssetKey(name, src);
 
-    if (this.isScriptAlreadyLoaded(name, src)) {
-      this.scripts[name] = { name, src };
-      return Promise.resolve();
-    }
-
     const inFlight = this.loadingScripts.get(key);
     if (inFlight) {
       return inFlight;
+    }
+
+    if (this.isScriptAlreadyLoaded(name, src)) {
+      this.scripts[name] = { name, src };
+      return Promise.resolve();
     }
 
     const script: Asset = { name, src };

@@ -276,7 +276,7 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   getPDFSrc(pathOne:string, pathTwo:string):string{

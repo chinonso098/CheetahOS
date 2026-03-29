@@ -1,4 +1,4 @@
-import { Component, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, effect } from '@angular/core';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -66,13 +66,13 @@ export class TaskbarComponent implements AfterViewInit{
     this._runningProcessService.addProcess(this.getComponentDetail());
 
      // this is a sub, but since this cmpnt will not be closed, it doesn't need to be destoryed
-    this._systemNotificationService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._systemNotificationService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
-    this._systemNotificationService.showTaskBarNotify.subscribe(() => {this.showTaskBar()});
-    this._systemNotificationService.hideTaskBarNotify.subscribe(() => {this.hideTaskBar()});
+    effect(() => { if(this._systemNotificationService.showLockScreenNotify() > 0) this.lockScreenIsActive(); });
+    effect(() => { if(this._systemNotificationService.showDesktopNotify() > 0) this.desktopIsActive(); });
+    effect(() => { if(this._systemNotificationService.showTaskBarNotify() > 0) this.showTaskBar(); });
+    effect(() => { if(this._systemNotificationService.hideTaskBarNotify() > 0) this.hideTaskBar(); });
 
-    this._menuService.hideStartMenu.subscribe(() => { this.changeStartMenuFlag()});
-    this._menuService.hideSearchBox.subscribe(() => { this.changeSearchFlag()});
+    effect(() => { if(this._menuService.hideStartMenu() > 0) this.changeStartMenuFlag(); });
+    effect(() => { const p = this._menuService.hideSearchBox(); if(p !== null) this.changeSearchFlag(); });
   }
 
   
@@ -88,7 +88,7 @@ export class TaskbarComponent implements AfterViewInit{
   }
 
   hideContextMenus():void{
-    this._menuService.hideContextMenus.next(this.name);
+    this._menuService.hideContextMenus.set(this.name);
   }
 
   showTaskBarContextMenu(evt:MouseEvent):void{
@@ -96,7 +96,7 @@ export class TaskbarComponent implements AfterViewInit{
       const uId = `${this.name}-${this.processId}`;
       this._runningProcessService.addEventOriginator(uId);
     
-      this._menuService.showTaskBarConextMenu.next(evt);
+      this._menuService.showTaskBarConextMenu.set(evt);
     }
 
     evt.preventDefault();
@@ -126,22 +126,22 @@ export class TaskbarComponent implements AfterViewInit{
 
   async showStartMenu(evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
-    this._systemNotificationService.hideTaskBarToolTipNotify.next();
+    this._systemNotificationService.hideTaskBarToolTipNotify.update(v => v + 1);
     const delay = 100;
 
     if(!this.isStartMenuVisible){
-      this._menuService.hideContextMenus.next(this.name);
+      this._menuService.hideContextMenus.set(this.name);
       await CommonFunctions.sleep(delay);
 
-      this._menuService.showStartMenu.next();
+      this._menuService.showStartMenu.update(v => v + 1);
       this.isStartMenuVisible = true;
     }else{
       this.isStartMenuVisible = false;
-      this._menuService.hideStartMenu.next();
+      this._menuService.hideStartMenu.update(v => v + 1);
     }
 
     if(this.isSearchWindowVisible)
-      this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
+      this._menuService.hideSearchBox.set(Constants.EMPTY_STRING);
   }
 
   changeStartMenuFlag():void{
@@ -150,22 +150,22 @@ export class TaskbarComponent implements AfterViewInit{
 
   async hideShowSearch(evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
-    this._systemNotificationService.hideTaskBarToolTipNotify.next();
+    this._systemNotificationService.hideTaskBarToolTipNotify.update(v => v + 1);
 
     if(this.isSearchWindowVisible){
-      this._menuService.hideContextMenus.next(this.name);
+      this._menuService.hideContextMenus.set(this.name);
       await CommonFunctions.sleep(this.SECONDS_DELAY);
 
       this.isSearchWindowVisible = true;
-      this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
+      this._menuService.hideSearchBox.set(Constants.EMPTY_STRING);
     }else{
       this.isSearchWindowVisible = true;
-      this._menuService.showSearchBox.next();
+      this._menuService.showSearchBox.update(v => v + 1);
     }
 
     if(this.isStartMenuVisible){
       this.isStartMenuVisible = false;
-      this._menuService.hideStartMenu.next();
+      this._menuService.hideStartMenu.update(v => v + 1);
     }
   }
 
@@ -190,11 +190,11 @@ export class TaskbarComponent implements AfterViewInit{
     const rect = elmt.getBoundingClientRect();
     const data: TooltipPositionInfo = { left: rect.left + xOffset, top: rect.top, appName: text };
 
-    this._systemNotificationService.showTaskBarToolTipNotify.next(data);
+    this._systemNotificationService.showTaskBarToolTipNotify.set(data);
   }
 
   public hideToolTip():void{
-    this._systemNotificationService.hideTaskBarToolTipNotify.next();
+    this._systemNotificationService.hideTaskBarToolTipNotify.update(v => v + 1);
   }
 
   private getComponentDetail():Process{

@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { Component, OnInit, AfterViewInit, OnDestroy, Renderer2, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, Renderer2, ElementRef, ViewChild, effect } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
@@ -163,16 +163,17 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    this._menuService.hideSearchBox.subscribe((p) => { 
-      if(p !== this.name)  //endless call with this check
+    effect(() => {
+      const p = this._menuService.hideSearchBox();
+      if(p !== null && p !== this.name)  //endless call with this check
         this.hideSearchBox();
     });
-    this._menuService.showSearchBox.subscribe(() => { this.showSearchBox()});
+    effect(() => { if (this._menuService.showSearchBox() > 0) this.showSearchBox(); });
 
-    this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.hideSearchBox()});
-    this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    effect(() => { if(this._systemNotificationServices.showLockScreenNotify() > 0) this.hideSearchBox(); });
+    effect(() => { if(this._systemNotificationServices.showDesktopNotify() > 0) this.desktopIsActive(); });
 
-    this._fileIndexerService.fileIndexChangeOperation.subscribe(() => {this.fetchIndex()})
+    effect(() => { if (this._fileIndexerService.fileIndexChangeOperation() !== null) this.fetchIndex(); });
   }
 
   ngOnInit(): void {
@@ -233,7 +234,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.searchBarForm.reset();
 
-    this._menuService.hideSearchBox.next(this.name);
+    this._menuService.hideSearchBox.set(this.name);
   }
 
   hideShowOptions(evt:MouseEvent):void{

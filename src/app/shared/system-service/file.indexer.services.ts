@@ -13,7 +13,7 @@ import { fileIndexChangeOperationType, FileIndexIDs } from "src/app/system-files
 
 import {extname, basename} from 'path';
 import { FileSearchIndex } from "src/app/system-files/common.interfaces";
-import { Subject } from "rxjs";
+import { signal } from '@angular/core';
 import { CommonFunctions } from "src/app/system-files/common.functions";
 
 @Injectable({
@@ -29,8 +29,8 @@ export class FileIndexerService implements BaseService{
     private _fileService!:FileService;
 
     private _appDirectory:AppDirectory;
-    fileIndexChangeOperation: Subject<string> = new Subject<string>();
-    IndexingInProgress: Subject<boolean> = new Subject<boolean>();
+    fileIndexChangeOperation = signal<string | null>(null, { equal: () => false });
+    IndexingInProgress = signal<boolean | null>(null, { equal: () => false });
 
     private readonly ENTRY_TO_EXCLUDE = 'Recycle Bin';
     private readonly PATH_TO_EXCLUDE = '/Users/Desktop/Recycle Bin';
@@ -70,7 +70,7 @@ export class FileIndexerService implements BaseService{
 
         const filePath = queue.shift() || Constants.EMPTY_STRING;
 
-        this.IndexingInProgress.next(true);
+        this.IndexingInProgress.set(true);
         const directoryEntries = await this._fileService.readDirectory(filePath);      
         for(const entry of directoryEntries){
             const entryPath = `${filePath}/${entry}`;
@@ -88,7 +88,7 @@ export class FileIndexerService implements BaseService{
         }
 
         //await CommonFunctions.sleep(this.generateBusyNumber(500, 2000));
-        this.IndexingInProgress.next(false);
+        this.IndexingInProgress.set(false);
         return this.indexDirectoryHelperAsync(queue);
     }
 
@@ -176,16 +176,16 @@ export class FileIndexerService implements BaseService{
             }
 
             //await this.indexDirectoryAsync();
-            this.fileIndexChangeOperation.next(fileIndexChangeOperationType.ADD);
+            this.fileIndexChangeOperation.set(fileIndexChangeOperationType.ADD);
         }
     }
 
     public deleteNotify(path:string, isFile:boolean):void{
-        this.fileIndexChangeOperation.next(fileIndexChangeOperationType.DELETE);
+        this.fileIndexChangeOperation.set(fileIndexChangeOperationType.DELETE);
     }
 
     public updateNotify(path:string, oldFileName:string, isFile:boolean):void{
-        this.fileIndexChangeOperation.next(fileIndexChangeOperationType.UPDATE);
+        this.fileIndexChangeOperation.set(fileIndexChangeOperationType.UPDATE);
     }
 
     public getFileIndex():FileSearchIndex[]{

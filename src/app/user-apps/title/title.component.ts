@@ -1,5 +1,4 @@
-import { Component, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit, Input } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit, Input, effect } from '@angular/core';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -29,7 +28,6 @@ export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   private _runningProcessService!:RunningProcessService;
   private _windowService!:WindowService;
   private _sessionManagmentService!:SessionManagmentService;
-  private _maximizeWindowSub!:Subscription;
 
   private _appState!:AppState;
   SECONDS_DELAY = 250;
@@ -52,7 +50,7 @@ export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
 
-    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
+    effect(() => { if (this._windowService.maximizeProcessWindowNotify() > 0) this.maximizeWindow(); });
   }
 
   ngOnInit(): void {
@@ -68,7 +66,6 @@ export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   }
 
   ngOnDestroy():void{
-    this._maximizeWindowSub?.unsubscribe();
   }
 
   captureComponentImg():void{
@@ -109,7 +106,7 @@ export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   storeAppState(app_data:unknown):void{

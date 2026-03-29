@@ -8,7 +8,7 @@ import { Service } from "src/app/system-files/service";
 import { BaseService } from "./base.service.interface";
 import { ScriptService } from "./script.services";
 import {extname} from 'path';
-import { Subject } from "rxjs";
+import { signal } from '@angular/core';
 
 declare const Howl:any;
 
@@ -24,9 +24,9 @@ export class AudioService implements BaseService {
   private _audioPlayer: any;
   private _externalAudioSrc: Map<string, any>;
 
-  changeVolumeNotify: Subject<void> = new Subject<void>();
-  hideVolumeControlNotify: Subject<string> = new Subject<string>();
-  showVolumeControlNotify: Subject<void> = new Subject<void>();
+  changeVolumeNotify = signal(0);
+  hideVolumeControlNotify = signal<string | null>(null, { equal: () => false });
+  showVolumeControlNotify = signal(0);
 
   isExternalAudioSrcPresent = false;
   isAudioScriptLoaded = false;
@@ -59,7 +59,7 @@ export class AudioService implements BaseService {
     if (this.isAudioScriptLoaded) return;
 
     try {
-      await this._scriptService.loadScript('howler', 'osdrive/Program-Files/Howler/howler.min.js');
+      await this._scriptService.loadScript('howler', 'osdrive/Program-Files/Howler/howler.min.js', false);
       this.isAudioScriptLoaded = true;
     } catch (err) {
       console.error('Failed to load Howler script:', err);

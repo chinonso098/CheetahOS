@@ -155,7 +155,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     const uId = `filetreeview-1-${this.pId}`;
     this._fileService.addEventOriginator(uId);
     await this._audioService.play(this.NAV_AUDIO);
-    this._fileService.goToDirectoryNotify.next([name, path]);
+    this._fileService.goToDirectoryNotify.set([name, path]);
   }
 
   // ────────────────────────────────────────────
@@ -202,7 +202,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     evt.preventDefault();
     evt.stopPropagation();
 
-    this._menuService.hideContextMenus.next(this.name);
+    this._menuService.hideContextMenus.set(this.name);
 
     if (!this.rect) {
       const el = document.getElementById(`qa-FileExplrTreeView-main-${this.processId}`) as HTMLElement;
@@ -247,7 +247,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     file.setFileType = Constants.FOLDER;
     file.setIconPath = this.getIconPath(this.selectedFileTreeNode.name, this.selectedFileTreeNode.path);
 
-    this._menuService.showPropertiesView.next(file);
+    this._menuService.showPropertiesView.set(file);
   }
 
   getIconPath(nodeName:string, nodePath:string):string{
@@ -281,7 +281,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
     this.showIconCntxtMenu = false;
     const uId = `filetreeview-1-${this.pId}`;
     this._fileService.addEventOriginator(uId);
-    this._fileService.goToDirectoryNotify.next([
+    this._fileService.goToDirectoryNotify.set([
       this.selectedFileTreeNode.name,
       this.selectedFileTreeNode.path,
     ]);
@@ -380,7 +380,7 @@ export class FileTreeViewComponent implements OnInit, OnChanges {
 
     const uId = `${this.name}-${this.pId}`;
     this._fileService.addEventOriginator(uId);
-    this._fileService.fetchDirectoryDataNotify.next(path);
+    this._fileService.fetchDirectoryDataNotify.set(path);
 
     await CommonFunctions.sleep(this.EXPAND_DELAY_MS);
     this.restoreExpandedViews();

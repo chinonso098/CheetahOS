@@ -1,6 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { concatMap } from 'rxjs/operators';
+import { Component, OnInit, AfterViewInit, effect } from '@angular/core';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -65,13 +64,16 @@ export class PowerOnOffComponent implements OnInit, AfterViewInit {
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    this._systemNotificationService.restartSystemNotify.subscribe((p) => { 
-      if(p === Constants.RSTRT_ORDER_PWR_ON_OFF_SCREEN){
-        this.simulateRestart();
+    effect(() => {
+      const p = this._systemNotificationService.restartSystemNotify();
+      if (p !== null) {
+        if(p === Constants.RSTRT_ORDER_PWR_ON_OFF_SCREEN){
+          this.simulateRestart();
+        }
       }
     });
 
-    this._systemNotificationService.shutDownSystemNotify.pipe(concatMap(() =>  this.thingsToDoOnShutDown())).subscribe();
+    effect(() => { if (this._systemNotificationService.shutDownSystemNotify() > 0) this.thingsToDoOnShutDown(); });
   }
 
   async ngOnInit(): Promise<void> {

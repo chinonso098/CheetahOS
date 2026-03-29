@@ -331,7 +331,7 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.onOutsideClick();
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   generateControlPanelOptions():string[][]{
@@ -665,16 +665,17 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if(isDesktopView){
       const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
-      this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
 
       if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC)
-        this._defaultService.updateDefaultData(Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG, selection);
+        this._defaultService.updateDefaultData(Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG, selection, false);
 
       if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE)
-        this._defaultService.updateDefaultData(Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE, selection);
+        this._defaultService.updateDefaultData(Constants.DEFAULT_PREVIOUS_DESKTOP_PICTURE, selection, false);
 
       if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR)
-        this._defaultService.updateDefaultData(Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR, selection);
+        this._defaultService.updateDefaultData(Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR, selection, false);
+
+      this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
     }else{
       const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selection}`;
       this._defaultService.updateDefaultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);

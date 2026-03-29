@@ -1,4 +1,4 @@
-import { OnInit, AfterViewInit, Component } from '@angular/core';
+import { OnInit, AfterViewInit, Component, effect } from '@angular/core';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -101,42 +101,50 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     this.processId = this._processIdService.getNewProcessId();
 
     this._runningProcessService.addProcess(this.getComponentDetail());
-    this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess()});
-    this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.onCloseProcessNotify(p)});
+    effect(() => { if (this._runningProcessService.processListChangeNotify() > 0) this.updateRunningProcess(); });
+    effect(() => { const p = this._runningProcessService.closeProcessNotify(); if (p !== null) this.onCloseProcessNotify(p); });
 
-    this._menuService.pinToTaskBar.subscribe((p)=>{this.onPinIconToTaskBarIconList(p)});
-    this._menuService.unPinFromTaskBar.subscribe((p)=>{this.onUnPinIconFromTaskBarIconList(p)});
-    this._menuService.openApplicationFromTaskBar.subscribe((p)=>{this.openApplication(p)});
-    this._menuService.closeApplicationFromTaskBar.subscribe((p) =>{this.closeApplication(p)});
-    this._menuService.UnMergeTaskBarIcon.subscribe(() =>{this.onChangeTaskBarIconState(this.unMergedIcons)});
-    this._menuService.mergeTaskBarIcon.subscribe(() =>{this.onChangeTaskBarIconState(this.mergedIcons)});
+    effect(() => { const p = this._menuService.pinToTaskBar(); if (p !== null) this.onPinIconToTaskBarIconList(p); });
+    effect(() => { const p = this._menuService.unPinFromTaskBar(); if (p !== null) this.onUnPinIconFromTaskBarIconList(p); });
+    effect(() => { const p = this._menuService.openApplicationFromTaskBar(); if (p !== null) this.openApplication(p); });
+    effect(() => { const p = this._menuService.closeApplicationFromTaskBar(); if (p !== null) this.closeApplication(p); });
+    effect(() => { if (this._menuService.UnMergeTaskBarIcon() > 0) this.onChangeTaskBarIconState(this.unMergedIcons); });
+    effect(() => { if (this._menuService.mergeTaskBarIcon() > 0) this.onChangeTaskBarIconState(this.mergedIcons); });
 
     //tskbar never closes so no need to unsub
-    this._systemNotificationService.taskBarIconInfoChangeNotify.subscribe((p) =>{this.updateTaskBarIcon(p); });
+    effect(() => { const p = this._systemNotificationService.taskBarIconInfoChangeNotify(); if (p !== null) this.updateTaskBarIcon(p); });
 
-    this._windowServices.focusOnCurrentProcessWindowNotify.subscribe((p)=>{
-      this.prevWindowInFocusPid = this.windowInFocusPid;
-      this.windowInFocusPid = p;
-      this.isAnyWindowInFocus = true;
-      
-      setTimeout(() => {
-        this.highlightTaskbarIcon();
-      }, this.SECONDS_DELAY);
+    effect(() => {
+      const p = this._windowServices.focusOnCurrentProcessWindowNotify();
+      if (p !== null) {
+        this.prevWindowInFocusPid = this.windowInFocusPid;
+        this.windowInFocusPid = p;
+        this.isAnyWindowInFocus = true;
+        
+        setTimeout(() => {
+          this.highlightTaskbarIcon();
+        }, this.SECONDS_DELAY);
+      }
     });
 
-    this._windowServices.currentProcessInFocusNotify.subscribe((p) =>{
-      this.prevWindowInFocusPid = this.windowInFocusPid;
-      this.windowInFocusPid = p;
-      this.isAnyWindowInFocus = true;
+    effect(() => {
+      const p = this._windowServices.currentProcessInFocusNotify();
+      if (p !== null) {
+        this.prevWindowInFocusPid = this.windowInFocusPid;
+        this.windowInFocusPid = p;
+        this.isAnyWindowInFocus = true;
 
-      setTimeout(() => {
-        this.highlightTaskbarIcon();
-      }, this.SECONDS_DELAY);
+        setTimeout(() => {
+          this.highlightTaskbarIcon();
+        }, this.SECONDS_DELAY);
+      }
     });
 
-    this._windowServices.noProcessInFocusNotify.subscribe(()=>{
+    effect(() => { if (this._windowServices.noProcessInFocusNotify() > 0) {
       this.isAnyWindowInFocus = false;
-      this.removeHighlightFromTaskbarIcon(this.windowInFocusPid)})}
+      this.removeHighlightFromTaskbarIcon(this.windowInFocusPid);
+    }});
+  }
   
 
   ngOnInit(): void {
@@ -668,11 +676,11 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     if (!windowState) return;
 
     if(!windowState.isVisible){ // make window visible
-      this._windowServices.restoreOrMinimizeProcessWindowNotify.next(pId);
+      this._windowServices.restoreOrMinimizeProcessWindowNotify.set(pId);
     } else if(windowState.isVisible && (windowState.pId !== pidWithHighestZIndex)){ //set window to focus
-      this._windowServices.focusOnCurrentProcessWindowNotify.next(pId);
+      this._windowServices.focusOnCurrentProcessWindowNotify.set(pId);
     }else{ // make window hidden
-      this._windowServices.restoreOrMinimizeProcessWindowNotify.next(pId);
+      this._windowServices.restoreOrMinimizeProcessWindowNotify.set(pId);
     }
   }
 
@@ -684,7 +692,8 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     const  process = proccess[0];
     for(let i = 0; i <= proccess.length - 1; i++){
       this._windowServices.removeWindowState(proccess[i].getProcessId);
-      this._runningProcessService.closeProcessNotify.next(proccess[i]);
+      this.onCloseProcessNotify(proccess[i]);
+      this._processHandlerService.closeApplicationProcess(proccess[i]);
     }
 
     // this removes other window state data
@@ -710,7 +719,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
       const uId = `${this.name}-${this.processId}`;
       
       this._runningProcessService.addEventOriginator(uId);
-      this._menuService.showTaskBarAppIconMenu.next(data);
+      this._menuService.showTaskBarAppIconMenu.set(data);
     }
 
     evt.preventDefault();
@@ -722,7 +731,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
     if(!isAppRunning  && hoveredRect){
       const data: TooltipPositionInfo = { left: hoveredRect.left, top: hoveredRect.top, appName: opensWith };
-      this._systemNotificationService.showTaskBarToolTipNotify.next(data);
+      this._systemNotificationService.showTaskBarToolTipNotify.set(data);
       return;
     }
 
@@ -829,9 +838,9 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
 
     if(!this._runningProcessService.isProcessRunning(opensWith)) return;
 
-    this._windowServices.showProcessPreviewWindowNotify.next(data);
+    this._windowServices.showProcessPreviewWindowNotify.set(data);
     if(this.taskBarEntriesIconState === this.unMergedIcons){
-      setTimeout(() => {this._systemNotificationService.taskBarPreviewHighlightNotify.next(`${opensWith}-${pId}`); }, delay);
+      setTimeout(() => {this._systemNotificationService.taskBarPreviewHighlightNotify.set(`${opensWith}-${pId}`); }, delay);
     }
   }
 
@@ -866,8 +875,8 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   }
 
   onMouseLeave(processName?:string, pId?:number):void{
-    this._windowServices.hideProcessPreviewWindowNotify.next();
-    this._systemNotificationService.hideTaskBarToolTipNotify.next();
+    this._windowServices.hideProcessPreviewWindowNotify.update(v => v + 1);
+    this._systemNotificationService.hideTaskBarToolTipNotify.update(v => v + 1);
 
     if(processName && processName !== Constants.BLANK_SPACE){
       const isMerged = this.taskBarEntriesIconState === this.mergedIcons;
@@ -884,7 +893,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
     }
 
     if(processName && pId)
-      this._systemNotificationService.taskBarPreviewUnHighlightNotify.next(`${processName}-${pId}`);
+      this._systemNotificationService.taskBarPreviewUnHighlightNotify.set(`${processName}-${pId}`);
     
     this.highlightTaskbarIcon();
   }
@@ -998,7 +1007,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   }
 
   restoreOrMinizeWindow(processId:number){
-    this._windowServices.restoreOrMinimizeProcessWindowNotify.next(processId);
+    this._windowServices.restoreOrMinimizeProcessWindowNotify.set(processId);
   }
 
   storeTskBarState(app_data:TaskBarIconInfo, action:string):void{

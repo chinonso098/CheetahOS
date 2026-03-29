@@ -52,12 +52,12 @@ export class TaskBarPreviewComponent implements OnInit, AfterViewInit {
   }
 
   keepTaskBarPreviewWindow():void{
-    this._windowServices.keepProcessPreviewWindowNotify.next();
+    this._windowServices.keepProcessPreviewWindowNotify.update(v => v + 1);
   }
 
   hideTaskBarPreviewWindowAndRestoreDesktop():void{
-    this._windowServices.hideProcessPreviewWindowNotify.next();
-    this._windowServices.restoreProcessesWindowNotify.next();
+    this._windowServices.hideProcessPreviewWindowNotify.update(v => v + 1);
+    this._windowServices.restoreProcessesWindowNotify.update(v => v + 1);
   }
 
   checkForUpdatedTaskBarPrevInfo():void{

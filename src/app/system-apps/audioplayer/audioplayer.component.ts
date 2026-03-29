@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
 import {extname} from 'path';
@@ -11,7 +11,6 @@ import { FileInfo } from 'src/app/system-files/file.info';
 import { Constants } from "src/app/system-files/constants";
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
-import { Subscription } from 'rxjs';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
@@ -50,10 +49,6 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   @Input() priorUId = Constants.EMPTY_STRING;
 
-  private _maximizeWindowSub!: Subscription;
-  private _minimizeWindowSub!: Subscription;
-  private _changeContentSub!: Subscription;
-  
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _processHandlerService!:ProcessHandlerService;
@@ -101,9 +96,9 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.processId = this._processIdService.getNewProcessId();
 
     this._runningProcessService = runningProcessService;
-    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
-    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
-    this._changeContentSub = this._runningProcessService.changeProcessContentNotify.subscribe(() =>{this.changeContent()})
+    effect(() => { if (this._windowService.maximizeProcessWindowNotify() > 0) this.maximizeWindow(); });
+    effect(() => { const p = this._windowService.minimizeProcessWindowNotify(); if (p !== null) this.minimizeWindow(p); });
+    effect(() => { if (this._runningProcessService.changeProcessContentNotify() > 0) this.changeContent(); });
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
@@ -158,9 +153,6 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   ngOnDestroy():void{
     this.audioPlayer?.unload();
     this._audioService.removeExternalAudioSrc(this.name);
-    this._maximizeWindowSub?.unsubscribe();
-    this._minimizeWindowSub?.unsubscribe(); 
-    this._changeContentSub?.unsubscribe(); 
   }
 
   captureComponentImg():void{
@@ -357,7 +349,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    this._windowService.focusOnCurrentProcessWindowNotify.set(this.processId);
   }
 
   resizeSiriWave():void{

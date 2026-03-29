@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChanges, ViewChild, ChangeDetectorRef, SimpleChanges, Renderer2 } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ElementRef, AfterViewInit,OnChanges, ViewChild, ChangeDetectorRef, SimpleChanges, Renderer2, effect } from '@angular/core';
 import { CdkDragEnd } from '@angular/cdk/drag-drop';
 
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -9,7 +9,6 @@ import { UserNotificationService } from '../../../system-service/user.notificati
 import { SystemNotificationService } from '../../../system-service/system.notification.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 
-import {Subscription } from 'rxjs';
 import { WindowState  } from '../windows.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
@@ -44,21 +43,6 @@ import { WindowConstants } from '../window.constants';
     private _processHandlerService!:ProcessHandlerService;
     private _userNotificationServices:UserNotificationService;
 
-    private _focusOnNextProcessSub!:Subscription;
-    private _focusOnCurrentProcessSub!:Subscription;
-    private _showOnlyCurrentProcessSub!:Subscription;
-    private _removeFocusOnOtherProcessesSub!:Subscription;
-    private _hideOtherProcessSub!:Subscription;
-    private _restoreProcessSub!:Subscription;
-    private _restoreProcessesSub!:Subscription;
-    private _showOrSetProcessWindowToFocusSub!:Subscription;
-    private _lockScreenActiveSub!:Subscription;
-    private _desktopActiveSub!:Subscription;
-    private _showTheDesktopSub!:Subscription;
-    private _showOpenWindowsSub!:Subscription;
-    private _closeCurrentProcessSub!:Subscription;
-    private _positionWindowSub!:Subscription;
-    private _positionWindowByIdSub!:Subscription;
 
     windowHide = false;
     windowMaximize = false;
@@ -103,25 +87,25 @@ import { WindowConstants } from '../window.constants';
       this._processHandlerService = controlProcessService;
       this._userNotificationServices = notificationServices;
  
-      this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusByPid(p)});
-      this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p)});
-      this._removeFocusOnOtherProcessesSub = this._windowService.removeFocusOnOtherProcessesWindowNotify.subscribe((p) => {this.removeFocusOnWindowNotMatchingPid(p)});
-      //this._showOnlyCurrentProcessSub = this._windowService.setProcessWindowToFocusOnMouseHoverNotify.subscribe((p) => {this.setWindowToFocusOnMouseHover(p)});
-      this._hideOtherProcessSub = this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.hideWindowNotMatchingPidOnMouseHover(p)});
-      this._restoreProcessSub = this._windowService.restoreProcessWindowOnMouseLeaveNotify.subscribe((p) => {this.restoreWindowOnMouseLeave(p)});
-      this._restoreProcessesSub = this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
+      effect(() => { const p = this._windowService.focusOnNextProcessWindowNotify(); if (p !== null) this.setWindowToFocusByPid(p); });
+      effect(() => { const p = this._windowService.focusOnCurrentProcessWindowNotify(); if (p !== null) this.setFocsuOnThisWindow(p); });
+      effect(() => { const p = this._windowService.removeFocusOnOtherProcessesWindowNotify(); if (p !== null) this.removeFocusOnWindowNotMatchingPid(p); });
+      //effect(() => { const p = this._windowService.setProcessWindowToFocusOnMouseHoverNotify(); if (p !== null) this.setWindowToFocusOnMouseHover(p); });
+      effect(() => { const p = this._windowService.hideOtherProcessesWindowNotify(); if (p !== null) this.hideWindowNotMatchingPidOnMouseHover(p); });
+      effect(() => { const p = this._windowService.restoreProcessWindowOnMouseLeaveNotify(); if (p !== null) this.restoreWindowOnMouseLeave(p); });
+      effect(() => { if (this._windowService.restoreProcessesWindowNotify() > 0) this.restorePriorFocusOnWindows(); });
 
-      this._lockScreenActiveSub = this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-      this._desktopActiveSub = this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+      effect(() => { if (this._systemNotificationServices.showLockScreenNotify() > 0) this.lockScreenIsActive(); });
+      effect(() => { if (this._systemNotificationServices.showDesktopNotify() > 0) this.desktopIsActive(); });
 
-      this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)});
-      this._closeCurrentProcessSub = this._windowService.closeWindowProcessNotify.subscribe((p) => {
+      effect(() => { const p = this._windowService.showOrSetProcessWindowToFocusOnClickNotify(); if (p !== null) this.showOrSetProcessWindowToFocusOnClick(p); });
+      effect(() => { const p = this._windowService.closeWindowProcessNotify(); if (p !== null) {
           if(this.processId === p){
             this.closeWindow();
-          }});
+          }}});
 
-      this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
-      this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
+      effect(() => { if (this._menuService.showTheDesktop() > 0) this.setHideAndShowAllVisibleWindows(); });
+      effect(() => { if (this._menuService.showOpenWindows() > 0) this.setHideAndShowAllVisibleWindows(); });
     }
 
     get getSecondaryWindowContainerElmnt(): HTMLElement {
@@ -136,7 +120,7 @@ import { WindowConstants } from '../window.constants';
       this.showTitleBarIcon = this.showTitleBarImg;
     
       this.uniqueId = `${this.name}-${this.processId}`;
-      this._runningProcessService.newProcessNotify.next(this.uniqueId);
+      this._runningProcessService.newProcessNotify.set(this.uniqueId);
       this._windowService.addProcessWindowToWindows(this.uniqueId); 
       this.resetHideShowWindowsList();
     }
@@ -169,21 +153,6 @@ import { WindowConstants } from '../window.constants';
     }
 
     ngOnDestroy():void{
-      this._closeCurrentProcessSub?.unsubscribe();
-      this._focusOnNextProcessSub?.unsubscribe();
-      this._focusOnCurrentProcessSub?.unsubscribe();
-      this._removeFocusOnOtherProcessesSub?.unsubscribe();
-      this._showOnlyCurrentProcessSub?.unsubscribe();
-      this._hideOtherProcessSub?.unsubscribe();
-      this._restoreProcessSub?.unsubscribe();
-      this._restoreProcessesSub?.unsubscribe();
-      this._showOrSetProcessWindowToFocusSub?.unsubscribe();
-      this._lockScreenActiveSub?.unsubscribe();
-      this._desktopActiveSub?.unsubscribe();
-      this._showTheDesktopSub?.unsubscribe();
-      this._showOpenWindowsSub?.unsubscribe();
-      this._positionWindowSub?.unsubscribe();
-      this._positionWindowByIdSub?.unsubscribe();
     }
 
     ngOnChanges(changes: SimpleChanges):void{
@@ -327,9 +296,9 @@ import { WindowConstants } from '../window.constants';
     }
 
     onMouseDown(pId:number):void{
-      this._windowService.windowDragIsActive.next();
+      this._windowService.windowDragIsActive.update(v => v + 1);
       this.setFocsuOnThisWindow(pId);
-      this._windowService.currentProcessInFocusNotify.next(pId);
+      this._windowService.currentProcessInFocusNotify.set(pId);
     }
 
     onDragEnded(event: CdkDragEnd): void {
@@ -349,7 +318,7 @@ import { WindowConstants } from '../window.constants';
 
       // Important: reset the drag transform so we don't accumulate drift
       event.source.reset();
-      this._windowService.windowDragIsInActive.next();
+      this._windowService.windowDragIsInActive.update(v => v + 1);
     }
 
     centerNotificationWindowWithinCallingProcess():void{
@@ -391,7 +360,7 @@ import { WindowConstants } from '../window.constants';
           const window_with_highest_zIndex = this._windowService.getProcessWindowIDWithHighestZIndex();
           if(window_with_highest_zIndex === this.processId){
             this.setFocsuOnThisWindow(ws.pId);
-            this._windowService.currentProcessInFocusNotify.next(ws.pId);
+            this._windowService.currentProcessInFocusNotify.set(ws.pId);
           }
           else{
             this.setWindowToPriorHiddenState(ws, WindowConstants.MIN_Z_INDEX);
@@ -402,7 +371,7 @@ import { WindowConstants } from '../window.constants';
 
     resetHideShowWindowsList():void{
       this._windowService.resetHiddenOrVisibleWindowsList();
-      this._menuService.updateTaskBarContextMenu.next();
+      this._menuService.updateTaskBarContextMenu.update(v => v + 1);
     }
 
     onCloseBtnClick(evt:MouseEvent):void{
@@ -426,27 +395,27 @@ import { WindowConstants } from '../window.constants';
       const nextProc = this.getNextProcess();
       if(!nextProc) return;
 
-      this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
-      this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
+      this._windowService.focusOnNextProcessWindowNotify.set(nextProc.getProcessId);
+      this._windowService.currentProcessInFocusNotify.set(nextProc.getProcessId);
     }
 
     setFocsuOnThisWindow(pId:number):void{
       const uId =`${this.name}-${pId}`;
       if(this.uniqueId !== uId || this.windowHide) return;
 
-      this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
+      this._windowService.removeFocusOnOtherProcessesWindowNotify.set(pId);
       this.setWindowToFocusByPid(pId);
     }
 
     setFocusOnWindowAfterInit(pId:number):void{
-      this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
-      this._windowService.currentProcessInFocusNotify.next(pId);
+      this._windowService.removeFocusOnOtherProcessesWindowNotify.set(pId);
+      this._windowService.currentProcessInFocusNotify.set(pId);
 
       this.setHeaderActive(pId);
     }
 
     setWindowToFocusOnMouseHover(pId:number):void{
-      this._windowService.hideOtherProcessesWindowNotify.next(pId);
+      this._windowService.hideOtherProcessesWindowNotify.set(pId);
       const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
       
       if(this.processId !== pId) return;
