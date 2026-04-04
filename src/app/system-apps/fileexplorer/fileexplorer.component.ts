@@ -73,7 +73,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _hideContextMenuSub!:Subscription;
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;
-  private _creatShortCutOnDesktopSub!: Subscription;
+  private _createShortCutOnDesktopSub!: Subscription;
   
   private isActive = false;
   private isFocus = false;
@@ -375,7 +375,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._minimizeWindowSub?.unsubscribe();
     this._fetchDirectoryDataSub?.unsubscribe();
     this._goToDirectoryDataSub?.unsubscribe();
-    this._creatShortCutOnDesktopSub?.unsubscribe();
+    this._createShortCutOnDesktopSub?.unsubscribe();
   }
 
   get getFileExplorerRootContainerElmnt(): HTMLElement {

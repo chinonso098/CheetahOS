@@ -59,7 +59,7 @@ export class AudioService implements BaseService {
     if (this.isAudioScriptLoaded) return;
 
     try {
-      await this._scriptService.loadScript('howler', 'osdrive/Program-Files/Howler/howler.min.js');
+      await this._scriptService.loadScript('howler', 'osdrive/Program-Files/Howler/howler.min.js', false);
       this.isAudioScriptLoaded = true;
     } catch (err) {
       console.error('Failed to load Howler script:', err);

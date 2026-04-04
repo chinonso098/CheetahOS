@@ -66,9 +66,9 @@ export class ScriptService implements BaseService {
       return Promise.resolve();
     }
 
-    const inFlight = this.loadingScripts.get(key);
-    if (inFlight) {
-      return inFlight;
+    const isLoadingInProgress = this.loadingScripts.get(key);
+    if(isLoadingInProgress){
+      return isLoadingInProgress;
     }
 
     const script: Asset = { name, src };
@@ -117,9 +117,9 @@ export class ScriptService implements BaseService {
       return Promise.resolve();
     }
 
-    const inFlight = this.loadingStyles.get(key);
-    if (inFlight) {
-      return inFlight;
+    const isLoadingInProgress = this.loadingStyles.get(key);
+    if(isLoadingInProgress){
+      return isLoadingInProgress;
     }
 
     const style: Asset = { name, src: href };

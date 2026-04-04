@@ -270,16 +270,19 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     this.startMenuFiles.push(...directoryEntries)
   }
 
-  runProcess(file:FileInfo, evt:MouseEvent):void{
+  async runProcess(file:FileInfo, evt:MouseEvent):Promise<void>{
     evt.stopPropagation();
     console.log('startmanager-runProcess:',file);
+    const app_startup_dalay = 450; // to allow any click animations to play before the start menu closes
+    this._menuService.hideStartMenu.next();
 
     this.hideStartMenu();
+    await CommonFunctions.sleep(app_startup_dalay);
     this._processHandlerService.runApplication(file);
   }
 
 
-  openFolderPath(folderName:string, evt:MouseEvent):void{
+  async openFolderPath(folderName:string, evt:MouseEvent):Promise<void>{
    const path = `/Users/${folderName}`;
 
    const file = new FileInfo();
@@ -288,7 +291,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
    file.setIsFile = false;
    file.setCurrentPath = path;
 
-    this.runProcess(file, evt);
+   await this.runProcess(file, evt);
   }
 
   power(evt:MouseEvent):void{
