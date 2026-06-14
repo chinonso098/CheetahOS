@@ -5,7 +5,7 @@
 </ng-container>
 
 <ng-template #fileView>
-    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg"  (click)="setPropertyWindowToFocus(this.processId)">
         <div class="properties-main-container" id="propDisplay-{{processId}}">
             <div class="properties-body-container">
                 <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
@@ -126,7 +126,7 @@
 
 
 <ng-template #folderView>
-    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg"  (click)="setPropertyWindowToFocus(this.processId)">
         <div class="properties-main-container" id="propDisplay-{{processId}}">
             <div class="properties-body-container">
                 <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
@@ -212,7 +212,7 @@
 </ng-template>
 
 <ng-template #rootFolderView>
-    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg"  (click)="setPropertyWindowToFocus(this.processId)">
         <div class="properties-main-container" id="propDisplay-{{processId}}">
             <div class="properties-body-container">
                 <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
@@ -265,7 +265,7 @@
                                             <p class="general-tab-p1"> Free space:</p>
                                         </div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{availableSpace | number:'1.0-2'}} bytes &nbsp;&nbsp;&nbsp;&nbsp; {{availableSpace2}} {{fileSizeUnit}}</p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{availableSpace | number:'1.0-2'}} bytes &nbsp;&nbsp;&nbsp;&nbsp; {{availableSpace2}} {{availableSpaceUnit}}</p></div>
                                     </div>
                                 </div>
                                 <div class="general-tab-line"></div>
@@ -273,7 +273,7 @@
                                     <div class="general-tab-content">
                                         <div class="general-tab-head"><p class="general-tab-p1" style="margin-left:18px;">Capacity:</p></div>
                                         <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1">{{capacity | number:'1.0-2'}} bytes &nbsp;&nbsp;&nbsp;&nbsp; {{capacity2}} {{fileSizeUnit}}</p></div>
+                                        <div class="general-tab-tail"><p class="general-tab-p1">{{capacity | number:'1.0-2'}} bytes &nbsp;&nbsp;&nbsp;&nbsp; {{capacity2}} {{capacityUnit}}</p></div>
                                     </div>
                                     <div class="general-tab-content">
                                         <div class="svg-container">
@@ -331,7 +331,7 @@
 </ng-template>
 
 <ng-template #deletedView>
-    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  (click)="setPropertyWindowToFocus(this.processId)">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg"  (click)="setPropertyWindowToFocus(this.processId)">
         <div class="properties-main-container" id="propDisplay-{{processId}}">
             <div class="properties-body-container">
                 <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>

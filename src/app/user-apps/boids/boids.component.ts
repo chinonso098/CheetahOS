@@ -1,9 +1,10 @@
 import { Component, ElementRef, OnDestroy, OnInit, AfterViewInit, ViewChild, Input } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
-import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
@@ -11,7 +12,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Boid } from './boid';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { AppState } from 'src/app/system-files/state/state.interface';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 
 declare const p5:any;
@@ -30,14 +31,22 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   private _windowService!:WindowService;
   private _scriptService!:ScriptService;
   private _processIdService!:ProcessIDService;
-  private _processHandlerService!:ProcessHandlerService;
   private _runningProcessService!:RunningProcessService;
-  private _sessionManagmentService!:SessionManagmentService;
+  private _sessionManagementService!:SessionManagementService;
 
   private SECONDS_DELAY = 1000;
   private _appState!:AppState;
   private p5Instance: any;
   private _intervalId: any;
+  private _windowResizeSub!: Subscription;
+  private _maximizeWindowSub!: Subscription;
+  private _minimizeWindowSub!: Subscription;
+
+  /* Floors mirror the CSS min-width/min-height; below these we skip the
+     canvas resize to avoid degenerate p5 buffers. */
+  readonly MIN_WIDTH_PX = 480;
+  readonly MIN_HEIGHT_PX = 320;
+
   flocks: Boid[] = [];
 
   params = {
@@ -51,7 +60,7 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   name= 'boids';
   hasWindow = true;
-  isMaximizable=false;
+  isMaximizable=true;
   icon = `${Constants.IMAGE_BASE_PATH}bird_oid.png`;
   processId = 0;
   type = ComponentType.User;
@@ -59,30 +68,47 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService,  scriptService: ScriptService, 
-              windowService:WindowService, triggerProcessService:ProcessHandlerService, private fb: FormBuilder,
-              sessionManagmentService:SessionManagmentService) { 
+              windowService:WindowService, private fb: FormBuilder, sessionManagementService:SessionManagementService) { 
                 
     this._processIdService = processIdService;
     this._scriptService = scriptService;
     this._windowService = windowService;
-    this._processHandlerService = triggerProcessService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
+
+    /* p5's built-in p.windowResized only fires on browser window
+       resize, not on our in-OS primary-window drag-resize. Listen to
+       the primary window broadcast and re-size the canvas to match
+       the host container. */
+    this._windowResizeSub = this._windowService.resizeProcessWindowNotify.subscribe((info:WindowResizeInfo) => {
+      if(info.pId !== this.processId) return;
+      if(info.widthPx < this.MIN_WIDTH_PX || info.heightPx < this.MIN_HEIGHT_PX) return;
+      this.onWindowResize();
+    });
+
+    /* Maximize and minimize fire as global notifications, so we gate
+       them by checking that we are the originating process before
+       refitting the canvas. */
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() => {
+      this.maximizeWindow();
+    });
+    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe(() => {
+      this.minimizeWindow();
+    });
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.form = this.fb.group({
       align: [1.2],
       cohesion: [1.5],
       separation: [1.4]
     });
 
-    this._scriptService.loadScript("P5JS","osdrive/Cheetah/System/P5JS/p5.min.js").then(()=>{
-      console.log('p5 loaded');
-    });
+    await this._scriptService.loadScript("P5JS","osdrive/Cheetah/System/P5JS/p5.min.js");
+    console.log('p5 loaded');
 
     this.retrievePastSessionData();
   }
@@ -99,11 +125,54 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   ngOnDestroy(): void {
     if (this.p5Instance) {
       this.p5Instance.remove();
+      this.p5Instance = null;
     }
 
     if (this._intervalId) {
       clearInterval(this._intervalId);
     }
+
+    this._windowResizeSub?.unsubscribe();
+    this._maximizeWindowSub?.unsubscribe();
+    this._minimizeWindowSub?.unsubscribe();
+
+    this._scriptService.unloadScript("P5JS","osdrive/Cheetah/System/P5JS/p5.min.js");
+  }
+
+  /**
+   * Re-fit the p5 canvas to the (now reflowed) host container. Reads
+   * the container's live offset size and asks p5 to resize the backing
+   * canvas. No-op until p5 has finished its initial setup.
+   */
+  onWindowResize():void {
+    if(!this.p5Instance) return;
+    const boidCntnr = document.getElementById('boidCntnr');
+    if(!boidCntnr) return;
+    this.p5Instance.resizeCanvas(boidCntnr.offsetWidth, boidCntnr.offsetHeight);
+  }
+
+  /**
+   * Maximize broadcasts have no pId, so gate on event originator. The
+   * primary window's maximize animation reflows our host on the next
+   * frame, so refit the canvas after rAF to capture the new size.
+   */
+  maximizeWindow():void {
+    const uId = `${this.name}-${this.processId}`;
+    if(this._runningProcessService.getEventOriginator() !== uId) return;
+    this._runningProcessService.removeEventOriginator();
+    requestAnimationFrame(() => this.onWindowResize());
+  }
+
+  /**
+   * Restore-from-maximized. Same originator gate + rAF refit as
+   * maximizeWindow; the layout is fluid, so we just need to re-read
+   * the host size after the primary window finishes shrinking back.
+   */
+  minimizeWindow():void {
+    const uId = `${this.name}-${this.processId}`;
+    if(this._runningProcessService.getEventOriginator() !== uId) return;
+    this._runningProcessService.removeEventOriginator();
+    requestAnimationFrame(() => this.onWindowResize());
   }
 
   captureComponentImg():void{
@@ -152,7 +221,7 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     const canvasElemnt = document.getElementById("defaultCanvas0") as HTMLCanvasElement;
     if (!canvasElemnt) return Constants.EMPTY_STRING;
 
-    return canvasElemnt.toDataURL("image/png");
+    return canvasElemnt.toDataURL("image/jpeg", 0.5);
   }
 
   updateComponentImg():void{
@@ -169,6 +238,16 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the App (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu. 
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
+  }
   
   storeAppState(app_data:unknown):void{
     const uId = `${this.name}-${this.processId}`;
@@ -179,11 +258,11 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
   
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
       //
     }

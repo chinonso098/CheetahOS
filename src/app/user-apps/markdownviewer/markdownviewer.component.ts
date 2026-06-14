@@ -10,16 +10,15 @@ import { Process } from 'src/app/system-files/process';
 import { AppState } from 'src/app/system-files/state/state.interface';
 
 import {extname} from 'path';
-
-import * as htmlToImage from 'html-to-image';
-import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { FileInfo } from 'src/app/system-files/file.info';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Constants } from "src/app/system-files/constants";
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 declare const marked:any;
 
@@ -37,7 +36,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
-  private _sessionManagmentService!:SessionManagmentService;
+  private _sessionManagementService!:SessionManagementService;
   private _processHandlerService!:ProcessHandlerService;
   private _scriptService!:ScriptService;
   private _fileService!:FileService;
@@ -46,10 +45,19 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
 
   private _sanitizer: DomSanitizer;
   private _renderer: Renderer2;
+  updateIntervalId !: NodeJS.Timeout;
 
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private _maximizeWindowSub!: Subscription;
+  private _minimizeWindowSub!: Subscription;
+  private _windowResizeSub!: Subscription;
+
+  /* Floors mirror the CSS min-width/min-height so the resize handler
+     ignores transient sub-min sizes during drag. */
+  readonly MIN_WIDTH_PX = 480;
+  readonly MIN_HEIGHT_PX = 320;
+
   private fileSrc = Constants.EMPTY_STRING;
   mkdDwnHtml:SafeHtml = Constants.EMPTY_STRING;
 
@@ -57,7 +65,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}markdown.png`;
-  isMaximizable = false;
+  isMaximizable = true;
   name = 'markdownviewer';
   processId = 0;
   type = ComponentType.System;
@@ -65,12 +73,12 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
 
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-                scriptService: ScriptService,fileService:FileService,  sessionManagmentService: SessionManagmentService, renderer: Renderer2, 
+                scriptService: ScriptService,fileService:FileService,  sessionManagementService: SessionManagementService, renderer: Renderer2, 
                 sanitizer: DomSanitizer,windowService:WindowService){
                   
     this._processIdService = processIdService
     this._runningProcessService = runningProcessService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
     this._processHandlerService = triggerProcessService;
     this._scriptService = scriptService;
     this._fileService = fileService;
@@ -81,52 +89,77 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
+
+    /* maximizeWindow was declared but never wired up. Subscribe so the
+       primary window's maximize/restore broadcasts actually reach us;
+       both handlers just clear any inline px so the flex CSS wins. */
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() => {
+      this.maximizeWindow();
+    });
+    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe(() => {
+      this.minimizeWindow();
+    });
+    this._windowResizeSub = this._windowService.resizeProcessWindowNotify.subscribe((info:WindowResizeInfo) => {
+      if(info.pId !== this.processId) return;
+      if(info.widthPx < this.MIN_WIDTH_PX || info.heightPx < this.MIN_HEIGHT_PX) return;
+      this.onWindowResize();
+    });
   }
 
   ngOnInit():void{
     this.retrievePastSessionData();
   }
 
-  ngAfterViewInit(): void{
-    this.fileSrc = (this.fileSrc !=='')? 
+  async ngAfterViewInit(): Promise<void>{
+    const imgUpdateDelay = 4500; //4.5 seconds to allow for the initial render and any async script loading
+    this.fileSrc = (this.fileSrc !== Constants.EMPTY_STRING)? 
     this.fileSrc : this.getFileSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    this._scriptService.loadScript("markedjs","osdrive/Program-Files/Marked/marked.min.js").then(async() =>{  
-     const mkd = marked.setOptions({
-        gfm: true,
-        breaks: true
-      });
+    const isModule = false;
+    await this._scriptService.loadScript("markedjs","osdrive/Program-Files/Marked/marked.min.js", isModule);
+    const mkd = marked.setOptions({
+      gfm: true,
+      breaks: true
+    });
 
-      const textCntnt = await this._fileService.getFileAsTextAsync(this.fileSrc);
-      const htmlCntnt = mkd(textCntnt);
-      const safeHtmlCntnt = this._sanitizer.bypassSecurityTrustHtml(htmlCntnt);
-      this.mkdDwnHtml = safeHtmlCntnt;
-      this.storeAppState(this.fileSrc);
-    })
+    const textCntnt = await this._fileService.getFileAsTextAsync(this.fileSrc);
+    const htmlCntnt = mkd(textCntnt);
+    const safeHtmlCntnt = this._sanitizer.bypassSecurityTrustHtml(htmlCntnt);
+    this.mkdDwnHtml = safeHtmlCntnt;
+    this.storeAppState(this.fileSrc);
 
-    setTimeout(()=>{
-      this.captureComponentImg();
-    },this.SECONDS_DELAY);
+    await CommonFunctions.sleep(this.SECONDS_DELAY);
+    await this.captureComponentImg();
 
+    this.updateIntervalId = setInterval(async ()=>{
+      await this.captureComponentImg();
+    }, imgUpdateDelay)
   }
 
   ngOnDestroy():void{
     this._maximizeWindowSub?.unsubscribe();
+    this._minimizeWindowSub?.unsubscribe();
+    this._windowResizeSub?.unsubscribe();
+
+    if(this.updateIntervalId){
+      clearInterval(this.updateIntervalId);
+    }
+
+    // for multiple instances of markdown viewer, we dont want to unload the script until the last instance is closed
+    if(this._runningProcessService.getProcessCount(this.name) <= 1){
+      this._scriptService.unloadScript(
+        "markedjs",
+        "osdrive/Program-Files/Marked/marked.min.js"
+      );
+
+      // marked.min.js attaches itself to window.marked — clear it so the
+      // global is GC'd and a fresh copy is fetched next time.
+      delete (window as any).marked;
+    }
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.markDownContent.nativeElement).then(htmlImg =>{
-
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+  async captureComponentImg(): Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.markDownContent, this.processId, this.name, this.icon, this._windowService);
   }
 
   maximizeWindow():void{
@@ -135,14 +168,43 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uId === evtOriginator){
-
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
-      //window title and button bar, and windows taskbar height
-      const pixelTosubtract = 30 + 40;
-      this.markDownContent.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
-      this.markDownContent.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
+      /* The host (.markdown-main-container) and inner .markdown-content
+         are now both fluid (100%/100% + flex), so the primary window's
+         maximize animation reflows us automatically. We just strip any
+         inline px that an older pass may have written. */
+      const host = this.markDownContent?.nativeElement as HTMLElement | undefined;
+      if(host){
+        host.style.width = '';
+        host.style.height = '';
+      }
+    }
+  }
 
+  /**
+   * Restore-from-maximized. Mirror of maximizeWindow: clear any inline
+   * sizes so the flex layout reads the restored host dimensions.
+   */
+  minimizeWindow():void{
+    const uId = `${this.name}-${this.processId}`;
+    if(this._runningProcessService.getEventOriginator() !== uId) return;
+    this._runningProcessService.removeEventOriginator();
+    const host = this.markDownContent?.nativeElement as HTMLElement | undefined;
+    if(host){
+      host.style.width = '';
+      host.style.height = '';
+    }
+  }
+
+  /**
+   * Live drag-resize. Same intent as maximize/minimize — clear any
+   * stale inline px so CSS controls the layout.
+   */
+  onWindowResize():void{
+    const host = this.markDownContent?.nativeElement as HTMLElement | undefined;
+    if(host){
+      host.style.width = '';
+      host.style.height = '';
     }
   }
 
@@ -153,6 +215,16 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+  }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the Task Manager (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu. 
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
   }
 
   getFileSrc(pathOne:string, pathTwo:string):string{
@@ -190,11 +262,11 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
       this.fileSrc = appSessionData.appData as string;
     }

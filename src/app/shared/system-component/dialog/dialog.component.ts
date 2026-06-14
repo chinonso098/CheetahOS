@@ -53,6 +53,9 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
   private _updateInformationSub!:Subscription;
   private _autoCloseDialogSub!:Subscription;
+  // Handle for the delayed auto-close that fires once a transfer/delete reaches 100%.
+  // Tracked so it can be cancelled if the dialog is destroyed before it fires.
+  private _autoCloseTimeoutId?:NodeJS.Timeout;
 
   notificationOption = Constants.EMPTY_STRING;
   errorNotification = UserNotificationType.Error;
@@ -99,7 +102,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   ];
 
   reOpenWindows = true;
-  showExtraErroMsg = false;
+  showExtraErrorMsg = false;
   selectedOption = this.SHUT_DOWN;
   pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === this.selectedOption)?.label;
 
@@ -113,7 +116,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   readonly SET_PWR_DIALOG_PID_ON_CLOSE = 'Update0';
 
   private transferAction = Constants.EMPTY_STRING;
-  showEsitmateIntervalId!: NodeJS.Timeout;
+  showEstimateIntervalId!: NodeJS.Timeout;
   isInit = true;
   isDialog = true;
   isQuestionHidden = false;
@@ -185,7 +188,6 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
 
   ngOnChanges(changes: SimpleChanges):void{
-    console.log('DIALOG onCHANGES:',changes);
     this.dialogMgs = this.inputMsg;
     this.dialogTitle = this.inputTitle;
     this.notificationOption = this.notificationType;
@@ -197,7 +199,7 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
 
     if(this.notificationType === UserNotificationType.Error){
       if(this.dialogMgs === this.dialogTitle)
-        this.showExtraErroMsg = true;
+        this.showExtraErrorMsg = true;
     }
 
     if(this.notificationType === UserNotificationType.ZipExtract){
@@ -229,6 +231,13 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     }
 
     if(this.notificationType === UserNotificationType.DeleteWarning || this.notificationType === UserNotificationType.InUseWarning){
+      // These notification types require the `inputFile` to be bound. Guard against a
+      // missing binding so we fail loudly instead of throwing on every property access.
+      if(!this.inputFile){
+        console.warn('DialogComponent: Delete/InUse warning requires an inputFile, but none was provided.');
+        return;
+      }
+
       this.fIcon = this.inputFile.getIconPath;
       this.fName = this.inputFile.getFileName;
       this.fType = this.inputFile.getIsFile ? CommonFunctions.getFileTypeName(this.inputFile.getFileType) : 'Folder';
@@ -260,13 +269,22 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   async ngAfterViewInit(): Promise<void> {
     const delay = 200; //200ms
     await CommonFunctions.sleep(delay);
-    await this.playDialogNotifcationSound();
+    await this.playDialogNotificationSound();
   }
 
   ngOnDestroy(): void {
     //console.log('Dialog was destroyed')
     this._updateInformationSub?.unsubscribe();
     this._autoCloseDialogSub?.unsubscribe();
+
+    // Stop the "Estimating..." animation timer so it can't keep mutating state
+    // (and leaking) after the component is gone.
+    if(this.showEstimateIntervalId)
+      clearInterval(this.showEstimateIntervalId);
+
+    // Cancel any pending auto-close timeout so it doesn't fire on a destroyed dialog.
+    if(this._autoCloseTimeoutId)
+      clearTimeout(this._autoCloseTimeoutId);
   }
 
   onYesDialogBox():void{
@@ -362,8 +380,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     evt.stopPropagation();
   }
 
-  onPwrOptionSelect(event: any):void{
-    const selectedValue = event.target.value;
+  onPwrOptionSelect(event: Event):void{
+    const selectedValue = (event.target as HTMLSelectElement).value;
     this.selectedOption = selectedValue;
     this.pwrOnOffOptionsTxt = this.pwrOnOffOptions.find(x => x.value === selectedValue)?.label;
     this.isQuestionHidden = (selectedValue === this.SHUT_DOWN || this.selectedOption === this.RESTART) ? false : true;
@@ -374,10 +392,10 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
   }
 
   onZipExtractBrowse():void{
-    // Placeholder for folder-picker integration.
+    // Placeholder for folder-picker integration.TODO
   }
 
-  async playDialogNotifcationSound():Promise<void>{
+  async playDialogNotificationSound():Promise<void>{
     if(this.notificationOption === this.errorNotification)
       await this._audioService.play(this.errorNotificationAudio);
 
@@ -400,8 +418,8 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
       this.showEstimating();
     }else{
       this.isInit = false;
-      if(this.showEsitmateIntervalId)
-        clearInterval(this.showEsitmateIntervalId);
+      if(this.showEstimateIntervalId)
+        clearInterval(this.showEstimateIntervalId);
 
       this.setTransferDialogFields(updateInfo);
     }
@@ -417,26 +435,37 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     this.timeRemaining = 'Calculating...';
     this.itemsRemaining ='Calculating...';
 
-    this.showEsitmateIntervalId = setInterval(() => {
-      while(counter < maxAppendNum){
-        const curString = this.progressUpdateText;
-        if(counter >= 0){
-          this.progressUpdateText = `${curString}.`;
-        }
+    // Animate an ellipsis after the base message: append one '.' per tick. Once
+    // maxAppendNum dots have been appended, reset back to the base message (in the
+    // same tick) and start the cycle again.
+    this.showEstimateIntervalId = setInterval(() => {
+      if(counter < 0){
+        // First tick: leave the base message untouched, just start counting.
         counter++;
-        break;
+        return;
       }
 
-      if(counter === maxAppendNum) {
+      // Append one more dot.
+      this.progressUpdateText = `${this.progressUpdateText}.`;
+      counter++;
+
+      // Reached the max dots: reset back to the base message and start over.
+      if(counter === maxAppendNum){
         this.progressUpdateText = this.dialogMgs;
-        counter = 0
+        counter = 0;
       }
     }, delay);
   }
 
   setTransferDialogFields(update: string[]):void{
-    // Validate the update array and its required indices
-    if (!Array.isArray(update) || update.length < 5) {
+    // Indices consumed below:
+    //   Base view  -> 0 srcPath, 1 destPath, 2 totalFiles, 3 movedFiles      (needs >= 4)
+    //   "More details" view additionally reads -> 4 timeRemaining, 5 itemsRemaining,
+    //                                              6 itemsRemainingSize, 7 fileName (needs >= 8)
+    // Require enough entries for whatever view is currently shown, otherwise bail out
+    // instead of silently reading undefined indices.
+    const requiredLength = this.showMoreDetails ? 8 : 4;
+    if (!Array.isArray(update) || update.length < requiredLength) {
       console.warn("setTransferDialogFields: Invalid or incomplete update array", update);
       return;
     }
@@ -489,13 +518,16 @@ export class DialogComponent implements BaseComponent, OnChanges, AfterViewInit,
     : `${value}% complete`;
 
     this.fileName = fileName;
-    this.timeRemaining = `About ${timeRemaining}`;
+    // `timeRemaining` is only populated in the "More details" view; avoid showing a
+    // dangling "About " prefix when there's no estimate to display.
+    this.timeRemaining = timeRemaining ? `About ${timeRemaining}` : Constants.EMPTY_STRING;
     this.itemsRemaining = `${itemsRemaining} (${itemsRemainingSize} ${itemsRemainingSizeUnit})`;
   
     //Auto-close if 100% complete
     if(value >= 100){
       const delay = 1000; // 1 sec
-      setTimeout(() => {
+      // Store the handle so ngOnDestroy can cancel it if the dialog closes early.
+      this._autoCloseTimeoutId = setTimeout(() => {
         this._userNotificationServices.closeDialogMsgBox(this.processId);
       }, delay);
     }

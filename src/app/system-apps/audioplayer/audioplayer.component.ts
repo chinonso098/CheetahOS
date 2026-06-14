@@ -10,13 +10,13 @@ import { ProcessHandlerService } from 'src/app/shared/system-service/process.han
 import { FileInfo } from 'src/app/system-files/file.info';
 import { Constants } from "src/app/system-files/constants";
 import { AppState } from 'src/app/system-files/state/state.interface';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { Subscription } from 'rxjs';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
-import * as htmlToImage from 'html-to-image';
-import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 
 // eslint-disable-next-line no-var
 declare const Howl:any;
@@ -53,11 +53,12 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;
   private _changeContentSub!: Subscription;
+  private _windowResizeSub!: Subscription;
   
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _processHandlerService!:ProcessHandlerService;
-  private _sessionManagmentService: SessionManagmentService;
+  private _sessionManagementService: SessionManagementService;
   private _scriptService!:ScriptService;
   private _windowService!:WindowService;
   private _audioService!:AudioService;
@@ -66,6 +67,11 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _appState!:AppState;
 
   SECONDS_DELAY = 250;
+  // Audio player minimum usable size. Resize notifications below these values
+  // are ignored so the SiriWave canvas / controls don't try to lay out into a
+  // sub-minimum window.
+  readonly MIN_WIDTH_PX  = 480;
+  readonly MIN_HEIGHT_PX = 320;
   private audioSrc = Constants.EMPTY_STRING;
   private audioPlayer: any;
   private siriWave: any;
@@ -76,7 +82,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   name= 'audioplayer';
   hasWindow = true;
-  isMaximizable=false;
+  isMaximizable=true;
   icon = `${Constants.IMAGE_BASE_PATH}audioplayer.png`;
   processId = 0;
   type = ComponentType.User;
@@ -89,11 +95,11 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
  
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-              sessionManagmentService: SessionManagmentService, scriptService:ScriptService, 
+              sessionManagementService: SessionManagementService, scriptService:ScriptService, 
     windowService:WindowService, audioService:AudioService) { 
     this._processIdService = processIdService;
     this._processHandlerService = triggerProcessService;
-    this._sessionManagmentService= sessionManagmentService;
+    this._sessionManagementService= sessionManagementService;
     this._scriptService = scriptService;
     this._windowService = windowService;
     this._audioService = audioService;
@@ -104,6 +110,12 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
     this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
     this._changeContentSub = this._runningProcessService.changeProcessContentNotify.subscribe(() =>{this.changeContent()})
+    this._windowResizeSub = this._windowService.resizeProcessWindowNotify.subscribe((info:WindowResizeInfo) => {
+      if(info.pId !== this.processId) return;
+      // Ignore resizes that fall below our declared minimums.
+      if(info.widthPx < this.MIN_WIDTH_PX || info.heightPx < this.MIN_HEIGHT_PX) return;
+      this.onWindowResize();
+    });
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
@@ -111,43 +123,53 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.retrievePastSessionData();
   }
 
-  ngAfterViewInit():void{  
+  async ngAfterViewInit():Promise<void>{  
 
     //this.setAudioWindowToFocus(this.processId); 
     this.audioSrc = (this.audioSrc !== Constants.EMPTY_STRING)? 
       this.audioSrc :this.getAudioSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-      this._scriptService.loadScript("howler","osdrive/Program-Files/Howler/howler.min.js").then(()=>{
+      // These are UMD bundles, not ES modules. They MUST be loaded as classic
+      // scripts (isModule = false). If loaded as type="module" the browser
+      // caches them in its module map keyed by URL, so removing the <script>
+      // tag in ngOnDestroy and re-appending it on the next open will NOT
+      // re-execute the script — meaning window.SiriWave never gets re-attached
+      // and `new SiriWave(...)` below throws on the second open.
+      //await this._scriptService.loadScript("howler","osdrive/Program-Files/Howler/howler.min.js", false);
+      const isModule = false;
+      await this._scriptService.loadScript("siriwave","osdrive/Program-Files/Howler/siriwave.umd.min.js", isModule);
 
-        this._scriptService.loadScript("siriwave","osdrive/Program-Files/Howler/siriwave.umd.min.js").then(()=>{
+      // .waveform itself is display:none until playback starts, so its rect
+      // is 0×0 right now. Measure the audio container instead and use the
+      // same 30% height ratio that .waveform's CSS uses.
+      const rect = this.audioContainer.nativeElement.getBoundingClientRect();
+      const initW = rect.width  || 480;
+      const initH = (rect.height || 320) * 0.3;
 
-          this.siriWave = new SiriWave({
-            container: this.waveForm.nativeElement,
-            width: 900,
-            height: 480,
-            autostart: false,
-            cover: true,
-            speed: 0.03,
-            amplitude: 0.7,
-            frequency: 2
-          });
-  
-          if(this.playList.length == 0){
-            this.loadHowlSingleTrackObjectAsync()
-                .then(howl => { this.audioPlayer = howl; 
-                  this._audioService.addExternalAudioSrc(this.name, howl);
-                })
-                .catch(error => { console.error('Error loading track:', error); });
-      
-            this.storeAppState(this.audioSrc);
-          }
-        });
+      this.siriWave = new SiriWave({
+        container: this.waveForm.nativeElement,
+        width: initW,
+        height: initH,
+        autostart: false,
+        cover: true,
+        speed: 0.03,
+        amplitude: 0.7,
+        frequency: 2
       });
 
-      setTimeout(()=>{
-        this.captureComponentImg();
-      },this.SECONDS_DELAY) 
+      if(this.playList.length == 0){
+        this.loadHowlSingleTrackObjectAsync()
+            .then(howl => { this.audioPlayer = howl; 
+              this._audioService.addExternalAudioSrc(this.name, howl);
+            })
+            .catch(error => { console.error('Error loading track:', error); });
   
+        this.storeAppState(this.audioSrc);
+      }
+
+      await CommonFunctions.sleep(this.SECONDS_DELAY);
+      await this.captureComponentImg();
+
 
     // when i implement the playlist feature
     // if((this.audioSrc !== '/' && this.playList.length >= 1) || (this.audioSrc  === '/' && this.playList.length >= 1)){
@@ -161,26 +183,21 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._maximizeWindowSub?.unsubscribe();
     this._minimizeWindowSub?.unsubscribe(); 
     this._changeContentSub?.unsubscribe(); 
+    this._windowResizeSub?.unsubscribe();
+
+    this._scriptService.unloadScript("siriwave", "osdrive/Program-Files/Howler/siriwave.umd.min.js" );
+    // siriwave.umd.min.js attaches itself to window.SiriWave — clear it so the
+    // global is GC'd and a fresh copy is fetched next time.
+    delete (window as any).SiriWave;
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.audioContainer.nativeElement).then(htmlImg =>{
-
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+  async captureComponentImg():Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.audioContainer, this.processId, this.name, this.icon, this._windowService);
   }
 
-  changeContent():void{
+  async changeContent():Promise<void>{
     const uId = `${this.name}-${this.processId}`;
-    const delay = 1000;
+    const delay = 1000; // 1sec delay to allow the file info to be updated in the process handler service before we fetch it
 
     console.log('previous audio source:',  this.audioSrc);
     this.audioSrc = Constants.EMPTY_STRING;
@@ -203,17 +220,18 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
       console.log('new audio source:',  this.audioSrc);
 
-      setTimeout(async()=> {
-        this.loadHowlSingleTrackObjectAsync()
-          .then(howl => { this.audioPlayer = howl; 
-            this._audioService.addExternalAudioSrc(this.name, howl);
-            this.onPlayBtnClicked();
-          })
-          .catch(error => { console.error('Error loading track:', error); });
+      await CommonFunctions.sleep(delay);
+      const howl = await this.loadHowlSingleTrackObjectAsync();
 
-        this.storeAppState(this.audioSrc);
-      }, delay);
+      try{
+        this.audioPlayer = howl;
+        this._audioService.addExternalAudioSrc(this.name, howl);
+        this.onPlayBtnClicked();
+      }
+      catch(error){ console.error('Error loading track:', error);}
 
+      this.storeAppState(this.audioSrc);
+      await this.captureComponentImg();
       this._runningProcessService.removeEventOriginator();
     }
   }
@@ -235,6 +253,11 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.waveForm.nativeElement.style.display = 'block';
     this.pauseBtn.nativeElement.style.display = 'block';
     this.playBtn.nativeElement.style.display = 'none';
+
+    // .waveform was display:none until now, so the canvas had no real rendered
+    // size. Re-sync the SiriWave drawing buffer to the canvas's actual CSS
+    // pixel size (times DPR) on the next frame to avoid blurry first paint.
+    requestAnimationFrame(() => this.resizeSiriWave());
 
     this.siriWave.start();
     this.audioPlayer.play();
@@ -344,12 +367,17 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   formatTime(seconds:number):string{
     const mins = Math.floor(seconds / 60) || 0;
     const secs = Math.floor(seconds - (mins * 60)) || 0;
-    return mins + ':' + (secs < 10 ? '0' : '') + secs;
+    return mins + Constants.COLON + (secs < 10 ? '0' : Constants.EMPTY_STRING) + secs;
   }
 
   addToRecentsList(audioPath:string):void{
     if(!this.recents.includes(audioPath))
       this.recents.push(audioPath);
+  }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    evt?.preventDefault();
+    evt?.stopPropagation();
   }
 
   focusWindow(evt?:MouseEvent):void{
@@ -361,23 +389,44 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   resizeSiriWave():void{
-    const rect =  this.audioContainer.nativeElement.getBoundingClientRect();
-    const height = rect.height * 0.3;
-    const width = rect.width;
-    this.siriWave.height = height;
-    this.siriWave.height_2 = height / 2;
-    this.siriWave.MAX = this.siriWave.height_2 - 4;
-    this.siriWave.width = width;
-    this.siriWave.width_2 = width / 2;
-    this.siriWave.width_4 = width / 4;
-    this.siriWave.canvas.height = height;
-    this.siriWave.canvas.width = width;
-    this.siriWave.container.style.margin = -(height / 2) + 'px auto';
+    if(!this.siriWave || !this.siriWave.canvas) return;
+
+    // Measure the canvas's actual rendered CSS pixels (cover:true makes the
+    // canvas style 100%/100% of .waveform, so this is the true display size).
+    // Fall back to computing from the container when the canvas is hidden.
+    const canvasRect = this.siriWave.canvas.getBoundingClientRect();
+    let cssW = canvasRect.width;
+    let cssH = canvasRect.height;
+
+    if(cssW <= 0 || cssH <= 0){
+      const containerRect = this.audioContainer.nativeElement.getBoundingClientRect();
+      cssW = containerRect.width;
+      cssH = containerRect.height * 0.3; // matches .waveform { height: 30% }
+    }
+    if(cssW <= 0 || cssH <= 0) return;
+
+    // Drawing buffer = CSS size * devicePixelRatio  =>  pixel-perfect, no blur.
+    const ratio = (this.siriWave.opt && this.siriWave.opt.ratio) || (window.devicePixelRatio || 1);
+    this.siriWave.opt.width  = cssW;
+    this.siriWave.opt.height = cssH;
+    this.siriWave.width      = ratio * cssW;
+    this.siriWave.height     = ratio * cssH;
+    this.siriWave.heightMax  = (this.siriWave.height / 2) - 6;
+
+    this.siriWave.canvas.width  = this.siriWave.width;
+    this.siriWave.canvas.height = this.siriWave.height;
+    // Keep CSS stretch at 100% (cover behavior); drawing buffer above gives crispness.
+    this.siriWave.canvas.style.width  = '100%';
+    this.siriWave.canvas.style.height = '100%';
+    // Library stores the host element at opt.container in this build.
+    const host = this.siriWave.container || (this.siriWave.opt && this.siriWave.opt.container);
+    if(host && host.style) host.style.margin = '0';
 
     if(this.audioPlayer){
+      const containerRect = this.audioContainer.nativeElement.getBoundingClientRect();
       const volume = this.audioPlayer.volume();
       const barWidth = (volume * 0.9);
-      this.sliderBtn.nativeElement.style.left = (rect.width * barWidth + rect.width * 0.05 - 25) + 'px';
+      this.sliderBtn.nativeElement.style.left = (containerRect.width * barWidth + containerRect.width * 0.05 - 25) + 'px';
     }
   }
 
@@ -482,12 +531,9 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
-      //window title and button bar, and windows taskbar height
-      const pixelTosubtract = 30 + 40;
-
-      this.audioContainer.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-      this.audioContainer.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
+      // Container is now 100% of the primary window content area, so we only
+      // need to re-flow the SiriWave canvas to the new size.
+      this.onWindowResize();
     }
   }
 
@@ -497,9 +543,17 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
+      this.onWindowResize();
+    }
+  }
 
-      this.audioContainer.nativeElement.style.width = `${arg[0]}px`;
-      this.audioContainer.nativeElement.style.height = `${arg[1]}px`;
+  // Called continuously while the primary window is being resized. Re-runs the
+  // SiriWave sizing math against the current container rect.
+  onWindowResize():void{
+    try {
+      this.resizeSiriWave();
+    } catch (e) {
+      console.warn('audioplayer resize failed:', e);
     }
   }
 
@@ -552,11 +606,11 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null &&  appSessionData.appData != Constants.EMPTY_STRING){
       this.audioSrc = appSessionData.appData as string;
     }

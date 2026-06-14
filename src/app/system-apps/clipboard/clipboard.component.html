@@ -1,0 +1,57 @@
+<cos-secondarywindow
+    [runningProcessID]="this.processId"
+    [processAppIcon]="this.icon"
+    [processAppName]="this.name"
+    [displayMessage]="this.displayName"
+    [showTitleBarImg]="true"
+    [isDialog]="isDialog">
+
+    <div class="clipboard-main-container" (click)="focusWindow($event)" (contextmenu)="silenceCtxEvt($event)" >
+
+        <div class="clipboard-header">
+            <span class="clipboard-title">Clipboard</span>
+            <button class="clear-all-btn" type="button" (click)="onClearAll()" [disabled]="!hasEntries">
+                Clear all
+            </button>
+        </div>
+
+        <div class="clipboard-body">
+
+            @if(hasEntries){
+                <div class="clipboard-list">
+                    @for(entry of entries; track entry.id){
+                        <div class="clipboard-item" (click)="onPasteEntry(entry)" title="Click to set as item to paste">
+                            <div class="item-toolbar">
+                                @if(entry.pinned){<span class="pinned-tag">Pinned</span>}
+                                <button class="item-action" type="button" title="Pin item"
+                                    (click)="onTogglePin($event, entry)">
+                                    <img [src]="entry.pinned ? unpinIcon : pinIcon" [alt]="entry.pinned ? 'Unpin' : 'Pin'" />
+                                </button>
+                                <button class="item-action" type="button" title="Delete"
+                                    (click)="onRemoveEntry($event, entry)">
+                                    <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+                                        <path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z" fill="#444"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="item-content">
+                                <img class="item-icon" [src]="entry.iconPath" [alt]="entry.displayName" />
+                                <div class="item-text">
+                                    <span class="item-name">{{entry.displayName}}</span>
+                                    <span class="item-action-badge" [class.cut]="isCutAction(entry)">{{entry.action}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            } @else {
+                <div class="clipboard-empty">
+                    <img class="empty-icon" [src]="this.icon" alt="Clipboard" />
+                    <p class="empty-title">Copy something to get started</p>
+                    <p class="empty-subtitle">Items you copy or cut on the desktop or in File Explorer show up here.</p>
+                </div>
+            }
+
+        </div>
+    </div>
+</cos-secondarywindow>

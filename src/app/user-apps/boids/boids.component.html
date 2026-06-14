@@ -1,6 +1,14 @@
 
-<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
-    <div class="boid-main-cntnr" id="boidCntnr" (contextmenu)="focusWindow($event)" (click)="focusWindow($event)">
+<cos-primarywindow 
+    [runningProcessID]="processId" 
+    [processAppIcon]="icon" 
+    [processAppName]="name" 
+    [isMaximizable]="isMaximizable" 
+    [minimumWindowWidth]="MIN_WIDTH_PX" 
+    [minimumWindowHeight]="MIN_HEIGHT_PX"
+    [priorUId]="priorUId">
+
+    <div class="boid-main-cntnr" id="boidCntnr" (contextmenu)="silenceCtxEvt($event)" (click)="focusWindow($event)">
         <div class="controls" [formGroup]="form">
             <div class="control" *ngFor="let name of sliders">
                 <label class="control-label">{{ name | titlecase }}: {{ form.get(name)?.value }}</label>

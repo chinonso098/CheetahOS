@@ -1,17 +1,21 @@
-<cos-primarywindow [runningProcessID]="this.processId" 
-  [processAppIcon]="this.icon" 
-  [processAppName]="this.name" 
-  [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId" (focusout)="hideShowNavMenu('')"> 
+<cos-primarywindow 
+  [runningProcessID]="processId" 
+  [processAppIcon]="icon" 
+  [processAppName]="name" 
+  [isMaximizable]="isMaximizable" 
+  [minimumWindowWidth]="MIN_WIDTH_PX" 
+  [minimumWindowHeight]="MIN_HEIGHT_PX" 
+  [priorUId]="priorUId" (focusout)="hideShowNavMenu('')"> 
 
   <ng-container [ngTemplateOutlet]="viewOptions === detailedView ? detailedView0 : miniView0 ">
   </ng-container>
 
   <ng-template #detailedView0>
-    <div   (click)="focusWindow($event)"   #tskManagerRootContainer>
+    <div class="tskmgr-root" (click)="focusWindow($event)" (contextmenu)="silenceCtxEvt($event)"   #tskManagerRootContainer>
       <div class="tskmgr-nav-btn-cntnr" >
         <div class="tskmgr-nav-btn" (click)="hideShowNavMenu('tskmgr-nav-file-menu')" (mouseenter)="hideShowNavMenu1('tskmgr-nav-file-menu','enter')">
            <span class="tskmgr-btn-span">File</span>
-            <div class="tskmgr-nav-menu-cntnr" id="tskmgr-nav-file-menu-{{this.processId}}">
+            <div class="tskmgr-nav-menu-cntnr" id="tskmgr-nav-file-menu-{{processId}}">
                 <div class="tskmgr-nav-menu-item">
                   <span class="tskmgr-item-span">Run new task</span>
                 </div>
@@ -26,7 +30,7 @@
     
         <div class="tskmgr-nav-btn" (click)="hideShowNavMenu('tskmgr-nav-view-menu')" (mouseenter)="hideShowNavMenu1('tskmgr-nav-view-menu','enter')">
           <span class="tskmgr-btn-span">View</span>
-            <div class="tskmgr-nav-menu-cntnr1" id="tskmgr-nav-view-menu-{{this.processId}}">
+            <div class="tskmgr-nav-menu-cntnr1" id="tskmgr-nav-view-menu-{{processId}}">
                 <div class="tskmgr-nav-menu-item">
                   <span class="tskmgr-item-span" (click)="generateLies()">Refresh now</span>
                 </div>
@@ -70,14 +74,14 @@
         <span style="height:3px; background-color: #ffffff;  border-top: none; "></span>
 
         <div class="tskmgr-tabs">
-          <div class="tskmgr-tab active" (click)="showProcessesPane()" id="tskmgr-process-tab">Processes</div>
+          <div class="tskmgr-tab active" (click)="showProcessesPane()" id="tskmgr-process-tab-{{processId}}">Processes</div>
           <div class="tskmgr-tab" (click)="hideShowNavMenu('tskmgr-nav-view-menu')">Performance</div>
           <div class="tskmgr-tab" (click)="hideShowNavMenu('tskmgr-nav-view-menu')">App history</div>
-          <div class="tskmgr-tab" (click)="showServicesPane()" id="tskmgr-service-tab">Services</div>
+          <div class="tskmgr-tab" (click)="showServicesPane()" id="tskmgr-service-tab-{{processId}}">Services</div>
         </div>
         
         <div class="tskmgr-tab-content">
-          <div class="tskmgr-tab-pane active" id="tskmgr-process-pane">
+          <div class="tskmgr-tab-pane active" id="tskmgr-process-pane-{{processId}}">
             <div class='card'>
                 <div class='card-body' #tskmgrCardBody>
                   <div class='tskmgr-table-cntnr' #tskmgrTblCntnr> 
@@ -350,68 +354,8 @@
                             </th>
                           </tr>
       
-                          <!--Context Menu-->
-                          <div class="tskmgr-vertical-menu" [style]="cntxtMenuStyle" #tsmgrCntxtMenu>
-                            <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Type')">
-                                <span class="tskmgr-span head" [class.active]="typeColumnVisible"><figure class="tskmgr-figure"><img *ngIf="typeColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
-                                <span class="tskmgr-span mid">Type</span>
-                                <span class="tskmgr-span tail"><figure></figure></span>
-                            </div>
-      
-                            <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Status')">
-                              <span class="tskmgr-span head" [class.active]="statusColumnVisible"><figure class="tskmgr-figure"><img *ngIf="statusColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
-                              <span class="tskmgr-span mid">Status</span>
-                              <span class="tskmgr-span tail"><figure></figure></span>
-                            </div>
-      
-                            <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('PID')">
-                              <span class="tskmgr-span head" [class.active]="pidColumnVisible"><figure class="tskmgr-figure"><img *ngIf="pidColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
-                              <span class="tskmgr-span mid">PID</span>
-                              <span class="tskmgr-span tail"><figure></figure></span>
-                            </div>
-      
-                            <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Process name')">
-                              <span class="tskmgr-span head" [class.active]="processNameColumnVisible"><figure class="tskmgr-figure"><img *ngIf="processNameColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
-                              <span class="tskmgr-span mid">Process name</span>
-                              <span class="tskmgr-span tail"><figure></figure></span>
-                            </div>
-      
-                            <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('CPU')">
-                              <span class="tskmgr-span head" [class.active]="cpuColumnVisible"><figure class="tskmgr-figure"><img *ngIf="cpuColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
-                              <span class="tskmgr-span mid">CPU</span>
-                              <span class="tskmgr-span tail"><figure></figure></span>
-                            </div>
-      
-                            <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Memory')">
-                              <span class="tskmgr-span head" [class.active]="memoryColumnVisible"><figure class="tskmgr-figure"><img *ngIf="memoryColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
-                              <span class="tskmgr-span mid">Memory</span>
-                              <span class="tskmgr-span tail"><figure></figure></span>
-                            </div>
-      
-                            <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Disk')">
-                              <span class="tskmgr-span head" [class.active]="diskColumnVisible"><figure class="tskmgr-figure"><img *ngIf="diskColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
-                              <span class="tskmgr-span mid">Disk</span>
-                              <span class="tskmgr-span tail"><figure></figure></span>
-                            </div>
-      
-                            <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Network')">
-                              <span class="tskmgr-span head" [class.active]="networkColumnVisible"><figure class="tskmgr-figure"><img *ngIf="networkColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
-                              <span class="tskmgr-span mid">Network</span>
-                              <span class="tskmgr-span tail"><figure></figure></span>
-                            </div>
-      
-                            <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('GPU')">
-                              <span class="tskmgr-span head" [class.active]="gpuColumnVisible"><figure class="tskmgr-figure"><img *ngIf="gpuColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
-                              <span class="tskmgr-span mid">GPU</span>
-                              <span class="tskmgr-span tail"><figure></figure></span>
-                            </div>
-      
-                            <div class="tskmgr-vertical-menu-item" (click)="toggleColumnVisibility('Power usage')">
-                              <span class="tskmgr-span head" [class.active]="powerColumnVisible"><figure class="tskmgr-figure"><img *ngIf="powerColumnVisible" class="tskmgr-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/></figure></span>
-                              <span class="tskmgr-span mid">Power usage</span>
-                              <span class="tskmgr-span tail"><figure></figure></span>
-                            </div>
-                         </div>
+                          <!-- Column show/hide context menu (shared cos-menu, checkable variant) -->
+                          <cos-menu [checkableMenu]="columnMenuItems" [style]="cntxtMenuStyle" [menuType]="checkableMenuOption"> </cos-menu>
                       </thead>
 
                       <div style="height: 2px;"></div>
@@ -431,12 +375,12 @@
                             </td>
                             <td style="text-align:right">{{ process.getProcessId}}</td>
                             <td>{{ process.getProcessName}}</td>
-                            <td [style]="setUtilColoumnColors(process.getCpuUsage)" id="tdCpuElmnt-{{this.processId}}-{{i}}">{{ process.getCpuUsage}}%</td>
-                            <td [style]="setUtilColoumnColors(process.getMemoryUsage)" #memoryId>{{ process.getMemoryUsage}} MB</td>
-                            <td [style]="setUtilColoumnColors(process.getDiskUsage)" #diskId>{{ process.getDiskUsage}} MB/s</td>
-                            <td [style]="setUtilColoumnColors(process.getNetworkUsage)" #networkId>{{ process.getNetworkUsage}} Mbps</td>
-                            <td [style]="setUtilColoumnColors(process.getGpuUsage)" #gpuId>{{ process.getGpuUsage}}%</td>
-                            <td [style]="setUtilColoumnColors(process.getPowerUsage)" #pwruseId> {{ process.getPowerUsage}}</td>
+                            <td [style]="setUtilColumnColors(process.getCpuUsage)" id="tdCpuElmnt-{{this.processId}}-{{i}}">{{ process.getCpuUsage}}%</td>
+                            <td [style]="setUtilColumnColors(process.getMemoryUsage)" #memoryId>{{ process.getMemoryUsage}} MB</td>
+                            <td [style]="setUtilColumnColors(process.getDiskUsage)" #diskId>{{ process.getDiskUsage}} MB/s</td>
+                            <td [style]="setUtilColumnColors(process.getNetworkUsage)" #networkId>{{ process.getNetworkUsage}} Mbps</td>
+                            <td [style]="setUtilColumnColors(process.getGpuUsage)" #gpuId>{{ process.getGpuUsage}}%</td>
+                            <td [style]="setUtilColumnColors(process.getPowerUsage)" #pwruseId> {{ process.getPowerUsage}}</td>
                         </tr>
                       </tbody>
 
@@ -468,7 +412,7 @@
             <p> Somethings is coming</p>
           </div>
           
-          <div class="tskmgr-tab-pane" id="tskmgr-service-pane">
+          <div class="tskmgr-tab-pane" id="tskmgr-service-pane-{{processId}}">
             <div class='card'>
               <div class='card-body' #tskmgrCardBody>
                 <div class='tskmgr-table-svc-cntnr' #tskmgrTblCntnr> 
@@ -627,7 +571,7 @@
           <table class='taskmgr-table mini' *ngIf = 'processes.length > 0' >
             <tbody>
               <tr *ngFor='let process of processes; let i = index'(click)="onProcessSelected(i,process.getProcessId)" [class.active]="i === selectedRow"  id="trElmnt-{{this.processId}}-{{i}}">
-                  <td style="width: 55%;">
+                  <td style="width: 100%;">
                       <figure class="tskmgr-figure0"> 
                           <img class="tskmgr-img0" [src]="process.getIcon">
                           <figcaption class="tskmgr-figcaption0">{{ process.getProcessName}}</figcaption>

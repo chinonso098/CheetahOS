@@ -1,12 +1,12 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ChatterService } from 'src/app/shared/system-service/chatter.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { SocketService } from 'src/app/shared/system-service/socket.service';
 
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -19,15 +19,14 @@ import { IUser, IUserData } from './model/chat.interfaces';
 import { Subscription } from 'rxjs';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import * as htmlToImage from 'html-to-image';
-import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 
 @Component({
   selector: 'cos-chatter',
   templateUrl: './chatter.component.html',
   styleUrl: './chatter.component.css',
   standalone:false,
-  providers: [SocketService] // New instance per component
+  providers: [SocketService, ChatterService] // New instance per component
 })
 export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, AfterViewInit{
 
@@ -41,13 +40,16 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _chatService!:ChatterService;
   private _socketService!:SocketService;
   private _audioService!:AudioService;
-  private _sessionManagmentService: SessionManagmentService;
+  private _sessionManagementService: SessionManagementService;
 
   private _newChatMessageSub!: Subscription;
+  private _priorMessagesSub!: Subscription;
   private _userCountChangeSub!: Subscription;
   private _newUserInfomationSub!: Subscription;
   private _updateOnlineUserListSub!: Subscription;
   private _updateUserNameOrStatusSub!: Subscription;
+  private _windowResizeSub!: Subscription;
+  private _maximizeSub!: Subscription;
 
   private _formBuilder;
   chatterForm!: FormGroup;
@@ -90,7 +92,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   newMsgAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_messaging.wav`;
 
   chatPrompt = 'Type a message';
-  isMaximizable = false;
+  isMaximizable = true;
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}chatter.png`;
   name = 'chatter';
@@ -98,16 +100,22 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   type = ComponentType.System;
   displayName = 'Chatter';
 
+  // Floor at which we still try to reflow. Below this, the user can
+  // see the window but the layout is intentionally clipped (see CSS
+  // min-width / min-height on .chatter-main-container).
+  readonly MIN_WIDTH_PX = 480;
+  readonly MIN_HEIGHT_PX = 320;
+
   constructor(socketService:SocketService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
               windowService:WindowService, formBuilder:FormBuilder, chatService:ChatterService, audioService:AudioService,
-              sessionManagmentService:SessionManagmentService) { 
+              sessionManagementService:SessionManagementService, private _cdr:ChangeDetectorRef) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
     this._socketService = socketService;
     this._audioService = audioService;
     this._chatService = chatService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
 
     this._chatService.setSocketInstance(socketService);
     this._chatService.setSubscriptions();
@@ -123,6 +131,23 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._newUserInfomationSub = this._chatService.newUserInformationNotify.subscribe(()=> this.updateOnlineUserList());
     this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList());
     this._updateUserNameOrStatusSub =  this._chatService.updateUserNameOrStateNotify.subscribe(()=> this.updateOnlineUserList());
+
+    // When the server's chat history arrives (in response to our fetch in
+    // ngAfterViewInit), render it via the existing batched-load routine.
+    this._priorMessagesSub = this._chatService.priorMessagesNotify.subscribe(()=> this.retrieveEarlierMessages());
+
+    // Live reflow when the primary window is resized. CSS flex already
+    // tracks the size; this just ensures change-detection runs so any
+    // bound style/state (footer message length, scroll position) updates.
+    this._windowResizeSub = this._windowService.resizeProcessWindowNotify.subscribe((info:WindowResizeInfo) => {
+      if(info.pId !== this.processId) return;
+      if(info.widthPx < this.MIN_WIDTH_PX || info.heightPx < this.MIN_HEIGHT_PX) return;
+      this.onWindowResize();
+    });
+
+    // Maximize/restore broadcasts no payload — just kick a CD tick and
+    // re-pin the scroll to the latest message after the animation settles.
+    this._maximizeSub = this._windowService.maximizeProcessWindowNotify.subscribe(() => this.onWindowResize());
   }
 
   async ngOnInit(): Promise<void> {
@@ -149,29 +174,42 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._chatService.sendUserOnlineAddInfoMessage(this.chatUserData);
     this.generateAndSendAppMessages(this.A_NEW_USER_HAS_JOINED_THE_CHAT_MSG);
 
-    this.retrieveEarlierMessages();
+    // Request the chat history from the server. The reply is handled by the
+    // priorMessagesNotify subscription, which then calls retrieveEarlierMessages().
+    this._chatService.sendFetchPriorMessagesMessage();
 
     await CommonFunctions.sleep(this.SECONDS_DELAY)
-    this.captureComponentImg();
+    await this.captureComponentImg();
   }
 
   async ngOnDestroy(): Promise<void>{
     const delay = 25;
     this._chatService.sendUserOfflineRemoveInfoMessage(this.chatUserData);
     this.generateAndSendAppMessages(this.USER_HAS_LEFT_THE_CHAT_MSG);
+    
 
     await CommonFunctions.sleep(delay);
     this._newChatMessageSub?.unsubscribe();
+    this._priorMessagesSub?.unsubscribe();
     this._userCountChangeSub?.unsubscribe();
     this._newUserInfomationSub?.unsubscribe();
     this._updateOnlineUserListSub?.unsubscribe();
     this._updateUserNameOrStatusSub?.unsubscribe();
+    this._windowResizeSub?.unsubscribe();
+    this._maximizeSub?.unsubscribe();
 
     this._socketService.disconnect();
     
     const ssPid = this._socketService.processId;
     const socketProccess = this._runningProcessService.getProcess(ssPid);
     this._runningProcessService.removeProcess(socketProccess);
+
+    // ChatterService is now component-scoped, so it registers a process on every
+    // open. Remove it here to mirror the socket cleanup and avoid leaking entries.
+    this._chatService.terminateSubscriptions();
+    const csPid = this._chatService.processId;
+    const chatterProcess = this._runningProcessService.getProcess(csPid);
+    this._runningProcessService.removeProcess(chatterProcess);
   }
 
   async updateChatData():Promise<void>{
@@ -185,20 +223,19 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.scrollToBottom();
   }
 
-    captureComponentImg():void{
-    htmlToImage.toPng(this.chatterContainer.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
+  async captureComponentImg():Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.chatterContainer, this.processId, this.name, this.icon, this._windowService);
+  }
 
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+  /** Triggered whenever the primary window broadcasts a resize/maximize.
+   *  CSS flex handles the visual reflow; we just nudge change detection
+   *  and keep the chat view scrolled to the latest message so the user
+   *  doesn't end up looking at empty space after the window grows. */
+  private onWindowResize():void{
+    this._cdr.detectChanges();
+    requestAnimationFrame(() => {
+      try { this.scrollToBottom(); } catch { /* view not ready */ }
+    });
   }
 
   updateOnlineUserCount(value:number):void{
@@ -328,8 +365,28 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   scrollToBottom(): void {
+    // Setting scrollTop on the (overflow:auto) chat list is sufficient to
+    // pin the view to the latest message.
+    //
+    // The previous extra `scrollIntoView` on this same element bubbled up
+    // to the nearest scrollable ancestor — the primary window's
+    // `.window-content-container`, which is `overflow: hidden`. Such
+    // elements are still programmatically scrollable, so scrollIntoView
+    // shifted the entire chatter app a few px up inside the window,
+    // exposing the dark window background at the bottom; a later reflow
+    // (e.g. hovering a title-bar button) reset it and it "floated back
+    // down". Removed. (Same fix as terminal.component.ts.)
     this.chatHistoryOutput.nativeElement.scrollTop = this.chatHistoryOutput.nativeElement.scrollHeight;
-    this.chatHistoryOutput.nativeElement.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the App (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu.
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
   }
 
   async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
@@ -494,11 +551,11 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null &&  appSessionData.appData != Constants.EMPTY_STRING){
       //const data = appSessionData.app_data as string;
     }

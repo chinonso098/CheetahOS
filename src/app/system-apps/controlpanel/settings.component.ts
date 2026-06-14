@@ -3,6 +3,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
+import { FileService } from 'src/app/shared/system-service/file.service';
 
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
@@ -13,9 +14,9 @@ import * as htmlToImage from 'html-to-image';
 import {basename, extname} from 'path';
 
 import { CommonFunctions } from 'src/app/system-files/common.functions';
-import { ScreenshotSetting } from './settings.interface';
+import { AppDirectory } from 'src/app/system-files/app.directory';
+import { ScreenshotSetting, SettingsMenuOption } from './settings.interface';
 import { SettingsHelper } from './settings.helper';
-import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 
 
 @Component({
@@ -29,11 +30,6 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('settingsContainer', {static: true}) settingsContainer!: ElementRef; 
   @Input() priorUId = Constants.EMPTY_STRING;
 
-  private _processIdService!:ProcessIDService;
-  private _runningProcessService!:RunningProcessService;
-  private _defaultService!:DefaultService;
-  private _windowService!:WindowService;
-
 
   readonly homeImg = `${Constants.IMAGE_BASE_PATH}cp_home.png`;
   readonly aboutImg = `${Constants.IMAGE_BASE_PATH}cp_info.png`;
@@ -46,7 +42,13 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly appsImg = `${Constants.IMAGE_BASE_PATH}cp_apps.png`;
   readonly personalizationImg = `${Constants.IMAGE_BASE_PATH}cp_personalization.png`;
 
-  readonly desktopBackgrounImg = `${Constants.IMAGE_BASE_PATH}cp_background.png`;
+  // Icon shown next to the single "Apps & features" item in the Apps sidebar.
+  readonly appsListImg = `${Constants.IMAGE_BASE_PATH}cp_app_list.png`;
+
+  // Local-disk icon shown in the System > Storage pane.
+  readonly storageDiskImg = `${Constants.IMAGE_BASE_PATH}os_disk_1.png`;
+
+  readonly desktopBackgroundImg = `${Constants.IMAGE_BASE_PATH}cp_background.png`;
   readonly taskbarImg = `${Constants.IMAGE_BASE_PATH}cp_taskbar.png`;
   readonly lockScreenImg = `${Constants.IMAGE_BASE_PATH}cp_lockscreen.png`;
   readonly colorImg = `${Constants.IMAGE_BASE_PATH}cp_color.png`;
@@ -58,7 +60,9 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly APPS_VIEW_EXTRA = 'Uninstall, default, optional features';
   readonly PERSONALIZATION_VIEW = 'Personalize';
   readonly PERSONALIZATION_VIEW_EXTRA = 'Background, lock screen, colors';
-  DEFAULT_VIEW = this.HOME_VIEW;
+  // The settings panel currently shown (Home / System / Apps / Personalize).
+  // Mutable navigation state, not a constant.
+  currentView = this.HOME_VIEW;
 
   readonly HOME_HOME = 'Home';
 
@@ -67,6 +71,9 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly SYSTEM_STORAGE = 'Storage';
   readonly SYSTEM_SCREEN = 'Screen';
   readonly SYSTEM_CLIPBOARD = 'Clipboard';
+
+  // The Apps panel currently has a single sub-pane.
+  readonly APPS_FEATURES = 'Apps & features';
 
   readonly PERSONALIZATION_DESKTOP_BACKGROUND = 'Desktop';
   readonly PERSONALIZATION_LOCKSCREEN = 'Lock screen';
@@ -98,43 +105,76 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
   lockScreenSlideShowOption = Constants.EMPTY_STRING;
   lockScreenTimeoutOption = Constants.EMPTY_STRING;
   desktopBkgrndOption = Constants.EMPTY_STRING;
-  taskBarPostionOption = 'Bottom';
+  taskBarPositionOption = 'Bottom';
   taskBarCombinationOption = Constants.EMPTY_STRING;
 
-  private _formBuilder:FormBuilder;
   searchBarForm!: FormGroup;
 
   searchPlaceHolder = 'Find a setting';
+
+  readonly screenViewText = 
+`Enable viewport bounds enforcement to prevent windows from being dragged off-screen.`;
 
   readonly clipboardText =
 `When you copy or cut something in Cheetah, it's copied to the
  clipboad for you to paste.`;
 
-  readonly clipboardHisotryText = 
+  readonly clipboardHistoryText = 
 `Save multiple items to the clipboard to use later. Press the
- Cheetah logo key + V to view your clipboard history and paste
+ Ctrl + Shift + V key to view your clipboard history and paste
  from it.`;
 
  isSaveClipboardHistory = true;
+ isEnforceViewPortBound = true;
  isAutoHideTaskBar = false;
  isScreenSaverActive = false;
  clipboardSaveStateText = Constants.ON;
  autoHideTaskBarText = Constants.OFF;
  isScreenSaverActiveText = Constants.OFF;
+ enforceViewPortBoundText = Constants.ON;
+
+ // System > Notifications & actions pane toggle state.
+ // The first option is disabled in the UI (matches Windows, which only enables it
+ // once lock-screen notifications are permitted); the other two default to On.
+ isShowNotificationsOnLockScreen = false;
+ isShowRemindersAndVoipOnLockScreen = true;
+ isGetNotificationsFromApps = true;
+ showNotificationsOnLockScreenText = Constants.OFF;
+ showRemindersAndVoipOnLockScreenText = Constants.ON;
+ getNotificationsFromAppsText = Constants.ON;
 
   selectedSystemOption = this.SYSTEM_SCREEN;
   selectedPersonalizationOption = this.PERSONALIZATION_DESKTOP_BACKGROUND;
   prevSelectedPersonalizationOption = this.PERSONALIZATION_DESKTOP_BACKGROUND;
 
-  selectedApplicationOption = Constants.EMPTY_STRING;
+  selectedApplicationOption = this.APPS_FEATURES;
   selectedIdx = 0;
 
   lockScreenPictureOptions!:string[];
   desktopPictureOptions!:string[];
   colorOptions!:string[];
-  settingsOptions!:string[][];
-  systemOptions!:string[][];
-  personalizationOptions!:string[][];
+  settingsOptions!:SettingsMenuOption[];
+  systemOptions!:SettingsMenuOption[];
+  personalizationOptions!:SettingsMenuOption[];
+  applicationOptions!:SettingsMenuOption[];
+
+  // Installed-apps list shown in the Apps > Apps & features pane.
+  applicationList!:{ icon:string, name:string }[];
+
+  // Resolves the installed-app catalogue and per-app icons for the apps list.
+  private readonly _appDirectory = new AppDirectory();
+
+  // Friendly display names for the catalogue's lowercase app keys.
+  private static readonly _appDisplayNames: Record<string, string> = {
+    audioplayer: 'Audio Player', chatter: 'Chatter', cheetah: 'Cheetah',
+    clippy: 'Clippy', clipboard: 'Clipboard', fileexplorer: 'File Explorer',
+    taskmanager: 'Task Manager', terminal: 'Terminal', videoplayer: 'Video Player',
+    photoviewer: 'Photo Viewer', runsystem: 'Run', texteditor: 'Text Editor',
+    settings: 'Settings', hello: 'Hello', greeting: 'Greeting', jsdos: 'JS-DOS',
+    ruffle: 'Ruffle', codeeditor: 'Code Editor', markdownviewer: 'Markdown Viewer',
+    starfield: 'Starfield', boids: 'Boids', particleflow: 'Particle Flow',
+    pdfviewer: 'PDF Viewer'
+  };
 
   lockScreenBackgroundOptions = [
     { value: 0, label: this.LOCKSCREEN_BACKGROUND_PICTURE },
@@ -175,6 +215,24 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
   currentTime = Constants.EMPTY_STRING;
   currentDate = Constants.EMPTY_STRING;
 
+  // System > Storage pane display state. Populated by getStorageData() when the
+  // pane is opened. The capacity comes from Constants.STORAGE_CAPACITY and the
+  // used amount from the FileService; "free" is simply capacity minus used.
+  storageCapacityText = Constants.EMPTY_STRING;
+  storageUsedText = Constants.EMPTY_STRING;
+  storageFreeText = Constants.EMPTY_STRING;
+  storageUsedPercent = 0;
+
+  // System > About pane: static "Cheetah specifications" rows, sourced entirely
+  // from the OS_* constants. Declared as label/value pairs so the template can
+  // render them with a simple *ngFor instead of repeating markup per row.
+  readonly aboutSpecs: { label: string, value: string }[] = [
+    { label: 'Edition', value: Constants.OS_NAME },
+    { label: 'Version', value: Constants.OS_VERSION },
+    { label: 'OS build', value: Constants.OS_BUILD },
+    { label: 'Architecture', value: Constants.OS_ARCHITECTURE },
+  ];
+
   retrievedBackgroundType = Constants.EMPTY_STRING;
   retrievedBackgroundValue = Constants.EMPTY_STRING;
 
@@ -183,12 +241,17 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
   isLockScreenSlideShowDropDownOpen = false;
   isLockScreenTimeoutDropDownOpen = false;
   isDesktopBkgrndDropDownOpen = false;
-  isTaskbarPostionDropDownOpen = false;
+  isTaskbarPositionDropDownOpen = false;
   isTaskbarCombinationDropDownOpen = false;
 
-  slideShowIntervalId!: NodeJS.Timeout;
+  // Holds the active background-preview slideshow timer, or undefined when no
+  // slideshow is running. Cleared in stopSlideShow() / ngOnDestroy().
+  slideShowIntervalId?: NodeJS.Timeout;
+
+  readonly MIN_WIDTH_PX = 480; 
+  readonly MIN_HEIGHT_PX = 320;
   
-  isMaximizable = false;
+  isMaximizable = true;
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}settings.png`;
   name = 'settings';
@@ -197,14 +260,13 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
   displayName = Constants.EMPTY_STRING;
 
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService,  windowService:WindowService, 
-               defaultService:DefaultService, formBuilder:FormBuilder) { 
-    this._processIdService = processIdService;
-    this._runningProcessService = runningProcessService;
-    this._windowService = windowService;
-    this._defaultService = defaultService
-    this._formBuilder = formBuilder;
-
+  constructor(
+    private _processIdService:ProcessIDService,
+    private _runningProcessService:RunningProcessService,
+    private _windowService:WindowService,
+    private _defaultService:DefaultService,
+    private _fileService:FileService,
+    private _formBuilder:FormBuilder) {
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
@@ -224,33 +286,24 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.settingsOptions = this.generateControlPanelOptions();
     this.systemOptions = this.generateSystemOptions();
     this.personalizationOptions = this.generatePersonalizationOptions();
+    this.applicationOptions = this.generateApplicationOptions();
+    this.applicationList = this.generateApplicationList();
   }
 
-  ngAfterViewInit(): void {
-    this.captureComponentImg();
+  async ngAfterViewInit(): Promise<void> {
+    await this.captureComponentImg();
   }
 
   ngOnDestroy(): void {
     // a wired bug. I shouldn't have to do this.
     this.stopSlideShow();
+    
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.settingsContainer.nativeElement).then(htmlImg =>{
-
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+  async captureComponentImg():Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.settingsContainer, this.processId, this.name, this.icon, this._windowService);
   }
   
-
   toggleLockScreenBkgrndDropdown(evt:MouseEvent): void {
     evt.stopPropagation();
     this.isLockScreenBkgrndDropDownOpen = !this.isLockScreenBkgrndDropDownOpen;
@@ -271,9 +324,9 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isDesktopBkgrndDropDownOpen = !this.isDesktopBkgrndDropDownOpen;
   }
 
-  toggleTaskBarPostionDropdown(evt:MouseEvent): void {
+  toggleTaskBarPositionDropdown(evt:MouseEvent): void {
     evt.stopPropagation();
-    this.isTaskbarPostionDropDownOpen = !this.isTaskbarPostionDropDownOpen;
+    this.isTaskbarPositionDropDownOpen = !this.isTaskbarPositionDropDownOpen;
   }
 
   toggleTaskBarCombinationDropdown(evt:MouseEvent): void {
@@ -288,11 +341,11 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLockScreenTimeoutDropDownOpen = false;
     this.isDesktopBkgrndDropDownOpen = false;
     this.isTaskbarCombinationDropDownOpen = false;
-    this.isTaskbarPostionDropDownOpen = false;
+    this.isTaskbarPositionDropDownOpen = false;
   }
 
   getLockScreenBackgroundData():void{
-    const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND).split(Constants.COLON);    
+    const defaultBkgrnd = SettingsHelper.splitSettingValue(this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND));    
     this.retrievedBackgroundType = defaultBkgrnd[0];
     this.retrievedBackgroundValue = defaultBkgrnd[1];
     this.lockScreenBkgrndOption  = defaultBkgrnd[0];
@@ -303,7 +356,7 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getDesktopBackgroundData():void{
-    const defaultBkgrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND).split(Constants.COLON);
+    const defaultBkgrnd = SettingsHelper.splitSettingValue(this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND));
     this.retrievedBackgroundType = defaultBkgrnd[0];
     this.retrievedBackgroundValue = defaultBkgrnd[1];
     this.desktopBkgrndOption  = defaultBkgrnd[0];
@@ -317,13 +370,59 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getLockScreenTimeOutData():void{
-    const defaultTimeOut = this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT).split(Constants.COLON);
+    const defaultTimeOut = SettingsHelper.splitSettingValue(this._defaultService.getDefaultSetting(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT));
     this.lockScreenTimeoutOption = defaultTimeOut[0];
   }
 
-  geScreenSaverData():void{
+  getScreenSaverData():void{
     const scrSvrState = this._defaultService.getDefaultSetting(Constants.DEFAULT_SCREEN_SAVER_STATE);
     this.isScreenSaverActive = (scrSvrState === Constants.ON)? true : false;
+  }
+
+  /**
+   * Loads the persisted "save clipboard history" preference so the toggle and its
+   * On/Off label reflect the value chosen in a previous session.
+   * The flag is stored as Constants.TRUE / Constants.FALSE, mirroring the
+   * convention used by the auto-hide-taskbar setting.
+   */
+  getClipboardData():void{
+    const savedClipboardState = this._defaultService.getDefaultSetting(Constants.DEFAULT_CLIP_BOARD_STATE);
+    this.isSaveClipboardHistory = (savedClipboardState === Constants.TRUE);
+    this.clipboardSaveStateText = (this.isSaveClipboardHistory)? Constants.ON : Constants.OFF;
+  }
+
+  /**
+   * Computes the figures shown in the System > Storage pane.
+   *
+   *  - Total capacity is the fixed virtual-disk size (Constants.STORAGE_CAPACITY).
+   *  - Used bytes come from the FileService, which tracks the live drive usage.
+   *  - Free bytes are the remainder.
+   *
+   * Used is clamped to the capacity so the progress bar can never exceed 100%
+   * and the "free" figure can never go negative, even if the drive somehow
+   * reports more usage than the advertised capacity.
+   */
+  getStorageData():void{
+    const totalCapacityInBytes = Constants.STORAGE_CAPACITY;
+    const usedInBytes = Math.min(this._fileService.getUsedStorage(), totalCapacityInBytes);
+    const freeInBytes = totalCapacityInBytes - usedInBytes;
+
+    this.storageCapacityText = this.formatStorageSize(totalCapacityInBytes);
+    this.storageUsedText = this.formatStorageSize(usedInBytes);
+    this.storageFreeText = this.formatStorageSize(freeInBytes);
+    this.storageUsedPercent = (totalCapacityInBytes > 0)
+      ? Math.round((usedInBytes / totalCapacityInBytes) * 100)
+      : 0;
+  }
+
+  /**
+   * Formats a byte count into a human-readable "<value> <unit>" string
+   * (e.g. "488.31 MB") using the shared size/unit helpers.
+   */
+  private formatStorageSize(sizeInBytes:number):string{
+    const readableValue = CommonFunctions.getReadableFileSizeValue(sizeInBytes);
+    const sizeUnit = CommonFunctions.getFileSizeUnit(sizeInBytes);
+    return `${readableValue} ${sizeUnit}`;
   }
 
   focusWindow(evt:MouseEvent):void{
@@ -334,22 +433,59 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
-  generateControlPanelOptions():string[][]{
-    const options = [[this.systemImg, this.SYSTEM_VIEW, this.SYSTEM_VIEW_EXTRA], [this.appsImg, this.APPS_VIEW,  this.APPS_VIEW_EXTRA],  
-                     [this.personalizationImg, this.PERSONALIZATION_VIEW, this.PERSONALIZATION_VIEW_EXTRA]];
-    return options;
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the App (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu.
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
   }
 
-  generateSystemOptions():string[][]{
-    const options = [[this.screenImg, this.SYSTEM_SCREEN], [this.notificationImg, this.SYSTEM_NOTIFICATION],  
-                     [this.storageImg, this.SYSTEM_STORAGE], [this.clipboardImg, this.SYSTEM_CLIPBOARD], [this.aboutImg, this.SYSTEM_ABOUT]];
-    return options;
+  generateControlPanelOptions():SettingsMenuOption[]{
+    return [
+      { icon: this.systemImg, title: this.SYSTEM_VIEW, subtitle: this.SYSTEM_VIEW_EXTRA },
+      { icon: this.appsImg, title: this.APPS_VIEW, subtitle: this.APPS_VIEW_EXTRA },
+      { icon: this.personalizationImg, title: this.PERSONALIZATION_VIEW, subtitle: this.PERSONALIZATION_VIEW_EXTRA },
+    ];
   }
 
-  generatePersonalizationOptions():string[][]{
-    const options = [[this.desktopBackgrounImg, this.PERSONALIZATION_DESKTOP_BACKGROUND], [this.lockScreenImg, this.PERSONALIZATION_LOCKSCREEN],  
-                     [this.taskbarImg, this.PERSONALIZATION_TASKBAR]];
-    return options;
+  generateSystemOptions():SettingsMenuOption[]{
+    return [
+      { icon: this.screenImg, title: this.SYSTEM_SCREEN },
+      { icon: this.notificationImg, title: this.SYSTEM_NOTIFICATION },
+      { icon: this.storageImg, title: this.SYSTEM_STORAGE },
+      { icon: this.clipboardImg, title: this.SYSTEM_CLIPBOARD },
+      { icon: this.aboutImg, title: this.SYSTEM_ABOUT },
+    ];
+  }
+
+  generatePersonalizationOptions():SettingsMenuOption[]{
+    return [
+      { icon: this.desktopBackgroundImg, title: this.PERSONALIZATION_DESKTOP_BACKGROUND },
+      { icon: this.lockScreenImg, title: this.PERSONALIZATION_LOCKSCREEN },
+      { icon: this.taskbarImg, title: this.PERSONALIZATION_TASKBAR },
+    ];
+  }
+
+  // The Apps panel has a single sidebar entry: "Apps & features".
+  generateApplicationOptions():SettingsMenuOption[]{
+    return [
+      { icon: this.appsListImg, title: this.APPS_FEATURES },
+    ];
+  }
+
+  /**
+   * Builds the installed-apps list for the Apps & features pane from the
+   * AppDirectory catalogue, pairing each app with its icon and a friendly
+   * display name (falling back to the raw catalogue key when none is mapped).
+   */
+  generateApplicationList():{ icon:string, name:string }[]{
+    return this._appDirectory.getAppList().filter(appName => !this._appDirectory.getHiddenApp().includes(appName)).map(appName => ({
+      icon: this._appDirectory.getAppIcon(appName),
+      name: SettingsComponent._appDisplayNames[appName] ?? appName,
+    }));
   }
 
   generateColorOptions():string[]{
@@ -358,26 +494,48 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async handleSettingsPanelSelection(selection:string, evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
-    this.DEFAULT_VIEW = selection;
+    this.currentView = selection;
 
     if(selection === this.PERSONALIZATION_VIEW){
       this.getDesktopBackgroundData();
       await this.handleDropDownChoiceAndSetBkgrnd();
     }
 
-    this.captureComponentImg();
+    if(selection === this.APPS_VIEW){
+      // Single sub-pane: ensure it is selected and its sidebar item highlighted.
+      this.selectedApplicationOption = this.APPS_FEATURES;
+      this.selectedIdx = 0;
+    }
+
+    await this.captureComponentImg();
   }
 
   async handleMenuSelection(selection:string, idx:number, evt:MouseEvent, view:string): Promise<void>{
     evt.stopPropagation();
 
     if(idx === -1 && view === this.HOME_VIEW){
-      this.DEFAULT_VIEW = this.HOME_VIEW;
+      this.currentView = this.HOME_VIEW;
       return;
     }
 
     if(view === this.SYSTEM_VIEW){
       this.selectedSystemOption = selection;
+      this.selectedIdx = idx;
+
+      // Lazily load the persisted clipboard preference when its pane is opened,
+      // matching how the lock-screen / taskbar panes load their data on demand.
+      if(selection === this.SYSTEM_CLIPBOARD)
+        this.getClipboardData();
+
+      // Compute disk usage figures when the storage pane is opened.
+      if(selection === this.SYSTEM_STORAGE)
+        this.getStorageData();
+
+      return;
+    }
+
+    if(view === this.APPS_VIEW){
+      this.selectedApplicationOption = selection;
       this.selectedIdx = idx;
       return;
     }
@@ -390,7 +548,7 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
       if(selection ===  this.PERSONALIZATION_LOCKSCREEN){
         this.getLockScreenBackgroundData();
         this.getLockScreenTimeOutData();
-        this.geScreenSaverData();
+        this.getScreenSaverData();
         this.currentTime = SettingsHelper.updateTime();
         this.currentDate = SettingsHelper.getDate();
         await this.handleDropDownChoiceAndSetBkgrnd();
@@ -407,15 +565,28 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.captureComponentImg();
+    await this.captureComponentImg();
   }
 
-  changeSaveClipBoardHisotryState():void{
-    //this.isSaveClipboardHistory = !this.isSaveClipboardHistory;
+  changeSaveClipboardHistoryState():void{
+    // The checkbox is bound via [(ngModel)], so isSaveClipboardHistory already holds
+    // the new value by the time this (change) handler runs. Update the label and
+    // persist the choice so it survives a reload (stored as TRUE / FALSE).
     this.clipboardSaveStateText = (this.isSaveClipboardHistory)? Constants.ON : Constants.OFF;
+    const clipboardStateValue = (this.isSaveClipboardHistory)? Constants.TRUE : Constants.FALSE;
+    this._defaultService.updateDefaultData(Constants.DEFAULT_CLIP_BOARD_STATE, clipboardStateValue);
   }
 
-  async handleDropDownChoiceAndSetBkgrnd(option?: { value: number, label: string }, evt?: any): Promise<void>{
+  changeEnforceViewPortBoundState():void{
+    // The checkbox is bound via [(ngModel)], so isEnforceViewPortBound already holds
+    // the new value by the time this (change) handler runs. Update the label and
+    // persist the choice so it survives a reload (stored as TRUE / FALSE).
+    this.enforceViewPortBoundText = (this.isEnforceViewPortBound)? Constants.ON : Constants.OFF;
+    const enforceViewPortBoundValue = (this.isEnforceViewPortBound)? Constants.TRUE : Constants.FALSE;
+    this._defaultService.updateDefaultData(Constants.DEFAULT_ENFORCE_VIEWPORT_BOUNDS, enforceViewPortBoundValue);
+  }
+
+  async handleDropDownChoiceAndSetBkgrnd(option?: { value: number, label: string }, evt?: MouseEvent): Promise<void>{
     if(evt)
       evt.stopPropagation();
 
@@ -491,8 +662,8 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
 
           if(isChanged){
             //auto apply
-            const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${selection}`;
-            this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+            const defaultDesktopBackgroundValue = `${this.desktopBkgrndOption}:${selection}`;
+            this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgroundValue);
           }
 
           //const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
@@ -526,8 +697,8 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
 
           if(isChanged){
             //auto apply
-            const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
-            this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+            const defaultDesktopBackgroundValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
+            this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgroundValue);
           }
 
           //await CommonFunctions.sleep(delay);
@@ -542,8 +713,8 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
         || (this.lockScreenBkgrndOption === this.LOCKSCREEN_BACKGROUND_MIRROR && isChanged)){
 
         if(isMirror){
-          const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${this.lockScreenBkgrndOption}`;
-          this._defaultService.updateDefaultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
+          const defaultLockScreenBackgroundValue = `${this.lockScreenBkgrndOption}:${this.lockScreenBkgrndOption}`;
+          this._defaultService.updateDefaultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgroundValue);
         }
         if(screenPrevElmnt){  
           const desktopBkgrndImg = await this.getDesktopScreenShot();  
@@ -567,8 +738,8 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
 
           if(isChanged){
             //auto apply
-            const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${prevSolidColor}`;
-            this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+            const defaultDesktopBackgroundValue = `${this.desktopBkgrndOption}:${prevSolidColor}`;
+            this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgroundValue);
           }
 
           await CommonFunctions.sleep(delay);
@@ -635,6 +806,7 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   stopSlideShow():void{
     CommonFunctions.stopSlideShow(this.slideShowIntervalId);
+    this.slideShowIntervalId = undefined;
   }
 
   setStyle(screenPrevElmnt: HTMLDivElement, styleClasses:string[], activeClass:string) {
@@ -653,8 +825,8 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.lockScreenTimeoutOption = selectedValue;
 
     const timeOutValue = this.lockScreenTimeOutOptions.find(x => x.label === this.lockScreenTimeoutOption)?.value;
-    const defaultLockScreenBackgrounValue = `${this.lockScreenTimeoutOption}:${timeOutValue}`;
-    this._defaultService.updateDefaultData(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, defaultLockScreenBackgrounValue);
+    const lockScreenTimeoutValue = `${this.lockScreenTimeoutOption}:${timeOutValue}`;
+    this._defaultService.updateDefaultData(Constants.DEFAULT_LOCK_SCREEN_TIMEOUT, lockScreenTimeoutValue);
   }
 
   async handleScreenPictureAndColorSelection(selection:string, evt:MouseEvent): Promise<void>{
@@ -664,8 +836,8 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     let activeClass = Constants.EMPTY_STRING;
 
     if(isDesktopView){
-      const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
-      this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+      const defaultDesktopBackgroundValue = `${this.desktopBkgrndOption}:${this.checkAndVantaCase(selection)}`;
+      this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgroundValue);
 
       if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC)
         this._defaultService.updateDefaultData(Constants.DEFAULT_PREVIOUS_DESKTOP_DYNAMIC_IMG, selection);
@@ -676,8 +848,8 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
       if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR)
         this._defaultService.updateDefaultData(Constants.DEFAULT_PREVIOUS_DESKTOP_SOLID_COLOR, selection);
     }else{
-      const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selection}`;
-      this._defaultService.updateDefaultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
+      const defaultLockScreenBackgroundValue = `${this.lockScreenBkgrndOption}:${selection}`;
+      this._defaultService.updateDefaultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgroundValue);
     }
 
     const styleClasses = (isDesktopView)
@@ -712,7 +884,7 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
         activeClass = styleClasses[0];
         this.setStyle(screenPrevElmnt, styleClasses, activeClass)
 
-        if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC){;
+        if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_DYNAMIC){
           //const img = await this.getDesktopScreenShot(selection, Constants.EMPTY_STRING);
           screenPrevElmnt.style.backgroundImage =`url(${selection})`;
         }else{
@@ -760,7 +932,7 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
       
       if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_PICTURE 
         || this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SLIDE_SHOW){
-          const dsktpBkGrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND).split(Constants.COLON);
+          const dsktpBkGrnd = SettingsHelper.splitSettingValue(this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND));
 
           setting.imgPath = dsktpBkGrnd[1];
           setting.isImage = true;
@@ -769,7 +941,7 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       if(this.desktopBkgrndOption === this.DESKTOP_BACKGROUND_SOLID_COLOR){
-        const dsktpBkGrnd = this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND).split(Constants.COLON)
+        const dsktpBkGrnd = SettingsHelper.splitSettingValue(this._defaultService.getDefaultSetting(Constants.DEFAULT_DESKTOP_BACKGROUND))
         setting.colorValue = dsktpBkGrnd[1]; setting.isColor = true;
 
         imgResult = await this.getDesktopScreenShotHelper(setting, this.CAPTURE_COLOR_BACKGROUND_ONLY);
@@ -820,9 +992,9 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if(setting.isImage && intent === this.MERGE_BACKGROUND_AND_FOREGROUND){
       const dsktpCntnrElmnt = document.getElementById('vantaCntnr') as HTMLElement;
-      const backGroungImgCntnr = new Image();
-      backGroungImgCntnr.src = setting.imgPath;
-      await backGroungImgCntnr.decode();
+      const backgroundImgCntnr = new Image();
+      backgroundImgCntnr.src = setting.imgPath;
+      await backgroundImgCntnr.decode();
 
       const foreGroundImg = new Image();
       foreGroundImg.src =  await this.getForeGroundScreenShot(defaultColor , setting.changeBackGrndColor);
@@ -838,7 +1010,7 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
         return Constants.EMPTY_STRING;
       }
       // 1. Draw the Vanta background image first.
-      ctx.drawImage(backGroungImgCntnr, 0, 0, mergedImg.width, mergedImg.height);
+      ctx.drawImage(backgroundImgCntnr, 0, 0, mergedImg.width, mergedImg.height);
       
       // 2. Draw the HTML content on top of the background.
       ctx.drawImage(foreGroundImg, 0, 0, mergedImg.width, mergedImg.height);
@@ -881,7 +1053,9 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     return htmlImg;
   }
 
-  shhhh(evt:MouseEvent):void{
+  // Stops a click on a preview surface from bubbling up to the document-level
+  // outside-click handler (which would otherwise close open dropdowns).
+  onPreviewClick(evt:MouseEvent):void{
     evt.stopPropagation();
   }
 
@@ -894,16 +1068,16 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const isDesktopView = (this.selectedPersonalizationOption === this.PERSONALIZATION_DESKTOP_BACKGROUND)? true: false;
     if(isDesktopView){
-      const defaultDesktopBackgrounValue = `${this.desktopBkgrndOption}:${selectedValue}`;
-      this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgrounValue);
+      const defaultDesktopBackgroundValue = `${this.desktopBkgrndOption}:${selectedValue}`;
+      this._defaultService.updateDefaultData(Constants.DEFAULT_DESKTOP_BACKGROUND, defaultDesktopBackgroundValue);
 
     }else{
-      const defaultLockScreenBackgrounValue = `${this.lockScreenBkgrndOption}:${selectedValue}`;
-      this._defaultService.updateDefaultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgrounValue);
+      const defaultLockScreenBackgroundValue = `${this.lockScreenBkgrndOption}:${selectedValue}`;
+      this._defaultService.updateDefaultData(Constants.DEFAULT_LOCK_SCREEN_BACKGROUND, defaultLockScreenBackgroundValue);
     }
   }
   
-  async handleTaskBarCombinationSelection(option: { value: number, label: string },  evt: any): Promise<void>{
+  async handleTaskBarCombinationSelection(option: { value: number, label: string },  evt: MouseEvent): Promise<void>{
     evt.stopPropagation();
 
     const selectedValue = option.label;
@@ -922,6 +1096,26 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isScreenSaverActiveText = (this.isScreenSaverActive)? Constants.ON : Constants.OFF;
     this._defaultService.updateDefaultData(Constants.DEFAULT_SCREEN_SAVER_STATE, this.isScreenSaverActiveText);
   }
+
+  // ----- System > Notifications & actions toggle handlers (stubs) -----
+  // Each handler updates its On/Off label from the [(ngModel)]-bound flag.
+  // Persistence / side-effects to be implemented later.
+
+  changeShowNotificationsOnLockScreenState():void{
+    this.showNotificationsOnLockScreenText = (this.isShowNotificationsOnLockScreen)? Constants.ON : Constants.OFF;
+    // TODO: persist + apply lock-screen notification preference.
+  }
+
+  changeShowRemindersAndVoipOnLockScreenState():void{
+    this.showRemindersAndVoipOnLockScreenText = (this.isShowRemindersAndVoipOnLockScreen)? Constants.ON : Constants.OFF;
+    // TODO: persist + apply reminders / VoIP lock-screen preference.
+  }
+
+  changeGetNotificationsFromAppsState():void{
+    this.getNotificationsFromAppsText = (this.isGetNotificationsFromApps)? Constants.ON : Constants.OFF;
+    // TODO: persist + apply app notifications preference.
+  }
+
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }

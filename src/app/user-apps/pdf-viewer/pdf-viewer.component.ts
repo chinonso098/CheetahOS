@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { Component, ElementRef, OnInit, AfterViewInit, ViewChild, Input } from '@angular/core';
+import { Component, ElementRef, OnInit, AfterViewInit, OnDestroy, Input } from '@angular/core';
 
 import {extname} from 'path';
 import { FileService } from 'src/app/shared/system-service/file.service';
@@ -12,9 +12,8 @@ import { ProcessHandlerService } from 'src/app/shared/system-service/process.han
 import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState} from 'src/app/system-files/state/state.interface';
 
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
-import * as htmlToImage from 'html-to-image';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
 import { WindowService } from 'src/app/shared/system-service/window.service';
@@ -26,20 +25,21 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   templateUrl: './pdf-viewer.component.html',
   styleUrl: './pdf-viewer.component.css'
 })
-export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit {
+export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit, OnDestroy {
   @Input() priorUId = Constants.EMPTY_STRING;
   
   private _fileService!:FileService;
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _processHandlerService!:ProcessHandlerService;
-  private _sessionManagmentService!:SessionManagmentService;
+  private _sessionManagementService!:SessionManagementService;
   private _scriptService!:ScriptService;
   private _windowService!:WindowService;
   
   private zoomBy = 0;
   private pageRendering = false;
   private pdfDoc:any = null;
+  private loadingTask:any = null;
   private pdfjsLib: any = null; // Store js-dos instance
   private pageNumPending:any = null;
 
@@ -56,20 +56,25 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
   readonly ZOOM_FACTOR = 0.1;
   readonly DEFAULT_SCALE = 1;
 
+  /* Floors mirror the CSS min-width/min-height so the resize handler
+     ignores transient sub-min sizes during drag. */
+  readonly MIN_WIDTH_PX = 480;
+  readonly MIN_HEIGHT_PX = 320;
+
   name= 'pdfviewer';
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}pdf_js.png`;
-  isMaximizable = false;
+  isMaximizable = true;
   processId = 0;
   type = ComponentType.User;
   displayName = 'PDFViewer';
 
   constructor(fileService:FileService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-              sessionManagmentService: SessionManagmentService, scriptService: ScriptService ,windowService:WindowService) { 
+              sessionManagementService: SessionManagementService, scriptService: ScriptService ,windowService:WindowService) { 
     this._fileService = fileService
     this._processIdService = processIdService;
     this._processHandlerService = triggerProcessService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
     this._scriptService = scriptService;
     this._windowService = windowService;
     this.processId = this._processIdService.getNewProcessId();
@@ -88,34 +93,64 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
       ? this.pdfFileSrc
       : this.getPDFSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
-    this._scriptService
-      .loadScript("pdf-js", "osdrive/Program-Files/PDF-JS/build/pdf.mjs")
-      .then(async() => {
-        // Ensure pdfjsLib is available from the loaded script
-        this.pdfjsLib = (window as any).pdfjsLib;
-        // Now set the workerSrc
-        this.pdfjsLib.GlobalWorkerOptions.workerSrc = 'osdrive/Program-Files/PDF-JS/build/pdf.worker.mjs';
+    // pdf.mjs is a real ES module (uses import.meta), so it MUST be loaded as
+    // type="module". The browser caches ES modules in its module map by URL,
+    // which means removing the <script> tag doesn't unload the module and a
+    // second <script type="module" src="...pdf.mjs"> tag won't re-execute it.
+    // So we only request the script the first time; on subsequent opens the
+    // window.pdfjsLib global is already there and we just reuse it.
+    if (!(window as any).pdfjsLib) {
+      await this._scriptService.loadScript("pdf-js", "osdrive/Program-Files/PDF-JS/build/pdf.mjs");
+    }
 
-        const file = await this._fileService.getFileAsBlobAsync(this.pdfFileSrc);
-        const isLoaded = await this.loadPDFFile(file);
+    // Ensure pdfjsLib is available from the loaded script
+    this.pdfjsLib = (window as any).pdfjsLib;
+    // Now set the workerSrc
+    this.pdfjsLib.GlobalWorkerOptions.workerSrc = 'osdrive/Program-Files/PDF-JS/build/pdf.worker.mjs';
 
-        if(isLoaded){
-          this.pageNum = firstPage
-          await this.renderPage(firstPage);
-        }
+    const file = await this._fileService.getFileAsBlobAsync(this.pdfFileSrc);
+    const isLoaded = await this.loadPDFFile(file);
 
-        this.displayName = this._fileInfo.getFileName;
-    });
+    if(isLoaded){
+      this.pageNum = firstPage
+      await this.renderPage(firstPage);
+    }
+
+    this.displayName = this._fileInfo.getFileName;
 
     await CommonFunctions.sleep(this.SECONDS_DELAY);
-    this.captureComponentImg();
+    await this.captureComponentImg();
+  }
+
+  ngOnDestroy(): void {
+    // Clean up PDF.js resources if needed
+    if (this.pdfDoc) {
+      this.pdfDoc.destroy();
+      this.pdfDoc = null;
+    }
+
+    // Abort network streams and pending range-requests
+    if (this.loadingTask) {
+      this.loadingTask.destroy();
+      this.loadingTask = null;
+    }
+
+    // NOTE: We deliberately do NOT unload pdf.mjs here, even when this is the
+    // last open instance. pdf.mjs is an ES module — once executed, it lives
+    // in the browser's module map for the lifetime of the page. Removing the
+    // <script> tag does not free it, and a future re-insertion of the same
+    // URL will not re-execute it. If we delete window.pdfjsLib the next open
+    // would crash with "Cannot read properties of undefined (reading
+    // 'GlobalWorkerOptions')". Letting the global persist is correct and is
+    // also what the official pdf.js viewer does.
+    this.pdfjsLib = null;
   }
 
   async loadPDFFile(srcFile: string): Promise<boolean> {
     try {
       // Asynchronous load file
-      const loadingTask = this.pdfjsLib.getDocument(srcFile);
-      const pdf:any = await loadingTask.promise;
+      this.loadingTask = this.pdfjsLib.getDocument(srcFile);
+      const pdf:any = await this.loadingTask.promise;
 
       this.pdfDoc = pdf;
       this.pageCount = pdf.numPages;
@@ -243,7 +278,7 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
   public async capturePDFStill(canvas: HTMLCanvasElement): Promise<string> {
     if (!canvas) return Constants.EMPTY_STRING;
 
-    return canvas.toDataURL("image/png");
+    return canvas.toDataURL("image/jpeg", 0.5);
   }
 
 
@@ -277,6 +312,16 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+  }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the Task Manager (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu. 
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
   }
 
   getPDFSrc(pathOne:string, pathTwo:string):string{
@@ -314,11 +359,11 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
       this.pdfFileSrc = appSessionData.appData as string;
     }

@@ -1,10 +1,11 @@
 import { NestedMenuItem } from "src/app/shared/system-component/menu/menu.types";
-import { ActivityHistoryService } from "src/app/shared/system-service/activity.tracking.service";
-import { ProcessHandlerService } from "src/app/shared/system-service/process.handler.service";
+import { Activity } from "src/app/system-files/common.interfaces";
 import { ActivityType } from "src/app/system-files/common.enums";
 import { CommonFunctions } from "src/app/system-files/common.functions";
 import { Constants } from "src/app/system-files/constants";
 import { FileInfo } from "src/app/system-files/file.info";
+import { AppLaunchDescriptor } from "./desktop.types";
+
 
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -13,31 +14,36 @@ export namespace DesktopGeneralHelper {
     const CLIPPY_APP = "clippy";
     const PHOTOS_APP = "photoviewer";
 
-  export const  initializeApplication =(arg0:string, 
-    processHandlerService:ProcessHandlerService, 
-    activityHistoryService:ActivityHistoryService, screenShot?: FileInfo):void=>{
-
+  /**
+   * Builds the `FileInfo` for an app launch and decides whether the launch
+   * is trackable (clippy spawn-ticks are excluded).  Pure: the caller is
+   * responsible for calling `ProcessHandlerService.runApplication` on the
+   * returned `file` and `CommonFunctions.trackActivity` on the returned
+   * `activityToTrack` (when non-null).
+   */
+  export const prepareAppLaunch = (arg0: string, screenShot?: FileInfo): AppLaunchDescriptor => {
     let file = new FileInfo();
     const appPath = 'None';
     file.setOpensWith = arg0;
 
-    if(arg0 ===  MARKDOWN_VIEWER_APP){
+    if (arg0 === MARKDOWN_VIEWER_APP) {
       file.setCurrentPath = Constants.DESKTOP_PATH;
       file.setContentPath = '/Users/Documents/Credits.md';
     }
 
-    if(arg0 !== CLIPPY_APP){
-      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
-      CommonFunctions.trackActivity(activityHistoryService, activity);
+    let activityToTrack: Activity | null = null;
+    if (arg0 !== CLIPPY_APP) {
+      activityToTrack = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
     }
 
-    if(arg0 === PHOTOS_APP){
-      file = (screenShot)? screenShot : new FileInfo();
-      const activity = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
-      CommonFunctions.trackActivity(activityHistoryService, activity);
+    if (arg0 === PHOTOS_APP) {
+      file = (screenShot) ? screenShot : new FileInfo();
+      // Mirrors prior behaviour: the photos branch always tracks, even though
+      // the if-tree above also produced an activity for the same arg0.
+      activityToTrack = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
     }
 
-    processHandlerService.runApplication(file);
+    return { file, activityToTrack };
   }
 
   export const getScreenShotTimeStamp = ():string=>{
@@ -56,7 +62,7 @@ export namespace DesktopGeneralHelper {
   export const handleBuildViewByMenu = ( smallIconAction: (event: MouseEvent) => void, isSmallIcon:boolean,
     mediumIconAction: (event: MouseEvent) => void, isMediumIcon:boolean,
     largeIconAction: (event: MouseEvent) => void, isLargeIcon:boolean,
-    autoArrageIconAction: (event: MouseEvent) => void, autoArrangeIcons:boolean,
+    autoArrangeIconAction: (event: MouseEvent) => void, autoArrangeIcons:boolean,
     autoAlignIconsAction: (event: MouseEvent) => void, autoAlignIcons:boolean,
     showDesktopIconsAction: (event: MouseEvent) => void, showDsktpIcons:boolean):NestedMenuItem[] =>{
   
@@ -69,7 +75,7 @@ export namespace DesktopGeneralHelper {
     const largeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Large icons', action: largeIconAction, variables:isLargeIcon,
       emptyline:true, styleOption:'A' }
 
-    const autoArrageIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Auto arrange icons',  action: autoArrageIconAction,  variables:autoArrangeIcons, 
+    const autoArrangeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Auto arrange icons',  action: autoArrangeIconAction,  variables:autoArrangeIcons, 
       emptyline:false, styleOption:'B' }
 
     const autoAlign:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Align icons to grid',  action: autoAlignIconsAction,  variables:autoAlignIcons, 
@@ -78,12 +84,12 @@ export namespace DesktopGeneralHelper {
     const showDesktopIcons:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}chkmark32.png`, label:'Show desktop icons',  action: showDesktopIconsAction, variables:showDsktpIcons,
       emptyline:false,  styleOption:'B' }
 
-    const viewByMenu = [smallIcon,mediumIcon,largeIcon, autoArrageIcon, autoAlign,showDesktopIcons];
+    const viewByMenu = [smallIcon,mediumIcon,largeIcon, autoArrangeIcon, autoAlign,showDesktopIcons];
 
     return viewByMenu;
   }
 
-  export const hanldeBuildSortByMenu = (sortByNameMAction: (event: MouseEvent) => void, isSortByName:boolean,
+  export const handleBuildSortByMenu = (sortByNameMAction: (event: MouseEvent) => void, isSortByName:boolean,
     sortBySizeMAction: (event: MouseEvent) => void, isSortBySize:boolean,
     sortByItemTypeMAction: (event: MouseEvent) => void, isSortByItemType:boolean,
     sortByDateModifiedMAction: (event: MouseEvent) => void, isSortByDateModified:boolean): NestedMenuItem[]=> {

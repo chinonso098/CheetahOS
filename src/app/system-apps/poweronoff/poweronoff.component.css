@@ -64,3 +64,44 @@
   font-weight: 400;
   color: #ccc;
 }
+
+/* One-time "not optimized for mobile" banner, pinned to the top of the screen */
+.mobile-banner {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 8; /* above .main-shutdown-container (z-index: 7) */
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  background-color: #2d3033;
+  border-bottom: 2px solid #f0a500;
+  color: #f1f1f1;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.mobile-banner-text {
+  flex: 1;
+}
+
+.mobile-banner-dismiss {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #f1f1f1;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mobile-banner-dismiss:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}

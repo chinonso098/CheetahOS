@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { Component, OnInit, AfterViewInit} from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, Renderer2 } from '@angular/core';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Constants } from "src/app/system-files/constants";
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
@@ -17,16 +17,26 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
   standalone:false,
 })
 
-export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
+export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit, OnDestroy {
+
+  // Reference to the tooltip element in the template. Using @ViewChild instead of
+  // document.getElementById() keeps the lookup scoped to THIS component instance, so
+  // multiple Cheetah dialogs could coexist without clashing over a shared DOM id.
+  @ViewChild('cheetahAboutTooltip') private tooltipRef?:ElementRef<HTMLElement>;
+
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _audioService!:AudioService;
   private _windowService!:WindowService;
+  private _renderer:Renderer2;
 
+  // Timer handles. Tracked so they can be cancelled on destroy (and before re-starting),
+  // preventing leaked timers and callbacks that run against an already torn-down view.
+  private infoMessageTimeOutId?:NodeJS.Timeout;
+  private fancyLetterIntervalId?:ReturnType<typeof setInterval>;
 
   isDialog = true;
   isVisible = false;
-  infoMessageTimeOutId!:NodeJS.Timeout;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}cheetah.png`;
@@ -35,61 +45,79 @@ export class CheetahComponent implements BaseComponent, OnInit, AfterViewInit{
   type = ComponentType.System;
   displayName = 'CheetahOS';
   name = 'cheetah';
-  version = 'Version: 4.10.02';
+
+  // Single source of truth for the OS version, reused by the header and the info tooltip.
+  version = `Version: ${Constants.OS_VERSION}`;
   year = `\u00A9 ${new Date().getFullYear()}`;
   infoMessage = Constants.EMPTY_STRING;
 
   readonly defaultAudio = `${Constants.AUDIO_BASE_PATH}about_cheetah.mp3`;
 
-  constructor(processIdService:ProcessIDService,  runningProcessService:RunningProcessService, audioService:AudioService, windowService:WindowService) { 
+  constructor(processIdService:ProcessIDService,  runningProcessService:RunningProcessService, audioService:AudioService, windowService:WindowService, renderer:Renderer2) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._audioService = audioService;
     this._windowService = windowService;
+    this._renderer = renderer;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
   async ngOnInit(): Promise<void> {
-    const delay = 50; //50ms
+    const delay = 5; //5ms
     await CommonFunctions.sleep(delay)
     await this._audioService.play(this.defaultAudio);
   }
 
    async ngAfterViewInit(): Promise<void> {    
-    await CommonFunctions.sleep((10)); //delay of 10ms
+    await CommonFunctions.sleep(5); //delay of 5ms to ensure the view is fully initialized before manipulating it 
     this.getInfoMessage();
+  }
+
+  // Clean up any outstanding timers so nothing fires after the component is destroyed
+  // (prevents leaked timers and callbacks touching a view that no longer exists).
+  ngOnDestroy(): void {
+    clearTimeout(this.infoMessageTimeOutId);
+    clearInterval(this.fancyLetterIntervalId);
   }
 
   getInfoMessage():void{
     this.infoMessage =`
 CheetahOS
-Version 4.10.02
+Version ${Constants.OS_VERSION}.${Constants.OS_BUILD}
 Copyright\u00A9 Chinonso098 2022 - ${new Date().getFullYear()}
 
-Windows 10 icons & audio files Microsoft Corporation\u00A9. 
-Windows \u2122 is a registered trademark of Microsoft Corporation.
-Other trademarks and logos are property of their respective owners
+Windows 10 icons and audio files are \u00A9 Microsoft Corporation. All rights reserved.
+Windows\u2122 is a trademark of the Microsoft group of companies and is used herein for identification purposes only.
+This product is not affiliated with, endorsed by, or sponsored by Microsoft Corporation.
+All other trademarks, service marks, and logos are the property of their respective owners.
     `
   }
 
   onMouseEnter1():void{
+    // Hovering the tooltip itself should only keep an already-visible tooltip open.
+    // If it's hidden, do nothing (don't re-show it just because the cursor grazed
+    // the now-invisible tooltip region). The pending-hide cancellation happens inside
+    // onMouseEnter so both enter paths share the same logic.
     const showFancyLetters = false;
     if(!this.isVisible)
         return;
 
-    clearTimeout(this.infoMessageTimeOutId);
     this.onMouseEnter(showFancyLetters);
   }
 
   onMouseEnter(showFancyLetters = true):void{
-    const toolTipID = 'cheetahAboutTooltip';
-    const aboutToolTip = document.getElementById(toolTipID) as HTMLElement;
+    // Cancel any hide that was scheduled by a previous onMouseLeave. Without this,
+    // re-entering the icon (or cursor jitter on its edge) leaves a stale 3s timer
+    // running that later fires and hides the tooltip "as soon as" the mouse moves away.
+    clearTimeout(this.infoMessageTimeOutId);
+
+    const aboutToolTip = this.tooltipRef?.nativeElement;
     if(aboutToolTip){
-      aboutToolTip.style.zIndex = '3';
-      aboutToolTip.style.opacity = '1';
-      aboutToolTip.style.transition = 'opacity 0.5s ease';
+      this._renderer.setStyle(aboutToolTip, 'zIndex', '3');
+      this._renderer.setStyle(aboutToolTip, 'opacity', '1');
+      this._renderer.setStyle(aboutToolTip, 'transition', 'opacity 0.5s ease');
     }
     this.isVisible = true;
 
@@ -98,27 +126,34 @@ Other trademarks and logos are property of their respective owners
   }
 
    onMouseLeave():void{
+    // Clear any previously scheduled hide first so timers can't stack up; otherwise
+    // an earlier timer could still fire and hide the tooltip unexpectedly.
+    clearTimeout(this.infoMessageTimeOutId);
+
     const delay = 3000; // wait 3 sec
-    const toolTipID = 'cheetahAboutTooltip';
-    const aboutToolTip = document.getElementById(toolTipID) as HTMLElement;
+    const aboutToolTip = this.tooltipRef?.nativeElement;
 
     this.infoMessageTimeOutId = setTimeout(() => {
       if(aboutToolTip){
-        aboutToolTip.style.zIndex = '-1';
-        aboutToolTip.style.opacity = '0';
-        aboutToolTip.style.transition = 'opacity 0.75s ease 1';
+        this._renderer.setStyle(aboutToolTip, 'zIndex', '-1');
+        this._renderer.setStyle(aboutToolTip, 'opacity', '0');
+        this._renderer.setStyle(aboutToolTip, 'transition', 'opacity 0.75s ease 1');
       }
       this.isVisible = false;
     }, delay); 
   }
 
   fancyLetterEffect(): void {
-    const LETTERS = 'ABCDEFGHIJKLMNOPQRSTVUWXYZ0123456789';
+    // Cancel any in-flight animation so rapid re-hovers don't spawn competing
+    // intervals that fight over `displayName` and cause flicker.
+    clearInterval(this.fancyLetterIntervalId);
+
+    const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const text = 'CheetahOS';
     const delay = 50;
     let counter = 0;
 
-    const intervalId = setInterval(() => {
+    this.fancyLetterIntervalId = setInterval(() => {
       let displayed = Constants.EMPTY_STRING;
 
       for (let i = 0; i < text.length; i++) {
@@ -134,7 +169,7 @@ Other trademarks and logos are property of their respective owners
       counter += 0.5;
 
       if (counter > text.length) {
-        clearInterval(intervalId);
+        clearInterval(this.fancyLetterIntervalId);
       }
     }, delay);
   }
@@ -147,6 +182,15 @@ Other trademarks and logos are property of their respective owners
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the App (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu.
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
+  }
   private getComponentDetail():Process{
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type);
   }

@@ -39,7 +39,9 @@ export class ComponentReferenceService implements BaseService{
     }
 
     private addComponentReference(processId:number, componentToAdd:ComponentRef<BaseComponent>):void{
-        this._componentsReferences.set(processId,componentToAdd)
+        if(this._componentsReferences.has(processId)) return;
+        
+        this._componentsReferences.set(processId, componentToAdd);
     }
 
     private getComponentReference(processId:number):ComponentRef<BaseComponent> | undefined{
@@ -48,7 +50,9 @@ export class ComponentReferenceService implements BaseService{
     }
 
     private removeComponentReference(processId:number):void{
-        this._componentsReferences.delete(processId)
+        if(!this._componentsReferences.has(processId)) return;
+
+        this._componentsReferences.delete(processId);
     }
 
     setViewContainerRef(ref: ViewContainerRef):void {
@@ -68,12 +72,12 @@ export class ComponentReferenceService implements BaseService{
 
     removeComponent(pId:number):void{
         const componentToDelete = this.getComponentReference(pId);
-        if(componentToDelete){
-            this._componentRefView = componentToDelete.hostView;
-            const iVCntr  = this._viewContainerRef.indexOf(this._componentRefView);
-            this._viewContainerRef.remove(iVCntr);
-            this.removeComponentReference(pId);
-        }
+        if(!componentToDelete) return;
+
+        this._componentRefView = componentToDelete.hostView;
+        const iVCntr  = this._viewContainerRef.indexOf(this._componentRefView);
+        this._viewContainerRef.remove(iVCntr);
+        this.removeComponentReference(pId);
     }
     
     private getProcessDetail():Process{

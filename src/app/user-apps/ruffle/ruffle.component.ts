@@ -10,13 +10,14 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 
 import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 
 
 
@@ -34,7 +35,7 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _processHandlerService!:ProcessHandlerService;
-  private _sessionManagmentService!:SessionManagmentService;
+  private _sessionManagementService!:SessionManagementService;
   private _scriptService!:ScriptService;
   private _windowService!:WindowService;
   private _fileService!:FileService;
@@ -45,6 +46,9 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   private _intervalId: any;
 
   SECONDS_DELAY = 3000;
+  WIDTH_PX = 550;
+  HEIGHT_PX = 400;
+
 
   name= 'ruffle';
   hasWindow = true;
@@ -55,12 +59,12 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   displayName = 'Ruffle-EM';
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-              sessionManagmentService: SessionManagmentService, scriptService: ScriptService, windowService:WindowService,
-              fileService:FileService,) { 
+              sessionManagementService: SessionManagementService, scriptService: ScriptService, windowService:WindowService,
+              fileService:FileService) { 
     
     this._processIdService = processIdService;
     this._processHandlerService = triggerProcessService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
     this._scriptService = scriptService;
     this._windowService = windowService;
     this._fileService = fileService
@@ -72,17 +76,19 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
 
   ngOnInit(): void {
     this.retrievePastSessionData();
+
+    const resize:WindowResizeInfo = {pId:this.processId, widthPx:this.WIDTH_PX, heightPx:this.HEIGHT_PX}
+    this._windowService.resizeProcessWindowNotify.next(resize);
   }
 
   async ngAfterViewInit(): Promise<void>{
     const isModule = false;
     this._gameSrc =  await this.getGamesSrc(this._fileInfo);
-    this._scriptService.loadScript("ruffle","osdrive/Program-Files/Ruffle/ruffle.js", isModule).then(()=>{
-      this.rufflePlayer = (window as any).RufflePlayer.newest();
-      this.loadSWF(this._fileInfo.getContentPath);
-      this.storeAppState(this._gameSrc);
-    });
 
+    await this._scriptService.loadScript("ruffle","osdrive/Program-Files/Ruffle/ruffle.js", isModule);
+    this.rufflePlayer = (window as any).RufflePlayer.newest();
+    this.loadSWF(this._fileInfo.getContentPath);
+    this.storeAppState(this._gameSrc);
 
     await CommonFunctions.sleep(this.SECONDS_DELAY);
     this.updateComponentImg();
@@ -93,6 +99,16 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
     if (this._intervalId) {
       clearInterval(this._intervalId);
     }
+
+    // for multiple instances of ruffle, we dont want to unload the script until the last instance is closed
+    if(this._runningProcessService.getProcessCount(this.name) <= 1){
+      this._scriptService.unloadScript("ruffle", "osdrive/Program-Files/Ruffle/ruffle.js");
+
+      // ruffle.js attaches itself to window.RufflePlayer — clear it so the
+      // global is GC'd and a fresh copy is fetched next time.
+      delete (window as any).RufflePlayer;
+    }
+    
   }
 
   public loadSWF(swfUrl: string):void{
@@ -152,7 +168,7 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
     const ctx = tmp.getContext("2d")!;
     ctx.drawImage(bitmap, 0, 0);
 
-    return tmp.toDataURL("image/png");
+    return tmp.toDataURL("image/jpeg", 0.5);
   }
 
   updateComponentImg():void{
@@ -186,11 +202,11 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
   
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     console.log('appSessionData:', appSessionData);
 
     if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){

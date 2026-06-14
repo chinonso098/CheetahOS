@@ -1,76 +1,97 @@
-.main-taskbar-system-tray{
+/* =============================================================================
+   System Tray
+   Layout: a flex container pinned to the right edge of the taskbar. Each tray
+   item (overflow arrow, volume, date/time, notifications) is absolutely
+   positioned by its distance from the right edge.
+
+   Shared values are centralised as CSS custom properties so the hover colour
+   and item height only need to be tweaked in one place.
+   ============================================================================= */
+
+.main-taskbar-system-tray {
+    /* Hover/active highlight shared by every tray item. */
+    --tray-hover-bg: hsla(0, 0%, 30%, 60%);
+    /* Full height of an interactive tray item. */
+    --tray-item-height: 40px;
+
     display: flex;
     height: 100%;
     right: 0;
 }
 
-.main-taskbar-arrow-div{
+/* -----------------------------------------------------------------------------
+   Overflow arrow ("show hidden icons")
+   ----------------------------------------------------------------------------- */
+.main-taskbar-arrow-div {
     width: 24px;
-    height: 40px;
+    height: var(--tray-item-height);
     position: absolute;
     right: 122px;
 }
 
-.taskbar-arrow-fig{
+.taskbar-arrow-fig {
+    display: inline-flex;
     align-items: center;
-    display:inline-flex;
     width: 14px;
     padding: 0 1px;
     position: relative;
-    top:11px;
+    top: 11px;
     left: 5px;
 }
 
-.taskbar-arrow-fig.show{
+.taskbar-arrow-fig.show {
     top: 6px;
 }
 
-.taskbar-arrow-img{
-    height: 14px;
+.taskbar-arrow-img {
     width: 14px;
+    height: 14px;
 }
 
 .main-taskbar-arrow-div.show,
-.main-taskbar-arrow-div:hover{
-    background-color:hsla(0,0%,30%,60%);
+.main-taskbar-arrow-div:hover {
+    background-color: var(--tray-hover-bg);
 }
 
-.main-taskbar-arrow-div.show{
-    transform:  rotate(180deg);
+.main-taskbar-arrow-div.show {
+    transform: rotate(180deg);
 }
 
-/* volume  */
-.main-taskbar-volume-div{
+/* -----------------------------------------------------------------------------
+   Volume
+   ----------------------------------------------------------------------------- */
+.main-taskbar-volume-div {
     width: 26px;
-    height: 40px;
+    height: var(--tray-item-height);
     position: absolute;
     right: 96px;
 }
 
-.taskbar-volume-fig{
+.taskbar-volume-fig {
+    display: inline-flex;
     align-items: center;
-    display:inline-flex;
-    height: 18px;
     width: 18px;
+    height: 18px;
     padding: 0 1px;
     position: relative;
-    top:13px;
+    top: 13px;
     left: 5px;
 }
 
-.taskbar-volume-img{
-    height: 18px;
+.taskbar-volume-img {
     width: 18px;
+    height: 18px;
 }
-
 
 .main-taskbar-volume-div.active,
-.main-taskbar-volume-div:hover{
-    background-color:hsla(0,0%,30%,60%);
+.main-taskbar-volume-div:hover {
+    background-color: var(--tray-hover-bg);
 }
 
-/* datetime */
-.main-taskbar-date-and-time-cntnr{
+/* -----------------------------------------------------------------------------
+   Date and time
+   ----------------------------------------------------------------------------- */
+.main-taskbar-date-and-time-cntnr {
     display: flex;
     height: 100%;
     width: 65px;
@@ -80,50 +101,51 @@
     right: 31px;
 }
 
-.main-taskbar-date-and-time-cntnr:hover{
-    background-color:hsla(0,0%,30%,60%);
+.main-taskbar-date-and-time-cntnr:hover {
+    background-color: var(--tray-hover-bg);
 }
 
-.taskbar-time-cntnr{
+.taskbar-time-cntnr,
+.taskbar-date-cntnr {
+    position: absolute;
     font-size: 11px;
-    /* font-weight: 200; */
+    color: rgb(255, 255, 255);
+}
+
+.taskbar-time-cntnr {
     top: 5px;
-    position: absolute;
-    color: rgba(255, 255, 255);
 }
 
-.taskbar-date-cntnr{
-    font-size: 11px;
-    /* font-weight: 200; */
+.taskbar-date-cntnr {
     top: 22px;
-    position: absolute;
-    color: rgba(255, 255, 255);
 }
 
-/* notification  */
-.main-taskbar-notification-div{
+/* -----------------------------------------------------------------------------
+   Notifications
+   ----------------------------------------------------------------------------- */
+.main-taskbar-notification-div {
     width: 26px;
-    height: 40px;
+    height: var(--tray-item-height);
     position: absolute;
     right: 5px;
 }
 
-.taskbar-notification-fig{
+.taskbar-notification-fig {
+    display: inline-flex;
     align-items: center;
-    display:inline-flex;
     width: 18px;
-    width: 18px;
+    height: 18px;
     padding: 0 1px;
     position: relative;
-    top:13px;
+    top: 13px;
     left: 4px;
 }
 
-.taskbar-notification-img{
-    height: 18px;
+.taskbar-notification-img {
     width: 18px;
+    height: 18px;
 }
 
-.main-taskbar-notification-div:hover{
-    background-color:hsla(0,0%,30%,60%);
+.main-taskbar-notification-div:hover {
+    background-color: var(--tray-hover-bg);
 }

@@ -1,6 +1,7 @@
 <ng-container [ngTemplateOutlet]="menuType === fileExplrMngrMenuOption ? fileExplrMngrMenu :
                                   menuType === tskBarAppIconMenuOption ? tskBarAppIconMenu :  
                                   menuType === tskBarContextMenuOption ? tskBarCntxtMenu :
+                                  menuType === checkableMenuOption ? checkableMenu0 :
                                   menuType === pwrMenuOption ? powerMenu : nestedMenu0">
 </ng-container>
 
@@ -160,7 +161,7 @@
   <div class="dm-power-vertical-menu" (mouseenter)="onBtnHover()">
     <div class="dm-power-empty-line-container" ></div>
 
-    <div lass="dm-power-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
+    <div class="dm-power-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
       <div class="dm-power-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
           <div class="dm-power-head"> 
             <figure class="dm-power-fig-menu">
@@ -172,5 +173,32 @@
       </div>
     </div>
     <div class="dm-power-empty-line-container" ></div>
+  </div>
+</ng-template>
+
+
+<!--
+  Checkable menu variant: a light-themed list where every row carries a
+  checkmark bound to its `checked` flag. Clicking a row runs its action
+  (which flips the underlying state) and intentionally leaves the menu open,
+  matching the show/hide-columns behaviour of Windows Task Manager.
+-->
+<ng-template #checkableMenu0>
+  <div class="dm-checkable-vertical-menu">
+    <div class="dm-checkable-empty-line-container"></div>
+
+    <div class="dm-checkable-vertical-menu-cntnr" *ngFor="let menuItem of checkableMenu">
+      <div class="dm-checkable-vertical-menu-item" (click)="onMenuItemClick(menuItem.action, $event)">
+        <span class="dm-checkable-head" [class.active]="menuItem.checked">
+          <figure class="dm-checkable-figure">
+            <img *ngIf="menuItem.checked" class="dm-checkable-img" [src]="'osdrive/Cheetah/System/Imageres/chkmark32.png'"/>
+          </figure>
+        </span>
+        <span class="dm-checkable-mid"><p class="dm-checkable-p">{{menuItem.label}}</p></span>
+        <span class="dm-checkable-tail"><figure class="dm-checkable-figure"></figure></span>
+      </div>
+    </div>
+
+    <div class="dm-checkable-empty-line-container"></div>
   </div>
 </ng-template>

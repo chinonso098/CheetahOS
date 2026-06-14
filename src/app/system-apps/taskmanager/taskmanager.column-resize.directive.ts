@@ -42,14 +42,17 @@ export class ColumnResizeDirective {
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         if(this.isResizing) {
-          minimumWidth = (this.columnIndex === 0)? minimumWidths[0] : minimumWidths[1]
-
+          // Pick the minimum allowed width for the column being dragged.
+          // Columns 0 and 1 have their own minimums; every other column
+          // shares the third entry. (Previously this read minimumWidths[3],
+          // which is out of bounds -> undefined, silently disabling resize
+          // for columns at index 2 and beyond.)
           if(this.columnIndex === 0){
-            minimumWidth =  minimumWidths[0];
+            minimumWidth = minimumWidths[0];
           }else if(this.columnIndex === 1){
             minimumWidth = minimumWidths[1];
           }else{
-            minimumWidth = minimumWidths[3];
+            minimumWidth = minimumWidths[2];
           }
 
           const deltaX = moveEvent.pageX - this.startX;

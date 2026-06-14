@@ -1,7 +1,11 @@
 .settings-main__container{
   display: flex;
-  width: fit-content;
-  height: fit-content;
+  /* Fill the primary window. Floor matches the legacy 900x600 fixed size
+     so two-panel views (250px sidebar + 650px content) still fit. */
+  width: 100%;
+  height: 100%;
+  min-width: 480px;
+  min-height: 320px;
 }
 
 /*home View Start*/
@@ -10,8 +14,11 @@
   flex-direction: column;
   gap: 20px 0px;
   padding: 15px;
-  width: 900px;
-  height: 600px;
+  /* Fill the outer container (was 900x600 fixed). */
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
   background-color: #000;
 }
 
@@ -19,7 +26,8 @@
   display: flex;
   justify-content: center; /* Horizontally centers the child */
   align-items: center;
-  width: 870px;
+  /* Was 870px (= 900 - 30 padding). Fill parent fluidly. */
+  width: 100%;
   height: 60px;
 }
 
@@ -38,7 +46,7 @@
 .home-search__container, .secondary-search__container{
   display: flex;
   justify-content: center; /* Horizontally centers the child */
-  width: 870px;
+  width: 100%;
   height: 30px;
 }
 
@@ -47,7 +55,7 @@
 }
 
 .home-search__empty-container{
-  width: 870px;
+  width: 100%;
   height: 30px;
 }
 
@@ -184,28 +192,30 @@
 }
 /*home View End*/
 
-.system-option__panel, .personalization-option__panel{
+.system-option__panel, .personalization-option__panel, .application-option__panel{
   display: block;
+  /* Sidebar: keep fixed 250px width, fill window height. */
   width: 250px;
-  height: 600px;
+  flex: 0 0 250px;
+  height: 100%;
   background-color: #1f1f1f;
   padding: 15px 0px;
 }
 
-.system-option__first, .personalization-option__first{
+.system-option__first, .personalization-option__first, .application-option__first{
   display: flex;
   flex-direction: column;
   gap: 20px 0px;
   width: 250px;
 }
 
-.system-option__first-text, .personalization-option__first-text{
+.system-option__first-text, .personalization-option__first-text, .application-option__first-text{
   position: relative;
   width: 100%;
   height: fit-content;
 }
 
-.system-option__first-p, .personalization-option__first-p{
+.system-option__first-p, .personalization-option__first-p, .application-option__first-p{
   position: relative;
   color: #fff;
   font-size:13px;
@@ -215,7 +225,7 @@
   width: 100%;
 }
 
-.ol-system-option__grid, .ol-personalization-option__grid{
+.ol-system-option__grid, .ol-personalization-option__grid, .ol-application-option__grid{
   display: grid;
   grid-auto-flow: row;
   grid-template-columns:  repeat(auto-fill, 248px);
@@ -224,13 +234,13 @@
   gap: 10px 0px;
 }
 
-.li-system-option__item, .li-personalization-option__item{
+.li-system-option__item, .li-personalization-option__item, .li-application-option__item{
   width: 248px;
   height: 40px;
   padding: 5px 0px;
 }
 
-.system-option__item-cntnr, .personalization-option__item-cntnr, .fixed-home-option__item-cntnr{
+.system-option__item-cntnr, .personalization-option__item-cntnr, .application-option__item-cntnr, .fixed-home-option__item-cntnr{
   display: inline-flex;
   height: 30px;
   width: 248px;
@@ -245,11 +255,11 @@
   background-color: #6d6d6d;
 }
 
-.li-system-option__item:hover, .li-personalization-option__item:hover{
+.li-system-option__item:hover, .li-personalization-option__item:hover, .li-application-option__item:hover{
   background-color: #6d6d6d;
 }
 
-.system-option__item-p, .personalization-option__item-p, .fixed-home-option__item-p{
+.system-option__item-p, .personalization-option__item-p, .application-option__item-p, .fixed-home-option__item-p{
   position: relative;
   width: 193px;
   top: 7px;
@@ -259,7 +269,7 @@
   white-space: nowrap;
 }
 
-.system-option__item-head, .personalization-option__item-head, .fixed-home-option__item-head{
+.system-option__item-head, .personalization-option__item-head, .application-option__item-head, .fixed-home-option__item-head{
   display: inline-flex;
   width: 45px;
   height: 30px;
@@ -275,7 +285,7 @@
   background-color: #0078d7;
 }
 
-.system-option__item-tail, .personalization-option__item-tail, .fixed-home-option__item-tail{
+.system-option__item-tail, .personalization-option__item-tail, .application-option__item-tail, .fixed-home-option__item-tail{
   padding: 0 1px;
   color: #fff;
   text-align: left;
@@ -286,7 +296,7 @@
   height: 30px;
 }
 
-.system-option__item-figure, .personalization-option__item-figure, .fixed-home-option__item-figure{
+.system-option__item-figure, .personalization-option__item-figure, .application-option__item-figure, .fixed-home-option__item-figure{
   position: relative;
   align-items: center;
   height: 20px;
@@ -294,18 +304,23 @@
   top: 5px;
 }
 
-.system-option__item-img, .personalization-option__item-img, .fixed-home-option__item-img{
+.system-option__item-img, .personalization-option__item-img, .application-option__item-img, .fixed-home-option__item-img{
   height: 20px;
   width: 20px;
   position: relative;
 }
 
-.system-view__panel, .personalization-view__panel, .taskbar-view__panel{
+.system-view__panel, .personalization-view__panel, .application-view__panel, .taskbar-view__panel{
   display: block;
-  width: 650px;
-  height: 600px;
+  /* Content pane: fills whatever horizontal space remains after the
+     250px sidebar; height tracks the window. */
+  flex: 1 1 auto;
+  width: auto;
+  height: 100%;
+  min-width: 0;
   padding: 15px;
   background-color: #000;
+  overflow: auto;
   /* background-clip: padding-box; */
 }
 
@@ -392,6 +407,81 @@
 /*Button CSS End*/
 
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ SYSTEM  START @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+/*System ScreenView Start*/
+
+.system-view__screenview-container{
+  width: 100%;
+  height: 100%;
+}
+
+.screenview-block__content, 
+.screenview-block__heading, 
+.screenview-block__text{
+  width: 100%;
+  height: fit-content;
+}
+
+.screenview-block__content{
+  display: flex;
+  flex-direction: column;     /* stack vertically */
+  gap: 20px 0px;
+  padding-top: 15px;
+}
+
+.screenview-block__heading{
+  height: fit-content;
+}
+
+.screenview-block-heading__p, .screenview-block-heading1__p, .screenview-block-text__p, .screenview-button-text__p{
+  padding: 0 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 27px;
+  font-weight:200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  word-wrap: break-word;
+  -webkit-line-clamp:3;
+  line-clamp: 3;
+  white-space: pre;
+  width: fit-content;
+  height: fit-content;
+}
+
+.screenview-block-heading1__p{
+  font-size: 19px;
+  height: fit-content;
+}
+
+.screenview-block-text__p{
+  font-size: 13px;
+  -webkit-line-clamp:2;
+  line-clamp: 2;
+}
+
+.screenview-block__button, .lockscreen-block__button, .taskbar-block__button{
+  display: flex;
+  width: 100%;
+  height: fit-content;
+}
+
+.screenview-button__text, .lockscreen-button__text .taskbar-button__text{
+  position: relative;
+  left: 10px;
+  height: fit-content;
+}
+
+.screenview-button-text__p, .lockscreen-button-text__p, .taskbar-button-text__p{
+  position: relative;
+  top: -1px;
+  font-size: 13px;
+  -webkit-line-clamp:2;
+  line-clamp: 2;
+}
+
+/*System ScreenView End*/
+
+
 /*System Clipboard Start*/
 
 .system-view__clipboard-container{
@@ -465,7 +555,340 @@
 
 /*System Clipboard End*/
 
+/*System Notifications Start*/
+
+.system-view__notification-container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px 0px;
+}
+
+/* Large "Notifications & actions" page title. */
+.notification-block-heading__p{
+  padding: 0 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 27px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* "Notifications" sub-title. */
+.notification-block-subheading__p{
+  padding: 18px 1px 6px 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 19px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* Each toggle option: label text on top, toggle + On/Off label below. */
+.notification-block-content{
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  padding-top: 14px;
+  width: 100%;
+}
+
+.notification-block__text{
+  width: 100%;
+  height: fit-content;
+}
+
+.notification-block-miniheading__p{
+  color: #fff;
+  font-size: 13px;
+  font-weight: normal;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  word-wrap: break-word;
+}
+
+/* Greyed-out label for the disabled lock-screen notifications option. */
+.notification-block-miniheading__p--disabled{
+  color: #6e6e6e;
+}
+
+.notification-block__button{
+  display: flex;
+  width: 100%;
+  height: fit-content;
+}
+
+.notification-button__text{
+  position: relative;
+  left: 10px;
+  height: fit-content;
+}
+
+.notification-button-text__p{
+  position: relative;
+  top: -1px;
+  font-size: 13px;
+  color: #fff;
+}
+
+/*System Notifications End*/
+
+/*System Storage Start*/
+
+.system-view__storage-container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px 0px;
+}
+
+/* Large "Storage" page title. */
+.storage-block-heading__p{
+  padding: 0 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 27px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* "Local storage" sub-title. */
+.storage-block-subheading__p{
+  padding: 8px 1px 0px 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 19px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* Disk row: icon on the left, label + bar + usage labels stacked on the right. */
+.storage-block__disk{
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0px 12px;
+  padding-top: 18px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.storage-disk__figure{
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.storage-disk__img{
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.storage-disk__details{
+  display: flex;
+  flex-direction: column;
+  gap: 6px 0px;
+  width: 100%;
+  min-width: 0;
+}
+
+.storage-disk__label{
+  color: #fff;
+  font-size: 13px;
+  font-weight: normal;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* The full-width track represents total capacity and is coloured as the "free" portion. */
+.storage-disk__bar{
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background-color: #d6d6d6;
+  overflow: hidden;
+}
+
+/* The blue inner bar represents the used portion; its width is driven by storageUsedPercent. */
+.storage-disk__bar-used{
+  height: 100%;
+  background-color: #0078d7;
+  transition: width 0.3s ease;
+}
+
+.storage-disk__usage{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.storage-disk__used-text{
+  color: #0078d7;
+  font-size: 12px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.storage-disk__free-text{
+  color: #9a9a9a;
+  font-size: 12px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/*System Storage End*/
+
+/*System About Start*/
+
+.system-view__about-container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px 0px;
+}
+
+/* Large "About" page title. */
+.about-block-heading__p{
+  padding: 0 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 27px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* "Windows specifications" sub-title. */
+.about-block-subheading__p{
+  padding: 18px 1px 0px 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 19px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* Specification rows: each row is a label (left) + value (right). */
+.ol-about-spec__list{
+  display: flex;
+  flex-direction: column;
+  gap: 4px 0px;
+  padding-top: 14px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.li-about-spec__item{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.about-spec__label{
+  flex: 0 0 110px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: normal;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.about-spec__value{
+  flex: 1 1 auto;
+  color: #9a9a9a;
+  font-size: 13px;
+  font-weight: normal;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  word-wrap: break-word;
+}
+
+/*System About End*/
+
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ SYSTEM  END @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ APPLICATION START @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+.application-view__container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px 0px;
+}
+
+/* Large "Apps & features" page title. */
+.application-block-heading__p{
+  padding: 0 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 27px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* "Installed apps" sub-title. */
+.application-block-subheading__p{
+  padding: 18px 1px 6px 1px;
+  color: #fff;
+  text-align: left;
+  font-size: 19px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* Vertical list of installed apps. */
+.ol-application-list__grid{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-top: 6px;
+}
+
+/* A single app row: icon on the left, name on the right. */
+.li-application-list__item{
+  display: flex;
+  align-items: center;
+  gap: 0 12px;
+  width: 100%;
+  height: 40px;
+  padding: 4px 6px;
+}
+
+.li-application-list__item:hover{
+  background-color: #2a2a2a;
+}
+
+.application-list__figure{
+  height: 24px;
+  width: 24px;
+}
+
+.application-list__img{
+  height: 24px;
+  width: 24px;
+}
+
+.application-list__name{
+  color: #fff;
+  font-size: 13px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ APPLICATION END @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
 
 
 
@@ -717,7 +1140,7 @@
 }
 /*DATE AND TIME OVERLAY END*/
 
-/*LOCK SCREEN BACKGROUNG DROP DOWN OPTION START*/
+/*LOCK SCREEN BACKGROUND DROP DOWN OPTION START*/
 /* ===== Base Dropdown Styles ===== */
 .lockscreen-background-dropdown, 
 .lockscreen-timeout-dropdown, 
@@ -777,8 +1200,10 @@
 .lockscreen-timeout-dropdown__icon svg, 
 .desktop-background-dropdown__icon svg,
 .taskbar-background-dropdown__icon svg {
+  position: relative;
   width: 12px;
   height: 12px;
+  top: -6px;
   fill: #fff;
   transition: transform 0.2s ease;
 }
@@ -858,7 +1283,7 @@
   }
 }
 
-/*LOCK SCREEN BACKGROUNG DROP DOWN OPTION END*/
+/*LOCK SCREEN BACKGROUND DROP DOWN OPTION END*/
 
 .lockscreen-solid-color__block, .desktop-solid-color__block{
   width: 418px;
@@ -901,8 +1326,9 @@
 }
 
 .lockscreen-picture__item img, .desktop-picture__item img{
+  width: 100%;
   height: 100%;
-  height: auto;
+  object-fit: cover;
   display: block;
 }
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ PERSONALIZATION  END @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/

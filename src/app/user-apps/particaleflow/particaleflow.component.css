@@ -1,11 +1,28 @@
 .particle-flow-main-cntnr{
-  width: 900px;
-  height: 480px;
+  /* Was 900x480 fixed. Now fills the primary window so the canvas
+     can grow/shrink with drag-resize. Floors keep the simulation
+     usable at small sizes. */
+  width: 100%;
+  height: 100%;
+  min-width: 480px;
+  min-height: 320px;
+  position: relative;
+  overflow: hidden;
 }
 
 .particle-flow-cntnr {
   position: relative;
-  width: 900px;
-  height: 480px;
-  z-index: 1;
+  width: 100%;
+  height: 100%;
+  /* No z-index here. A child stacking context would paint above the
+     ngResizable edge handles injected into .window-container and
+     swallow the resize cursor hit-strip. */
+}
+
+/* The <canvas> is appended at runtime by initScene(). Let pointer
+   events fall through so the primary window's edge resize handles
+   keep working — the canvas has no interactive surface anyway. */
+.particle-flow-main-cntnr canvas {
+  display: block;
+  pointer-events: none;
 }

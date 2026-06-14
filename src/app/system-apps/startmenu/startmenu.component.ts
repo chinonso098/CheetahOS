@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 //import { animate, style, transition, trigger } from '@angular/animations';
 
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -17,6 +17,7 @@ import { SystemNotificationService } from 'src/app/shared/system-service/system.
 import { applyEffect } from "src/osdrive/Cheetah/System/Fluent Effect";
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { trigger, transition, style, animate, state, keyframes } from '@angular/animations';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'cos-startmenu',
@@ -70,7 +71,7 @@ import { trigger, transition, style, animate, state, keyframes } from '@angular/
   ]
 })
 
-export class StartMenuComponent implements OnInit, AfterViewInit {
+export class StartMenuComponent implements AfterViewInit, OnDestroy {
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _processHandlerService!:ProcessHandlerService;
@@ -80,18 +81,39 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
   private _fileService!:FileService;
   private _elRef:ElementRef;
 
-  slideState = 'slideDown';
+  // This is a never-destroyed system singleton: <cos-startmenu> sits statically in
+  // DesktopComponent's template, and DesktopComponent lives for the whole page
+  // lifetime. The constructor therefore subscribes exactly once and there is no
+  // re-creation, so these streams are not a leak risk in normal use. We still keep
+  // the Subscription handles so ngOnDestroy can tear them down as a safety net
+  // (e.g. for tests, or if this component is ever hosted somewhere transient).
+  private _showStartMenuSub!:Subscription;
+  private _hideStartMenuSub!:Subscription;
+  private _showLockScreenSub!:Subscription;
+  private _showDesktopSub!:Subscription;
+
+  // Animation state names consumed by the [@slideStartMenuAnimation] trigger in the template.
+  private readonly SLIDE_UP = 'slideUp';
+  private readonly SLIDE_DOWN = 'slideDown';
+
+  // Current animation state bound in the template. The menu starts hidden (slid down).
+  slideState = this.SLIDE_DOWN;
 
   isOverlayExpanded = false;
   delayStartMenuOverlayHideTimeoutId!: ReturnType<typeof setTimeout>;
   delayStartMenuOverlayShowTimeoutId!: ReturnType<typeof setTimeout>;
+  // Guards the Fluent reveal effects so they are wired up only once (not on every hover).
   private hasAppliedRevealEffects = false;
 
   startMenuFiles:FileInfo[] = [];
-  private SECONDS_DELAY = 250;
+  // Delay (in milliseconds) before stripping the VANTA.js inline styles off our host element.
+  private VANTA_CLEANUP_DELAY_MS = 250;
+  // Delay (in milliseconds) before moving focus into the menu, so it lands after
+  // the open animation has started and the menu is no longer inert.
+  private FOCUS_ON_OPEN_DELAY_MS = 200;
   readonly START_MENU_DIRECTORY ='/AppData/StartMenu';
   readonly Documents= 'Documents';
-  readonly Pictures = 'Pictures'
+  readonly Pictures = 'Pictures';
   readonly Music = 'Music';
 
   hamburgerMenuImg = `${Constants.IMAGE_BASE_PATH}sm_hamburger_menu.png`;
@@ -124,17 +146,29 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
       this._runningProcessService.addProcess(this.getComponentDetail());
     }
 
-    this._menuService.showStartMenu.subscribe(() => {this.showStartMenu()});
-    this._menuService.hideStartMenu.subscribe(() => {this.hideStartMenu()});
+    this._showStartMenuSub = this._menuService.showStartMenu.subscribe(() => {this.showStartMenu()});
+    this._hideStartMenuSub = this._menuService.hideStartMenu.subscribe(() => {this.hideStartMenu()});
 
-    this._systemNotificationService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-    this._systemNotificationService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+    this._showLockScreenSub = this._systemNotificationService.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
+    this._showDesktopSub = this._systemNotificationService.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
   }
 
-  ngOnInit(): void {
-    1 
+  ngOnDestroy(): void {
+    // SAFETY NET ONLY: in normal use this never runs, because the component is a
+    // never-destroyed singleton (see the subscription fields above). It exists so
+    // that any transient host (e.g. a test harness) still cleans up correctly.
+    this._showStartMenuSub?.unsubscribe();
+    this._hideStartMenuSub?.unsubscribe();
+    this._showLockScreenSub?.unsubscribe();
+    this._showDesktopSub?.unsubscribe();
+
+    // Cancel any pending overlay slide timers so they cannot fire after teardown.
+    clearTimeout(this.delayStartMenuOverlayHideTimeoutId);
+    clearTimeout(this.delayStartMenuOverlayShowTimeoutId);
+
+    console.log(`StartMenuComponent (processId: ${this.processId}) destroyed and unsubscribed from all streams.`);
   }
-  
+
   async ngAfterViewInit():Promise<void>{
     const delay = 1500; //1.5secs
     await CommonFunctions.sleep(delay);
@@ -153,18 +187,137 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
         elfRef.style.position = Constants.EMPTY_STRING;
         elfRef.style.zIndex = Constants.EMPTY_STRING;
       }
-    }, this.SECONDS_DELAY);
+    }, this.VANTA_CLEANUP_DELAY_MS);
   }
 
   showStartMenu():void{
-    this.slideState = 'slideUp';
+    this.slideState = this.SLIDE_UP;
+    // Tell the rest of the system the menu now owns keyboard navigation so the
+    // desktop icon grid stops reacting to the same keys (see MenuService).
+    this._menuService.isStartMenuOpen = true;
+
+    // Once the open animation has begun, move keyboard focus into the menu so it
+    // can be driven entirely from the keyboard (arrow keys, Enter, Escape).
+    setTimeout(() => this.focusFirstAppButton(), this.FOCUS_ON_OPEN_DELAY_MS);
   }
 
   hideStartMenu():void{
-    this.slideState = 'slideDown';
+    this.slideState = this.SLIDE_DOWN;
+    // Release keyboard ownership back to the desktop / open windows.
+    this._menuService.isStartMenuOpen = false;
   }
 
-  private applyHighlighEffects(): void {
+  /**
+   * True while the start menu is open (slid up). Bound to the `inert` attribute in
+   * the template so the menu's controls are skipped by Tab and assistive tech
+   * while the menu is closed/off-screen.
+   */
+  get isMenuOpen(): boolean {
+    return this.slideState === this.SLIDE_UP;
+  }
+
+  /**
+   * Top-level keyboard handler for the menu. Pressing Escape closes the menu via
+   * the shared menu stream (which also keeps other listeners, e.g. the
+   * notification center, in sync).
+   */
+  onMenuKeydown(evt: KeyboardEvent): void {
+    if (evt.key === 'Escape') {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this._menuService.hideStartMenu.next();
+    }
+  }
+
+  /**
+   * Roving keyboard navigation for the app list. Arrow Up/Down move focus between
+   * app buttons (wrapping around), Home/End jump to the first/last app. Enter and
+   * Space are handled natively by the <button> elements.
+   */
+  onAppListKeydown(evt: KeyboardEvent): void {
+    const navigationKeys = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+    if (!navigationKeys.includes(evt.key)) {
+      return;
+    }
+
+    // Stop the arrow keys from also scrolling the app list container.
+    evt.preventDefault();
+
+    const buttons = this.getAppButtons();
+    if (buttons.length === 0) {
+      return;
+    }
+
+    const currentIndex = buttons.indexOf(document.activeElement as HTMLButtonElement);
+    let nextIndex = 0;
+
+    switch (evt.key) {
+      case 'ArrowDown':
+        nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % buttons.length;
+        break;
+      case 'ArrowUp':
+        nextIndex = currentIndex <= 0 ? buttons.length - 1 : currentIndex - 1;
+        break;
+      case 'Home':
+        nextIndex = 0;
+        break;
+      case 'End':
+        nextIndex = buttons.length - 1;
+        break;
+    }
+
+    buttons[nextIndex]?.focus();
+  }
+
+  /** Keyboard activation (Enter/Space) for a left-rail folder shortcut. */
+  onFolderKeydown(folderName: string, evt: Event): void {
+    // Prevent Space from scrolling the page before we open the folder.
+    evt.preventDefault();
+    this.openFolderPath(folderName, evt);
+  }
+
+  /** Keyboard activation (Enter/Space) for the left-rail power button. */
+  onPowerKeydown(evt: Event): void {
+    evt.preventDefault();
+    this.power(evt);
+  }
+
+  /**
+   * Moves keyboard focus into the menu when it opens. Prefers the first app
+   * button; if the app list hasn't populated yet it falls back to the app-list
+   * container (which is focusable via tabindex="-1"). Either way the start menu
+   * takes DOM focus, which is what makes the focus-gated desktop icon navigation
+   * stand down — so the two no longer fight over the arrow keys.
+   */
+  private focusFirstAppButton(): void {
+    const firstButton = this.getAppButtons()[0];
+    if (firstButton) {
+      firstButton.focus();
+      return;
+    }
+
+    const appList = this._elRef.nativeElement.querySelector('.start-menu-list-ol') as HTMLElement | null;
+    appList?.focus();
+  }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the App (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu. 
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
+  }
+
+  /** Returns the app-list launch buttons in DOM order. */
+  private getAppButtons(): HTMLButtonElement[] {
+    return Array.from(
+      this._elRef.nativeElement.querySelectorAll('.start-menu-list-btn')
+    ) as HTMLButtonElement[];
+  }
+
+  private applyHighlightEffects(): void {
 
     // App list reveal: subtle Windows 10 style
     applyEffect('.start-menu-list-ol', {
@@ -242,25 +395,14 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     }, 90);
   }
 
-
-
   onBtnHover():void{
+    // The Fluent reveal effect attaches DOM listeners, so wire it up only once.
+    if (this.hasAppliedRevealEffects) {
+      return;
+    }
 
-    // applyEffect('.start-menu-list-ol', {
-    //   clickEffect: true,
-    //   lightColor: 'rgba(255,255,255,0.1)',
-    //   gradientSize: 35,
-    //   isContainer: true,
-    //   children: {
-    //     borderSelector: '.start-menu-list-li',
-    //     elementSelector: '.start-menu-list-btn',
-    //     lightColor: 'rgba(255,255,255,0.3)',
-    //     gradientSize: 150
-    //   }
-    // })
-
-    this.applyHighlighEffects();
-
+    this.applyHighlightEffects();
+    this.hasAppliedRevealEffects = true;
   }
 
   private async loadFilesInfoAsync():Promise<void>{
@@ -270,19 +412,22 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
     this.startMenuFiles.push(...directoryEntries)
   }
 
-  async runProcess(file:FileInfo, evt:MouseEvent):Promise<void>{
+  async runProcess(file:FileInfo, evt:Event):Promise<void>{
     evt.stopPropagation();
-    console.log('startmanager-runProcess:',file);
-    const app_startup_dalay = 450; // to allow any click animations to play before the start menu closes
+
+    // Allow any click animations to play before the start menu closes.
+    const app_startup_delay = 450;
+
+    // Emitting on the shared stream both closes this menu (via our hideStartMenu
+    // subscription) and notifies other listeners (e.g. the notification center),
+    // so an explicit this.hideStartMenu() call here would be redundant.
     this._menuService.hideStartMenu.next();
 
-    this.hideStartMenu();
-    await CommonFunctions.sleep(app_startup_dalay);
+    await CommonFunctions.sleep(app_startup_delay);
     this._processHandlerService.runApplication(file);
   }
 
-
-  async openFolderPath(folderName:string, evt:MouseEvent):Promise<void>{
+  async openFolderPath(folderName:string, evt:Event):Promise<void>{
    const path = `/Users/${folderName}`;
 
    const file = new FileInfo();
@@ -294,7 +439,7 @@ export class StartMenuComponent implements OnInit, AfterViewInit {
    await this.runProcess(file, evt);
   }
 
-  power(evt:MouseEvent):void{
+  power(evt:Event):void{
     evt.stopPropagation();
 
     this.hideStartMenu();

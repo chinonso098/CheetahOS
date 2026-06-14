@@ -29,7 +29,7 @@ export class MenuService implements BaseService{
     showTaskBarConextMenu: Subject<MouseEvent> = new Subject<MouseEvent>();
 
     hideStartMenu: Subject<void> = new Subject<void>();
-    showStartMenu: Subject<void> = new Subject<void>();
+    showStartMenu: Subject<void> = new Subject<void>();    
     hideContextMenus: Subject<string> = new Subject<string>();
     addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();
     showPropertiesView: Subject<FileInfo> = new Subject<FileInfo>();
@@ -47,6 +47,14 @@ export class MenuService implements BaseService{
 
     hideOverFlowMenu: Subject<string> = new Subject<string>();
     showOverFlowMenu: Subject<void> = new Subject<void>();
+
+    /**
+     * Whether the start menu is currently open. Read by the desktop's keyboard
+     * handler so it stands down (ignores arrow/Home/End/etc.) while the start menu
+     * owns navigation — this prevents the desktop icon grid and the start menu from
+     * both reacting to the same keystroke.
+     */
+    isStartMenuOpen = false;
 
     private storeData:string[] = []
     private _isPasteActive = false;

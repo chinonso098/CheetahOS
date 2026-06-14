@@ -127,4 +127,23 @@ export namespace Colors{
     return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
   }
 
+  /**
+   * Convert an HSL triple (each component in [0, 1]) into a packed
+   * 0xRRGGBB integer.
+   *
+   * This is a thin convenience wrapper over `hslToRgb` + `rgbToHex` for
+   * callers that prefer the normalised [0, 1] convention and want the
+   * result as a single 24-bit int (e.g. for Vanta `setOptions({ color })`).
+   * The underlying HSL→RGB math lives in `hslToRgb` — do not duplicate it
+   * here.
+   */
+  export function hslToRgbInt(h: number, s: number, l: number): number {
+    // hslToRgb expects h in [0, 360] and s/l in [0, 100]; rescale our
+    // normalised inputs into that convention.
+    const rgb = hslToRgb(h * 360, s * 100, l * 100);
+    // Round before packing: rgbToHex uses bitwise OR which truncates floats,
+    // and we want standard nearest-int rounding for color accuracy.
+    return rgbToHex([Math.round(rgb.r), Math.round(rgb.g), Math.round(rgb.b)]);
+  }
+
 }

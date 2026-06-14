@@ -157,6 +157,124 @@ export class ScriptService implements BaseService {
   }
 
   /**
+   * Unloads a previously loaded JS script. Removes the matching <script>
+   * tag(s) from the DOM and clears tracked state so it can be loaded again.
+   * Returns true if a script tag was removed.
+   */
+  unloadScript(name: string, src?: string): boolean {
+    const tracked = this.scripts[name];
+    const effectiveSrc = src ?? tracked?.src;
+
+    let removed = false;
+
+    if (effectiveSrc) {
+      const elements = document.querySelectorAll<HTMLScriptElement>(
+        `script[src="${this.escapeAttributeValue(effectiveSrc)}"]`
+      );
+      elements.forEach((el) => {
+        el.remove();
+        removed = true;
+      });
+    }
+
+    const byName = document.querySelectorAll<HTMLScriptElement>(
+      `script[data-asset-name="${this.escapeAttributeValue(name)}"]`
+    );
+    byName.forEach((el) => {
+      el.remove();
+      removed = true;
+    });
+
+    delete this.scripts[name];
+
+    if (effectiveSrc) {
+      this.loadingScripts.delete(this.buildAssetKey(name, effectiveSrc));
+    } else {
+      for (const key of Array.from(this.loadingScripts.keys())) {
+        if (key.startsWith(`${name}::`)) {
+          this.loadingScripts.delete(key);
+        }
+      }
+    }
+
+    return removed;
+  }
+
+  /**
+   * Unloads a previously loaded CSS file. Removes the matching <link>
+   * tag(s) from the DOM and clears tracked state so it can be loaded again.
+   * Returns true if a link tag was removed.
+   */
+  unloadStyle(name: string, href?: string): boolean {
+    const tracked = this.styles[name];
+    const effectiveHref = href ?? tracked?.src;
+
+    let removed = false;
+
+    if (effectiveHref) {
+      const elements = document.querySelectorAll<HTMLLinkElement>(
+        `link[rel="stylesheet"][href="${this.escapeAttributeValue(effectiveHref)}"]`
+      );
+      elements.forEach((el) => {
+        el.remove();
+        removed = true;
+      });
+    }
+
+    const byName = document.querySelectorAll<HTMLLinkElement>(
+      `link[rel="stylesheet"][data-asset-name="${this.escapeAttributeValue(name)}"]`
+    );
+    byName.forEach((el) => {
+      el.remove();
+      removed = true;
+    });
+
+    delete this.styles[name];
+
+    if (effectiveHref) {
+      this.loadingStyles.delete(this.buildAssetKey(name, effectiveHref));
+    } else {
+      for (const key of Array.from(this.loadingStyles.keys())) {
+        if (key.startsWith(`${name}::`)) {
+          this.loadingStyles.delete(key);
+        }
+      }
+    }
+
+    return removed;
+  }
+
+  /**
+   * Unloads multiple JS scripts at once.
+   */
+  unloadScripts(names: string[], srcs?: string[]): void {
+    for (let i = 0; i < names.length; i++) {
+      this.unloadScript(names[i], srcs?.[i]);
+    }
+  }
+
+  /**
+   * Unloads multiple CSS files at once.
+   */
+  unloadStyles(names: string[], hrefs?: string[]): void {
+    for (let i = 0; i < names.length; i++) {
+      this.unloadStyle(names[i], hrefs?.[i]);
+    }
+  }
+
+  /**
+   * Convenience method to unload either an asset type.
+   * Returns true if a matching tag was removed.
+   */
+  unloadAsset(type: 'script' | 'style', name: string, url?: string): boolean {
+    if (type === 'script') {
+      return this.unloadScript(name, url);
+    }
+
+    return this.unloadStyle(name, url);
+  }
+
+  /**
    * Optional convenience method if you want one call site
    * for both script and style asset types.
    */

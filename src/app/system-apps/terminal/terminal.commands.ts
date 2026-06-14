@@ -1,16 +1,19 @@
-import { GenericResult, ITraverseResult, LSResult, TerminalCommand } from "./model/terminal.types";
+import { GenericResult, ITraverseResult, LSResult, TerminalCommand, TERMINAL_OUTPUT_APP_NAME } from "./model/terminal.types";
 import { AppDirectory } from "src/app/system-files/app.directory";
 
 import { FileService } from "src/app/shared/system-service/file.service";
 import { ProcessHandlerService } from "src/app/shared/system-service/process.handler.service";
 import { RunningProcessService } from "src/app/shared/system-service/running.process.service";
+import { SystemNotificationService } from "src/app/shared/system-service/system.notification.service";
+import { InformationUpdate } from "src/app/system-files/common.interfaces";
 
 import { FileInfo } from "src/app/system-files/file.info";
 //import {extname, basename, resolve, dirname} from 'path';
 import { Constants } from 'src/app/system-files/constants';
-import { ActivityType } from "src/app/system-files/common.enums";
+//import { ActivityType } from "src/app/system-files/common.enums";
 import { CommonFunctions } from "src/app/system-files/common.functions";
 import { ActivityHistoryService } from "src/app/shared/system-service/activity.tracking.service";
+import { SystemMetric } from "src/app/shared/system-service/system.metrics";
 
 
 export interface OctalRepresentation {
@@ -24,6 +27,8 @@ export class TerminalCommandProcessor{
     private _processHandlerService!:ProcessHandlerService;
     private _runningProcessService!:RunningProcessService;
     private _activityHistoryService!:ActivityHistoryService;
+    private _systemMetric!:SystemMetric;
+    private _systemNotificationService!:SystemNotificationService;
 
     private _fileService!:FileService;
     private _appDirctory = new AppDirectory();
@@ -42,14 +47,35 @@ export class TerminalCommandProcessor{
     private fallBackDirPath = Constants.EMPTY_STRING;
 
     constructor(controlProcessService:ProcessHandlerService, runningProcessService:RunningProcessService, fileService:FileService,
-                activityHistoryService:ActivityHistoryService) { 
+                activityHistoryService:ActivityHistoryService, systemMetric:SystemMetric, systemNotificationService:SystemNotificationService) { 
         this._processHandlerService = controlProcessService;
         this._runningProcessService = runningProcessService;
         this._activityHistoryService = activityHistoryService;
+        this._systemMetric = systemMetric;
+        this._systemNotificationService = systemNotificationService;
 
         this._fileService = fileService;
         this.permissionChart = new Map<number, OctalRepresentation>();
         this.genPermissionsRepresentation();
+    }
+
+    /**
+     * Push a live progress line back to the terminal that issued the command.
+     * Routed by commandID through SystemNotificationService; the originating
+     * TerminalComponent updates the matching command's output in place.
+     */
+    private emitLiveOutput(commandID:number, output:string):void{
+        const update:InformationUpdate = {pId:commandID, appName:TERMINAL_OUTPUT_APP_NAME, info:[output]};
+        this._systemNotificationService.updateInformationNotify.next(update);
+    }
+
+    private formatBytes(bytes:number):string{
+        if(bytes < 1024) return `${bytes} B`;
+        const units = ['KB','MB','GB','TB'];
+        let val = bytes / 1024;
+        let i = 0;
+        while(val >= 1024 && i < units.length - 1){ val /= 1024; i++; }
+        return `${val.toFixed(1)} ${units[i]}`;
     }
 
     help(arg0:string[], arg1:string[],arg2:string):string{
@@ -85,12 +111,13 @@ cd                              change directory
 cp  -<option> <path> <path>     copy from source to destination folder
 mv  <path> <path>               move from source to destination folder
 cat <file>                      open the contents 
-tocuh <file>                    create an empty files
+touch <file>                    create an empty files
 list --apps -i                  get a list of all installed apps
 list --apps -a                  get a list of all running apps
+sysmetric                       show session uptime, app usage, and process counts
 
 All commands:
-    cat, clear, close, curl, cd, download, date, ls, list, help, hostname, open, pwd, touch, version, weather
+    cat, clear, close, curl, cd, download, date, ls, list, help, hostname, open, pwd, sysmetric, touch, version, weather
     whoami
         `;
             return verbose;
@@ -121,14 +148,26 @@ All commands:
     //     link.click();
     // }
 
-    async download(srcUri: string, dest: string, name: string): Promise<GenericResult> {     
-        const defualtDownloadLocation = '/Users/Downloads';
-        const regexStr = '^[a-zA-Z0-9_]+$';
-        const res = new RegExp(regexStr).test(name);
+    /**
+     * Download a remote resource and write it into the virtual file system.
+     *
+     * Usage (positional args, each prefixed):
+     *   src:<url>            required, http(s) URL
+     *   dpath:<path>         optional, target directory (defaults to /Users/Downloads or `.` for cwd)
+     *   filename:<name>      optional, safe filename (alphanumeric + underscore)
+     *
+     * Notes:
+     *   - Names are validated against [A-Za-z0-9_]+ to prevent path traversal.
+     *   - The remote body is read fully into memory via arrayBuffer(); callers
+     *     should keep this in mind for very large downloads.
+     */
+    async download(srcUri: string, dest: string, name: string, commandID?:number): Promise<GenericResult> {
+        const defaultDownloadLocation = Constants.DOWNLOADS_PATH;
+        // Safe-filename regex: letters, digits, underscore. Used to block path traversal
+        // and shell metacharacters in user-supplied filenames.
+        const safeNameRegex = /^[a-zA-Z0-9_]+$/;
         const filePathRegex = /^(\.\.\/)+([a-zA-Z0-9_-]+\/?)*$|^(\.\/|\/)([a-zA-Z0-9_-]+\/?)+$|^\.\.$|^\.\.\/$/;
 
-        let defaultfileName = Constants.EMPTY_STRING;
-        
         if(!srcUri) {
             const response = `
 download src must be specified.
@@ -139,63 +178,113 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             return {response:response, result:true};
         }
 
+        // Strip the "src:" prefix before any further processing.
         const alteredSrcUri = srcUri.replace('src:', Constants.EMPTY_STRING).trim();
-        // Ensure the URL has a valid scheme
+
+        // Only allow http(s) — refuse file://, data:, javascript:, etc.
         if (!alteredSrcUri.startsWith('http://') && !alteredSrcUri.startsWith('https://')) {
             return {response:'provide a valid url starting with http:// or https://', result:true};
         }
 
-        const parts = srcUri.split(Constants.ROOT)
-        defaultfileName = parts[parts.length - 1];
+        // Derive a default filename from the *cleaned* URL (was previously using
+        // the raw srcUri which could leak the "src:" prefix into the filename).
+        const urlParts = alteredSrcUri.split(Constants.ROOT);
+        const defaultFileName = urlParts[urlParts.length - 1] || 'download.bin';
 
-        if(!dest){  dest = defualtDownloadLocation; }
-        else{
-            const dlDest = dest.replace('dpath:', Constants.EMPTY_STRING)
+        // ----- Resolve destination directory -----
+        if(!dest){
+            dest = defaultDownloadLocation;
+        } else {
+            const dlDest = dest.replace('dpath:', Constants.EMPTY_STRING);
             if(dlDest === '.'){ dest = this.currentDirectoryPath; }
 
             if(filePathRegex.test(dlDest)){
-               const result = await this._fileService.exists(dlDest);
-               if(!result){
-                return {response:'download folder does not exist', result:true};
-               }
-
-               dest = dlDest;
+                const result = await this._fileService.exists(dlDest);
+                if(!result){
+                    return {response:'download folder does not exist', result:true};
+                }
+                dest = dlDest;
             }
         }
 
-        if(!name){  name = defaultfileName;}
-        else{
-            const dlName = dest.replace('filename:', Constants.EMPTY_STRING)
+        // ----- Resolve filename -----
+        // Previously this branch read `dest.replace('filename:', '')` (wrong source)
+        // and validated the regex against the raw `name` (still prefixed). Fixed both.
+        if(!name){
+            name = defaultFileName;
+        } else {
+            const dlName = name.replace('filename:', Constants.EMPTY_STRING);
             if(dlName){
-                if(!res){
+                if(!safeNameRegex.test(dlName)){
                     return {response: 'file name not allowed', result:true};
                 }
                 name = dlName;
             }
         }
 
-        try {    
+        try {
             const response = await fetch(alteredSrcUri);
             // Handle non-OK responses (e.g., 404, 500)
             if (!response.ok) {
-                return {response:`Download failed, status ${response.status} - ${response.statusText}`, result:false}
+                return {response:`Download failed, status ${response.status} - ${response.statusText}`, result:false};
             }
-    
-            const buffer = await response.arrayBuffer();
+
+            // Stream the body so we can report incremental progress back to the
+            // terminal instead of blocking on response.arrayBuffer(). Falls back
+            // to a single buffer read when the body stream isn't available.
+            const reader = response.body?.getReader();
+            let buffer:ArrayBuffer;
+
+            if(reader){
+                const contentLength = Number(response.headers.get('Content-Length')) || 0;
+                const chunks:Uint8Array[] = [];
+                let received = 0;
+
+                // eslint-disable-next-line no-constant-condition
+                while(true){
+                    const {done, value} = await reader.read();
+                    if(done) break;
+                    if(value){
+                        chunks.push(value);
+                        received += value.length;
+
+                        if(commandID !== undefined){
+                            const progress = contentLength
+                                ? `Downloading ${name}... ${Math.floor((received/contentLength)*100)}% (${this.formatBytes(received)}/${this.formatBytes(contentLength)})`
+                                : `Downloading ${name}... ${this.formatBytes(received)}`;
+                            this.emitLiveOutput(commandID, progress);
+                        }
+                    }
+                }
+
+                const merged = new Uint8Array(received);
+                let offset = 0;
+                for(const chunk of chunks){ merged.set(chunk, offset); offset += chunk.length; }
+                buffer = merged.buffer;
+            } else {
+                buffer = await response.arrayBuffer();
+            }
+
             if(buffer){
                 const dlCntnt:FileInfo = new FileInfo();
-                dlCntnt.setFileName = name,
+                dlCntnt.setFileName = name;
                 dlCntnt.setCurrentPath = `${dest}/${name}`;
-                //dlCntnt.setContentBuffer = Buffer.from(buffer);
+                dlCntnt.setStringBuffer = Constants.EMPTY_STRING;
+                // Previously commented out — meant downloaded files were written empty.
+                // setContentBuffer accepts ArrayBuffer, which is exactly what fetch returns.
+                dlCntnt.setContentBuffer = buffer;
 
-                this._fileService.writeFileAsync(dest, dlCntnt);
-            }    
+                await this._fileService.writeFileAsync(dest, dlCntnt);
+            }
         } catch (error:any) {
             return {response:`Error downloading file: ${error.message}`, result:false};
         }
 
-        return {response:`Download successful, location:${dest}`, result:true};
+        return {response:`Download successful,
+    location:${dest}`, result:true};
     }
+
+    
 
     hostname():string{
         const hostname = window.location.hostname;
@@ -218,6 +307,47 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
         return 'guest';
     }
 
+    sysmetric():string{
+        const snapshot = this._systemMetric.getSnapshot();
+
+        const sessionStart = new Date(snapshot.sessionStartTS).toLocaleString();
+        const result:string[] = [];
+        result.push('System Metrics');
+        result.push('--------------');
+        result.push(`Session started   : ${sessionStart}`);
+        result.push(`Uptime            : ${this.formatDuration(snapshot.uptimeMs)}`);
+        result.push(`Running processes : ${snapshot.runningProcessCount}`);
+        result.push(`Running services  : ${snapshot.runningServiceCount}`);
+        result.push(Constants.EMPTY_STRING);
+        result.push('System Information');
+        result.push('------------------');
+        result.push(`Host OS           : ${CommonFunctions.getOS()}`);
+        result.push(`Host Browser      : ${CommonFunctions.getBrowser()}`);
+        result.push(Constants.EMPTY_STRING);
+        result.push('App Usage');
+        result.push('---------');
+
+        if(snapshot.appUsage.length === 0){
+            result.push('No app usage recorded this session.');
+        }else{
+            const sorted = [...snapshot.appUsage].sort((a, b) => b.launchCount - a.launchCount);
+            for(const usage of sorted){
+                const lastLaunch = new Date(usage.lastLaunchTS).toLocaleString();
+                result.push(`${usage.name} - launches: ${usage.launchCount}, active: ${this.formatDuration(usage.totalActiveMs)}, last: ${lastLaunch}`);
+            }
+        }
+
+        return result.join('\n');
+    }
+
+    private formatDuration(ms:number):string{
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
     version(arg:string):string{
 
         const banner =  `
@@ -234,39 +364,44 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
     }
 
     list(arg1:string, arg2:string):string{
-        const runningProccess = this._runningProcessService.getProcesses();
+        // Both args are required: `list --apps -i` (installed) or `list --apps -a` (active).
         if((arg1 == undefined || arg2 == undefined) || (arg1.length == 0 || arg2.length == 0))
             return 'incomplete command, list --apps -i  or list --apps -a';
 
         if(arg1 !== "--apps")
-            return `unkown command: ${arg1}`;
+            return `unknown command: ${arg1}`;
 
-        if(arg2 == "-i"){ // list install apps
+        if(arg2 == "-i"){ // list installed apps
             return `Installed Apps: ${this._appDirctory.getAppList().join(', ')}`;
         }
 
-        if(arg2 == "-a"){ // list install apps
+        if(arg2 == "-a"){ // list running apps
+            const runningProccess = this._runningProcessService.getProcesses();
             const result:string[] = [];
+
+            // NOTE: the leading/trailing whitespace inside these template literals
+            // is significant — it aligns the fixed-width ASCII table. Don't reflow.
             const tmpHead = `
 +-----------------------+-----------------------+-----------------------+
 |      Process Name     |      Process Type     |      Process ID       |
 +-----------------------+-----------------------+-----------------------+
             `
-            result.push(tmpHead)
             const tmpBottom = `
 +-----------------------+-----------------------+-----------------------+`
-            for(let i = 0; i <= runningProccess.length - 1; i++){
-                const process = runningProccess[i];
+
+            result.push(tmpHead);
+            for(const process of runningProccess){
                 const tmpMid = `
 | ${this.addspaces(process.getProcessName)} | ${this.addspaces(process.getType)} | ${this.addspaces(process.getProcessId.toString())} |
             `
                 result.push(tmpMid);
             }
-
             result.push(tmpBottom);
+
             return result.join(Constants.EMPTY_STRING); // Join with empty string to avoid commas
         }
-        return Constants.EMPTY_STRING;
+
+        return `unknown option: ${arg2}. Usage: list --apps -i  or list --apps -a`;
     }
 
     open(arg0:string, arg1:string):string{
@@ -526,7 +661,10 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         }else if(path.trim() === Constants.ROOT){
             fixedPath = Constants.ROOT;
         }else{
-            fixedPath = `${this.currentDirectoryPath}/${path}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+            // Collapse every run of consecutive slashes to a single one. A plain
+            // string .replace() only fixes the FIRST match, so joins like
+            // `/` + `/` + `/Users/...` (=> `///Users/...`) were left as `//Users/...`.
+            fixedPath = `${this.currentDirectoryPath}/${path}`.replace(/\/{2,}/g, Constants.ROOT);
         }
         const res = await this._fileService.exists(fixedPath);
         if(res){
@@ -560,7 +698,7 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
         let depth = 0;
         let result:ITraverseResult;
 
-        if(path === undefined){
+        if(!path){
             result = {type:Constants.EMPTY_STRING, result:Constants.EMPTY_STRING, depth:depth};
             return result;
         }
@@ -574,19 +712,21 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
            this.fallBackDirPath = impliedPath;
            const explicitPath = (path !== goOneLevelUp)? path.split(goOneLevelUpWithSlash).splice(-1)[0] : Constants.EMPTY_STRING;
 
-           directory = `${impliedPath}/${explicitPath}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+           // Collapse any run of consecutive slashes to a single one (a plain
+           // string .replace() only fixes the FIRST '//').
+           directory = `${impliedPath}/${explicitPath}`.replace(/\/{2,}/g, Constants.ROOT);
            this.fallBackDirPath = this.getFallBackPath(directory); // why didn't i add this before?
 
-           console.log('IMPLIEDPATH:', impliedPath);
-           console.log('EXPLICITPATH:', explicitPath);
-           console.log('DIRECTORY:', directory);
+        //    console.log('IMPLIEDPATH:', impliedPath);
+        //    console.log('EXPLICITPATH:', explicitPath);
+        //    console.log('DIRECTORY:', directory);
         }else{
-            directory = `${this.currentDirectoryPath}/${path}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+            directory = `${this.currentDirectoryPath}/${path}`.replace(/\/{2,}/g, Constants.ROOT);
             this.fallBackDirPath = this.getFallBackPath(directory);
         }
 
-        console.log('directory:', directory);
-        console.log('fallBackDirPath:', this.fallBackDirPath);
+        // console.log('directory:', directory);
+        // console.log('fallBackDirPath:', this.fallBackDirPath);
 
         const firstDirectoryCheck = await this._fileService.exists(directory);
         let secondDirectoryCheck = false;
@@ -601,24 +741,23 @@ ${(file.getIsFile)? '-':'d'}${this.addspaces(strPermission,10)} ${this.addspaces
 
         if(firstDirectoryCheck || secondDirectoryCheck){
             depth = this.getFolderDepth(directory);
-            const fetchedFiles = await this.loadFilesInfoAsync(directory).then(()=>{
-                const files:string[] = [];
-                this.files.forEach(file => {
-                    if(file.getFileType === folder && this.falseDirectories.includes(file.getFileName) 
-                        && (this.fallBackDirPath.includes(users) || directory.includes(users))){
+            await this.loadFilesInfoAsync(directory);
 
-                        files.push(`${this.addBackTickToFileName(file.getFileName)}/`);
-                    } else if(file.getFileType === folder && !this.falseDirectories.includes(file.getFileName)){
-                        files.push(`${this.addBackTickToFileName(file.getFileName)}/`);
-                    }else{
-                        files.push(`${this.addBackTickToFileName(file.getFileName)}${file.getFileExtension}`);
-                    }
-                });
-                result = {type:'string[]', result:files, depth:depth};
-                return result;
-            })
+            const files:string[] = [];
+            this.files.forEach(file => {
+                if(file.getFileType === folder && this.falseDirectories.includes(file.getFileName) 
+                    && (this.fallBackDirPath.includes(users) || directory.includes(users))){
 
-            return fetchedFiles;
+                    files.push(`${this.addBackTickToFileName(file.getFileName)}/`);
+                } else if(file.getFileType === folder && !this.falseDirectories.includes(file.getFileName)){
+                    files.push(`${this.addBackTickToFileName(file.getFileName)}/`);
+                }else{
+                    files.push(`${this.addBackTickToFileName(file.getFileName)}${file.getFileExtension}`);
+                }
+            });
+            result = {type:'string[]', result:files, depth:depth};
+            return result;
+
         }else{
             result = {type:'string', result:'No such file or directory', depth:depth};
             return result
@@ -798,22 +937,111 @@ touch <filename>{start_char..end_char}`;
             return {response:`file: ${fileName} not found`, result:true};
 
         }else if(arg0.match(createRegex)){
-                //
+            // "cat > file.txt" — create an empty file.
+            const parts = arg0.split(Constants.BLANK_SPACE);
+            const fileName = parts[parts.length - 1];
+
+            const newFile:FileInfo = new FileInfo();
+            newFile.setFileName = fileName;
+            newFile.setCurrentPath = `${this.currentDirectoryPath}/${fileName}`;
+            newFile.setStringBuffer = Constants.EMPTY_STRING;
+
+            this._fileService.writeFileAsync(this.currentDirectoryPath, newFile);
+
+            return {response:Constants.EMPTY_STRING, result:true};
         }else if(arg0.match(writeCreateRegex)){
-            const idxs = [];
-            for( let i = 0; i <= arg0.length; i++){
+            // Locate the two single-quote delimiters around the payload.
+            const idxs:number[] = [];
+            for(let i = 0; i <= arg0.length; i++){
                 if(arg0[i] === "'")
-                    idxs.push(i)
+                    idxs.push(i);
             }
 
-            const text = arg0.substring(idxs[0], idxs[1] + 1);
-            const parts = arg0.split(Constants.BLANK_SPACE)
+            // Strip the surrounding quotes from the captured text. The previous
+            // implementation used substring(idxs[0], idxs[1] + 1) which kept both
+            // quote characters in the file's contents.
+            const text = arg0.substring(idxs[0] + 1, idxs[1]);
+            const parts = arg0.split(Constants.BLANK_SPACE);
             const fileName = parts[parts.length -1];
 
             const newFile:FileInfo = new FileInfo();
             newFile.setFileName = fileName,
             newFile.setCurrentPath = `${this.currentDirectoryPath}/${fileName}`;
-            newFile.setContentPath = text
+            newFile.setStringBuffer = text;
+
+            this._fileService.writeFileAsync(this.currentDirectoryPath, newFile);
+
+            return {response:Constants.EMPTY_STRING, result:true};
+        }else if(arg0.match(updateCreateRegex)){
+            // "cat 'text' >> file.txt" — append the quoted text to an existing
+            // file (creating it when absent).
+            const idxs:number[] = [];
+            for(let i = 0; i <= arg0.length; i++){
+                if(arg0[i] === "'")
+                    idxs.push(i);
+            }
+
+            const text = arg0.substring(idxs[0] + 1, idxs[1]);
+            const parts = arg0.split(Constants.BLANK_SPACE);
+            const fileName = parts[parts.length - 1];
+
+            let existingText = Constants.EMPTY_STRING;
+            const exists = await this._fileService.exists(`${this.currentDirectoryPath}/${fileName}`);
+            if(exists){
+                existingText = await this._fileService.getFileAsTextAsync(`${this.currentDirectoryPath}/${fileName}`);
+            }
+
+            const newFile:FileInfo = new FileInfo();
+            newFile.setFileName = fileName;
+            newFile.setCurrentPath = `${this.currentDirectoryPath}/${fileName}`;
+            newFile.setStringBuffer = `${existingText}${text}`;
+
+            this._fileService.updateFileAsync(newFile);
+
+            return {response:Constants.EMPTY_STRING, result:true};
+        }else if(arg0.match(copyRegex)){
+            // "cat old.txt > new.txt" — copy the contents of one file into another.
+            const parts = arg0.split(Constants.BLANK_SPACE);
+            const srcFileName = parts[1];
+            const destFileName = parts[parts.length - 1];
+
+            const exists = await this._fileService.exists(`${this.currentDirectoryPath}/${srcFileName}`);
+            if(!exists){
+                return {response:`file: ${srcFileName} not found`, result:true};
+            }
+
+            const textCntnt = await this._fileService.getFileAsTextAsync(`${this.currentDirectoryPath}/${srcFileName}`);
+
+            const newFile:FileInfo = new FileInfo();
+            newFile.setFileName = destFileName;
+            newFile.setCurrentPath = `${this.currentDirectoryPath}/${destFileName}`;
+            newFile.setStringBuffer = textCntnt;
+
+            this._fileService.writeFileAsync(this.currentDirectoryPath, newFile);
+
+            return {response:Constants.EMPTY_STRING, result:true};
+        }else if(arg0.match(concatRegex)){
+            // "cat f1.txt f2.txt f3.txt > f4.txt" — concatenate the sources, in
+            // order, into the destination. Checked last because its pattern is
+            // broad enough to also match the copy/write forms above.
+            const parts = arg0.split(Constants.BLANK_SPACE);
+            const redirectIdx = parts.indexOf('>');
+            const srcFileNames = parts.slice(1, redirectIdx);
+            const destFileName = parts[parts.length - 1];
+
+            let combined = Constants.EMPTY_STRING;
+            for(const srcFileName of srcFileNames){
+                const exists = await this._fileService.exists(`${this.currentDirectoryPath}/${srcFileName}`);
+                if(!exists){
+                    return {response:`file: ${srcFileName} not found`, result:true};
+                }
+                combined += await this._fileService.getFileAsTextAsync(`${this.currentDirectoryPath}/${srcFileName}`);
+            }
+
+            const newFile:FileInfo = new FileInfo();
+            newFile.setFileName = destFileName;
+            newFile.setCurrentPath = `${this.currentDirectoryPath}/${destFileName}`;
+            newFile.setStringBuffer = combined;
 
             this._fileService.writeFileAsync(this.currentDirectoryPath, newFile);
 
@@ -835,7 +1063,6 @@ cat oldfile.txt > newfile.txt                   Copy to new file
         return {response:invalidResponse, result:true};
     }
 
-
     async mkdir(arg0:string, arg1:string):Promise<string>{
         
         const forbiddenChars:string[]= [ '\\', '/',':','*','?','"', '<', '>', '|', "'", '`'];
@@ -843,7 +1070,7 @@ cat oldfile.txt > newfile.txt                   Copy to new file
         if(arg0 && !forbiddenChars.includes(arg0)){
             const folderName = arg0;
             const  result = await this._fileService.createFolderAsync(this.currentDirectoryPath, folderName);//.then(()=>{ })
-            if(result){
+            if(result.ok){
                 if(arg1 && arg1 == '-v'){
                     return `folder: ${arg0} successfully created`;
                 }
@@ -858,16 +1085,32 @@ usage: mkdir direcotry_name [-v]
         return Constants.EMPTY_STRING;
     }
 
-    async mv(sourceArg:string, destinationArg:string):Promise<string>{
+    async mv(sourceArg:string, destinationArg:string, thirdArg?:string, commandID?:number):Promise<string>{
 
         console.log(`sourceArg:${sourceArg}`);
         console.log(`destinationArg:${destinationArg}`);
+
+        // mv has no general option parser; support a leading verbose flag only.
+        // `mv -v <src> <dest>` shifts the args by one.
+        let isVerbose = false;
+        if(sourceArg === '-v' || sourceArg === '--verbose'){
+            isVerbose = true;
+            sourceArg = destinationArg;
+            destinationArg = thirdArg as string;
+        }
 
         if(sourceArg === undefined || sourceArg.length === 0)
             return 'source path required';
 
         if(destinationArg === undefined || destinationArg.length === 0)
             return 'destination path required';
+
+        if(isVerbose && commandID !== undefined){
+            //# pending deep granularity live output for recursive moves
+        }
+
+        if(commandID !== undefined)
+            this.emitLiveOutput(commandID, `moving '${sourceArg}' -> '${destinationArg}'...`);
 
         const result =  await this._fileService.moveAsync(sourceArg, destinationArg);
         if(result){
@@ -879,13 +1122,16 @@ usage: mkdir direcotry_name [-v]
                 }
                 else
                     this.sendDirectoryUpdateNotification(sourceArg);
+
+                if(isVerbose)
+                    return `moved '${sourceArg}' -> '${destinationArg}'`;
             }
         }
 
         return Constants.EMPTY_STRING;
     }
 
-    async cp(optionArg:any, sourceArg:string, destinationArg:string):Promise<string>{
+    async cp(optionArg:any, sourceArg:string, destinationArg:string, commandID?:number):Promise<string>{
 
         console.log(`copy-source ${optionArg}`);
         console.log(`copy-destination ${sourceArg}`);
@@ -893,15 +1139,17 @@ usage: mkdir direcotry_name [-v]
 
         if(destinationArg === undefined){
             destinationArg = sourceArg;
-            if(destinationArg === '.'){
+
+            if(destinationArg === Constants.DOT)
                 destinationArg = this.currentDirectoryPath;
-            }
+            
             sourceArg = optionArg.replaceAll(Constants.BACK_TICK, Constants.BLANK_SPACE);
             optionArg = undefined
         }
-        if(destinationArg === '.'){
+
+        if(destinationArg === Constants.DOT)
             destinationArg = this.currentDirectoryPath;
-        }
+        
         
         const options = ['-f', '--force', '-R','-r','--recursive', '-v', '--verbose' , '--help'];
         let option = Constants.EMPTY_STRING;
@@ -930,14 +1178,14 @@ Mandatory argument to long options are mandotory for short options too.
         if(destinationArg === undefined || destinationArg.length === 0)
             return 'destination path required';
 
-        const isDirectory = await this._fileService.isDirectory(sourceArg);
-        if(isDirectory){
+        const stat = await this._fileService.getStatAsync(sourceArg);
+        if(stat.isDirectory){
             if(option === Constants.EMPTY_STRING || option === '-f' || option === '--force' || option === '--verbose')
                 return `cp: omitting directory ${sourceArg}`;
 
             if(option === '-r' || (option === '-R' || option === '--recursive')){
 
-                const result = await this._fileService.copyAsync(sourceArg, destinationArg, !isDirectory);
+                const result = await this._fileService.copyAsync(sourceArg, destinationArg, !stat.isDirectory);
                 if(result){
                     this.sendDirectoryUpdateNotification(destinationArg);
                 }
@@ -945,15 +1193,25 @@ Mandatory argument to long options are mandotory for short options too.
         }else{
             // just copy regular file
             //const result = await this.cp_file_handler(sourceArg,destinationArg);
-            const result = await this._fileService.copyAsync(sourceArg, destinationArg, isDirectory);
+            const isVerbose = option === '-v' || option === '--verbose';
+            if(isVerbose && commandID !== undefined){
+                //# pending deep granularity live output for recursive copies
+            }
+
+            if(commandID !== undefined)
+                this.emitLiveOutput(commandID, `copying '${sourceArg}' -> '${destinationArg}'...`);
+
+            const result = await this._fileService.copyAsync(sourceArg, destinationArg, stat.isDirectory);
             if(result){
                 this.sendDirectoryUpdateNotification(destinationArg);
+                if(isVerbose)
+                    return `copied '${sourceArg}' -> '${destinationArg}'`;
             }
         }        
         return Constants.EMPTY_STRING;
     }
 
-    async rm(optionArg:any, sourceArg:string):Promise<string>{
+    async rm(optionArg:any, sourceArg:string, commandID?:number):Promise<string>{
 
         console.log(`source ${optionArg}`);
         console.log(`source ${sourceArg}`);
@@ -966,7 +1224,7 @@ Mandatory argument to long options are mandotory for short options too.
         }
 
         
-        const options = ['-rf'];
+        const options = ['-rf', '-v', '--verbose'];
         let option = Constants.EMPTY_STRING;
         if(optionArg){
             option = (options.includes(optionArg as string))? optionArg : Constants.EMPTY_STRING;
@@ -989,14 +1247,14 @@ Mandatory argument to long options are mandotory for short options too.
         if(sourceArg === undefined || sourceArg.length === 0)
             return 'source path required';
 
-        const isDirectory = await this._fileService.isDirectory(sourceArg);
-        if(isDirectory){
+        const stat = await this._fileService.getStatAsync(sourceArg);
+        if(stat.isDirectory){
             if(option === Constants.EMPTY_STRING)
                 return `rm: omitting directory ${sourceArg}`;
 
             if(option === '-rf'){
                 folderQueue.push(sourceArg);
-                const result = await this._fileService.deleteAsync(sourceArg, !isDirectory);
+                const result = await this._fileService.deleteAsync(sourceArg, !stat.isDirectory);
                 if(result){
                     this.sendDirectoryUpdateNotification(sourceArg);
                     return Constants.EMPTY_STRING;
@@ -1004,10 +1262,18 @@ Mandatory argument to long options are mandotory for short options too.
             }
         }else{
             // just delete regular file
-            const result = await this._fileService.deleteAsync(sourceArg, isDirectory);
+            const isVerbose = option === '-v' || option === '--verbose';
+            if(isVerbose && commandID !== undefined){
+                //# pending deep granularity live output for recursive deletes
+            }
+
+            if(commandID !== undefined)
+                this.emitLiveOutput(commandID, `removing '${sourceArg}'...`);
+
+            const result = await this._fileService.deleteAsync(sourceArg, stat.isDirectory);
             if(result){
                 this.sendDirectoryUpdateNotification(sourceArg);
-                return Constants.EMPTY_STRING;
+                return isVerbose ? `removed '${sourceArg}'` : Constants.EMPTY_STRING;
             }
         }        
         return 'error';
@@ -1028,47 +1294,5 @@ Mandatory argument to long options are mandotory for short options too.
         const directoryEntries  = await this._fileService.loadDirectoryFiles(directory);
         this.files.push(...directoryEntries)
     
-    }
-
-    trackActivity(type:string, name:string, path:string, oldFileName = Constants.EMPTY_STRING, isRename?:boolean):void{
-        //check for exisiting activity
-        if(isRename){
-        const activityHistory = this._activityHistoryService.getActivityHistory(oldFileName, path, type); 
-        if(activityHistory){
-            const isNameChanged = true;
-            this._activityHistoryService.updateActivityHistory(activityHistory, isNameChanged, oldFileName);
-        }else{
-            this._activityHistoryService.addActivityHistory(type, name, path);
-        }
-        }else{
-        const activityHistory = this._activityHistoryService.getActivityHistory(name, path, type);
-        if(activityHistory){
-            this._activityHistoryService.updateActivityHistory(activityHistory);
-        }else{
-            this._activityHistoryService.addActivityHistory(type, name, path);
-        }
-        }
-    }
-
-    handleTracking(file:FileInfo):void{
-        const appPath = 'None';
-        const shortCut = ` - ${Constants.SHORTCUT}`;
-
-        // handle urls (aka shortcuts)
-        if(file.getFileExtension === Constants.URL && file.getIsShortCut){
-        if(file.getFileType === Constants.FOLDER && file.getOpensWith === Constants.FILE_EXPLORER){       
-            if(CommonFunctions.isPath(file.getContentPath))
-            this.trackActivity(ActivityType.FOLDERS, file.getFileName.replace(shortCut, Constants.EMPTY_STRING), file.getContentPath);
-        }
-        else
-            this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
-        }else{     // handle non-urls
-        if(!file.getIsFile && file.getFileType === Constants.FOLDER && file.getOpensWith === Constants.FILE_EXPLORER)
-            this.trackActivity(ActivityType.FOLDERS, file.getFileName, file.getContentPath);
-        else
-            this.trackActivity(ActivityType.FILE, file.getFileName, file.getContentPath);
-        }
-
-        this.trackActivity(ActivityType.APPS, file.getOpensWith, appPath);
     }
 }

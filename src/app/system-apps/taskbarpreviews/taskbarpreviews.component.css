@@ -68,12 +68,36 @@
     margin-bottom: 2px;
 }
 
-.taskbar-preview-content:hover {
+/* The host element wraps the whole preview tile. Make it a block so the
+   highlight background spans the full tile width. */
+:host{
+    display: block;
+}
+
+/* Highlighted state is toggled from the component via the `is-highlighted`
+   host class (in response to taskbar highlight notifications). Hovering the
+   tile with the mouse produces the same "show the controls" affordance. */
+:host(.is-highlighted){
     background-color: hsla(0,0%,25%,60%);
 }
 
-.taskbar-preview-content:hover .taskbar-preview-svg{
+:host(:hover) .taskbar-preview-button,
+:host(.is-highlighted) .taskbar-preview-button{
+    background-color: black;
+}
+
+:host(:hover) .taskbar-preview-svg,
+:host(.is-highlighted) .taskbar-preview-svg{
     fill: #ababab;
+}
+
+/* The close button turns red while it is itself hovered. These selectors are
+   nested under the same :host(...) conditions on purpose so they out-specify
+   the "black" rules above — otherwise the higher-specificity :host(...) black
+   rule would win and the button could never go red on direct hover. */
+:host(:hover) .taskbar-preview-button:hover,
+:host(.is-highlighted) .taskbar-preview-button:hover{
+    background-color: rgb(232,17,35);
 }
 
 .taskbar-preview-nav{

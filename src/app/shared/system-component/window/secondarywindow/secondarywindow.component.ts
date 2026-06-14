@@ -9,13 +9,25 @@ import { UserNotificationService } from '../../../system-service/user.notificati
 import { SystemNotificationService } from '../../../system-service/system.notification.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 
-import {Subscription } from 'rxjs';
-import { WindowState  } from '../windows.types';
+import { WindowState, WindowFocusHost, WindowCloseHost } from '../windows.types';
 import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowHelper } from '../window.helper';
 import { WindowStyleHelper } from '../window.style.helper';
+import { WindowSilhouetteHandler } from '../handler/window.silhouette.handler';
 import { WindowConstants } from '../window.constants';
+import { WindowFocusHandler } from '../handler/window.focus.handler';
+import { WindowCloseHandler } from '../handler/window.close.handler';
+import { SubscriptionBag } from '../subscription.bag';
+
+// ──────────────────────────────────────────────────────────────────────────
+// Header color tokens. Kept here (not in a global theme file) so the
+// secondary-window visuals can be tuned independently of the primary window.
+// Values intentionally mirror PrimaryWindowComponent for visual consistency.
+// The close-button hover background is driven purely by CSS.
+// ────────────────────────────────────────────────────────────────────────────
+const HEADER_ACTIVE_BG   = 'hsla(0, 0%, 100%, 1)';
+const HEADER_INACTIVE_BG = 'hsla(0, 0%, 85%, 1)';
 
 @Component({
   selector: 'cos-secondarywindow',
@@ -24,65 +36,96 @@ import { WindowConstants } from '../window.constants';
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone:false,
 })
- export class SecondaryWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+ export class SecondaryWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy, WindowFocusHost, WindowCloseHost {
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Template refs
+    // ────────────────────────────────────────────────────────────────────────
     @ViewChild('secondaryWindowContainer') secondaryWindowContainer!: ElementRef;
     @ViewChild('secGlassPaneContainer') secGlassPaneContainer!: ElementRef;
 
-    @Input() runningProcessID = 0;  
-    @Input() processAppIcon = Constants.EMPTY_STRING;  
-    @Input() displayMessage = Constants.EMPTY_STRING;  
-    @Input() processAppName = Constants.EMPTY_STRING;  
-    @Input() callingProcessUId = Constants.EMPTY_STRING;    
-    @Input() isDialog = false; 
-    @Input() showTitleBarImg = false; 
+    // ────────────────────────────────────────────────────────────────────────
+    // Inputs
+    // ────────────────────────────────────────────────────────────────────────
+    @Input() runningProcessID = 0;
+    @Input() processAppIcon = Constants.EMPTY_STRING;
+    @Input() displayMessage = Constants.EMPTY_STRING;
+    @Input() processAppName = Constants.EMPTY_STRING;
+    @Input() callingProcessUId = Constants.EMPTY_STRING;
+    @Input() isDialog = false;
+    @Input() showTitleBarImg = false;
 
+    // ────────────────────────────────────────────────────────────────────────
+    // Injected services
+    // ────────────────────────────────────────────────────────────────────────
     private _runningProcessService!:RunningProcessService;
     private _systemNotificationServices!:SystemNotificationService;
     private _windowService!:WindowService;
-    private _originalWindowsState!:WindowState;
     private _menuService!:MenuService;
     private _processHandlerService!:ProcessHandlerService;
     private _userNotificationServices:UserNotificationService;
 
-    private _focusOnNextProcessSub!:Subscription;
-    private _focusOnCurrentProcessSub!:Subscription;
-    private _showOnlyCurrentProcessSub!:Subscription;
-    private _removeFocusOnOtherProcessesSub!:Subscription;
-    private _hideOtherProcessSub!:Subscription;
-    private _restoreProcessSub!:Subscription;
-    private _restoreProcessesSub!:Subscription;
-    private _showOrSetProcessWindowToFocusSub!:Subscription;
-    private _lockScreenActiveSub!:Subscription;
-    private _desktopActiveSub!:Subscription;
-    private _showTheDesktopSub!:Subscription;
-    private _showOpenWindowsSub!:Subscription;
-    private _closeCurrentProcessSub!:Subscription;
-    private _positionWindowSub!:Subscription;
-    private _positionWindowByIdSub!:Subscription;
+    // ────────────────────────────────────────────────────────────────────────
+    // Internal state
+    // ────────────────────────────────────────────────────────────────────────
+    private _originalWindowsState!:WindowState;
 
-    windowHide = false;
-    windowMaximize = false;
+    // ────────────────────────────────────────────────────────────────────────
+    // Subscriptions (tracked via the bag; ngOnDestroy is a single call)
+    // ────────────────────────────────────────────────────────────────────────
+    private readonly _subs = new SubscriptionBag();
 
+    // Tracks the deferred paint scheduled by `centerNotificationWindowWithinCallingProcess`
+    // so it can be cancelled in ngOnDestroy. Without this, a rapid close
+    // (dialog opened-and-closed within ~1ms) would fire the callback on a
+    // torn-down component instance.
+    private _centerWindowTimer: ReturnType<typeof setTimeout> | null = null;
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Window geometry (numeric)
+    // ────────────────────────────────────────────────────────────────────────
     windowTopPx = 0;
     windowLeftPx = 0;
     windowWidthPx = 0;
     windowHeightPx = 0;
 
+    // ────────────────────────────────────────────────────────────────────────
+    // Window geometry (string / template-bound)
+    // ────────────────────────────────────────────────────────────────────────
     strWindowZIndex = '0';
     strWindowWidthPx = '0px';
     strWindowHeightPx = '0px';
 
+    // ────────────────────────────────────────────────────────────────────────
+    // Drag scratch values
+    // ────────────────────────────────────────────────────────────────────────
     xAxisTmp = 0;
     yAxisTmp = 0;
     windowTransform = Constants.EMPTY_STRING;
 
-    callingProcessId = 0;   
+    // ────────────────────────────────────────────────────────────────────────
+    // Visibility / mode flags
+    // ────────────────────────────────────────────────────────────────────────
+    windowHide = false;
+    windowMaximize = false;
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Dialog / calling-process context
+    // ────────────────────────────────────────────────────────────────────────
+    callingProcessId = 0;
     isDialogContent = false;
     showTitleBarIcon = false
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Style bindings
+    // ────────────────────────────────────────────────────────────────────────
     currentWinStyles: Record<string, unknown> = {};
-    headerActiveStyles: Record<string, unknown> = {}; 
+    headerActiveStyles: Record<string, unknown> = {};
     closeBtnStyles: Record<string, unknown> = {};
 
+    // ────────────────────────────────────────────────────────────────────────
+    // Identity / metadata
+    // ────────────────────────────────────────────────────────────────────────
     readonly hasWindow = false; //The window cmpnt is an exception
     icon = Constants.EMPTY_STRING;
     name = 'Window';
@@ -91,8 +134,29 @@ import { WindowConstants } from '../window.constants';
     uniqueGlassPaneId = Constants.EMPTY_STRING;
     type = ComponentType.System;
     displayName = Constants.EMPTY_STRING;
-  
 
+    // Per-instance silhouette/glass-pane handler. Owns the hidden DIV
+    // that covers this window's footprint when it is hidden / minimized /
+    // hover-previewed. Scoped to this window's pane only.
+    private readonly _windowSilhouetteHandler = new WindowSilhouetteHandler();
+
+    // Per-instance focus coordinator. Owns the "who has focus / who is
+    // demoted / who is hover-previewed" decisions previously duplicated
+    // with PrimaryWindow. Reads host state lazily, so binding in the
+    // constructor is safe even though some @Input fields aren't yet set.
+    private readonly _windowFocusHandler = new WindowFocusHandler();
+
+    // Per-instance close coordinator. Owns the silhouette teardown,
+    // focus-next publish, and ngOnDestroy WindowService cleanup. Shared
+    // with the primary window component. Secondary's close path is
+    // synchronous (no animation) and branches dialog vs process, so the
+    // orchestration still lives in `closeWindow` below.
+    private readonly _windowCloseHandler = new WindowCloseHandler();
+
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Constructor
+    // ════════════════════════════════════════════════════════════════════════
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, private renderer: Renderer2,
                 windowService:WindowService, systemNotificationServices:SystemNotificationService, menuService: MenuService, 
                 controlProcessService:ProcessHandlerService, notificationServices:UserNotificationService){
@@ -102,32 +166,44 @@ import { WindowConstants } from '../window.constants';
       this._menuService = menuService;
       this._processHandlerService = controlProcessService;
       this._userNotificationServices = notificationServices;
- 
-      this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusByPid(p)});
-      this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p)});
-      this._removeFocusOnOtherProcessesSub = this._windowService.removeFocusOnOtherProcessesWindowNotify.subscribe((p) => {this.removeFocusOnWindowNotMatchingPid(p)});
-      //this._showOnlyCurrentProcessSub = this._windowService.setProcessWindowToFocusOnMouseHoverNotify.subscribe((p) => {this.setWindowToFocusOnMouseHover(p)});
-      this._hideOtherProcessSub = this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.hideWindowNotMatchingPidOnMouseHover(p)});
-      this._restoreProcessSub = this._windowService.restoreProcessWindowOnMouseLeaveNotify.subscribe((p) => {this.restoreWindowOnMouseLeave(p)});
-      this._restoreProcessesSub = this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
 
-      this._lockScreenActiveSub = this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-      this._desktopActiveSub = this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+      // Wire the focus handler. Safe to call here even though @Input-derived
+      // fields are not yet populated: the handler stores a reference to
+      // `this` and reads those fields lazily at method-invocation time.
+      this._windowFocusHandler.bind(this, windowService, runningProcessService);
+      this._windowCloseHandler.bind(this, windowService);
 
-      this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)});
-      this._closeCurrentProcessSub = this._windowService.closeWindowProcessNotify.subscribe((p) => {
-          if(this.processId === p){
-            this.closeWindow();
-          }});
+      // Broadcast-style subscriptions (fan out to every *other* window): keep
+      // on the legacy Subjects with their in-callback guard. These don't need
+      // this.processId, so wiring them in the constructor is fine.
+      this._subs.add(this._windowService.removeFocusOnOtherProcessesWindowNotify.subscribe((p) => {this.removeFocusOnWindowNotMatchingPid(p)}));
 
-      this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
-      this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
+      // Hover hide / restore notifications
+      this._subs.add(this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.hideWindowNotMatchingPidOnMouseHover(p)}));
+      this._subs.add(this._windowService.restoreProcessWindowOnMouseLeaveNotify.subscribe((p) => {this.restoreWindowOnMouseLeave(p)}));
+      this._subs.add(this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()}));
+
+      // System-level state notifications
+      this._subs.add(this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()}));
+      this._subs.add(this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()}));
+
+      // Show-desktop / show-open-windows menu actions
+      this._subs.add(this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()}));
+      this._subs.add(this._menuService.showOpenWindows.subscribe(() => {this.setHideAndShowAllVisibleWindows()}));
     }
 
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Getters
+    // ════════════════════════════════════════════════════════════════════════
     get getSecondaryWindowContainerElmnt(): HTMLElement {
       return this.secondaryWindowContainer.nativeElement;
     }
 
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Angular lifecycle hooks
+    // ════════════════════════════════════════════════════════════════════════
     ngOnInit():void{
       this.processId = this.runningProcessID;
       this.icon = this.processAppIcon;
@@ -139,6 +215,29 @@ import { WindowConstants } from '../window.constants';
       this._runningProcessService.newProcessNotify.next(this.uniqueId);
       this._windowService.addProcessWindowToWindows(this.uniqueId); 
       this.resetHideShowWindowsList();
+
+      // Per-pid keyed channels. MUST be wired here, not in the constructor:
+      // Angular populates @Input bindings (i.e. `runningProcessID`) between
+      // constructor return and ngOnInit. Subscribing earlier keys every
+      // window's Subject at `undefined`, so events targeting the real pid
+      // never reach this window (close/focus-next stops working).
+      const pid = this.processId;
+      this._subs.add(this._windowService.onFocusOnNextFor(pid).subscribe(() => this.setWindowToFocusByPid(pid)));
+      this._subs.add(this._windowService.onFocusOnCurrentFor(pid).subscribe(() => this.setFocusOnThisWindow(pid)));
+      this._subs.add(this._windowService.onShowOrSetFocusFor(pid).subscribe(() => this.showOrSetProcessWindowToFocusOnClick(pid)));
+      this._subs.add(this._windowService.onCloseWindowFor(pid).subscribe(() => this.closeWindow()));
+    }
+
+    ngOnChanges(changes: SimpleChanges):void{
+      //console.log('WINDOW onCHANGES:',changes);
+      if(this.name ===  WindowConstants.WINDOW)
+        this.name = this.processAppName;
+
+      this.icon = this.processAppIcon;
+      if(this.isDialog)
+       this.displayName = this.displayMessage; 
+      else
+       this.displayName = this.processAppName;
     }
 
     ngAfterViewInit():void{
@@ -169,50 +268,27 @@ import { WindowConstants } from '../window.constants';
     }
 
     ngOnDestroy():void{
-      this._closeCurrentProcessSub?.unsubscribe();
-      this._focusOnNextProcessSub?.unsubscribe();
-      this._focusOnCurrentProcessSub?.unsubscribe();
-      this._removeFocusOnOtherProcessesSub?.unsubscribe();
-      this._showOnlyCurrentProcessSub?.unsubscribe();
-      this._hideOtherProcessSub?.unsubscribe();
-      this._restoreProcessSub?.unsubscribe();
-      this._restoreProcessesSub?.unsubscribe();
-      this._showOrSetProcessWindowToFocusSub?.unsubscribe();
-      this._lockScreenActiveSub?.unsubscribe();
-      this._desktopActiveSub?.unsubscribe();
-      this._showTheDesktopSub?.unsubscribe();
-      this._showOpenWindowsSub?.unsubscribe();
-      this._positionWindowSub?.unsubscribe();
-      this._positionWindowByIdSub?.unsubscribe();
+      // One call replaces the prior per-field unsubscribe block.
+      this._subs.unsubscribeAll();
+
+      // Cancel any pending centering paint so the callback can't fire on a
+      // destroyed component. Harmless if already nulled out by the callback.
+      if (this._centerWindowTimer !== null) {
+        clearTimeout(this._centerWindowTimer);
+        this._centerWindowTimer = null;
+      }
+
+      // Guarantee WindowService state is cleaned up regardless of how the
+      // window was closed (X button, dialog dismiss, programmatic close,
+      // shutdown). All remove* ops are idempotent so this is safe to run
+      // after `closeWindow` has already done part of it.
+      this._windowCloseHandler.cleanupServiceState();
     }
 
-    ngOnChanges(changes: SimpleChanges):void{
-      //console.log('WINDOW onCHANGES:',changes);
-      if(this.name ===  WindowConstants.WINDOW)
-        this.name = this.processAppName;
 
-      this.icon = this.processAppIcon;
-      if(this.isDialog)
-       this.displayName = this.displayMessage; 
-      else
-       this.displayName = this.processAppName;
-    }
-    
-    setBtnFocus(pId:number):void{
-      if(this.processId !== pId) return;
-      this.closeBtnStyles = { 'background-color':'rgb(139,10,20)' };
-    }
-
-    setHeaderInActive(pId:number):void{
-      if(this.processId !== pId) return;
-      this.headerActiveStyles = {'background-color':'hsla(0, 0%, 85%, 1)'};
-    }
-
-    setHeaderActive(pId:number):void{
-      if(this.processId !== pId) return; 
-      this.headerActiveStyles = {  'background-color':'hsla(0, 0%, 100%, 1)' };
-    }
-
+    // ════════════════════════════════════════════════════════════════════════
+    // Initial state setup
+    // ════════════════════════════════════════════════════════════════════════
     storeWindowStateAfterViewInit():void{
       const clamped = WindowHelper.computeClampedPosition(this.windowLeftPx, this.windowTopPx, this.windowWidthPx, this.windowHeightPx, WindowConstants.TASKBAR_HEIGHT_PX );
       if(!clamped){
@@ -240,6 +316,28 @@ import { WindowConstants } from '../window.constants';
       this.createSilhouette();
     }
 
+    centerNotificationWindowWithinCallingProcess():void{
+      const primWindElmnt = document.getElementById(`primWinCmpnt-${this.callingProcessUId}`) as HTMLElement;
+      if(!primWindElmnt) return;
+
+      const winRect = primWindElmnt.getBoundingClientRect();
+      this.windowTopPx = winRect.y + (winRect.height * 0.25);
+      this.windowLeftPx = winRect.x + (winRect.width * 0.25);
+
+      // Stored so ngOnDestroy can cancel it if the dialog is torn down before
+      // the 1ms tick fires (rapid open/close sequence during shutdown, etc.).
+      this._centerWindowTimer = setTimeout(() => {
+        this._centerWindowTimer = null;
+        this.applyPositionStyles();
+        this.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);
+        this.setHeaderActive(this.processId);
+      }, 1);
+    }
+
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Geometry / style helpers
+    // ════════════════════════════════════════════════════════════════════════
     private clampToContainer():void{
       const clampData = WindowHelper.clampToContainer(this.secondaryWindowContainer, this.windowLeftPx, this.windowTopPx, WindowConstants.EDGE_PAD_PX, WindowConstants.TASKBAR_HEIGHT_PX);
       if(!clampData) return;
@@ -248,7 +346,13 @@ import { WindowConstants } from '../window.constants';
       this.windowTopPx  = clampData.topPx;
     }
 
-    private applyOpacityZ(zIndex: number, opacity: number): void {
+    /**
+     * WindowFocusHost: the handler calls this to repaint THIS window's
+     * z-index/opacity. Public (rather than private) so the handler can
+     * invoke it. The `_isWindowVisible` arg exists only to satisfy the
+     * WindowFocusHost interface (primary uses it) -- secondary ignores it.
+     */
+    applyOpacityZ(zIndex: number, opacity: number, _isWindowVisible?: boolean): void {
       this.currentWinStyles = WindowStyleHelper.applyStyle(this.currentWinStyles, this.windowLeftPx,
          this.windowTopPx, zIndex, opacity);
     }
@@ -261,74 +365,155 @@ import { WindowConstants } from '../window.constants';
          this.windowTopPx, Number(zIndex), opacity);
     }
 
-    private syncStatePositionSize(): void {
-      WindowHelper.syncStatePositionSize(this._windowService, this.processId, this.windowLeftPx,
-        this.windowTopPx, this.windowWidthPx, this.windowHeightPx, this.strWindowZIndex);
-    }
-
     private applySizeStyles(): void {
       this.strWindowHeightPx = `${this.windowHeightPx}px`;
       this.strWindowWidthPx =  `${this.windowWidthPx}px`;
     }
 
+    /**
+     * Mirror this window's current pos/size/z-index into the central
+     * WindowService store. Helper does the pure field copy; the service
+     * read/write lives here.
+     */
+    private syncStatePositionSize(): void {
+      const ws = this._windowService.getWindowState(this.processId);
+      if (!ws) return;
+      WindowHelper.applyPositionSize(ws, this.windowLeftPx, this.windowTopPx,
+        this.windowWidthPx, this.windowHeightPx, this.strWindowZIndex);
+      this._windowService.addWindowState(ws);
+    }
+
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Header / button styling
+    //   - setHeaderActive / setHeaderInActive are pid-targeted: a service
+    //     broadcast hits every window instance, and each one decides whether
+    //     the message is meant for it. The `pId` guard at the top of each
+    //     method is what makes that work.
+    //   - The dead `setBtnFocus` helper that previously hard-coded the close
+    //     button's hover background was removed; the close button hover state
+    //     is driven by CSS, not by a TS method.
+    // ════════════════════════════════════════════════════════════════════════
+    setHeaderInActive(pId:number):void{ this._windowFocusHandler.setHeaderInActive(pId); }
+    setHeaderActive(pId:number):void{ this._windowFocusHandler.setHeaderActive(pId); }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // WindowFocusHost implementation
+    // ════════════════════════════════════════════════════════════════════════
+    // The focus handler reads these accessors lazily; safe even though
+    // some @Input-derived fields are not populated until ngOnInit.
+    get windowName(): string { return this.name; }
+    get isHidden(): boolean { return this.windowHide; }
+    get windowComponentIdPrefix(): string { return 'secWinCmpnt'; }
+
+    /** WindowFocusHost: paint the header in the active color (no pid check). */
+    setHeaderActiveStyle(): void {
+      this.headerActiveStyles = { 'background-color': HEADER_ACTIVE_BG };
+    }
+
+    /** WindowFocusHost: paint the header in the inactive color (no pid check). */
+    setHeaderInActiveStyle(): void {
+      this.headerActiveStyles = { 'background-color': HEADER_INACTIVE_BG };
+    }
+
+    /** WindowFocusHost: show THIS window's silhouette pane unconditionally. */
+    showSilhouettePane(): void {
+      this.setSilhouetteState();
+      this._windowSilhouetteHandler.show();
+    }
+
+    /** WindowFocusHost: hide THIS window's silhouette pane unconditionally. */
+    hideSilhouettePane(): void {
+      this.setSilhouetteState();
+      this._windowSilhouetteHandler.hide();
+    }
+
+    // Note: `onAfterFocusAcquired` and `onShowOrSetFocusForHidden` are
+    // deliberately NOT implemented here. Secondary (dialog) windows have
+    // no minimize/restore concept and don't snapshot bounds, so the
+    // handler's optional hooks default to no-ops.
+
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Silhouette / glass pane
+    // ════════════════════════════════════════════════════════════════════════
     createSilhouette():void{
       this.uniqueGlassPaneId = `secGP-${this.uniqueId}`;
 
-      // //Every window has a hidden glass pane that is revealed when the window is hidden
-      this.secGlassPaneContainer = WindowStyleHelper.createSilhouette(this.uniqueGlassPaneId, this.renderer, this.secGlassPaneContainer,
-         this.windowHeightPx, this.windowWidthPx);
-
-      this.setSilhouetteState();
+      // Bind once (renderer + container + pane id never change for the life
+      // of this window), seed the geometry, then create the hidden pane DIV.
+      this._windowSilhouetteHandler.bind(this.renderer, this.secGlassPaneContainer, this.uniqueGlassPaneId);
+      this._windowSilhouetteHandler.sync({
+        leftPx: this.windowLeftPx, topPx: this.windowTopPx,
+        widthPx: this.windowWidthPx, heightPx: this.windowHeightPx,
+      });
+      this._windowSilhouetteHandler.create();
     }
 
+    /**
+     * Push the window's current position into the silhouette handler.
+     * Called before every show/hide/position op so the pane is aligned with
+     * the window's current coordinates.
+     */
     setSilhouetteState():void{
-      WindowStyleHelper.updateState({
-        renderer: this.renderer, glassPaneContainer: this.secGlassPaneContainer, uniqueGlassPaneId: this.uniqueGlassPaneId,
-        windowLeftPx: this.windowLeftPx, windowTopPx: this.windowTopPx,
-      });
+      this._windowSilhouetteHandler.sync({ leftPx: this.windowLeftPx, topPx: this.windowTopPx });
+    }
+
+    /**
+     * WindowCloseHost: thin wrapper so the close handler can tear down
+     * the silhouette without holding a direct silhouette reference.
+     */
+    removeSilhouette(): void {
+      this._windowSilhouetteHandler.remove();
     }
 
     showSilhouette(pId: number): void {
       if(this.processId !== pId) return;
 
       this.setSilhouetteState();
-      WindowStyleHelper.showSilhouette();
-    }
-
-    showGlassPaneContainer() {
-      this.setSilhouetteState();
-      WindowStyleHelper.showGlassPaneContainer();
+      this._windowSilhouetteHandler.show();
     }
 
     hideSilhouette(pId:number):void{
       if(this.processId !== pId) return;
 
       this.setSilhouetteState();
-      WindowStyleHelper.hideSilhouette();
+      this._windowSilhouetteHandler.hide();
+    }
+
+    showGlassPaneContainer() {
+      this.setSilhouetteState();
+      this._windowSilhouetteHandler.showContainer();
     }
 
     hideGlassPaneContainer() {
       this.setSilhouetteState();
-      WindowStyleHelper.hideGlassPaneContainer();
+      this._windowSilhouetteHandler.hideContainer();
     }
 
-    updateWindowZIndex(window: WindowState, zIndex:number):void{
-      if (this.processId !== window.pId) return;
 
-      this.applyOpacityZ(zIndex, zIndex > 0 ? 1 : 0);
-      window.zIndex = zIndex;
-      this._windowService.addWindowState(window);
+    // ════════════════════════════════════════════════════════════════════════
+    // Z-index / visibility helpers
+    // ════════════════════════════════════════════════════════════════════════
+    updateWindowZIndex(window: WindowState, zIndex:number):void{
+      this._windowFocusHandler.updateWindowZIndex(window, zIndex);
     }
 
     setWindowToPriorHiddenState(ws: WindowState, zIndex: number): void {
-      if(this.processId !== ws.pId) return;
-
-      this.applyOpacityZ(zIndex, zIndex > 0 ? 1 : 0);
+      this._windowFocusHandler.setWindowToPriorHiddenState(ws, zIndex);
     }
 
+    showOnlyWindowById(pId: number): void {
+      this._windowFocusHandler.showOnlyWindowById(pId);
+    }
+
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Mouse / drag handlers
+    // ════════════════════════════════════════════════════════════════════════
     onMouseDown(pId:number):void{
       this._windowService.windowDragIsActive.next();
-      this.setFocsuOnThisWindow(pId);
+      this.setFocusOnThisWindow(pId);
       this._windowService.currentProcessInFocusNotify.next(pId);
     }
 
@@ -345,27 +530,17 @@ import { WindowConstants } from '../window.constants';
       this.applyPositionStyles();
       this.syncStatePositionSize();
       this.setSilhouetteState();
-      WindowStyleHelper.positionSilhouette();
+      this._windowSilhouetteHandler.position();
 
       // Important: reset the drag transform so we don't accumulate drift
       event.source.reset();
       this._windowService.windowDragIsInActive.next();
     }
 
-    centerNotificationWindowWithinCallingProcess():void{
-      const primWindElmnt = document.getElementById(`primWinCmpnt-${this.callingProcessUId}`) as HTMLElement;
-      if(!primWindElmnt) return;
 
-      const winRect = primWindElmnt.getBoundingClientRect();
-      this.windowTopPx = winRect.y + (winRect.height * 0.25);
-      this.windowLeftPx = winRect.x + (winRect.width * 0.25);
-
-      setTimeout(() => { 
-        this.applyPositionStyles()
-        this.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);
-        this.setHeaderActive(this.processId); }, 1);
-    }
-
+    // ════════════════════════════════════════════════════════════════════════
+    // Hide / show window(s)
+    // ════════════════════════════════════════════════════════════════════════
     setHideAndShowAllVisibleWindows():void{
       const ws = this._windowService.getWindowState(this.processId);
       if(!ws || ws.pId !== this.processId) return;
@@ -390,7 +565,7 @@ import { WindowConstants } from '../window.constants';
 
           const window_with_highest_zIndex = this._windowService.getProcessWindowIDWithHighestZIndex();
           if(window_with_highest_zIndex === this.processId){
-            this.setFocsuOnThisWindow(ws.pId);
+            this.setFocusOnThisWindow(ws.pId);
             this._windowService.currentProcessInFocusNotify.next(ws.pId);
           }
           else{
@@ -405,15 +580,26 @@ import { WindowConstants } from '../window.constants';
       this._menuService.updateTaskBarContextMenu.next();
     }
 
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Close
+    // ════════════════════════════════════════════════════════════════════════
     onCloseBtnClick(evt:MouseEvent):void{
       evt.stopPropagation();
       this.closeWindow();
     }
 
     closeWindow(): void {
+      // Re-entrancy guard: secondary windows can be closed by TWO paths --
+      // the X button (onCloseBtnClick) and the `closeWindowProcessNotify`
+      // channel (currently fired by properties.component). If both fire we'd
+      // otherwise call closeDialogMsgBox / closeApplicationProcess twice and
+      // publish focus-on-next twice. `beginClose` returns false on the second
+      // call AND tears down the silhouette as a side effect (so the explicit
+      // setSilhouetteState/removeSilhouette lines below are unnecessary).
+      if (!this._windowCloseHandler.beginClose()) return;
+
       this._windowService.removeWindowState(this.processId);
-      this.setSilhouetteState();
-      WindowStyleHelper.removeSilhouette();
 
       if(this.isDialogContent) //Close dialog or process
         this._userNotificationServices.closeDialogMsgBox(this.processId);
@@ -423,39 +609,34 @@ import { WindowConstants } from '../window.constants';
           this._processHandlerService.closeApplicationProcess(process);
       }
       this._windowService.cleanupWindowDataForApp(this.uniqueId);
-      const nextProc = this.getNextProcess();
-      if(!nextProc) return;
-
-      this._windowService.focusOnNextProcessWindowNotify.next(nextProc.getProcessId);
-      this._windowService.currentProcessInFocusNotify.next(nextProc.getProcessId);
+      this._windowCloseHandler.publishFocusOnNext();
     }
 
-    setFocsuOnThisWindow(pId:number):void{
-      const uId =`${this.name}-${pId}`;
-      if(this.uniqueId !== uId || this.windowHide) return;
 
-      this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
-      this.setWindowToFocusByPid(pId);
+    // ════════════════════════════════════════════════════════════════════════
+    // Focus management
+    // ════════════════════════════════════════════════════════════════════════
+    /**
+     * Public focus entry-point invoked by drag/mouse-down handlers and by the
+     * `focusOnCurrentProcessWindowNotify` service broadcast. Bails early if
+     * the broadcast wasn't meant for this window, or if this window is
+     * currently hidden (focusing a hidden window would briefly steal z-index
+     * from the visible one).
+     */
+    setFocusOnThisWindow(pId:number):void{
+      this._windowFocusHandler.setFocusOnThisWindow(pId);
     }
 
     setFocusOnWindowAfterInit(pId:number):void{
-      this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
-      this._windowService.currentProcessInFocusNotify.next(pId);
-
-      this.setHeaderActive(pId);
+      this._windowFocusHandler.setFocusOnWindowAfterInit(pId);
     }
 
-    setWindowToFocusOnMouseHover(pId:number):void{
-      this._windowService.hideOtherProcessesWindowNotify.next(pId);
-      const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
-      
-      if(this.processId !== pId) return;
+    setWindowToFocusByPid(pId:number):void{
+      this._windowFocusHandler.setWindowToFocusByPid(pId);
+    }
 
-      if(pId === pid_with_highest_z_index)
-        this.setHeaderActive(pId);
-
-      this.hideSilhouette(pId);
-      this.showOnlyWindowById(pId);
+    private setFocusOnWindowAndUpdateStates(pId:number):void{
+      this._windowFocusHandler.setFocusOnWindowAndUpdateStates(pId);
     }
 
     /**
@@ -463,32 +644,23 @@ import { WindowConstants } from '../window.constants';
      * then they are set out of focus 
      */
     removeFocusOnWindowNotMatchingPid(pId:number):void{
-      if(this.processId === pId) return;
-
-      const ws = this._windowService.getWindowState(this.processId);
-      if(!ws || !ws.isVisible) return;
-
-      this.setHeaderInActive(ws.pId);
-      this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
+      this._windowFocusHandler.removeFocusOnWindowNotMatchingPid(pId);
     }
 
     restorePriorFocusOnWindows():void{
-      const processWithWindows = this._windowService.getWindowStates();
-      const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
+      this._windowFocusHandler.restorePriorFocusOnWindows();
+    }
 
-      for(let i = 0; i < processWithWindows.length; i++){
-        const ws = processWithWindows[i];          
-        if(ws && ws.isVisible){
-          if(ws.pId !== pid_with_highest_z_index ){
-            this.setHeaderInActive(ws.pId);
-            this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
-          }else{
-            this.setHeaderActive(ws.pId);
-            this.updateWindowZIndex(ws, WindowConstants.MAX_Z_INDEX);
-          }
-          this.hideSilhouette(ws.pId);
-        }
-      }
+    showOrSetProcessWindowToFocusOnClick(pId:number):void{
+      this._windowFocusHandler.showOrSetProcessWindowToFocusOnClick(pId);
+    }
+
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Hover handlers
+    // ════════════════════════════════════════════════════════════════════════
+    setWindowToFocusOnMouseHover(pId:number):void{
+      this._windowFocusHandler.setWindowToFocusOnMouseHover(pId);
     }
 
     /**
@@ -496,87 +668,19 @@ import { WindowConstants } from '../window.constants';
      * then they are hidden by setting z -index = 0
      */
     hideWindowNotMatchingPidOnMouseHover(pId:number):void{
-      if(this.processId === pId) return;
-
-      const ws  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
-      if(!ws) return;
-
-      if(ws.isVisible){
-        this.showSilhouette(ws.pId);
-        this.updateWindowZIndex(ws, WindowConstants.HIDDEN_Z_INDEX);
-      }
-      else if(!ws.isVisible){
-        this.setWindowToPriorHiddenState(ws, WindowConstants.HIDDEN_Z_INDEX);
-      }
+      this._windowFocusHandler.hideWindowNotMatchingPidOnMouseHover(pId);
     }
 
     restoreWindowOnMouseLeave(pId:number):void{
-      const ws = this._windowService.getWindowState(pId);
-      if(!ws) return;
-
-      const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
-
-      if(ws.isVisible){
-        if(ws.pId !==  pid_with_highest_z_index){
-          this.setHeaderInActive(ws.pId);
-          this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
-        }else{
-          this.setHeaderActive(ws.pId);
-          this.updateWindowZIndex(ws, WindowConstants.MAX_Z_INDEX);
-        }
-      } else if(!ws.isVisible){
-        this.setWindowToPriorHiddenState(ws, WindowConstants.HIDDEN_Z_INDEX);
-      }
-    }
-
-    showOrSetProcessWindowToFocusOnClick(pId:number):void{
-      if(this.processId !== pId) return;
-
-      const ws = this._windowService.getWindowState(pId);
-      if(!ws || !ws.isVisible) return;
-
-      this.setFocsuOnThisWindow(ws.pId);
-    }
-
-    setWindowToFocusByPid(pId:number):void{
-      if(this.processId !== pId) return;
-
-      const ws = this._windowService.getWindowState(this.processId);
-      if(!ws || !ws.isVisible) return;
-
-      this.setFocusOnWindowAndUpdateStates(ws.pId);
-    }
-
-    private setFocusOnWindowAndUpdateStates(pId:number):void{
-      const ws = this._windowService.getWindowState(pId);
-      const winCmpntId =`secWinCmpnt-${this.name}-${this.processId}`;
-
-      if(!ws || ws.pId !== pId) return;
-
-      if(ws.zIndex < WindowConstants.MAX_Z_INDEX){
-        ws.zIndex = WindowConstants.MAX_Z_INDEX;
-        this._windowService.addWindowState(ws);
-        this._windowService.addProcessWindowIDWithHighestZIndex(pId);
-
-        this.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);
-        this.setHeaderActive(pId);
-        WindowHelper.setFocusOnDiv(winCmpntId);
-      }
-      else if(ws.zIndex === WindowConstants.MAX_Z_INDEX){
-        this._windowService.addProcessWindowIDWithHighestZIndex(pId);
-        this.setHeaderActive(pId);
-         this.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);
-        WindowHelper.setFocusOnDiv(winCmpntId);
-      } 
+      this._windowFocusHandler.restoreWindowOnMouseLeave(pId);
     }
 
 
-    showOnlyWindowById(pId: number): void {
-      const ws = this._windowService.getWindowState(pId);
-      if (!ws || ws.pId !== pId) return;
-
-      const z = WindowConstants.TMP_MAX_Z_INDEX;
-      this.applyOpacityZ(z, 1);
+    // ════════════════════════════════════════════════════════════════════════
+    // System-level state reactions
+    // ════════════════════════════════════════════════════════════════════════
+    resetLockScreenTimeOut():void{
+      this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
     }
 
     lockScreenIsActive(): void {
@@ -595,12 +699,15 @@ import { WindowConstants } from '../window.constants';
       this.applyOpacityZ(z, 1);
     }
 
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Misc helpers
+    // ════════════════════════════════════════════════════════════════════════
     /**
      * this method returns a process that has a windows, with a visible state
      * @returns Process
      */
     getNextProcess():Process | undefined{
-      const nextPId = this._windowService.getNextPidInWindowStateList();
-      return this._runningProcessService.getProcesses().find(p => p.getProcessId === nextPId);
+      return this._windowFocusHandler.getNextProcess();
     }
 }

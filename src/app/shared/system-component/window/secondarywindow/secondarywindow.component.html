@@ -1,19 +1,19 @@
 
 <div
     #secondaryWindowContainer class="window-container  window-dd-box"
-     [ngStyle]="currentWinStyles"   
-     tabindex="0" 
-    cdkDrag
-    [cdkDragBoundary]="'#vantaCntnr'"
-    (mousedown)="onMouseDown(this.processId)"
-    (cdkDragEnded)="onDragEnded($event)"
-    
-    id="secWinCmpnt-{{uniqueId}}">
+        [ngStyle]="currentWinStyles"   
+        tabindex="0" 
+        cdkDrag
+        [cdkDragBoundary]="'#vantaCntnr'"
+        (mousedown)="onMouseDown(this.processId)"
+        (cdkDragEnded)="onDragEnded($event)"
+        id="secWinCmpnt-{{uniqueId}}">
 
     <div class="header-container"
-        appHighlight tabindex="0"
+        appHighlight
         [ngStyle]="headerActiveStyles">
         <div class="left-header-section" cdkDragHandle>
+         <!--<tabindex="0"-->
             <h1>
                 <figure>
                     @if(!isDialogContent || (isDialogContent && showTitleBarIcon)){<img [src]="this.icon" [alt]="this.name" title="Icon" role="img"/>}
@@ -32,7 +32,8 @@
             </nav>
         </div>
     </div>
-    <div tabindex="0" class="window-content-container">
+     <!--<tabindex="0"-->
+    <div  class="window-content-container" (mousemove)="resetLockScreenTimeOut()">
         <ng-content> </ng-content>
     </div>
 </div> 

@@ -1,11 +1,18 @@
 import { MenuPosition, GeneralMenu } from "src/app/shared/system-component/menu/menu.types";
-import { DefaultService } from "src/app/shared/system-service/defaults.services";
 import { Constants } from "src/app/system-files/constants";
 import { FileInfo } from "src/app/system-files/file.info";
+import { RecycleBinToggleState } from "./desktop.types";
+
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DesktopContextMenuHelper {
-   export const checkAndHandleDesktopCntxtMenuBounds =(evt:MouseEvent, menuHeightInput:number, menuWidthInput:number):[MenuPosition, boolean] =>{
+   /**
+    * §1.4 — the desktop root element (`<main id="vantaCntnr">`) is now
+    * passed in by the caller via the component's `@ViewChild` ElementRef
+    * instead of being looked up here with `document.getElementById`.
+    * Keeps this helper pure (no DOM globals beyond its arguments).
+    */
+   export const checkAndHandleDesktopCntxtMenuBounds =(evt:MouseEvent, menuHeightInput:number, menuWidthInput:number, vantaCntnr: HTMLElement | null):[MenuPosition, boolean] =>{
         let xAxis = 0;
         let yAxis = 0;
         const menuWidth = menuWidthInput;
@@ -15,9 +22,8 @@ export namespace DesktopContextMenuHelper {
 
         let isShiftSubMenuLeft = false;
     
-        const mainWindow = document.getElementById('vantaCntnr');
-        const windowWidth =  mainWindow?.offsetWidth || 0;
-        const windowHeight =  mainWindow?.offsetHeight || 0;
+        const windowWidth =  vantaCntnr?.offsetWidth || 0;
+        const windowHeight =  vantaCntnr?.offsetHeight || 0;
     
         const horizontalDiff =  windowWidth - evt.clientX;
         const verticalDiff = windowHeight - evt.clientY;
@@ -48,7 +54,15 @@ export namespace DesktopContextMenuHelper {
         return [{xAxis, yAxis}, isShiftSubMenuLeft];
     }
 
-    export const adjustIconContextMenuData =(file:FileInfo, sourceData: GeneralMenu[], defaultService:DefaultService): [GeneralMenu[], string]=>{
+    /**
+     * Filters / re-orders the icon context menu rows based on whether the
+     * icon points at a file, the recycle-bin folder, or a regular folder.
+     *
+     * Recycle-bin toggle state (`showDelete`, `moveToRecycle`) is supplied
+     * pre-computed by the caller — this helper never touches `DefaultService`.
+     */
+    export const adjustIconContextMenuData =(file:FileInfo, sourceData: GeneralMenu[], recycleBinState: RecycleBinToggleState): [GeneralMenu[], string]=>{
+        const { showDelete, moveToRecycle } = recycleBinState;
         let menuData = [];
         let menuOrder = Constants.EMPTY_STRING;
         if(file.getIsFile){
@@ -64,8 +78,6 @@ export namespace DesktopContextMenuHelper {
             }
         }else{
           if(file.getCurrentPath === Constants.RECYCLE_BIN_PATH){ 
-            const showDelete = getConfirmDeleteState(Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG, defaultService);
-            const moveToRecycle = getConfirmDeleteState(Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE, defaultService);
             menuOrder = Constants.RECYCLE_BIN_MENU_ORDER;
             for(const x of sourceData){
               if(x.label === 'Open' || x.label === 'Empty Recycle Bin' || x.label === 'Create shortcut' ||
@@ -91,19 +103,18 @@ export namespace DesktopContextMenuHelper {
         return [menuData, menuOrder]
     }
 
-    const getConfirmDeleteState =(setting:string, defaultService:DefaultService):boolean=>{
-      const confirmationState = defaultService.getDefaultSetting(setting);
-      return confirmationState === (Constants.TRUE)? true : false;
-    }
-
-    export const  checkAndHandleDesktopIconCntxtMenuBounds =(evt:MouseEvent, menuHeight:number):MenuPosition =>{
+    /**
+     * §1.4 — the desktop root element is now passed in by the caller
+     * via the component's `@ViewChild` ElementRef instead of being
+     * looked up here with `document.getElementById`.
+     */
+    export const  checkAndHandleDesktopIconCntxtMenuBounds =(evt:MouseEvent, menuHeight:number, vantaCntnr: HTMLElement | null):MenuPosition =>{
       let yAxis = 0;
       let verticalShift = false;
   
       const xAxis = 0;
       const taskBarHeight = 40;
-      const mainWindow = document.getElementById('vantaCntnr');
-      const windowHeight =  mainWindow?.offsetHeight || 0;
+      const windowHeight =  vantaCntnr?.offsetHeight || 0;
       const verticalSum = evt.clientY + menuHeight;
   
       if(verticalSum >= windowHeight || (windowHeight - verticalSum) <= 40){

@@ -10,13 +10,13 @@ import { ProcessHandlerService } from 'src/app/shared/system-service/process.han
 import { FileInfo } from 'src/app/system-files/file.info';
 import { Constants } from "src/app/system-files/constants";
 import { AppState } from 'src/app/system-files/state/state.interface';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { Subscription } from 'rxjs';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
-import * as htmlToImage from 'html-to-image';
-import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 declare const videojs: (arg0: any, arg1: object, arg2: () => void) => any;
 
@@ -36,11 +36,12 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;
   private _changeContentSub!: Subscription;
+  private _windowResizeSub!: Subscription;
   
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _processHandlerService!:ProcessHandlerService;
-  private _sessionManagmentService!:SessionManagmentService;
+  private _sessionManagementService!:SessionManagementService;
   private _scriptService!:ScriptService;
   private _windowService!:WindowService;
   private _audioService!:AudioService;
@@ -57,22 +58,28 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   name= 'videoplayer';
   hasWindow = true;
-  isMaximizable=false;
+   isMaximizable = true;
   icon = `${Constants.IMAGE_BASE_PATH}videoplayer.png`;
   processId = 0;
   type = ComponentType.System;
   displayName = 'Video-js';
   showTopMenu = false;
 
+  // Floor for honouring live resize broadcasts (matches CSS min-* on
+  // .my-video-main-container). Below this we ignore the event so we don't
+  // fight the user shrinking the window past the visible minimum.
+  readonly MIN_WIDTH_PX = 480;
+  readonly MIN_HEIGHT_PX = 270;
+
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-              sessionManagmentService: SessionManagmentService, scriptService: ScriptService, windowService:WindowService, 
+              sessionManagementService: SessionManagementService, scriptService: ScriptService, windowService:WindowService, 
               audioService:AudioService) { 
 
     this._processIdService = processIdService;
     this._processHandlerService = triggerProcessService;
     this._runningProcessService = runningProcessService;
-    this._sessionManagmentService= sessionManagmentService;
+    this._sessionManagementService= sessionManagementService;
     this._scriptService = scriptService;
     this._windowService = windowService;
     this._audioService = audioService;
@@ -82,6 +89,17 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
     this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minmizeWindow(p)})
     this._changeContentSub = this._runningProcessService.changeProcessContentNotify.subscribe(() =>{this.changeContent()})
+
+    // Live reflow during drag-resize of the primary window. We don't need
+    // imperative sizing here — the CSS makes .my-video-container fluid and
+    // video.js (fluid:true) follows. We just clear any leftover inline
+    // px sizes that maximize/minimize may have written, then let CSS rule.
+    this._windowResizeSub = this._windowService.resizeProcessWindowNotify.subscribe((info:WindowResizeInfo) => {
+      if(info.pId !== this.processId) return;
+      if(info.widthPx < this.MIN_WIDTH_PX || info.heightPx < this.MIN_HEIGHT_PX) return;
+        this.onWindowResize();
+    });
+
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
 
@@ -112,11 +130,14 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       this.videoSrc : this.getVideoSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
 
     const videoOptions = {
-        fluid: true,
+        // fill (not fluid): the .video-js box matches the parent container's
+        // width AND height. fluid forces a 16:9 padding-top trick which
+        // pushed the absolutely-positioned control bar below the visible
+        // frame whenever the window aspect ratio differed from 16:9.
+        fill : true,
         responsive: true,
         autoplay: true, 
         controls:true,
-        aspectRatio: '16:9',
         controlBar: {
           fullscreenToggle: false,
           skipButtons: {
@@ -130,18 +151,18 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     const appData:string[] = [this.fileType, this.videoSrc];
     this.storeAppState(appData);
 
-    this._scriptService.loadScript("videojs","osdrive/Program-Files/Videojs/video.min.js").then(() =>{
-      this.player = videojs(this.videowindow.nativeElement, videoOptions, ()=>{
-        console.log('onPlayerReady:', "player is read");
-        this._audioService.addExternalAudioSrc(this.name, this.player)
-      });
-  
-      //this.player.on('fullscreenchange', this.onFullscreenChange);
-    })
+    await this._scriptService.loadStyle("videojs-css","osdrive/Program-Files/Videojs/video-js.min.css");
+    await this._scriptService.loadScript("videojs","osdrive/Program-Files/Videojs/video.min.js", false);
 
-    setTimeout(()=>{
-      this.captureComponentImg();
-    },this.SECONDS_DELAY) 
+    this.player = videojs(this.videowindow.nativeElement, videoOptions, ()=>{
+      console.log('onPlayerReady:', "player is read");
+      //this.player.on('fullscreenchange', this.onFullscreenChange);
+      this._audioService.addExternalAudioSrc(this.name, this.player)
+    });
+  
+
+    await CommonFunctions.sleep(this.SECONDS_DELAY);
+    await this.captureComponentImg();
   }
 
   ngOnDestroy(): void {
@@ -153,6 +174,18 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._maximizeWindowSub?.unsubscribe();
     this._minimizeWindowSub?.unsubscribe();
     this._changeContentSub?.unsubscribe();
+    this._windowResizeSub?.unsubscribe();
+    
+
+    // for multiple instances of video player, we dont want to unload the script until the last instance is closed
+    if(this._runningProcessService.getProcessCount(this.name) <= 1){
+      this._scriptService.unloadScript("videojs", "osdrive/Program-Files/Videojs/video.min.js");
+      this._scriptService.unloadStyle("videojs-css", "osdrive/Program-Files/Videojs/video-js.min.css");
+
+      // video.min.js attaches itself to window.videojs — clear it so the
+      // global is GC'd and a fresh copy is fetched next time.
+      delete (window as any).videojs;
+    }
   }
 
   changeContent():void{
@@ -188,20 +221,24 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     }
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.videowindow.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
+  async captureComponentImg(): Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.videowindow, this.processId, this.name, this.icon, this._windowService);
+  }
 
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
+  /** Drag-resize: drop the inline pixel sizes that maximize/minimize may
+   *  have written so CSS flex can take over. With fill:true the player
+   *  automatically tracks the parent container; no API call needed. */
+  private onWindowResize():void{
+    try{
+      if(this.videoCntnr?.nativeElement?.style){
+        this.videoCntnr.nativeElement.style.width = '';
+        this.videoCntnr.nativeElement.style.height = '';
       }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+      if(this.videowindow?.nativeElement?.style){
+        this.videowindow.nativeElement.style.width = '';
+        this.videowindow.nativeElement.style.height = '';
+      }
+    }catch{ /* player not ready yet — CSS still reflows correctly */ }
   }
 
   onFullscreenChange = () => {
@@ -263,11 +300,11 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.appData != Constants.EMPTY_STRING){
         const videoData =  appSessionData.appData as string[];
         this.fileType = videoData[0];
@@ -276,41 +313,45 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   maximizeWindow():void{
+    // Bring maximize in line with the responsive layout: the CSS flex chain
+    // (.my-video-main-container -> .my-video-container) fills whatever the
+    // primary window gives us, and video.js (fluid/fill) follows. So we no
+    // longer compute and stamp explicit pixel sizes off #vantaCntnr (which
+    // double-counted chrome and fought the flex parent). Just clear any
+    // stale inline px and let CSS reflow.
     const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement; //1920 x 1080
-
-      //window title and button bar, and windows taskbar height, video top menu bar
-      const pixelTosubtract = 30 + 40;
-      this.videoCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-      this.videoCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
-
-      // this.mainVideoCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-      // this.mainVideoCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
-
-      // Resize video element
-      this.videowindow.nativeElement.style.width = '100%';
-      this.videowindow.nativeElement.style.height = '100%';
-      // this.videowindow.nativeElement.style.width = `1920px`;
-      // this.videowindow.nativeElement.style.height= `1080px`;
-
-      this._runningProcessService.removeEventOriginator();
+      this.onWindowResize();
     }
   }
 
   minmizeWindow(arg:number[]):void{
+    // Restore from maximized. Same reasoning as maximizeWindow — the
+    // window component owns the box size; we only strip leftover inline px
+    // so the CSS flex chain + video.js can reflow to the restored size.
+    // (arg carries the restored [width,height] but is no longer needed
+    //  imperatively; kept for the subscription signature.)
+    void arg;
     const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-
-      this.videoCntnr.nativeElement.style.width = `${arg[0]}px`;
-      this.videoCntnr.nativeElement.style.height = `${arg[1]}px`;
+      this.onWindowResize();
     }
+  }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the App (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu. 
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
   }
 
   private getComponentDetail():Process{

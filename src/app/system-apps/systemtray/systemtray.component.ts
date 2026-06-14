@@ -57,10 +57,15 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail());
 
-    // these are subs, but since this cmpnt will not be closed, it doesn't need to be destoryed
-    this._audioService.changeVolumeNotify.pipe(concatMap(() =>  this.upadateVolume())).subscribe(); 
-    this._systemNotificationService.showDesktopNotify.pipe(concatMap(() =>  this.upadateVolume())).subscribe();
-    
+    // NOTE: The system tray lives for the entire lifetime of the OS and is never
+    // closed, so these subscriptions intentionally do not need to be unsubscribed.
+
+    // Refresh the volume icon whenever the audio volume changes.
+    this._audioService.changeVolumeNotify.pipe(concatMap(() => this.updateVolume())).subscribe();
+    // Also refresh the volume icon when the desktop is shown, so the tray icon
+    // stays in sync after the desktop is brought back into focus.
+    this._systemNotificationService.showDesktopNotify.pipe(concatMap(() => this.updateVolume())).subscribe();
+
     this._audioService.hideVolumeControlNotify.subscribe((p) => {
       if(p === Constants.EMPTY_STRING){
         this.hideVolumeControl();
@@ -75,18 +80,24 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit():void {
-    const secondsDelay = [1000, 360000]; 
+    // Refresh intervals expressed in milliseconds.
+    const clockRefreshMs = 1000;    // update the clock every second
+    const dateRefreshMs = 360000;   // update the date every 6 minutes
+
+    // Seed the initial values immediately so the tray is populated on first render.
     this.updateTime();
     this.getDate();
 
-    setInterval(() => { this.updateTime();  }, secondsDelay[0]); 
-
-    setInterval(() => {
-      this.getDate();
-    }, secondsDelay[1]); 
+    // These timers run for the lifetime of the OS and are intentionally not cleared.
+    setInterval(() => { this.updateTime(); }, clockRefreshMs);
+    setInterval(() => { this.getDate(); }, dateRefreshMs);
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void {
+    // Seed the taskbar volume icon on startup so it reflects the current
+    // service-level volume even before any audio has played.
+    this.updateVolume();
+  }
 
   updateTime():void {
     const now = new Date();
@@ -121,30 +132,41 @@ export class SystemtrayComponent implements OnInit, AfterViewInit {
   setVolumeIcon():void{
     const tskBarVolumeElmnt = document.getElementById('taskBarVolumeFig') as HTMLImageElement;
     if(tskBarVolumeElmnt){
+      // Pick the icon based on the current volume level. The ranges are kept
+      // contiguous (no gaps) so every possible value maps to exactly one icon:
+      //   -1            -> error
+      //    0            -> muted
+      //   (0,   0.4)    -> low
+      //   [0.4, 0.8)    -> medium
+      //   [0.8, 1]      -> high
       if(this.currentVolume === -1){
-        this.audioIcon =  `${Constants.IMAGE_BASE_PATH}volume_error.png`;
+        this.audioIcon = `${Constants.IMAGE_BASE_PATH}volume_error.png`;
         tskBarVolumeElmnt.style.left = '5px';
-      }else  if(this.currentVolume === 0){
-        this.audioIcon =  `${Constants.IMAGE_BASE_PATH}no_volume.png`;
+      }else if(this.currentVolume <= 0){
+        this.audioIcon = `${Constants.IMAGE_BASE_PATH}no_volume.png`;
         tskBarVolumeElmnt.style.left = '5px';
-      }else  if(this.currentVolume > 0 && this.currentVolume <= 0.3){
-          this.audioIcon =  `${Constants.IMAGE_BASE_PATH}low_volume.png`;
-          tskBarVolumeElmnt.style.left = '4.5px';
-      }else  if(this.currentVolume >= 0.4 && this.currentVolume <= 0.7){
-        this.audioIcon =  `${Constants.IMAGE_BASE_PATH}medium_volume.png`;
+      }else if(this.currentVolume < 0.4){
+        this.audioIcon = `${Constants.IMAGE_BASE_PATH}low_volume.png`;
         tskBarVolumeElmnt.style.left = '4.5px';
-      }else  if(this.currentVolume >= 0.8 && this.currentVolume <= 1){
-        this.audioIcon =  `${Constants.IMAGE_BASE_PATH}high_volume.png`;
+      }else if(this.currentVolume < 0.8){
+        this.audioIcon = `${Constants.IMAGE_BASE_PATH}medium_volume.png`;
+        tskBarVolumeElmnt.style.left = '4.5px';
+      }else{
+        this.audioIcon = `${Constants.IMAGE_BASE_PATH}high_volume.png`;
         tskBarVolumeElmnt.style.left = '4.5px';
       }
 
-      this.currentVolumeTxt = `Speaker: ${(this.currentVolume * 100)}%`;
+      // Round to a whole number so the tooltip never shows floating-point noise
+      // (e.g. "35.00000000000001%").
+      this.currentVolumeTxt = `Speaker: ${Math.round(this.currentVolume * 100)}%`;
     }
   }
 
-  async upadateVolume():Promise<void>{
-    const delay = 100; //100ms
-    await CommonFunctions.sleep(delay);
+  async updateVolume():Promise<void>{
+    // Small delay to let the audio service settle on its final volume value
+    // before we read it (the value can change immediately after a notification).
+    const delayMs = 100;
+    await CommonFunctions.sleep(delayMs);
     this.currentVolume = this._audioService.getVolume();
     this.setVolumeIcon();
   }

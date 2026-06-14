@@ -5,6 +5,7 @@ export interface BaseComponent {
   name:string,
   hasWindow:boolean,
   isMaximizable?:boolean,
+  ignoreShrinkResize?:boolean,
   icon:string
   processId:number;
   type: ComponentType;

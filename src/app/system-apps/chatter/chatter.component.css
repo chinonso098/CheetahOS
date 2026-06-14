@@ -9,9 +9,14 @@ span {
 
 /* Main Container */
 .chatter-main-container {
-    width: 800px;
+    width: 100%;
     height: 100%;
+    min-width: 640px;
+    min-height: 480px;
     background: #ccc;
+    /* Stack: content area (flex) + 24px footer */
+    display: flex;
+    flex-direction: column;
 }
 
 /* Improve keyboard usability (tabIndex="0" elements) */
@@ -32,11 +37,16 @@ span {
    width: 100%;
     display: flex;
     background-color: #202020;
+    /* Fill all vertical space above the 24px footer; min-height:0 lets
+       inner flex children (chat scroll, online list) actually shrink. */
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 /* Sidebar Styles */
 .chatter-sidebar-container {
     width: 50px;
+    flex: 0 0 50px;
     background-color: #100c0c;
     border-right: 1px solid #a6a4a4;
 }
@@ -72,6 +82,12 @@ span {
 /* Chat Container */
 .chatter-chat-container {
     width: 530px;
+    /* Take whatever horizontal space is left after sidebar + online panel,
+       and stack header / scroll area / textbox so the scroll area flexes. */
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 /* User Info Section */
@@ -79,6 +95,7 @@ span {
     width: 100%;
     display: flex;
     height: 58px;
+    flex: 0 0 58px;
     padding: 5px 0;
     background-color: #201c1c;
     border-bottom: 1px solid #a6a4a4;
@@ -146,18 +163,28 @@ span.chatter-mid:hover {
 /*Users Online Styles */
 .chatter-online-container{
     width: 230px;
+    flex: 0 0 230px;
     background-color: #201c1c;
     border-right: 1px solid #a6a4a4;
+    /* Stack heading + scroll list so the list fills available height. */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .chatter-online-content{
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1 1 auto;
 }
 
 .chatter-online-heading{
     width: 100%;
     height: 58px;
+    flex: 0 0 58px;
     border-bottom: 1px solid #a6a4a4;
     padding: 5px 0 5px 15px;
 }
@@ -173,7 +200,9 @@ span.chatter-mid:hover {
 
 .chatter-online-section{
     width: 100%;
-    height: 570px;
+    /* Fill remaining height after the 58px heading instead of a fixed 570px. */
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     padding: 8px 0px;
     background-color: #201c1c;
@@ -186,6 +215,7 @@ span.chatter-mid:hover {
 }
 
 .chatter-online-item{
+    position: relative; /* anchor for .chatter-online-tail */
     height: fit-content;
     padding: 4px 0;
     background-color: #201c1c;
@@ -216,8 +246,11 @@ span.chatter-online-mid{
 }
 
 span.chatter-online-tail{
-    position: fixed; 
-    left: 31.5%;
+    /* Was: position: fixed; left: 31.5%; — pinned to the viewport, which
+       broke the layout when the window moved or resized. Anchor to the
+       right edge of the online row instead so it stays inside the panel. */
+    position: absolute;
+    right: 12px;
 }
 
 .chatter-user-online-acronym {
@@ -265,10 +298,14 @@ span.chatter-online-tail{
 /* Chat Window */
 .chatter-chat-window-content {
     width: 100%;
-    height: 500px;
+    /* Fill space between the 58px header and the 70px textbox row. */
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     background-color: #201c1c;
-    padding: 8px 12px;
+    /* Right padding caps the gap between right-aligned bubbles and the
+       chat column's right edge (was 12px, user requested <=10px). */
+    padding: 8px 10px;
 }
 
 .chatter-empty-line-container {
@@ -281,7 +318,14 @@ span.chatter-online-tail{
     display: flex;
     flex-direction: column;  /* Stack children vertically */
     align-items: flex-start; /* Default left alignment */
-    width: 372px;
+    width: 100%;
+    /* Previously `max-width: 372px` capped this wrapper. That cap left
+       right-aligned messages (`.chatter-chat-output-content-right`)
+       flex-ending inside a 372px box pinned to the left of the chat
+       column, so bubbles never actually reached the right edge. The
+       bubble itself is still capped via `.chat-content { max-width:360px }`
+       and `.chat-user-txt-container-* { max-width:360px }`, so left-
+       aligned messages look identical without the wrapper cap. */
 }
 
 /* Chat Messages */
@@ -295,7 +339,10 @@ span.chatter-online-tail{
     justify-content: flex-end; /* Push content to the right */
     align-items: flex-start;
     width: 100%; /* Ensure it takes full width */
-    margin-left: 128px; /* Moves content further right */
+    /* Removed margin-left: 128px — it caused horizontal overflow when the
+       chat column narrowed and prevented the bubble from sitting flush
+       with the right edge when it widened. justify-content already handles
+       the right-align. */
 }
 
 .chat-user-txt-container-left {
@@ -375,6 +422,7 @@ span.chatter-online-tail{
     width: 100%;
     display: flex;
     height: 70px; /* Allows for padding */
+    flex: 0 0 70px;
     padding: 10px 5px;
     border-top: 1px solid #a6a4a4;
     background-color: #201c1c;
@@ -492,9 +540,14 @@ span.chatter-online-tail{
 }
 
 .chatter-div-footer-lm{
-    width:225px; 
+    /* Fluid: was width: 225px which clipped on small windows. */
+    flex: 1 1 auto;
+    min-width: 0;
     position: relative;
     left: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .chatter-div-footer-online{
@@ -529,6 +582,7 @@ span.chatter-online-tail{
 .chatter-footer-container{
     width: 100%;
     height: 24px;
+    flex: 0 0 24px;
     display: flex;
     background-color: #302c2c;
 }
@@ -544,7 +598,10 @@ span.chatter-online-tail{
     margin: auto;
     position: absolute;
     z-index: 2;
-    left: 41%;
+    /* Was: left: 41% — drifted off-screen on resize. Center horizontally
+       within the chat column instead. */
+    left: 50%;
+    transform: translateX(-50%);
   }
   
   .chat-user-form-body {

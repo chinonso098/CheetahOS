@@ -76,6 +76,8 @@
 }
   
 .lockscreen-arrow-icon {
+    position: relative;
+    top: 2px;
     font-size: 20px;
     color: #fff;
 }

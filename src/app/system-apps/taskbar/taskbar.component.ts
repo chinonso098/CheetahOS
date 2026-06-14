@@ -40,19 +40,33 @@ export class TaskbarComponent implements AfterViewInit{
 
   isStartMenuVisible = false;
   isSearchWindowVisible = false;
-  
-  SECONDS_DELAY = 250;
+
+  /**
+   * Delay (ms) before stripping the inline styles that the VANTA.js wallpaper
+   * injects onto the host element. The wallpaper writes its styles slightly
+   * after view init, so we wait before clearing them.
+   */
+  private readonly VANTA_STYLE_FIX_DELAY_MS = 250;
+
+  /** Delay (ms) used when collapsing the search box so context menus close first. */
+  private readonly SEARCH_HIDE_DELAY_MS = 250;
+
   slideState = 'slideUp';
 
+  /**
+   * Bound to the taskbar's opacity in the template so the lock-screen / desktop
+   * toggles are model-driven instead of reaching into the DOM directly.
+   */
+  taskBarOpacity = 1;
+
   searchIcon = `${Constants.IMAGE_BASE_PATH}taskbar_search.png`;
-  hover = false;
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
   name = 'taskbar';
   processId = 0;
-  type = ComponentType.System
-  displayName = Constants.EMPTY_STRING
+  type = ComponentType.System;
+  displayName = Constants.EMPTY_STRING;
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService,
     systemNotificationServices:SystemNotificationService, el: ElementRef) { 
@@ -84,7 +98,7 @@ export class TaskbarComponent implements AfterViewInit{
         tskBar.style.position = Constants.EMPTY_STRING;
         tskBar.style.zIndex = Constants.EMPTY_STRING;
       }
-    }, this.SECONDS_DELAY);
+    }, this.VANTA_STYLE_FIX_DELAY_MS);
   }
 
   hideContextMenus():void{
@@ -92,6 +106,8 @@ export class TaskbarComponent implements AfterViewInit{
   }
 
   showTaskBarContextMenu(evt:MouseEvent):void{
+    evt.preventDefault();
+
     if(this._runningProcessService.getEventOriginator() === Constants.EMPTY_STRING){
       const uId = `${this.name}-${this.processId}`;
       this._runningProcessService.addEventOriginator(uId);
@@ -99,21 +115,26 @@ export class TaskbarComponent implements AfterViewInit{
       this._menuService.showTaskBarConextMenu.next(evt);
     }
 
-    evt.preventDefault();
   }
 
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the App (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu. 
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
+  }
+
+  // Hide the taskbar while the lock screen is showing (model-driven opacity).
   lockScreenIsActive():void{
-    const taskBarElmnt = document.getElementById('the-window-taskbar') as HTMLDivElement;
-    if(taskBarElmnt){
-      taskBarElmnt.style.opacity = '0';
-    }
+    this.taskBarOpacity = 0;
   }
 
+  // Restore the taskbar once the desktop is active again.
   desktopIsActive():void{
-    const taskBarElmnt = document.getElementById('the-window-taskbar') as HTMLDivElement;
-    if(taskBarElmnt){
-      taskBarElmnt.style.opacity = '1';
-    }
+    this.taskBarOpacity = 1;
   }
 
   showTaskBar():void{
@@ -124,22 +145,30 @@ export class TaskbarComponent implements AfterViewInit{
     this.slideState = 'slideDown';
   }
 
+  /**
+   * Toggles the start menu. When opening, any open context menus are closed
+   * first and we wait briefly so they animate out before the start menu shows.
+   * Opening the start menu also closes the search box (they are mutually exclusive).
+   */
   async showStartMenu(evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
     this._systemNotificationService.hideTaskBarToolTipNotify.next();
     const delay = 100;
 
     if(!this.isStartMenuVisible){
+      // Open: let context menus close first, then reveal the start menu.
       this._menuService.hideContextMenus.next(this.name);
       await CommonFunctions.sleep(delay);
 
       this._menuService.showStartMenu.next();
       this.isStartMenuVisible = true;
     }else{
+      // Close.
       this.isStartMenuVisible = false;
       this._menuService.hideStartMenu.next();
     }
 
+    // The start menu and search box are mutually exclusive.
     if(this.isSearchWindowVisible)
       this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
   }
@@ -148,21 +177,29 @@ export class TaskbarComponent implements AfterViewInit{
     this.isStartMenuVisible = false;
   }
 
+  /**
+   * Toggles the search box. When it is already open we first close any open
+   * context menus and wait briefly so they animate out before the search box
+   * collapses. Opening it while the start menu is open also closes the start menu.
+   */
   async hideShowSearch(evt:MouseEvent): Promise<void>{
     evt.stopPropagation();
     this._systemNotificationService.hideTaskBarToolTipNotify.next();
 
     if(this.isSearchWindowVisible){
+      // Collapse: let context menus close first, then hide the search box.
       this._menuService.hideContextMenus.next(this.name);
-      await CommonFunctions.sleep(this.SECONDS_DELAY);
+      await CommonFunctions.sleep(this.SEARCH_HIDE_DELAY_MS);
 
-      this.isSearchWindowVisible = true;
+      this.isSearchWindowVisible = false;
       this._menuService.hideSearchBox.next(Constants.EMPTY_STRING);
     }else{
+      // Expand.
       this.isSearchWindowVisible = true;
       this._menuService.showSearchBox.next();
     }
 
+    // The start menu and search box are mutually exclusive.
     if(this.isStartMenuVisible){
       this.isStartMenuVisible = false;
       this._menuService.hideStartMenu.next();

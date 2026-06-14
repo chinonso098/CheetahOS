@@ -1,4 +1,4 @@
-import {Component,ViewChild, ViewContainerRef, OnInit, AfterViewInit} from '@angular/core';
+import {Component,ViewChild, ViewContainerRef, AfterViewInit} from '@angular/core';
 
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from './shared/system-service/running.process.service';
@@ -8,11 +8,9 @@ import { Process } from './system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { ComponentReferenceService } from './shared/system-service/component.reference.service';
 import { AudioService } from './shared/system-service/audio.services';
-import { SessionManagmentService } from './shared/system-service/session.management.service';
+import { SessionManagementService } from './shared/system-service/session.management.service';
 import { FileIndexerService } from './shared/system-service/file.indexer.services';
 import { DefaultService } from './shared/system-service/defaults.services';
-
-import { CommonFunctions } from './system-files/common.functions';
 
 @Component({
   selector: 'cos-root',
@@ -36,7 +34,7 @@ export class AppComponent implements AfterViewInit {
   private _runningProcessService!:RunningProcessService;
   private _componentReferenceService:ComponentReferenceService;
   private _audioService!:AudioService;
-  private _sessionManagmentService:SessionManagmentService;
+  private _sessionManagementService:SessionManagementService;
 
 
   hasWindow = false;
@@ -53,7 +51,7 @@ export class AppComponent implements AfterViewInit {
   //a number of these servies are injected here (like fileIndexerService), even though it isn't utiized hear. This is to get around 
   //circular reference error, should it be injected in the fileService
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
-              componentReferenceService:ComponentReferenceService, fileIndexerService: FileIndexerService, sessionManagmentService:SessionManagmentService,
+              componentReferenceService:ComponentReferenceService, fileIndexerService: FileIndexerService, sessionManagementService:SessionManagementService,
               defaultService:DefaultService){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
@@ -61,7 +59,7 @@ export class AppComponent implements AfterViewInit {
     this._runningProcessService = runningProcessService;
     this._audioService = audioService;
     this._componentReferenceService = componentReferenceService; 
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
 
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
@@ -72,12 +70,15 @@ export class AppComponent implements AfterViewInit {
       this._componentReferenceService.setViewContainerRef(this.itemViewContainer);
 
     // This quiets the - audioservice error
-    // const cheetahLogonKey = this._sessionManagmentService.getSession(Constants.CHEETAH_LOGON_KEY) as string;
-    // const cheetahPwrKey = this._sessionManagmentService.getSession(Constants.CHEETAH_PWR_KEY) as string;
+    // const cheetahLogonKey = this._sessionManagementService.getSession(Constants.CHEETAH_LOGON_KEY) as string;
+    // const cheetahPwrKey = this._sessionManagementService.getSession(Constants.CHEETAH_PWR_KEY) as string;
 
     // if(cheetahPwrKey === Constants.SYSTEM_ON && cheetahLogonKey === Constants.SIGNED_IN){
     //   this._audioService.play(this.noAudio);
     // }
+
+    // console.log("OS:", CommonFunctions.getOS());
+    // console.log("Browser:", CommonFunctions.getBrowser());
   }
 
   private getComponentDetail():Process{

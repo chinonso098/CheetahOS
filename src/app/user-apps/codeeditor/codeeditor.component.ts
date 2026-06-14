@@ -5,18 +5,18 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 
-import * as htmlToImage from 'html-to-image';
-import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
 import { Constants } from "src/app/system-files/constants";
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { FileService } from 'src/app/shared/system-service/file.service';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 
 // import { DiffEditorModel } from 'ngx-monaco-editor-v2';
 
@@ -37,11 +37,14 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   private _processHandlerService!:ProcessHandlerService;
   private _windowService!:WindowService;
   private _fileService!:FileService;
-  private _sessionManagmentService!:SessionManagmentService
+  private _sessionManagementService!:SessionManagementService
 
 
   private _maximizeWindowSub!: Subscription;
+  private _minimizeWindowSub!: Subscription;
+  private _windowResizeSub!: Subscription;
   private _appState!:AppState;
+
   private _fileInfo!:FileInfo;
   private _editor: any;   // monaco.editor.IStandaloneCodeEditor
   private _model: any;    // monaco.editor.ITextModel
@@ -49,6 +52,11 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   private _isApplyingFileLoad = false;
 
   SECONDS_DELAY = 250;
+  
+    /* Floors mirror the CSS min-width/min-height so the resize handler
+     ignores transient sub-min sizes during drag. */
+  readonly MIN_WIDTH_PX = 480;
+  readonly MIN_HEIGHT_PX = 320;
 
   editorOptions = {}
   code = Constants.EMPTY_STRING;
@@ -59,27 +67,36 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   fileEncoding = 'UTF-8';           // replace if you can read from FileInfo
   displayLanguage = 'Plain Text';   // human label
   isDirty = false;
+  
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}vs_code.png`;
-  isMaximizable = false;
+  isMaximizable = true;
   name = 'codeeditor';
   processId = 0;
   type = ComponentType.User;
   displayName = Constants.EMPTY_STRING;
 
   constructor( processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-               sessionManagmentService:SessionManagmentService ,windowService:WindowService, fileService:FileService, ){
+               sessionManagementService:SessionManagementService ,windowService:WindowService, fileService:FileService, ){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService = runningProcessService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
     this._processHandlerService = triggerProcessService;
     this._windowService = windowService;
     this._fileService = fileService;
 
 
     this._runningProcessService.addProcess(this.getComponentDetail());
+
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() => { this.maximizeWindow(); });
+    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe(() => { this.minimizeWindow(); });
+    this._windowResizeSub = this._windowService.resizeProcessWindowNotify.subscribe((info:WindowResizeInfo) => {
+      if(info.pId !== this.processId) return;
+      if(info.widthPx < this.MIN_WIDTH_PX || info.heightPx < this.MIN_HEIGHT_PX) return;
+      this.onWindowResize();
+    });
   }
 
   ngOnInit(): void {
@@ -123,29 +140,20 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
     this.displayLanguage = this.getLanguageLabel(this._languageType);
     this.fileEncoding = this.getFileEncodingLabel();
 
-    setTimeout(()=>{
-        this.captureComponentImg();
-    },this.SECONDS_DELAY) 
+    await CommonFunctions.sleep(this.SECONDS_DELAY);
+    await this.captureComponentImg();
 
       //this.storeAppState();
   }
 
   ngOnDestroy():void{
     this._maximizeWindowSub?.unsubscribe();
+    this._minimizeWindowSub?.unsubscribe();
+    this._windowResizeSub?.unsubscribe();
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.monacoContent.nativeElement).then(htmlImg =>{
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+  async captureComponentImg(): Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.monacoContent, this.processId, this.name, this.icon, this._windowService);
   }
 
   onEditorInit(editor: any): void {
@@ -286,20 +294,30 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
 
 
   maximizeWindow():void{
-
     const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uId === evtOriginator){
-
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
-      //window title and button bar, and windows taskbar height
-      const pixelTosubtract = 30 + 40;
-      this.monacoContent.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
-      this.monacoContent.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-
+      this.onWindowResize();
     }
+  }
+
+  minimizeWindow():void{
+    const uId = `${this.name}-${this.processId}`;
+    const evtOriginator = this._runningProcessService.getEventOriginator();
+
+    if(uId === evtOriginator){
+      this._runningProcessService.removeEventOriginator();
+      this.onWindowResize();
+    }
+  }
+
+  onWindowResize():void{
+    const host = this.monacoContent?.nativeElement as HTMLElement;
+    if(!host) return;
+    host.style.width = '';
+    host.style.height = '';
   }
 
   storeAppState(app_data:unknown):void{
@@ -311,11 +329,11 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.appData != Constants.EMPTY_STRING){
         this.code =  appSessionData.appData as string;
     }
@@ -325,9 +343,16 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() !== this.processId){
+      this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    }
 
-    this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+    // The window-container's mousedown calls .focus() on the container (tabindex=0),
+    // which steals focus from Monaco's hidden textarea and hides the caret.
+    // Give focus back to the editor after that runs.
+    if(this._editor){
+      requestAnimationFrame(() => this._editor?.focus());
+    }
   }
 
   private getComponentDetail():Process{

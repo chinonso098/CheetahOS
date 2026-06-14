@@ -1,6 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, OnInit, AfterViewInit, ViewChild, OnDestroy, Input } from '@angular/core';
-import {extname} from 'path';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
 
@@ -15,12 +14,14 @@ import { ProcessIDService } from 'src/app/shared/system-service/process.id.servi
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { TaskBarPreviewImage } from 'src/app/system-apps/taskbarpreview/taskbar.preview';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 
 import { Constants } from "src/app/system-files/constants";
 import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 
-declare let Dos: any;
+declare let emulatorsUi: any;
+//declare let Dos: any;
 @Component({
   selector: 'cos-jsdos',
   templateUrl: './jsdos.component.html',
@@ -35,11 +36,20 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _processHandlerService!:ProcessHandlerService;
-  private _sessionManagmentService!:SessionManagmentService;
+  private _sessionManagementService!:SessionManagementService;
   private _scriptService!:ScriptService;
   private _windowService!:WindowService;
   
   private dosInstance: any = null; // Store js-dos instance
+
+  // Scoped CSS injection for js-dos.css so its bundled modern-normalize /
+  // Tailwind preflight (global *, html, body, h1..h6, [type='button'] ...
+  // resets) cannot leak into the rest of CheetahOS. Shared across instances.
+  private static readonly JS_DOS_CSS_HREF = 'osdrive/Program-Files/jsdos/js-dos.css';
+  private static readonly JS_DOS_CSS_STYLE_ID = 'js-dos-css-scoped';
+  private static _scopedStyleEl: HTMLStyleElement | null = null;
+  private static _scopedStyleRefs = 0;
+  private static _scopedStyleLoading: Promise<void> | null = null;
 
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
@@ -47,6 +57,11 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   private _intervalId: any;
 
   SECONDS_DELAY = 5000;
+  WIDTH_PX = [640,854];
+  HEIGHT_PX = 480;
+  FHD_WIDTH_PX = 1920;
+  FHD_HEIGHT_PX = 1080;
+  dosWidthPx = this.WIDTH_PX[0];
 
   name= 'jsdos';
   hasWindow = true;
@@ -56,19 +71,23 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   type = ComponentType.User;
   displayName = 'JS-Dos';
 
-  dosOptions= {
-    style: "none",
-    noSideBar: true,
-    noFullscreen: true,
-    noSocialLinks:true
-  }
+  // Options for the raw emulators-ui `DosInstance` (window.emulatorsUi.dos).
+  // The wrapper-only flags (style/noSideBar/noFullscreen/noSocialLinks) do not
+  // apply here — emulators-ui has no sidebar/social UI to begin with.
+  dosOptions: Record<string, unknown> = {}
+  // dosOptions= {
+  //   style: "none",
+  //   noSideBar: true,
+  //   noFullscreen: true,
+  //   noSocialLinks:true
+  // }
 
   constructor(fileService:FileService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-              sessionManagmentService: SessionManagmentService, scriptService: ScriptService ,windowService:WindowService) { 
+              sessionManagementService: SessionManagementService, scriptService: ScriptService ,windowService:WindowService) { 
     this._fileService = fileService
     this._processIdService = processIdService;
     this._processHandlerService = triggerProcessService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
     this._scriptService = scriptService;
     this._windowService = windowService;
     this.processId = this._processIdService.getNewProcessId();
@@ -79,33 +98,33 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   ngOnInit(): void {
     this.retrievePastSessionData();
-  }
 
-  ngOnDestroy(): void {
-    if(this.dosInstance) {
-      this.dosInstance.exit(); // Clean up js-dos instance
-      this.dosInstance = null;
-    }
+    const desktopElmnt = document.getElementById('vantaCntnr') as HTMLDivElement;
+    const widthPx = (desktopElmnt && desktopElmnt.offsetWidth >= this.FHD_WIDTH_PX) ? this.WIDTH_PX[1] : this.WIDTH_PX[0];
+    this.dosWidthPx = widthPx;
 
-    // Clear the interval to prevent memory leaks
-    if (this._intervalId) {
-      clearInterval(this._intervalId);
-      console.log('Timer cleared on destroy.');
-    }
+    const resize:WindowResizeInfo = {pId:this.processId, widthPx:widthPx, heightPx:this.HEIGHT_PX}
+    this._windowService.resizeProcessWindowNotify.next(resize);
   }
 
   async ngAfterViewInit():Promise<void>{
     this._gameSrc = this.getGamesSrc(this._fileInfo);
+    const isModule = false;
+    await this.loadScopedJsDosCss();
+    await this._scriptService.loadScript("js-dos", "osdrive/Program-Files/jsdos/js-dos.js", isModule);
 
-    this._scriptService.loadScript("js-dos", "osdrive/Program-Files/jsdos/js-dos.js").then(async() =>{
-      const data = await this._fileService.getFileAsBlobAsync(this._gameSrc);
-      this.dosInstance = await Dos(this.dosWindow.nativeElement, this.dosOptions).run(data);
+    const data = await this._fileService.getFileAsBlobAsync(this._gameSrc);
+    // Use the lower-level emulators-ui API directly instead of the DosPlayer
+    // wrapper (which logs "please use emulators + emulators-ui instead" when
+    // style:'none' is set). window.emulatorsUi is exposed by js-dos.js.
+    this.dosInstance = emulatorsUi.dos(this.dosWindow.nativeElement, this.dosOptions);
+    //this.dosInstance = await Dos(this.dosWindow.nativeElement, this.dosOptions);
+    this.dosInstance.run(data);
 
-      this.storeAppState(this._gameSrc);
-      URL.revokeObjectURL(this._gameSrc);
+    this.storeAppState(this._gameSrc);
+    URL.revokeObjectURL(this._gameSrc);
 
-      this.displayName = this._fileInfo.getFileName;
-    })
+    this.displayName = this._fileInfo.getFileName;
 
     await CommonFunctions.sleep(this.SECONDS_DELAY);
     this.updateComponentImg();
@@ -123,6 +142,31 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
       imageData: htmlImg
     }
     this._windowService.addProcessPreviewImage(this.name, cmpntImg);
+  }
+
+  ngOnDestroy(): void {
+    if(this.dosInstance) {
+      this.dosInstance.stop(); // Clean up emulators-ui DosInstance
+      this.dosInstance = null;
+    }
+
+    // Clear the interval to prevent memory leaks
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+      console.log('Timer cleared on destroy.');
+    }
+
+
+    // for multiple instances of js-dos, we dont want to unload the script until the last instance is closed
+    if(this._runningProcessService.getProcessCount(this.name) <= 1){
+      this.unloadScopedJsDosCss();
+      this._scriptService.unloadScript( "js-dos", "osdrive/Program-Files/jsdos/js-dos.js");
+
+      // js-dos.js attaches itself to window.Dos / window.emulatorsUi — clear
+      // them so the globals are GC'd and a fresh copy is fetched next time.
+      //delete (window as any).Dos;
+      delete (window as any).emulatorsUi;
+    }
   }
 
   async captureJSDos(): Promise<string> {
@@ -144,7 +188,7 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     const ctx = tmp.getContext("2d")!;
     ctx.drawImage(bitmap, 0, 0);
 
-    return tmp.toDataURL("image/png");
+    return tmp.toDataURL("image/jpeg", 0.5);
   }
 
   updateComponentImg():void{
@@ -163,9 +207,13 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   }
 
   getGamesSrc(file: FileInfo):string {
-    console.log('getGamesSrc:', file);
+    //console.log('getGamesSrc:', file);
 
     const { getCurrentPath, getContentPath } = file;
+
+    if(getCurrentPath !== Constants.EMPTY_STRING && getCurrentPath.endsWith(Constants.URL)){ 
+      return getContentPath;
+    }
 
     if ((getCurrentPath !== Constants.EMPTY_STRING && getContentPath !== Constants.EMPTY_STRING)
         || (getCurrentPath !== Constants.EMPTY_STRING && getContentPath === Constants.EMPTY_STRING)) {
@@ -179,21 +227,6 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
     return Constants.EMPTY_STRING;
   }
 
-
-  checkForExt(contentPath:string, currentPath:string):boolean{
-    const contentExt = extname(contentPath);
-    const currentPathExt = extname(currentPath);
-    const ext = ".jsdos";
-    let res = false;
-
-    if(contentExt !== Constants.EMPTY_STRING && contentExt == ext){
-      res = true;
-    }else if( currentPathExt === ext){
-      res = false;
-    }
-    return res;
-  }
-
   storeAppState(app_data:unknown):void{
     const uId = `${this.name}-${this.processId}`;
     this._appState = {
@@ -203,11 +236,11 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
       this._gameSrc = appSessionData.appData as string;
     }
@@ -216,6 +249,51 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   private getComponentDetail():Process{
     this._fileInfo = this._processHandlerService.getLastProcessTrigger(this.name);
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
+  }
+
+  /**
+   * Fetches js-dos.css and injects it wrapped in `@scope (.dosbox-container)`
+   * so its bundled modern-normalize / Tailwind preflight rules (which target
+   * `*`, `html`, `body`, headings, form controls, etc.) only apply inside
+   * the JS-DOS window and cannot bleed into the rest of CheetahOS.
+   * Reference-counted so concurrent JS-DOS instances share the same <style>.
+   */
+  private async loadScopedJsDosCss(): Promise<void> {
+    if (JSdosComponent._scopedStyleEl) {
+      JSdosComponent._scopedStyleRefs++;
+      return;
+    }
+    if (JSdosComponent._scopedStyleLoading) {
+      await JSdosComponent._scopedStyleLoading;
+      JSdosComponent._scopedStyleRefs++;
+      return;
+    }
+
+    JSdosComponent._scopedStyleLoading = (async () => {
+      const res = await fetch(JSdosComponent.JS_DOS_CSS_HREF);
+      const css = await res.text();
+      const style = document.createElement('style');
+      style.id = JSdosComponent.JS_DOS_CSS_STYLE_ID;
+      style.setAttribute('data-asset-name', 'js-dos-css');
+      style.textContent = `@scope (.dosbox-container) {\n${css}\n}`;
+      document.head.appendChild(style);
+      JSdosComponent._scopedStyleEl = style;
+    })();
+
+    try {
+      await JSdosComponent._scopedStyleLoading;
+      JSdosComponent._scopedStyleRefs++;
+    } finally {
+      JSdosComponent._scopedStyleLoading = null;
+    }
+  }
+
+  private unloadScopedJsDosCss(): void {
+    JSdosComponent._scopedStyleRefs = Math.max(0, JSdosComponent._scopedStyleRefs - 1);
+    if (JSdosComponent._scopedStyleRefs === 0 && JSdosComponent._scopedStyleEl) {
+      JSdosComponent._scopedStyleEl.remove();
+      JSdosComponent._scopedStyleEl = null;
+    }
   }
 
 }

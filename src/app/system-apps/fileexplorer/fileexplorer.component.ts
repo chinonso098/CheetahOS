@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
-import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild, ElementRef, ViewEncapsulation, Input} from '@angular/core';
+import { AfterViewInit, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, ElementRef, ViewEncapsulation, Input} from '@angular/core';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -13,12 +13,11 @@ import { FormGroup, FormBuilder } from '@angular/forms';
 import { FileToolTip, ViewOptions, ViewOptionsCSS } from './fileexplorer.types';
 import {basename, dirname} from 'path';
 import { AppState } from 'src/app/system-files/state/state.interface';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { GeneralMenu, MenuPosition, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import { Constants } from 'src/app/system-files/constants';
-import * as htmlToImage from 'html-to-image';
-import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
+import { ClipboardService } from 'src/app/shared/system-service/clipboard.service';
 import { ActivityType, SortBys, UserNotificationType } from 'src/app/system-files/common.enums';
 import { DragEventInfo, FileTreeNode } from 'src/app/system-files/common.interfaces';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
@@ -30,6 +29,14 @@ import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
+import { FileExplorerContextMenuHelper } from './fileexplorer.context.menu.helper';
+import { FileExplorerGeneralHelper } from './fileexplorer.general.helper';
+import { FileExplorerFileTreeHelper } from './fileexplorer.file.tree.helper';
+import { FileExplorerSearchHelper } from './fileexplorer.search.helper';
+import { FileExplorerTooltipHelper } from './fileexplorer.tooltip.helper';
+import { FileExplorerMultiSelectHelper } from './fileexplorer.multi.select.helper';
+import { FileExplorerPathHelper } from './fileexplorer.path.helper';
+import { FileExplorerKeyboardHelper } from './fileexplorer.keyboard.helper';
 
 @Component({
   selector: 'cos-fileexplorer',
@@ -39,10 +46,38 @@ import { DefaultService } from 'src/app/shared/system-service/defaults.services'
 })
 
 export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewInit, OnDestroy {
+  //#region Fields & Constants
   @ViewChild('fileExplorerMainContainer', {static: true}) fileExplrMainCntnr!: ElementRef; 
   @ViewChild('fileExplorerRootContainer', {static: true}) fileExplorerRootContainer!: ElementRef; 
   @ViewChild('fileExplorerContentContainer', {static: true}) fileExplrCntntCntnr!: ElementRef;
   @ViewChild('navExplorerContainer', {static: true}) navExplorerCntnr!: ElementRef; 
+  // Refactor #11.a — path text box now driven by `isPathEditing` + this ref
+  // instead of `document.getElementById('pathTxtBox-' + processId)`. static:false
+  // because the input may not exist at the very first CD pass (its [style.display]
+  // can defer focusability).
+  @ViewChild('pathInputRef', {static: false}) pathInputRef?: ElementRef<HTMLInputElement>;
+  // Refactor #11.b — used only to measure the breadcrumb container's width so
+  // the path-history dropdown can match it (minus a small inset). static:true
+  // because the container exists from the first render.
+  @ViewChild('navPathContainer', {static: true}) navPathContainer!: ElementRef<HTMLElement>;
+  // Refactor #11.h — typed ref to the lasso pane. Replaces
+  // `document.getElementById('fileExplrMultiSelectPane')`, which previously
+  // resolved against the whole document and could (with two FileExplorers
+  // open) hand back the wrong window's pane. static:false because the pane
+  // lives inside the dynamic `<ol>` template subtree.
+  @ViewChild('selectPaneContainer', {static: false}) selectPaneContainer?: ElementRef<HTMLDivElement>;
+  // Refactor #11.h — per-instance list of icon-view buttons (one per file in
+  // `fetchedFiles`, in *ngFor order). Replaces the global
+  // `document.querySelectorAll('.iconview-button')` scan used by the lasso,
+  // which crossed FileExplorer instance boundaries. The QueryList is naturally
+  // scoped to this component's template.
+  @ViewChildren('iconBtn') iconBtnRefs!: QueryList<ElementRef<HTMLElement>>;
+
+  // Keyboard navigation — typed ref to the `<ol>` list container. The list is
+  // made focusable (tabindex="0" in the template) so it can receive arrow/Enter
+  // keydown events. Per-instance, so keyboard focus in window A never reaches
+  // window B's list.
+  @ViewChild('fileExplorerListContainer', {static: false}) fileExplrListCntnr?: ElementRef<HTMLOListElement>;
 
   @Input() priorUId = Constants.EMPTY_STRING;
  
@@ -50,10 +85,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _runningProcessService!:RunningProcessService;
   private _fileService!:FileService;
   private _processHandlerService!:ProcessHandlerService;
-  private _sessionManagmentService!:SessionManagmentService;
+  private _sessionManagementService!:SessionManagementService;
   private _userNotificationService!:UserNotificationService;
   private _windowService!:WindowService;
   private _menuService!:MenuService;
+  private _clipboardService!:ClipboardService;
   private _audioService!:AudioService;
   private _systemNotificationService!:SystemNotificationService;
   private _activityHistoryService!:ActivityHistoryService;
@@ -73,17 +109,33 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _hideContextMenuSub!:Subscription;
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;
-  private _createShortCutOnDesktopSub!: Subscription;
+  private _windowResizeSub!: Subscription;
+  // (Refactor #12) `_createShortCutOnDesktopSub` removed — the field was
+  // declared and unsubscribed in ngOnDestroy but never assigned anywhere
+  // (no service ever called .subscribe() into it). Dropping it removes a
+  // dead unsubscribe call and a misleading field. If desktop-shortcut
+  // notifications are reintroduced later, declare the Subscription at
+  // assignment time so the lifecycle is obvious.
   
   private isActive = false;
   private isFocus = false;
   private isPrevBtnActive = false;
   private isNextBtnActive = false;
   private isUpBtnActive = true;
-  private isNavigatedBefore = false;
+  // (`isNavigatedBefore` was removed in fix #2 — `runApplication` now uses the
+  // same "push current dir, then mutate" pattern as `navigateTo`/`navigateToFolder`,
+  // so no first-time gating is needed.)
   private isRenameActive = false;
-  private isIconInFocusDueToCurrentAction = false;
-  private isIconInFocusDueToPriorAction = false;
+  // Refactor #11.i — dropped `private` so the template can read these in
+  // [class.is-selected-*] bindings. Still write-restricted by convention.
+  isIconInFocusDueToCurrentAction = false;
+  isIconInFocusDueToPriorAction = false;
+  // Refactor #11.i — which icon (in fetchedFiles index order) the mouse is
+  // currently over. -1 means none. Drives `.is-hovered` via [class.*] on
+  // the icon button. Replaces the old `document.getElementById(...)` +
+  // `style.backgroundColor/border` writes in `setBtnStyle`/`removeBtnStyle`.
+  // Per-instance — hover state in window A cannot bleed into window B.
+  hoveredElementId = -1;
   private isHideCntxtMenuEvt= false;
   private isShiftSubMenuLeft = false;
   private isRecycleBinFolder = false;
@@ -98,7 +150,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
-  private selectedElementId = -1;
+  // Refactor #11.i — dropped `private` so the template can read this in
+  // [class.is-selected-*] / [class.is-hovered] bindings.
+  selectedElementId = -1;
   private prevSelectedElementId = -1; 
   private hideCntxtMenuEvtCnt = 0;
   private btnClickCnt = 0;
@@ -114,8 +168,28 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   isSearchBoxNotEmpty = false;
   isShowOnlyURLFilesInRootDir = true;
   showPathHistory = false;
-  onClearSearchIconHover = false;
-  onSearchIconHover = false;
+  // --- Search state -------------------------------------------------------
+  // True while a search walk is running; drives the loading overlay.
+  isSearching = false;
+  // True while search RESULTS are shown in place of the directory listing.
+  // Lets the clear/empty-query paths know to restore the normal folder view.
+  isShowingSearchResults = false;
+  // Refactor #11.a — true while the breadcrumb is swapped for an editable
+  // path input. Drives [style.display] on the path-display / form / input.
+  // Per-instance (each FileExplorer has its own field) so two open windows
+  // don't toggle each other's path editor.
+  isPathEditing = false;
+  // Refactor #11.b — visibility of the search-input recent-searches dropdown.
+  // Per-instance, so opening the dropdown in window A leaves window B alone.
+  isSearchHistoryVisible = false;
+  // Refactor #11.b — px width applied to the path-history dropdown when it
+  // is opened. Re-measured on every open so the dropdown tracks resizes of
+  // the parent FileExplorer window.
+  pathHistoryWidthPx = 0;
+  // (Refactor #11.c) The `onClearSearchIconHover` / `onSearchIconHover` /
+  // `clearSearchStyle` / `searchStyle` fields were removed here. Hover
+  // styling on the search / clear-search icons is now pure CSS, scoped to
+  // `.active` — see span.head-search-cntnr{1,2}.active(:hover) in the .css.
   showIconCntxtMenu = false;
   showFileExplrCntxtMenu = false;
   quickAccessFolderSection = false;
@@ -135,8 +209,20 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   fileTreeNavToPath = Constants.EMPTY_STRING
 
   fileExplrCntxtMenuStyle:Record<string, unknown> = {};
-  clearSearchStyle:Record<string, unknown> = {};
-  searchStyle:Record<string, unknown> = {};
+  // (Refactor #11.f) CSS `transform` for the invalid-chars warning tooltip,
+  // bound via [style.transform] on .tool-tip-container. Replaces the previous
+  // `document.getElementById('invalidChars-' + processId).style.transform = ...`
+  // pattern. Per-instance, so two open FileExplorers cannot reposition each
+  // other's tooltip.
+  invalidCharsTooltipTransform = '';
+  // (Refactor #11.g) Bound to .fx-information-tip-container in the template.
+  // Replaces document.getElementById('fx-information-tip-' + processId) +
+  // imperative style.left/top/position + classList.add('visible'). Each
+  // FileExplorer instance owns its own three fields, so the file-info
+  // tooltip in window A is fully independent of window B's.
+  infoTipLeftPx = 0;
+  infoTipTopPx = 0;
+  isInfoTipVisible = false;
   prevNavBtnStyle:Record<string, unknown> = {};
   nextNavBtnStyle:Record<string, unknown> = {};
   recentNavBtnStyle:Record<string, unknown> = {};
@@ -144,12 +230,29 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   upNavBtnCntnrStyle:Record<string, unknown> = {};
   tabLayoutCntnrStyle:Record<string, unknown> = {};
   ribbonMenuBtnStyle:Record<string, unknown> = {};
-  ribbonMenuCntnrStyle:Record<string, unknown> = {};
+  // (Refactor #11.d) Removed: `ribbonMenuCntnrStyle`, `btnTypeRibbon`,
+  // `btnTypeFooter`. They drove the colorBtnCntnr/uncolorBtnCntnr/
+  // colorRibbonMenuCntnr/uncolorRibbonMenuCntnr methods, which have all
+  // been replaced by CSS :hover rules on the three relevant containers
+  // (.fileexp-header__question-cntnr, .fileexp-footer__details-cntnr,
+  // .fileexp-footer__large-icon-cntnr).
 
   olClassName = ViewOptionsCSS.ICONS_VIEW_CSS;
-  btnTypeRibbon = 'Ribbon';
-  btnTypeFooter = 'Footer';
-  selectedRow = -1;
+  // (Refactor #11.j) Per-icon-size CSS class applied to the same <ol> alongside
+  // `olClassName`. Possible values: 'view-small' / 'view-medium' / 'view-large'
+  // / 'view-xlarge' / 'view-details'. CSS rules under `.ol-iconview-grid.view-*`
+  // own all grid/button/image/caption/shortcut dimensions, replacing the old
+  // imperative loops in `changeIconViewBtnSize` / `changeOrderedlistStyle`
+  // that wrote inline styles on every fetched-file icon. Default matches the
+  // default `currentViewOption = MEDIUM_ICON_VIEW`.
+  viewSizeClass = 'view-medium';
+  // (Bugfix follow-up to #11.i) `selectedRow` was a parallel selection state
+  // only used by details view via `[class.active]="i === selectedRow"`. It
+  // duplicated `selectedElementId` and didn't participate in the
+  // current/prior/hover state machine, so a clicked row never deselected on
+  // empty-space clicks. Details rows now bind the same three
+  // [class.is-*] classes as icon-view buttons (see template), driven by
+  // selectedElementId / isIconInFocusDueTo* / hoveredElementId / markedBtnIds.
 
   fetchedFiles:FileInfo[] = [];
   frequentFolders:FileInfo[] = [];
@@ -182,6 +285,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   readonly sortBySize = SortBys.SIZE;
   readonly sortByDateModified = SortBys.DATE_MODIFIED;
 
+    /* Floors mirror the CSS min-width/min-height so the resize handler
+     ignores transient sub-min sizes during drag. */
+  readonly MIN_WIDTH_PX = 560;
+  readonly MIN_HEIGHT_PX = 360;
+
   isExtraLargeIcon = false;
   isLargeIcon = false;
   isMediumIcon = true;
@@ -200,14 +308,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   pathForm!: FormGroup;
   searchForm!: FormGroup;
 
-  searchHistory =['Java','ProgramFile', 'Perenne'];
-  pathHistory =['/Users/Vidoes','/Users/Games', '/Users/Music'];
+  searchHistory:string[] = [];
+  pathHistory:string[] = [];
+  // Per-directory cache of recursively-collected files, reused across searches
+  // so repeated/expanding searches don't re-walk the same subtrees.
+  private _searchIndexCache = new Map<string, FileInfo[]>();
 
   sourceData:GeneralMenu[] = [
     {icon:Constants.EMPTY_STRING, label: 'Open', action: this.onTriggerRunApplication.bind(this) },
-    {icon:Constants.EMPTY_STRING, label: 'Open in new window', action: this.doNothing.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Open in new window', action: this.openInANewWindow.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Pin to Quick access', action: this.doNothing.bind(this) },
-    {icon:Constants.EMPTY_STRING, label: 'Open in Terminal', action: this.doNothing.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: 'Open in Terminal', action: this.openInTerminal.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Pin to Start', action: this.doNothing.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Send to Zip', action: this.onZip.bind(this) },
     {icon:Constants.EMPTY_STRING, label: 'Extract All...', action: this.onUnZip.bind(this) },
@@ -239,17 +350,32 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   readonly cheetahNavAudio = `${Constants.AUDIO_BASE_PATH}cheetah_navigation_click.wav`;
 
   fileExplorerBoundedRect!:DOMRect;
-  multiSelectElmnt!:HTMLDivElement | null;
   multiSelectStartingPosition!:MouseEvent | null;
 
-  markedBtnIds:string[] = [];
+  // Refactor #11.h — lasso pane geometry/visibility, bound to
+  // #selectPaneContainer in the template via [class.visible] +
+  // [style.transform] + [style.width.px] + [style.height.px]. The constant
+  // pane styling (background, border, backdrop-filter, position, z-index)
+  // now lives in CSS (.lasso-pane / .lasso-pane.visible) instead of being
+  // re-applied on every mousemove.
+  lassoVisible = false;
+  lassoLeftPx = 0;
+  lassoTopPx = 0;
+  lassoWidthPx = 0;
+  lassoHeightPx = 0;
+
+  // Refactor #11.h — selection set (icon indices). Was a `string[]` with the
+  // DOM class list as a parallel source of truth; now the Set is the single
+  // source of truth and the `.fileexplr-multi-select-highlight` class is
+  // driven by `[class.fileexplr-multi-select-highlight]="markedBtnIds.has(i)"`.
+  markedBtnIds: Set<number> = new Set<number>();
   movedBtnIds:string[] = [];
 
-  mounthPath:string = Constants.EMPTY_STRING;
+  mountPath:string = Constants.EMPTY_STRING;
 
   icon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
   navPathIcon = `${Constants.IMAGE_BASE_PATH}this_pc.png`;
-  isMaximizable = false;
+  isMaximizable = true;
   readonly name = 'fileexplorer';
   processId = 0;
   type = ComponentType.System;
@@ -257,19 +383,22 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   displayName = 'fileexplorer';
   hasWindow = true;
 
+  //#endregion Fields & Constants
 
+  //#region Constructor & Lifecycle
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, 
-              triggerProcessService:ProcessHandlerService, formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, 
+              triggerProcessService:ProcessHandlerService, formBuilder: FormBuilder, sessionManagementService:SessionManagementService, 
               menuService:MenuService, notificationService:UserNotificationService, windowService:WindowService, 
               audioService:AudioService, systemNotificationService:SystemNotificationService, activityHistoryService:ActivityHistoryService,
-              defaultService: DefaultService) { 
+              defaultService: DefaultService, clipboardService:ClipboardService) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._fileService = fileService;
     this._processHandlerService = triggerProcessService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
     this._menuService = menuService;
+    this._clipboardService = clipboardService;
     this._userNotificationService = notificationService;
     this._windowService = windowService;
     this._audioService = audioService;
@@ -309,6 +438,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
     this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)});
+    this._windowResizeSub = this._windowService.resizeProcessWindowNotify.subscribe((info:WindowResizeInfo) => {
+      if(info.pId !== this.processId) return;
+      if(info.widthPx < this.MIN_WIDTH_PX || info.heightPx < this.MIN_HEIGHT_PX) return;
+      this.onWindowResize();
+    });
     this._hideContextMenuSub = this._menuService.hideContextMenus.subscribe((p) => {
       if(p !== this.name) // don't answer your own call
         this.hideIconContextMenu();
@@ -318,7 +452,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   ngOnInit():void{
     this.retrievePastSessionData();
-    
+
     if(this._fileInfo){
       // is this a URL or and Actual Folder
       if(this._fileInfo.getOpensWith === Constants.FILE_EXPLORER && !this._fileInfo.getIsFile){ //Actual Folder
@@ -337,13 +471,33 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this.setNavButtonsColor();
     this.getFileExplorerMenuData();
-    this.storeAppState(this._fileInfo.getCurrentPath);
+
+    // BUG FIX (#5): `_fileInfo` is optional (it's never assigned for some
+    // launch paths, e.g. when File Explorer is opened from the Start menu
+    // or restored from a session without a seeded FileInfo). The original
+    // code unconditionally dereferenced `this._fileInfo.getCurrentPath`
+    // here, which threw "Cannot read properties of undefined" and aborted
+    // the rest of init. Fall back to the already-resolved `this.directory`
+    // (which `retrievePastSessionData` / the guarded block above will have
+    // populated; otherwise it still holds its class-default of `ROOT`).
+    const initialPath = this._fileInfo ? this._fileInfo.getCurrentPath : this.directory;
+    this.storeAppState(initialPath);
   }
 
   async ngAfterViewInit():Promise<void>{
-    this.hidePathTextBoxOnload();
-    this.changeFileExplorerLayoutCSS(this.currentViewOption);
-    this.changeTabLayoutIconCntnrCSS(this.currentViewOptionId,false);
+    // (Refactor #11.a) `hidePathTextBoxOnload()` removed — the path-edit
+    // input is now bound to `isPathEditing` which defaults to false, so the
+    // form/input are hidden from the very first render without any
+    // imperative DOM mutation needed at boot.
+    // (Refactor #11.e) `changeTabLayoutIconCntnrCSS(this.currentViewOptionId, false)`
+    // removed — the tab-layout icon row (`tabLayoutIconCntnr-*` spans) lives only
+    // in `fileexplorer_old/`; the active template never rendered those elements,
+    // so the document.getElementById lookup always returned null and the call
+    // was a no-op.
+    // (Refactor #11.j) was: changeFileExplorerLayoutCSS(currentViewOption).
+    // Direct call to the new single-helper now that the imperative trio is
+    // gone.
+    this.applyViewClasses(this.currentViewOption);
 
     this.pathForm.setValue({
       pathInput: (this.directory !== Constants.ROOT)? this.directory : Constants.ROOT
@@ -351,18 +505,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     await this.loadFileTreeAsync();
     await this.setProperRecycleBinIcon();
-    await this.loadFiles().then(async()=>{
-      await CommonFunctions.sleep(this.SECONDS_DELAY[4])
-      this.captureComponentImg();
-    });
+    await this.loadFiles();
 
-    //this.updateFileExplorerWindoAfterViewInit();
+    await CommonFunctions.sleep(this.SECONDS_DELAY[4])
+    await this.captureComponentImg();
   }
 
   ngOnDestroy(): void {
-    if(this.mounthPath !== Constants.EMPTY_STRING)
-      this._fileService.unmountZip(this.mounthPath);
+    if(this.mountPath !== Constants.EMPTY_STRING)
+      this._fileService.unmountZip(this.mountPath);
 
+    
     this._systemNotificationService.removeAppIconNotication(this.processId);
     this._viewByNotifySub?.unsubscribe();
     this._sortByNotifySub?.unsubscribe();
@@ -373,25 +526,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._hideContextMenuSub?.unsubscribe();
     this._maximizeWindowSub?.unsubscribe();
     this._minimizeWindowSub?.unsubscribe();
+    this._windowResizeSub?.unsubscribe();
     this._fetchDirectoryDataSub?.unsubscribe();
     this._goToDirectoryDataSub?.unsubscribe();
-    this._createShortCutOnDesktopSub?.unsubscribe();
+    // (Refactor #12) `_createShortCutOnDesktopSub?.unsubscribe()` removed
+    // along with the dead field declaration above.
   }
+  //#endregion Constructor & Lifecycle
 
+  //#region State, Session & Button-Click Flag
   get getFileExplorerRootContainerElmnt(): HTMLElement {
     return this.fileExplorerRootContainer.nativeElement;
-  }
-
-  updateFileExplorerWindoAfterViewInit():void{
-
-    if(!this.fileExplorerRootContainer) return;
-
-    const windowHeightPx = this.getFileExplorerRootContainerElmnt.offsetHeight;
-    const windowWidthPx = this.getFileExplorerRootContainerElmnt.offsetWidth;
-    const titleBar = 30;
-
-    const resize:WindowResizeInfo = {pId:this.processId, widthPx:windowWidthPx, heightPx:windowHeightPx + titleBar}
-    this._windowService.resizeProcessWindowNotify.next(resize);
   }
 
   setIsBtnClickEvt(val: boolean, who:string) {
@@ -418,17 +563,19 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
 
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
 
     if(appSessionData !== null  && appSessionData.appData !== Constants.EMPTY_STRING){
       this.directory = appSessionData.appData as string;
     }
   }
+  //#endregion State, Session & Button-Click Flag
 
+  //#region Window Management (focus / maximize / minimize / resize)
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
@@ -442,56 +589,57 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
-
-      //window title and button bar, and windows taskbar height, fileExplr headerTab container, 
-      //empty line container, fileExplr header container, empty line container 2, footer container
-      const pixelTosubtract = 30 + 40 + 115.5 + 6 + 24 + 7 + 24;
-
-      this.fileExplrMainCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
-      this.fileExplrCntntCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
-      this.navExplorerCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
+      this.onWindowResize();
     }
   }
 
-  minimizeWindow(arg:number[]):void{
+  minimizeWindow(_arg?:number[]):void{
     const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-
-      // fileExplr headerTab container, empty line container, fileExplr header container, empty line container 2, footer container
-      const pixelTosubtract =  115.5 + 6 + 24 + 7 + 24;
-      const windowHeight = arg[1];
-      const res = windowHeight - pixelTosubtract;
-
-      this.fileExplrMainCntnr.nativeElement.style.height = `${res}px`;
-      this.fileExplrCntntCntnr.nativeElement.style.height = `${res}px`;
-      this.navExplorerCntnr.nativeElement.style.height = `${res}px`;
+      this.onWindowResize();
     }
   }
 
+  onWindowResize():void{
+    // CSS now drives layout (flex column root + flex row content with min-height:0).
+    // Just strip any leftover inline px that older imperative code may have written.
+    const targets: (ElementRef | undefined)[] = [
+      this.fileExplrMainCntnr,
+      this.fileExplrCntntCntnr,
+      this.navExplorerCntnr,
+    ];
+    for(const ref of targets){
+      const el = ref?.nativeElement as HTMLElement | undefined;
+      if(!el) continue;
+      el.style.height = '';
+      el.style.width = '';
+    }
+  }
+  //#endregion Window Management (focus / maximize / minimize / resize)
+
+  //#region Navigation Button Styling
   setNavButtonsColor():void{
-    this.prevNavBtnStyle ={
-      'fill': '#ccc'
-    }
+    // Initial colours for the nav arrows in the header.
+    // Derive every fill from the corresponding `is*BtnActive` flag so the
+    // class-level defaults are the single source of truth. (Cleanup #10:
+    // previously the Up button was hard-coded to '#fff' regardless of
+    // `isUpBtnActive`, while Prev/Next were hard-coded to '#ccc' regardless
+    // of their flags — fine today, but it would silently lie about state
+    // if any default changed.)
+    const activeFill = '#fff';
+    const inactiveFill = '#ccc';
 
-    this.nextNavBtnStyle ={
-      'fill': '#ccc'
-    }
+    this.prevNavBtnStyle    = { fill: this.isPrevBtnActive ? activeFill : inactiveFill };
+    this.nextNavBtnStyle    = { fill: this.isNextBtnActive ? activeFill : inactiveFill };
+    this.upNavBtnStyle      = { fill: this.isUpBtnActive   ? activeFill : inactiveFill };
 
-    this.recentNavBtnStyle ={
-      'fill': '#ccc'
-    }
-
-    this.upNavBtnStyle ={
-      'fill': '#fff'
-    }
-
-    this.ribbonMenuBtnStyle ={
-      'fill': '#fff'
-    }
+    // `recentNavBtnStyle` and `ribbonMenuBtnStyle` have no paired "active"
+    // flag at init time — they remain at their static initial colours.
+    this.recentNavBtnStyle  = { fill: inactiveFill };
+    this.ribbonMenuBtnStyle = { fill: activeFill };
   }
 
   colorChevron():void{
@@ -542,41 +690,21 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       'fill': '#ccc'
     }
   }
+  //#endregion Navigation Button Styling
 
+  //#region Path Navigation (back / forward / up)
   private normalizePath(path: string): string {
-    // normalize slashes + remove trailing root (except if it's the root itself)
-    const root = Constants.ROOT;
-    let p = path.replace(/\\/g, root); // if you mix slashes
-    if (p.length > 1 && p.endsWith(root)) p = p.slice(0, -1);
-    return p;
+    return FileExplorerPathHelper.normalizePath(path, Constants.ROOT);
   }
 
   private getParentPath(path: string): string {
-    const root = Constants.ROOT;
-    const p = this.normalizePath(path);
-    const lastSep = p.lastIndexOf(root);
-    if (lastSep <= 0) return root;          // parent of "/x" -> "/"
-    return p.substring(0, lastSep);
+    return FileExplorerPathHelper.getParentPath(path, Constants.ROOT);
   }
 
   private rebuildUpStackFromCurrent(): void {
     // "Up" should take you to parent, then parent's parent, etc.
-    const root = Constants.ROOT;
-    let cur = this.normalizePath(this.directory);
-
-    const parents: string[] = [];
-    while (cur !== root && cur !== Constants.RECYCLE_BIN_PATH) {
-      cur = this.getParentPath(cur);
-      parents.push(cur);
-      if (cur === root) break;
-    }
-
-    // We want pop() to return the immediate parent first:
-    // if parents = ["/Users/me", "/Users", "/"]
-    // we should store it as ["/", "/Users", "/Users/me"] so pop() => "/Users/me"
-    this.upPathEntries = parents.reverse();
-
-    console.log('this.upPathEntries:', this.upPathEntries);
+    this.upPathEntries = FileExplorerPathHelper.buildUpStack(
+      this.directory, Constants.ROOT, Constants.RECYCLE_BIN_PATH);
 
     this.isUpBtnActive = this.upPathEntries.length > 0;
     this.upNavBtnStyle = { fill: this.isUpBtnActive ? '#fff' : '#ccc' };
@@ -587,8 +715,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const next = this.normalizePath(targetPath);
     const cur  = this.normalizePath(this.directory);
 
-    if(this.mounthPath !== Constants.EMPTY_STRING && !next.includes(this.mounthPath)){
-      this.mounthPath = Constants.EMPTY_STRING;
+    if(this.mountPath !== Constants.EMPTY_STRING && !next.includes(this.mountPath)){
+      this.mountPath = Constants.EMPTY_STRING;
     }
 
     if (!next || next === cur) return;
@@ -609,7 +737,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     const detectedMount = this._fileService.findMountPointForPath(next);
     if(detectedMount !== Constants.EMPTY_STRING){
-      this.mounthPath = detectedMount;
+      this.mountPath = detectedMount;
       this.directory = detectedMount;
     }else{
       // Apply directory
@@ -635,7 +763,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.setNavPathIcon(folderName, this.directory);
     await this.loadFiles();
     await CommonFunctions.sleep(this.SECONDS_DELAY[4]);
-    this.captureComponentImg();
+    await this.captureComponentImg();
   }
 
   async goForwardAlevel(): Promise<void> {
@@ -661,7 +789,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const parent = this.upPathEntries.pop() ?? Constants.EMPTY_STRING;
     await this.navigateTo(parent, 'up');
   }
+  //#endregion Path Navigation (back / forward / up)
 
+  //#region Navigation Pane & Misc Nav UI
   colorNextNavBtn():void{
     if(!this.isNextBtnActive){
       this.nextNavBtnStyle ={
@@ -690,7 +820,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   hideExpandTreeIconBtn():void{
     this.showExpandTreeIcon = false;
   }
+  //#endregion Navigation Pane & Misc Nav UI
 
+  //#region File Tree
   private async loadFileTreeAsync():Promise<void>{
     if(this.isRecycleBinFolder) return;
 
@@ -702,11 +834,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
       const entryPath = `${Constants.USER_BASE_PATH}/${dirEntry}`;
-      const isFile =  await this._fileService.isDirectory(entryPath);
+      const stat =  await this._fileService.getStatAsync(entryPath);
       const ftn:FileTreeNode = {
         name : dirEntry,
         path : entryPath,
-        isFolder: isFile,
+        isFolder: stat.isDirectory,
         children: []
       }
 
@@ -727,47 +859,28 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       // this.directory, will not be correct for all cases. Make sure to check
       for(const dirEntry of directoryEntries){
         const entryPath = `${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
-        const isDir =  await this._fileService.isDirectory(entryPath);
-        const ftn:FileTreeNode = { name: dirEntry,  path: entryPath, isFolder: isDir, children: [] }
+        const stat =  await this._fileService.getStatAsync(entryPath);
+        const ftn:FileTreeNode = { name: dirEntry,  path: entryPath, isFolder: stat.isDirectory, children: [] }
         tmpFileTreeNode.push(ftn);
       }
   
-      const res =  this.addChildrenToNode(this.fileTreeNode, path, tmpFileTreeNode);
+      const res =  FileExplorerFileTreeHelper.addChildrenToNode(this.fileTreeNode, path, tmpFileTreeNode);
       this.fileTreeNode = res;
       this.fileTreeHistory.push(path);
     }
   }
+  //#endregion File Tree
 
-  private addChildrenToNode(treeData: FileTreeNode[], nodePath: string, newChildren: FileTreeNode[]): FileTreeNode[] {
-    // Create a new array for the updated treeData
-    const updatedTreeData: FileTreeNode[] = [];
-
-    for(let i = 0; i < treeData.length; i++){
-      const node = treeData[i];
-      const updatedNode: FileTreeNode = { name: node.name, path: node.path, isFolder: node.isFolder, children: node.children || [] };
-
-      // If the current node matches the nodeName, add the new children
-      if(node.path === nodePath){
-        for(const child of newChildren)
-          updatedNode.children.push(child);
-      }
-
-      // If the node has children, recursively call this function on the children
-      if(node.children)
-        updatedNode.children = this.addChildrenToNode(node.children, nodePath, newChildren);
-      
-      // Add the updated node to the new treeData array
-      updatedTreeData.push(updatedNode);
-    }
-
-    return updatedTreeData;
-  }
-
+  //#region Folder Navigation (from tree / breadcrumb)
   async navigateToFolder(data: string[]): Promise<void> {
     console.log('navigateToFolder:', data);
 
     this.hideIconContextMenu(undefined, this.name);
-    this.mounthPath === Constants.EMPTY_STRING; // reset any prior mounted zip path when navigating via file tree
+    // Reset any prior mounted zip path when navigating via the file tree / breadcrumb.
+    // BUG FIX (#1): this was previously `===` (a comparison whose result was discarded),
+    // so a stale mount path from a previously opened .zip persisted across navigations
+    // and caused `navigateTo` to keep treating us as "inside the mount".
+    this.mountPath = Constants.EMPTY_STRING;
 
     const quickAccess = 'Quick access';
     const thisPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
@@ -792,12 +905,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isPrevBtnActive = this.prevPathEntries.length > 0;
     this.displayName = fileName;
 
-    // fileTreeNavToPath appears to be a "highlight in tree" target
+    // `fileTreeNavToPath` is the "highlight in tree" target. The tree has no
+    // node for the synthetic ROOT view, so blank it out in that case; for
+    // every other path we highlight the navigated location.
+    // (Cleanup #7: previous code wrote this via a ternary and then re-applied
+    // the same blanking with a duplicate `if (rawPath === ROOT)` branch.)
     this.fileTreeNavToPath = (rawPath === Constants.ROOT) ? Constants.EMPTY_STRING : rawPath;
 
-    if(rawPath === Constants.ROOT)
-      this.fileTreeNavToPath = Constants.EMPTY_STRING;
-     
     // --- Apply navigation ---
     this.directory = targetDir;
     this.generateFileAndUpdateProcess(); // this must happen after directory is set;
@@ -823,13 +937,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.storeAppState(this.directory);
 
     // --- Load content based on resolved directory ---
-    if(rawPath === thisPC || rawPath !== Constants.ROOT)
-      await this.loadFiles();
-    else if(rawPath === Constants.ROOT)
+    // `loadFiles()` defaults `showOnlyUrlFiles=true`, which only matters when
+    // `this.directory === ROOT` (it picks .url shortcut tiles vs. real files).
+    // ROOT view -> show the non-shortcut listing; anywhere else -> defaults.
+    // (Cleanup #7: original was a tautological `if (a || !b) ... else if (b) ...`
+    // chain — `rawPath === thisPC || rawPath !== ROOT` is just `rawPath !== ROOT`.)
+    if(rawPath === Constants.ROOT)
       await this.loadFiles(false);
+    else
+      await this.loadFiles();
 
     await CommonFunctions.sleep(this.SECONDS_DELAY[4]);
-    this.captureComponentImg();
+    await this.captureComponentImg();
   }
 
   setNavPathIcon(fileName:string, directory:string):void{
@@ -853,286 +972,203 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     this._systemNotificationService.taskBarIconInfoChangeNotify.next(taskBarAppIconInfo);
   }
+  //#endregion Folder Navigation (from tree / breadcrumb)
 
+  //#region Path Text Box, Breadcrumbs & Image Capture
+  /**
+   * Swap the breadcrumb display for the editable path input.
+   *
+   * (Refactor #11.a) Replaces three `document.getElementById(...-{processId})`
+   * lookups + manual style mutations with a single boolean flag that the
+   * template binds via [style.display]. Multi-instance safe by construction —
+   * each FileExplorer instance owns its own `isPathEditing` field.
+   */
   showPathTextBox(evt:MouseEvent):void{
     evt.stopPropagation();
     this.focusWindow();
 
-    const pathTxtBoxCntrElement = document.getElementById(`pathTxtBoxCntr-${this.processId}`) as HTMLElement;
-    const pathTxtBoxElement = document.getElementById(`pathTxtBox-${this.processId}`) as HTMLInputElement;
-    const pathIconBoxElement = document.getElementById(`pathIconBox-${this.processId}`) as HTMLElement;
-
-    if(!pathTxtBoxCntrElement || !pathTxtBoxElement || !pathIconBoxElement) return;
-
-    pathTxtBoxCntrElement.style.display = 'flex';
-    pathTxtBoxElement.style.display = 'block';
-
+    // Seed the input with the path the user is about to edit. Matches the
+    // pre-refactor behaviour: while the history dropdown is open and we're
+    // at ROOT, show the bare ROOT marker; otherwise show the current dir.
     if(this.showPathHistory){
       if(this.directory === Constants.ROOT)
-        this.pathForm.setValue({ pathInput:Constants.ROOT })
+        this.pathForm.setValue({ pathInput: Constants.ROOT });
+    } else {
+      this.pathForm.setValue({ pathInput: this.directory });
     }
-    else
-      this.pathForm.setValue({ pathInput:this.directory })
 
-    pathTxtBoxElement?.focus();
-    pathTxtBoxElement?.select();
-    pathIconBoxElement.style.display = 'none';
-  }
+    this.isPathEditing = true;
 
-  hidePathTextBox():void{
-    const pathTxtBoxCntrElement = document.getElementById(`pathTxtBoxCntr-${this.processId}`) as HTMLElement;
-    const pathTxtBoxElement = document.getElementById(`pathTxtBox-${this.processId}`) as HTMLElement;
-    const pathIconBoxElement = document.getElementById(`pathIconBox-${this.processId}`) as HTMLElement;
-
-    if(!pathTxtBoxCntrElement || !pathTxtBoxElement || !pathIconBoxElement) return;
-
-    pathTxtBoxElement.style.display = 'none';
-    pathTxtBoxCntrElement.style.display = 'none';
-    pathIconBoxElement.style.display = 'flex';
-  }
-
-  hidePathTextBoxOnload():void{
-    const pathTxtBoxCntrElement = document.getElementById(`pathTxtBoxCntr-${this.processId}`) as HTMLElement;
-    const pathTxtBoxElement = document.getElementById(`pathTxtBox-${this.processId}`) as HTMLElement;  
-
-    if(!pathTxtBoxCntrElement || ! pathTxtBoxElement) return;
-
-    pathTxtBoxElement.style.display = 'none';
-    pathTxtBoxCntrElement.style.display = 'none';
+    // Defer focus/select to the next macrotask so Angular has flushed the
+    // [style.display] binding and the browser has had a paint tick — an
+    // element with display:none cannot be focused, and microtasks run
+    // BEFORE zone-triggered change detection completes.
+    setTimeout(() => {
+      const el = this.pathInputRef?.nativeElement;
+      el?.focus();
+      el?.select();
+    }, 0);
   }
 
   /**
-   * Populates a List with path traversal
+   * (Refactor #11.a) Reverts the input/form back to the breadcrumb display.
+   * Wired to (focusout) on the nav anchor — identical wiring as before, only
+   * the visibility mechanism changed.
+   */
+  hidePathTextBox():void{
+    this.isPathEditing = false;
+  }
+
+  /**
+   * Navigate to the path the user typed into the address bar.
+   *
+   * Wired to the path form's (ngSubmit) (Enter key). Resolves the raw input to
+   * an absolute path, verifies it exists, and either navigates there (folder)
+   * or opens its containing folder (file). If the location can't be found, a
+   * 'Location not found' error notification is raised and we stay put.
+   */
+  async onPathSubmit():Promise<void>{
+    const raw = ((this.pathForm.value.pathInput as string | null) ?? Constants.EMPTY_STRING).trim();
+
+    // Empty input: just drop back to the breadcrumb view, no navigation.
+    if(raw.length === 0){
+      this.hidePathTextBox();
+      return;
+    }
+
+    // Resolve to an absolute path: a relative entry is taken from root.
+    let targetPath = raw.startsWith(Constants.ROOT) ? raw : `${Constants.ROOT}${raw}`;
+    targetPath = this.normalizePath(targetPath);
+
+    // Root is always valid — short-circuit the existence check.
+    if(targetPath === Constants.ROOT){
+      this.hidePathTextBox();
+      await this.navigateToFolder([Constants.ROOT, Constants.ROOT]);
+      return;
+    }
+
+    const stat = await this._fileService.getStatAsync(targetPath);
+    if(!stat.exists){
+      // Keep the editor open so the user can correct the path.
+      this._userNotificationService.showErrorNotification(
+        `Cheetah can't find '${targetPath}'. Check the spelling and try again.`,
+        'Location not found'
+      );
+      return;
+    }
+
+    this.hidePathTextBox();
+
+    // A folder opens directly; a file opens its containing folder (matches the
+    // familiar "type a file path, land in its folder" behaviour).
+    const destDir = stat.isDirectory ? targetPath : this.normalizePath(dirname(targetPath));
+    await this.navigateToFolder([basename(destDir), destDir]);
+  }
+
+  /**
+   * Populates `_directoryTraversalList` with the breadcrumb trail for the
+   * current directory (delegated to the path helper).
    * RECYCLE_BIN_PATH → [RECYCLE_BIN]
    * user path like /Users/Bob/Documents → [THISPC, Users, Bob, Documents]
    * non-user path like /System/Library → [THISPC, System, Library]
    * root / → [THISPC, OSDISK] (stable breadcrumb)
-   * @returns 
    */
   generateBreadCrumbs(): void {
-    // Split directory into segments (ignore empty from leading/trailing slashes)
-    const segments = this.directory
-      .split(Constants.ROOT)
-      .filter(x => x !== Constants.EMPTY_STRING);
-
-    // Breadcrumb trail always starts at THISPC
-    const trail: string[] = [Constants.THISPC, ...segments];
-
-    // Special case: Recycle Bin
-    if (this.directory === Constants.RECYCLE_BIN_PATH) {
-      this._directoryTraversalList = [Constants.RECYCLE_BIN];
-      return;
-    }
-
-    // User base path: show the real segments as-is (THISPC + /Users/...)
-    if (this.directory.includes(Constants.USER_BASE_PATH)) {
-      this._directoryTraversalList = trail;
-      return;
-    }
-
-    // Non-user paths: show a stable disk label after THISPC
-    // Ensure slot exists for the disk label (index 1).
-    if (trail.length === 1) {
-      trail.push(Constants.OSDISK);
-    } else {
-      if(this.directory === Constants.ROOT)
-        trail[1] = Constants.OSDISK;
-    }
-
-    this._directoryTraversalList = trail;
-    console.log('this._directoryTraversalList:', this._directoryTraversalList);
+    this._directoryTraversalList = FileExplorerPathHelper.buildBreadCrumbs(this.directory, {
+      root: Constants.ROOT,
+      thisPc: Constants.THISPC,
+      recycleBinPath: Constants.RECYCLE_BIN_PATH,
+      recycleBin: Constants.RECYCLE_BIN,
+      userBasePath: Constants.USER_BASE_PATH,
+      osDisk: Constants.OSDISK,
+      empty: Constants.EMPTY_STRING,
+    });
   }
 
-
-  captureComponentImg():void{
-    htmlToImage.toPng(this.fileExplorerRootContainer.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
-
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+  async captureComponentImg():Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.fileExplorerRootContainer, this.processId, this.name, this.icon, this._windowService, { useJpeg: true, maxWidth: 320 });
   }
-  
+  //#endregion Path Text Box, Breadcrumbs & Image Capture
 
+  //#region View / Layout (icon sizes, ordered list)
   toggleLargeIconsView():void{
     this.currentViewOption = ViewOptions.LARGE_ICON_VIEW;
-    this.changeLayoutCss( this.currentViewOption );
-    this.changeOrderedlistStyle( this.currentViewOption );
-    this.changeIconViewBtnSize( this.currentViewOption );
+    this.applyViewClasses(this.currentViewOption);
   }
 
   toggleDetailsView():void{
     this.currentViewOption = ViewOptions.DETAILS_VIEW;
-    this.changeLayoutCss( this.currentViewOption );
-    this.changeOrderedlistStyle( this.currentViewOption );
-    this.changeIconViewBtnSize( this.currentViewOption );
+    this.applyViewClasses(this.currentViewOption);
   }
 
-  changeFileExplorerLayoutCSS(inputViewOption:ViewOptions):void{
-    if(inputViewOption === ViewOptions.SMALL_ICON_VIEW || inputViewOption === ViewOptions.MEDIUM_ICON_VIEW || 
-      inputViewOption === ViewOptions.LARGE_ICON_VIEW || inputViewOption === ViewOptions.EXTRA_LARGE_ICON_VIEW){
-      this.currentViewOption = inputViewOption;
-      this.changeLayoutCss(inputViewOption);
-      this.changeOrderedlistStyle(inputViewOption);
-      this.changeIconViewBtnSize(inputViewOption);
+  // (Refactor #11.j) `changeFileExplorerLayoutCSS` removed — it was just a
+  // thin dispatcher over `changeLayoutCss` + `changeOrderedlistStyle` +
+  // `changeIconViewBtnSize`. Replaced by `applyViewClasses` which sets both
+  // CSS classes the template needs ([ngClass]="[olClassName, viewSizeClass]")
+  // and works uniformly for icon views and details view.
+
+  // (Refactor #11.e) Removed: `changeTabLayoutIconCntnrCSS(id, isMouseHover)`.
+  // It mutated background/border/margin on `#tabLayoutIconCntnr-<pid>-<id>`
+  // spans that only exist in the legacy `fileexplorer_old/` template. In the
+  // active component the getElementById lookup always returned null, so every
+  // branch fell through silently. If the tab-layout icon row is ever brought
+  // back, re-implement it as a CSS-class-driven binding (e.g. [class.is-active]
+  // + [class.is-hover] or pure :hover) rather than the imperative pattern.
+
+  /**
+   * Refactor #11.j: single source of truth for the two CSS classes that
+   * drive layout. Replaces the imperative trio `changeLayoutCss` (set
+   * `olClassName`) + `changeOrderedlistStyle` (write inline grid styles on
+   * the <ol>) + `changeIconViewBtnSize` (loop over fetched files writing
+   * inline width/height on each icon button / image / caption / shortcut).
+   * All of that geometry now lives in `.ol-iconview-grid.view-*` CSS rules,
+   * so this helper just picks the right two class names. Multi-instance
+   * safe: writes to per-component fields only, no DOM lookups.
+   */
+  private applyViewClasses(view:ViewOptions):void{
+    if(view === ViewOptions.DETAILS_VIEW){
+      this.olClassName = ViewOptionsCSS.DETAILS_VIEW_CSS;
+      this.viewSizeClass = 'view-details';
+      return;
     }
 
-    if(inputViewOption === ViewOptions.DETAILS_VIEW){
-      this.currentViewOption = inputViewOption;
-      this.changeLayoutCss(inputViewOption);
-      //this.changeOrderedlistStyle(inputViewOption);
-    }
-  }
-
-  changeTabLayoutIconCntnrCSS(id:number, isMouseHover:boolean):void{
-    const btnElement = document.getElementById(`tabLayoutIconCntnr-${this.processId}-${id}`) as HTMLElement;
-    if(this.currentViewOptionId === id){
-      if(btnElement){
-        btnElement.style.border = '0.5px solid #ccc';
-        if(isMouseHover){
-          btnElement.style.backgroundColor = '#807c7c';
-        }else{
-          btnElement.style.backgroundColor = '#605c5c';
-        }
-      }
-    }
-
-    if(this.currentViewOptionId !== id){
-      if(btnElement){
-        if(isMouseHover){
-          btnElement.style.backgroundColor = '#403c3c';
-          btnElement.style.border = '0.5px solid #ccc';
-        }else{
-          btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-          btnElement.style.border = Constants.EMPTY_STRING;
-          btnElement.style.margin = '0';
-        }
-      }    
+    this.olClassName = ViewOptionsCSS.ICONS_VIEW_CSS;
+    switch(view){
+      case ViewOptions.SMALL_ICON_VIEW:        this.viewSizeClass = 'view-small';  break;
+      case ViewOptions.LARGE_ICON_VIEW:        this.viewSizeClass = 'view-large';  break;
+      case ViewOptions.EXTRA_LARGE_ICON_VIEW:  this.viewSizeClass = 'view-xlarge'; break;
+      case ViewOptions.MEDIUM_ICON_VIEW:
+      default:                                 this.viewSizeClass = 'view-medium'; break;
     }
   }
 
-  changeLayoutCss(iconSize:ViewOptions):void{
-    const layoutOptions:ViewOptions[] = [ViewOptions.SMALL_ICON_VIEW, ViewOptions.MEDIUM_ICON_VIEW, ViewOptions.LARGE_ICON_VIEW, 
-                                        ViewOptions.EXTRA_LARGE_ICON_VIEW, ViewOptions.DETAILS_VIEW];
+  // (Refactor #11.j) `changeLayoutCss`, `changeIconViewBtnSize` and
+  // `changeOrderedlistStyle` were all deleted. The first only set the
+  // `<ol>` class — now handled by `applyViewClasses`. The latter two looped
+  // over `fetchedFiles` writing inline width/height/grid styles on every
+  // icon element by `document.getElementById('...-${pid}-${i}')`. They had
+  // three problems: (1) per-icon DOM mutation that didn't survive `*ngFor`
+  // re-renders, requiring the toggles to be called again; (2) every fileexplorer
+  // instance shared the same scan path, so a slow second instance would
+  // contend with the first — the per-process id suffix saved us from cross-talk
+  // but the lookup cost still scaled with O(processes × icons); (3) DETAILS_VIEW
+  // crashed when it indexed past the end of the size tables. CSS rules under
+  // `.ol-iconview-grid.view-small/.view-medium/.view-large/.view-xlarge` now
+  // own all that geometry — set the class once on the <ol>, every descendant
+  // picks it up via cascade. Multi-instance safe by construction.
+  //#endregion View / Layout (icon sizes, ordered list)
 
-    const LayoutOptionsCSS:ViewOptionsCSS[] = [ViewOptionsCSS.ICONS_VIEW_CSS, ViewOptionsCSS.DETAILS_VIEW_CSS];
-
-    const layoutIdx = layoutOptions.indexOf(iconSize);
-    if(layoutIdx <= 3){
-      this.olClassName = LayoutOptionsCSS[0];
-    } else if (layoutIdx >= 4){
-      this.olClassName = LayoutOptionsCSS[1];
-    }
-  }
-
-  changeIconViewBtnSize(iconSize:ViewOptions):void{
-
-    const icon_sizes:ViewOptions[] = [ViewOptions.SMALL_ICON_VIEW, ViewOptions.MEDIUM_ICON_VIEW, ViewOptions.LARGE_ICON_VIEW, 
-                                      ViewOptions.EXTRA_LARGE_ICON_VIEW, ViewOptions.DETAILS_VIEW];
-
-    const fig_img_sizes:string[] = ['30px', '45px', '80px', '96px']; //small, med, large, ext large
-    const btn_width_height_sizes:string[][] = [['70px', '50px'], ['90px', '70px'], ['120px', '100px'], ['140px', '120px']];
-    const shortCutIconSizes:string[][] = [['8', '-12'], ['12', '-8'], ['21', '1'],  ['25', '5']];
-
-    const iconIdx = icon_sizes.indexOf(iconSize);
-
-    for(let i = 0; i < this.fetchedFiles.length; i++){
-      const btnElmnt = document.getElementById(`btnElmnt-${this.processId}-${i}`) as HTMLElement;
-      const imgElmnt = document.getElementById(`imgElmnt-${this.processId}-${i}`) as HTMLElement;
-      const figCapElmnt = document.getElementById(`figCapElmnt-${this.processId}-${i}`) as HTMLElement;
-      const shortCutElmt = document.getElementById(`shortCut-${this.processId}-${i}`) as HTMLElement;
-
-      if(btnElmnt){
-        btnElmnt.style.width = btn_width_height_sizes[iconIdx][0];
-        //btnElmnt.style.height = btn_width_height_sizes[iconIdx][1];
-        btnElmnt.style.height = 'min-content';
-      }
-
-      if(imgElmnt){
-        imgElmnt.style.width = fig_img_sizes[iconIdx];
-        imgElmnt.style.height = fig_img_sizes[iconIdx];
-      }
-
-      if(figCapElmnt){
-        figCapElmnt.style.width = btn_width_height_sizes[iconIdx][0];
-      }
-
-      if(shortCutElmt){
-        shortCutElmt.style.width = shortCutIconSizes[iconIdx][0];
-        shortCutElmt.style.height = shortCutIconSizes[iconIdx][0];
-        shortCutElmt.style.bottom = shortCutIconSizes[iconIdx][1];
-      }
-    }
-  }
-
-  changeOrderedlistStyle(iconView:ViewOptions):void{
-    const icon_sizes:ViewOptions[] = [ViewOptions.SMALL_ICON_VIEW, ViewOptions.MEDIUM_ICON_VIEW, ViewOptions.LARGE_ICON_VIEW, 
-                                ViewOptions.EXTRA_LARGE_ICON_VIEW];
-
-    const btn_width_height_sizes = [['70px', '50px'], ['90px', '70px'], ['120px', '100px'],  ['140px', '120px']];
-    const iconIdx = icon_sizes.indexOf(iconView);
-    
-    const olElmnt = document.getElementById(`olElmnt-${this.processId}`) as HTMLElement;
-
-    if(iconView === ViewOptions.SMALL_ICON_VIEW || 
-      iconView === ViewOptions.MEDIUM_ICON_VIEW ||
-      iconView === ViewOptions.LARGE_ICON_VIEW  || 
-      iconView === ViewOptions.EXTRA_LARGE_ICON_VIEW){
-
-      if(olElmnt){
-        olElmnt.style.gridTemplateColumns = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][0]})`;
-        olElmnt.style.gridTemplateRows = `repeat(auto-fill,${btn_width_height_sizes[iconIdx][1]})`;
-        olElmnt.style.rowGap = '34px';
-        olElmnt.style.columnGap = '5px';
-        olElmnt.style.padding = '5px 10px';
-        olElmnt.style.gridAutoFlow = 'row';
-      }
-    }
-  }
-
+  //#region Ribbon Menu Styling
   questionBtn():void{
    // no-op
   }
 
-  colorRibbonMenuCntnr():void{
-    this.ribbonMenuCntnrStyle ={
-      'background-color': '#ccc'
-    }
-  }
+  // (Refactor #11.d) Removed methods:
+  //   colorRibbonMenuCntnr, uncolorRibbonMenuCntnr  — dead (no template ref).
+  //   colorBtnCntnr, uncolorBtnCntnr                — replaced by CSS :hover.
+  //#endregion Ribbon Menu Styling
 
-  uncolorRibbonMenuCntnr():void{
-    this.ribbonMenuCntnrStyle ={
-      'background-color': '#080404'
-    }
-  }
-
-  colorBtnCntnr(btnId:string):void{
-    const btnElmnt = document.getElementById(btnId) as HTMLElement;
-    if(btnElmnt){
-      btnElmnt.style.backgroundColor = '#ccc';
-    }
-  }
-
-  uncolorBtnCntnr(type:string, btnId:string):void{
-    const btnElmnt = document.getElementById(btnId) as HTMLElement;
-    if(type === this.btnTypeRibbon){
-      if(btnElmnt){
-        btnElmnt.style.backgroundColor = '#080404';
-      }
-    }else{
-      if(btnElmnt){
-        btnElmnt.style.backgroundColor = Constants.EMPTY_STRING;
-      }
-    }
-  }
-
+  //#region Run Application & Selection (clicks / hovers)
   async runApplication(file:FileInfo, evt?:MouseEvent):Promise<void>{
     if(evt)
       evt.stopPropagation();
@@ -1159,34 +1195,72 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // console.log('what was clicked:',file.getFileName +'-----' + file.getOpensWith +'---'+ file.getCurrentPath +'----'+ file.getIcon) TBD
     if(isFolder || isZipFile){
 
-      if(isZipFile && this.mounthPath === Constants.EMPTY_STRING){
+      // --- Navigation stack maintenance ---------------------------------
+      // IMPORTANT: capture `fromDir` BEFORE the zip-mount block below runs,
+      // because that block mutates `this.directory` to the mount path. If
+      // we read `this.directory` after the mount, the back stack would
+      // record the mount path instead of the folder we are leaving from
+      // (regression seen when opening a .zip from /Users/Games: Back
+      // jumped all the way to "/" because /Users/Games was never pushed).
+      const fromDir = this.directory;
+
+      // Track whether the mount was established THIS call. Needed because
+      // `this.mountPath` can be non-empty in two very different cases:
+      //   (a) we just mounted in this call         -> target = mountPath
+      //   (b) we are drilling INTO an existing mount
+      //       (clicking a folder inside the zip)   -> target = file.getCurrentPath
+      // Without this distinction, drilling deeper inside a mounted zip
+      // collapses to "target == current" and navigation silently no-ops.
+      let mountedThisCall = false;
+
+      if(isZipFile && this.mountPath === Constants.EMPTY_STRING){
         const detectedMount = this._fileService.findMountPointForPath(file.getCurrentPath);
         if(detectedMount !== Constants.EMPTY_STRING){
-          this.mounthPath = detectedMount;
+          this.mountPath = detectedMount;
           this.directory = detectedMount;
         }else{
           const mountPath = await this.getZipFileMountPath(file.getCurrentPath);
-          this.directory = mountPath; this.mounthPath = mountPath;
+          this.directory = mountPath; this.mountPath = mountPath;
         }
+        mountedThisCall = true;
       }
 
-      if(!this.isNavigatedBefore){
-        this.prevPathEntries.push(this.directory);
-        this.upPathEntries.push(this.directory);
-        this.isNavigatedBefore = true;
+      // Resolve the target directory:
+      //   - URL shortcut       -> follow getContentPath
+      //   - zip mounted now    -> the mount path that the block above set
+      //   - everything else    -> the file's own current path
+      // (Bug fixes #2 / #3 / #4 — see prior comment block. Forward history
+      // is invalidated on any real navigation; Up stack is rebuilt from the
+      // resolved directory's actual parent chain by `rebuildUpStackFromCurrent`.)
+      let targetDir: string;
+      if(file.getCurrentPath.includes(Constants.URL)){
+        targetDir = file.getContentPath;
+      }else if(mountedThisCall){
+        targetDir = this.directory; // already set to mountPath above
+      }else{
+        targetDir = file.getCurrentPath;
       }
 
-      this.isPrevBtnActive = true;
-      if(file.getCurrentPath.includes(Constants.URL))
-        this.directory = file.getContentPath;
-      else
-        this.directory = file.getCurrentPath;
-    
+      // Only mutate history if we are actually changing directories.
+      if(targetDir !== fromDir){
+        this.prevPathEntries.push(fromDir);
+        this.nextPathEntries = []; // new branch -> forward history is invalid
+      }
+
+      this.directory = targetDir;
       this.displayName = file.getFileName;
       this.icon = file.getIconPath;
 
-      this.prevPathEntries.push(this.directory);
-      this.upPathEntries.push(this.directory);
+      // Rebuild Up stack from the new directory's real parent chain.
+      this.rebuildUpStackFromCurrent();
+
+      // Back button reflects actual back-stack depth.
+      this.isPrevBtnActive = this.prevPathEntries.length > 0;
+      this.prevNavBtnStyle = { fill: this.isPrevBtnActive ? '#fff' : '#ccc' };
+
+      // Forward stack was just cleared (when navigating) -> forward is inactive.
+      this.isNextBtnActive = this.nextPathEntries.length > 0;
+      this.nextNavBtnStyle = { fill: this.isNextBtnActive ? '#fff' : '#ccc' };
 
       if(this.recentPathEntries.indexOf(this.directory) === -1){
         this.recentPathEntries.push(this.directory);
@@ -1199,7 +1273,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
       await this.loadFiles();
       await CommonFunctions.sleep(this.SECONDS_DELAY[4])
-      this.captureComponentImg();
+     await this.captureComponentImg();
       
       return;
     }else{
@@ -1216,8 +1290,18 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   onBtnClick(evt:MouseEvent, id:number):void{
     this.doBtnClickThings(id);
-    this.setBtnStyle(id, true);
+    // Refactor #11.i: previously called `setBtnStyle(id, true)` to paint the
+    // selected icon imperatively. The same visual is now produced by the
+    // [class.is-selected-current] binding on the icon button — it activates
+    // automatically because `doBtnClickThings` set `selectedElementId = id`
+    // and `isIconInFocusDueToCurrentAction = true`.
     this.getSelectFileSizeSumAndUnitOrFolders();
+    // Keyboard navigation: move DOM focus to the list container so subsequent
+    // arrow/Enter keys are captured by `onFileExplorerKeyDown`. Details-view
+    // rows are not focusable, so without this the first keypress after a click
+    // would be lost. preventScroll keeps the viewport steady.
+    this.selectedFile = this.fetchedFiles[id];
+    this.fileExplrListCntnr?.nativeElement.focus({preventScroll: true});
 
     evt.stopPropagation();
   }
@@ -1227,28 +1311,138 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     evt.preventDefault()
   }
 
-  onQuickAccessMouseEnter(evt:MouseEvent, file:FileInfo, id:number, isFileSection:boolean):void{
-    const quickAcessSection = (isFileSection)? 'btnElmnt-file': 'btnElmnt-folder';
-    const quickAcessSection2 = (isFileSection)? 'fileExplrQAFiles': 'fileExplrQAFolder';
+  //#region Keyboard Navigation
+  /**
+   * Keyboard navigation for the file list (`<ol>`, made focusable via
+   * tabindex="0"). Supports Windows-Explorer-style keys:
+   *   ArrowLeft/Right  — previous / next item
+   *   ArrowUp/Down     — up / down one grid row (icon view) or one row (details)
+   *   Home / End       — first / last item
+   *   Enter            — open / activate the selected item
+   *   F2               — rename the selected item
+   *   Escape           — clear the selection
+   * Multi-instance safe: navigation reads only this component's `fetchedFiles`
+   * and `iconBtnRefs`; no global document scans.
+   */
+  onFileExplorerKeyDown(evt:KeyboardEvent):void{
+    // The rename textbox owns its own keys (handled by `onKeyPress`); don't
+    // hijack typing/Enter while a rename is in progress.
+    if(this.isRenameActive) return;
 
-    if(!this.isMultiSelectActive){
-      this.isMultiSelectEnabled = false;
+    const total = this.fetchedFiles.length;
+    if(total === 0) return;
 
-      const quickAccesBtnElmnt = document.getElementById(`${quickAcessSection}-${this.processId}-${id}`) as HTMLDivElement;
-      const quickAccesUlElmnt = document.getElementById(`${quickAcessSection2}-${this.processId}`) as HTMLUListElement;
-      this.setBtnStyle(id, true, quickAccesBtnElmnt);
+    const current = this.selectedElementId; // -1 when nothing is selected
+    const isDetailsView = this.currentViewOption === this.detailsView;
+    const columns = isDetailsView ? 1 : this.getIconViewColumnCount();
+    let handled = true;
 
-      // if(quickAccesUlElmnt){
-      //   const rect = quickAccesUlElmnt.getBoundingClientRect();
-      //   this.showFileExplorerToolTip(evt, file);
-      // }
+    // Grid-movement keys resolve to an index; action keys fall through below.
+    const nextIndex = FileExplorerKeyboardHelper.computeNextIndex(evt.key, current, total, columns);
+    if(nextIndex !== null){
+      this.selectIconByIndex(nextIndex);
+    }else{
+      switch(evt.key){
+        case 'Enter':
+          if(current >= 0 && current < total){
+            void this.runApplication(this.fetchedFiles[current]);
+          }
+          break;
+        case 'F2':
+          if(current >= 0 && current < total){
+            this.selectedFile = this.fetchedFiles[current];
+            this.onRenameFileTxtBoxShow();
+          }
+          break;
+        case 'Escape':
+          this.btnStyleAndValuesReset();
+          this.markedBtnIds.clear();
+          this.areMultipleIconsHighlighted = false;
+          break;
+        default:
+          handled = false;
+      }
+    }
+
+    if(handled){
+      evt.preventDefault();
+      evt.stopPropagation();
     }
   }
+
+  /**
+   * Select the item at `index` from the keyboard. Reuses `doBtnClickThings`
+   * (the same path a single mouse click takes) so the existing
+   * [class.is-selected-current] binding paints the highlight, then updates the
+   * footer size readout and scrolls the item into view.
+   */
+  private selectIconByIndex(index:number):void{
+    if(index < 0 || index >= this.fetchedFiles.length) return;
+
+    // Keyboard navigation is single-select — drop any lasso multi-selection.
+    if(this.markedBtnIds.size > 0){
+      this.markedBtnIds.clear();
+      this.areMultipleIconsHighlighted = false;
+    }
+
+    this.hoveredElementId = -1; // clear stale hover paint so the keyboard selection shows
+    this.doBtnClickThings(index);
+    this.selectedFile = this.fetchedFiles[index];
+    this.propertiesViewFile = this.fetchedFiles[index];
+    this.getSelectFileSizeSumAndUnitOrFolders();
+    this.scrollSelectedIntoView(index);
+  }
+
+  /**
+   * Count the icons on the first grid row by comparing each button's top
+   * offset to the first button's. Works for the CSS `auto-fill` grid at any
+   * view size and stays correct when the window is resized. Returns 1 when
+   * there are no icon buttons (e.g. details view) or only one item.
+   */
+  private getIconViewColumnCount():number{
+    const refs = this.iconBtnRefs?.toArray() ?? [];
+    if(refs.length <= 1) return 1;
+
+    const firstTop = refs[0].nativeElement.getBoundingClientRect().top;
+    let columns = 0;
+    for(const ref of refs){
+      const top = ref.nativeElement.getBoundingClientRect().top;
+      if(Math.abs(top - firstTop) < 1) columns++;
+      else break;
+    }
+    return Math.max(columns, 1);
+  }
+
+  /**
+   * Scroll the selected item into view. Icon view uses the per-instance
+   * `iconBtnRefs`; details view falls back to the row's processId-qualified id
+   * (unique per instance). Keyboard focus stays on the `<ol>` so the next key
+   * keeps reaching `onFileExplorerKeyDown`.
+   */
+  private scrollSelectedIntoView(index:number):void{
+    let element:HTMLElement | undefined;
+    if(this.currentViewOption === this.detailsView){
+      element = document.getElementById(`trElmnt-${this.processId}-${index}`) ?? undefined;
+    }else{
+      element = this.iconBtnRefs?.toArray()[index]?.nativeElement;
+    }
+    element?.scrollIntoView({block: 'nearest', inline: 'nearest'});
+  }
+  //#endregion Keyboard Navigation
+
+  // Refactor #11.i: `onQuickAccessMouseEnter` / `onQuickAccessMouseLeave` /
+  // `onQuickAcessShowIconContextMenu` were removed — the Quick Access section
+  // (which referenced `btnElmnt-file/folder-*` and `fileExplrQAFiles/Folder-*`
+  // ids) exists only in `fileexplorer_old/`. The methods were dead in the
+  // active component.
 
   onMouseEnter(id:number):void{
     if(!this.isMultiSelectActive){
       this.isMultiSelectEnabled = false;
-      this.setBtnStyle(id, true);
+      // Refactor #11.i: just record which icon the mouse is over. The
+      // template's [class.is-hovered] binding paints the bg/border. No DOM
+      // lookup, no per-instance leak.
+      this.hoveredElementId = id;
     }
   }
 
@@ -1256,70 +1450,61 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     await this.showFileExplorerToolTip(evt, file);
   }
 
-  onQuickAccessMouseLeave(id:number, isFileSection:boolean):void{
-    const quickAcessSection = (isFileSection)? 'btnElmnt-file': 'btnElmnt-folder';
-
-    this.isMultiSelectEnabled = true;
-    this.hideToolTip();
-
-    const quickAccesBtnElmnt = document.getElementById(`${quickAcessSection}-${this.processId}-${id}`) as HTMLDivElement;
-    if(!this.isMultiSelectActive){
-      if(id !== this.selectedElementId){
-        this.removeBtnStyle(id, quickAccesBtnElmnt);
-      }
-      else if((id === this.selectedElementId) && this.isIconInFocusDueToPriorAction){
-        this.setBtnStyle(id,false, quickAccesBtnElmnt);
-      }
-    }
-  }
-  
   onMouseLeave(id:number):void{
     this.isMultiSelectEnabled = true;
     this.hideToolTip();
 
-    if(!this.isMultiSelectActive){
-      if(id !== this.selectedElementId){
-        this.removeBtnStyle(id);
-      }
-      else if((id === this.selectedElementId) && this.isIconInFocusDueToPriorAction){
-        this.setBtnStyle(id,false);
-      }
+    // Refactor #11.i: clearing `hoveredElementId` removes `.is-hovered`. If
+    // the icon is the currently-selected one and selection is in the "prior"
+    // (post-click / post-context-menu) phase, the [class.is-selected-prior]
+    // binding will now light up automatically (the white ring look). This
+    // preserves the legacy `setBtnStyle(id, false)` behaviour for that case.
+    if(this.hoveredElementId === id){
+      this.hoveredElementId = -1;
     }
   }
 
   doNothing():void{/** */}
+
+  async openInTerminal():Promise<void>{
+    const terminal ="terminal";
+    const selectedFile = this.selectedFile;
+
+    if(selectedFile.getIsFile){
+      console.warn('Cannot open file in Terminal');
+      return;
+    }
+    selectedFile.setOpensWith = terminal;
+    await this.runApplication(selectedFile);
+  }
+
+  async openInANewWindow():Promise<void>{
+    const selectedFile = this.selectedFile;
+
+    if(selectedFile.getIsFile){
+      console.warn('Cannot open file in File Explorer');
+      return;
+    }
+    selectedFile.setOpensWith = Constants.FILE_EXPLORER;
+    await this.runApplication(selectedFile);
+  }
 
   updateTableFieldSize(data:string[]) {
     // Column-resize events are handled by the directive;
     // reserved for future per-cell width synchronization.
   }
 
-  onProcessSelected(rowIndex:number, btnId:number):void{
-    this.selectedRow = rowIndex;
-    
-    if(this.selectedRow !== -1){
-      this.isActive = true;
-      this.isFocus = true;
-    }
-  }
+  // (Bugfix follow-up to #11.i) `onProcessSelected` removed. It set a
+  // duplicate `selectedRow` field that didn't honor the
+  // current/prior/hover state machine. Details rows now go through the
+  // same `onBtnClick` / `onMouseEnter` / `onMouseLeave` / `handleIconHighLightState`
+  // path as icon-view buttons, so selection clears on empty-space click etc.
+  //#endregion Run Application & Selection (clicks / hovers)
 
-  onQuickAcessShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number, isFileSection:boolean):void{
-    const quickAcessSection = (isFileSection)? 'fileExplrQAFiles': 'fileExplrQAFolder';
-
-    if(isFileSection){
-      this.quickAccessFilesSection = true;
-      this.quickAccessFolderSection = false;
-    }else{
-      this.quickAccessFilesSection = false;
-      this.quickAccessFolderSection = true;
-    }
-
-    const quickAccesFileElmnt = document.getElementById(`${quickAcessSection}-${this.processId}`) as HTMLDivElement;
-    // if(quickAccesFileElmnt){
-    //   const rect = quickAccesFileElmnt.getBoundingClientRect();
-    //   this.onShowIconContextMenu(evt, file, id, rect, isFileSection);
-    // }
-  }
+  //#region Context Menu (build / show / hide / position)
+  // Refactor #11.i: `onQuickAcessShowIconContextMenu` removed — it was dead
+  // in the active component (only `fileexplorer_old/` still references the
+  // Quick Access section and its `fileExplrQAFiles/Folder-*` ids).
 
   onShowIconContextMenu(evt:MouseEvent, file:FileInfo, id:number):void{
     evt.preventDefault();
@@ -1349,7 +1534,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // show IconContexMenu is still a btn click, just a different type
     this.doBtnClickThings(id);
-    this.setBtnStyle(id, true);
+    // Refactor #11.i: previously `setBtnStyle(id, true)`. Painting is now
+    // handled by [class.is-selected-current] reacting to `selectedElementId`
+    // and `isIconInFocusDueToCurrentAction` (both updated by doBtnClickThings).
 
     this.fileExplrCntxtMenuStyle = {
       'position': 'absolute', 
@@ -1360,51 +1547,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   adjustIconContextMenuData(file:FileInfo):void{
-    this.menuData = [];
-    const editNotAllowed:string[] = ['3D-Objects.url', 'Desktop.url', 'Documents.url', 'Downloads.url', 'Games.url', 'Music.url', 'Pictures.url', 'Videos.url'];
-    const isZipFile = (file.getFileExtension === '.zip');
-    
-   if(file.getIsFile){
-      if(editNotAllowed.includes(file.getCurrentPath.replace(Constants.ROOT, Constants.EMPTY_STRING))){
-        this.menuOrder = Constants.FILE_EXPLORER_UNIQUE_MENU_ORDER;
-        for(const x of this.sourceData) {
-          if(x.label === 'Cut' || x.label === 'Delete' || x.label === 'Rename' || x.label === 'Extract All...') continue;
-          else
-            this.menuData.push(x);
-        }
-      }else if(this.isRecycleBinFolder){
-        this.menuOrder = Constants.FILE_EXPLORER_RECYCLE_BIN_MENU_ORDER;
-        for(const x of this.sourceData){
-          if(x.label === 'Restore' || x.label === 'Cut' || x.label === 'Delete' || x.label === 'Properties')
-            this.menuData.push(x);
-        }
-      }else{
-        //files can not be opened in terminal, pinned to start, opened in new window, pin to Quick access
-        this.menuOrder = Constants.FILE_EXPLORER_FILE_MENU_ORDER;
-        for(const x of this.sourceData){
-          if(x.label === 'Open in Terminal' 
-            || x.label === 'Pin to Quick access' || x.label === 'Open in new window' 
-            || x.label === 'Pin to Start' || x.label === 'Restore') continue;
-          else{
-            if(x.label === 'Extract All...' && !isZipFile) continue;
-            else
-              this.menuData.push(x);
-          }
-        }
-      }
-    }else{
-      if(this.isRecycleBinFolder){
-        this.menuOrder = Constants.FILE_EXPLORER_RECYCLE_BIN_MENU_ORDER;
-        for(const x of this.sourceData){
-          if(x.label === 'Restore' || x.label === 'Cut' || x.label === 'Delete' || x.label === 'Properties'){
-            this.menuData.push(x);
-          }
-        }
-      }else{
-        this.menuOrder = Constants.FILE_EXPLORER_FOLDER_MENU_ORDER;
-        this.menuData = this.sourceData.filter(x => x.label !== 'Restore' &&  x.label !== 'Extract All...');
-      }
-    }
+    // Pure filtering lives in the helper; we just apply the result.
+    const [menuData, menuOrder] = FileExplorerContextMenuHelper.adjustIconContextMenuData(file, this.sourceData, this.isRecycleBinFolder);
+    this.menuData = menuData;
+    this.menuOrder = menuOrder;
   }
 
 
@@ -1464,44 +1610,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   checkAndHandleMenuBounds(rect:DOMRect, evt:MouseEvent, menuHeight:number):MenuPosition{
-    let xAxis = 0;
-    let yAxis = 0;
-    let shiftMenuXPosition = false;
-    let shiftMenuYPosition = false;
-
-    const menuWidth = 210;
-    const subMenuWidth = 205;
-    const xOffSet = 180;
-    const yOffSet = 65;
-    const fileExplorerFooterHeight = 24;
-
-    const distanceToRightBoundary =  rect.right - evt.clientX; // horizontalMax - clientX
-    const distanceToBottomBoundary = rect.bottom - evt.clientY ; // verticalMax - clientY
-
-    const mousePositionX = evt.clientX - rect.left;
-    const mousePositionY = evt.clientY - rect.top;
-
-    if(distanceToRightBoundary < menuWidth){
-      const shifMenuLeftBy = menuWidth - distanceToRightBoundary;
-      xAxis = mousePositionX - shifMenuLeftBy;
-      shiftMenuXPosition = true;
-    }
-
-    if(distanceToBottomBoundary < (menuHeight + fileExplorerFooterHeight)){
-      const shifMenuUpBy = menuHeight - distanceToBottomBoundary;
-      yAxis = mousePositionY - shifMenuUpBy;
-      shiftMenuYPosition = true;
-    }
-    
-    this.isShiftSubMenuLeft = distanceToRightBoundary <= (menuWidth + subMenuWidth)
-    xAxis = (shiftMenuXPosition) ? xAxis + xOffSet : mousePositionX + xOffSet;
-    yAxis = (shiftMenuYPosition) ? yAxis + yOffSet - fileExplorerFooterHeight : mousePositionY + yOffSet;
-
-    // Keep values non-negative without changing normal placement behavior.
-    xAxis = Math.max(0, xAxis);
-    yAxis = Math.max(0, yAxis);
- 
-    return {xAxis, yAxis};
+    // Placement geometry lives in the helper; it also tells us whether nested
+    // sub-menus must flip left, which we keep on the component for the template.
+    const [position, isShiftSubMenuLeft] = FileExplorerContextMenuHelper.checkAndHandleMenuBounds(rect, evt, menuHeight);
+    this.isShiftSubMenuLeft = isShiftSubMenuLeft;
+    return position;
   }
 
   shiftViewSubMenu():void{ this.shiftNestedMenuPosition(0); }
@@ -1519,58 +1632,24 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   buildViewMenu():NestedMenuItem[]{
-
-    const extraLargeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Extra Large icons', action: this.showExtraLargeIconsM,
-      variables:this.isExtraLargeIcon,  emptyline:false, styleOption:'A' }
-
-    const largeIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Large icons', action: this.showLargeIconsM,
-      variables:this.isLargeIcon, emptyline:false, styleOption:'A' }
-
-    const mediumIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Medium icons', action: this.showMediumIconsM, 
-      variables:this.isMediumIcon, emptyline:false, styleOption:'A' }
-
-    const smallIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Small icons', action: this.showSmallIconsM, 
-      variables:this.isSmallIcon, emptyline:false, styleOption:'A' }
-
-
-    const detailsIcon:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Details icons', action:this.showDetailsIconsM,
-     variables:this.isDetailsIcon, emptyline:false, styleOption:'A' }
-
-
-    const viewByMenu = [extraLargeIcon, largeIcon, mediumIcon, smallIcon, detailsIcon];
-
-    return viewByMenu;
+    return FileExplorerGeneralHelper.handleBuildViewByMenu(
+      this.showExtraLargeIconsM, this.isExtraLargeIcon,
+      this.showLargeIconsM, this.isLargeIcon,
+      this.showMediumIconsM, this.isMediumIcon,
+      this.showSmallIconsM, this.isSmallIcon,
+      this.showDetailsIconsM, this.isDetailsIcon);
   }
 
   buildSortByMenu(): NestedMenuItem[]{
-
-    const sortByName:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Name',  action: this.sortByNameM.bind(this),  variables:this.isSortByName , 
-      emptyline:false, styleOption:'A' }
-
-    const sortBySize:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Size',  action: this.sortBySizeM.bind(this),  variables:this.isSortBySize , 
-      emptyline:false, styleOption:'A' }
-
-    const sortByItemType:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Item type',  action: this.sortByItemTypeM.bind(this),  variables:this.isSortByItemType, 
-      emptyline:false, styleOption:'A' }
-
-    const sortByDateModified:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}circle.png`, label:'Date modified',  action: this.sortByDateModifiedM.bind(this),  variables:this.isSortByDateModified, 
-      emptyline:false, styleOption:'A' }
-
-    const sortByMenu = [sortByName, sortBySize, sortByItemType, sortByDateModified ]
-
-    return sortByMenu;
+    return FileExplorerGeneralHelper.handleBuildSortByMenu(
+      this.sortByNameM.bind(this), this.isSortByName,
+      this.sortBySizeM.bind(this), this.isSortBySize,
+      this.sortByItemTypeM.bind(this), this.isSortByItemType,
+      this.sortByDateModifiedM.bind(this), this.isSortByDateModified);
   }
 
   buildNewMenu(): NestedMenuItem[]{
-    const newFolder:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}empty_folder.png`, label:'Folder',  action:()=> console.log(),  variables:true , 
-      emptyline:false, styleOption:'C' }
-
-    const textEditor:NestedMenuItem={ icon:`${Constants.IMAGE_BASE_PATH}text_editor.png`, label:'Rich Text',  action:()=> console.log(),  variables:true , 
-      emptyline:false, styleOption:'C' }
-
-    const sortByMenu = [newFolder, textEditor ]
-
-    return sortByMenu;
+    return FileExplorerGeneralHelper.handleBuildNewMenu();
   }
 
   getFileExplorerMenuData():void{
@@ -1585,7 +1664,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label:'Properties', nest:[], action: () => console.log('Properties'), action1: ()=> Constants.EMPTY_STRING, emptyline:false}
     ]
   }
+  //#endregion Context Menu (build / show / hide / position)
 
+  //#region Icon Highlight & Button State
   handleIconHighLightState():void{
     this.hideShowFileSizeAndUnit();
     this.showAFolderSelected = false;
@@ -1598,7 +1679,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       }
       if(this.isIconInFocusDueToPriorAction){
         if(this.hideCntxtMenuEvtCnt >= 0)
-          this.setBtnStyle(this.selectedElementId, false);
+          // Refactor #11.i: previously `setBtnStyle(this.selectedElementId, false)`.
+          // The flag flip is enough — [class.is-selected-prior] picks it up.
+          this.isIconInFocusDueToPriorAction = true;
       }
       if(!this.isRenameActive){
         this.btnClickCnt = 0;
@@ -1631,7 +1714,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           this.removeClassAndStyleFromBtn();
           this.btnStyleAndValuesChange();
 
-          this.markedBtnIds = [];
+          // Refactor #11.h: removeClassAndStyleFromBtn() now clears the Set
+          // itself; this explicit reassignment is preserved for clarity.
+          this.markedBtnIds.clear();
           this.areMultipleIconsHighlighted = false;
           this.blankSpaceClickCntr = 0;
         }
@@ -1649,54 +1734,30 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.btnClickCnt++;
     this.isHideCntxtMenuEvt = false;
     this.hideCntxtMenuEvtCnt = 0;
-   
-    if(this.prevSelectedElementId !== id){
-      this.removeBtnStyle(this.prevSelectedElementId);
-    }
+
+    // Refactor #11.i: previously `removeBtnStyle(prevSelectedElementId)` when
+    // selection moved to a new icon. The old icon now loses its
+    // [class.is-selected-*] automatically because `selectedElementId` changed.
   }
 
-  setBtnStyle(id:number, isMouseHover:boolean, btnElementInput?:HTMLElement):void{
-    const btnElement = (btnElementInput)? btnElementInput : document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
-    //const figCapElement = document.getElementById(`figCapElmnt-${this.processId}-${id}`) as HTMLElement;
-    if(btnElement){
-      btnElement.style.backgroundColor = '#4c4c4c';
-      btnElement.style.border = '0.5px solid #3c3c3c';
-
-      if(this.selectedElementId === id){
-
-        if(isMouseHover && this.isIconInFocusDueToCurrentAction){
-          btnElement.style.backgroundColor ='#787474'
-        }
-
-        if(!isMouseHover && this.isIconInFocusDueToCurrentAction){
-          btnElement.style.backgroundColor ='#787474'
-        }
-
-        if(isMouseHover && this.isIconInFocusDueToPriorAction){
-          btnElement.style.backgroundColor = '#4c4c4c';
-        }
-
-        if(!isMouseHover && this.isIconInFocusDueToPriorAction){
-          btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-          btnElement.style.border = '0.5px solid white'
-        }
-      }
-    }
-
-    // if(figCapElement){
-    //   if(this.selectedElementId === id){
-    //       figCapElement.style.overflow = 'unset'; 
-    //       figCapElement.style.overflowWrap = 'break-word';
-    //       figCapElement.style.webkitLineClamp = '2';
-    //   }
-    // }
-  }
+  // Refactor #11.i: `setBtnStyle(id, isMouseHover, btnElementInput?)` and
+  // `removeBtnStyle(id, btnElementInput?)` were deleted. The per-icon
+  // bg/border that they painted via document.getElementById is now produced
+  // by three CSS classes on `.iconview-button`, bound via [class.*]:
+  //   .is-hovered          — hoveredElementId === i (when not multi-selected)
+  //   .is-selected-current — selectedElementId === i && isIconInFocusDueToCurrentAction
+  //   .is-selected-prior   — selectedElementId === i && isIconInFocusDueToPriorAction (and not hovered)
+  // The multi-select highlight (.fileexplr-multi-select-highlight) suppresses
+  // all three (the bindings include `!markedBtnIds.has(i)`), matching the
+  // legacy behaviour where the lasso style took precedence.
 
   btnStyleAndValuesReset():void{
     this.setIsBtnClickEvt(false, 'btnStyleAndValuesReset');
     this.btnClickCnt = 0;
-    this.removeBtnStyle(this.selectedElementId);
-    this.removeBtnStyle(this.prevSelectedElementId);
+    // Refactor #11.i: previously `removeBtnStyle(selectedElementId)` +
+    // `removeBtnStyle(prevSelectedElementId)`. Clearing the ids below makes
+    // both icons stop matching every `.is-selected-*` binding, so Angular CD
+    // removes the classes for us — no DOM writes needed.
     this.selectedElementId = -1;
     this.prevSelectedElementId = -1;
     this.btnClickCnt = 0;
@@ -1709,150 +1770,122 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.prevSelectedElementId = this.selectedElementId;
     this.isIconInFocusDueToPriorAction = true;
     this.isIconInFocusDueToCurrentAction = false;
-    this.setBtnStyle(this.selectedElementId, false);
-    //this.removeBtnStyle(this.prevSelectedElementId);
-  }
-  
-  removeBtnStyle(id:number, btnElementInput?:HTMLElement):void{
-    const btnElement = (btnElementInput)? btnElementInput : document.getElementById(`btnElmnt-${this.processId}-${id}`) as HTMLElement;
-    //const figCapElement = document.getElementById(`figCapElmnt-${this.processId}-${id}`) as HTMLElement;
-    if(btnElement){
-      btnElement.style.backgroundColor = Constants.EMPTY_STRING;
-      btnElement.style.border = '0.5px solid transparent'
-    }
-
-    // if(figCapElement){
-    //   figCapElement.style.overflow = 'hidden'; 
-    //   figCapElement.style.overflowWrap = 'unset'
-    //   figCapElement.style.webkitLineClamp = '3';
-    // }
+    // Refactor #11.i: previously `setBtnStyle(selectedElementId, false)`.
+    // Toggling the two focus flags above is enough; the
+    // [class.is-selected-prior] binding lights up automatically.
   }
 
+  // Refactor #11.i: `removeBtnStyle(id, btnElementInput?)` deleted — see the
+  // multi-line note above `doBtnClickThings`. Call sites either no longer
+  // need it (CD-driven) or were updated to manipulate the driver fields.
+  //#endregion Icon Highlight & Button State
+
+  //#region Multi-Select (lasso, selection sum)
+  /**
+   * (Refactor #11.h) Begin a lasso drag. The pane element is reached via the
+   * `selectPaneContainer` ViewChild (per-instance) rather than a global
+   * document.getElementById — this is the fix for the cross-instance pane
+   * leak that occurred when two FileExplorers were open.
+   */
   activateMultiSelect(evt:MouseEvent):void{
-    this.fileExplorerBoundedRect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
-    if(this.isMultiSelectEnabled){    
+    this.fileExplorerBoundedRect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    if(this.isMultiSelectEnabled && this.selectPaneContainer){
       this.isMultiSelectActive = true;
-      this.multiSelectElmnt = document.getElementById('fileExplrMultiSelectPane') as HTMLDivElement;
       this.multiSelectStartingPosition = evt;
     }
     evt.stopPropagation();
   }
-  
-  deActivateMultiSelect():void{ 
-    if(this.multiSelectElmnt){
-      this.setDivWithAndSize(this.multiSelectElmnt, 0, 0, 0, 0, false);
-    }
 
-    this.multiSelectElmnt = null;
+  /**
+   * (Refactor #11.h) End a lasso drag. Hides the pane via the bound
+   * `lassoVisible` flag (CSS handles the rest) and finalizes the selection
+   * count / sum using the per-instance Set.
+   */
+  deActivateMultiSelect():void{
+    this.lassoVisible = false;
+    this.lassoLeftPx = 0;
+    this.lassoTopPx = 0;
+    this.lassoWidthPx = 0;
+    this.lassoHeightPx = 0;
+
     this.multiSelectStartingPosition = null;
     this.isMultiSelectActive = false;
 
-    const markedBtnCount = this.getCountOfAllTheMarkedButtons();
-    if(markedBtnCount === 0)
-      this.areMultipleIconsHighlighted = false;
-    else{
-      this.areMultipleIconsHighlighted = true;
-      this.getIDsOfAllTheMarkedButtons();
-    }
+    // The Set is already the source of truth — no need to re-scan the DOM
+    // for `.fileexplr-multi-select-highlight` like the old getIDs/getCount
+    // helpers did (which also globbed across other FileExplorer instances).
+    this.areMultipleIconsHighlighted = this.markedBtnIds.size > 0;
     this.getSelectFileSizeSumAndUnitOrFolders();
   }
 
+  /**
+   * (Refactor #11.h) Update the lasso pane geometry as the mouse moves.
+   * Writes to component fields (bound on the pane) instead of mutating 9
+   * inline styles per mousemove tick. Geometry is computed by the helper.
+   */
   updateDivWithAndSize(evt:MouseEvent):void{
-
     if(!this.isMultiSelectEnabled) return;
+    if(!this.multiSelectStartingPosition || !this.isMultiSelectActive) return;
 
-    const rect = this.fileExplorerBoundedRect;
-    
-    if(this.multiSelectStartingPosition && this.multiSelectElmnt){
-      const startingXPoint = this.multiSelectStartingPosition.clientX - rect.left;
-      const startingYPoint = this.multiSelectStartingPosition.clientY - rect.top;
+    const lasso = FileExplorerMultiSelectHelper.computeLassoRect(
+      this.fileExplorerBoundedRect, this.multiSelectStartingPosition, evt);
 
-      const currentXPoint = evt.clientX - rect.left;
-      const currentYPoint = evt.clientY - rect.top;
+    this.lassoLeftPx = lasso.left;
+    this.lassoTopPx = lasso.top;
+    this.lassoWidthPx = lasso.width;
+    this.lassoHeightPx = lasso.height;
+    this.lassoVisible = true;
 
-      const startX = Math.min(startingXPoint, currentXPoint);
-      const startY = Math.min(startingYPoint, currentYPoint);
-      const divWidth = Math.abs(startingXPoint - currentXPoint);
-      const divHeight = Math.abs(startingYPoint - currentYPoint);
+    this.highlightSelectedItems(lasso.left, lasso.top, lasso.width, lasso.height);
 
-      this.setDivWithAndSize(this.multiSelectElmnt, startX, startY, divWidth, divHeight, true);
-
-      // Call function to check and highlight selected items
-      this.highlightSelectedItems(startX, startY, divWidth, divHeight);
-    }
-
-     evt.stopPropagation();
+    evt.stopPropagation();
   }
 
-  setDivWithAndSize(divElmnt:HTMLDivElement, initX:number, initY:number, width:number, height:number, isShow:boolean):void{
-
-    divElmnt.style.position = 'absolute';
-    divElmnt.style.transform =  `translate(${initX}px , ${initY}px)`;
-    divElmnt.style.height =  `${height}px`;
-    divElmnt.style.width =  `${width}px`;
-
-    divElmnt.style.backgroundColor = 'rgba(4, 124, 212, 0.2)';
-    divElmnt.style.border = '1px solid #047cd4';
-    divElmnt.style.backdropFilter = 'blur(5px)';
-    if(isShow){
-      divElmnt.style.zIndex = '2';
-      divElmnt.style.display =  'block';
-    }else{
-      divElmnt.style.zIndex = '0';
-      divElmnt.style.display =  'none';
-    }
-  }
-  
+  /**
+   * (Refactor #11.h) Mark icons that intersect the lasso rectangle. Iterates
+   * this component's own QueryList of icon buttons (per-instance) instead of
+   * `document.querySelectorAll('.iconview-button')` — which would otherwise
+   * include buttons in any other open FileExplorer window.
+   *
+   * Hit-test math lives in the helper; only the input list and the highlight
+   * sink (Set vs. DOM classList) are component concerns.
+   */
   highlightSelectedItems(initX: number, initY: number, width: number, height: number): void {
-    const rect = this.fileExplorerBoundedRect;
-    const selectionRect = {
-        left: initX + rect.left,
-        top: initY + rect.top,
-        right: initX + rect.left + width,
-        bottom: initY + rect.top + height
-    };
+    if(!this.iconBtnRefs) return;
+    const selectionRect = FileExplorerMultiSelectHelper.computeSelectionBounds(
+      initX, initY, width, height, this.fileExplorerBoundedRect);
 
-    const btnIcons = document.querySelectorAll('.iconview-button');
-    btnIcons.forEach((btnIcon) => {
-        const btnIconRect = btnIcon.getBoundingClientRect();
-        const id = btnIcon.id.replace(`btnElmnt-${this.processId}-`, Constants.EMPTY_STRING);
-
-        // Check if the item is inside the selection area
-        if ( btnIconRect.right > selectionRect.left && btnIconRect.left < selectionRect.right &&
-            btnIconRect.bottom > selectionRect.top && btnIconRect.top < selectionRect.bottom){
-
-            //remove any previous style
-            if(Number(id) === this.selectedElementId){
-              this.removeBtnStyle(this.selectedElementId);
-              this.removeBtnStyle(this.prevSelectedElementId);
-            }
-            btnIcon.classList.add('fileexplr-multi-select-highlight'); 
-        } else {
-            btnIcon.classList.remove('fileexplr-multi-select-highlight');
-        }
+    // ViewChildren preserves *ngFor index order, so `idx` matches the file id
+    // used everywhere else (fetchedFiles[idx], btnElmnt-{pid}-{idx}, etc.).
+    this.iconBtnRefs.forEach((btnRef, idx) => {
+      const btnIconRect = btnRef.nativeElement.getBoundingClientRect();
+      if(FileExplorerMultiSelectHelper.intersects(btnIconRect, selectionRect)){
+        // Refactor #11.i/#11.h: when the currently-single-selected icon gets
+        // pulled into the lasso, mark it. The `[class.is-selected-*]`
+        // bindings include `!markedBtnIds.has(i)`, so adding the index to
+        // the Set suppresses the single-select look automatically — no
+        // imperative DOM cleanup needed any more.
+        this.markedBtnIds.add(idx);
+      } else {
+        this.markedBtnIds.delete(idx);
+      }
     });
   }
-  
+
+  /**
+   * (Refactor #11.h) Compatibility shim — a handful of legacy call sites
+   * still ask for the count. Backed by the Set's size now.
+   */
   getCountOfAllTheMarkedButtons():number{
-    const btnIcons = document.querySelectorAll('.fileexplr-multi-select-highlight');
-    return btnIcons.length;
+    return this.markedBtnIds.size;
   }
-  
-  getIDsOfAllTheMarkedButtons():void{
-    const btnIcons = document.querySelectorAll('.fileexplr-multi-select-highlight');
-    btnIcons.forEach(btnIcon => {
-      const btnId = btnIcon.id.replace(`btnElmnt-${this.processId}-`, Constants.EMPTY_STRING);
-      if(!this.markedBtnIds.includes(btnId))
-        this.markedBtnIds.push(btnId);
-    });
-  }
-  
+
   getSelectFileSizeSumAndUnitOrFolders():void{
     let sum = 0; let aFolderIsSelected = false;
 
-    if(this.markedBtnIds.length > 0){
+    if(this.markedBtnIds.size > 0){
       for(const id of this.markedBtnIds){
-        const file = this.fetchedFiles[Number(id)];
+        const file = this.fetchedFiles[id];
         if(file.getIsFile){
           sum += file.getSizeInBytes;
         }else{
@@ -1889,14 +1922,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.selectFilesSizeUnit = Constants.EMPTY_STRING;
   }
 
+  /**
+   * (Refactor #11.h/#11.i) Clear the multi-select highlight. Emptying the
+   * Set is enough — Angular CD removes
+   * `[class.fileexplr-multi-select-highlight]` from each affected icon.
+   * No DOM walk, no per-icon style cleanup (single-select styling is also
+   * CD-driven now).
+   */
   removeClassAndStyleFromBtn():void{
-    this.markedBtnIds.forEach(id =>{
-      const btnIcon = document.getElementById(`btnElmnt-${this.processId}-${id}`);
-      if(btnIcon){
-        btnIcon.classList.remove('fileexplr-multi-select-highlight');
-      }
-      this.removeBtnStyle(Number(id));
-    })
+    this.markedBtnIds.clear();
   }
 
   enableDisableMultSelect(evt:string){
@@ -1910,7 +1944,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
           this.isMultiSelectEnabled = true;
     }
   }
+  //#endregion Multi-Select (lasso, selection sum)
 
+  //#region Zip / Unzip
   async onZip(): Promise<void>{
     const srcPath = this.selectedFile.getCurrentPath;
     const isDir = !this.selectedFile.getIsFile;
@@ -1919,7 +1955,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const result = await this._fileService.zipEntityAsync(srcPath, isDir);
     if(result){
       await CommonFunctions.sleep(delay);
-      this.refresh();
+      await this.refresh();
     }
   }
 
@@ -1944,17 +1980,21 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     
     return Constants.EMPTY_STRING;
   }
+  //#endregion Zip / Unzip
 
+  //#region Clipboard (Copy / Cut / Paste / Restore)
   onCopy():void{
     const action = MenuAction.COPY;
     const path = this.selectedFile.getCurrentPath;
     this._menuService.setStoreData([path, action]);
+    this._clipboardService.addFileEntry(this.selectedFile, action);
   }
 
   onCut():void{
     const action = MenuAction.CUT;
     const path = this.selectedFile.getCurrentPath;
     this._menuService.setStoreData([path, action]);
+    this._clipboardService.addFileEntry(this.selectedFile, action);
   }
 
   async onPaste():Promise<void>{
@@ -2007,7 +2047,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this._fileService.dirFilesUpdateNotify.next();
     }
   }
+  //#endregion Clipboard (Copy / Cut / Paste / Restore)
 
+  //#region Drag & Drop
   onDragOver(event:DragEvent):void{
     event.stopPropagation();
     event.preventDefault();
@@ -2019,40 +2061,70 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   
     const dragInfo = this._systemNotificationService.getDragEventInfo();
     if(dragInfo){ //&& (dragInfo.Origin.includes(Constants.FILE_EXPLORER) || dragInfo.Origin.includes(Constants.DESKTOP_PATH))
-      const files = this._fileService.getDragAndDropFile();
-      if (!files?.length) return;
+      // Pull (and clear) the queued drag payload from the shared FileService.
+      const queuedFiles = this._fileService.getDragAndDropFile();
+      if (!queuedFiles?.length) return;
 
       const delay = 50; //50ms
       const destPath = this.directory;
-      const moveResults:Promise<boolean>[] = [];
 
-      // Move all files concurrently
-      for (const file of files) {
-        const srcPath = file.getCurrentPath;
-        moveResults.push(
-          this._fileService.moveAsync(srcPath, destPath, file.getIsFile)
-        );
-      }
-
-      // Wait for all moves to complete
-      const results = await Promise.all(moveResults);
-      //const allSucceeded = moveResults.every(value => value === true);
-      const allSucceeded = results.every(Boolean);
-
-      if(!allSucceeded){
-        console.error('One or more move operations failed');
+      // Same-directory guard: skip any file whose parent folder is already the
+      // drop target. Now that icons are draggable, a user can drag an icon and
+      // release it back onto its own File Explorer; without this guard
+      // `moveAsync` would "move" the file onto itself, which the underlying
+      // write (flag 'wx') treats as a name collision — producing a duplicate
+      // "name (1)" copy and deleting the original. Files already here are no-ops.
+      const files = queuedFiles.filter(f => dirname(f.getCurrentPath) !== destPath);
+      if(files.length === 0){
+        this._systemNotificationService.removeDragEventInfo();
         return;
       }
 
-      const cameFromFileExplr = files.some(f => !f.getCurrentPath.includes(Constants.DESKTOP_PATH));
-      if(cameFromFileExplr){
-        this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
-        this._fileService.dirFilesUpdateNotify.next();
-        await CommonFunctions.sleep(delay)
+      // Use allSettled (not all) so a single failure/throw doesn't mask the
+      // outcome of the other files. We need to know exactly which files moved
+      // so the view can reflect reality after a partial move.
+      const moveOutcomes = await Promise.allSettled(
+        files.map(f => this._fileService.moveAsync(f.getCurrentPath, destPath, f.getIsFile))
+      );
+
+      const succeededFiles:FileInfo[] = [];
+      const failedFiles:FileInfo[] = [];
+      moveOutcomes.forEach((outcome, i) => {
+        const file = files[i];
+        if(outcome.status === 'fulfilled' && outcome.value === true){
+          succeededFiles.push(file);
+        }else{
+          failedFiles.push(file);
+        }
+      });
+
+      // Clear drag state before any further awaits so it can't leak if a later
+      // step throws.
+      this._systemNotificationService.removeDragEventInfo();
+
+      if(succeededFiles.length > 0){
+        // Files NOT under the Desktop path came from a File Explorer window —
+        // tell other explorers to refresh their (now-emptier) source folder.
+        const cameFromFileExplr = succeededFiles.some(f => !f.getCurrentPath.includes(Constants.DESKTOP_PATH));
+        if(cameFromFileExplr){
+          this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
+          this._fileService.dirFilesUpdateNotify.next();
+          await CommonFunctions.sleep(delay);
+        }
+        await this.refresh();
       }
 
-      this._systemNotificationService.removeDragEventInfo();
-      await this.refresh();
+      // Surface partial / total failure to the user instead of silently
+      // swallowing it. We don't roll back the successful moves — that would
+      // itself partial-fail and undo work the user asked for.
+      if(failedFiles.length > 0){
+        const sampleNames = failedFiles.slice(0, 3).map(f => f.getFileName).join(', ');
+        const moreSuffix = failedFiles.length > 3 ? `, +${failedFiles.length - 3} more` : '';
+        const title = (succeededFiles.length === 0) ? 'Move failed' : 'Some files could not be moved';
+        const msg = `${failedFiles.length} of ${files.length} file(s) could not be moved: ${sampleNames}${moreSuffix}.`;
+        console.error('onDrop partial/total failure:', { failed: failedFiles.map(f => f.getCurrentPath) });
+        this._userNotificationService.showErrorNotification(msg, title);
+      }
       return;
     }
 
@@ -2075,25 +2147,106 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
-  onDragStart(_evt:DragEvent):void{
+  /**
+   * Drag SOURCE: fired when the user starts dragging an icon/row (index
+   * `draggedIndex`). Registers the file(s) being dragged with the shared
+   * FileService queue so a drop target (Desktop or another File Explorer) can
+   * pick them up, and publishes a `DragEventInfo` identifying this window as
+   * the origin.
+   *
+   * Payload transport note: the file objects travel through the FileService
+   * queue (`addDragAndDropFile`), NOT through `event.dataTransfer`. The native
+   * dataTransfer can only carry OS-level File objects, so all in-app drags use
+   * the service as the cross-component channel.
+   */
+  onDragStart(evt:DragEvent, draggedIndex:number):void{
+    // Decide which files travel with this drag:
+    //  - If a multi-selection exists AND the grabbed icon is part of it, drag
+    //    the whole selection.
+    //  - Otherwise drag only the grabbed icon, and make it the active
+    //    single-selection so the highlight matches what is being moved.
+    let indicesToDrag:number[];
+    if(this.markedBtnIds.size > 0 && this.markedBtnIds.has(draggedIndex)){
+      indicesToDrag = Array.from(this.markedBtnIds);
+    }else{
+      indicesToDrag = [draggedIndex];
+      this.doBtnClickThings(draggedIndex);
+    }
+
+    // Resolve indices to FileInfo objects, dropping any out-of-range entries.
+    const filesToDrag = indicesToDrag
+      .map(idx => this.fetchedFiles[idx])
+      .filter((file):file is FileInfo => !!file);
+
+    // Nothing valid to move — cancel the native drag so no stale state lingers.
+    if(filesToDrag.length === 0){
+      evt.preventDefault();
+      return;
+    }
+
     this.isDragFromFileExplorerActive = true;
+
+    // Hand the payload to the shared queue for the drop target to read back.
+    filesToDrag.forEach(file => this._fileService.addDragAndDropFile(file));
+
+    // Publish this drag's identity. `origin` embeds this window's name + PID;
+    // the Desktop drop handler matches on `Constants.FILE_EXPLORER`.
     const uId = `${this.name}-${this.processId}`;
-
-    const dragEvtInfo:DragEventInfo={origin:uId, currentLocation:Constants.EMPTY_STRING, isDragActive: this.isDragFromFileExplorerActive};
+    const dragEvtInfo:DragEventInfo = {
+      origin: uId,
+      currentLocation: Constants.EMPTY_STRING,
+      isDragActive: this.isDragFromFileExplorerActive
+    };
     this._systemNotificationService.setDropEventInfo(dragEvtInfo);
+
+    // Hint the browser this is a move. The resulting `dropEffect` is what
+    // onDragEnd inspects to tell a successful drop from a cancelled one.
+    if(evt.dataTransfer){
+      evt.dataTransfer.effectAllowed = 'move';
+    }
   }
 
-  onDragEnd(_evt:DragEvent):void{
+  /**
+   * Drag SOURCE cleanup: fired when the drag ends (whether dropped or not).
+   *
+   * A drop on a valid target consumes the queued files and clears the drag
+   * info itself. But if the user released over a non-droppable area or pressed
+   * Esc, the native `dropEffect` stays `'none'` and no drop handler ran — so we
+   * clear the leftover payload here to stop it leaking into the next drop.
+   */
+  onDragEnd(evt:DragEvent):void{
     this.isDragFromFileExplorerActive = false;
-  }
 
+    const wasDropped = !!evt.dataTransfer && evt.dataTransfer.dropEffect !== 'none';
+    if(!wasDropped){
+      this._fileService.removeDragAndDropFile();
+      this._systemNotificationService.removeDragEventInfo();
+    }
+  }
+  //#endregion Drag & Drop
+
+  //#region Tooltips (file info / invalid chars)
+  /**
+   * (Refactor #11.g) Position + reveal the file-info tooltip.
+   *
+   * Previously this method called document.getElementById to grab the
+   * tooltip div, then mutated `style.position/left/top` and added a
+   * `visible` class. The position is now bound via [style.left.px] /
+   * [style.top.px] and visibility via [class.visible] in the template.
+   *
+   * `position: absolute` is no longer set imperatively — the base CSS rule
+   * for `.fx-information-tip-container` already declares it.
+   *
+   * We still defer the `visible` flip into requestAnimationFrame so that
+   * Angular's change detection flushes the new left/top BEFORE the opacity
+   * transition starts. Otherwise the tooltip would briefly animate from its
+   * previous position. zone.js patches rAF, so setting fields inside the
+   * callback still triggers CD.
+   */
   private async showFileExplorerToolTip(evt:MouseEvent, file: FileInfo): Promise<void> {
-    const rect:DOMRect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    const rect:DOMRect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const mousePoistionX = evt.clientX - rect.left;
     const mousePositionY = evt.clientY - rect.top;
-
-    const infoTip:HTMLDivElement|null = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
-    if (!infoTip) return;
 
     this.currentTooltipFileId = file.getCurrentPath;
     await this.setInformationTipInfo(file);
@@ -2101,223 +2254,196 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(this.fileInfoTipData.length === 0) return;
 
     requestAnimationFrame(() => {
-      const offsetX = 180;
-      const offsetY =  80;
+      // Coordinates are relative to the content container, which is the tooltip's
+      // offsetParent (position: relative). So we just nudge it slightly below the
+      // cursor. (Previously offsetX=180 / offsetY=80 compensated for the nav pane
+      // width + header height — only valid when the offsetParent was the full
+      // file-explorer container; it pushed the tip far from the cursor once the
+      // content container became the offsetParent.)
+      const offsetX = 0;
+      const offsetY = 18;
 
-      infoTip.style.position = 'absolute';
-      infoTip.style.left =  `${Math.round(mousePoistionX + offsetX)}px`, 
-      infoTip.style.top =  `${Math.round(mousePositionY + offsetY)}px`,
-      infoTip.classList.add('visible');
+      this.infoTipLeftPx = Math.round(mousePoistionX + offsetX);
+      this.infoTipTopPx  = Math.round(mousePositionY + offsetY);
+      this.isInfoTipVisible = true;
     });
   }
 
+  /**
+   * (Refactor #11.g) Hide the file-info tooltip.
+   *
+   * Resetting the position fields to 0 isn't strictly required — the
+   * `[class.visible]` removal alone hides the element via opacity:0 +
+   * visibility:hidden in the CSS. We zero them anyway so the next show
+   * doesn't briefly flash at the stale coordinates if the rAF callback
+   * fires before the new left/top are written.
+   */
   hideToolTip():void {
     this.currentTooltipFileId = Constants.EMPTY_STRING;
     this.fileInfoTipData = [];
-
-    const infoTip = document.getElementById(`fx-information-tip-${this.processId}`) as HTMLDivElement;
-    if(!infoTip) return;
-
-    infoTip.style.removeProperty('position');
-    infoTip.style.removeProperty('left');
-    infoTip.style.removeProperty('top');
-    infoTip.classList.remove('visible');
+    this.isInfoTipVisible = false;
+    this.infoTipLeftPx = 0;
+    this.infoTipTopPx = 0;
   }
 
   async setInformationTipInfo(file:FileInfo):Promise<void>{
-    const infoTipFields = ['Author:', 'Item type:', 'Date created:', 'Date modified:', 'Dimensions:', 'General', 'Size:', 'Type:', 'Original location:', 'Files:', 'Folders:'];
-    const specialFolders: Record<string, string> = {
-      'Music': 'Contains music and other audio files',
-      'Videos': 'Contains movies and other video files',
-      'Pictures': 'Contains digital photos, images and graphic files'
-    };
-    const standardFolders = ['3D-Objects', 'Documents', 'Downloads', 'Desktop', 'Games'];
-   
-    const fileAuthor = 'Relampago Del Catatumbo';
-    const fileType = file.getFileType;
-    const fileDateModified = file.getDateModifiedUS;
-    const fileSize = `${String(file.getSize)}  ${file.getFileSizeUnit}`;
-    const fileName = file.getFileName;
-    const isFile = file.getIsFile;
-    const currentPath = dirname(file.getCurrentPath);
-    const isRoot = currentPath === Constants.ROOT;
-
-    let isFolder = fileType === Constants.FOLDER;
-
-    //reset
-    this.fileInfoTipData = [];
-
-    //Special Cases
-    //Normally, IsFile & IsFolder can't both be true at the same time, expect in a few cases like fileexplorer.url, music.url etc...
-    //This is a condition that wayback when, i didn't foresee coming to bite me in the rear.
-    if(isFile && isFolder){ isFolder = false; }
-
-
-    if (Constants.IMAGE_FILE_EXTENSIONS.includes(file.getFileType)) {
-      await new Promise<void>((resolve) => {
-        const img = new Image();
-        img.src = file.getContentPath;
-        img.onload = () => {
-          const width = img.naturalWidth;
-          const height = img.naturalHeight;
-          const imgDimensions = `${width} x ${height}`;
-
-          this.fileInfoTipData.push({
-            label: infoTipFields[1],
-            data: `${file.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`
-          });
-          
-          this.fileInfoTipData.push({ label: infoTipFields[4], data: imgDimensions });
-          this.fileInfoTipData.push({ label: infoTipFields[6], data: fileSize });
-
-          resolve();
-        };
-        img.onerror = (err) => {
-          console.error("Failed to load image", err);
-          resolve(); // Still resolve to prevent blocking
-        };
-      });
-    }else if(isFile && !isFolder){
-      const fileTypeName = (fileType !== Constants.FOLDER)?  CommonFunctions.getFileTypeName(fileType) : CommonFunctions.getFileTypeName(Constants.URL);
-      this.fileInfoTipData.push({label:infoTipFields[7], data:fileTypeName});
-      this.fileInfoTipData.push({label:infoTipFields[3], data: fileDateModified });
-      this.fileInfoTipData.push({ label: infoTipFields[6], data: fileSize });
-    }
-    else if(isFolder){
-      if(isRoot && (standardFolders.includes(fileName))){
-        this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified });
-      }else if((isRoot && specialFolders[fileName])){
-        this.fileInfoTipData.push({label:Constants.EMPTY_STRING, data:specialFolders[fileName]})
-      }else{
-        //this.fileInfoTipData.push({label:infoTipFields[7], data:fileType });
-        this.fileInfoTipData.push({label:infoTipFields[2], data:fileDateModified });
-
-        const folderSizeInBytes = await this._fileService.getFolderSizeAsync(file.getCurrentPath);
-        const folderSize = CommonFunctions.getReadableFileSizeValue(folderSizeInBytes);
-        const folderUnit = CommonFunctions.getFileSizeUnit(folderSizeInBytes);
-
-        const sizeLabelExists = this.fileInfoTipData.some(x => x.label === infoTipFields[6]);
-        if(!sizeLabelExists){
-          this.fileInfoTipData.push({label:infoTipFields[6], data:`${String(folderSize)} ${folderUnit}`});
-        }
-
-        if(this.isRecycleBinFolder){
-          const originalLocation = this._fileService.getFolderOrigin(file.getCurrentPath);
-          this.fileInfoTipData.push({label:infoTipFields[8], data:originalLocation });
-        }
-
-        const filesAndFolders = await this.getAListOfFilesAndFoldersInCurrentDirectory(file.getCurrentPath);
-        if(filesAndFolders[0] !== Constants.EMPTY_STRING)
-          this.fileInfoTipData.push({label:infoTipFields[9], data:filesAndFolders[0] });
-        
-        if(filesAndFolders[1] !== Constants.EMPTY_STRING)
-          this.fileInfoTipData.push({label:infoTipFields[10], data:filesAndFolders[1] });
-      }
-    }
+    // The tip rows are assembled by the helper; we inject this window's I/O.
+    this.fileInfoTipData = await FileExplorerTooltipHelper.buildInformationTip(file, {
+      getFolderSizeAsync: (path:string) => this._fileService.getFolderSizeAsync(path),
+      getFolderOrigin: (path:string) => this._fileService.getFolderOrigin(path),
+      getFilesAndFolders: (path:string) => this.getAListOfFilesAndFoldersInCurrentDirectory(path),
+      isRecycleBinFolder: this.isRecycleBinFolder,
+    });
   }
 
   getFileTypeName(fileExt:string):string{
     return  CommonFunctions.getFileTypeName(fileExt);
   }
 
+  /**
+   * (Refactor #11.f) Position the invalid-filename-chars tooltip just below
+   * the active rename input and reveal it.
+   *
+   * Previously this method called document.getElementById on both the tooltip
+   * AND the rename form, then mutated `style.transform` directly. The tooltip
+   * lookup is gone — the value is now written to `invalidCharsTooltipTransform`
+   * and Angular flushes it through [style.transform] in the template.
+   *
+   * NOTE: the rename-form lookup remains for now — the rename forms are
+   * generated inside an *ngFor and a dedicated ViewChildren refactor for them
+   * is out of scope for #11.f. The id pattern already includes `processId`,
+   * so the lookup is multi-instance safe.
+   */
   showInvalidCharsToolTip():void{
-    // get the position of the textbox
-    const invalidCharElmt = document.getElementById(`invalidChars-${this.processId}`) as HTMLElement;
-    const renameFormElmnt= document.getElementById(`renameForm-${this.processId}-${this.selectedElementId}`) as HTMLElement;
+    const renameFormElmnt = document.getElementById(
+      `renameForm-${this.processId}-${this.selectedElementId}`
+    ) as HTMLElement | null;
+    if(!renameFormElmnt) return;
 
-    if(!invalidCharElmt || !renameFormElmnt)return;
-
-    const fileRect =  this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
+    const fileRect = this.fileExplrCntntCntnr.nativeElement.getBoundingClientRect();
     const rect = renameFormElmnt.getBoundingClientRect();
 
     const x = rect.left - fileRect.left;
-    const y = rect.top - fileRect.top ;
+    const y = rect.top - fileRect.top;
 
+    this.invalidCharsTooltipTransform = `translate(${x + 2}px, ${y + 2}px)`;
     this.isShowFileNameWarning = true;
-    invalidCharElmt.style.transform =`translate(${x + 2}px, ${y + 2}px)`;
   }
 
   hideInvalidCharsToolTip():void{
     this.isShowFileNameWarning = false;
   }
+  //#endregion Tooltips (file info / invalid chars)
 
+  //#region Search & Path History
   onInputChange():void{
-    const SearchTxtBox = document.getElementById(`searchTxtBox-${this.processId}`) as HTMLInputElement;
-    const charLength = SearchTxtBox.value.length
-    if( charLength > 0){
-      this.isSearchBoxNotEmpty = true;
-    }else if( charLength <= 0){
-      this.isSearchBoxNotEmpty = false;
-    }
-
-    this.resetSearchIconHiglight();
-    this.resetClearSearchIconHiglight();
+    // (Refactor #11.c) Source the value from the reactive form instead of
+    // document.getElementById('searchTxtBox-' + processId). The form is
+    // bound via formControlName="searchInput", so its value is authoritative.
+    const value = (this.searchForm.value.searchInput as string | null) ?? Constants.EMPTY_STRING;
+    this.isSearchBoxNotEmpty = value.length > 0;
+    // No reset*Highlight() calls needed \u2014 toggling `isSearchBoxNotEmpty`
+    // switches the `.active` class on the search/clear icons; CSS handles
+    // the colors and the :hover state automatically.
   }
 
   onClearSearchTextBox():void{
-    const SearchTxtBox = document.getElementById(`searchTxtBox-${this.processId}`) as HTMLInputElement;
-    SearchTxtBox.value = Constants.EMPTY_STRING;
+    // (Refactor #11.c) Clear the input through the reactive form instead of
+    // reaching into the DOM by id. No more searchTxtBox-<processId> lookup.
+    this.searchForm.patchValue({ searchInput: Constants.EMPTY_STRING });
     this.isSearchBoxNotEmpty = false;
-
-    this.resetSearchIconHiglight();
-    this.resetClearSearchIconHiglight();
+    // Clearing the box also leaves search-results mode and restores the listing.
+    if(this.isShowingSearchResults){
+      void this.exitSearchResults();
+    }
+    // No reset*Highlight() calls needed — toggling `isSearchBoxNotEmpty` off
+    // removes the `.active` class, and the CSS `:hover` rule scoped to
+    // `.active` stops applying automatically.
   }
 
-  handleClearSearchIconHighlights():void{
-    this.onClearSearchIconHover = !this.onClearSearchIconHover;
+  // (Refactor #11.c) Removed methods:
+  //   handleClearSearchIconHighlights, handleSearchIconHighlights,
+  //   resetClearSearchIconHiglight,    resetSearchIconHiglight
+  // All four were maintaining hover state in TS — now handled by pure CSS
+  // :hover on span.head-search-cntnr{1,2}.active.
 
-    if(this.isSearchBoxNotEmpty){
-      if(this.onClearSearchIconHover){
-        this.clearSearchStyle = {
-          'background-color': '#3f3e3e',
-          'transition': 'background-color 0.3s ease'
-        }
-      }else if(!this.onClearSearchIconHover){
-        this.clearSearchStyle = {
-          'background-color': '#191919',
-        }
+  /**
+   * Run a file-name search.
+   *
+   * Strategy (per the request): start at the current directory and expand the
+   * scope outward one ancestor level at a time, up to root — so a hit close to
+   * where the user is browsing surfaces first and we avoid indexing all of root
+   * unless the walk actually reaches it. Subtrees are memoised in
+   * `_searchIndexCache`, so an expanding/repeat search reuses already-walked
+   * directories instead of re-reading them.
+   */
+  async onSearch():Promise<void>{
+    const searchText = ((this.searchForm.value.searchInput as string | null) ?? Constants.EMPTY_STRING).trim();
+
+    // Empty query: nothing to search. If results are showing, restore the
+    // normal directory listing; otherwise just no-op.
+    if(searchText.length === 0){
+      if(this.isShowingSearchResults){
+        await this.exitSearchResults();
       }
+      return;
+    }
+
+    // Hide the recent-search dropdown and remember this term for next time.
+    this.isSearchHistoryVisible = false;
+    this.addToSearchHistory(searchText);
+
+    // Selection state is keyed by list index, so it would be meaningless once
+    // the listing is replaced by results — clear it before swapping content.
+    this.btnStyleAndValuesReset();
+    this.markedBtnIds.clear();
+    this.areMultipleIconsHighlighted = false;
+
+    // Show the loading overlay while the (potentially deep) walk runs.
+    this.isSearching = true;
+    this.isShowingSearchResults = true;
+    this.fetchedFiles = [];
+
+    try{
+      this.fetchedFiles = await this.runIncrementalSearch(this.directory, searchText);
+    }finally{
+      // Always clear the spinner, even if a walk threw partway through.
+      this.isSearching = false;
     }
   }
 
-  resetClearSearchIconHiglight():void{
-    this.clearSearchStyle = {
-      'background-color': '#191919',
-    }
-
-    if(!this.isSearchBoxNotEmpty){
-      this.onClearSearchIconHover = false;
-    }
+  /**
+   * Leave search-results mode and restore the real directory listing.
+   * `loadFiles()` clears `isShowingSearchResults`, so this is the single place
+   * that "un-searches" the view.
+   */
+  private async exitSearchResults():Promise<void>{
+    await this.loadFiles();
   }
 
-  handleSearchIconHighlights():void{
-    this.onSearchIconHover = !this.onSearchIconHover;
-
-    if(this.isSearchBoxNotEmpty){
-      if(this.onSearchIconHover){
-        this.searchStyle = {
-          'background-color': 'rgb(18, 107, 240)',
-          'transition': 'background-color 0.3s ease'
-        }
-      }else if(!this.onSearchIconHover){
-        this.searchStyle = {
-          'background-color': 'blue',
-        }
-      }
-    }
+  /**
+   * Search the file system for files whose name contains `query`, starting at
+   * `currentDirectory` and expanding up to root. The engine itself lives in
+   * `FileExplorerSearchHelper`; here we just inject this window's file loader,
+   * cache and path helpers.
+   */
+  private runIncrementalSearch(currentDirectory:string, query:string):Promise<FileInfo[]>{
+    return FileExplorerSearchHelper.runIncrementalSearch(currentDirectory, query, {
+      loadDirectoryFiles: (path:string) => this._fileService.loadDirectoryFiles(path),
+      cache: this._searchIndexCache,
+      normalizePath: (path:string) => this.normalizePath(path),
+      getParentPath: (path:string) => this.getParentPath(path),
+    });
   }
 
-  resetSearchIconHiglight():void{
-    if(this.isSearchBoxNotEmpty){
-      this.searchStyle = { 'background-color': 'blue'}
-    }else{
-      this.searchStyle = { 'background-color': '#191919'}
-      this.onSearchIconHover = false;
-    }
+  /** Drop the cached search index so the next search re-walks fresh data. */
+  private invalidateSearchIndex():void{
+    this._searchIndexCache.clear();
   }
 
-  onSearch():void{
-    const searchText = this.searchForm.value.searchInput as string;
+  /** Record a search term most-recent-first, de-duplicated and length-capped. */
+  private addToSearchHistory(term:string):void{
+    this.searchHistory = [term, ...this.searchHistory.filter(t => t !== term)].slice(0, 10);
   }
 
   isFormDirty(): void {
@@ -2333,52 +2459,54 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+  /**
+   * (Refactor #11.b) Show the recent-search dropdown when the search input is
+   * clicked, provided there's something to show. Replaces the old
+   * `document.getElementById('searchHistory-' + processId).style.display = 'block'`
+   * pattern with a per-instance boolean bound via [style.display] in the template.
+   */
   showSearchHistory(evt:MouseEvent):void{
     this.focusWindow();
 
-    const searchHistoryElement = document.getElementById(`searchHistory-${this.processId}`) as HTMLElement;
-    if(searchHistoryElement){
-      if(this.searchHistory.length > 0){
-        searchHistoryElement.style.display = 'block';
-      }
+    if(this.searchHistory.length > 0){
+      this.isSearchHistoryVisible = true;
     }
 
     evt.stopPropagation();
   }
 
+  /** (Refactor #11.b) Hide the recent-search dropdown. Wired to (focusout). */
   hideSearchHistory():void{
-    const searchHistoryElement = document.getElementById(`searchHistory-${this.processId}`) as HTMLElement;
-    if(searchHistoryElement)
-      searchHistoryElement.style.display = 'none';
+    this.isSearchHistoryVisible = false;
   }
 
+  /**
+   * (Refactor #11.b) Toggle the path-history dropdown open/closed.
+   *
+   * The dropdown's width is matched to the breadcrumb container's current
+   * width (minus a 25px inset for the right-side controls) every time it is
+   * opened. We measure on demand instead of binding to a getter so we don't
+   * call offsetWidth on every change-detection pass, and we measure on each
+   * open so the dropdown follows window resizes that happen while closed.
+   */
   hideshowPathHistory():void{
-    const pathHistoryElement = document.getElementById(`pathHistory-${this.processId}`) as HTMLElement;
-    const hdrNavPathCntnrElement =  document.getElementById(`hdrNavPathCntnr-${this.processId}`) as HTMLElement; 
-    const minus24 = hdrNavPathCntnrElement.offsetWidth - 25;
-
     this.showPathHistory = !this.showPathHistory;
 
-    if(this.showPathHistory){
-      if(pathHistoryElement){
-        if(this.pathHistory.length > 0){
-          pathHistoryElement.style.display = 'block';
-          pathHistoryElement.style.width = `${minus24}px`;
-        }
+    if(this.showPathHistory && this.pathHistory.length > 0){
+      const containerEl = this.navPathContainer?.nativeElement;
+      if(containerEl){
+        this.pathHistoryWidthPx = Math.max(0, containerEl.offsetWidth - 25);
       }
-    }else if(!this.showPathHistory){
-      if(pathHistoryElement)
-        pathHistoryElement.style.display = 'none';
     }
   }
-  
+
+  /** (Refactor #11.b) Force-close the path-history dropdown. */
   hidePathHistory():void{
-    const pathHistoryElement = document.getElementById(`pathHistory-${this.processId}`) as HTMLElement;
-    if(pathHistoryElement)
-      pathHistoryElement.style.display = 'none';
     this.showPathHistory = false;
   }
+  //#endregion Search & Path History
 
+  //#region Recycle Bin & Directory Listing
   checkAndSetIfRecycleBin():void{
     if(this.directory === Constants.RECYCLE_BIN_PATH){
       this.isRecycleBinFolder = true;
@@ -2397,40 +2525,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
 
   async getAListOfFilesAndFoldersInCurrentDirectory(fPath:string):Promise<string[]>{
-    let fileCounter = 0;
-    let folderCounter = 0;
-    let filesList = Constants.EMPTY_STRING;
-    let foldersList = Constants.EMPTY_STRING;
-
-    const MaxItemsToFetch = 10;
-    const files:string[] = [];
-    const folders:string[] = [];
     const directoryFiles = await this._fileService.loadDirectoryFiles(fPath);
-
-    for(const file of directoryFiles){
-      if(file.getIsFile){
-        if(fileCounter < MaxItemsToFetch){
-          files.push(file.getFileName);
-          fileCounter++;
-        }
-      }else{
-        if(folderCounter < MaxItemsToFetch){
-          folders.push(file.getFileName);
-          folderCounter++;
-        }
-      }
-
-      if(fileCounter >= MaxItemsToFetch && folderCounter >= MaxItemsToFetch){
-        break;
-      }
-    }
-
-    filesList = (files.length > 0)? `${files.join(', ')}` : Constants.EMPTY_STRING;
-    foldersList = (folders.length > 0)? `${folders.join(', ')}` : Constants.EMPTY_STRING;
-
-    return [filesList, foldersList];
+    return FileExplorerGeneralHelper.summarizeDirectoryContents(directoryFiles);
   }
+  //#endregion Recycle Bin & Directory Listing
 
+  //#region Load / Refresh / Delete
   onFileExplrCntntClick():void{
     this.hidePathTextBox();
   }
@@ -2440,6 +2540,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
    * @param showOnlyUrlFiles 
    */
   private async loadFiles(showOnlyUrlFiles=true):Promise<void>{
+    // Loading a real directory listing always means we're no longer showing
+    // search results, so leaving search-results mode is centralised here.
+    this.isShowingSearchResults = false;
     this.fetchedFiles = [];
     const directoryFiles  = await this._fileService.loadDirectoryFiles(this.directory);
 
@@ -2459,6 +2562,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   async refresh(evt?:MouseEvent):Promise<void>{
     console.log('Refresh Called !!!!!!!')
     this.isIconInFocusDueToPriorAction = false;
+    // A manual refresh may follow file-system changes, so the cached search
+    // index could be stale — drop it and let the next search rebuild it.
+    this.invalidateSearchIndex();
 
     if(evt)
       evt.stopPropagation();
@@ -2466,25 +2572,25 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     await this.loadFiles();
   }
 
-  async onDeleteFile___():Promise<void>{
+  // async onDeleteFile___():Promise<void>{
 
-    const desktopRefreshDelay = 1000;
-    const callerUId = `${this.name}-${this.processId}`;
-    const isAlreadyInRecycleBin = false;
+  //   const desktopRefreshDelay = 1000;
+  //   const callerUId = `${this.name}-${this.processId}`;
+  //   const isAlreadyInRecycleBin = false;
 
-    const result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile, isAlreadyInRecycleBin,
-      { file: this.selectedFile, callerUId }
-    );
+  //   const result = await this._fileService.deleteAsync(this.selectedFile.getCurrentPath, this.selectedFile.getIsFile, isAlreadyInRecycleBin,
+  //     { file: this.selectedFile, callerUId }
+  //   );
 
-    if(result){
-      this._menuService.resetStoreData();
-      await this.loadFiles();
+  //   if(result){
+  //     this._menuService.resetStoreData();
+  //     await this.loadFiles();
 
-      await CommonFunctions.sleep(desktopRefreshDelay)
-      this._fileService.addEventOriginator(Constants.DESKTOP);
-      this._fileService.dirFilesUpdateNotify.next();
-    }
-  }
+  //     await CommonFunctions.sleep(desktopRefreshDelay)
+  //     this._fileService.addEventOriginator(Constants.DESKTOP);
+  //     this._fileService.dirFilesUpdateNotify.next();
+  //   }
+  // }
 
   async onDeleteFile(): Promise<void> {
     const isAlreadyInRecycleBin = false;
@@ -2492,7 +2598,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // Determine which files to delete
     const filesToDelete = (this.areMultipleIconsHighlighted)
-      ? this.markedBtnIds.map(id => this.fetchedFiles[Number(id)])
+      ? Array.from(this.markedBtnIds).map(id => this.fetchedFiles[id])
       : [this.selectedFile];
 
     // Run deletions concurrently — the service handles confirm-delete (first file only) and file-in-use checks
@@ -2519,7 +2625,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       )
     );
   }
+  //#endregion Load / Refresh / Delete
 
+  //#region Rename (keypress, show/save/hide textbox)
 
   onKeyPress(evt:KeyboardEvent):boolean{
     const regexStr = '^[a-zA-Z0-9_.\\s-]+$';
@@ -2596,6 +2704,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const renameTxtBoxElmnt= document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLInputElement;
     const renameText = this.renameForm.value.renameInput as string;
     const oldFileName = this.selectedFile.getFileName;
+    // Capture BEFORE mutating selectedFile; activity history is keyed by the
+    // path the row was originally stored under.
+    const oldPath = this.selectedFile.getCurrentPath;
 
     if(renameText !== Constants.EMPTY_STRING && renameText.length !== 0 && renameText !== this.currentIconName){
 
@@ -2617,18 +2728,26 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this.renameForm.reset();
         this._menuService.resetStoreData();
         //await this.loadFiles();
-        const activity = CommonFunctions.getTrackingActivity(ActivityType.FILE, renameText, this.selectedFile.getCurrentPath, oldFileName, isRename);
+        const activity = CommonFunctions.getTrackingActivity(ActivityType.FILE, renameText, oldPath, oldFileName, isRename);
         CommonFunctions.trackActivity(this._activityHistoryService, activity);
       }
     }else{
       this.renameForm.reset();
     }
 
-    this.setBtnStyle(this.selectedElementId, false);
+    // Refactor #11.i: previously `setBtnStyle(selectedElementId, false)`. The
+    // rename flow ends with the icon still selected (prior-action phase), so
+    // we flip the focus flags and let [class.is-selected-prior] paint it.
+    this.isIconInFocusDueToCurrentAction = false;
+    this.isIconInFocusDueToPriorAction = true;
     this.renameFileTriggerCnt = 0;
 
     if(figCapElmnt && renameFormElmnt && renameTxtBoxElmnt){
-      figCapElmnt.style.display = 'block';
+      // Clear the inline display (don't hardcode 'block') so the caption falls
+      // back to its stylesheet `display: -webkit-box`, which the 4-line clamp
+      // (-webkit-line-clamp) depends on. Setting 'block' here silently disabled
+      // the clamp after a rename save.
+      figCapElmnt.style.display = '';
       renameFormElmnt.style.display = 'none';
       renameTxtBoxElmnt.style.display = 'none';
     }
@@ -2642,7 +2761,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const renameTxtBoxElmnt= document.getElementById(`renameTxtBox-${this.processId}-${this.selectedElementId}`) as HTMLInputElement;
 
     if(figCapElmnt && renameFormElmnt && renameTxtBoxElmnt){
-      figCapElmnt.style.display = 'block';
+      // Clear the inline display (don't hardcode 'block') so the caption falls
+      // back to its stylesheet `display: -webkit-box`, which the 4-line clamp
+      // (-webkit-line-clamp) depends on. Setting 'block' here silently disabled
+      // the clamp after a rename cancel.
+      figCapElmnt.style.display = '';
       renameFormElmnt.style.display = 'none';
       renameTxtBoxElmnt.style.display = 'none';
     }
@@ -2650,7 +2773,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isIconInFocusDueToPriorAction = true;
     this.isIconInFocusDueToCurrentAction = false;
   }
+  //#endregion Rename (keypress, show/save/hide textbox)
 
+  //#region Sort & Layout Selection (menu helpers)
   sortByNameM():void{
     this.sortBy(this.sortByName)
   }
@@ -2735,9 +2860,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   onMenuSelectLayout(inputViewOption:ViewOptions):void{
-    this.changeLayoutCss( inputViewOption);
-    this.changeOrderedlistStyle( inputViewOption );
-    this.changeIconViewBtnSize( inputViewOption);
+    // (Refactor #11.j) was: changeLayoutCss + changeOrderedlistStyle +
+    // changeIconViewBtnSize. Now a single class-binding update on the <ol>.
+    this.currentViewOption = inputViewOption;
+    this.applyViewClasses(inputViewOption);
   }
   
 
@@ -2748,13 +2874,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.isSmallIcon = false;
     this.isDetailsIcon = false;
   }
+  //#endregion Sort & Layout Selection (menu helpers)
 
+  //#region Shortcut Creation
   async createShortCut(): Promise<void>{
     const selectedFile = this.selectedFile;
     const shortCut:FileInfo = new FileInfo();
     const directory = this.directory;
     const fileContent = this.generateShortcuContent(selectedFile);
-    shortCut.setContentPath = fileContent;
+    shortCut.setStringBuffer = fileContent;
 
     if(directory === Constants.ROOT){
       const title = 'Shortcut';
@@ -2802,7 +2930,9 @@ OpensWith=${file.getOpensWith}
         await this.loadFiles();
     }
   }
+  //#endregion Shortcut Creation
 
+  //#region Process / Component Helpers
   private generateFileAndUpdateProcess():void{
     const updateFile = new FileInfo();
     updateFile.setOpensWith = Constants.FILE_EXPLORER 
@@ -2820,4 +2950,5 @@ OpensWith=${file.getOpensWith}
     this._fileInfo = this._processHandlerService.getLastProcessTrigger(this.name);
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type, this._fileInfo)
   }
+  //#endregion Process / Component Helpers
 }

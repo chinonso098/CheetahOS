@@ -22,13 +22,13 @@ import { ProcessIDService } from "./process.id.service";
 import { FileIndexerService } from "./file.indexer.services";
 import { RunningProcessService } from "./running.process.service";
 import { UserNotificationService } from "./user.notification.service";
-import { SessionManagmentService } from "./session.management.service";
+import { SessionManagementService } from "./session.management.service";
 import { SystemNotificationService } from "./system.notification.service";
 
 import { OpensWith } from "src/app/system-files/common.interfaces";
 import { zipSync, unzipSync } from "fflate";
 import { CommonFunctions } from "src/app/system-files/common.functions";
-import { FileTransferUpdate, FileTransferCopyOptions, FileTransferCount, FileTransferMoveOptions, FileOperationCheck } from "src/app/system-files/file.system.types";
+import { FileTransferUpdate, FileTransferCopyOptions, FileTransferCount, FileTransferMoveOptions, FileOperationCheck, FolderMoveQueueItem, FileStat } from "src/app/system-files/file.system.types";
 import { UserNotificationType } from "src/app/system-files/common.enums";
 
 
@@ -36,27 +36,45 @@ import { UserNotificationType } from "src/app/system-files/common.enums";
     providedIn: 'root'
 })
 export class FileService implements BaseService{ 
-    private abortController?: AbortController;
+    // Per-operation abort controllers keyed by dialogPId so concurrent transfers do not cancel each other.
+    private _abortControllers: Map<number, AbortController> = new Map();
   
     private _fileSystem!:FSModule;
+    private _initPromise!:Promise<boolean>;
     private _fileExistsMap!:Map<string, string>; 
     private _fileAndAppIconAssociation!:Map<string,string>; 
     private _restorePoint!:Map<string,string>; 
     private _fileDragAndDrop!:FileInfo[];
     private _eventOriginator = Constants.EMPTY_STRING;
     private _mountedZips:Map<string, string> = new Map<string, string>(); // mountPoint -> srcPath
+    private static readonly _utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+    private static readonly _utf8DecoderLenient = new TextDecoder('utf-8');
 
     private _runningProcessService!:RunningProcessService;
     private _processIdService!:ProcessIDService;
     private _userNotificationService!:UserNotificationService
     private _systemNotificationService:SystemNotificationService;
-    private _sessionManagmentService!:SessionManagmentService;
+    private _sessionManagementService!:SessionManagementService;
     private _fileIndexerService!:FileIndexerService;
     private _defaultService:DefaultService;
 
+    /**
+     * Lazy accessor for the file indexer. The indexer is normally assigned
+     * in postInitBrowserFs(), but BrowserFS init is asynchronous and the
+     * static `FileIndexerService.instance` may not be populated yet when
+     * the very first file operation runs (e.g. an early screenshot save).
+     * This getter resolves the singleton on demand and caches it once
+     * available. Callers must still null-check, because the indexer may
+     * legitimately not exist yet on the very first call.
+     */
+    private get fileIndexer(): FileIndexerService | undefined {
+        if(!this._fileIndexerService){
+            this._fileIndexerService = FileIndexerService.instance;
+        }
+        return this._fileIndexerService;
+    }
+
     private _isCalculated = false;
-    private _isDuplicate = false;
-    private _generatedName = Constants.EMPTY_STRING;
     private _usedStorageSizeInBytes = 0;
     private _dialogPIdToCancel = 0;
 
@@ -70,7 +88,7 @@ export class FileService implements BaseService{
     readonly FILE_TRANSFER_DIALOG_APP_NAME = 'fileTransferDialog';
 
     // Concurrency limit (adjust as needed)
-    private readonly CONCURRENCY_LIMIT = 4;
+    private readonly CONCURRENCY_LIMIT = 8;
     // Maximum number of retries when generating unique file/folder names
     private readonly MAX_DUPLICATE_RETRIES = 10;
 
@@ -83,7 +101,7 @@ export class FileService implements BaseService{
     description = 'Mediates btwn ui & filesystem';
     
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService,
-                sessionManagmentService:SessionManagmentService, systemNotificationService:SystemNotificationService, defaultService:DefaultService){ 
+                sessionManagementService:SessionManagementService, systemNotificationService:SystemNotificationService, defaultService:DefaultService){ 
         this.initBrowserFS();
         this._fileExistsMap =  new Map<string, string>();
         this._restorePoint =  new Map<string, string>();
@@ -93,12 +111,12 @@ export class FileService implements BaseService{
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
         this._userNotificationService = userNotificationService;
-        this._sessionManagmentService = sessionManagmentService;
+        this._sessionManagementService = sessionManagementService;
         this._systemNotificationService = systemNotificationService;
         this._defaultService = defaultService;
 
         this.cancelFileTransferNotify.subscribe((p) =>{
-            this.terminateTransfer();
+            this.terminateTransfer(p);
             this.pIdToTerminate(p);
         });
 
@@ -111,15 +129,18 @@ export class FileService implements BaseService{
     }
 
     private initBrowserFS(): void {
-        setTimeout(() => {
-            this.initBrowserFsAsync().then((success) => {
-                if (success) {
-                    this.postInitBrowserFs();
-                } else {
-                    console.warn("BrowserFS failed to initialize.");
-                }
-            });
-        }, 0);
+        this._initPromise = new Promise<boolean>((resolve) => {
+           // setTimeout(() => {
+                this.initBrowserFsAsync().then((success) => {
+                    if (success) {
+                        this.postInitBrowserFs();
+                    } else {
+                        console.warn("BrowserFS failed to initialize.");
+                    }
+                    resolve(success);
+                });
+           // }, 0);
+        });
     }
 
     private async initBrowserFsAsync():Promise<boolean>{
@@ -157,15 +178,15 @@ export class FileService implements BaseService{
                 (err) =>{
                     if(err){  
                         console.error('initBrowserFs Error:', err)
-                        resolve(false); 
+                        return resolve(false);
                     }
                     try {
                         this._fileSystem = BrowserFS.BFSRequire('fs');
                         // console.log('initBrowserFsAsync: File system initialized successfully.');
-                        resolve(true);
+                        return resolve(true);
                     } catch (initErr) {
                         console.error('initBrowserFsAsync: BFSRequire failed', initErr);
-                        resolve(false);
+                        return resolve(false);
                     }
                 }
             );
@@ -178,25 +199,48 @@ export class FileService implements BaseService{
         this._fileIndexerService = FileIndexerService.instance;
 
         await CommonFunctions.sleep(delay);
-        await this._fileIndexerService.indexDirectoryAsync();
+        // Guard: if Angular hasn't constructed FileIndexerService yet for any
+        // reason, skip the initial walk rather than crashing. Subsequent
+        // operations will lazy-resolve via the `fileIndexer` getter.
+        if(this._fileIndexerService){
+            await this._fileIndexerService.indexDirectoryAsync();
+        }else{
+            console.warn('postInitBrowserFs: FileIndexerService.instance not ready; skipping initial index walk');
+        }
     }   
 
-    public async isDirectory(path:string):Promise<boolean> {
-        return new Promise<boolean>((resolve) =>{
-            this._fileSystem.stat(path,(err, stats) =>{
-                if(err){
-                    console.error('checkIfDirectory error:',err)
-                    console.error('checkIfDirectoryAsync: Failed to get stats →', err);
-                    resolve(false);
+    // public async isDirectory(path:string):Promise<boolean> {
+    //     await this._initPromise;
+    //     return new Promise<boolean>((resolve) =>{
+    //         this._fileSystem.stat(path,(err, stats) =>{
+    //             if(err){
+    //                 console.error('checkIfDirectoryAsync: Failed to get stats →', err);
+    //                 return resolve(false);
+    //             }
+    //             return resolve(stats ? stats.isDirectory() : false);
+    //         });
+    //     });
+    // }
+
+    /**
+     * Stat helper that returns the raw isDirectory + size in a single call,
+     * letting callers avoid the common pattern of `isDirectory()` + `geFileMetaData()`
+     * (which previously issued 2–3 stat calls per entry).
+     */
+    public async getStatAsync(path: string): Promise<FileStat>{
+        await this._initPromise;
+        return new Promise<FileStat>((resolve) => {
+            this._fileSystem.stat(path, (err, stats) => {
+                if(err || !stats){
+                    return resolve({ isDirectory: false, size: 0, exists: false });
                 }
-               
-                const isDirectory = (stats)? stats.isDirectory(): false;
-                resolve(isDirectory);
+                return resolve({ isDirectory: stats.isDirectory(), size: stats.size || 0, exists: true });
             });
         });
     }
 
     public async exists(path: string):Promise<boolean> {
+        await this._initPromise;
         return new Promise<boolean>((resolve) => {
             this._fileSystem.exists(path, (exists) => {
                 // console.log(`checkIfExistsAsync: ${exists ? 'Already exists' : 'Does not exist'}`, exists);
@@ -206,152 +250,172 @@ export class FileService implements BaseService{
     }
 
     public async copyAsync(srcPath:string, destPath:string, isFile?:boolean):Promise<boolean>{
-        const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
-
-        this.abortController = new AbortController();
-        const signal = this.abortController.signal;
+        const isDirectory = (isFile === undefined) ? (await this.getStatAsync(srcPath)).isDirectory : !isFile;
 
         const filesTrasnferedCount:FileTransferCount = { fileCount: 0};
         const firstMsg = 'Estimating';
         const title = 'Copying';
         const dialogPId = this.initFileTransfer(firstMsg, title);
+        const abortController = new AbortController();
+        this._abortControllers.set(dialogPId, abortController);
+        const signal = abortController.signal;
         this.sendUpdate(dialogPId);
 
-        const count = await this.getFullCountOfFolderItemsInt(srcPath);
-        const dirSize = await this.getFolderSizeAsync(srcPath);
-        const fileToCopyCount = count.files;
+        let result: boolean;
+        let deltaSize = 0;
+        try {
+            if(isDirectory){
+                // Single merged traversal returns count + size, avoids 3 separate tree walks.
+                const stats = await this.traverseFolderAsync(srcPath);
+                deltaSize = stats.size;
+                result = await this.copyFolderHandlerAsync({arg0:Constants.EMPTY_STRING, srcPath, destPath, filesToTransferCount: stats.files, dialogPId, fileTransferCount:filesTrasnferedCount, currentSize:stats.size, signal});
+            } else {
+                result = await this.copyFileAsync(srcPath, destPath);
+                if(result){
+                    const meta = await this.getStatAsync(srcPath);
+                    deltaSize = meta.size;
+                    // Emit a single "100% complete" update so the transfer dialog
+                    // leaves the Estimating animation and auto-closes. Without this
+                    // the dialog stays stuck in the estimating state for single-file
+                    // copies (which never go through copyFolderHandlerAsync).
+                    const fileName = this.getNameFromPath(srcPath);
+                    filesTrasnferedCount.fileCount = 1;
+                    const transferUpdate = this.genFileTransferUpdate(
+                        srcPath, destPath, 1, 1, 0, 0, 0, fileName
+                    );
+                    this.sendFileTransferUpdate(dialogPId, transferUpdate);
+                }
+            }
+        } finally {
+            this._abortControllers.delete(dialogPId);
+        }
 
-        const result = isDirectory
-            ? await this.copyFolderHandlerAsync({arg0:Constants.EMPTY_STRING, srcPath, destPath, filesToTransferCount: fileToCopyCount, dialogPId, fileTransferCount:filesTrasnferedCount, currentSize:dirSize, signal})
-            : await this.copyFileAsync(srcPath, destPath);
-
-        await this.recalculateUsedStorage();
+        if(result && deltaSize > 0){
+            // Incremental update avoids re-scanning the whole drive after every transfer.
+            this._usedStorageSizeInBytes += deltaSize;
+        }
         return result;
     }
 
     private async copyFileAsync(srcPath:string, destPath:string):Promise<boolean>{
         const name = this.getNameFromPath(srcPath);
         const destinationPath = `${this.pathCorrection(destPath)}/${name}`;
-        // console.log(`Destination: ${destinationPath}`);
 
         const readResult = await this.readRawAsync(srcPath);
         if(!readResult){
             return false;
         }
 
-        const result =  await this.writeRawHandlerAsync(destinationPath, readResult);
-        if(result){
+        const writeRes = await this.writeRawHandlerAsync(destinationPath, readResult);
+        if(writeRes.ok){
             const isFile = true;
-            const fPath = (this._isDuplicate) ? `${this.pathCorrection(srcPath)}/${this._generatedName}` : destPath;
-            await  this._fileIndexerService.addNotify(fPath, isFile);
-
-            this._isDuplicate = false;
-            this._generatedName = Constants.EMPTY_STRING;
+            // Best-effort: indexer may not be ready on very early writes.
+            await this.fileIndexer?.addNotify(writeRes.finalPath, isFile);
         }
 
-        return result;
+        return writeRes.ok;
     }
 
     /**
-     * Run several file copies in parallel
+     * Run several file copies in parallel using a single shared semaphore so the total
+     * number of in-flight I/O operations stays bounded across the whole recursion.
      * @param options 
      * @returns 
      */
     private async copyFolderHandlerAsync(options: FileTransferCopyOptions): Promise<boolean> {
-        const { arg0, srcPath, destPath, filesToTransferCount: fileCount, dialogPId, fileTransferCount: copiedFiles, signal } = options;
-    
-        const folderName = this.getNameFromPath(srcPath);
-        const createFolderResult = await this.createFolderAsync(destPath, folderName);
-        if(!createFolderResult) return false;
-    
+        const { srcPath, destPath, filesToTransferCount: fileCount, dialogPId, fileTransferCount: copiedFiles, signal } = options;
+
+        const createFolderResult = await this.createFolderAsync(destPath, this.getNameFromPath(srcPath));
+        if(!createFolderResult.ok) return false;
+        const folderName = this.getNameFromPath(createFolderResult.finalPath);
+
+        // The shared limiter is created on the first (top-level) call and reused on recursion.
+        // IMPORTANT: the limiter is only used for leaf file I/O. Recursion into subfolders
+        // MUST NOT run inside a limiter slot, otherwise parents holding slots while waiting
+        // for children that also need slots will deadlock once depth >= concurrency limit.
+        const limiter = options.limiter ?? this.createLimiter(this.CONCURRENCY_LIMIT);
+        const passOptions = { ...options, limiter };
+
+        if (dialogPId === this._dialogPIdToCancel && signal.aborted) {
+            console.warn("Transfer aborted.");
+            this._dialogPIdToCancel = 0;
+            return false;
+        }
+
         const loadedDirectoryEntries = await this.readDirectory(srcPath);
-        let activeTasks: Promise<boolean>[] = [];
-    
-        for(const directoryEntry of loadedDirectoryEntries){
+
+        // Stat all entries in parallel (cheap, no limiter needed).
+        const entryStats = await Promise.all(loadedDirectoryEntries.map(async directoryEntry => {
             const entryPath = `${srcPath}/${directoryEntry}`;
-            if (dialogPId === this._dialogPIdToCancel && signal.aborted) {
-                console.warn("Transfer aborted.");
-                this._dialogPIdToCancel = 0;
-                return false;
+            const st = await this.getStatAsync(entryPath);
+            return { directoryEntry, entryPath, st };
+        }));
+
+        const subDirs: Array<{ directoryEntry: string; entryPath: string }> = [];
+        const fileTasks: Promise<boolean>[] = [];
+
+        for(const { directoryEntry, entryPath, st } of entryStats){
+            if(st.isDirectory){
+                subDirs.push({ directoryEntry, entryPath });
+                continue;
             }
-    
-            const isDir = await this.isDirectory(entryPath);
-            const task = (async()=>{
-                if(isDir){
-                    const result = await this.copyFolderHandlerAsync({ ...options,
-                        srcPath: entryPath,
-                        destPath: `${destPath}/${folderName}`,
-                    });
-                    if(!result){
-                        console.error(`Failed to copy directory: ${entryPath}`);
-                        return false;
-                    }
-                }else{
-                    const start = performance.now();
-                    const result = await this.copyFileAsync(entryPath, `${destPath}/${folderName}`);
-                    const fileMetaData = await this.geFileMetaData(entryPath);
-                    const end = performance.now();
-                    const duration = end - start;
 
-                    if(result){
-                        copiedFiles.fileCount++;
-                        const itemsRemaining = fileCount - copiedFiles.fileCount;
-                        const timeRemaining = duration * itemsRemaining;
-                        options.currentSize = Math.max(0, (options.currentSize ?? 0) - fileMetaData.getSize);
-                        const itemsRemainingSize = options.currentSize;
-
-                        const transferUpdate = this.genFileTransferUpdate(
-                            srcPath,
-                            destPath,
-                            fileCount,
-                            copiedFiles.fileCount,
-                            timeRemaining,
-                            itemsRemaining,
-                            itemsRemainingSize,
-                            directoryEntry
-                        );
-                        this.sendFileTransferUpdate(dialogPId, transferUpdate);
-                    } else {
-                        console.error(`file:${entryPath} failed to copy to destination:${destPath}/${folderName}`);
-                        return false;
-                    }
+            const entrySize = st.size;
+            fileTasks.push(limiter(async () => {
+                if (dialogPId === this._dialogPIdToCancel && signal.aborted) {
+                    return false;
                 }
-                return true;
-            })();
-    
-            activeTasks.push(task);
-    
-            //Throttle to maintain concurrency limit
-            if(activeTasks.length >= this.CONCURRENCY_LIMIT){
-                const results = await Promise.allSettled(activeTasks);
-                const failed = results.some(r => r.status === "fulfilled" && r.value === false);
-                if (failed) return false;
-                activeTasks = [];
-            }
+                const start = performance.now();
+                const result = await this.copyFileAsync(entryPath, `${destPath}/${folderName}`);
+                const end = performance.now();
+                const duration = end - start;
+
+                if(result){
+                    copiedFiles.fileCount++;
+                    const itemsRemaining = fileCount - copiedFiles.fileCount;
+                    const timeRemaining = duration * itemsRemaining;
+                    options.currentSize = Math.max(0, (options.currentSize ?? 0) - entrySize);
+                    const itemsRemainingSize = options.currentSize;
+
+                    const transferUpdate = this.genFileTransferUpdate(
+                        srcPath,
+                        destPath,
+                        fileCount,
+                        copiedFiles.fileCount,
+                        timeRemaining,
+                        itemsRemaining,
+                        itemsRemainingSize,
+                        directoryEntry
+                    );
+                    this.sendFileTransferUpdate(dialogPId, transferUpdate);
+                    return true;
+                }
+
+                console.error(`file:${entryPath} failed to copy to destination:${destPath}/${folderName}`);
+                return false;
+            }));
         }
-    
-        // Wait for any remaining tasks
-        if (activeTasks.length > 0) {
-            const results = await Promise.allSettled(activeTasks);
-            const failed = results.some(r => r.status === "fulfilled" && r.value === false);
-            if (failed) return false;
-        }
-    
-        return true;
+
+        // Wait for file-level copies at this level.
+        const fileResults = await Promise.allSettled(fileTasks);
+        const fileFailed = fileResults.some(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value === false));
+
+        // Recurse into subdirectories OUTSIDE the limiter so we never deadlock.
+        const subResults = await Promise.allSettled(subDirs.map(({ entryPath }) =>
+            this.copyFolderHandlerAsync({ ...passOptions, srcPath: entryPath, destPath: `${destPath}/${folderName}` })
+        ));
+        const subFailed = subResults.some(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value === false));
+
+        return !(fileFailed || subFailed);
     }
 
-    public async createFolderAsync(directory: string, folderName: string): Promise<boolean> {
+    public async createFolderAsync(directory: string, folderName: string): Promise<{ ok: boolean; finalPath: string }> {
         const folderPath = `${directory}/${folderName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
-        const result =  await this.createFolderHandlerAsync(folderPath);
+        const result = await this.createFolderHandlerAsync(folderPath);
 
-        if(result){
-            const isFile = false;
-            const dPath = (this._isDuplicate) ? this._generatedName : folderPath;
-
-            await  this._fileIndexerService.addNotify(dPath, isFile);
-
-            this._isDuplicate = false;
-            this._generatedName = Constants.EMPTY_STRING;
+        if(result.ok){
+            // Best-effort: indexer may not be ready on very early folder creates.
+            await this.fileIndexer?.addNotify(result.finalPath, false);
         }
 
         return result;
@@ -359,48 +423,41 @@ export class FileService implements BaseService{
 
     /**
      * Creates a folder and handles duplicate folder names gracefully.
-     * @param folderPath - The target folder path.
-     * @returns true if folder creation succeeded, false otherwise.
+     * Returns the path of the folder that was actually created (which may differ
+     * from `folderPath` when a duplicate name was encountered and an incremented
+     * unique name was used).
      */
-    private async createFolderHandlerAsync(folderPath: string): Promise<boolean> {
+    private async createFolderHandlerAsync(folderPath: string): Promise<{ ok: boolean; finalPath: string }> {
         const createResult = await this.createFolderRawAsync(folderPath);
 
         if (createResult === 0) {
-            // Folder created successfully
             this._fileExistsMap.set(folderPath, String(0));
             this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
-            return true;
+            return { ok: true, finalPath: folderPath };
         }
 
         if (createResult === 1) {
-            this._isDuplicate = true;
-
             for (let attempt = 0; attempt < this.MAX_DUPLICATE_RETRIES; attempt++) {
                 const uniqueFolderPath = this.IncrementFileName(folderPath).replace(Constants.DOUBLE_SLASH, Constants.ROOT);
                 const retryResult = await this.createFolderRawAsync(uniqueFolderPath);
 
                 if (retryResult === 0) {
-                    this._generatedName = uniqueFolderPath;
-                    // Folder created successfully after name iteration
                     this._fileExistsMap.set(uniqueFolderPath, String(0));
                     this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
-                    return true;
+                    return { ok: true, finalPath: uniqueFolderPath };
                 }
 
                 if (retryResult !== 1) {
-                    // Non-duplicate error, abort
                     console.error(`createFolderAsync: unexpected error on retry ${attempt + 1}`);
-                    return false;
+                    return { ok: false, finalPath: folderPath };
                 }
-                // retryResult === 1 means this name also exists, try next
             }
 
             console.error(`createFolderAsync: exceeded ${this.MAX_DUPLICATE_RETRIES} retries`);
-            return false;
+            return { ok: false, finalPath: folderPath };
         }
 
-        // Other errors
-        return false;
+        return { ok: false, finalPath: folderPath };
     }
 
     /**
@@ -428,15 +485,20 @@ export class FileService implements BaseService{
         });
     }
 
-    private async updateAccessTimeAsync(path: string, mtime: Date): Promise<void> {
+    private async updateFileTimestampsAsync(path: string, mtime?: Date): Promise<void> {
         return new Promise<void>((resolve) => {
             const now = new Date();
-            this._fileSystem.utimes(path, now, mtime, (err) => {
-                if (err) {
-                    console.error('updateAccessTimeAsync error:', err);
-                }
-                resolve();
-            });
+            if(mtime){
+                this._fileSystem.utimes(path, now, mtime, (err) => {
+                    if(err){ console.error('updateAccessTimeAsync error:', err); }
+                    resolve();
+                });
+            }else{
+                this._fileSystem.utimes(path, now, now, (err) => {
+                    if(err){ console.error('updateAccessTimeAsync error:', err); }
+                    resolve();
+                });
+            }
         });
     }
 
@@ -514,15 +576,16 @@ export class FileService implements BaseService{
             console.error('getEntriesFromDirectoryAsync error: Path must not be empty');
             return Promise.reject(new Error('Path must not be empty'));
         }
+
+        await this._initPromise;
         
         return new Promise<string[]>((resolve) => {
              this._fileSystem.readdir(path, function(err, files) {
                 if(err){
                     console.error("Dang! The filesystem is acting up:", err);
-                    resolve([]);
+                    return resolve([]);
                 }
-
-                resolve(files || []);
+                return resolve(files || []);
             });
         });
     }
@@ -541,16 +604,20 @@ export class FileService implements BaseService{
 
 	async loadDirectoryFiles(path: string): Promise<FileInfo[]>{
 		try{
-            const files:FileInfo[] = [];
             const directoryEntries = await this.readDirectory(path);
-
-            for(const entry of directoryEntries){
+            // Load entries in parallel (bounded) and tolerate per-file failures so one
+            // bad entry doesn't blank the whole listing.
+            const limiter = this.createLimiter(this.CONCURRENCY_LIMIT);
+            const results = await Promise.all(directoryEntries.map(entry => limiter(async () => {
                 const entryPath = `${path}/${entry}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
-                const file =  await this.getFileInfo(entryPath);
-                files.push(file);
-            }
-
-            return files;
+                try {
+                    return await this.getFileInfo(entryPath);
+                } catch(err) {
+                    console.error('loadDirectoryFiles: entry failed', entryPath, err);
+                    return null;
+                }
+            })));
+            return results.filter((f): f is FileInfo => f !== null);
 		}catch(err){
 			console.error('loadDirectoryFiles:',err);
 			return [];
@@ -694,24 +761,29 @@ export class FileService implements BaseService{
                     return resolve(this.populateFileContent());
                 }
 
-                if (!this.isUtf8Encoded(contents)) {
-                    return  resolve(this.createFileContentFromBuffer(contents, contentType, path));
-                }
+                // Cheap probe: a data URL always starts with the ASCII bytes "data:".
+                // Avoid decoding (and re-decoding) potentially multi-MB binary buffers.
+                const looksLikeDataUrl = contents.length >= 5
+                    && contents[0] === 0x64 && contents[1] === 0x61
+                    && contents[2] === 0x74 && contents[3] === 0x61
+                    && contents[4] === 0x3a;
 
-                const encoding:BufferEncoding = 'utf8';
-                const utf8Data = contents.toString(encoding);
-
-                const dataPrefix = utf8Data.substring(0, 10);
-                //const dataPrefix = utf8Data.replace(/^data:.*;base64,/, Constants.EMPTY_STRING);
-                if (this.isDataUrl(utf8Data)) {
-                    const base64Data = utf8Data.split(Constants.COMMA)[1];
-                    const binaryData = Buffer.from(base64Data, 'base64');
-                    const fileUrl = this.bufferToUrl(binaryData);
-
-                    return resolve(this.createFileContent(fileUrl, path, dataPrefix === 'data:image'));
-                } else {
+                if(!looksLikeDataUrl){
                     return resolve(this.createFileContentFromBuffer(contents, contentType, path));
                 }
+
+                // Decode only the leading slice for the data:image vs data:* check.
+                const prefix = FileService._utf8DecoderLenient.decode(contents.subarray(0, Math.min(contents.length, 64)));
+                const isImage = prefix.startsWith('data:image');
+                const utf8Data = FileService._utf8DecoderLenient.decode(contents);
+                const commaIdx = utf8Data.indexOf(Constants.COMMA);
+                if(commaIdx < 0){
+                    return resolve(this.createFileContentFromBuffer(contents, contentType, path));
+                }
+                const base64Data = utf8Data.substring(commaIdx + 1);
+                const binaryData = Buffer.from(base64Data, 'base64');
+                const fileUrl = this.bufferToUrl(binaryData);
+                return resolve(this.createFileContent(fileUrl, path, isImage));
             });
         });
     }
@@ -748,12 +820,12 @@ export class FileService implements BaseService{
 	}
 
     public async getShortCutFromURL(path: string): Promise<ShortCut> {
+        await this._initPromise;
         return new Promise<ShortCut>((resolve) => {
             this._fileSystem.readFile(path, (err, contents = Buffer.from(Constants.EMPTY_STRING)) => {
                 if (err) {
                     console.error('getShortCutAsync error:', err);
                     return resolve(this.createEmptyShortCut());
-                 
                 }
 
                 const stage = contents.toString();
@@ -843,11 +915,10 @@ export class FileService implements BaseService{
     }
 
     private async renameDirectoryAsync(srcPath:string, destPath:string):Promise<boolean>{
-        const folderToProcessingQueue:string[] =  [];
-        const folderToDeleteStack:string[] =  [];
+        const folderToProcessingQueue:FolderMoveQueueItem[] = [];
+        const folderToDeleteStack:string[] = [];
 
-        //dir path can be gotten from either src or dest path;
-        const  directoryPath = dirname(srcPath);
+        const directoryPath = dirname(srcPath);
         const newName = this.getNameFromPath(destPath);
 
         const directoryExists = await this.exists(destPath);
@@ -858,37 +929,47 @@ export class FileService implements BaseService{
             return false;
         }
 
-        const result = await this.createFolderAsync(directoryPath, newName);
-        if(!result) return result;
+        // Create destination folder with the exact user-supplied name (no duplicate-rename retry,
+        // because we already verified it does not exist above).
+        const createDest = await this.createFolderAsync(directoryPath, newName);
+        if(!createDest.ok) return false;
 
-        this.abortController = new AbortController();
-        const signal = this.abortController.signal;
+        // Single merged traversal for count + size.
+        const stats = await this.traverseFolderAsync(srcPath);
+        const dirFilesCount = stats.files;
+        const folderSize = stats.size;
+
         const firstMsg = 'Estimating';
         const title = 'Moving';
-
         const dialogPId = this.initFileTransfer(firstMsg, title);
+        const abortController = new AbortController();
+        this._abortControllers.set(dialogPId, abortController);
+        const signal = abortController.signal;
         this.sendUpdate(dialogPId);
 
-        const dirItemsCount = await this.getFullCountOfFolderItemsInt(srcPath);
-        const dirFilesCount = dirItemsCount.files;
-        const folderSize = await this.getFolderSizeAsync(srcPath);
         const filesMovedCount:FileTransferCount = { fileCount: 0};
 
-        folderToProcessingQueue.push(srcPath);
-        const isRenameSuccessful = await this.moveHandlerAsync({ 
-            destPath, 
-            folderToProcessingQueue, 
-            folderToDeleteStack,
-            filesToMoveCount:dirFilesCount,
-            dialogPId,
-            filesMovedCount,
-            currentSize:folderSize,
-            signal,
-            moveFolderItself: false  // same as moveHandlerBAsync
-        });   
-        
+        // Contents of srcPath go directly into the newly created destPath (no extra wrapper).
+        folderToProcessingQueue.push({ src: srcPath, parentDest: destPath, isRoot: true });
+
+        let isRenameSuccessful = false;
+        try {
+            isRenameSuccessful = await this.moveHandlerAsync({
+                folderToProcessingQueue,
+                folderToDeleteStack,
+                filesToMoveCount:dirFilesCount,
+                dialogPId,
+                filesMovedCount,
+                currentSize:folderSize,
+                signal,
+                moveFolderItself: false
+            });
+        } finally {
+            this._abortControllers.delete(dialogPId);
+        }
+
         if(isRenameSuccessful){
-          await this.deleteEmptyFolders(folderToDeleteStack);
+            await this.deleteEmptyFolders(folderToDeleteStack);
         }
 
         return isRenameSuccessful;
@@ -902,27 +983,20 @@ export class FileService implements BaseService{
             return false;
         }
 
-        const isDirectory = (isFile === undefined) ? await this.isDirectory(srcPath) : !isFile;
-
-        this.abortController = new AbortController();
-        const signal = this.abortController.signal;
+        const isDirectory = (isFile === undefined) ? (await this.getStatAsync(srcPath)).isDirectory : !isFile;
 
         let firstMsg = 'Estimating';
         let dialogPId = 0;
-        let dirFilesCount = 0;
-        let folderSize = 0;
         const filesMovedCount:FileTransferCount = { fileCount: 0};
         
         if(isDirectory){
-            const folderToProcessingQueue:string[] =  [];
-            const folderToDeleteStack:string[] =  [];
-            let result = false;
+            const folderToProcessingQueue:FolderMoveQueueItem[] = [];
+            const folderToDeleteStack:string[] = [];
 
-            folderToProcessingQueue.push(srcPath);
-
-            const dirItemsCount = await this.getFullCountOfFolderItemsInt(srcPath);
-            dirFilesCount = dirItemsCount.files;
-            folderSize = await this.getFolderSizeAsync(srcPath);
+            // Single merged traversal for count + size.
+            const stats = await this.traverseFolderAsync(srcPath);
+            const dirFilesCount = stats.files;
+            const folderSize = stats.size;
 
             if(destPath === Constants.RECYCLE_BIN_PATH){
                 const size = CommonFunctions.getReadableFileSizeValue(folderSize);         
@@ -938,33 +1012,45 @@ export class FileService implements BaseService{
                 this.sendUpdate(dialogPId);
             }
 
-            //check if destPath Exists
-            const exists = await this.exists(destPath);
-            if(exists){
-                result = await this.moveHandlerAsync({ 
-                    destPath, 
-                    folderToProcessingQueue, 
+            const abortController = new AbortController();
+            this._abortControllers.set(dialogPId, abortController);
+            const signal = abortController.signal;
+
+            // If destPath already exists, move whole tree under it (creating srcName inside it).
+            // Otherwise treat destPath as the new target name: create it, then move contents in.
+            const destExists = await this.exists(destPath);
+            let parentDest: string;
+            if(destExists){
+                parentDest = destPath;
+            } else {
+                const createDest = await this.createFolderAsync(dirname(destPath), this.getNameFromPath(destPath));
+                if(!createDest.ok){
+                    this._abortControllers.delete(dialogPId);
+                    return false;
+                }
+                parentDest = createDest.finalPath;
+            }
+            folderToProcessingQueue.push({
+                src: srcPath,
+                parentDest,
+                isRoot: true,
+            });
+
+            let result = false;
+            try {
+                result = await this.moveHandlerAsync({
+                    folderToProcessingQueue,
                     folderToDeleteStack,
                     filesToMoveCount:dirFilesCount,
                     dialogPId,
                     filesMovedCount,
                     currentSize:folderSize,
                     signal,
-                    isRecycleBin,      // or false
-                    moveFolderItself: true   // same as moveHandlerAAsync
+                    isRecycleBin,
+                    moveFolderItself: destExists,
                 });
-            }else{
-                result = await this.moveHandlerAsync({ 
-                    destPath, 
-                    folderToProcessingQueue, 
-                    folderToDeleteStack,
-                    filesToMoveCount:dirFilesCount,
-                    dialogPId,
-                    filesMovedCount,
-                    currentSize:folderSize,
-                    signal,
-                    moveFolderItself: false  // same as moveHandlerBAsync
-                });   
+            } finally {
+                this._abortControllers.delete(dialogPId);
             }
 
             if(result){
@@ -983,122 +1069,84 @@ export class FileService implements BaseService{
     }
 
     private async moveHandlerAsync(options: FileTransferMoveOptions): Promise<boolean> {
-        const {destPath, folderToProcessingQueue, folderToDeleteStack, filesToMoveCount, dialogPId,
+        const { folderToProcessingQueue, folderToDeleteStack, filesToMoveCount, dialogPId,
             filesMovedCount, signal, isRecycleBin = false, moveFolderItself = true } = options;
-    
-        let { skipCounter = 0, } = options;
-    
-        if (folderToProcessingQueue.length === 0)
-            return true;
-    
-        //Abort check before any I/O
-        if((dialogPId === this._dialogPIdToCancel) && signal.aborted){
-            this._dialogPIdToCancel = 0;
-            console.warn("Move operation aborted.");
-            return false;
-        }
-    
-        const srcPath = folderToProcessingQueue.shift() || Constants.EMPTY_STRING;
-        folderToDeleteStack.push(srcPath);
-    
-        let folderName = this.getNameFromPath(srcPath);
-        let shouldCreateFolder = true;
-    
-        // In "contents only" mode, skip creating the top-level folder
-        if(!moveFolderItself && skipCounter === 0){
-            folderName = Constants.EMPTY_STRING;
-            shouldCreateFolder = false;
-        }
-    
-        const loadedDirectoryEntries = await this.readDirectory(srcPath);
-        let moveFolderResult = true;
-    
-        if(shouldCreateFolder){
-            moveFolderResult = await this.createFolderAsync(destPath, folderName);
-            if(!moveFolderResult){
-                console.error(`folder:${destPath}/${folderName} creation failed`);
-                return false;
-            }
-        }
-    
-        skipCounter++;
-        let activeTasks: Promise<boolean>[] = [];
-    
-        for (const directoryEntry of loadedDirectoryEntries) {
-            const fullSrcPath = `${srcPath}/${directoryEntry}`;
-    
-            // Abort check before scheduling the task
+
+        const limiter = options.limiter ?? this.createLimiter(this.CONCURRENCY_LIMIT);
+
+        while (folderToProcessingQueue.length > 0) {
             if((dialogPId === this._dialogPIdToCancel) && signal.aborted){
                 this._dialogPIdToCancel = 0;
                 console.warn("Move operation aborted.");
                 return false;
             }
-    
-            const isDir = await this.isDirectory(fullSrcPath);
-            const task = (async ()=>{
-                if(isDir){
-                    folderToProcessingQueue.push(fullSrcPath);
-                    return true;
-                }else{
-                    const fullDestPath = `${destPath}/${folderName}`;
+
+            const item = folderToProcessingQueue.shift()!;
+            const { src, parentDest, isRoot } = item;
+            folderToDeleteStack.push(src);
+
+            // Determine the directory into which this folder's files/subdirs are placed.
+            // For "contents only" mode (rename), the root's contents go directly into parentDest.
+            let targetDir: string;
+            if (isRoot && !moveFolderItself) {
+                targetDir = parentDest;
+            } else {
+                const folderName = this.getNameFromPath(src);
+                const createRes = await this.createFolderAsync(parentDest, folderName);
+                if (!createRes.ok) {
+                    console.error(`folder:${parentDest}/${folderName} creation failed`);
+                    return false;
+                }
+                targetDir = createRes.finalPath;
+            }
+
+            const entries = await this.readDirectory(src);
+            const tasks: Promise<boolean>[] = [];
+
+            for (const entry of entries) {
+                const fullSrcPath = `${src}/${entry}`;
+                if((dialogPId === this._dialogPIdToCancel) && signal.aborted){
+                    this._dialogPIdToCancel = 0;
+                    console.warn("Move operation aborted.");
+                    return false;
+                }
+
+                tasks.push(limiter(async () => {
+                    const st = await this.getStatAsync(fullSrcPath);
+                    if (st.isDirectory) {
+                        folderToProcessingQueue.push({ src: fullSrcPath, parentDest: targetDir });
+                        return true;
+                    }
+
                     const start = performance.now();
-                    const fileMetaData = await this.geFileMetaData(fullSrcPath);
-                    const result = await this.moveFileAsync(fullSrcPath, fullDestPath, undefined, isRecycleBin);
+                    const result = await this.moveFileAsync(fullSrcPath, targetDir, undefined, isRecycleBin);
                     const end = performance.now();
                     const duration = end - start;
-    
-                    if(result){
+
+                    if (result) {
                         filesMovedCount.fileCount++;
                         const itemsRemaining = filesToMoveCount - filesMovedCount.fileCount;
                         const estimatedRemainingTime = duration * itemsRemaining;
-                        options.currentSize = Math.max(0, (options.currentSize ?? 0) - fileMetaData.getSize);
-                        const itemsRemainingSize = options.currentSize;
-    
-                        // Generate transfer update
+                        options.currentSize = Math.max(0, (options.currentSize ?? 0) - st.size);
                         const transferUpdate = this.genFileTransferUpdate(
-                            srcPath,
-                            fullDestPath,
-                            filesToMoveCount,
-                            filesMovedCount.fileCount,
-                            estimatedRemainingTime,
-                            itemsRemaining,
-                            itemsRemainingSize,
-                            directoryEntry
+                            src, targetDir, filesToMoveCount,
+                            filesMovedCount.fileCount, estimatedRemainingTime,
+                            itemsRemaining, options.currentSize, entry
                         );
                         this.sendFileTransferUpdate(dialogPId, transferUpdate);
                         return true;
-                    }else{
-                        console.error(`file:${fullSrcPath} failed to move to destination:${fullDestPath}`);
-                        return false;
                     }
-                }
-            })();
-    
-            activeTasks.push(task);
-    
-            //Throttle to maintain concurrency limit
-            if (activeTasks.length >= this.CONCURRENCY_LIMIT) {
-                const results = await Promise.allSettled(activeTasks);
-                const failed = results.some(r => r.status === "fulfilled" && r.value === false);
-                if(failed)return false;
-                activeTasks = [];
+                    console.error(`file:${fullSrcPath} failed to move to destination:${targetDir}`);
+                    return false;
+                }));
             }
-        }
-    
-        // Wait for remaining tasks
-        if (activeTasks.length > 0) {
-            const results = await Promise.allSettled(activeTasks);
-            const failed = results.some(r => r.status === "fulfilled" && r.value === false);
+
+            const results = await Promise.allSettled(tasks);
+            const failed = results.some(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value === false));
             if (failed) return false;
         }
-    
-        // Recursive call for next folder in queue
-        return this.moveHandlerAsync({ ...options,
-            destPath: `${destPath}/${folderName}`,
-            folderToProcessingQueue,
-            folderToDeleteStack,
-            skipCounter,
-        });
+
+        return true;
     }
 
     //virtual filesystem, use copy and then delete. There is a BrowserFS bug causing an error to be thrown
@@ -1114,23 +1162,34 @@ export class FileService implements BaseService{
         const readResult = await this.readRawAsync(srcPath);
         if(!readResult) return false;
 
-        const checkResult = await this.exists(destinationPath);
-        if(checkResult)
-            return false
+        // For auto-generated dest paths (move into a folder), allow collision retry by
+        // appending a counter; for explicit destination paths (rename), fail on collision
+        // so the user-requested name is honoured.
+        const allowRename = (generatePath === undefined || generatePath);
+        let writeResult = await this.writeRawAsync(destinationPath, readResult, 'wx');
 
-        //overwrite the file
-        const writeResult = await this.writeRawAsync(destinationPath, readResult, 'wx');
+        if(writeResult === 1 && allowRename){
+            for (let attempt = 0; attempt < this.MAX_DUPLICATE_RETRIES && writeResult === 1; attempt++) {
+                destinationPath = this.IncrementFileName(destinationPath);
+                writeResult = await this.writeRawAsync(destinationPath, readResult, 'wx');
+            }
+        }
+
         if(writeResult !== 0)
-            return false
-        
+            return false;
+
         return await this.deleteFileAsync(srcPath);
     }
 
     //O for success, 1 for file already present, 2 other error
     // eslint-disable-next-line @typescript-eslint/no-inferrable-types
     private async writeRawAsync(destPath: string, content:any, flag:string = 'wx'): Promise<number>{
+        // Normalize binary payloads to a Buffer. BrowserFS.writeFile only reliably
+        // persists a string or Buffer; a raw ArrayBuffer (e.g. from fetch/streamed
+        // downloads or File.arrayBuffer() uploads) is written as 0 bytes otherwise.
+        const writable = this.toWritableContent(content);
         return new Promise((resolve) => {
-            this._fileSystem.writeFile(destPath, content, { flag: flag }, (writeErr) => {
+            this._fileSystem.writeFile(destPath, writable, { flag: flag }, (writeErr) => {
                 if(!writeErr){
                     //console.log('Succes writing content');
                     return resolve(0);
@@ -1148,23 +1207,35 @@ export class FileService implements BaseService{
     }
 
     /**
-     * handles instances where a file being written alredy exist in a given location
-     * @param destPath 
-     * @param cntnt 
-     * @returns 
+     * Coerce a write payload into something BrowserFS persists correctly.
+     * Strings pass through untouched; ArrayBuffers and typed-array views are
+     * wrapped in a Buffer (without copying when possible).
      */
-    private async writeRawHandlerAsync(destPath:string, cntnt:any):Promise<boolean>{
+    private toWritableContent(content:any):any{
+        if(content instanceof ArrayBuffer){
+            return Buffer.from(content);
+        }
+        if(ArrayBuffer.isView(content) && !Buffer.isBuffer(content)){
+            const view = content as ArrayBufferView;
+            return Buffer.from(view.buffer, view.byteOffset, view.byteLength);
+        }
+        return content;
+    }
+
+    /**
+     * handles instances where a file being written alredy exist in a given location.
+     * Returns the path that was actually written, which may differ from `destPath` when
+     * a duplicate name was encountered and an incremented unique name was used.
+     */
+    private async writeRawHandlerAsync(destPath:string, cntnt:any):Promise<{ ok: boolean; finalPath: string }>{
         const writeResult = await this.writeRawAsync(destPath, cntnt, 'wx');
         if(writeResult === 0){
             this._fileExistsMap.set(destPath, String(0));
             this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
-            return true;
+            return { ok: true, finalPath: destPath };
         }
 
         if(writeResult === 1){
-            console.warn('writeRawHandlerAsync: file already exists, generating unique name');
-            this._isDuplicate = true;
-
             for (let attempt = 0; attempt < this.MAX_DUPLICATE_RETRIES; attempt++) {
                 const newFileName = this.IncrementFileName(destPath);
                 const writeRetry = await this.writeRawAsync(newFileName, cntnt, 'wx');
@@ -1172,82 +1243,101 @@ export class FileService implements BaseService{
                 if(writeRetry === 0){
                     this._fileExistsMap.set(newFileName, String(0));
                     this.addAndUpdateSessionData(this.fileServiceIterateKey, this._fileExistsMap);
-                    this._generatedName = newFileName;
-                    return true;
+                    return { ok: true, finalPath: newFileName };
                 }
 
                 if (writeRetry !== 1) {
-                    // Non-duplicate error, abort
                     console.error(`writeRawHandlerAsync: unexpected error on retry ${attempt + 1}`);
-                    return false;
+                    return { ok: false, finalPath: destPath };
                 }
-                // writeRetry === 1 means this name also exists, try next
             }
 
             console.error(`writeRawHandlerAsync: exceeded ${this.MAX_DUPLICATE_RETRIES} retries`);
-            return false;
+            return { ok: false, finalPath: destPath };
         }
 
-        return false;
+        return { ok: false, finalPath: destPath };
     }
 
     public async writeFilesAsync(directory: string, files: File[]): Promise<boolean> {
-        const readFileAsDataURL = (file: File): Promise<string | ArrayBuffer | null> => {
-            return new Promise((resolve, reject) => {
-                const fileReader = new FileReader();
-                fileReader.readAsDataURL(file);
-                fileReader.onload = () => resolve(fileReader.result);
-                fileReader.onerror = () => reject(fileReader.error);
-            });
-        };
-
-        for (const file of files) {
+        // Use file.arrayBuffer() (native streaming) instead of FileReader.readAsDataURL
+        // and process uploads in bounded parallel for substantial speedup with many files.
+        const limiter = this.createLimiter(this.CONCURRENCY_LIMIT);
+        const results = await Promise.all(files.map(file => limiter(async () => {
             try {
-                const result = await readFileAsDataURL(file);
+                const buffer = await file.arrayBuffer();
                 const newFile: FileInfo = new FileInfo();
                 newFile.setFileName = file.name;
-
-                if (result instanceof ArrayBuffer) {
-                    newFile.setContentBuffer = result;
-                } else {
-                    newFile.setContentPath = result || Constants.EMPTY_STRING;
-                }
-
+                newFile.setContentBuffer = buffer;
                 newFile.setCurrentPath = `${this.pathCorrection(directory)}/${file.name}`;
-                const success = await this.writeFileAsync(directory, newFile);
-
-                if (!success) {
-                    return false; // Return false if any file write fails
-                }
-
+                return await this.writeFileAsync(directory, newFile);
             } catch (error) {
                 console.error(`Error processing file ${file.name}:`, error);
                 return false;
             }
-        }
-
-        return true; // Return true if all files were written successfully
+        })));
+        return results.every(r => r === true);
     }
 
     public async writeFileAsync(path:string, file:FileInfo):Promise<boolean>{
-        const cntnt = (file.getContentPath === Constants.EMPTY_STRING)? file.getContentBuffer : file.getContentPath;
+        const cntnt = (file.getStringBuffer === Constants.EMPTY_STRING)
+            ? file.getContentBuffer 
+            : file.getStringBuffer;
+
         const destPath = `${this.pathCorrection(path)}/${file.getFileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
 
-        const result =  await this.writeRawHandlerAsync(destPath, cntnt);
-        if(result){
-            const isFile = true;
-            const fPath = (this._isDuplicate) 
-            ? `${this.pathCorrection(path)}/${this._generatedName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT) 
-            : destPath;
-            await  this._fileIndexerService.addNotify(fPath, isFile);
-
-            this._isDuplicate = false;
-            this._generatedName = Constants.EMPTY_STRING;
-
-            await this.recalculateUsedStorage();
+        const writeRes = await this.writeRawHandlerAsync(destPath, cntnt);
+        if(writeRes.ok){
+            // Best-effort: indexer may not be ready on very early writes
+            // (e.g. a screenshot save fired before BrowserFS post-init has
+            // resolved FileIndexerService.instance).
+            await this.fileIndexer?.addNotify(writeRes.finalPath, true);
+            // Incremental storage update — avoid full drive rescan.
+            const meta = await this.getStatAsync(writeRes.finalPath);
+            if(meta.exists) this._usedStorageSizeInBytes += meta.size;
         }
 
-        return result;
+        return writeRes.ok;
+    }
+
+    /**
+     * Overwrites the contents of an existing file at `path`. Unlike
+     * `writeFileAsync`, this does not generate a unique name when the file
+     * already exists — the existing file is replaced in place. The path
+     * is treated as the full destination (directory + filename).
+     *
+     * Returns false if the destination doesn't exist or points to a directory.
+     */
+    public async updateFileAsync(file:FileInfo):Promise<boolean>{
+        const cntnt = (file.getStringBuffer === Constants.EMPTY_STRING)
+            ? file.getContentBuffer 
+            : file.getStringBuffer;
+
+        //check if the file is a shotrcut file, if so, 
+        // we need to use the content path as the destination path to update the content.
+        const destPath = (file.getCurrentPath.endsWith(Constants.URL))
+            ? file.getContentPath
+            : file.getCurrentPath;
+
+        const beforeMeta = await this.getStatAsync(destPath);
+        if(!beforeMeta.exists || beforeMeta.isDirectory){
+            console.error(`updateFileAsync: target does not exist or is a directory: ${destPath}`);
+            return false;
+        }
+        const oldSize = beforeMeta.size;
+
+        const writeResult = await this.writeRawAsync(destPath, cntnt, 'w');
+        if(writeResult !== 0){
+            return false;
+        }
+
+        // Incremental storage delta — avoid full drive rescan.
+        const afterMeta = await this.getStatAsync(destPath);
+        if(afterMeta.exists){
+            this._usedStorageSizeInBytes += (afterMeta.size - oldSize);
+        }
+
+        return true;
     }
 
     public async renameAsync(path:string, newFileName:string, isFile?:boolean, check?:FileOperationCheck): Promise<boolean> {
@@ -1258,7 +1348,7 @@ export class FileService implements BaseService{
         }
 
         const rename = `${dirname(path)}/${newFileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
-        const isDirectory = (isFile === undefined) ? await this.isDirectory(path) : !isFile;
+        const isDirectory = (isFile === undefined) ? (await this.getStatAsync(path)).isDirectory : !isFile;
 
         return isDirectory
             ? await this.renameDirectoryAsync(path, rename)
@@ -1285,14 +1375,14 @@ export class FileService implements BaseService{
             return false;
         }
       const shortCutContent = `[InternetShortcut]
-FileName=${fileName} 
+FileName=${fileName}
 IconPath=${shortCutData.iconPath}
 FileType=${shortCutData.fileType}
 ContentPath=${shortCutData.contentPath}
 OpensWith=${shortCutData.opensWith}
 `;
         const shortCut:FileInfo = new FileInfo();
-        shortCut.setContentPath = shortCutContent;
+        shortCut.setStringBuffer = shortCutContent;
         shortCut.setFileName= `${fileName}${Constants.URL}`;
 
         const writeResult = await this.writeFileAsync(destPath, shortCut);
@@ -1320,13 +1410,11 @@ OpensWith=${shortCutData.opensWith}
             }
         }
 
-
         if(isAlreadyInRecycleBin){
             return await this.deleteFolderHandlerAsync(path, isAlreadyInRecycleBin);
         }
 
-        const sendToRecycleBin = this.getMoveToRecycleBinState();
-        if(!path.includes(Constants.RECYCLE_BIN_PATH) && sendToRecycleBin){
+        if(!path.includes(Constants.RECYCLE_BIN_PATH) && this.getMoveToRecycleBinState()){
             const name = this.getNameFromPath(path);
 
             // Move first — only update map/session on success.
@@ -1391,8 +1479,8 @@ OpensWith=${shortCutData.opensWith}
             const entryPath = `${srcPath}/${directoryEntry}`;
             this.removeAndUpdateSessionData(this.fileServiceRestoreKey, entryPath, this._restorePoint);
 
-            const checkIfDirectory = await this.isDirectory(entryPath);
-            if(checkIfDirectory){
+            const checkIfDirectory = await this.getStatAsync(entryPath);
+            if(checkIfDirectory.isDirectory){
                 // Recursively call the rm_dir_handler for the subdirectory
                 const success = await this.deleteFolderHandlerAsync(entryPath);
                 if(!success){
@@ -1448,37 +1536,51 @@ OpensWith=${shortCutData.opensWith}
         const processes = this._runningProcessService.getProcesses();
         return processes.some(process => {
             const trigger = process.getProcessTrigger as FileInfo;
-            return trigger?.getCurrentPath === filePath  || trigger?.getCurrentPath.includes(filePath);
+            const triggerPath = trigger?.getCurrentPath;
+            if(!triggerPath) return false;
+            // Exact match or descendant of filePath (avoid substring false positives like /foo matching /foobar)
+            return triggerPath === filePath || triggerPath.startsWith(filePath + Constants.ROOT);
         });
     }
 
     async showDeleteConfirmation(file:FileInfo, callerUId:string = Constants.EMPTY_STRING):Promise<boolean>{
         let msg = Constants.EMPTY_STRING;
 
-        if((file.getCurrentPath.includes(Constants.RECYCLE_BIN_PATH))) { // is file or folder in recycle bin
+        //if the file is not currently in the recycle bin and the option to move to recycle bin is not enabled, 
+        //we will show a different message to the user to confirm permanent deletion right away instead of moving to the recycle bin first.
+        //  If the file is already in the recycle bin, we will show a message to confirm permanent deletion as well.
+        
+        // if(!this.getMoveToRecycleBinState() && !file.getCurrentPath.includes(Constants.RECYCLE_BIN_PATH)){
+
+        // }
+
+        if((file.getCurrentPath.includes(Constants.RECYCLE_BIN_PATH))) { // is file or folder already in them recycle bin
             msg = (file.getIsFile) 
-            ? 'Are you sure that you want to permanently delete this file?' 
-            : 'Are you sure that you want to permanently delete this folder ?' 
+            ? Constants.FILE_SVC_PERMANENTLY_DELETE_FILE_MSG
+            : Constants.FILE_SVC_PERMANENTLY_DELETE_FOLDER_MSG;
         }
         else{
             msg = (file.getIsFile) 
-            ? 'Are you sure that you want to move this file to the Recycle Bin?' 
-            : 'Are you sure that you want to move this folder to the Recycle Bin?' 
+            ? Constants.FILE_SVC_MOVE_FILE_TO_RECYCLE_BIN_MSG
+            : Constants.FILE_SVC_MOVE_FOLDER_TO_RECYCLE_BIN_MSG;
         }
 
         const title = (file.getIsFile && file.getFileType === Constants.URL)
-            ? 'Delete Shortcut'
-            : `Delete ${file.getIsFile ? 'File' : 'Folder'}`;
+            ? Constants.FILE_SVC_DELETE_SHORTCUT_TITLE
+            : `${file.getIsFile ? Constants.FILE_SVC_FILE_TITLE : Constants.FILE_SVC_FOLDER_TITLE}`;
 
         return await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.DeleteWarning, file, callerUId);
     }
 
     async showFileInUseNotification(file:FileInfo, callerUId:string = Constants.EMPTY_STRING):Promise<boolean>{
         const isDir = !file.getIsFile;
-        const title = isDir ? 'Folder In Use' : 'File In Use';
+        const title = isDir 
+            ? Constants.FILE_SVC_FOLDER_IN_USE_TITLE 
+            : Constants.FILE_SVC_FILE_IN_USE_TITLE;
+
         const msg = isDir
-            ? `The action can't be completed because the folder or a file in it is open in another program`
-            : `The action can't be completed because the file is open in another program`;
+            ? Constants.FILE_SVC_FOLDER_IN_USE_MSG
+            : Constants.FILE_SVC_FILE_IN_USE_MSG;
 
         await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.InUseWarning, file, callerUId);
         return false;
@@ -1489,83 +1591,104 @@ OpensWith=${shortCutData.opensWith}
             this._fileSystem.readdir(path, (readDirErr, files) =>{
                 if(readDirErr){
                     console.error('Error reading dir for count:', readDirErr);
-                    resolve(0);
+                    return resolve(0);
                 }
-                resolve(files?.length || 0);
+                return resolve(files?.length || 0);
             });
         });
     }
 
     public  async getFullCountOfFolderItems(path:string): Promise<string> {
-        const counts = { files: 0, folders: 0 };
-        const queue:string[] = [];
-        
-        queue.push(path);
-        await this.traverseAndCountFolderItems(queue, counts);
-        return `${counts.files} Files, ${counts.folders} Folders`;
+        const stats = await this.traverseFolderAsync(path);
+        return `${stats.files} Files, ${stats.folders} Folders`;
     }
 
     private  async getFullCountOfFolderItemsInt(path:string): Promise<{files: number; folders: number;}> {
-        const counts = { files: 0, folders: 0 };
-        const queue:string[] = [];
-        
-        queue.push(path);
-        await this.traverseAndCountFolderItems(queue, counts);
-        return counts;
-    }
-
-    private  async traverseAndCountFolderItems(queue:string[], counts:{files: number, folders: number}): Promise<void> {
-        if(queue.length === 0)
-            return;
-
-        const srcPath = queue.shift() || Constants.EMPTY_STRING;
- 
-        const directoryEntries = await this.readDirectory(srcPath);      
-        for(const directoryEntry of directoryEntries){
-            const isDirectory = await this.isDirectory(`${srcPath}/${directoryEntry}`);
-            if(isDirectory){
-                queue.push(`${srcPath}/${directoryEntry}`);
-                counts.folders++;
-            }else{
-                counts.files++;
-            }
-        }
-
-        return this.traverseAndCountFolderItems(queue, counts);
+        const stats = await this.traverseFolderAsync(path);
+        return { files: stats.files, folders: stats.folders };
     }
 
     public  async getFolderSizeAsync(path:string):Promise<number>{
-        const sizes = {files: 0, folders: 0};
-        const queue:string[] = [];
-        
-        queue.push(path);
-        await this.traverseAndSumFolderSize(queue, sizes);
-        return sizes.files + sizes.folders;
+        const stats = await this.traverseFolderAsync(path);
+        return stats.size;
     }
 
-    private  async traverseAndSumFolderSize(queue:string[], sizes:{files: number, folders: number}): Promise<void> {
-        if(queue.length === 0)
-            return;
+    /**
+     * Walks a folder tree exactly once and returns the aggregate stats. Combines what
+     * used to be three separate traversals (count, count-int, size) and uses a single
+     * `stat` per entry plus parallel sibling traversal for major speedup on large trees.
+     */
+    private async traverseFolderAsync(path:string):Promise<{files:number; folders:number; size:number;}>{
+        const counts = { files: 0, folders: 0, size: 0 };
 
-        const srcPath = queue.shift() || Constants.EMPTY_STRING;
+        // NOTE: do NOT route recursion through a bounded `createLimiter`.
+        // A parent task holding a slot while awaiting child tasks that also
+        // need slots will deadlock once the recursion depth reaches the
+        // concurrency limit. Stat calls are cheap; unbounded `Promise.all`
+        // is safe here because the underlying BrowserFS queue serializes I/O.
+        const visit = async (p: string): Promise<void> => {
+            const entries = await this.readDirectory(p);
+            const entryStats = await Promise.all(entries.map(async entry => {
+                const entryPath = `${p}/${entry}`;
+                const st = await this.getStatAsync(entryPath);
+                return { entryPath, st };
+            }));
 
-        const extraInfo = await this.geFileMetaData(srcPath);
-        sizes.folders += extraInfo.getSize;
-
-        const directoryEntries = await this.readDirectory(srcPath);      
-        for(const entry of directoryEntries){
-            const entryPath = `${srcPath}/${entry}`;
-            const isDirectory = await this.isDirectory(entryPath);
-
-            if(isDirectory){
-                queue.push(entryPath);
-            }else{
-                const extraInfo = await this.geFileMetaData(entryPath);
-                sizes.files += extraInfo.getSize;
+            const subDirs: string[] = [];
+            for(const { entryPath, st } of entryStats){
+                if(!st.exists) continue;
+                if(st.isDirectory){
+                    counts.folders++;
+                    counts.size += st.size;
+                    subDirs.push(entryPath);
+                }else{
+                    counts.files++;
+                    counts.size += st.size;
+                }
             }
+
+            // Recurse OUTSIDE any limiter slot (parents don't hold capacity).
+            await Promise.all(subDirs.map(d => visit(d)));
+        };
+
+        const rootStat = await this.getStatAsync(path);
+        if(!rootStat.exists){
+            return counts;
         }
 
-        return this.traverseAndSumFolderSize(queue, sizes);
+        if(rootStat.isDirectory){
+            // Root folder itself is not counted in `folders`; its size is added.
+            counts.size += rootStat.size;
+            await visit(path);
+        }else{
+            counts.files = 1;
+            counts.size = rootStat.size;
+        }
+
+        return counts;
+    }
+
+    /**
+     * Returns a simple async semaphore that caps the number of concurrent in-flight
+     * tasks. Used across the whole tree-walk so recursive calls share the budget.
+     */
+    private createLimiter(maxConcurrent: number) {
+        let active = 0;
+        const queue: Array<() => void> = [];
+        const next = () => {
+            if(active >= maxConcurrent) return;
+            const run = queue.shift();
+            if(run){ active++; run(); }
+        };
+        return <T>(fn: () => Promise<T>): Promise<T> => {
+            return new Promise<T>((resolve, reject) => {
+                queue.push(() => {
+                    fn().then(v => { resolve(v); active--; next(); },
+                              e => { reject(e); active--; next(); });
+                });
+                next();
+            });
+        };
     }
 
     /**
@@ -1588,9 +1711,15 @@ OpensWith=${shortCutData.opensWith}
             if (!result) return false;
 
             const zipped = zipSync(zippable, { level: 6 });
-            const writeResult = await this.writeRawAsync(zipFilePath, Buffer.from(zipped));
+            // Use 'w' (overwrite) instead of the default 'wx' so re-zipping a
+            // folder, or zipping when a same-named archive already exists,
+            // doesn't silently fail with EEXIST.
+            const writeResult = await this.writeRawAsync(zipFilePath, Buffer.from(zipped), 'w');
 
             if (writeResult === 0) {
+                // Keep the search/file index in sync — writeRawAsync bypasses
+                // the addNotify path that writeFileAsync uses.
+                await this.fileIndexer?.addNotify(zipFilePath, true);
                 await this.recalculateUsedStorage();
                 return true;
             }
@@ -1655,9 +1784,9 @@ OpensWith=${shortCutData.opensWith}
 
         for (const entry of entries) {
             const entryPath = `${srcPath}/${entry}`;
-            const isDir = await this.isDirectory(entryPath);
+            const isDir = await this.getStatAsync(entryPath);
 
-            if (isDir) {
+            if (isDir.isDirectory) {
                 const success = await this.collectFolderForZip(entryPath, currentPrefix, out);
                 if (!success) {
                     console.error(`Failed to collect directory for zip: ${entryPath}`);
@@ -1695,33 +1824,48 @@ OpensWith=${shortCutData.opensWith}
 
             // Create root extraction folder
             const createResult = await this.createFolderAsync(parentDir, folderName);
-            if (!createResult) {
+            if (!createResult.ok) {
                 console.error('unzipEntityAsync: could not create extraction folder');
                 return false;
             }
 
-            const extractionRoot = `${parentDir}/${folderName}`;
+            const extractionRoot = createResult.finalPath;
 
-            for (const [relativePath, data] of Object.entries(decompressed)) {
-                // Skip directory-only entries (fflate marks them with a trailing /)
+            // Dedupe parent directories so each unique path is created only once
+            // (avoids N redundant exists/mkdir round-trips).
+            const dirsToCreate = new Set<string>();
+            for (const relativePath of Object.keys(decompressed)) {
                 if (relativePath.endsWith(Constants.ROOT)) {
-                    const dirPath = `${extractionRoot}/${relativePath.slice(0, -1)}`;
-                    await this.createNestedFolders(dirPath);
-                    continue;
+                    dirsToCreate.add(`${extractionRoot}/${relativePath.slice(0, -1)}`);
+                } else {
+                    const entryDir = dirname(`${extractionRoot}/${relativePath}`);
+                    if(entryDir && entryDir !== extractionRoot) dirsToCreate.add(entryDir);
                 }
-
-                // Ensure parent directories exist
-                const entryDir = dirname(`${extractionRoot}/${relativePath}`);
-                await this.createNestedFolders(entryDir);
-
-                // Write the file
-                const destPath = `${extractionRoot}/${relativePath}`;
-                const writeResult = await this.writeRawAsync(destPath, Buffer.from(data));
-                if (writeResult !== 0) {
-                    console.error(`unzipEntityAsync: failed to write: ${destPath}`);
+            }
+            // Sort by depth so parents are created before children.
+            const sortedDirs = Array.from(dirsToCreate).sort((a, b) => a.length - b.length);
+            for (const dir of sortedDirs) {
+                const ok = await this.createNestedFolders(dir);
+                if(!ok){
+                    console.error('unzipEntityAsync: failed to create directory', dir);
                     return false;
                 }
             }
+
+            // Write files in parallel.
+            const limiter = this.createLimiter(this.CONCURRENCY_LIMIT);
+            const fileEntries = Object.entries(decompressed).filter(([rel]) => !rel.endsWith(Constants.ROOT));
+            const writeResults = await Promise.all(fileEntries.map(([relativePath, data]) => limiter(async () => {
+                const filePath = `${extractionRoot}/${relativePath}`;
+                const writeResult = await this.writeRawAsync(filePath, Buffer.from(data));
+                if (writeResult !== 0) {
+                    console.error(`unzipEntityAsync: failed to write: ${filePath}`);
+                    return false;
+                }
+                return true;
+            })));
+
+            if(writeResults.some(r => !r)) return false;
 
             await this.recalculateUsedStorage();
             return true;
@@ -1826,12 +1970,14 @@ OpensWith=${shortCutData.opensWith}
      * any currently mounted zip archive. Otherwise returns empty string.
      */
     public findMountPointForPath(path: string): string {
+        // Choose the longest matching mount point so nested mounts resolve to the deepest one.
+        let best = Constants.EMPTY_STRING;
         for (const mountPoint of this._mountedZips.keys()) {
-            if (path === mountPoint || path.startsWith(mountPoint + '/')) {
-                return mountPoint;
+            if (path === mountPoint || path.startsWith(mountPoint + Constants.ROOT)) {
+                if(mountPoint.length > best.length) best = mountPoint;
             }
         }
-        return Constants.EMPTY_STRING;
+        return best;
     }
 
     /**
@@ -1843,7 +1989,7 @@ OpensWith=${shortCutData.opensWith}
         let current = Constants.EMPTY_STRING;
 
         for (const part of parts) {
-            current = `${current}/${part}`;
+            current = `${current}${Constants.ROOT}${part}`;
             const exists = await this.exists(current);
             if (!exists) {
                 const result = await this.createFolderRawAsync(current);
@@ -1897,9 +2043,12 @@ OpensWith=${shortCutData.opensWith}
      * @param path - The file or folder path being removed.
      */
     public DecrementFileName(path:string):void{
-        // Resolve the base path if this is a generated duplicate name
+        // Resolve the base path only if this is a generated duplicate the map knows about.
+        // Avoids false positives on legitimate user-named files like "Report (2).txt".
         const originalPath = this.getOriginalPathFromGenerated(path);
-        const targetPath = originalPath ?? path;
+        const targetPath = (originalPath && this._fileExistsMap.has(originalPath))
+            ? originalPath
+            : path;
 
         let count = Number(this._fileExistsMap.get(targetPath) ?? 0);
         if (isNaN(count)) count = 0;
@@ -1908,12 +2057,11 @@ OpensWith=${shortCutData.opensWith}
             count -= 1;
             this._fileExistsMap.set(targetPath, String(count));
         }else{
-            // Counter is already 0 — remove the entry entirely
             this._fileExistsMap.delete(targetPath);
         }
 
         // Also clean up the generated path's own entry if it differs from the target
-        if(originalPath && this._fileExistsMap.has(path)){
+        if(targetPath !== path && this._fileExistsMap.has(path)){
             this._fileExistsMap.delete(path);
         }
     }
@@ -1973,8 +2121,7 @@ OpensWith=${shortCutData.opensWith}
 
     private isUtf8Encoded(data: Buffer | Uint8Array): boolean {
         try {
-          const decoder = new TextDecoder('utf-8', { fatal: true });
-          decoder.decode(data);
+          FileService._utf8Decoder.decode(data);
           return true;
         } catch {
           return false;
@@ -2010,8 +2157,9 @@ OpensWith=${shortCutData.opensWith}
         this._fileDragAndDrop = [];
     }
 
-    private terminateTransfer(): void {
-        this.abortController?.abort();
+    private terminateTransfer(pId: number): void {
+        const controller = this._abortControllers.get(pId);
+        controller?.abort();
     }
 
     private pIdToTerminate(pId:number):void{
@@ -2066,14 +2214,14 @@ OpensWith=${shortCutData.opensWith}
     }
 
     private addAndUpdateSessionData(key:string, map:Map<string, string>):void{
-        this._sessionManagmentService.addMapBasedSession(key, map);
+        this._sessionManagementService.addMapBasedSession(key, map);
     }
 
     private removeAndUpdateSessionData(key:string, path:string, map:Map<string, string>):void{
         if(map.has(path)){
             map.delete(path);
         }
-        this._sessionManagmentService.addMapBasedSession(key, map);
+        this._sessionManagementService.addMapBasedSession(key, map);
     }
 
     /**
@@ -2081,11 +2229,11 @@ OpensWith=${shortCutData.opensWith}
      * without modifying any entries.
      */
     private persistIterateMapToSession():void{
-        this._sessionManagmentService.addMapBasedSession(this.fileServiceIterateKey, this._fileExistsMap);
+        this._sessionManagementService.addMapBasedSession(this.fileServiceIterateKey, this._fileExistsMap);
     }
 
     private retrievePastSessionData(key:string):void{
-        const sessionData = this._sessionManagmentService.getMapBasedSession(key) as Map<string, string>;
+        const sessionData = this._sessionManagementService.getMapBasedSession(key) as Map<string, string>;
         console.log(`${key} sessionData:`, sessionData);
 
         if(!sessionData || !(sessionData instanceof Map)){
@@ -2095,8 +2243,9 @@ OpensWith=${shortCutData.opensWith}
         if(key === this.fileServiceRestoreKey){
             this._restorePoint = sessionData;
         }else{
-            // Sanitize: drop entries with non-numeric or negative values
-            for(const [k, v] of sessionData){
+            // Snapshot keys first so we don't mutate the Map while iterating it.
+            const entries = Array.from(sessionData.entries());
+            for(const [k, v] of entries){
                 const num = Number(v);
                 if(isNaN(num) || num < 0){
                     console.warn(`retrievePastSessionData: dropping invalid entry [${k}]=${v}`);

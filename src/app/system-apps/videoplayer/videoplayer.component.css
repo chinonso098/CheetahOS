@@ -1,14 +1,26 @@
 .my-video-main-container{
     display:flex;
+    flex-direction: column;
     height: 100%;
     width: 100%;
+    /* Floor at 16:9 of the practical minimum (matches MIN_W/MIN_H in TS). */
+    min-width: 480px;
+    min-height: 270px;
     overflow: hidden;
 }
 
 .video-js {
     width: 100% ;
     height: 100%;
-    object-fit: contain ;
+    /* object-fit applies to the inner <video> element, not .video-js itself.
+       Letterboxing the actual <video> keeps aspect ratio inside the box
+       sized by fill:true so the control bar (bottom:0) stays glued to the
+       bottom of the visible frame instead of floating below. */
+}
+
+.video-js video,
+.video-js .vjs-tech {
+    object-fit: contain;
 }
  
 .video-js .vjs-control-bar {
@@ -53,8 +65,14 @@
 .my-video-container{
     display:flex;
     position: relative;
-    min-width: 640px;
-    min-height: 360px;
+    /* Fill whatever space the primary window gives us. min-* set to 0 so
+       the flex parent can actually shrink us; video.js (fluid:true) keeps
+       the 16:9 aspect inside this box. */
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
     color: #000;
 }
 

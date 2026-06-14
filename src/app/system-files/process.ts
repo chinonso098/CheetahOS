@@ -1,3 +1,4 @@
+import { Constants } from "./constants";
 import { FileInfo } from "./file.info";
 
 export class Process{
@@ -28,8 +29,8 @@ export class Process{
         this._gpuUsage = 0;
         this._diskUsage = 0;
         this._networkUsage = 0;
-        this._status = '';
-        this._powerUsage = '';
+        this._status = Constants.EMPTY_STRING;
+        this._powerUsage = Constants.EMPTY_STRING;
     }
 
     public get getProcessId():number{

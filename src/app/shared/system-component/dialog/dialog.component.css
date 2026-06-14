@@ -701,8 +701,8 @@
     width: 16px;
     height: 16px;
     position: relative;
-    left: 6px;
-    top: 2px;
+    /* left: 6px; */
+    top: -4px;
 }
 
 .shutdown-restart-option{

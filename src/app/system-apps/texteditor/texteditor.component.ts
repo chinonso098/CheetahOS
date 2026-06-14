@@ -3,7 +3,7 @@ import { AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, O
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { Constants } from "src/app/system-files/constants";
@@ -13,12 +13,11 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState } from 'src/app/system-files/state/state.interface';
-import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 
 import {extname} from 'path';
-import * as htmlToImage from 'html-to-image';
 import { Subscription } from 'rxjs';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 declare const Quill:any;
 
@@ -37,7 +36,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
-  private _sessionManagmentService!:SessionManagmentService;
+  private _sessionManagementService!:SessionManagementService;
   private _processHandlerService!:ProcessHandlerService;
   private _scriptService!:ScriptService;
   private _fileService!:FileService;
@@ -62,27 +61,32 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
 
   private saveInFlight = false;
   private destroyed = false;
+  private none = "None";
 
   SECONDS_DELAY = 250;
+  /* Floors mirror the CSS min-width/min-height so the resize handler
+     ignores transient sub-min sizes during drag. */
+  readonly MIN_WIDTH_PX = 480;
+  readonly MIN_HEIGHT_PX = 320;
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}text_editor.png`;
   name = 'texteditor';
-  isMaximizable = false;
+  isMaximizable = true;
   processId = 0;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
 
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, triggerProcessService:ProcessHandlerService,
-              fileService:FileService,  sessionManagmentService: SessionManagmentService, scriptService: ScriptService,
+              fileService:FileService,  sessionManagementService: SessionManagementService, scriptService: ScriptService,
               windowService:WindowService){
 
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService = runningProcessService;
     this._processHandlerService = triggerProcessService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
     this._scriptService = scriptService;
     this._fileService = fileService;
     this._windowService = windowService;
@@ -95,37 +99,6 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     this.retrievePastSessionData();
   }
 
-
-  // ngAfterViewInit(): void {
-  //   //this.setTextEditorWindowToFocus(this.processId); 
-
-  //   this.fileSrc = (this.fileSrc !== Constants.EMPTY_STRING)? 
-  //   this.fileSrc : this.getFileSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
-
-  //   const options = {
-  //     debug: 'info',
-  //     modules: {
-  //       toolbar: true,
-  //     },
-  //     placeholder: 'Compose an epic...',
-  //     theme: 'snow'
-  //   };
-  //   this._scriptService.loadScript("quilljs","osdrive/Program-Files/Quill/quill.js").then( async() =>{
-  
-  //     const textCntnt = await this._fileService.getFileAsTextAsync(this.fileSrc);
-  //     const index = 0;
-
-  //     this.quill = new Quill(this.editorContainer.nativeElement, options)
-  //     this.quill.insertText(index, textCntnt, {
-  //       color: '#ffff00',
-  //       italic: false,
-  //     });
-  //   })
-
-  //   setTimeout(()=>{
-  //     this.captureComponentImg();
-  //   },this.SECONDS_DELAY) 
-  // }
 
   async ngAfterViewInit(): Promise<void> {
     try {
@@ -145,18 +118,20 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
         theme: 'snow'
       };
 
-      await this._scriptService.loadScript("quilljs", "osdrive/Program-Files/Quill/quill.js");
+      const isModule = false;
+      await this._scriptService.loadStyle("quilljs-css", "osdrive/Program-Files/Quill/quill.snow.css");
+      await this._scriptService.loadScript("quilljs", "osdrive/Program-Files/Quill/quill.js", isModule);
 
       // Initialize Quill
       this.quill = new Quill(this.editorSurface.nativeElement, options);
 
       // Load file contents (if we have a real path)
-      if (this.fileSrc !== Constants.EMPTY_STRING) {
+      if (this.fileSrc !== Constants.EMPTY_STRING && this.fileSrc !== this.none) {
         const textCntnt = await this._fileService.getFileAsTextAsync(this.fileSrc);
         // Set as plain text; keeps things predictable for line/col math
-        this.quill.setText(textCntnt ?? '');
+        this.quill.setText(textCntnt ?? Constants.EMPTY_STRING);
       } else {
-        this.quill.setText('');
+        this.quill.setText(Constants.EMPTY_STRING);
       }
 
       // Mark ready and compute initial status
@@ -178,9 +153,10 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
       this.quill.on('text-change', this.quillTextChangeHandler);
 
       // Snapshot for taskbar preview
-      setTimeout(() => {
-        if (!this.destroyed) this.captureComponentImg();
-      }, this.SECONDS_DELAY);
+      if (!this.destroyed){
+        await CommonFunctions.sleep(this.SECONDS_DELAY) 
+        await this.captureComponentImg();
+      }
 
     } catch (err) {
       console.warn('TextEditor init failed:', err);
@@ -188,36 +164,35 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     }
   }
 
-ngOnDestroy(): void {
-  this.destroyed = true;
+  ngOnDestroy(): void {
+    this.destroyed = true;
 
-  this._maximizeWindowSub?.unsubscribe();
+    this._maximizeWindowSub?.unsubscribe();
 
-  // Detach Quill handlers if initialized
-  if (this.quill && this.quillSelectionHandler) {
-    this.quill.off('selection-change', this.quillSelectionHandler);
-  }
-  if (this.quill && this.quillTextChangeHandler) {
-    this.quill.off('text-change', this.quillTextChangeHandler);
-  }
-}
+    // Detach Quill handlers if initialized
+    if (this.quill && this.quillSelectionHandler) {
+      this.quill.off('selection-change', this.quillSelectionHandler);
+    }
+    if (this.quill && this.quillTextChangeHandler) {
+      this.quill.off('text-change', this.quillTextChangeHandler);
+    }
+    
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.editorRoot.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
+    // for multiple instances of quill, we dont want to unload the script until the last instance is closed
+    if(this._runningProcessService.getProcessCount(this.name) <= 1){
+      this._scriptService.unloadScript( "quilljs", "osdrive/Program-Files/Quill/quill.js");
+      this._scriptService.unloadStyle("quilljs-css", "osdrive/Program-Files/Quill/quill.snow.css");
 
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+      // quill.js attaches itself to window.Quill — clear it so the
+      // global is GC'd and a fresh copy is fetched next time.
+      delete (window as any).Quill;
+    }
   }
 
+  async captureComponentImg():Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.editorRoot, this.processId, this.name, this.icon, this._windowService);
+  }
+  
   @HostListener('document:keydown', ['$event'])
   onKeyDown(evt: KeyboardEvent): void {
     if (!this.isReady) return;
@@ -238,10 +213,10 @@ ngOnDestroy(): void {
 
     // You need a real path to save. If your editor can be “untitled”,
     // you must implement “Save As” elsewhere.
-    if (!this.fileSrc || this.fileSrc === Constants.EMPTY_STRING) {
-      console.warn('No fileSrc available. Implement Save As for untitled docs.');
-      return;
-    }
+    // if (!this.fileSrc || this.fileSrc === Constants.EMPTY_STRING) {
+    //   console.warn('No fileSrc available. Implement Save As for untitled docs.');
+    //   return;
+    // }
 
     try {
       this.isSaving = true;
@@ -251,20 +226,53 @@ ngOnDestroy(): void {
       const raw = this.quill.getText(0, this.quill.getLength());
       const normalized = raw.endsWith('\n') ? raw.slice(0, -1) : raw;
 
-      // REQUIRED: implement this method in FileService (see section 4)
-      await this._fileService.writeFileAsync(this.fileSrc, normalized);
+      await this.saveFileHelperAsync(normalized);
 
       this.isDirty = false;
       this.storeAppState(this.fileSrc);
 
       // Optional: refresh preview after save
-      this.captureComponentImg();
+      await this.captureComponentImg();
     } catch (err) {
       console.warn('Save failed:', err);
     } finally {
       this.isSaving = false;
       this.saveInFlight = false;
     }
+  }
+
+  // private async autoSave(): Promise<void> {
+  //   if (!this.isReady) return;
+  //   if (this.isSaving || this.saveInFlight) return;
+  //   if (!this.isDirty) return;
+
+  //   await this.saveFile();
+  // }
+
+  private async saveFileHelperAsync(textData:string): Promise<void> {
+    const fileName = 'Untitled.txt';
+
+    //Opened the app itself without going through a text file, so no proper fileinfo is passed through.
+    //Try to get the last trigger info from process handler service,
+    //which will be set if the app was triggered by opening a file.
+    if(this._fileInfo 
+      && this._fileInfo.getCurrentPath === this.none 
+      && this._fileInfo.getContentPath === Constants.EMPTY_STRING){ 
+
+        const destPath = Constants.DOCUMENTS_PATH;
+        this._fileInfo.setFileType = ".txt";
+        this._fileInfo.setFileExtension = ".txt";
+        this._fileInfo.setCurrentPath = destPath;
+        this._fileInfo.setStringBuffer = textData;
+        this._fileInfo.setFileName = fileName;
+
+      await this._fileService.writeFileAsync(destPath, this._fileInfo);
+    }
+    else{ // In other cases, such as opening through file explorer, the fileinfo will be passed through correctly, so we can just use it.
+      this._fileInfo.setStringBuffer = textData;
+      await this._fileService.updateFileAsync(this._fileInfo);
+    }
+
   }
 
   private updateCursorAndSelection(): void {
@@ -295,20 +303,30 @@ ngOnDestroy(): void {
   }
 
   maximizeWindow():void{
-
+    // Bring maximize in line with the responsive layout. The editor root
+    // (.editor-main-container) is width/height:100% inside a flex column, so
+    // the primary window owns the box size and CSS reflows to fill it. We no
+    // longer measure #vantaCntnr and stamp explicit pixel sizes (which fought
+    // the responsive 100% and double-counted chrome). Just clear any stale
+    // inline px so CSS can take over.
     const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uId === evtOriginator){
-
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
-      //window title and button bar, and windows taskbar height
-      const pixelTosubtract = 30 + 40;
-      this.editorRoot.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
-      this.editorRoot.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-
+      this.editorRoot.nativeElement.style.removeProperty('width');
+      this.editorRoot.nativeElement.style.removeProperty('height');
     }
+  }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the App (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu. 
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
   }
 
   focusWindow(evt?:MouseEvent):void{
@@ -354,16 +372,15 @@ ngOnDestroy(): void {
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
       this.fileSrc = appSessionData.appData as string;
     }
   }
-
 
   private getComponentDetail():Process{
     this._fileInfo = this._processHandlerService.getLastProcessTrigger(this.name);

@@ -5,12 +5,16 @@
     <div class="volume-control-body">
       <div class="volume-control-head"> 
         <figure class="volume-control-fig">
-            <img class="volume-control-img" [src]="audioIcon"/>
+            <img class="volume-control-img" [src]="audioIcon" alt="Volume level indicator"/>
         </figure>
       </div>
 
       <div class="volume-control-mid">
-        <input type="range" min="0" max="100" value="50"  (input)="onVolumeSliderChange($event)" class="volume-control-slider" id="volumeControlSlider">
+        <!-- Bind the slider position to the real volume so the thumb and the
+             numeric label always agree. -->
+        <input type="range" min="0" max="100" [value]="adjustedVolume" (input)="onVolumeSliderChange($event)"
+               class="volume-control-slider" id="volumeControlSlider"
+               aria-label="Speaker volume" [attr.aria-valuetext]="adjustedVolume + ' percent'">
       </div>
 
       <div class="volume-control-tail"> 

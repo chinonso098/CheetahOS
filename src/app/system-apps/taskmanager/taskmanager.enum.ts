@@ -1,3 +1,5 @@
+// User-selectable refresh speeds. The numeric value doubles as the index
+// used to look up the matching interval in `refreshRate()`.
 export enum RefreshRates { 
     HIGH = 3,  
     NORMAL = 2,  
@@ -5,13 +7,15 @@ export enum RefreshRates {
     PAUSED = 0,  
 }
 
+// Polling intervals (in milliseconds) that correspond to each RefreshRate.
 export enum RefreshRatesIntervals { 
-    HIGH = 1000,   //1 second
-    NOMRAL = 2000,  //2 seconds
-    LOW = 4000,  //...
-    PAUSED = 36000000, //24hrs
+    HIGH = 1000,      // 1 second
+    NORMAL = 2000,    // 2 seconds
+    LOW = 4000,       // 4 seconds
+    PAUSED = 36000000, // 10 hours - effectively "paused" (no practical refresh)
  }
 
+ // Thresholds (as a percentage) used to colour a resource-usage cell.
  export enum ResourceUtilization { 
    LOW = 25, 
    MEDIUM = 50,

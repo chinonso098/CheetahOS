@@ -14,14 +14,24 @@
   */
  
  .terminal-container {
-    width: 900px;
-    height: 480px;
+    /* Fill the primary window. Flex column so the output area expands
+       and the 30px input section is pinned to the bottom of the window
+       (NOT the viewport — see .terminal-input-section below). */
+    width: 100%;
+    height: 100%;
+    min-width: 480px;
+    min-height: 240px;
     background-color: #171717;
+    display: flex;
+    flex-direction: column;
   }
 
   .terminal-output-section{
     width: 100%;
-    height: 450px;
+    /* Was height: 450px (= 480 - 30 input bar). Now flexes to fill
+       whatever vertical space is left above the input section. */
+    flex: 1 1 auto;
+    min-height: 0;
     overflow: auto;
     background-color: #171717;
     /* padding: 5px 10px 10px 5px; */
@@ -35,11 +45,16 @@
   }
 
   .terminal-input-section{
-    position: fixed;
+    /* Was: position: fixed; bottom: 0; — pinned the input bar to the
+       VIEWPORT, so it overlapped the taskbar and didn't track the
+       terminal window when moved or resized. Now it's the second flex
+       child of .terminal-container, naturally pinned to the window's
+       bottom edge. */
+    position: relative;
     width: 100%;
     height: 30px;
+    flex: 0 0 30px;
     background-color: #252424;
-    bottom: 0;
   }
   
   .terminal-banner-container {
@@ -91,7 +106,11 @@
   
   .terminal-command-output {
     padding: 8px 4px 8px 8px;
-    width: 820px;
+    /* Was fixed 820px which clipped on small windows and left a gap on
+       wide ones. Fluid to the parent column. */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     color: #ccc;
     line-height: normal;
     font-weight: normal;
@@ -134,10 +153,11 @@
   }
   
   .terminal-input-area {
-    bottom: 0;
+    /* Was: position: fixed; bottom: 0; left: 4px; — anchored to viewport.
+       Now flows inside the (relatively positioned) input section. */
+    position: relative;
     left: 4px;
-    padding-top:4px;
-    position: fixed;
+    padding-top: 4px;
     display: inline-flex;
     width: 100%;
     align-items: center;

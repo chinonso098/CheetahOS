@@ -9,16 +9,23 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { TerminalCommand } from './model/terminal.types';
 import { TerminalCommandProcessor } from './terminal.commands';
+import { TerminalCommandRouter } from './command.router';
+import {ITerminalCommandHost} from './model/terminal.types';
 import { AppState } from 'src/app/system-files/state/state.interface';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { Constants } from 'src/app/system-files/constants';
-import * as htmlToImage from 'html-to-image';
-import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { ITabState, IState } from './model/terminal.types';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
+import { TabCompletionState } from './model/tab-completion.state';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
+import { SystemMetric } from 'src/app/shared/system-service/system.metrics';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { InformationUpdate } from 'src/app/system-files/common.interfaces';
+import { TERMINAL_OUTPUT_APP_NAME } from './model/terminal.types';
+import { FileInfo } from 'src/app/system-files/file.info';
 
 @Component({
   selector: 'cos-terminal',
@@ -38,28 +45,45 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   private _runningProcessService!:RunningProcessService;
   private _maximizeWindowSub!:Subscription;
   private _minimizeWindowSub!:Subscription;
+  private _windowResizeSub!:Subscription;
   private _formBuilder;
   private _terminaCommandsProc!:TerminalCommandProcessor;
-  private _sessionManagmentService!:SessionManagmentService;
+  // Routes a parsed command to the processor and writes the result back onto
+  // the TerminalCommand. Lives in command.router.ts to keep this component
+  // focused on view concerns.
+  private _commandRouter!:TerminalCommandRouter;
+  private _commandHost!:ITerminalCommandHost;
+  private _sessionManagementService!:SessionManagementService;
   private _windowService!:WindowService;
   private _fileService!:FileService;
+  private _processHandlerService!:ProcessHandlerService;
+  private _systemNotificationService!:SystemNotificationService;
+  private _updateInformationSub!:Subscription;
   private _appState!:AppState;
 
 
   private msgPosCounter = 0;
   private prevPtrIndex = 0;
-  private versionNum = '1.0.4.4';
+  private versionNum = '1.0.4.6';
   private SECONDS_DELAY:number[] = [120,250];
   private doesDirExist = true;
-  private isInLoopState = false;
-  private isWhiteSpaceAtTheEnd = false;
 
-  private tabCompletionState:ITabState = {
-    sections: [],
-  };
+  // Handle to the typewriter interval used by populateWelecomeMessageField.
+  // Tracked so we can clear it in ngOnDestroy and avoid a leak when the user
+  // rapidly opens/closes the terminal window.
+  private welcomeMsgIntervalId: ReturnType<typeof setInterval> | null = null;
 
-  stateOne = 'S1';
-  stateTwo = 'S2';
+  // ---------------------------------------------------------------------
+  // Tab-completion state machine.
+  //
+  // All the small flags / counters that used to be sprinkled across the
+  // component (firstSection, secondSection, swtichToNextSection,
+  // firstSectionCntr, secondSectionCntr, sectionTabPressCntnr,
+  // dirEntryTraverseCntr, fetchedDirectoryList, isInLoopState, ...)
+  // now live on this single object. See TabCompletionState for the
+  // semantics of each field.
+  // ---------------------------------------------------------------------
+  private _tab = new TabCompletionState();
 
   Success = 1;
   Fail = 2;
@@ -73,50 +97,64 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   welcomeMessage = Constants.EMPTY_STRING;
   terminalPrompt = ">";
   commandHistory:TerminalCommand[] = [];
-  echoCommands:string[] = ["close", "curl","date", "echo", "help", "hostname", "list", "open", "version", "whoami", "weather","pwd"];
+  echoCommands:string[] = ["close", "curl","date", "echo", "help", "hostname", "list", "open", "sysmetric", "version", "whoami", "weather","pwd"];
   utilityCommands:string[] = ["all", "cat", "cd", "clear", "cp", "dir", "download","exit", "ls", "mkdir", "mv", "rm","touch"];
-  fetchedDirectoryList:string[] = [];
   generatedArguments:string[] = [];
   allCommands:string[] = [];
-  haveISeenThisRootArg = Constants.EMPTY_STRING;
-  haveISeenThisAutoCmplt = Constants.EMPTY_STRING;
+  _fileInfo!:FileInfo;
 
   terminalForm!: FormGroup;
-  dirEntryTraverseCntr = 0;
-  directoryTraversalDepth = 0;
   readonly SCROLL_DELAY = 300;
-  firstSection = true;
-  secondSection = false;
-  sectionTabPressCntnr = 0;
-
-  firstSectionCntr = -1;
-  secondSectionCntr = -1;
-  currentState =  this.stateOne;
-  swtichToNextSection = false;
 
   hasWindow = true;
-  isMaximizable = false;
+  isMaximizable = true;
   icon = `${Constants.IMAGE_BASE_PATH}terminal.png`;
   name = 'terminal';
   processId = 0;
   type = ComponentType.System;
   displayName = 'Terminal';
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, controlProcessService:ProcessHandlerService, fileService:FileService,  formBuilder:FormBuilder,
-               sessionManagmentService: SessionManagmentService, windowService:WindowService, activityHistoryService:ActivityHistoryService ) { 
+  // Floor for honouring live resize broadcasts (matches CSS min-* on
+  // .terminal-container). Below this we ignore the event.
+  readonly MIN_WIDTH_PX = 480;
+  readonly MIN_HEIGHT_PX = 320;
+
+  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, processHandlerService:ProcessHandlerService, fileService:FileService,  formBuilder:FormBuilder,
+               sessionManagementService: SessionManagementService, windowService:WindowService, activityHistoryService:ActivityHistoryService, systemMetric:SystemMetric,
+               systemNotificationService:SystemNotificationService ) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._formBuilder = formBuilder;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
     this._windowService = windowService;
     this._fileService = fileService;
-    
-    this._terminaCommandsProc = new TerminalCommandProcessor(controlProcessService, runningProcessService, fileService, activityHistoryService);
+    this._systemNotificationService = systemNotificationService;
+    this._processHandlerService = processHandlerService;
+    this._terminaCommandsProc = new TerminalCommandProcessor(processHandlerService, runningProcessService, fileService, activityHistoryService, systemMetric, systemNotificationService);
+    this._commandRouter = new TerminalCommandRouter(this._terminaCommandsProc);
+    this._commandHost = this.createCommandHost();
 
     this.processId = this._processIdService.getNewProcessId()
     this._runningProcessService.addProcess(this.getComponentDetail()); 
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()})
     this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
+
+    // Live drag-resize. The CSS now makes the terminal fluid, so we just
+    // need to clear the inline px sizes that maximize/minimize may have
+    // written on the output / history elements; CSS flex then takes over.
+    this._windowResizeSub = this._windowService.resizeProcessWindowNotify.subscribe((info:WindowResizeInfo) => {
+      if(info.pId !== this.processId) return;
+      if(info.widthPx < this.MIN_WIDTH_PX || info.heightPx < this.MIN_HEIGHT_PX) return;
+      this.onWindowResize();
+    });
+
+    // Live progress for long-running commands (download / verbose cp,mv,rm).
+    // The processor routes updates by the command's unique id; update the
+    // matching command's output in place so the user sees continuous feedback.
+    this._updateInformationSub = this._systemNotificationService.updateInformationNotify.subscribe((p) =>{
+      if(p.appName === TERMINAL_OUTPUT_APP_NAME)
+        this.updateTerminalOutput(p);
+    });
   }
 
   ngOnInit():void{
@@ -130,37 +168,59 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     this.allCommands = [...this.echoCommands, ...this.utilityCommands];
   }
 
-  ngAfterViewInit():void{
+  async ngAfterViewInit():Promise<void>{
     //this.setTerminalWindowToFocus(this.processId); 
     this.populateWelecomeMessageField();
 
-    setTimeout(()=>{
-      this.captureComponentImg();
-    },this.SECONDS_DELAY[1]) 
+    if(this._fileInfo && this._fileInfo.getCurrentPath !== Constants.EMPTY_STRING){
+      await this.navigateToPath();
+    }
+
+    await CommonFunctions.sleep(this.SECONDS_DELAY[1]);
+    await this.captureComponentImg();
   }
   
   ngOnDestroy():void{
     this._maximizeWindowSub?.unsubscribe();
     this._minimizeWindowSub?.unsubscribe();
+    this._windowResizeSub?.unsubscribe();
+    this._updateInformationSub?.unsubscribe();
+
+    // Stop the welcome-message typewriter if the component is torn down
+    // before it finishes — prevents the interval from outliving the view.
+    if(this.welcomeMsgIntervalId !== null){
+      clearInterval(this.welcomeMsgIntervalId);
+      this.welcomeMsgIntervalId = null;
+    }
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.terminalCntnr.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
-
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
+  /** Drop the inline pixel sizes that maximize/minimize wrote so the
+   *  CSS flex layout can reflow with the new primary-window size. */
+  private onWindowResize():void{
+    try{
+      if(this.terminalOutputCntnr?.nativeElement?.style){
+        this.terminalOutputCntnr.nativeElement.style.width = Constants.EMPTY_STRING;
+        this.terminalOutputCntnr.nativeElement.style.height = Constants.EMPTY_STRING;
       }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    });
+      if(this.terminalHistoryOutput?.nativeElement?.style){
+        this.terminalHistoryOutput.nativeElement.style.width = Constants.EMPTY_STRING;
+        this.terminalHistoryOutput.nativeElement.style.height = Constants.EMPTY_STRING;
+      }
+    }catch{ /* view not ready */ }
+  }
 
+  async captureComponentImg():Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.terminalCntnr, this.processId, this.name, this.icon, this._windowService);
     this.storeAppState();
-}
+  }
+
+  async navigateToPath():Promise<void> {
+    const path = this._fileInfo.getCurrentPath;
+    const cmdString = `cd ${path}`;
+
+    const terminalCommand = new TerminalCommand(cmdString, 0, Constants.EMPTY_STRING);
+    await this.processCommand(terminalCommand, "Enter");
+  }
 
   getYear():number {
     return new Date().getFullYear();
@@ -184,7 +244,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     const welcomeMessage = "Type 'help', or 'help -verbose' to view a list of available commands.";
     const msgArr :string[] = welcomeMessage.split(Constants.BLANK_SPACE);
 
-    const interval =  setInterval((msg) => {
+    // Stash the interval id so ngOnDestroy can cancel it if the user closes
+    // the terminal before the typewriter animation finishes.
+    this.welcomeMsgIntervalId = setInterval((msg) => {
       let tmpCounter = 0;
       for(let i = 0; i < msg.length; i++){
         if (tmpCounter < 1){
@@ -193,8 +255,12 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         }
       }
 
-      if(this.msgPosCounter === msg.length - 1)
-        clearInterval(interval);
+      if(this.msgPosCounter === msg.length - 1){
+        if(this.welcomeMsgIntervalId !== null){
+          clearInterval(this.welcomeMsgIntervalId);
+          this.welcomeMsgIntervalId = null;
+        }
+      }
 
       this.msgPosCounter++;
     },this.SECONDS_DELAY[0], msgArr);
@@ -239,92 +305,99 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   getTabStateCount():number{
-    return this.tabCompletionState.sections.length;
+    return this._tab.sectionCount;
   }
 
   createTabState(cursorPos:number, idxSec?:number):void{
-    const writeState:IState ={
-      cursorPosition: cursorPos,
-      indexSection: idxSec || 0,
-      dirEntryTraverseCntr:0,
-      currentPath:Constants.BLANK_SPACE 
-    }
-
-    this.tabCompletionState.sections.push(writeState);
+    this._tab.createSection(cursorPos, idxSec);
   }
 
   updateTabState(idx:number, cursorPos:number, rootArg:string):void{
-    const writeState = this.tabCompletionState.sections[idx];
-
-    if(writeState){
-      writeState.cursorPosition = cursorPos
-      writeState.currentPath = rootArg;
-      writeState.dirEntryTraverseCntr = this.dirEntryTraverseCntr;
-      this.tabCompletionState.sections[idx] = writeState;
-    }
+    this._tab.updateSection(idx, cursorPos, rootArg);
   }
 
   scrollToBottom(): void {
+    // Setting scrollTop on the (overflow:auto) output container is sufficient
+    // to pin the view to the latest command output.
+    //
+    // The previous extra call to `scrollIntoView` on this same element bubbled
+    // up to the nearest scrollable ancestor — `.window-content-container`,
+    // which is `overflow: hidden`. `overflow: hidden` elements are still
+    // programmatically scrollable, so scrollIntoView would shift the entire
+    // terminal contents a few pixels up inside the primary window, exposing
+    // the dark window background at the bottom and making the title bar look
+    // shorter. A subsequent reflow (e.g. hovering a header button) would
+    // reset that hidden scrollTop and the layout would "snap back". Removed.
     this.terminalOutputCntnr.nativeElement.scrollTop = this.terminalOutputCntnr.nativeElement.scrollHeight;
-    this.terminalOutputCntnr.nativeElement.scrollIntoView({ behavior: 'smooth' });
   }
 
-
+  /**
+   * Decide which "section" the cursor currently belongs to and update
+   * the mode (STATE_ONE / STATE_TWO) plus the firstSection/secondSection
+   * flags accordingly. Called on ArrowLeft / ArrowRight so the user can
+   * jump between the source and destination paths in cp / mv.
+   *
+   * Legacy state-table (preserved):
+   *   STATE_ONE
+   *     firstSection active only
+   *     firstSection inactive  secondSection active only
+   *   STATE_TWO
+   *     firstSection active   secondSection inactive
+   *     firstSection inactive secondSection active
+   */
   switchSections():void{
-    /*
-      State 1
-        firstSection Active only
-        firstSection Inactive  secondSection Active only
-      State 2
-        firstSection Avtive  secondSection Inactive only
-        firstSection Inactive  secondSection Active only
-      Store fetches Directories & numCntr state for each section */
-
     const curCursorPos = this.getCursorPosition();
-    let sectOneCursorPos = 0;
-    let sectTwoCursorPos = 0;
+    const tab = this._tab;
 
-    if(this.getTabStateCount() === 1){
-      //state 1
-      sectOneCursorPos = this.tabCompletionState.sections[0]?.cursorPosition;
+    if(tab.sectionCount === 1){
+      // Single-section mode: only re-assert STATE_ONE if the cursor
+      // moved before the recorded section-0 position.
+      const sectOneCursorPos = tab.sections[0]?.cursorPosition;
       if(curCursorPos < sectOneCursorPos){
-        this.currentState = this.stateOne;
+        tab.currentState = TabCompletionState.STATE_ONE;
       }
     }else{
-      this.currentState = this.stateTwo;
-      sectOneCursorPos = this.tabCompletionState.sections[0]?.cursorPosition;
-      sectTwoCursorPos = this.tabCompletionState.sections[1]?.cursorPosition;
+      // Two-section mode (cp / mv): figure out which section the cursor
+      // is inside and flip the active flags.
+      tab.currentState = TabCompletionState.STATE_TWO;
+      const sectOneCursorPos = tab.sections[0]?.cursorPosition;
+      const sectTwoCursorPos = tab.sections[1]?.cursorPosition;
+
       if(curCursorPos < sectOneCursorPos){
-        this.firstSection = true;
-        this.secondSection = false;
-        this.swtichToNextSection = false;
-        this.firstSectionCntr = 0;
+        tab.firstSection = true;
+        tab.secondSection = false;
+        tab.switchToNextSection = false;
+        tab.firstSectionCounter = 0;
       }else if(curCursorPos > sectOneCursorPos && curCursorPos <= sectTwoCursorPos){
-        this.firstSection = false
-        this.secondSection = true;
-        this.swtichToNextSection = true;
-        this.secondSectionCntr = 0;
+        tab.firstSection = false;
+        tab.secondSection = true;
+        tab.switchToNextSection = true;
+        tab.secondSectionCounter = 0;
       }
     }
   }
 
+  /**
+   * Snap the cursor back to the recorded position for the active section
+   * and restore the matching traversal counter. Called from the TAB
+   * handler in two-section commands when the cursor has drifted.
+   */
   changeCursorPositionAndNumCntr():void{
-    const curCursorPos = this.getCursorPosition();
-    if(this.getTabStateCount() === 1){
-      //
-    }else if(this.getTabStateCount() === 2){
-      const sectOneCursorPos = this.tabCompletionState.sections[0]?.cursorPosition;
-      const sectOneIdxCntr = this.tabCompletionState.sections[0]?.dirEntryTraverseCntr;
-      const sectTwoCursorPos = this.tabCompletionState.sections[1]?.cursorPosition;
-      const sectTwoIdxCntr = this.tabCompletionState.sections[1]?.dirEntryTraverseCntr;
+    const tab = this._tab;
+    if(tab.sectionCount !== 2) return;
 
-      if(this.firstSection && (curCursorPos < sectOneCursorPos)){
-        this.setCursorPosition(sectOneCursorPos);
-        this.dirEntryTraverseCntr = sectOneIdxCntr;
-      }else if(this.secondSection && (curCursorPos > sectOneCursorPos && curCursorPos < sectTwoCursorPos)){
-        this.setCursorPosition(sectTwoCursorPos);
-        this.dirEntryTraverseCntr = sectTwoIdxCntr;
-      }
+    const curCursorPos = this.getCursorPosition();
+    const sectOneCursorPos = tab.sections[0]?.cursorPosition;
+    const sectOneIdxCntr   = tab.sections[0]?.dirEntryTraverseCntr;
+    const sectTwoCursorPos = tab.sections[1]?.cursorPosition;
+    const sectTwoIdxCntr   = tab.sections[1]?.dirEntryTraverseCntr;
+
+    if(tab.firstSection && (curCursorPos < sectOneCursorPos)){
+      this.setCursorPosition(sectOneCursorPos);
+      tab.dirEntryTraverseCounter = sectOneIdxCntr;
+    }else if(tab.secondSection && (curCursorPos > sectOneCursorPos && curCursorPos < sectTwoCursorPos)){
+      this.setCursorPosition(sectTwoCursorPos);
+      tab.dirEntryTraverseCounter = sectTwoIdxCntr;
     }
   }
 
@@ -338,14 +411,18 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     const rootCmd = cmdStringArr[0];
     let rootArg =cmdStringArr[1];
     if(evt.key === "Enter"){
-      this.isInLoopState = false;
-      this.dirEntryTraverseCntr = 0;
+      // Reset the cycling state so the next command starts fresh.
+      this._tab.inLoopState = false;
+      this._tab.dirEntryTraverseCounter = 0;
       const terminalCommand = new TerminalCommand(cmdString, 0, Constants.EMPTY_STRING);
 
       if(cmdString !== Constants.EMPTY_STRING){
-        this.processCommand(terminalCommand, "Enter");
+        // Register the command in history BEFORE processing so live progress
+        // updates (routed by commandID) can locate and update it while the
+        // operation is still running.
         this.commandHistory.push(terminalCommand);
         this.prevPtrIndex = this.commandHistory.length;
+        this.processCommand(terminalCommand, "Enter");
         this.terminalForm.reset();
         this.resetValues();
       }
@@ -358,17 +435,20 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     }else if(evt.key === "ArrowRight"){
       this.switchSections();  
     }else if(evt.key === Constants.BLANK_SPACE){
+      // SPACE after a valid command + a non-empty first argument means
+      // the user is moving on to the destination argument (cp / mv). Flip
+      // into STATE_TWO so the next TAB press operates on section 1.
       if(this.isValidInputArg(rootCmd) && (rootArg !== undefined && !this.stringIsOnlyWhiteSpace(rootArg))){
-        this.currentState = this.stateTwo;
-        this.swtichToNextSection = true;
-        this.sectionTabPressCntnr = 0;
+        this._tab.currentState = TabCompletionState.STATE_TWO;
+        this._tab.switchToNextSection = true;
+        this._tab.sectionTabPressCounter = 0;
       }
-
-      console.log('this.swtichToNextSection:',this.swtichToNextSection);
     } else if(evt.key === "Tab"){
-      //console.log('rootCmd:',rootCmd);
       /**
-       * the command part of the command string, can not be undefined, must have a length greater than 0, and cannot contain space
+       * Command-name auto-complete:
+       * the root command must be defined, non-empty, and contain no
+       * embedded whitespace. If it's not already a known command, see
+       * if it uniquely (or ambiguously) prefixes one.
        */
       if(this.isValidInputArg(rootCmd)){
         if(!this.allCommands.includes(rootCmd)){
@@ -377,6 +457,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
           if(autoCmpltReslt.length === 1){
             this.terminalForm.setValue({terminalCmd: autoCmpltReslt[0]});
           }if(autoCmpltReslt.length > 1){
+            // Ambiguous prefix: log the choices into the history view
+            // so the user can see what's available.
             const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
             terminalCommand.setResponseCode = this.Options;
             terminalCommand.setCommandOutput = autoCmpltReslt.join(Constants.BLANK_SPACE);
@@ -385,90 +467,94 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         }
       }
 
-      //console.log('rootArg:',rootArg);
+      // ---- single-section commands (cd / rm) --------------------------
       if(rootCmd === "cd" || rootCmd === "rm"){
         if(cmdStringArr.length === 1){
           rootArg  =  cmdStringArr[1];
-          this.isWhiteSpaceAtTheEnd = this.checkForWhitSpaceAtTheEnd(cmdString);
-  
+          this._tab.isWhitespaceAtEnd = this.checkForWhitSpaceAtTheEnd(cmdString);
+
           if(rootArg === undefined){
+            // No argument typed yet: insert a space so the next TAB
+            // starts the path-completion flow on a fresh argument.
             this.terminalForm.setValue({terminalCmd:`${rootCmd} ${Constants.BLANK_SPACE}`});
             return;
           }
         }else{
           if(cmdStringArr.length >= 2){
-
+            // Drop a trailing empty token that appears if the user typed
+            // a space after their path argument.
             if(cmdStringArr.length === 3)
               cmdStringArr.pop();
 
             rootArg  =  cmdStringArr[1];
-    
+
             await this.handleChangeDirectoryRequest(cmdString,rootCmd,rootArg);
           }
         }
-      }else if(rootCmd === "download"){
+      }
+      // ---- download: just inject the "src:" prefix on first TAB ------
+      else if(rootCmd === "download"){
         if(cmdStringArr.length === 1){
           rootArg  =  cmdStringArr[1];
-          this.isWhiteSpaceAtTheEnd = this.checkForWhitSpaceAtTheEnd(cmdString);
+          this._tab.isWhitespaceAtEnd = this.checkForWhitSpaceAtTheEnd(cmdString);
           const src = 'src:';
-  
+
           if(rootArg === undefined){
             this.terminalForm.setValue({terminalCmd:`${rootCmd} ${src}`});
             return;
           }
         }
       }
-      
-      else if(rootCmd === "cp" || rootCmd === "mv"){        
-        //case where cp is rootCmd, but there is no space following rootCmd. Add space
+      // ---- two-section commands (cp / mv) ----------------------------
+      else if(rootCmd === "cp" || rootCmd === "mv"){
+        // Case A: just the command typed, no argument yet -> prime the
+        // form with a space and record section 0.
         if(cmdStringArr.length === 1){
           rootArg  =  cmdStringArr[1];
-          this.isWhiteSpaceAtTheEnd = this.checkForWhitSpaceAtTheEnd(cmdString);
-          console.log('Has-White-Space-At-The- sEnd:', this.isWhiteSpaceAtTheEnd);
+          this._tab.isWhitespaceAtEnd = this.checkForWhitSpaceAtTheEnd(cmdString);
 
           if(rootArg === undefined){
-            console.log('setValue - 0');
             this.terminalForm.setValue({terminalCmd:`${rootCmd} ${Constants.BLANK_SPACE}`});
             const cursorPos = this.getCursorPosition();
             this.createTabState(cursorPos);
             return;
           }
         }else{
-            //case where cp is rootCmd, and rootArg could be empty space or something else
+          // Case B: at least one argument already present.
           if(cmdStringArr.length >= 2){
             this.changeCursorPositionAndNumCntr();
-            //condition to switch to next section, not met. still on the 1st section
-            if(cmdStringArr.length === 3 && !this.swtichToNextSection){
+
+            // Sub-case B1: still cycling source path (section 0).
+            if(cmdStringArr.length === 3 && !this._tab.switchToNextSection){
               cmdStringArr.pop();
-              this.sectionTabPressCntnr++;
+              this._tab.sectionTabPressCounter++;
               rootArg  =  cmdStringArr[1];
 
               this.updateTabState(0, this.getCursorPosition(), rootArg);
-            } 
-            //condition to switch to next section, met. now on the 2nd section
-            else if(cmdStringArr.length === 3 && this.swtichToNextSection){
-              if(this.sectionTabPressCntnr === 0){
+            }
+            // Sub-case B2: user pressed SPACE -> handing off to section 1.
+            else if(cmdStringArr.length === 3 && this._tab.switchToNextSection){
+              if(this._tab.sectionTabPressCounter === 0){
+                // First TAB after the hand-off: persist section 0 state
+                // and reset the working buffers for section 1.
                 cmdStringArr.pop();
                 this.updateTabState(0, this.getCursorPosition(), rootArg);
 
-
-
                 rootArg = Constants.EMPTY_STRING;
                 cmdString = 'cp  ';
-                this.firstSection = false;
-                this.secondSection = true;
-                this.dirEntryTraverseCntr = 0;
-                // reset
-                this.fetchedDirectoryList = [];
+                this._tab.firstSection = false;
+                this._tab.secondSection = true;
+                this._tab.dirEntryTraverseCounter = 0;
+                this._tab.fetchedDirectoryList = [];
 
                 const cursorPos = this.getCursorPosition();
                 this.createTabState(cursorPos, 1);
-
               }else{
+                // Subsequent TABs in section 1: keep cycling the dest.
                 rootArg  =  cmdStringArr[2];
                 this.updateTabState(1, this.getCursorPosition(), rootArg);
               }
-              this.sectionTabPressCntnr++;
+              this._tab.sectionTabPressCounter++;
             }else{
               rootArg  =  cmdStringArr[1];
             }
@@ -476,18 +562,21 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
             await this.handleChangeDirectoryRequest(cmdString,rootCmd,rootArg);
           }
         }
-      } else{
+      }
+      // ---- everything else: generic argument auto-complete -----------
+      else{
         if(!this.generatedArguments.includes(rootArg)){
           const autoCmpltReslt = this.getAutoCompelete(rootArg, this.generatedArguments);
           if(autoCmpltReslt.length >= 1){
             this.terminalForm.setValue({terminalCmd: `${rootCmd} ${autoCmpltReslt[0]}`});
           }
-          
         }
       }
       evt.preventDefault();
     }else{
-      this.isInLoopState = false;
+      // Any other keystroke breaks us out of the cycling loop so the
+      // next TAB starts a fresh directory listing.
+      this._tab.inLoopState = false;
     }
   }
 
@@ -495,13 +584,10 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   async handleChangeDirectoryRequest(cmdString: string, rootCmd: string, rootArg: string): Promise<void> {
       if (this.isValidInputArg(rootArg)) {
           const alteredRootArg = this.getLastSegment(rootArg);
-          console.log('alteredRootArg:', alteredRootArg);
 
-          if (!this.isInLoopState) {
-              console.log('Processing outside loop state');
+          if (!this._tab.inLoopState) {
               await this.processDirectoryTraversal(cmdString, rootCmd, rootArg, alteredRootArg);
           } else {
-              console.log('Processing inside loop state');
               await this.processSection(rootCmd, rootArg, alteredRootArg);
           }
       } else {
@@ -516,51 +602,49 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   /** Handles directory traversal when outside loop state */
   private async processDirectoryTraversal(cmdString: string, rootCmd: string, rootArg: string, alteredRootArg: string): Promise<void> {
-      if (!this.fetchedDirectoryList.includes(alteredRootArg)) {
-          console.log('Directory list does not contain:', alteredRootArg);
+      // Only re-fetch when we don't already have this entry cached.
+      if (!this._tab.fetchedDirectoryList.includes(alteredRootArg)) {
           const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
           await this.traverseDirectoryHelper(terminalCommand);
-      } else {
-          console.log('Directory list contains:', alteredRootArg);
       }
       this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, alteredRootArg);
-      this.isInLoopState = true;
+      this._tab.inLoopState = true;
   }
 
   /** Processes section-based directory traversal */
   private async processSection(rootCmd: string, rootArg: string, alteredRootArg: string): Promise<void> {
-      if (this.firstSection && this.firstSectionCntr === 0) {
+      const tab = this._tab;
+      if (tab.firstSection && tab.firstSectionCounter === 0) {
           await this.processSpecificSection(0, rootCmd, rootArg, alteredRootArg);
-      } else if (this.secondSection && this.secondSectionCntr === 0) {
+      } else if (tab.secondSection && tab.secondSectionCounter === 0) {
           await this.processSpecificSection(1, rootCmd, rootArg, alteredRootArg);
       } else {
           this.loopThroughDirectory(rootCmd, rootArg, alteredRootArg);
-          console.log('Updated dirEntryTraverseCntr:', this.dirEntryTraverseCntr);
       }
   }
 
   /** Processes a specific section */
   private async processSpecificSection(sectionIndex: number, rootCmd: string, rootArg: string, alteredRootArg: string): Promise<void> {
-      if (sectionIndex === 0) this.firstSectionCntr--;
-      else this.secondSectionCntr--;
+      if (sectionIndex === 0) this._tab.firstSectionCounter--;
+      else this._tab.secondSectionCounter--;
 
+      // Synthesize a fake command ("lx <path>") used by traverseDirectoryHelper
+      // to read the listing for the section's recorded path.
       const alteredCmdString = `lx ${this.removeCurrentDir(rootArg)}`;
-      console.log('alteredCmdString:', alteredCmdString);
       const terminalCommand = new TerminalCommand(alteredCmdString, 0, Constants.BLANK_SPACE);
 
       await this.traverseDirectoryHelper(terminalCommand);
       this.loopThroughDirectory(rootCmd, rootArg, alteredRootArg);
-      this.dirEntryTraverseCntr = this.tabCompletionState.sections[sectionIndex].dirEntryTraverseCntr;
+      this._tab.dirEntryTraverseCounter = this._tab.sections[sectionIndex].dirEntryTraverseCntr;
   }
 
   /** Handles cases where rootArg is empty */
   private async handleEmptyRootArg(cmdString: string, rootCmd: string, rootArg: string): Promise<void> {
-      if (this.fetchedDirectoryList.length === 0) {
-          console.log('Handling empty directory list');
+      if (this._tab.fetchedDirectoryList.length === 0) {
           const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
           await this.traverseDirectoryHelper(terminalCommand);
           this.evaluateChangeDirectoryRequest(cmdString, rootCmd, rootArg, Constants.EMPTY_STRING);
-          this.isInLoopState = true;
+          this._tab.inLoopState = true;
       } else {
           await this.handleLoopState(rootCmd, rootArg);
       }
@@ -568,30 +652,27 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   /** Handles loop state logic */
   private async handleLoopState(rootCmd: string, rootArg: string): Promise<void> {
-      if (this.isInLoopState) {
-          console.log('Handling loop state');
+      if (this._tab.inLoopState) {
           this.updateTerminalForm(rootCmd, rootArg);
-          this.dirEntryTraverseCntr++;
+          this._tab.dirEntryTraverseCounter++;
       } else {
-          console.log('Handling directory loop');
           this.loopThroughDirectory(rootCmd, rootArg, Constants.EMPTY_STRING);
       }
   }
 
   /** Updates the terminal form based on rootArg */
   private updateTerminalForm(rootCmd: string, rootArg: string): void {
-      const firstPath = this.fetchedDirectoryList[0];
+      const firstPath = this._tab.fetchedDirectoryList[0];
+      const inStateOne = this._tab.currentState === TabCompletionState.STATE_ONE;
 
       if (rootArg.includes(Constants.ROOT)) {
-          console.log('setValue - 1');
-          if (this.currentState === this.stateOne) {
+          if (inStateOne) {
               this.terminalForm.setValue({ terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${firstPath}` });
           } else {
               this.updateMultiSectionPath(rootCmd, rootArg, firstPath);
           }
       } else {
-          console.log('setValue - 2');
-          if (this.currentState === this.stateOne) {
+          if (inStateOne) {
               this.terminalForm.setValue({ terminalCmd: `${rootCmd} ${firstPath}` });
           } else {
               this.updateMultiSectionPath(rootCmd, rootArg, firstPath);
@@ -601,103 +682,96 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   /** Updates multi-section paths */
   private updateMultiSectionPath(rootCmd: string, rootArg: string, firstPath: string): void {
-      if (this.firstSection) {
-          this.terminalForm.setValue({ terminalCmd: `${rootCmd} ${firstPath} ${this.tabCompletionState.sections[1].currentPath}` });
+      const tab = this._tab;
+      if (tab.firstSection) {
+          this.terminalForm.setValue({ terminalCmd: `${rootCmd} ${firstPath} ${tab.sections[1].currentPath}` });
       }
-      if (this.secondSection) {
-          this.terminalForm.setValue({ terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath} ${firstPath}` });
+      if (tab.secondSection) {
+          this.terminalForm.setValue({ terminalCmd: `${rootCmd} ${tab.sections[0].currentPath} ${firstPath}` });
       }
   }
 
   loopThroughDirectory(rootCmd:string, rootArg:string,  alteredRootArg:string):void{
+    // Suppress unused-param warning while keeping the public signature.
+    void alteredRootArg;
 
-    //const cnt = this.countSlashes(rootArg);
-    //console.log('cnt:',cnt);
-    console.log(`loopThroughDirectory:rootArg:${rootArg}`)
-    console.log(`loopThroughDirectory:alteredRootArg:${alteredRootArg}`)
-    console.log('traversalDepth:',this.directoryTraversalDepth);
+    const tab = this._tab;
+    const curNum = tab.dirEntryTraverseCounter++;
+    const inStateOne = tab.currentState === TabCompletionState.STATE_ONE;
 
-    const curNum = this.dirEntryTraverseCntr++;
-    console.log('dirEntryTraverseCntr:',this.dirEntryTraverseCntr);
-
-    if((this.directoryTraversalDepth > 1)){
-      console.log('11111111');
-      console.log('setValue - 3');
-
+    if((tab.directoryTraversalDepth > 1)){
+      // Deep path: keep the user's directory prefix and only swap the
+      // trailing segment with the next completion candidate.
       if(this.countSlahesInPath(rootArg) <= 1){
         if(!this.checkForCharAfterSlashRegex(rootArg)){
           rootArg = this.stripAfterSlash(rootArg);
         }
       }
-        
 
-      if(this.currentState === this.stateOne){
-        this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[curNum]}`});
+      if(inStateOne){
+        this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${tab.fetchedDirectoryList[curNum]}`});
       }else{
-        if(this.firstSection)
-          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[curNum]} ${this.tabCompletionState.sections[1].currentPath} `});
-  
-        if(this.secondSection)
-          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath} ${this.removeCurrentDir(rootArg)}${this.fetchedDirectoryList[curNum]}`});
+        if(tab.firstSection)
+          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${tab.fetchedDirectoryList[curNum]} ${tab.sections[1].currentPath} `});
+
+        if(tab.secondSection)
+          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${tab.sections[0].currentPath} ${this.removeCurrentDir(rootArg)}${tab.fetchedDirectoryList[curNum]}`});
       }
 
 
-    }else if(this.directoryTraversalDepth >= 0 && this.directoryTraversalDepth <= 1){
-      console.log('22222222');
-      console.log('setValue - 4');
-
-      if(this.currentState === this.stateOne){
-        this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[curNum]}`});
+    }else if(tab.directoryTraversalDepth >= 0 && tab.directoryTraversalDepth <= 1){
+      // Shallow path: just substitute the entire argument.
+      if(inStateOne){
+        this.terminalForm.setValue({terminalCmd: `${rootCmd} ${tab.fetchedDirectoryList[curNum]}`});
       }else{
-        if(this.firstSection)
-          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.fetchedDirectoryList[curNum]} ${this.tabCompletionState.sections[1].currentPath}`});
-  
-        if(this.secondSection)
-          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.tabCompletionState.sections[0].currentPath} ${this.fetchedDirectoryList[curNum]}`});
+        if(tab.firstSection)
+          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${tab.fetchedDirectoryList[curNum]} ${tab.sections[1].currentPath}`});
+
+        if(tab.secondSection)
+          this.terminalForm.setValue({terminalCmd: `${rootCmd} ${tab.sections[0].currentPath} ${tab.fetchedDirectoryList[curNum]}`});
       }
     }
 
-    if(this.dirEntryTraverseCntr > this.fetchedDirectoryList.length - 1){
-      this.dirEntryTraverseCntr = 0;
+    // Wrap the cycling index back to 0 when we walk past the end of the
+    // listing so repeated TABs cycle indefinitely.
+    if(tab.dirEntryTraverseCounter > tab.fetchedDirectoryList.length - 1){
+      tab.dirEntryTraverseCounter = 0;
     }
   }
 
   evaluateChangeDirectoryRequest(cmdString:string, rootCmd:string, rootArg:string, alteredRootArg:string):boolean{
-    console.log('ecdr-cmdString:',cmdString);
-    console.log('ecdr-rootCmd:',rootCmd);
-    console.log('ecdr-rootArg:',rootArg);
-    console.log('ecdr-alteredRootArg:',alteredRootArg);
-    const autoCmpltReslt = this.getAutoCompelete(alteredRootArg, this.fetchedDirectoryList);
+    const tab = this._tab;
+    const autoCmpltReslt = this.getAutoCompelete(alteredRootArg, tab.fetchedDirectoryList);
     let result = false;
     if(autoCmpltReslt.length === 1){
-      if((rootArg.includes(Constants.ROOT) && rootArg !== this.haveISeenThisRootArg) &&  (this.haveISeenThisAutoCmplt !== autoCmpltReslt[0])){
-        console.log('1- I AM STILL NEEDED 001');
+      // Single match: apply unless we've already applied this exact
+      // completion (avoids re-stomping the form on every keystroke).
+      if((rootArg.includes(Constants.ROOT) && rootArg !== tab.lastSeenRootArg) &&  (tab.lastSeenAutoComplete !== autoCmpltReslt[0])){
         this.terminalForm.setValue({terminalCmd: `${rootCmd} ${this.removeCurrentDir(rootArg)}${autoCmpltReslt[0]}`});
-        this.haveISeenThisRootArg = `${this.removeCurrentDir(rootArg)}${autoCmpltReslt[0]}`
-        this.haveISeenThisAutoCmplt = autoCmpltReslt[0];
+        tab.lastSeenRootArg = `${this.removeCurrentDir(rootArg)}${autoCmpltReslt[0]}`;
+        tab.lastSeenAutoComplete = autoCmpltReslt[0];
       }else if(!rootArg.includes(Constants.ROOT)){
-        console.log('2 - I AM STILL NEEDED 0002');
-        this.haveISeenThisAutoCmplt = autoCmpltReslt[0];
+        tab.lastSeenAutoComplete = autoCmpltReslt[0];
         this.terminalForm.setValue({terminalCmd: `${rootCmd} ${autoCmpltReslt[0]}`});
       }
       result = true;
     }else if(autoCmpltReslt.length > 1){
-      console.log('3 - I AM STILL NEEDED 00003');
+      // Ambiguous: dump the candidates into history for the user.
       const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
       terminalCommand.setResponseCode = this.Options;
       terminalCommand.setCommandOutput = autoCmpltReslt.join(Constants.BLANK_SPACE);
       this.commandHistory.push(terminalCommand);
       result = true;
     }else{
-      console.log('3 - I AM STILL NEEDED 00004');
+      // No match: still show the listing so the user can see what's there.
       const terminalCommand = new TerminalCommand(cmdString, 0, Constants.BLANK_SPACE);
       terminalCommand.setResponseCode = this.Options;
-      terminalCommand.setCommandOutput = this.fetchedDirectoryList.join(Constants.BLANK_SPACE);
+      terminalCommand.setCommandOutput = tab.fetchedDirectoryList.join(Constants.BLANK_SPACE);
       this.commandHistory.push(terminalCommand);
       result = true;
     }
 
-    return result
+    return result;
   }
 
   removeCurrentDir(arg0:string):string{
@@ -708,7 +782,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
      */
     let result = Constants.EMPTY_STRING;
 
-    if(this.isWhiteSpaceAtTheEnd)
+    if(this._tab.isWhitespaceAtEnd)
         return arg0;
 
     if(arg0.includes(Constants.ROOT)) {
@@ -770,15 +844,9 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     return whitespaceChars.some(char => arg0.slice(-1).includes(char));
   }
 
+  /** Thin wrapper kept for clarity at call sites in the Enter handler. */
   resetValues():void{
-    this.firstSection = true;
-    this.secondSection = false;
-    this.sectionTabPressCntnr = 0;
-    this.firstSectionCntr = -1;
-    this.secondSectionCntr = -1;
-    this.currentState =  this.stateOne;
-    this.swtichToNextSection = false;
-    this.fetchedDirectoryList = [];
+    this._tab.reset();
   }
 
   isOption(arg0:string):boolean{
@@ -796,6 +864,11 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
         currPtrIndex = (this.prevPtrIndex === this.commandHistory.length)? 
           this.commandHistory.length : this.prevPtrIndex + 1
       }
+
+      // Clamp into [0, length] so external mutations to commandHistory (e.g.
+      // `clear`) cannot leave the pointer pointing past the end of the array.
+      if(currPtrIndex < 0) currPtrIndex = 0;
+      if(currPtrIndex > this.commandHistory.length) currPtrIndex = this.commandHistory.length;
 
       this.prevPtrIndex = currPtrIndex;
       (currPtrIndex === this.commandHistory.length) ? 
@@ -821,14 +894,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
 
   async traverseDirectoryHelper(terminalCmd:TerminalCommand):Promise<void>{
     const cmdStringArr = terminalCmd.getCommand.split(Constants.BLANK_SPACE);
-    //const rootCmd = cmdStringArr[0].toLowerCase();
-    let path = Constants.EMPTY_STRING;
-
-    if(this.firstSection)
-        path = cmdStringArr[1];
-    else{
-      path = cmdStringArr[2];
-    }
+    // Section 0 -> token index 1 (source path); section 1 -> token index 2 (dest path).
+    const path = this._tab.firstSection ? cmdStringArr[1] : cmdStringArr[2];
 
     const str = 'string';
     const strArr = 'string[]';
@@ -841,179 +908,78 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
     if(result.type === str){
       terminalCmd.setCommandOutput = result.result;
       this.doesDirExist = false;
-      this.directoryTraversalDepth = result.depth;
+      this._tab.directoryTraversalDepth = result.depth;
     }
     else if(result.type === strArr){
-      this.fetchedDirectoryList = [];
-      this.dirEntryTraverseCntr = 0;
-      this.fetchedDirectoryList = [...result.result as string[]];
+      // Cache the directory listing for cycling and reset the index.
+      this._tab.fetchedDirectoryList = [...result.result as string[]];
+      this._tab.dirEntryTraverseCounter = 0;
       this.doesDirExist = true;
-      this.directoryTraversalDepth = result.depth;
+      this._tab.directoryTraversalDepth = result.depth;
     }
 
     setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
   }
 
   async processCommand(terminalCmd:TerminalCommand, key=""):Promise<void>{
-    const cmdStringArr = terminalCmd.getCommand.split(Constants.BLANK_SPACE);
-    const rootCmd = cmdStringArr[0].toLowerCase();
+    // Suppress unused-param warning while keeping the public signature.
+    void key;
 
-    if(this.isValidCommand(rootCmd)){
-
-      if(rootCmd == "cat"){
-        const result = await this._terminaCommandsProc.cat(terminalCmd.getCommand);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result.response;
-      }
-
-      if(rootCmd == "cd"){
-        const result = await this._terminaCommandsProc.cd(cmdStringArr[1]);
-
-        if(result.result){
-          terminalCmd.setResponseCode = this.Success;
-          terminalCmd.setCommandOutput = result.response;
-        }else{
-          terminalCmd.setResponseCode = this.Fail;
-          terminalCmd.setCommandOutput = result.response;
-        }
-      } 
-
-      if(rootCmd == "clear"){
-        this.commandHistory = [];
-        this.isBannerVisible = false;
-        this.isWelcomeVisible = false;
-      } 
-
-      if(rootCmd == "close"){
-        const result = this._terminaCommandsProc.close(cmdStringArr[1], cmdStringArr[2]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if (rootCmd == "cp"){
-        const option = cmdStringArr[1];
-        const source = cmdStringArr[2];
-        const destination = cmdStringArr[3];
-      
-        const result = await this._terminaCommandsProc.cp(option, source, destination);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      }
-
-      if(rootCmd == "curl"){
-        const result = await this._terminaCommandsProc.curl(cmdStringArr);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "date"){
-        const result = this._terminaCommandsProc.date();
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "download"){
-        const result = await this._terminaCommandsProc.download(cmdStringArr[1], cmdStringArr[2], cmdStringArr[3]);
-        terminalCmd.setResponseCode = (result.result)? this.Success : this.Fail;
-        terminalCmd.setCommandOutput = result.response;
-      } 
-
-      if(rootCmd == "exit"){
-        this._terminaCommandsProc.exit(this.processId);
-      } 
-
-      if(rootCmd == "help"){
-        const result = this._terminaCommandsProc.help(this.echoCommands, this.utilityCommands, cmdStringArr[1]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "list"){
-        const result = this._terminaCommandsProc.list(cmdStringArr[1], cmdStringArr[2]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "ls"){
-        const str = 'string';
-        const strArr = 'string[]';
-        const result = await this._terminaCommandsProc.ls(cmdStringArr[1]);
-        terminalCmd.setResponseCode = this.Success;
-
-
-        if(result.type === str){
-          terminalCmd.setCommandOutput = result.result;
-          this.doesDirExist = false;
-        }
-        else if(result.type === strArr){
-          console.log('ls result:', result)
-          terminalCmd.setCommandOutput = result.result.join(Constants.BLANK_SPACE);
-          this.fetchedDirectoryList = [];
-          this.fetchedDirectoryList = [...result.result];
-        }
-      } 
-
-      if(rootCmd == "mkdir"){
-        const result = await this._terminaCommandsProc.mkdir(cmdStringArr[1], cmdStringArr[2]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      }
-
-      if(rootCmd == "mv"){
-        const result = await this._terminaCommandsProc.mv(cmdStringArr[1], cmdStringArr[2]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      }
-
-      if(rootCmd == "open"){
-        const result = this._terminaCommandsProc.open(cmdStringArr[1], cmdStringArr[2]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "pwd"){
-        const result = this._terminaCommandsProc.pwd();
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "rm"){
-        const result = await this._terminaCommandsProc.rm(cmdStringArr[1], cmdStringArr[2]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      }
-
-      if(rootCmd == "touch"){
-        const result = await this._terminaCommandsProc.touch(cmdStringArr[1]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result.response;
-      }
-
-      if(rootCmd == "version"){
-        const result = this._terminaCommandsProc.version(this.versionNum);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "whoami"){
-        const result = this._terminaCommandsProc.whoami();
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-      if(rootCmd == "weather"){
-        const result = await this._terminaCommandsProc.weather(cmdStringArr[1]);
-        terminalCmd.setResponseCode = this.Success;
-        terminalCmd.setCommandOutput = result;
-      } 
-
-    }else{
-      terminalCmd.setResponseCode = this.Fail;
-      terminalCmd.setCommandOutput = `${terminalCmd.getCommand}: command not found. Type 'help', or 'help -verbose' to view a list of available commands.`;
-    }
+    // Dispatch lives in command.router.ts. It reads the few component values it
+    // needs (and pushes back the `clear` / `ls` side-effects) through the host
+    // adapter built in createCommandHost(); everything else it writes directly
+    // onto terminalCmd.
+    await this._commandRouter.route(terminalCmd, this._commandHost);
 
     setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
     this.storeAppState();
+  }
+
+  /**
+   * Build the narrow adapter the command router uses to read component state
+   * and apply the handful of side-effects it owns. Getters keep the values
+   * live (e.g. processId is assigned after this object is created) and keep
+   * the component's private fields private.
+   */
+  private createCommandHost():ITerminalCommandHost{
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    return {
+      get Success(){ return self.Success; },
+      get Fail(){ return self.Fail; },
+      get Options(){ return self.Options; },
+      get processId(){ return self.processId; },
+      get versionNum(){ return self.versionNum; },
+      get echoCommands(){ return self.echoCommands; },
+      get utilityCommands(){ return self.utilityCommands; },
+      isValidCommand: (cmd:string) => self.isValidCommand(cmd),
+      clearScreen: () => {
+        self.commandHistory = [];
+        self.isBannerVisible = false;
+        self.isWelcomeVisible = false;
+      },
+      setDoesDirExist: (exists:boolean) => { self.doesDirExist = exists; },
+      setFetchedDirectoryList: (list:string[]) => { self._tab.fetchedDirectoryList = list; },
+    };
+  }
+
+  /**
+   * Live progress sink. The command processor routes updates by the command's
+   * unique id (carried in update.pId); find the matching command in history and
+   * refresh its output in place so the user sees continuous feedback while a
+   * long-running operation (download / verbose cp,mv,rm) is still in flight.
+   */
+  updateTerminalOutput(update:InformationUpdate):void{
+    if(!update || !Array.isArray(update.info) || update.info.length === 0)
+      return;
+
+    const cmd = this.commandHistory.find(c => c.getCommandID === update.pId);
+    if(!cmd)
+      return;
+
+    cmd.setResponseCode = this.Success;
+    cmd.setCommandOutput = update.info[0];
+    setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
   }
 
   /***
@@ -1027,39 +993,47 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   maximizeWindow():void{
+    // Bring maximize in line with the responsive layout: the CSS flex chain
+    // (.terminal-container -> .terminal-output-section) fills whatever the
+    // primary window gives us, so we no longer measure #vantaCntnr and stamp
+    // explicit pixel sizes (which double-counted chrome and fought the flex
+    // parent). Just clear any stale inline px and let CSS reflow.
     const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
-      //window title and button bar, terminal input section, windows taskbar height 
-      let pixelTosubtract = 30 + 25 + 40;
-      this.terminalOutputCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-      this.terminalOutputCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
-
-      if(this.isBannerVisible && this.isWelcomeVisible){
-        // bannerVisible (28) + welcomeVisible(27)
-        pixelTosubtract += 55;
-      }
-      this.terminalHistoryOutput.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-      this.terminalHistoryOutput.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelTosubtract}px`;
+      this.onWindowResize();
     }
   }
 
   minimizeWindow(arg:number[]):void{
+    // Restore from maximized. Same reasoning as maximizeWindow — the window
+    // component owns the box size; we only strip leftover inline px so the
+    // CSS flex chain can reflow to the restored size. (arg carries the
+    // restored [width,height] but is no longer needed imperatively; kept
+    // for the subscription signature.)
+    void arg;
     const uId = `${this.name}-${this.processId}`;
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-
-      this.terminalOutputCntnr.nativeElement.style.width = `${arg[0]}px`;
-      this.terminalOutputCntnr.nativeElement.style.height = `${arg[1]}px`;
-
-      this.terminalHistoryOutput.nativeElement.style.width = `${arg[0]}px`;
-      this.terminalHistoryOutput.nativeElement.style.height = `${arg[1]}px`;
+      this.onWindowResize();
     }
+  }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the App (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu. The desktop's menu is opened by a (contextmenu) handler on the
+    // desktop root, which receives this event as it bubbles up the DOM.
+    // Stopping propagation here means the event never reaches the desktop,
+    // so its menu never opens — no shared service flag required.
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
   }
 
   focusWindow(evt?:MouseEvent):void{
@@ -1087,7 +1061,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
 
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   async onDrop(event:DragEvent):Promise<void>{
@@ -1105,7 +1079,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.appData != Constants.EMPTY_STRING){
         const terminalCmds =  appSessionData.appData as string[];
         for(let i = 0; i < terminalCmds.length; i++){
@@ -1116,6 +1090,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   }
 
   private getComponentDetail():Process{
+    this._fileInfo = this._processHandlerService.getLastProcessTrigger(this.name);
     return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
   }
 }

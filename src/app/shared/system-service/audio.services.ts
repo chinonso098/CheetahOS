@@ -32,6 +32,10 @@ export class AudioService implements BaseService {
   isAudioScriptLoaded = false;
   isAudioFileReady = false;
 
+  // Service-level volume, independent of whether a Howl instance exists yet.
+  // This is the source of truth used by the taskbar/volume-control UI.
+  private _volume = 0.5;
+
   audioSrc = Constants.EMPTY_STRING;
   
   name = 'audio_svc';
@@ -75,7 +79,7 @@ export class AudioService implements BaseService {
         format: [ext],
         autoplay: false,
         loop: false,
-        volume: 0.5,
+        volume: this._volume,
         preload: true,
         onload: () => {
           this.isAudioFileReady = true;
@@ -126,18 +130,21 @@ export class AudioService implements BaseService {
     this._audioPlayer.pause();
   }
 
-  getVolume():number{
-    if(!this.isAudioFileReady || !this._audioPlayer)
-      return -1;
-
-    return this._audioPlayer.volume();
+  getVolume(): number {
+    // Always return the service-level volume so the UI can render correctly
+    // before any track has ever been loaded. -1 is reserved for real errors.
+    return this._volume;
   }
 
-  changeVolume(volume:number):void{
-    this._audioPlayer.volume(volume);
+  changeVolume(volume: number): void {
+    this._volume = volume;
 
-    if(this._externalAudioSrc){
-      for(const extSrc of this._externalAudioSrc.values()){
+    if (this._audioPlayer) {
+      this._audioPlayer.volume(volume);
+    }
+
+    if (this._externalAudioSrc) {
+      for (const extSrc of this._externalAudioSrc.values()) {
         extSrc.volume(volume);
       }
     }

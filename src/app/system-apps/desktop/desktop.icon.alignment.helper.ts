@@ -1,7 +1,7 @@
-import { FileService } from "src/app/shared/system-service/file.service";
 import { Constants } from "src/app/system-files/constants";
 import { FileInfo } from "src/app/system-files/file.info";
-import { mousePosition } from "./desktop.types";
+import { DragStartResult, mousePosition } from "./desktop.types";
+
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DesktopIconAlignmentHelper {
@@ -9,15 +9,24 @@ export namespace DesktopIconAlignmentHelper {
   let cloneList:HTMLElement[] = []
   let cloneIdList:number[] = []
 
-  const cloneDesktopIcon = (id: number): HTMLElement=> {
-    const srcIconElmnt = document.getElementById(`iconBtn${id}`) as HTMLElement;
-    // Clone the element deeply
+  /**
+   * §1.5 — returns `null` when the source icon hasn't rendered yet
+   * instead of crashing inside `.cloneNode(true)`.  Caller bails on
+   * null rather than enqueuing a broken clone.
+   */
+  const cloneDesktopIcon = (id: number): HTMLElement | null => {
+    const srcIconElmnt = document.getElementById(`iconBtn${id}`);
+    if (!srcIconElmnt) return null;
+    // Clone the element deeply.  `cloneNode(true)` returns `Node`, so the
+    // `as HTMLElement` cast survives — it's the one cast we can't drop.
     return srcIconElmnt.cloneNode(true) as HTMLElement;
   }
 
   export const preCloneDesktopIcon = (btnId: number):void=>{
     if(!cloneIdList.includes(btnId)){
       const btnClone = cloneDesktopIcon(btnId);
+      // §1.5 — skip enqueue when the source icon hasn't rendered yet.
+      if (!btnClone) return;
       cloneList.push(btnClone);
       cloneIdList.push(btnId);
     }
@@ -25,69 +34,106 @@ export namespace DesktopIconAlignmentHelper {
 
   //export const clearPreClonedIcons = ():void=>{  cloneList = []}
 
+  /**
+   * Drop one icon's tracking entries (clone element + id) from the
+   * pre-clone bookkeeping.  No-op when the id was never staged.
+   *
+   * §3.E — was a 2-pass operation: `findIndex` to locate, then TWO
+   * `filter((_, i) => i !== idx)` calls (one per array) to remove.
+   * Now ONE pass each: locate the index ONCE, then `splice` in place
+   * on both arrays so a missing id triggers no allocation at all.
+   * Using `splice` (in place) over a fresh `filter` allocation is
+   * fine here because these arrays are private to the helper.
+   */
   export const clearPreClonedIconById = (id:number):void=>{
-    const idx = cloneIdList.findIndex(x => x === id);
-    cloneIdList = cloneIdList.filter((_, index) => index !== idx);
-    cloneList = cloneList.filter((_, index) => index !== idx);
+    const idx = cloneIdList.indexOf(id);
+    if (idx === -1) return;
+    cloneIdList.splice(idx, 1);
+    cloneList.splice(idx, 1);
   }
   
+  /**
+   * Builds the drag-image clone container and reports the dragged-element id
+   * plus the list of files that should be staged in `FileService` as the
+   * drag payload.  The caller is responsible for calling
+   * `FileService.addDragAndDropFile(...)` on each — this helper never
+   * touches application services.
+   *
+   * §1.4 — `desktopIconCloneCntnr` is the off-screen scratch container
+   * (`<div id="desktopIcon_clone_cntnr">`) supplied by the caller via
+   * the component's `@ViewChild` ElementRef.
+   */
   export const  handleDragStart = (evt:DragEvent, 
       i: number, 
       countOfMarkedBtns: number, 
       files:FileInfo[],
-      fileService: FileService ): number =>{
+      desktopIconCloneCntnr: HTMLElement | null): DragStartResult =>{
     
-      // Get the cloneIcon container
-      const elementId = 'desktopIcon_clone_cntnr';
-      const cloneIcon = document.getElementById(elementId);
       let draggedElementId = -1;
+      const filesToRegister: FileInfo[] = [];
   
-      if(cloneIcon){
+      if(desktopIconCloneCntnr){
         //Clear any previous content in the clone container
-        cloneIcon.innerHTML = Constants.EMPTY_STRING;
+        desktopIconCloneCntnr.innerHTML = Constants.EMPTY_STRING;
         if(countOfMarkedBtns <= 1){
           draggedElementId = i;
   
-          cloneList.forEach(clone =>{ cloneIcon.appendChild(clone);  });
+          cloneList.forEach(clone =>{ desktopIconCloneCntnr.appendChild(clone);  });
           const file = files[i];
           if(file)
-            fileService.addDragAndDropFile(file);
+            filesToRegister.push(file);
           
         }else{
           cloneIdList.forEach(id =>{
             const file = files[id];
             if(file)
-              fileService.addDragAndDropFile(file);
+              filesToRegister.push(file);
           });
 
           cloneList.forEach((clone, idx) =>{
-            cloneIcon.appendChild(clone);
+            desktopIconCloneCntnr.appendChild(clone);
             if(idx !== countOfMarkedBtns - 1){
               const spacer = document.createElement('div');
               spacer.style.height = '20px';
-              cloneIcon.appendChild(spacer);
+              desktopIconCloneCntnr.appendChild(spacer);
             }
           });
         }
 
         // Move it out of view initially
-        cloneIcon.style.left = '-9999px';  
-        cloneIcon.style.opacity = '0.2';
+        desktopIconCloneCntnr.style.left = '-9999px';
+        // §4-followup — REMOVED `desktopIconCloneCntnr.style.opacity = '0.2'`.
+        // Every browser already applies its own ~50% translucency to
+        // the drag image as a native UX cue (Windows, macOS — see the
+        // HTML5 drag-and-drop spec).  Stacking our extra 0.2 on top
+        // multiplied to ~10% effective opacity, which the user
+        // perceived as "barely visible" specifically on multi-select
+        // drag (a tall stack of faint clones reads much worse than a
+        // single faint icon).  Letting the browser-native
+        // translucency be the only translucency restores normal
+        // visibility for multi-select while leaving single-icon drag
+        // visually unchanged.
+        //
+        // `left: -9999px` is kept: the container still needs to be
+        // out of the viewport so the live page doesn't briefly show
+        // it before `setDragImage` snapshots it.
 
         // Set the cloned icon as the drag image
         if(evt.dataTransfer){
-          evt.dataTransfer.setDragImage(cloneIcon, 0, 0);  // Offset positions for the drag image
+          evt.dataTransfer.setDragImage(desktopIconCloneCntnr, 0, 0);  // Offset positions for the drag image
         }
       }
 
-    return draggedElementId;
+    return { draggedElementId, filesToRegister };
   }
 
-  export const clearCloneConainter = (): void =>{
-    const elementId = 'desktopIcon_clone_cntnr'; // Get the cloneIcon container
-    const cloneIcon = document.getElementById(elementId);
-    if(cloneIcon) 
-      cloneIcon.innerHTML = Constants.EMPTY_STRING;
+  /**
+   * §1.4 — `desktopIconCloneCntnr` supplied by the caller via the
+   * component's `@ViewChild` ElementRef.
+   */
+  export const clearCloneContainer = (desktopIconCloneCntnr: HTMLElement | null): void =>{
+    if(desktopIconCloneCntnr) 
+      desktopIconCloneCntnr.innerHTML = Constants.EMPTY_STRING;
   }
 
   export const  handleMoveBtnIconsToNewPositionAlignOff = (mPos:mousePosition, 
@@ -105,7 +151,8 @@ export namespace DesktopIconAlignmentHelper {
       }
 
       markedBtnIds.forEach(id =>{
-          const btnIconElmnt = document.getElementById(`desktopIcon_li${id}`) as HTMLElement;
+          // §1.5 — dropped redundant `as HTMLElement` cast.
+          const btnIconElmnt = document.getElementById(`desktopIcon_li${id}`);
 
           movedBtnIds.push(id);
           if(btnIconElmnt){
@@ -134,21 +181,25 @@ export namespace DesktopIconAlignmentHelper {
       return markedBtnIds;
   }
 
+  /**
+   * §1.4 — `desktopIconOl` (the icon-grid `<ol>`) is supplied by the
+   * caller via the component's `@ViewChild` ElementRef.
+   */
   export const handleMoveBtnIconsToNewPositionAlignOn = (mPos: mousePosition,
       movedBtnIds: string[],  
       markedBtnIds: string[], 
       draggedElementId:number,
       GRID_SIZE:number,
-      ROW_GAP:number ): string[] => {
+      ROW_GAP:number,
+      desktopIconOl: HTMLElement | null ): string[] => {
 
-    const gridEl = document.getElementById('desktopIcon_ol') as HTMLElement;
     const heightAdjustment = 20;
     const iconWidth = GRID_SIZE; 
     const iconHeight = GRID_SIZE - heightAdjustment;  
 
-    if (!gridEl) return [];
+    if (!desktopIconOl) return [];
 
-    const rect = gridEl.getBoundingClientRect();
+    const rect = desktopIconOl.getBoundingClientRect();
     const relativeX = mPos.x - rect.left;
     const relativeY = mPos.y - rect.top;
 
@@ -163,7 +214,8 @@ export namespace DesktopIconAlignmentHelper {
     }
 
     markedBtnIds.forEach(id => {
-        const btnIconElmnt = document.getElementById(`desktopIcon_li${id}`) as HTMLElement;
+        // §1.5 — dropped redundant `as HTMLElement` cast.
+        const btnIconElmnt = document.getElementById(`desktopIcon_li${id}`);
         movedBtnIds.push(id);
     
         if (btnIconElmnt) {
@@ -188,7 +240,11 @@ export namespace DesktopIconAlignmentHelper {
     return  markedBtnIds;
   }
 
-  export const correctMisalignedIcons =(movedBtnIds: string[], GRID_SIZE:number, ROW_GAP:number ): void=> {
+  /**
+   * §1.4 — `desktopIconOl` is supplied by the caller via the
+   * component's `@ViewChild` ElementRef.
+   */
+  export const correctMisalignedIcons =(movedBtnIds: string[], GRID_SIZE:number, ROW_GAP:number, desktopIconOl: HTMLElement | null ): void=> {
 
     const heightAdjustment = 20;
     const iconWidth = GRID_SIZE;
@@ -197,10 +253,9 @@ export namespace DesktopIconAlignmentHelper {
     const effectiveRowHeight = iconHeight + rowGap; 
     const offsetY = 5;
 
-    const grid = document.getElementById('desktopIcon_ol');
-    if (!grid) return;
+    if (!desktopIconOl) return;
 
-    const gridRect = grid.getBoundingClientRect();
+    const gridRect = desktopIconOl.getBoundingClientRect();
 
     movedBtnIds.forEach((id) => {
       const btnIcon = document.getElementById(`desktopIcon_li${id}`);

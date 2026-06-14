@@ -11,6 +11,7 @@ export namespace Constants{
     export const BACK_TICK= '`';
     export const TILDE= '~';
     export const DASH= '-';
+    export const UNDERSCORE = '_';
     export const HASH= '#';
     export const BACK_SLASH= '\\';
     export const DOUBLE_SLASH = '//';
@@ -31,6 +32,8 @@ export namespace Constants{
     export const SCREEN_SAVER_BASE_PATH = 'osdrive/Cheetah/Themes/ScreenSavers/';
     export const RECYCLE_BIN_PATH = '/Users/Desktop/Recycle Bin';
     export const DESKTOP_PATH = '/Users/Desktop';
+    export const DOCUMENTS_PATH = '/Users/Documents';
+    export const DOWNLOADS_PATH = '/Users/Downloads';
     export const USER_BASE_PATH = '/Users';
 
     export const FILE_EXPLORER = 'fileexplorer';
@@ -38,6 +41,7 @@ export namespace Constants{
     export const FOLDER = 'folder';
     export const NEW_FOLDER = 'New Folder';
     export const CHEETAH = 'cheetah';
+    export const CLIPBOARD = 'clipboard';
     export const WIN_EXPLR = 'win_explr_';
 
     export const DEFAULT_MENU_ORDER = 'DefaultMenuOrder';
@@ -54,8 +58,14 @@ export namespace Constants{
     export const NESTED_MENU_OPTION =  'nested-menu';
     export const FILE_EXPLORER_FILE_MANAGER_MENU_OPTION = 'file-explorer-file-manager-menu';
     export const POWER_MENU_OPTION = 'power-menu';
+    export const CHECKABLE_MENU_OPTION = 'checkable-menu';
 
     export const RESERVED_ID_RUNNING_PROCESS_SERVICE = 4;
+    export const OS_NAME = 'Cheetah OS';
+    export const OS_VERSION = '5.6.8';
+    export const OS_COPYRIGHT = '© 2026 Cheetah Software Inc. All rights reserved.';
+    export const OS_BUILD = '260609' //date-based build number, in the format YYMMDD, used to track specific builds and updates of the OS.;
+    export const OS_ARCHITECTURE = 'WEB-BASED';
 
     export const ON = 'On';
     export const OFF = 'Off'
@@ -75,6 +85,7 @@ export namespace Constants{
 
     export const CHEETAH_PWR_KEY = 'cheetahPwrKey';
     export const CHEETAH_LOGON_KEY = 'cheetahLogonKey';
+    export const CHEETAH_MOBILE_BANNER_KEY = 'cheetahMobileBannerKey';
     export const CHEETAH_DEFAULT_SETTINGS_KEY = 'cheetahDefaultSettingsKey';
     export const FILE_SVC_RESTORE_KEY = 'fileServiceRestoreKey';
     export const FILE_SVC_FILE_ITERATE_KEY = 'fileServiceFileIterateKey';
@@ -136,6 +147,8 @@ export namespace Constants{
     export const USER_OPENED_APPS = 'usrOpenedApps'; 
     export const USER_OPENED_APPS_INSTANCE = 'usrOpenedAppsInstances';
 
+    export const CLIPBOARD_DATA = 'clipBoardData';
+
     export const MERGED_TASKBAR_ENTRIES = 'Merged Entries Icon';
     export const DISTINCT_TASKBAR_ENTRIES = 'Distinct Entries Icon';
 
@@ -162,6 +175,11 @@ export namespace Constants{
 
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_IS_USER_OPENED_APPS_RESTORED_VALUE = FALSE;
+
+    export const DEFAULT_ENFORCE_VIEWPORT_BOUNDS = 'DEFAULT_ENFORCE_VIEWPORT_BOUNDS';
+    
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_ENFORCE_VIEWPORT_BOUNDS_VALUE = TRUE;
 
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
@@ -229,7 +247,7 @@ export namespace Constants{
 
     export const FILE_EXTENSION_MAP = [
         ['.url','Shortcut File'],
-        ['.txt','Text Document'],
+        ['.txt','Text Document'],   
         ['.log','Log File'],
         ['.wasm','WASM File'],
         ['.properties','Properties File '],
@@ -300,5 +318,27 @@ export namespace Constants{
     
     export const DESKTOP_PICTURE_SET = ['crown_station.jpg', 'cyber_city.jpg', 'fractal_design.jpeg', 'landscape.jpg',
         'mineral_heart.jpg', 'summer_vibe.jpg', 'sun_set.jpg', 'win_seven.jpg']
+
+
+    export const FILE_SVC_FILE_TITLE ='File';
+    export const FILE_SVC_FOLDER_TITLE ='Folder';
+
+    export const FILE_SVC_PERMANENTLY_DELETE_FILE_MSG = 'Are you sure that you want to permanently delete this file?';
+    export const FILE_SVC_PERMANENTLY_DELETE_FOLDER_MSG = 'Are you sure that you want to permanently delete this folder?';
+
+    export const FILE_SVC_FILE_IN_USE_TITLE = 'File in use';
+    export const FILE_SVC_FILE_IN_USE_MSG = `The action can't be completed because the file is open in another program`;
+
+    export const FILE_SVC_FOLDER_IN_USE_TITLE = 'Folder in use';
+    export const FILE_SVC_FOLDER_IN_USE_MSG = `The action can't be completed because the folder or a file in it is open in another program`;
+
+    export const FILE_SVC_MOVE_FILE_TO_RECYCLE_BIN_MSG = 'Are you sure that you want to move this file to the Recycle Bin?';
+    export const FILE_SVC_MOVE_FOLDER_TO_RECYCLE_BIN_MSG = 'Are you sure that you want to move this folder to the Recycle Bin?';
+
+    export const FILE_SVC_DELETE_FILE_TITLE = 'Delete file';
+    export const FILE_SVC_DELETE_FOLDER_TITLE = 'Delete folder';
+    export const FILE_SVC_DELETE_CONFIRMATION_TITLE = 'Delete Confirmation';
+    export const FILE_SVC_DELETE_SHORTCUT_TITLE = 'Delete Shortcut';
+
         
 }

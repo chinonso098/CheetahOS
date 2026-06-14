@@ -25,6 +25,19 @@
     /* bottom: 0; */
 }
 
+/* Hover styling moved out of inline [style] bindings into pure CSS. */
+.cheetah-start-button:hover{
+    background-color: hsla(0,0%,30%,60%);
+}
+
+.cheetah-start-button svg{
+    fill: #fff;
+}
+
+.cheetah-start-button:hover svg{
+    fill: #76B9ED;
+}
+
 .main-taskbar-search-cntnr{
     width: 40px;
     height: 40px;

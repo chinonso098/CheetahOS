@@ -22,7 +22,7 @@
 // import { BaseService } from "./base.service.interface";
 // import { ProcessIDService } from "./process.id.service";
 // import { RunningProcessService } from "./running.process.service";
-// import { SessionManagmentService } from "./session.management.service";
+// import { SessionManagementService } from "./session.management.service";
 // import { UserNotificationService } from "./user.notification.service";
 // import { Process } from "src/app/system-files/process";
 // import { Service } from "src/app/system-files/service";
@@ -97,7 +97,7 @@
 //     private _runningProcessService!:RunningProcessService;
 //     private _processIdService!:ProcessIDService;
 //     private _userNotificationService:UserNotificationService
-//     private _sessionManagmentService:SessionManagmentService;
+//     private _sessionManagementService:SessionManagementService;
 
 //     private _isCalculated = false;
 //     private _usedStorageSizeInBytes = 0;
@@ -120,7 +120,7 @@
 
 
 // 	constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService, userNotificationService:UserNotificationService,
-//                 sessionManagmentService:SessionManagmentService ){ 
+//                 sessionManagementService:SessionManagementService ){ 
 		
 //         this._fileExistsMap =  new Map<string, string>();
 //         this._restorePoint =  new Map<string, string>();
@@ -130,7 +130,7 @@
 //         this._processIdService = processIDService;
 //         this._runningProcessService = runningProcessService;
 //         this._userNotificationService = userNotificationService;
-//         this._sessionManagmentService = sessionManagmentService;
+//         this._sessionManagementService = sessionManagementService;
 
 //         this.processId = this._processIdService.getNewProcessId();
 //         this._runningProcessService.addProcess(this.getProcessDetail());
@@ -1331,7 +1331,7 @@
 //     }
 
 // 	private retrievePastSessionData(key:string):void{
-//         const sessionData = this._sessionManagmentService.getFileServiceSession(key) as Map<string, string>;
+//         const sessionData = this._sessionManagementService.getFileServiceSession(key) as Map<string, string>;
 //         console.log(`${key} sessionData:`, sessionData);
 //         if(sessionData){
 //             if(key === this.fileServiceRestoreKey)

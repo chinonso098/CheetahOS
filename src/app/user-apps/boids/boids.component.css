@@ -1,14 +1,34 @@
-.boid-main-cntnr{
+/* .boid-main-cntnr{
   width: 900px;
   height: 480px;
+} */
+
+.boid-main-cntnr{
+  /* Was 900x480 fixed. Now fills the primary window so the p5 canvas
+     can grow/shrink with drag-resize. Floors protect the slider panel
+     and keep the simulation readable. */
+  width: 100%;
+  height: 100%;
+  min-width: 480px;
+  min-height: 320px;
+  position: relative;
+  cursor: default;
 }
+
 
 .boid-cntnr {
   position: relative;
-  width: 900px;
-  height: 480px;
-  z-index: 1;
+  width: 100%;
+  height: 100%;
+  /* Do NOT set z-index here. The ngResizable directive appends its
+     edge handles to .window-container with default stacking
+     (z-index:auto). A child stacking context with z-index:1 paints
+     above those handles and swallows the 2px hit-strip at the window
+     edges, so the resize cursors never appear. .controls keeps its
+     own z-index:2 to stay above the canvas, which still works. */
 }
+
+.boid-cntnr canvas { pointer-events: none; }
 
 .controls {
   position: absolute;
@@ -32,6 +52,7 @@
   font-style: normal;
   font-weight: 300;
 }
+
 
 input[type="range"] {
   width: 100%;

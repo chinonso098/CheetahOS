@@ -67,18 +67,37 @@ import {trigger, transition, state, animate, style, keyframes} from '@angular/an
     ]);
 
 
+    /**
+     * Maximize / restore animation.
+     *
+     * Geometry notes:
+     *   - The window host element is `position: absolute` inside
+     *     `.ol-desktopIcon-grid` (the nearest positioned ancestor), which is
+     *     already sized to `calc(100vh - 40px)` to exclude the taskbar.
+     *     Therefore `height: 100%` in the maximized state already stops at the
+     *     top of the taskbar - subtracting another 40px would leave a gap.
+     *
+     *   - The `restore` state explicitly restores `left` and `top` via the
+     *     `winLeft` / `winTop` params. Without these, the inline `left:0;top:0`
+     *     written by the maximized state would linger after the transition
+     *     (Angular's animation engine does not clear properties that aren't
+     *     present in the target state, and ngStyle's KeyValueDiffer cannot
+     *     detect "no change" in the bound object to force a re-write).
+     */
     export const maximizeRestoreAnimation = trigger('maximizeRestore', [
         state('restore', style({
             opacity: 1,
             width :'{{winWidth}}',
             height : '{{winHeight}}',
-            transform : '{{winTransform}}', 
+            left : '{{winLeft}}',
+            top : '{{winTop}}',
+            transform : '{{winTransform}}',
             zIndex: '{{winZIndex}}',
-        }),{params:{ winWidth: '',winHeight: '', winTransform: '', winZIndex:''}}),
+        }),{params:{ winWidth: '',winHeight: '', winLeft: '0px', winTop: '0px', winTransform: '', winZIndex:''}}),
         state('maximized', style({
             opacity: 1,
             width :'100%',
-            height : 'calc(100% - 40px)',
+            height : '100%',
             left : 0,
             right : 0,
             top : 0,

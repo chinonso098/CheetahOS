@@ -8,16 +8,17 @@ import { ComponentType, ProcessType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { SortingInterface } from './sorting.interface';
 import { RefreshRates, RefreshRatesIntervals, TableColumns,DisplayViews, ResourceUtilization } from './taskmanager.enum';
+import { CheckableMenu } from 'src/app/shared/system-component/menu/menu.types';
 import { UserNotificationService } from 'src/app/shared/system-service/user.notification.service';
-import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
-import * as htmlToImage from 'html-to-image';
 import { Constants } from 'src/app/system-files/constants';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 import { Service } from 'src/app/system-files/service';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { InformationUpdate } from 'src/app/system-files/common.interfaces';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { CommonFunctions } from 'src/app/system-files/common.functions';
 
 
 @Component({
@@ -38,12 +39,18 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   private _maximizeWindowSub!: Subscription;
   private _minimizeWindowSub!: Subscription;
+  private _windowResizeSub!: Subscription;
+
+  /* Floors used to gate the resize handler so we don't react to
+     transient sub-min sizes from drag-resize. */
+  readonly MIN_WIDTH_PX = 480;
+  readonly MIN_HEIGHT_PX = 320;
 
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _notificationService!:UserNotificationService;
   private _windowService!:WindowService;
-  private _sessionManagmentService!:SessionManagmentService;
+  private _sessionManagementService!:SessionManagementService;
   private _systemNotificationService!:SystemNotificationService;
   private _renderer: Renderer2;
   private _appState!:AppState;
@@ -51,13 +58,47 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   private _processListChangeSub!: Subscription;
   private _taskmgrRefreshIntervalSub!: Subscription;
-  private _chnageTaskmgrRefreshIntervalSub!:Subject<number>;
-  private _currentSortingOrder!:any;
+  /** Emits a new polling interval (ms) whenever the user changes the refresh rate. */
+  private _changeRefreshRateSubject!:Subject<number>;
+  /** Subscription to the refresh-rate-change pipeline; tracked so it can be torn down. */
+  private _refreshRateSwitchSub!: Subscription;
+  private _currentSortingOrder:'asc' | 'desc' = 'asc';
 
   private _sorting:SortingInterface ={
     column: '',
     order: 'asc',
-  }  
+  }
+
+  /**
+   * The physical left-to-right order of the table columns. Both the header
+   * row and every body row follow this order, so the array index doubles as
+   * the cell index when we show/hide a column.
+   */
+  private readonly _columnOrder:string[] = [
+    TableColumns.NAME, TableColumns.TYPE, TableColumns.STATUS, TableColumns.PID,
+    TableColumns.PROCESS_NAME, TableColumns.CPU, TableColumns.MEMORY,
+    TableColumns.DISK, TableColumns.NETWORK, TableColumns.GPU, TableColumns.POWER_USAGE,
+  ];
+
+  /**
+   * Ascending comparators keyed by column. `sortTable` multiplies the result
+   * by -1 to get descending order, so each comparator only needs to define
+   * the "smallest first" direction. Numeric columns subtract; text columns
+   * use localeCompare (which correctly returns 0 for equal values, keeping
+   * the sort stable).
+   */
+  private readonly _ascendingComparators:Record<string, (a:Process, b:Process) => number> = {
+    [TableColumns.CPU]:          (a, b) => a.getCpuUsage - b.getCpuUsage,
+    [TableColumns.GPU]:          (a, b) => a.getGpuUsage - b.getGpuUsage,
+    [TableColumns.MEMORY]:       (a, b) => a.getMemoryUsage - b.getMemoryUsage,
+    [TableColumns.DISK]:         (a, b) => a.getDiskUsage - b.getDiskUsage,
+    [TableColumns.NETWORK]:      (a, b) => a.getNetworkUsage - b.getNetworkUsage,
+    [TableColumns.PID]:          (a, b) => a.getProcessId - b.getProcessId,
+    [TableColumns.NAME]:         (a, b) => a.getProcessName.localeCompare(b.getProcessName),
+    [TableColumns.PROCESS_NAME]: (a, b) => a.getProcessName.localeCompare(b.getProcessName),
+    [TableColumns.POWER_USAGE]:  (a, b) => a.getPowerUsage.localeCompare(b.getPowerUsage),
+    [TableColumns.TYPE]:         (a, b) => a.getType.localeCompare(b.getType),
+  };
 
   private sleepNumber = 0;
   private sleepCounter = 0;
@@ -75,6 +116,16 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   powerColumnVisible = true;
   processNameColumnVisible = false;
   typeColumnVisible = false;
+
+  /** Discriminator that tells <cos-menu> to render the checkable variant. */
+  checkableMenuOption = Constants.CHECKABLE_MENU_OPTION;
+
+  /**
+   * Backing data for the column show/hide context menu. Built once in
+   * ngOnInit; each item's `checked` flag is kept in sync by
+   * toggleColumnVisibility so the menu reflects the live column state.
+   */
+  columnMenuItems: CheckableMenu[] = [];
 
   cntxtMenuStyle:Record<string, unknown> = {};
   thStyle:Record<string,unknown> = {};
@@ -98,7 +149,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   closingNotAllowed:string[] = ["system", "desktop", "filemanager", "taskbar", "startbutton", "clock", "taskbarentry", "startmenu", "volume", "search",
     "cmpnt_ref_svc", "file_mgr_svc", "file_svc", "menu_svc", "notification_svc", "pid_gen_svc", "rning_proc_svc", "scripts_svc",
     "session_mgmt_svc", "state_mgmt_svc","trgr_proc_svc", "window_mgmt_svc", "audio_svc", "activity_tracking_svc", "file_indexing_svc"];
-  groupedData: any = {};
+  groupedData:Record<string, Process[]> = {};
   selectedRefreshRate = 0;
 
   cpuUtil = 0;
@@ -110,14 +161,14 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}taskmanager.png`;
-  isMaximizable=false;
+  isMaximizable=true;
   name = 'taskmanager';
   processId = 0;
   type = ComponentType.System;
   displayName = 'Task Manager';
 
 
-  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, sessionManagmentService:SessionManagmentService,
+  constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, sessionManagementService:SessionManagementService,
                notificationService:UserNotificationService, renderer: Renderer2 ,windowService:WindowService,
                systemNotificationService:SystemNotificationService) { 
 
@@ -125,7 +176,7 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this._runningProcessService = runningProcessService;
     this._notificationService = notificationService;
     this._windowService = windowService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
     this._systemNotificationService = systemNotificationService;
     this._renderer = renderer;
 
@@ -134,11 +185,16 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     this._processListChangeSub = this._runningProcessService.processListChangeNotify.subscribe(() =>{this.updateRunningProcess();})
     this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow();})
     this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe((p) =>{this.minimizeWindow(p)})
+    this._windowResizeSub = this._windowService.resizeProcessWindowNotify.subscribe((info:WindowResizeInfo) => {
+      if(info.pId !== this.processId) return;
+      if(info.widthPx < this.MIN_WIDTH_PX || info.heightPx < this.MIN_HEIGHT_PX) return;
+      this.onWindowResize();
+    });
     this._currentSortingOrder = this._sorting.order;
 
-    this._chnageTaskmgrRefreshIntervalSub = new Subject<number>();
+    this._changeRefreshRateSubject = new Subject<number>();
 
-    this.refreshRateInterval = RefreshRatesIntervals.NOMRAL;
+    this.refreshRateInterval = RefreshRatesIntervals.NORMAL;
     this.selectedRefreshRate = RefreshRates.NORMAL;
     this.viewOptions = this.detailedView; 
   }
@@ -147,21 +203,46 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   ngOnInit(): void {
    this.processes = this._runningProcessService.getProcesses();
    this.services = this._runningProcessService.getServices();
+   this.buildColumnMenuItems();
    //this.groupTableBy(); -- work on table grouping...someday
+  }
+
+  /**
+   * Builds the checkable items shown in the column show/hide context menu.
+   * The order matches the right-click menu in Windows Task Manager (Name is
+   * always shown, so it is intentionally omitted). Each item's action flips
+   * the matching column's visibility.
+   */
+  private buildColumnMenuItems():void{
+    const toggleableColumns:string[] = [
+      TableColumns.TYPE, TableColumns.STATUS, TableColumns.PID, TableColumns.PROCESS_NAME,
+      TableColumns.CPU, TableColumns.MEMORY, TableColumns.DISK, TableColumns.NETWORK,
+      TableColumns.GPU, TableColumns.POWER_USAGE,
+    ];
+
+    this.columnMenuItems = toggleableColumns.map(column => ({
+      label: column,
+      checked: this.isColumnVisible(column),
+      action: () => this.toggleColumnVisibility(column),
+    }));
   }
 
   ngOnDestroy(): void {
     this._processListChangeSub?.unsubscribe();
     this._taskmgrRefreshIntervalSub?.unsubscribe();
-    this._chnageTaskmgrRefreshIntervalSub?.unsubscribe();
+    this._refreshRateSwitchSub?.unsubscribe();
+    this._changeRefreshRateSubject?.unsubscribe();
     this._maximizeWindowSub?.unsubscribe();
+    this._minimizeWindowSub?.unsubscribe();
+    this._windowResizeSub?.unsubscribe();
+    
     
     this.sleepCounter = 0;
     this.processNumberToSuspend = 0;
     this.sleepNumber = 0;
   }
 
-  ngAfterViewInit(): void {
+  async ngAfterViewInit(): Promise<void> {
 
     //this.setTaskMangrWindowToFocus(this.processId); 
 
@@ -179,7 +260,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       this.sortTable(this._sorting.column, false);
     });
 
-    this._chnageTaskmgrRefreshIntervalSub.pipe(
+    // When the user changes the refresh rate, switchMap tears down the old
+    // interval and starts a fresh one. The resulting subscription is stored
+    // in `_refreshRateSwitchSub` so ngOnDestroy can clean it up (previously
+    // it was discarded, leaking a timer that kept firing after close).
+    this._refreshRateSwitchSub = this._changeRefreshRateSubject.pipe(
       switchMap( newRefreshRate => {
         //un-sub from current interval
         this._taskmgrRefreshIntervalSub?.unsubscribe();   
@@ -192,27 +277,13 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     });
 
     this.synchronizeBodyCntntAndBodyCntnr();
-    setTimeout(()=>{
-      this.captureComponentImg();
-    },this.SECONDS_DELAY) 
+    await CommonFunctions.sleep(this.SECONDS_DELAY);
+    await this.captureComponentImg();
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.tskManagerRootContainer.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
-
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
-}
-
+  async captureComponentImg(): Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.tskManagerRootContainer, this.processId, this.name, this.icon, this._windowService);
+  }
 
   isDescSorting(column: string): boolean {
     return this._sorting.column === column && this._sorting.order === 'desc';
@@ -225,10 +296,28 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
+    // Any left-click inside the Task Manager (empty space, a row, a tab, etc.)
+    // dismisses the column context menu. This runs before the focus check
+    // below so an already-focused window still closes the menu.
+    this.hideContextMenu();
+
     if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
     this.hideContextMenu();
+  }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the Task Manager (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu. The desktop's menu is opened by a (contextmenu) handler on the
+    // desktop root, which receives this event as it bubbles up the DOM.
+    // Stopping propagation here means the event never reaches the desktop,
+    // so its menu never opens — no shared service flag required.
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
   }
 
   closeHeaderList():void{
@@ -238,136 +327,73 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   updateRunningProcess():void{
     this.processes = this._runningProcessService.getProcesses();
 
-    setTimeout(()=>{
-      this.applyDefaultColumnVisibility();
-    }, 10);
- 
+    setTimeout(()=>{ this.applyDefaultColumnVisibility();}, 10);
   }
 
   refreshRate(refreshRate:number):void{
     const refreshRatesIntervals:number[] = [RefreshRatesIntervals.PAUSED,RefreshRatesIntervals.LOW,
-                                          RefreshRatesIntervals.NOMRAL,RefreshRatesIntervals.HIGH];
+                                          RefreshRatesIntervals.NORMAL,RefreshRatesIntervals.HIGH];
 
     if(refreshRate >= RefreshRates.PAUSED && refreshRate <= RefreshRates.HIGH){
       this.refreshRateInterval = refreshRatesIntervals[refreshRate];
       this.selectedRefreshRate =  refreshRate;
-      this._chnageTaskmgrRefreshIntervalSub.next(this.refreshRateInterval);
+      this._changeRefreshRateSubject.next(this.refreshRateInterval);
     }
   }
 
   sortTable(column: string,  isSortTriggered:boolean): void {
 
+    // A direct click on a header toggles the direction and (for the basic,
+    // non-numeric columns) repaints the header highlight. The periodic
+    // refresh also calls this method with isSortTriggered === false to keep
+    // the rows ordered as the (fake) usage numbers change.
     if(isSortTriggered){
       this._currentSortingOrder = this.isDescSorting(column) ? 'asc' : 'desc';
       this._sorting = {column, order: this._currentSortingOrder };
-      this.thStyle = {
-        'background-color': '#ffffff'
-      }
-      this.thStyle1 = {
-        'background-color': '#ffffff'
-      }
-      this.thStyle2 = {
-        'background-color': '#ffffff'
-      }
-      this.thStyle3 = {
-        'background-color': '#ffffff'
-      }
-      this.thStyle4 = {
-        'background-color': '#ffffff'
-      }
+      this.resetBasicHeaderHighlights();
     }
-  
-    if(column == TableColumns.CPU){
-      if(this._currentSortingOrder == 'asc'){
-          this.processes = this.processes.sort((objA, objB) => objB.getCpuUsage - objA.getCpuUsage);
-      }else{
-        this.processes = this.processes.sort((objA, objB) => objB.getCpuUsage - objA.getCpuUsage).reverse();
-      }
-    }else if(column == TableColumns.GPU){
-      if(this._currentSortingOrder == 'asc'){
-          this.processes = this.processes.sort((objA, objB) => objB.getCpuUsage - objA.getCpuUsage);
-      }else{
-        this.processes = this.processes.sort((objA, objB) => objB.getCpuUsage - objA.getCpuUsage).reverse();
-      }
-    } else if (column == TableColumns.MEMORY){
-      if(this._currentSortingOrder == 'asc'){
-        this.processes = this.processes.sort((objA, objB) => objB.getMemoryUsage - objA.getMemoryUsage);
-      }else{
-        this.processes = this.processes.sort((objA, objB) => objB.getMemoryUsage - objA.getMemoryUsage).reverse();
-      }
-    }else if(column == TableColumns.DISK){
-      if(this._currentSortingOrder == 'asc'){
-        this.processes = this.processes.sort((objA, objB) => objB.getDiskUsage - objA.getDiskUsage);
-      }else{
-        this.processes = this.processes.sort((objA, objB) => objB.getDiskUsage - objA.getDiskUsage).reverse();
-      }
-    }else if(column == TableColumns.NETWORK){
-      if(this._currentSortingOrder == 'asc'){
-        this.processes = this.processes.sort((objA, objB) => objB.getNetworkUsage - objA.getNetworkUsage);
-      }else{
-        this.processes = this.processes.sort((objA, objB) => objB.getNetworkUsage - objA.getNetworkUsage).reverse();
-      }
-    }else if(column == TableColumns.PID){
-      this.thStyle2 = {
-        'background-color': '#d0ecfc'
-      }
-      if(this._currentSortingOrder == 'asc'){
-        this.processes = this.processes.sort((objA, objB) => objB.getProcessId - objA.getProcessId);
-      }else{
-        this.processes = this.processes.sort((objA, objB) => objB.getProcessId - objA.getProcessId).reverse();
-      }
-    }else if(column == TableColumns.NAME){
-      this.thStyle = {
-        'background-color': '#d0ecfc'
-      }
-      if(this._currentSortingOrder == 'asc'){
-        this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? -1 : 1;
-        });
-      }else{
-        this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? -1 : 1
-        }).reverse();
-      }
-    }else if(column == TableColumns.PROCESS_NAME){
-      this.thStyle3 = {
-        'background-color': '#d0ecfc'
-      }
-      if(this._currentSortingOrder == 'asc'){
-        this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? -1 : 1;
-        });
-      }else{
-        this.processes = this.processes.sort((objA, objB) => {
-          return objA.getProcessName < objB.getProcessName ? -1 : 1
-        }).reverse();
-      }
-    }else if(column == TableColumns.POWER_USAGE){
-      this.thStyle4 = {
-        'background-color': '#d0ecfc'
-      }
-      if(this._currentSortingOrder == 'asc'){
-        this.processes = this.processes.sort((objA, objB) => {
-          return objA.getPowerUsage < objB.getPowerUsage ? -1 : 1;
-        });
-      }else{
-        this.processes = this.processes.sort((objA, objB) => {
-          return objA.getPowerUsage < objB.getPowerUsage ? -1 : 1
-        }).reverse();
-      }
-    }else if(column == TableColumns.TYPE){
-      this.thStyle1 = {
-        'background-color': '#d0ecfc'
-      }
-      if(this._currentSortingOrder == 'asc'){
-        this.processes = this.processes.sort((objA, objB) => {
-          return objA.getType < objB.getType ? -1 : 1;
-        });
-      }else{
-        this.processes = this.processes.sort((objA, objB) => {
-          return objA.getType < objB.getType ? -1 : 1
-        }).reverse();
-      }
+
+    this.applySort(column);
+  }
+
+  /**
+   * Reorders `this.processes` by the given column. Numeric columns sort
+   * numerically, text columns alphabetically; the active direction
+   * (asc/desc) is applied by flipping the comparator's sign. Unknown or
+   * empty columns (e.g. the initial state before any sort) are ignored.
+   */
+  private applySort(column: string): void {
+    const ascendingComparator = this._ascendingComparators[column];
+    if(!ascendingComparator) return;
+
+    // Keep the highlight on the active basic column. (Numeric columns are
+    // highlighted separately through setThHeaderContainerColor in the
+    // template, so they intentionally have no entry here.)
+    this.highlightSortedBasicHeader(column);
+
+    const directionMultiplier = this._currentSortingOrder === 'asc' ? 1 : -1;
+    this.processes = [...this.processes].sort((a, b) => directionMultiplier * ascendingComparator(a, b));
+  }
+
+  /** Clears the highlight on every basic (text) column header. */
+  private resetBasicHeaderHighlights(): void {
+    const whiteBackground = { 'background-color': '#ffffff' };
+    this.thStyle  = { ...whiteBackground };
+    this.thStyle1 = { ...whiteBackground };
+    this.thStyle2 = { ...whiteBackground };
+    this.thStyle3 = { ...whiteBackground };
+    this.thStyle4 = { ...whiteBackground };
+  }
+
+  /** Highlights the header of the basic (text) column that is currently sorted. */
+  private highlightSortedBasicHeader(column: string): void {
+    const highlight = { 'background-color': '#d0ecfc' };
+    switch(column){
+      case TableColumns.NAME:         this.thStyle  = highlight; break;
+      case TableColumns.TYPE:         this.thStyle1 = highlight; break;
+      case TableColumns.PID:          this.thStyle2 = highlight; break;
+      case TableColumns.PROCESS_NAME: this.thStyle3 = highlight; break;
+      case TableColumns.POWER_USAGE:  this.thStyle4 = highlight; break;
     }
   }
 
@@ -376,18 +402,21 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
 
-    const uId = `${this.name}-${this.processId}`;
-    this._runningProcessService.addEventOriginator(uId);
-
     this.cntxtMenuStyle = {
       'display': 'block', 
+      'position': 'absolute',
       'width': '180px', 
       'transform':`translate(${x}px, ${y - 65}px)`,
       'z-index': 2,
       'opacity': 1
     }
 
+    // Open our own column menu and stop here: preventDefault() kills the
+    // native browser menu and stopPropagation() keeps the event from
+    // bubbling to the desktop root, so the desktop context menu stays shut.
+    // (Replaces the old addEventOriginator side-channel coordination.)
     evt.preventDefault();
+    evt.stopPropagation();
   }
 
   hideContextMenu():void{
@@ -461,8 +490,10 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   showDefaultPane():void{
-    const tskmgrProcessPane = document.getElementById('tskmgr-process-pane');
-    const tskmgrProcessTab = document.getElementById('tskmgr-process-tab');
+    // IDs are suffixed with the process id so multiple task-manager
+    // instances never resolve to each other's tabs/panes.
+    const tskmgrProcessPane = document.getElementById(`tskmgr-process-pane-${this.processId}`);
+    const tskmgrProcessTab = document.getElementById(`tskmgr-process-tab-${this.processId}`);
 
     if(tskmgrProcessTab && tskmgrProcessPane){
 
@@ -472,10 +503,10 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   showProcessesPane():void{
-    const tskmgrProcessPane = document.getElementById('tskmgr-process-pane');
-    const tskmgrProcessTab = document.getElementById('tskmgr-process-tab');
-    const tskmgrServicePane = document.getElementById('tskmgr-service-pane');
-    const tskmgrServiceTab = document.getElementById('tskmgr-service-tab');
+    const tskmgrProcessPane = document.getElementById(`tskmgr-process-pane-${this.processId}`);
+    const tskmgrProcessTab = document.getElementById(`tskmgr-process-tab-${this.processId}`);
+    const tskmgrServicePane = document.getElementById(`tskmgr-service-pane-${this.processId}`);
+    const tskmgrServiceTab = document.getElementById(`tskmgr-service-tab-${this.processId}`);
 
     if(tskmgrProcessTab && tskmgrServiceTab){
       tskmgrProcessTab.classList.add('active');
@@ -488,11 +519,11 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
   }
 
   showServicesPane():void{
-    const tskmgrProcessPane = document.getElementById('tskmgr-process-pane');
-    const tskmgrProcessTab = document.getElementById('tskmgr-process-tab');
+    const tskmgrProcessPane = document.getElementById(`tskmgr-process-pane-${this.processId}`);
+    const tskmgrProcessTab = document.getElementById(`tskmgr-process-tab-${this.processId}`);
 
-    const tskmgrServicePane = document.getElementById('tskmgr-service-pane');
-    const tskmgrServiceTab = document.getElementById('tskmgr-service-tab');
+    const tskmgrServicePane = document.getElementById(`tskmgr-service-pane-${this.processId}`);
+    const tskmgrServiceTab = document.getElementById(`tskmgr-service-tab-${this.processId}`);
 
     if(tskmgrProcessTab && tskmgrServiceTab){
       tskmgrServiceTab.classList.add('active');
@@ -767,157 +798,70 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
  
     this.applyColumnHeaderVisibility(column);
     this.applyColumnBodyVisibility(column);
+
+    // Keep the menu's checkmark in step with the column's new visibility.
+    const menuItem = this.columnMenuItems.find(item => item.label === column);
+    if(menuItem){
+      menuItem.checked = this.isColumnVisible(column);
+    }
+
+    // A selection from the context menu dismisses it.
+    this.hideContextMenu();
   }
 
   applyDefaultColumnVisibility():void{
-    const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
-      TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
-
-      for(let i = 0; i < tableColumns.length; i++){
-        this.applyColumnHeaderVisibility(tableColumns[i]);
-        this.applyColumnBodyVisibility(tableColumns[i]);
-      }
+    for(const column of this._columnOrder){
+      this.applyColumnHeaderVisibility(column);
+      this.applyColumnBodyVisibility(column);
+    }
   }
 
+  /**
+   * Returns whether a given column is currently visible. The `Name` column
+   * (and any column without a dedicated toggle) is always visible.
+   */
+  private isColumnVisible(column: string): boolean {
+    switch(column){
+      case TableColumns.TYPE:         return this.typeColumnVisible;
+      case TableColumns.STATUS:       return this.statusColumnVisible;
+      case TableColumns.PID:          return this.pidColumnVisible;
+      case TableColumns.PROCESS_NAME: return this.processNameColumnVisible;
+      case TableColumns.CPU:          return this.cpuColumnVisible;
+      case TableColumns.MEMORY:       return this.memoryColumnVisible;
+      case TableColumns.DISK:         return this.diskColumnVisible;
+      case TableColumns.NETWORK:      return this.networkColumnVisible;
+      case TableColumns.GPU:          return this.gpuColumnVisible;
+      case TableColumns.POWER_USAGE:  return this.powerColumnVisible;
+      default:                        return true;
+    }
+  }
+
+  /** Shows or hides a single cell by toggling its inline `display` style. */
+  private setCellDisplay(cell: HTMLElement, visible: boolean): void {
+    if(visible){
+      this._renderer.removeStyle(cell, 'display');
+    }else{
+      this._renderer.setStyle(cell, 'display', 'none');
+    }
+  }
 
   applyColumnHeaderVisibility(column: string) {
     const tableHeader = this.tskMgrTableHeaderCntnt.nativeElement;
-    const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
-      TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
+    const colNum = this._columnOrder.indexOf(column);
+    if(colNum < 0) return;
 
-    const rowNum = 0;
-    const colNum = tableColumns.indexOf(column);
-
-    if(column === TableColumns.TYPE){
-      this.typeColumnVisible
-      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
-      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
-    }
-
-    if(column === TableColumns.STATUS){
-      this.statusColumnVisible
-      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
-      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
-    }
-
-    if(column === TableColumns.PID){
-      this.pidColumnVisible
-      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
-      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
-    }
-
-    if(column === TableColumns.PROCESS_NAME){
-      this.processNameColumnVisible
-      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
-      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
-    }
-
-    if(column === TableColumns.CPU){
-      this.cpuColumnVisible
-      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
-      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
-    }
-
-    if(column === TableColumns.MEMORY){
-      this.memoryColumnVisible
-      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
-      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
-    }
-
-    if(column === TableColumns.DISK){
-      this.diskColumnVisible
-      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
-      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
-    }
-
-    if(column === TableColumns.NETWORK){
-      this.networkColumnVisible
-      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
-      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
-    }
-
-    if(column === TableColumns.GPU){
-      this.gpuColumnVisible
-      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
-      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
-    }
-
-    if(column === TableColumns.POWER_USAGE){
-      this.powerColumnVisible
-      ? this._renderer.removeStyle(tableHeader.rows[rowNum].cells[colNum], 'display')
-      : this._renderer.setStyle(tableHeader.rows[rowNum].cells[colNum], 'display', 'none');
-    }
+    const headerRowIndex = 0;
+    this.setCellDisplay(tableHeader.rows[headerRowIndex].cells[colNum], this.isColumnVisible(column));
   }
 
   applyColumnBodyVisibility(column: string) {
     const tableBody = this.tskMgrTableBodyCntnt.nativeElement;
+    const colNum = this._columnOrder.indexOf(column);
+    if(colNum < 0) return;
 
-    const tableColumns: string[] = [TableColumns.NAME,TableColumns.TYPE,TableColumns.STATUS,TableColumns.PID,TableColumns.PROCESS_NAME,
-                                    TableColumns.CPU,TableColumns.MEMORY,TableColumns.DISK,TableColumns.NETWORK,TableColumns.GPU,TableColumns.POWER_USAGE];
-    
-    const colNum = tableColumns.indexOf(column);
-
-    for( let i = 0; i < this.processes.length; i++){
-
-      if(column === TableColumns.TYPE){
-        this.typeColumnVisible
-        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
-      }
-
-      if(column === TableColumns.STATUS){
-        this.statusColumnVisible
-        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
-      }
-
-      if(column === TableColumns.PID){
-        this.pidColumnVisible
-        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
-      }
-
-      if(column === TableColumns.PROCESS_NAME){
-        this.processNameColumnVisible
-        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
-      }
-
-      if(column === TableColumns.CPU){
-        this.cpuColumnVisible
-        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
-      }
-
-      if(column === TableColumns.MEMORY){
-        this.memoryColumnVisible
-        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
-      }
-
-      if(column === TableColumns.DISK){
-        this.diskColumnVisible
-        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
-      }
-
-      if(column === TableColumns.NETWORK){
-        this.networkColumnVisible
-        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
-      }
-
-      if(column === TableColumns.GPU){
-        this.gpuColumnVisible
-        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
-      }
-
-      if(column === TableColumns.POWER_USAGE){
-        this.powerColumnVisible
-        ? this._renderer.removeStyle(tableBody.rows[i].cells[colNum], 'display')
-        : this._renderer.setStyle(tableBody.rows[i].cells[colNum], 'display', 'none');
-      }
+    const visible = this.isColumnVisible(column);
+    for(let i = 0; i < this.processes.length; i++){
+      this.setCellDisplay(tableBody.rows[i].cells[colNum], visible);
     }
 
     /**
@@ -984,53 +928,54 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     }
   }
 
-  setUtilColoumnColors(cellValue:any){
-    let  baseStyle: Record<string, unknown> = {};
-
+  setUtilColumnColors(cellValue: number | string){
+    // Numeric usage cells (CPU/Memory/Disk/Network/GPU) are colour-coded by
+    // how heavy the load is; the higher the value, the warmer the colour.
     if(typeof cellValue == "number"){
       if(cellValue <= ResourceUtilization.LOW){
-      return baseStyle = {
+        return {
           'text-align':'right',
           'background-color': '#fff4c4'
         };
       }else if(cellValue > ResourceUtilization.LOW && cellValue <= ResourceUtilization.MEDIUM){
-        return baseStyle = {
+        return {
           'text-align':'right',
           'background-color': '#ffecac'
         };
       }else if(cellValue > ResourceUtilization.MEDIUM && cellValue <= ResourceUtilization.HIGH){
-        return baseStyle = {
+        return {
           'text-align':'right',
           'background-color': '#ffa41c'
         };
       }else if (cellValue > ResourceUtilization.HIGH){
-        return baseStyle = {
+        return {
           'text-align':'right',
           'background-color': '#fc6c30', 
         };
       }
     }else if(typeof cellValue =="string"){
+      // The Power-usage cell uses descriptive levels rather than a number.
       if(cellValue == 'Very low'){
-        return baseStyle = {
-            'background-color': '#fff4c4'
-          };
-        }else if(cellValue == 'Low'){
-          return baseStyle = {
-            'background-color': '#ffecac'
-          };
-        }else if(cellValue == 'Moderate'){
-          return baseStyle = {
-            'background-color': '#ffd464'
-          };
-        }else if(cellValue == 'High'){
-          return baseStyle = {
-            'background-color': '#ffa41c'
-          };
-        }else if (cellValue == 'Very high'){
-          return baseStyle = {
-            'background-color': '#fc6c30', 
-          };
-        }       
+        return {
+          'background-color': '#fff4c4'
+        };
+      }else if(cellValue == 'Low'){
+        return {
+          'background-color': '#ffecac'
+        };
+      }else if(cellValue == 'Moderate'){
+        return {
+          'background-color': '#ffd464'
+        };
+      }else if(cellValue == 'High'){
+        return {
+          'background-color': '#ffa41c'
+        };
+      }else if (cellValue == 'Very high'){
+        return {
+          'background-color': '#fc6c30', 
+        };
+      }       
     }
 
     return {};
@@ -1091,30 +1036,20 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
 
     if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
-      //const tskmgrCardBody = this.tskmgrCardBody.nativeElement;
-      //const tbodyWidth = tskmgrCardBody.getBoundingClientRect().width;
-      // console.log('mainWindow?.offsetHeight:',mainWindow?.offsetHeight);
-      // console.log('mainWindow?.offsetWidth:',mainWindow?.offsetWidth);
-      // console.log('maximizeWindow from tskmgrCardBody tbodyWidth:', tbodyWidth);
-  
-      /*
-      -45 (tskmgr footer)
-      -30 (window title and button tab)
-      -20 (taskmgr nav buttons)
-      -3  (span)
-      -19 (tskmgr tabs)
-      -2 (empty div )
-      -1 (body border solid px)
-      -40 (windows taskbar)
-      */
-      const pixelToSubtract = 45 + 30 + 20 + 3 + 19 + 2 + 1 + 40;
-      this.tskmgrTblCntnr.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0) - pixelToSubtract}px`;
-      this.tskmgrTblCntnr.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
 
-
-      //when next you decide to focus on the Window min/max, use the chrome dev mode to see whhich containers 
-      // do not return to their original size on minimize. The minimize functionality for the taskmanger, is 95% there 
+      /* The layout is now fully flex-driven:
+         .tskmgr-root (100%/100%) -> .tskmgr-tabbed-window (flex:1) ->
+         .tskmgr-tab-content -> .tskmgr-tab-pane.active -> .card ->
+         .card-body -> .tskmgr-table-cntnr (flex:1; overflow:auto).
+         The primary window already sizes the host on maximize, so the
+         table container fills the available space automatically. We
+         just clear any leftover inline sizes from a prior imperative
+         pass and re-sync the header column. */
+      const tblCntnr = this.tskmgrTblCntnr?.nativeElement as HTMLElement | undefined;
+      if(tblCntnr){
+        tblCntnr.style.width = '';
+        tblCntnr.style.height = '';
+      }
     }
   }
 
@@ -1125,12 +1060,43 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     if(uId === evtOriginator){
       this._runningProcessService.removeEventOriginator();
 
-      console.log('Set windows backto this:', arg);
+      /* `arg` carried the pre-maximize width so the old code could
+         restore an inline px width on the table container. With the
+         flex layout in place the container reflows on its own when the
+         primary window shrinks back to its prior size, so the arg is
+         no longer needed -- we just clear any inline sizes to make
+         sure CSS wins. */
+      void arg;
+      const tblCntnr = this.tskmgrTblCntnr?.nativeElement as HTMLElement | undefined;
+      if(tblCntnr){
+        tblCntnr.style.width = '';
+        tblCntnr.style.height = '';
+      }
+    }
+  }
 
-      this.tskmgrTblCntnr.nativeElement.style.width = `${arg[0]}px`;
-      
-      // this.tskmgrTblCntnr.nativeElement.style.width = `${arg[0]}px`;
-      // this.tskmgrTblCntnr.nativeElement.style.height = `${arg[1]}px`;
+  /**
+   * Called whenever the primary window broadcasts a live drag-resize.
+   * Both maximizeWindow / minimizeWindow / synchronizeBodyCntntAndBodyCntnr
+   * write inline px sizes onto tskmgrTblCntnr, and alignHeaderAndBodyWidth
+   * writes inline px width/min-width onto the first header cell. Those
+   * pinned values would prevent the layout from shrinking with the
+   * window, so we strip them and let CSS (flex on the container,
+   * table-layout:auto + width:max-content on the table) take over. We do
+   * NOT re-run alignHeaderAndBodyWidth here -- header and body share the
+   * same <table>, so their columns align automatically.
+   */
+  onWindowResize():void {
+    const tblCntnr = this.tskmgrTblCntnr?.nativeElement as HTMLElement | undefined;
+    if(tblCntnr){
+      tblCntnr.style.width = '';
+      tblCntnr.style.height = '';
+    }
+    const headerEl = this.tskMgrTableHeaderCntnt?.nativeElement as HTMLTableSectionElement | undefined;
+    const firstHeaderCell = headerEl?.rows?.[0]?.cells?.[0] as HTMLElement | undefined;
+    if(firstHeaderCell){
+      firstHeaderCell.style.width = '';
+      firstHeaderCell.style.minWidth = '';
     }
   }
 
@@ -1144,12 +1110,12 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
     
       //retrieve refresh state, sort state, and view state

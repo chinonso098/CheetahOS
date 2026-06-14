@@ -1,4 +1,7 @@
-<div class="start-menu-main-container" [@slideStartMenuAnimation]="slideState" id="the-window-startmenu">
+<div class="start-menu-main-container" [@slideStartMenuAnimation]="slideState" id="the-window-startmenu"
+    role="menu" aria-label="Start menu"
+    [attr.inert]="isMenuOpen ? null : ''"
+    (keydown)="onMenuKeydown($event)"  (contextmenu)="silenceCtxEvt($event)">
     <div class="start-menu-main-overlay-container">
         <div class="start-menu-main-overlay-content">
             <div class="start-menu-main-overlay-icon-text-container" id="sm-IconText-Overlay-Cntnr">
@@ -19,7 +22,12 @@
                 <div style="height: 280px;"> </div>
 
                 <div class="start-menu-main-overlay-icon-text-content"
+                    role="menuitem" tabindex="0" aria-label="Open Documents"
                     (click)="openFolderPath(Documents, $event)"
+                    (keydown.enter)="onFolderKeydown(Documents, $event)"
+                    (keydown.space)="onFolderKeydown(Documents, $event)"
+                    (focus)="startMenuOverlaySlideOut()"
+                    (blur)="startMenuOverlaySlideIn()"
                     (mouseenter)="startMenuOverlaySlideOut()"
                     (mouseleave)="startMenuOverlaySlideIn()">
                     <div class="start-menu-overlay-icon">
@@ -34,7 +42,12 @@
                 </div>
 
                 <div class="start-menu-main-overlay-icon-text-content"
+                    role="menuitem" tabindex="0" aria-label="Open Pictures"
                     (click)="openFolderPath(Pictures, $event)"
+                    (keydown.enter)="onFolderKeydown(Pictures, $event)"
+                    (keydown.space)="onFolderKeydown(Pictures, $event)"
+                    (focus)="startMenuOverlaySlideOut()"
+                    (blur)="startMenuOverlaySlideIn()"
                     (mouseenter)="startMenuOverlaySlideOut()"
                     (mouseleave)="startMenuOverlaySlideIn()">
                     <div class="start-menu-overlay-icon">
@@ -49,7 +62,12 @@
                 </div>
 
                 <div class="start-menu-main-overlay-icon-text-content"
+                    role="menuitem" tabindex="0" aria-label="Open Music"
                     (click)="openFolderPath(Music, $event)"
+                    (keydown.enter)="onFolderKeydown(Music, $event)"
+                    (keydown.space)="onFolderKeydown(Music, $event)"
+                    (focus)="startMenuOverlaySlideOut()"
+                    (blur)="startMenuOverlaySlideIn()"
                     (mouseenter)="startMenuOverlaySlideOut()"
                     (mouseleave)="startMenuOverlaySlideIn()">
                     <div class="start-menu-overlay-icon">
@@ -64,7 +82,12 @@
                 </div>
 
                 <div class="start-menu-main-overlay-icon-text-content"
+                    role="menuitem" tabindex="0" aria-label="Power"
                     (click)="power($event)"
+                    (keydown.enter)="onPowerKeydown($event)"
+                    (keydown.space)="onPowerKeydown($event)"
+                    (focus)="startMenuOverlaySlideOut()"
+                    (blur)="startMenuOverlaySlideIn()"
                     (mouseenter)="startMenuOverlaySlideOut()"
                     (mouseleave)="startMenuOverlaySlideIn()">
                     <div class="start-menu-overlay-icon">
@@ -86,11 +109,12 @@
         <div class="start-menu-main-content-list-container">
             <div class="start-menu-main-content-list-content">
 
-                <ol class="start-menu-list-ol" (mouseenter)="onBtnHover()"> 
+                <ol class="start-menu-list-ol" role="menu" aria-label="Apps" tabindex="-1"
+                    (mouseenter)="onBtnHover()" (keydown)="onAppListKeydown($event)"> 
                     <li class="start-menu-list-li"
                         *ngFor="let file of startMenuFiles; let i = index"
                         id="start-menu-list-li-{{i}}">
-                        <button class="start-menu-list-btn" (click)="runProcess(file, $event)">
+                        <button class="start-menu-list-btn" role="menuitem" (click)="runProcess(file, $event)">
                             <div class="start-menu-list-head">
                                 <figure class="start-menu-list-fig">
                                     <img class="start-menu-list-img" [src]="file.getIconPath"/>

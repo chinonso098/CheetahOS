@@ -1,10 +1,17 @@
-<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
+<cos-primarywindow 
+    [runningProcessID]="processId" 
+    [processAppIcon]="icon" 
+    [processAppName]="name" 
+    [isMaximizable]="isMaximizable" 
+    [minimumWindowWidth]="MIN_WIDTH_PX" 
+    [minimumWindowHeight]="MIN_HEIGHT_PX" 
+    [priorUId]="this.priorUId">
     <div class="main-photos__container"  id="photosContainer" #photoContainer>
         <ng-container [ngTemplateOutlet]="defaultView === GALLERY_VIEW ? galleryView : photoView ">
         </ng-container>
         
         <ng-template #galleryView> 
-            <div class="main-gallery__container" (contextmenu)="focusHere($event)" (click)="focusHere($event)" >
+            <div class="main-gallery__container" (contextmenu)="focusHere($event); silenceCtxEvt($event)" (click)="focusHere($event)" >
                 
                 <div class="gallery-option__panel">
                     <ol class="ol-gallery-option__grid">
@@ -212,7 +219,7 @@
                                 <img [src]="scaleImg"/>
                               </div>
                               <div class="photos_toolbar_zoom">
-                                <div class="photo-dropdown" (click)="toggleDropdown()" [class.open]="isOpen">
+                                <div class="photo-dropdown" (click)="toggleDropdown($event)" [class.open]="isOpen">
                                     <div class="photo-dropdown__selected">
                                       {{ currentZoomValue || 'Select background' }}
                                     </div>
@@ -239,7 +246,7 @@
                                 <div class="photos_toolbar_icon" (click)="zoomOut()">
                                     <img [src]="zoomOutImg"/>
                                 </div>
-                                <input type="range" min="25" max="400" value="80"  (input)="onZoomSliderChange($event)">
+                                <input type="range" min="25" max="400" [value]="zoomLevel * 100"  (input)="onZoomSliderChange($event)">
                                 <div class="photos_toolbar_icon" (click)="zoomIn()">
                                     <img [src]="zoomInImg"/>
                                 </div>

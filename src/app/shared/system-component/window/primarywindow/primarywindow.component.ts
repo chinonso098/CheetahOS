@@ -5,10 +5,14 @@ import { CdkDragEnd } from '@angular/cdk/drag-drop';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
+import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 
-import {Subscription } from 'rxjs';
-import { WindowBoundsState, WindowResizeInfo, WindowState } from '../windows.types';
+import {WindowResizeInfo, WindowResizeHost, WindowState, 
+        WindowMaximizeHost, WindowFocusHost, NgResizableEvent, 
+        WindowVisibilityHost, WindowCloseHost, WindowCascadeHost, WindowDragHost, 
+        ClampedPosition} from '../windows.types';
+
 import {openCloseAnimation, hideShowAnimation, maximizeRestoreAnimation} from 'src/app/shared/system-component/window/window.animations';
 import { AnimationEvent } from '@angular/animations';
 
@@ -16,10 +20,25 @@ import { Process } from 'src/app/system-files/process';
 import { SystemNotificationService } from '../../../system-service/system.notification.service';
 import { MenuService } from '../../../system-service/menu.services';
 import { Constants } from 'src/app/system-files/constants';
-import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { WindowConstants } from '../window.constants';
 import { WindowStyleHelper } from '../window.style.helper';
+import { WindowSilhouetteHandler } from '../handler/window.silhouette.handler';
 import { WindowHelper } from '../window.helper';
+import { WindowFocusHandler } from '../handler/window.focus.handler';
+import { WindowMaximizeHandler } from '../handler/window.maximize.handler';
+import { WindowCascadeHandler } from '../handler/window.cascade.handler';
+import { WindowResizeHandler } from '../handler/window.resize.handler';
+import { WindowVisibilityHandler } from '../handler/window.visibility.handler';
+import { WindowCloseHandler } from '../handler/window.close.handler';
+import { WindowDragHandler } from '../handler/window.drag.handler';
+import { SubscriptionBag } from '../subscription.bag';
+
+
+// Header background colors. Kept here (and not in WindowConstants) because
+// they are presentation concerns specific to this component.
+const HEADER_ACTIVE_BG   = 'rgb(24,60,124)';
+const HEADER_INACTIVE_BG = 'rgb(56,56,56)';
+//const CLOSE_BTN_HOVER_BG = 'rgb(139,10,20)';
 
  @Component({
    selector: 'cos-primarywindow',
@@ -28,7 +47,7 @@ import { WindowHelper } from '../window.helper';
    styleUrls: ['./primarywindow.component.css'],
    standalone:false,
  })
- export class PrimaryWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+ export class PrimaryWindowComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy, WindowFocusHost, WindowMaximizeHost, WindowCascadeHost, WindowResizeHost, WindowVisibilityHost, WindowCloseHost, WindowDragHost {
    @ViewChild('primaryWindowContainer') primaryWindowContainer!: ElementRef;
    @ViewChild('primGlassPaneContainer') primGlassPaneContainer!: ElementRef;
 
@@ -37,40 +56,33 @@ import { WindowHelper } from '../window.helper';
    @Input() processAppName = Constants.EMPTY_STRING;  
    @Input() priorUId = Constants.EMPTY_STRING;  
    @Input() isMaximizable = true;  
+   @Input() minimumWindowHeight = 240;
+   @Input() minimumWindowWidth = 160;
    @Input() turnOffWindowOpenCloseAnimation = false;  
    @Input() turnOffWindowStacking = false;  
 
    private _renderer: Renderer2;
    private _runningProcessService!:RunningProcessService;
-   private _sessionManagmentService!:SessionManagmentService;
+   private _sessionManagementService!:SessionManagementService;
    private _systemNotificationServices!:SystemNotificationService;
    private _windowService!:WindowService;
    private _originalWindowsState!:WindowState;
    private _menuService!:MenuService;
+    private _defaultService!:DefaultService;
 
-   private _restoreOrMinSub!:Subscription
-   private _focusOnNextProcessSub!:Subscription;
-   private _focusOnCurrentProcessSub!:Subscription;
-   private _showOnlyCurrentProcessSub!:Subscription;
-   private _removeFocusOnOtherProcessesSub!:Subscription;
-   private _hideOtherProcessSub!:Subscription;
-   private _resizeWindowSub!:Subscription;
-   private _restoreProcessSub!:Subscription;
-   private _restoreProcessesSub!:Subscription;
-   private _showOrSetProcessWindowToFocusSub!:Subscription;
-   private _lockScreenActiveSub!:Subscription;
-   private _desktopActiveSub!:Subscription;
-   private _showTheDesktopSub!:Subscription;
-   private _showOpenWindowsSub!:Subscription;
-   private _positionWindowSub!:Subscription;
+   // All RxJS subscriptions owned by this component are tracked here so
+   // ngOnDestroy is a single `unsubscribeAll` call. Replaces the prior
+   // 14 individual `_xSub!: Subscription` fields and matching unsub lines.
+   private readonly _subs = new SubscriptionBag();
 
   hideWindow = false;
-  disableWindowAnimaion = false;
+  disableWindowAnimation = false;
   windowOpenCloseAction = WindowConstants.OPEN;
   windowHideShowAction = WindowConstants.VISIBLE;
   windowMaxRestoreAction = WindowConstants.RESTORE;
 
-  readonly SECONDS_DELAY = 450;
+  minWindowWidthPx = 240;
+  minWindowHeightPx = 160;
 
   windowTransform =  'translate(0,0)';
   hsZIndex = 2;
@@ -82,6 +94,13 @@ import { WindowHelper } from '../window.helper';
   strWindowZIndex = '0';
   strWindowWidthPx = '0px';
   strWindowHeightPx = '0px';
+  // String-form copies of the current top/left, used as params for the
+  // maximize/restore animation. Without these, the inline `left:0;top:0`
+  // set by the maximized state would never be cleared on restore
+  // (the animation engine does not clear unmentioned properties, and
+  // ngStyle's KeyValueDiffer wouldn't notice a re-set to the same value).
+  strWindowLeftPx = '0px';
+  strWindowTopPx  = '0px';
 
   isWindowMaximizable = true;
   isWindowInFullScreenMode = false;
@@ -97,39 +116,87 @@ import { WindowHelper } from '../window.helper';
   uniqueGlassPaneId = Constants.EMPTY_STRING;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
+
+  // Per-instance silhouette/glass-pane handler. Owns the hidden DIV that
+  // covers this window's footprint when it is hidden / minimized / hover-
+  // previewed. Each window owns its own handler so calls (show, hide,
+  // position, remove) are correctly scoped to this window's pane.
+  private readonly _windowSilhouetteHandler = new WindowSilhouetteHandler();
+
+  // Per-instance focus coordinator. Owns the "who has focus / who is
+  // demoted / who is hover-previewed" decisions previously duplicated
+  // across Primary and Secondary windows. Wired via `bind(...)` in the
+  // constructor, which is safe because the handler reads host state
+  // (e.g. processId) lazily at method-invocation time, not at bind time.
+  private readonly _windowFocusHandler = new WindowFocusHandler();
+
+  // Per-instance maximize / restore coordinator. Owns the full-screen
+  // entry/exit dance (geometry snapshot, animation trigger, z-index
+  // sync) and the three button/double-click entry points.
+  private readonly _windowMaximizeHandler = new WindowMaximizeHandler();
+
+  // Per-instance cascade coordinator. Owns the initial placement
+  // (`stackWindow`) and the per-app cascade-cursor bookkeeping
+  // (`updateWindowBoundsState`).
+  private readonly _windowCascadeHandler = new WindowCascadeHandler();
+
+  // Per-instance resize coordinator. Owns the three ngResizable handlers
+  // and the inbound "please take this size" broadcast.
+  private readonly _windowResizeHandler = new WindowResizeHandler();
+
+  // Per-instance visibility coordinator. Owns the minimize / restore /
+  // show-desktop / lock-screen lifecycle. Co-locates the focus-handoff
+  // publish (focusOnNextProcessWindowNotify / noProcessInFocusNotify) that
+  // the Action #1 regression depended on, so future edits can't lose it.
+  private readonly _windowVisibilityHandler = new WindowVisibilityHandler();
+
+  // Per-instance close coordinator. Owns the close-animation timing,
+  // re-entrancy guard, silhouette teardown, focus-next publish, and
+  // ngOnDestroy WindowService cleanup. Shared with secondary windows.
+  private readonly _windowCloseHandler = new WindowCloseHandler();
+
+  // Per-instance drag coordinator. Owns the CDK drag mouse-down / drag-
+  // end handlers (focus on grab, clamp / repaint / sync on release,
+  // silhouette + cascade-cursor follow-up, drag-active broadcast pair).
+  private readonly _windowDragHandler = new WindowDragHandler();
   
 
     constructor(runningProcessService:RunningProcessService, private changeDetectorRef: ChangeDetectorRef, renderer: Renderer2,
-                windowService:WindowService, sessionManagmentService: SessionManagmentService, systemNotificationServices:SystemNotificationService,
-                menuService: MenuService,){
+                windowService:WindowService, sessionManagementService: SessionManagementService, systemNotificationServices:SystemNotificationService,
+                menuService: MenuService, defaultService: DefaultService){
       this._runningProcessService = runningProcessService;
-      this._sessionManagmentService = sessionManagmentService;
+      this._sessionManagementService = sessionManagementService;
       this._windowService = windowService;
       this._systemNotificationServices = systemNotificationServices;
       this._menuService = menuService;
-
+      this._defaultService = defaultService;
       this._renderer = renderer
-      this._restoreOrMinSub = this._windowService.restoreOrMinimizeProcessWindowNotify.subscribe((p) => {this.restoreHiddenWindow(p)});
-      this._focusOnNextProcessSub = this._windowService.focusOnNextProcessWindowNotify.subscribe((p) => {this.setWindowToFocusAndResetWindowBoundsByPid(p)});
-      this._focusOnCurrentProcessSub = this._windowService.focusOnCurrentProcessWindowNotify.subscribe((p) => { this.setFocsuOnThisWindow(p)});
-      this._removeFocusOnOtherProcessesSub = this._windowService.removeFocusOnOtherProcessesWindowNotify.subscribe((p) => {this.removeFocusOnWindowNotMatchingPid(p)});
-      this._showOnlyCurrentProcessSub = this._windowService.setProcessWindowToFocusOnMouseHoverNotify.subscribe((p) => {this.setWindowToFocusOnMouseHover(p)});
-      this._hideOtherProcessSub = this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.hideWindowNotMatchingPidOnMouseHover(p)});
-      this._restoreProcessSub = this._windowService.restoreProcessWindowOnMouseLeaveNotify.subscribe((p) => {this.restoreWindowOnMouseLeave(p)});
-      this._restoreProcessesSub = this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()});
 
-      this._lockScreenActiveSub = this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()});
-      this._desktopActiveSub = this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()});
+      // Wire the focus handler. Safe to call here even though @Input-derived
+      // fields (processId, uniqueId) are not yet populated: the handler
+      // only stores a reference to `this` and reads those fields lazily.
+      this._windowFocusHandler.bind(this, windowService, runningProcessService);
+      this._windowMaximizeHandler.bind(this, windowService);
+      this._windowCascadeHandler.bind(this, windowService);
+      this._windowResizeHandler.bind(this, windowService);
+      this._windowVisibilityHandler.bind(this, windowService, menuService);
+      this._windowCloseHandler.bind(this, windowService);
+      this._windowDragHandler.bind(this, windowService, defaultService);
 
-      this._showOrSetProcessWindowToFocusSub = this._windowService.showOrSetProcessWindowToFocusOnClickNotify.subscribe((p) => {this.showOrSetProcessWindowToFocusOnClick(p)});
+      // Broadcast-style subscriptions (fan out to every *other* window): keep
+      // on the legacy Subjects with their in-callback guard. These don't need
+      // this.processId, so wiring them in the constructor is fine.
+      this._subs.add(this._windowService.removeFocusOnOtherProcessesWindowNotify.subscribe((p) => {this.removeFocusOnWindowNotMatchingPid(p)}));
+      this._subs.add(this._windowService.setProcessWindowToFocusOnMouseHoverNotify.subscribe((p) => {this.setWindowToFocusOnMouseHover(p)}));
+      this._subs.add(this._windowService.hideOtherProcessesWindowNotify.subscribe((p) => {this.hideWindowNotMatchingPidOnMouseHover(p)}));
+      this._subs.add(this._windowService.restoreProcessWindowOnMouseLeaveNotify.subscribe((p) => {this.restoreWindowOnMouseLeave(p)}));
+      this._subs.add(this._windowService.restoreProcessesWindowNotify.subscribe(() => {this.restorePriorFocusOnWindows()}));
 
-      this._showTheDesktopSub = this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()});
-      this._showOpenWindowsSub = this._menuService.showOpenWindows.subscribe(() => { this.setHideAndShowAllVisibleWindows() });
+      this._subs.add(this._systemNotificationServices.showLockScreenNotify.subscribe(() => {this.lockScreenIsActive()}));
+      this._subs.add(this._systemNotificationServices.showDesktopNotify.subscribe(() => {this.desktopIsActive()}));
 
-      this._resizeWindowSub = this._windowService.resizeProcessWindowNotify.subscribe((p) => {
-        if(p.pId === this.processId)
-          this.onRZWindow(p)
-      });
+      this._subs.add(this._menuService.showTheDesktop.subscribe(() => {this.setHideAndShowAllVisibleWindows()}));
+      this._subs.add(this._menuService.showOpenWindows.subscribe(() => { this.setHideAndShowAllVisibleWindows() }));
     }
 
     get getPrimaryWindowContainerElmnt(): HTMLElement {
@@ -146,34 +213,59 @@ import { WindowHelper } from '../window.helper';
       this._runningProcessService.newProcessNotify.next(this.uniqueId);
       this._windowService.addProcessWindowToWindows(this.uniqueId); 
       this.resetHideShowWindowsList();
+
+      // Per-pid keyed channels. MUST be wired here, not in the constructor:
+      // Angular populates @Input bindings (i.e. `runningProcessID`) between
+      // constructor return and ngOnInit. Subscribing earlier keys every
+      // window's Subject at `undefined`, so the bridge in WindowService
+      // never finds a subscriber when a publisher targets the real pid --
+      // and "focus on next window after close/hide" silently no-ops.
+      const pid = this.processId;
+      this._subs.add(this._windowService.onRestoreOrMinimizeFor(pid).subscribe(() => this.restoreHiddenWindow(pid)));
+      this._subs.add(this._windowService.onFocusOnNextFor(pid).subscribe(() => this.setWindowToFocusAndResetWindowBoundsByPid(pid)));
+      this._subs.add(this._windowService.onFocusOnCurrentFor(pid).subscribe(() => this.setFocusOnThisWindow(pid)));
+      this._subs.add(this._windowService.onShowOrSetFocusFor(pid).subscribe(() => this.showOrSetProcessWindowToFocusOnClick(pid)));
+      this._subs.add(this._windowService.onResizeFor(pid).subscribe(info => this.onRZWindow(info)));
     }
 
     ngAfterViewInit():void{
       this.hideGlassPaneContainer();
       this.setFocusOnWindowAfterInit(this.processId);
-      
-      // set defaultHeightOnOpen and defaultWidthOnOpen  
+
+      // Capture the initial rendered size (defaultHeightOnOpen / defaultWidthOnOpen).
       this.windowHeightPx = this.getPrimaryWindowContainerElmnt.offsetHeight;
       this.windowWidthPx = this.getPrimaryWindowContainerElmnt.offsetWidth;
       this.strWindowZIndex =  String(WindowConstants.MAX_Z_INDEX);
       this.applySizeStyles();
 
-      // cascade position after view is ready
-      if (!this.turnOffWindowStacking)
+      // Decide initial position:
+      //   - Default windows cascade so multiple instances don't stack on top of each other.
+      //   - Windows that opt out of stacking (e.g. the file-transfer dialog) are centered
+      //     on the desktop instead. This branch used to incorrectly require
+      //     `turnOffWindowOpenCloseAnimation` as well, which left non-animated dialogs
+      //     stuck at (0,0).
+      if (!this.turnOffWindowStacking) {
         this.stackWindow();
-      
-      else if(this.turnOffWindowOpenCloseAnimation && this.turnOffWindowStacking){ // file tranfer Dialog
-        const rect = WindowHelper.getDesktopRect();
-        if(rect){
-          // top-left position that centers the element
-          this.windowLeftPx = Math.round((rect.width - this.windowWidthPx) * 0.5);
-          this.windowTopPx  = Math.round((rect.height - this.windowHeightPx) * 0.5);
-          this.applyPositionStyles();
-          this.syncStatePositionSize();
-        }
+      } else {
+        this.centerWindowOnDesktop();
       }
+
       this.storeWindowStateAfterViewInit();
-      this.changeDetectorRef.detectChanges();  //tell angular to run additional detection cycle after 
+      this.changeDetectorRef.detectChanges();  // run one extra change-detection cycle after the size/position updates above
+    }
+
+    /**
+     * Position this window in the visual center of the desktop area. Used for
+     * windows that opt out of the cascade behavior.
+     */
+    private centerWindowOnDesktop(): void {
+      const rect = WindowHelper.getDesktopRect();
+      if (!rect) return;
+
+      this.windowLeftPx = Math.round((rect.width  - this.windowWidthPx)  * 0.5);
+      this.windowTopPx  = Math.round((rect.height - this.windowHeightPx) * 0.5);
+      this.applyPositionStyles();
+      this.syncStatePositionSize();
     }
 
     ngOnChanges(changes: SimpleChanges):void{
@@ -184,48 +276,56 @@ import { WindowHelper } from '../window.helper';
       this.displayName = this.processAppName;
       this.icon = this.processAppIcon;
       this.isWindowMaximizable = this.isMaximizable;
+      this.minWindowHeightPx = this.minimumWindowHeight;
+      this.minWindowWidthPx = this.minimumWindowWidth;
 
-      if(this.turnOffWindowOpenCloseAnimation && this.turnOffWindowStacking){ // file tranfer Dialog
-        this.disableWindowAnimaion = true;
+      if(this.turnOffWindowOpenCloseAnimation && this.turnOffWindowStacking){ // file transfer dialog
+        this.disableWindowAnimation = true;
       }
     }
 
     ngOnDestroy():void{
-      this._restoreOrMinSub?.unsubscribe();
-      this._focusOnNextProcessSub?.unsubscribe();
-      this._focusOnCurrentProcessSub?.unsubscribe();
-      this._removeFocusOnOtherProcessesSub?.unsubscribe();
-      this._showOnlyCurrentProcessSub?.unsubscribe();
-      this._hideOtherProcessSub?.unsubscribe();
-      this._restoreProcessSub?.unsubscribe();
-      this._restoreProcessesSub?.unsubscribe();
-      this._showOrSetProcessWindowToFocusSub?.unsubscribe();
-      this._lockScreenActiveSub?.unsubscribe();
-      this._desktopActiveSub?.unsubscribe();
-      this._showTheDesktopSub?.unsubscribe();
-      this._showOpenWindowsSub?.unsubscribe();
-      this._resizeWindowSub?.unsubscribe();
-      this._positionWindowSub?.unsubscribe();
+      // One call replaces the prior per-field unsubscribe block.
+      this._subs.unsubscribeAll();
+
+      // Guarantee WindowService state is cleaned up regardless of how the
+      // window was closed (X button, task manager, terminal exit,
+      // programmatic close, shutdown, etc.). Idempotent -- safe to run
+      // after an animated close has already done part of this work.
+      this._windowCloseHandler.cleanupServiceState();
     }
 
     storeWindowStateAfterViewInit():void{
-      const clamped = WindowHelper.computeClampedPosition(this.windowLeftPx, this.windowTopPx, this.windowWidthPx, this.windowHeightPx, WindowConstants.TASKBAR_HEIGHT_PX );
-      if(!clamped){
-        console.warn('Clamped in undefined');
-        return;
+      // Optionally clamp the initial position to the desktop bounds. When
+      // the user has DEFAULT_ENFORCE_VIEWPORT_BOUNDS disabled, the
+      // window keeps whatever position cascade/centerWindowOnDesktop chose
+      // and `this.windowLeftPx` / `this.windowTopPx` are already up to date.
+      const enforce = (this._defaultService.getDefaultSetting(Constants.DEFAULT_ENFORCE_VIEWPORT_BOUNDS) === Constants.TRUE) ? true : false;
+
+      if(enforce){
+        const clamped: ClampedPosition | undefined = WindowHelper.computeClampedPosition(this.windowLeftPx, this.windowTopPx, this.windowWidthPx, this.windowHeightPx, WindowConstants.TASKBAR_HEIGHT_PX );
+        if(!clamped){
+          console.warn('Clamped in undefined');
+          return;
+        }
+
+        this.windowLeftPx = clamped.leftPx;
+        this.windowTopPx  = clamped.topPx;
+        this.applyPositionStyles();
       }
 
-      this.windowLeftPx = clamped.leftPx;
-      this.windowTopPx  = clamped.topPx;
-      this.applyPositionStyles();
-
+      // Always seed the saved state from the CURRENT live coordinates.
+      // Previously this read from `clamped?.leftPx ?? 0` in the
+      // non-enforced branch, which made `clamped` undefined and silently
+      // zeroed leftPx/topPx -- causing maximize/restore (and any future
+      // consumer of the saved state) to snap the window to (0,0).
       this._originalWindowsState = {
         appName: this.name,
         pId: this.processId,
         widthPx: this.windowWidthPx,
         heightPx: this.windowHeightPx,
-        leftPx: clamped.leftPx,
-        topPx: clamped.topPx,
+        leftPx: this.windowLeftPx,
+        topPx: this.windowTopPx,
         zIndex: WindowConstants.MAX_Z_INDEX,
         isVisible: true,
       };
@@ -235,15 +335,12 @@ import { WindowHelper } from '../window.helper';
       this.createSilhouette();
     }
 
-    private clampToContainer():void{
-      const clampData = WindowHelper.clampToContainer(this.primaryWindowContainer, this.windowLeftPx, this.windowTopPx, WindowConstants.EDGE_PAD_PX, WindowConstants.TASKBAR_HEIGHT_PX);
-      if(!clampData) return;
-
-      this.windowLeftPx = clampData.leftPx;
-      this.windowTopPx  = clampData.topPx;
-    }
-
-    private applyOpacityZ(zIndex: number, opacity: number, isWindowVisible:boolean = true): void {
+    /**
+     * WindowFocusHost: the handler calls this to repaint THIS window's
+     * z-index/opacity. Public (rather than private) so the handler can
+     * invoke it; behavior is identical to the prior private helper.
+     */
+    applyOpacityZ(zIndex: number, opacity: number, isWindowVisible:boolean = true): void {
 
       if(isWindowVisible)
         this.currentStyles = WindowStyleHelper.applyStyle(this.currentStyles, this.windowLeftPx,
@@ -253,66 +350,149 @@ import { WindowHelper } from '../window.helper';
           this.windowTopPx, zIndex, opacity, isWindowVisible);
     }
 
-    private applyPositionStyles(): void {
+    /** Public (was private) so cascade / maximize controllers can invoke it. */
+    applyPositionStyles(): void {
       const zIndex = this.hideWindow ? WindowConstants.HIDDEN_Z_INDEX : this.strWindowZIndex;
       const opacity = this.hideWindow ? 0 : 1;
+
+      // Keep the string-form left/top in sync so the maximize/restore
+      // animation's `winLeft` / `winTop` params reflect the current position.
+      this.strWindowLeftPx = `${this.windowLeftPx}px`;
+      this.strWindowTopPx  = `${this.windowTopPx}px`;
 
       this.currentStyles = WindowStyleHelper.applyStyle(this.currentStyles, this.windowLeftPx,
          this.windowTopPx, Number(zIndex), opacity);
     }
 
-    private syncStatePositionSize(): void {
-      WindowHelper.syncStatePositionSize(this._windowService, this.processId, this.windowLeftPx,
-        this.windowTopPx, this.windowWidthPx, this.windowHeightPx, this.strWindowZIndex);
+    /**
+     * Mirror this window's current pos/size/z-index into the central
+     * WindowService store so other parts of the system (task previews,
+     * focus restoration, persistence) see fresh values.
+     *
+     * Public (was private) so cascade / resize controllers can invoke it.
+     */
+    syncStatePositionSize(): void {
+      const ws = this._windowService.getWindowState(this.processId);
+      if (!ws) return;
+      WindowHelper.applyPositionSize(ws, this.windowLeftPx, this.windowTopPx,
+        this.windowWidthPx, this.windowHeightPx, this.strWindowZIndex);
+      this._windowService.addWindowState(ws);
     }
 
-    private applySizeStyles(): void {
+    /** Public (was private) so maximize / resize controllers can invoke it. */
+    applySizeStyles(): void {
       this.strWindowHeightPx = `${this.windowHeightPx}px`;
       this.strWindowWidthPx =  `${this.windowWidthPx}px`;
       this._renderer.setStyle(this.primaryWindowContainer.nativeElement, 'width', `${this.windowWidthPx}px`);
       this._renderer.setStyle(this.primaryWindowContainer.nativeElement, 'height', `${this.windowHeightPx}px`);
 
+      // Push fresh size into the silhouette and apply it to the live pane.
+      this._windowSilhouetteHandler.sync({ widthPx: this.windowWidthPx, heightPx: this.windowHeightPx });
+      this._windowSilhouetteHandler.syncSize();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // WindowFocusHost implementation
+    // ════════════════════════════════════════════════════════════════════════
+    // The focus handler reads these accessors lazily; safe even though
+    // some @Input-derived fields are not populated until ngOnInit.
+    get windowName(): string { return this.name; }
+    get isHidden(): boolean { return this.hideWindow; }
+    get windowComponentIdPrefix(): string { return 'primWinCmpnt'; }
+    /**
+     * Resolved at change-detection time and bound to `[cdkDragBoundary]` in
+     * the template. Returns the desktop container selector when the user's
+     * DEFAULT_ENFORCE_VIEWPORT_BOUNDS setting is on, otherwise an empty
+     * string -- CDK's drag-ref runs `document.querySelector('')` which
+     * yields null and effectively disables the boundary, allowing the
+     * window to be dragged partially or fully off-screen.
+     *
+     * Why an empty string instead of null:
+     *   - The directive's input is typed `string | HTMLElement | ElementRef`
+     *     and does not accept null at the template-typecheck level.
+     *   - `''` is the canonical "no boundary" sentinel inside CDK Drag.
+     *
+     * Why a getter (rather than caching a field):
+     *   - The user can toggle the setting at runtime from the control
+     *     panel; a getter picks up the change on the next CD cycle without
+     *     any explicit re-bind.
+     *   - `DefaultService.getDefaultSetting` is a cheap Map.get, so the
+     *     per-cycle read is negligible.
+     */
+    get dragBoundarySelector(): string {
+      const enforce = this._defaultService.getDefaultSetting(Constants.DEFAULT_ENFORCE_VIEWPORT_BOUNDS) === Constants.TRUE;
+      return enforce ? '#vantaCntnr' : Constants.EMPTY_STRING;
+    }
+    /** WindowFocusHost: paint the header in the active color (no pid check). */
+    setHeaderActiveStyle(): void {
+      this.headerActiveStyles = { 'background-color': HEADER_ACTIVE_BG };
+    }
+
+    /** WindowFocusHost: paint the header in the inactive color (no pid check). */
+    setHeaderInActiveStyle(): void {
+      this.headerActiveStyles = { 'background-color': HEADER_INACTIVE_BG };
+    }
+
+    /** WindowFocusHost: show THIS window's silhouette pane unconditionally. */
+    showSilhouettePane(): void {
       this.setSilhouetteState();
-      WindowStyleHelper.syncSilhouetteSize();
+      this._windowSilhouetteHandler.show();
     }
 
-    setBtnFocus(pId:number):void{
-      if(this.processId !== pId) return;
-      this.closeBtnStyles = { 'background-color':'rgb(139,10,20)' };
+    /** WindowFocusHost: hide THIS window's silhouette pane unconditionally. */
+    hideSilhouettePane(): void {
+      this.setSilhouetteState();
+      this._windowSilhouetteHandler.hide();
     }
 
-    setHeaderInActive(pId:number):void{
-      if(this.processId !== pId) return;
-      this.headerActiveStyles = { 'background-color':'rgb(56,56,56)'};
+    /** WindowFocusHost: snapshot the window bounds after a focus acquisition. */
+    onAfterFocusAcquired(): void {
+      this.updateWindowBoundsState();
     }
 
-    setHeaderActive(pId:number):void{
-      if(this.processId !== pId) return; 
-      this.headerActiveStyles = {  'background-color':'rgb(24,60,124)'};
+    /** WindowFocusHost: taskbar click on a hidden window → restore it. */
+    onShowOrSetFocusForHidden(): void {
+      this.restoreHiddenWindow(this.processId);
     }
+
+    /**
+     * WindowCascadeHost: the cascade handler reads the live container
+     * ElementRef so it can measure the rendered window. Exposed as an
+     * accessor (rather than passing the ref through `bind`) because
+     * @ViewChild fields are populated after construction.
+     */
+    get windowContainer(): ElementRef | undefined {
+      return this.primaryWindowContainer;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Focus methods (thin forwarders to the focus handler)
+    // ════════════════════════════════════════════════════════════════════════
+    setHeaderInActive(pId:number):void{ this._windowFocusHandler.setHeaderInActive(pId); }
+    setHeaderActive(pId:number):void{ this._windowFocusHandler.setHeaderActive(pId); }
 
     showSilhouette(pId:number): void {
       if(this.processId !== pId) return;
 
       this.setSilhouetteState();
-      WindowStyleHelper.showSilhouette();
+      this._windowSilhouetteHandler.show();
     }
 
     showGlassPaneContainer() {
       this.setSilhouetteState();
-      WindowStyleHelper.showGlassPaneContainer();
+      this._windowSilhouetteHandler.showContainer();
     }
 
     hideSilhouette(pId:number):void{
       if(this.processId !== pId) return;
 
       this.setSilhouetteState();
-      WindowStyleHelper.hideSilhouette();
+      this._windowSilhouetteHandler.hide();
     }
 
     hideGlassPaneContainer() {
       this.setSilhouetteState();
-      WindowStyleHelper.hideGlassPaneContainer();
+      this._windowSilhouetteHandler.hideContainer();
     }
    
     onHideBtnClick(pId:number, evt:MouseEvent):void{
@@ -328,11 +508,7 @@ import { WindowHelper } from '../window.helper';
     }
 
     updateWindowZIndex(window: WindowState, zIndex:number):void{
-      if(this.processId !== window.pId) return;
-
-      this.applyOpacityZ(zIndex, zIndex > 0 ? 1 : 0);
-      window.zIndex = zIndex;
-      this._windowService.addWindowState(window);
+      this._windowFocusHandler.updateWindowZIndex(window, zIndex);
     }
 
     syncFullScreenWindowZIndexForProcess(pId:number, zIndex:number):void{ // this may be deleted
@@ -343,350 +519,146 @@ import { WindowHelper } from '../window.helper';
     }
 
     setWindowToPriorHiddenState(window: WindowState, zIndex: number): void {
-      if (this.processId !== window.pId) return;
-      this.applyOpacityZ(zIndex, zIndex > 0 ? 1 : 0);
+      this._windowFocusHandler.setWindowToPriorHiddenState(window, zIndex);
     }
 
     onMaximizeBtnClick(evt: MouseEvent): void {
-      evt.stopPropagation();
-
-      if (!this.isWindowMaximizable) return;
-
-      const maxWindow = true;   // full screen
-      this.setMaximizeOrRestore(maxWindow);
+      this._windowMaximizeHandler.onMaximizeBtnClick(evt);
     }
 
     onRestoreBtnClick(evt: MouseEvent): void {
-      evt.stopPropagation();
-
-      const maxWindow = false;   // restore window to prior size
-      this.setMaximizeOrRestore(maxWindow);
+      this._windowMaximizeHandler.onRestoreBtnClick(evt);
     }
 
     onTitleBarDoubleClick(evt:MouseEvent):void{
-      // evt.stopPropagation();
-
-      // if(!this.isWindowMaximizable) return;
-      // let maxWindow = false;
-
-      // if(this.isWindowInFullScreenMode)
-      //   maxWindow = false;   
-      // else
-      //   maxWindow = true;   
-
-      // this.setMaximizeOrRestore(maxWindow);
+      this._windowMaximizeHandler.onTitleBarDoubleClick(evt);
     }
 
     onMouseDown(pId:number):void{
-      this._windowService.windowDragIsActive.next();
-      this.setFocsuOnThisWindow(pId);
-      this._windowService.currentProcessInFocusNotify.next(pId);
+      this._windowDragHandler.onMouseDown(pId);
     }
 
     onDragEnded(event: CdkDragEnd): void {
-      if(this.isWindowInFullScreenMode){ // dragging full screen window is not allowed
-        this._windowService.windowDragIsInActive.next();
-        return;
-      }
-      // CDK gives a clean delta since drag started
-      const delta = event.distance;
-
-      // Commit delta into absolute left/top
-      this.windowLeftPx += delta.x;
-      this.windowTopPx  += delta.y;
-
-      // Clamp, apply, sync
-      this.clampToContainer();
-      this.applyPositionStyles();
-      this.syncStatePositionSize();
-
-      this.setSilhouetteState();
-      WindowStyleHelper.positionSilhouette();
-
-      // Update per-app cascade starting point
-      this.updateWindowBoundsState();
-
-      // Important: reset the drag transform so we don't accumulate drift
-      event.source.reset();
-      this._windowService.windowDragIsInActive.next();
+      this._windowDragHandler.onDragEnded(event);
     }
 
-    onRZStop(input:any):void{
-      this.windowWidthPx =  Number(input.size.width);
-      this.windowHeightPx =  Number(input.size.height);  
-      this.applySizeStyles();
-      this.syncStatePositionSize();
+    onRZStop(input: NgResizableEvent):void{
+      this._windowResizeHandler.onRZStop(input);
+    }
 
-      //send window resize alert(containing new width and height);
-      const resize:WindowResizeInfo = {pId:this.processId, widthPx:this.windowWidthPx, heightPx:this.windowHeightPx}
-      this._windowService.resizeProcessWindowNotify.next(resize);
+    // Fires continuously while the user drags a resize handle. ngResizable
+    // already updates the host element's size visually, so we only need to
+    // broadcast the live dimensions so hosted apps can grow/shrink in step.
+    onRZResizing(input: NgResizableEvent):void{
+      this._windowResizeHandler.onRZResizing(input);
     }
 
     onRZWindow(input:WindowResizeInfo):void{
-      const windowState = this._windowService.getWindowState(this.processId);
-      if(!windowState) return;
-        
-      this.windowHeightPx = input.heightPx;
-      this.windowWidthPx = input.widthPx; 
-      this.applySizeStyles();
-      this.syncStatePositionSize();
+      this._windowResizeHandler.onRZWindow(input);
     }
 
     setHideAndShow():void{
-      const ws = this._windowService.getWindowState(this.processId);
-      if(!ws || ws.pId !== this.processId) return;
-
-      this.hideWindow = !this.hideWindow;
-      this.windowHideShowAction = this.hideWindow ? WindowConstants.HIDDEN : WindowConstants.VISIBLE;
-
-      if(this.hideWindow){
-        ws.isVisible = false;
-        ws.zIndex = WindowConstants.HIDDEN_Z_INDEX;
-        this._windowService.addWindowState(ws);
-        this._windowService.removeProcessIDToHiddenOrVisibleWindows(ws.pId);
-
-        this.setHeaderInActive(ws.pId);
-        this.applyOpacityZ(WindowConstants.HIDDEN_Z_INDEX, 0);
-
-        const nxtProcess = this.getNextProcess();
-        if(nxtProcess){
-          this._windowService.focusOnNextProcessWindowNotify.next(nxtProcess.getProcessId);
-          this._windowService.currentProcessInFocusNotify.next(nxtProcess.getProcessId);
-        }else{
-          this._windowService.noProcessInFocusNotify.next();
-        }
-      }
-      else if(!this.hideWindow){
-        if(this.isWindowInFullScreenMode){ 
-          // if window was in full screen when hidden, give the proper z-index when unhidden
-          this.syncFullScreenWindowZIndexForProcess(this.processId, ws.zIndex);
-        }
-        ws.isVisible = true;
-        this._windowService.addWindowState(ws);
-        this.setFocsuOnThisWindow(ws.pId);
-
-        this._windowService.currentProcessInFocusNotify.next(ws.pId);
-        this.resetHideShowWindowsList();
-      }
+      this._windowVisibilityHandler.setHideAndShow();
     }
 
     setHideAndShowAllVisibleWindows():void{
-      const ws = this._windowService.getWindowState(this.processId);
-      if (!ws || ws.pId !== this.processId) return;
-
-      this.hideWindow = !this.hideWindow;
-
-      if(ws.isVisible && this.hideWindow){
-        //this.windowHideShowAction = this.hideWindow ? WindowConstants.HIDDEN : WindowConstants.VISIBLE; // animation not needed for this case
-
-        ws.isVisible = false;
-        ws.zIndex = WindowConstants.HIDDEN_Z_INDEX;
-        this._windowService.addWindowState(ws);
-        this._windowService.addProcessIDToHiddenOrVisibleWindows(this.processId);
-
-        this.setHeaderInActive(ws.pId);
-        this.applyOpacityZ(WindowConstants.HIDDEN_Z_INDEX, 0);
-      }
-      else if(!ws.isVisible){
-        const windowList = this._windowService.getProcessIDOfHiddenOrVisibleWindows();
-
-        if(windowList.includes(this.processId) && !this.hideWindow){
-          //this.windowHideShowAction = this.hideWindow ? WindowConstants.HIDDEN : WindowConstants.VISIBLE; // animation not needed for this case
-
-          if(this.isWindowInFullScreenMode)  // if window was in full screen when hidden, give the proper z-index when unhidden
-            this.syncFullScreenWindowZIndexForProcess(this.processId, ws.zIndex);
-
-          ws.isVisible = true;
-          this._windowService.addWindowState(ws);
-          const window_with_highest_zIndex = this._windowService.getProcessWindowIDWithHighestZIndex();
-          if(window_with_highest_zIndex === this.processId){
-            this.setFocsuOnThisWindow(ws.pId);
-            this._windowService.currentProcessInFocusNotify.next(ws.pId);
-          }else{
-            this.setWindowToPriorHiddenState(ws, WindowConstants.MIN_Z_INDEX);
-          }
-        }
-      }
+      this._windowVisibilityHandler.setHideAndShowAllVisibleWindows();
     }
 
     hideShowAnimationDone(event: AnimationEvent) {
-      if (event.toState === 'hidden') {
-        this.hsZIndex = WindowConstants.HIDDEN_Z_INDEX
-      } else {
-        this.hsZIndex = WindowConstants.MAX_Z_INDEX
-      }
+      this._windowVisibilityHandler.hideShowAnimationDone(event);
     }
 
     resetHideShowWindowsList():void{
-      this._windowService.resetHiddenOrVisibleWindowsList();
-      this._menuService.updateTaskBarContextMenu.next();
+      this._windowVisibilityHandler.resetHideShowWindowsList();
     }
 
     private setMaximizeOrRestore(maxWindow: boolean): void {
-      const ws = this._windowService.getWindowState(this.processId);
-      if (!ws) return;
-
-      this.isWindowInFullScreenMode = maxWindow;
-      ws.isMaximized = maxWindow;
-
-      if(maxWindow){
-        this.windowMaxRestoreAction = WindowConstants.MAXIMIZED;
-        // keep current zIndex, just ensure it is top visually
-        this.syncFullScreenWindowZIndexForProcess(this.processId, ws.zIndex);
-
-        this._windowService.addEventOriginator(this.uniqueId);
-        this._windowService.maximizeProcessWindowNotify.next();
-      } else {
-        this.windowMaxRestoreAction = WindowConstants.RESTORE;
-
-        // Restore to stored service size (or original default)
-        this.windowWidthPx  = ws.widthPx || this.windowWidthPx;
-        this.windowHeightPx = ws.heightPx || this.windowHeightPx;
-
-        const windowTitleBarHeight = 30;
-        this.applySizeStyles();
-
-        this._windowService.addEventOriginator(this.uniqueId);
-        this._windowService.minimizeProcessWindowNotify.next([
-          this.windowWidthPx,
-          this.windowHeightPx - windowTitleBarHeight
-        ]);
-      }
-
-      this._windowService.addWindowState(ws);
+      this._windowMaximizeHandler.setMaximizeOrRestore(maxWindow);
     }
 
     stackWindow():void{
-      const containerRect = WindowHelper.getDesktopRect();
-      const winEl = this.primaryWindowContainer?.nativeElement as HTMLElement | undefined;
-      if (!containerRect || !winEl) return;
-
-      const winRect = winEl.getBoundingClientRect();
-
-      const step = WindowConstants.CASCADE_STEP_PX;
-      const pad = WindowConstants.EDGE_PAD_PX;
-
-      const usableHeight = containerRect.height - WindowConstants.TASKBAR_HEIGHT_PX;
-
-      // Center baseline
-      const centerLeft = Math.round((containerRect.width - winRect.width) / 2);
-      const centerTop  = Math.round((usableHeight - winRect.height) / 2);
-
-      // Clamp bounds
-      const maxLeft = Math.max(pad, containerRect.width - winRect.width - pad);
-      const maxTop  = Math.max(pad, usableHeight - winRect.height - pad);
-
-      // per-app cascade cursor
-      let bounds = this._windowService.getProcessWindowBounds(this.uniqueId);
-
-      if (!bounds) {
-        // first instance: start near center
-        bounds = {
-          xOffset: centerLeft,
-          yOffset: centerTop,
-          xBoundsSubtraction: 0,
-          yBoundsSubtraction: 0
-        };
-      } else {
-        // next instance: cascade
-        bounds.xOffset += step;
-        bounds.yOffset += step;
-      }
-
-      // wrap if overflow
-      if (bounds.xOffset > maxLeft || bounds.yOffset > maxTop) {
-        bounds.xOffset = centerLeft;
-        bounds.yOffset = centerTop;
-      }
-
-      this._windowService.addProcessWindowBounds(this.uniqueId, bounds);
-      this.windowLeftPx = Math.min(Math.max(bounds.xOffset, pad), maxLeft);
-      this.windowTopPx  = Math.min(Math.max(bounds.yOffset, pad), maxTop);
-
-      this.applyPositionStyles();
-      this.syncStatePositionSize();
+      this._windowCascadeHandler.stackWindow();
     }
 
     updateWindowBoundsState(): void {
-      const currentBound = this._windowService.getProcessWindowBounds(this.uniqueId);
-      const next: WindowBoundsState = currentBound ?? { xOffset: 0, yOffset: 0, xBoundsSubtraction: 0, yBoundsSubtraction: 0 };
-
-      // Store the current committed absolute px position
-      next.xOffset = this.windowLeftPx;
-      next.yOffset = this.windowTopPx;
-      next.xBoundsSubtraction = 0;
-      next.yBoundsSubtraction = 0;
-
-      this._windowService.addProcessWindowBounds(this.uniqueId, next);
+      this._windowCascadeHandler.updateWindowBoundsState();
     }
 
     createSilhouette():void{
       this.uniqueGlassPaneId = `primGP-${this.uniqueId}`;
 
-      // //Every window has a hidden glass pane that is revealed when the window is hidden
-      this.primGlassPaneContainer = WindowStyleHelper.createSilhouette(this.uniqueGlassPaneId, this._renderer, this.primGlassPaneContainer,
-         this.windowHeightPx, this.windowWidthPx);
-
-      this.setSilhouetteState();
+      // Bind once (renderer + container + pane id never change for the life
+      // of this window), seed the geometry, then create the hidden pane DIV.
+      this._windowSilhouetteHandler.bind(this._renderer, this.primGlassPaneContainer, this.uniqueGlassPaneId);
+      this._windowSilhouetteHandler.sync({
+        leftPx: this.windowLeftPx, topPx: this.windowTopPx,
+        widthPx: this.windowWidthPx, heightPx: this.windowHeightPx,
+      });
+      this._windowSilhouetteHandler.create();
     }
 
+    /**
+     * Push the window's current position into the silhouette handler.
+     * Called before every show/hide/position op so the pane is aligned with
+     * the window's current coordinates (size is pushed in `applySizeStyles`).
+     */
     setSilhouetteState():void{
-      WindowStyleHelper.updateState({
-        renderer: this._renderer, glassPaneContainer: this.primGlassPaneContainer, uniqueGlassPaneId: this.uniqueGlassPaneId,
-        windowLeftPx: this.windowLeftPx, windowTopPx: this.windowTopPx,
-      });
+      this._windowSilhouetteHandler.sync({ leftPx: this.windowLeftPx, topPx: this.windowTopPx });
+    }
+
+    /**
+     * WindowDragHost: thin wrapper so the drag handler can nudge the
+     * silhouette without holding a reference to the silhouette handler.
+     */
+    positionSilhouette(): void {
+      this._windowSilhouetteHandler.position();
+    }
+
+    /**
+     * WindowCloseHost: thin wrapper so the close handler can tear down
+     * the silhouette without holding a direct silhouette reference.
+     */
+    removeSilhouette(): void {
+      this._windowSilhouetteHandler.remove();
     }
 
     async onCloseBtnClick(evt:MouseEvent):Promise<void>{
       evt.stopPropagation();
 
+      // Re-entrancy guard: if the user mashes the X button or another path
+      // (taskbar context menu, programmatic close) also fires close, only
+      // the first call should do the work. Without this we would call
+      // `closeProcessNotify` twice and race the animation tear-down.
+      // `beginClose` also tears down the silhouette so it doesn't linger
+      // over the taskbar/desktop while the close animation plays.
+      if (!this._windowCloseHandler.beginClose()) return;
+
       if(!this.turnOffWindowOpenCloseAnimation)
         this.windowOpenCloseAction = WindowConstants.CLOSE;
 
-      this._windowService.removeWindowState(this.processId);
-      this.setSilhouetteState();
-      WindowStyleHelper.removeSilhouette();
+      await this._windowCloseHandler.waitForCloseAnimation();
 
-      await CommonFunctions.sleep(this.SECONDS_DELAY);
       const process = this._runningProcessService.getProcess(this.processId);
       if(process){
         this._runningProcessService.closeProcessNotify.next(process);
+        // cleanupWindowDataForApp is idempotent and will also run in ngOnDestroy.
         this._windowService.cleanupWindowDataForApp(this.uniqueId);
       }
 
-      const nxtProcess = this.getNextProcess();
-      if(nxtProcess){
-        this._windowService.focusOnNextProcessWindowNotify.next(nxtProcess.getProcessId);
-        this._windowService.currentProcessInFocusNotify.next(nxtProcess.getProcessId);
-      }
+      this._windowCloseHandler.publishFocusOnNext();
     }
 
-    setFocsuOnThisWindow(pId:number):void{
-      const uId = `${this.name}-${pId}`;
-      if(this.uniqueId !== uId || this.hideWindow) return;
-
-      this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
-      this.setFocusOnWindowAndUpdateStates(pId);
-      this.updateWindowBoundsState();
+    setFocusOnThisWindow(pId:number):void{
+      this._windowFocusHandler.setFocusOnThisWindow(pId);
     }
 
     setFocusOnWindowAfterInit(pId:number):void{
-      this._windowService.removeFocusOnOtherProcessesWindowNotify.next(pId);
-      this._windowService.currentProcessInFocusNotify.next(pId);
-      this.setHeaderActive(pId);
+      this._windowFocusHandler.setFocusOnWindowAfterInit(pId);
     }
 
     setWindowToFocusOnMouseHover(pId:number):void{
-      this._windowService.hideOtherProcessesWindowNotify.next(pId);
-      const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
-      
-      if(this.processId !== pId) return;
-
-      if(pId === pid_with_highest_z_index)
-        this.setHeaderActive(pId);
-
-      this.hideSilhouette(pId);
-      this.showOnlyWindowById(pId);
+      this._windowFocusHandler.setWindowToFocusOnMouseHover(pId);
     }
 
     /**
@@ -694,33 +666,11 @@ import { WindowHelper } from '../window.helper';
      * then they are set out of focus 
      */
     removeFocusOnWindowNotMatchingPid(pId:number):void{
-      if(this.processId === pId) return;
-
-      const ws = this._windowService.getWindowState(this.processId);
-      if(!ws || !ws.isVisible) return;
-
-      this.setHeaderInActive(ws.pId);
-      this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
+      this._windowFocusHandler.removeFocusOnWindowNotMatchingPid(pId);
     }
 
     restorePriorFocusOnWindows():void{
-      const processWithWindows = this._windowService.getWindowStates();
-      const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
-
-      for(let i = 0; i < processWithWindows.length; i++){
-        const ws = processWithWindows[i];          
-        if(ws && ws.isVisible){
-          if(ws.pId !== pid_with_highest_z_index ){
-            this.setHeaderInActive(ws.pId);
-            this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
-          }
-          else{
-            this.setHeaderActive(ws.pId);
-            this.updateWindowZIndex(ws, WindowConstants.MAX_Z_INDEX);
-          }
-          this.hideSilhouette(ws.pId);
-        }
-      }
+      this._windowFocusHandler.restorePriorFocusOnWindows();
     }
 
     /**
@@ -728,110 +678,40 @@ import { WindowHelper } from '../window.helper';
      * then they are hidden by setting z -index = 0
      */
     hideWindowNotMatchingPidOnMouseHover(pId:number):void{
-      if(this.processId === pId) return;
-
-      const ws  = this._windowService.getWindowStates().find(p => p.pId === this.processId);
-      if(!ws) return;
-
-      if(ws.isVisible){
-        this.showSilhouette(ws.pId);
-        this.updateWindowZIndex(ws, WindowConstants.HIDDEN_Z_INDEX);
-      }
-      else if(!ws.isVisible){
-        this.setWindowToPriorHiddenState(ws, WindowConstants.HIDDEN_Z_INDEX);
-      }
+      this._windowFocusHandler.hideWindowNotMatchingPidOnMouseHover(pId);
     }
 
     restoreWindowOnMouseLeave(pId:number):void{
-      const ws = this._windowService.getWindowState(pId);
-      if(!ws) return;
-
-      const pid_with_highest_z_index = this._windowService.getProcessWindowIDWithHighestZIndex();
-      if(ws.isVisible){
-        if(ws.pId !==  pid_with_highest_z_index){
-          this.setHeaderInActive(ws.pId);
-          this.updateWindowZIndex(ws, WindowConstants.MIN_Z_INDEX);
-        }
-        else{
-          this.setHeaderActive(ws.pId);
-          this.updateWindowZIndex(ws, WindowConstants.MAX_Z_INDEX);
-        }
-      } 
-      else if(!ws.isVisible){
-        this.setWindowToPriorHiddenState(ws, WindowConstants.HIDDEN_Z_INDEX);
-      }
+      this._windowFocusHandler.restoreWindowOnMouseLeave(pId);
     }
 
     //the window positioning is acting wonky, but it is kinda 50% there
     showOrSetProcessWindowToFocusOnClick(pId:number):void{
-      if(this.processId !== pId) return;
-
-      const ws = this._windowService.getWindowState(pId);
-      if(!ws) return;
-
-      if(!ws.isVisible){
-        this.restoreHiddenWindow(pId);
-      }else{
-        this.setFocsuOnThisWindow(ws.pId);
-      }
+      this._windowFocusHandler.showOrSetProcessWindowToFocusOnClick(pId);
     }
 
     setWindowToFocusAndResetWindowBoundsByPid(pId:number):void{
-      if(this.processId !== pId) return;
-
-      const ws = this._windowService.getWindowState(this.processId);
-      if(!ws || !ws.isVisible) return;
-      
-      this.setFocusOnWindowAndUpdateStates(ws.pId);
-      this.updateWindowBoundsState();
+      this._windowFocusHandler.setWindowToFocusAndResetWindowBoundsByPid(pId);
     }
 
     setFocusOnWindowAndUpdateStates(pId:number):void{
-      const ws = this._windowService.getWindowState(pId);
-      if(!ws || ws.pId !== pId) return;
-
-      const winCmpntId =`primWinCmpnt-${this.name}-${this.processId}`;
-      if(ws.zIndex < WindowConstants.MAX_Z_INDEX){
-        ws.zIndex = WindowConstants.MAX_Z_INDEX;
-        this._windowService.addWindowState(ws);
-        this._windowService.addProcessWindowIDWithHighestZIndex(pId);
-
-        this.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);
-        this.setHeaderActive(pId);
-        WindowHelper.setFocusOnDiv(winCmpntId);
-      }
-      else if(ws.zIndex === WindowConstants.MAX_Z_INDEX){
-        this._windowService.addProcessWindowIDWithHighestZIndex(pId);
-        this.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);
-        this.setHeaderActive(pId);
-        WindowHelper.setFocusOnDiv(winCmpntId);
-      } 
+      this._windowFocusHandler.setFocusOnWindowAndUpdateStates(pId);
     }
 
     showOnlyWindowById(pId: number): void {
-      const ws = this._windowService.getWindowState(pId);
-      if (!ws || ws.pId !== pId) return;
+      this._windowFocusHandler.showOnlyWindowById(pId);
+    }
 
-      const z = WindowConstants.TMP_MAX_Z_INDEX;
-      if(ws.isVisible)
-        this.applyOpacityZ(z, 1);
-      else
-        this.applyOpacityZ(z, 1, ws.isVisible);
+    resetLockScreenTimeOut():void{
+      this._systemNotificationServices.resetLockScreenTimeOutNotify.next();
     }
 
     lockScreenIsActive(): void {
-      const ws = this._windowService.getWindowState(this.processId);
-      if (ws && ws.isVisible)
-        this.applyOpacityZ(WindowConstants.HIDDEN_Z_INDEX, 0);
+      this._windowVisibilityHandler.lockScreenIsActive();
     }
 
     desktopIsActive(): void {
-      const ws = this._windowService.getWindowState(this.processId);
-      if (!ws || !ws.isVisible) return;
-
-      const topPid = this._windowService.getProcessWindowIDWithHighestZIndex();
-      const z = ws.pId === topPid ? WindowConstants.MAX_Z_INDEX : WindowConstants.MIN_Z_INDEX;
-      this.applyOpacityZ(z, 1);
+      this._windowVisibilityHandler.desktopIsActive();
     }
 
     /**
@@ -839,41 +719,22 @@ import { WindowHelper } from '../window.helper';
      * @returns Process
      */
     getNextProcess():Process | undefined{
-      const nextPid = this._windowService.getNextPidInWindowStateList();
-      return this._runningProcessService.getProcesses().find(p => p.getProcessId === nextPid);
+      return this._windowFocusHandler.getNextProcess();
     }
 
     retrievePastSessionData():void{
-
-      const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+      // The session blob exists only to carry forward window position/size
+      // information across reloads. Once this window has been re-created the
+      // data is no longer needed, so consume-and-delete is the right policy.
+      //
+      // Order of operations for context:
+      //   1. App component constructor runs.
+      //   2. Window component constructor runs.
+      //   3. Window component ngOnChanges (inputs land).
+      //   4. Window component ngOnInit (this method is called from here).
+      const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
       if(appSessionData !== null && appSessionData.window !== undefined){
-          // this.currentStyles = {
-          //   'transform': 'translate(0,0)',
-          //   'width': '100%',
-          //   'height': 'calc(100% - 40px)', //This accounts for the taskbar height
-          //   'top': '0',
-          //   'left': '0',
-          //   'right': '0',
-          //   'bottom': '0', 
-          //   'z-index': z_index
-          // };
-
-      /*
-          Why i am removing the session below. Once window has it's size and position data, the session data is no longer needed
-
-          --- Order of Operation ---   the application open first, followed by creating a window component for it's presentation.
-
-            1. For the App Component
-              1. The constructor executes first
-
-            2.For the Windows Component
-              1. The constructor executes first
-
-              2. ngOnChange executes next
-
-              3.  Then followed by ngOnInit
-      */
-        this._sessionManagmentService.removeAppSession(this.priorUId);
+        this._sessionManagementService.removeAppSession(this.priorUId);
       }
     }
 

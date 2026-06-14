@@ -4,6 +4,27 @@ import { ScreenshotSetting } from "./settings.interface";
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace SettingsHelper {
 
+    /**
+     * Splits a stored "type:value" setting on its FIRST colon only.
+     *
+     * Unlike String.prototype.split(':'), this keeps any additional colons that
+     * belong to the value intact (e.g. a future URL such as "Picture:http://...")
+     * and always returns a fixed two-element tuple, so callers can safely
+     * destructure [type, value] without worrying about a missing second element.
+     *
+     * @param raw The raw stored setting, e.g. "Picture:osdrive/.../crown.jpg".
+     * @returns A [type, value] tuple; value is an empty string when no colon exists.
+     */
+    export const splitSettingValue = (raw:string):[string, string] =>{
+        const separatorIdx = raw.indexOf(Constants.COLON);
+        if(separatorIdx === -1)
+            return [raw, Constants.EMPTY_STRING];
+
+        const type = raw.substring(0, separatorIdx);
+        const value = raw.substring(separatorIdx + 1);
+        return [type, value];
+    }
+
     export const generateDesktopPictureOptions =(desktopBkgrndOption:string):string[] =>{
         const options:string[] = [];
         const desktopImgPath = Constants.DESKTOP_IMAGE_BASE_PATH;

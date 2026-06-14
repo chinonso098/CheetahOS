@@ -1,35 +1,60 @@
+<!--
+  TaskBar entries
+  --------------------------------------------------------------------------
+  Two render modes selected via the same template-outlet switch we had before.
 
-<ng-container [ngTemplateOutlet]="taskBarEntriesIconState === mergedIcons ? mergedTskBarIcons : unMergedTskBarIcons">
+  Visual highlight (hover / focused window / running app / file-transfer shine)
+  is driven entirely by CSS classes bound to model flags on each TaskBarIconInfo:
+    [class.is-active]   <->  app.isRunning           (blue bottom border)
+    [class.is-focused]  <->  app.isFocused           (focused-window background)
+    [class.is-transfer] <->  app.isTransferActive    (file-copy shine overlay)
+  Plain ":hover" adds the hover background. See taskbarentries.component.css.
+
+  We deliberately no longer use the legacy `taskBarEntryHighlight` directive:
+  it set inline backgroundColor on mouseenter and cleared it on mouseleave,
+  which fought the component-side focus highlight and produced the brief
+  "focused icon flickers when you mouse over a neighbour" glitch.
+-->
+<ng-container [ngTemplateOutlet]="isMergedMode ? mergedTskBarIcons : unMergedTskBarIcons">
 </ng-container>
 
 <ng-template #mergedTskBarIcons>
-     <ol class="taskBar-Entries-ol"> 
-          <ng-container *ngFor="let pin of mergedTaskBarIconList;  let i = index">
+     <ol class="taskBar-Entries-ol">
+          <ng-container *ngFor="let pin of mergedTaskBarIconList; let i = index">
                @if (pin.instanceCount === 1) {
-                    <li class="taskBar-Entries-li" 
-                    taskBarEntryHighlight 
-                    id="tskbar-{{pin.opensWith}}" 
-                    (mouseenter)="onMouseEnter(pin.opensWith, 0, pin.iconPath)" 
-                    (mouseleave)="onMouseLeave()" 
-                    (click)="onTaskBarIconClick(pin)" 
-                    (contextmenu)="onShowIconContextMenu($event, pin)">
-                         <cos-taskbarentry  [taskBarPid]="pin.pId" [taskBarIconImgUrl]="pin.defaultIconPath"  [taskBarIconName]="pin.opensWith" [taskBarEntryType]="hideLabel"> </cos-taskbarentry> 
+                    <li class="taskBar-Entries-li"
+                        [class.is-active]="pin.isRunning"
+                        [class.is-focused]="pin.isFocused"
+                        [class.is-transfer]="pin.isTransferActive"
+                        [@taskbarEntryAnim]
+                        id="tskbar-{{pin.opensWith}}"
+                        (mouseenter)="onMouseEnter(pin.opensWith, 0, pin.iconPath)"
+                        (mouseleave)="onMouseLeave()"
+                        (click)="onTaskBarIconClick(pin)"
+                        (contextmenu)="onShowIconContextMenu($event, pin)">
+                         <cos-taskbarentry [taskBarPid]="pin.pId" [taskBarIconImgUrl]="pin.defaultIconPath" [taskBarIconName]="pin.opensWith" [taskBarEntryType]="hideLabel"></cos-taskbarentry>
                     </li>
                }
 
-               @if(pin.instanceCount > 1){
-                    <li class="li-pill-cntnr" id="tskbar-pill-cntnr-{{pin.opensWith}}">
-                         <div 
-                         class="taskBar-Entries-div" 
-                         taskBarEntryHighlight  
-                         id="tskbar-{{pin.opensWith}}" 
-                         (mouseenter)="onMouseEnter(pin.opensWith, 0, pin.iconPath)" 
-                         (mouseleave)="onMouseLeave()" 
-                         (click)="onTaskBarIconClick(pin)" 
-                         (contextmenu)="onShowIconContextMenu($event, pin)">
-                              <cos-taskbarentry  [taskBarPid]="pin.pId" [taskBarIconImgUrl]="pin.defaultIconPath"  [taskBarIconName]="pin.opensWith" [taskBarEntryType]="hideLabel"> </cos-taskbarentry> 
+               @if (pin.instanceCount > 1) {
+                    <li class="li-pill-cntnr" id="tskbar-pill-cntnr-{{pin.opensWith}}" [@taskbarEntryAnim]>
+                         <div class="taskBar-Entries-div"
+                              [class.is-active]="pin.isRunning"
+                              [class.is-focused]="pin.isFocused"
+                              [class.is-transfer]="pin.isTransferActive"
+                              id="tskbar-{{pin.opensWith}}"
+                              (mouseenter)="onMouseEnter(pin.opensWith, 0, pin.iconPath)"
+                              (mouseleave)="onMouseLeave()"
+                              (click)="onTaskBarIconClick(pin)"
+                              (contextmenu)="onShowIconContextMenu($event, pin)">
+                              <cos-taskbarentry [taskBarPid]="pin.pId" [taskBarIconImgUrl]="pin.defaultIconPath" [taskBarIconName]="pin.opensWith" [taskBarEntryType]="hideLabel"></cos-taskbarentry>
                          </div>
-                         <div class="div-pill-divider" id="tskbar-pill-{{pin.opensWith}}"> </div>
+                         <!--
+                           The pill divider mirrors the entry's hover / focus / active
+                           visuals via the adjacent-sibling CSS selector
+                           (`.taskBar-Entries-div.is-focused + .div-pill-divider`, etc.).
+                         -->
+                         <div class="div-pill-divider" id="tskbar-pill-{{pin.opensWith}}"></div>
                     </li>
                }
           </ng-container>
@@ -37,18 +62,32 @@
 </ng-template>
 
 <ng-template #unMergedTskBarIcons>
-     <ol class="taskBar-Entries-ol"> 
-          <li class="taskBar-Entries-li unmerged" 
-          taskBarEntryHighlight 
-          [@taskbarEntryAnim]
-               *ngFor="let app of unMergedTaskBarIconList;  let i = index" 
-               id="tskbar-{{app.opensWith}}-{{app.pId}}" 
-               (mouseenter)="onMouseEnter(app.opensWith, app.pId, app.iconPath)" 
-               (mouseleave)="onMouseLeave(app.opensWith, app.pId)" 
-               (click)="onTaskBarIconClick(app)" 
-               (contextmenu)="onShowIconContextMenu($event, app)">
-               
-               <cos-taskbarentry  [taskBarPid]="app.pId" [taskBarIconImgUrl]="app.iconPath"  [taskBarIconName]="app.displayName" (restoreOrMinizeWindowEvent)="restoreOrMinizeWindow($event)" [taskBarEntryType]="app.showLabel"> </cos-taskbarentry> 
+     <ol class="taskBar-Entries-ol">
+          <!--
+            Width rule (intentional):
+              * isRunning  → `.unmerged` is applied  → flex-basis 130px (full label width).
+              * !isRunning → `.unmerged` is OMITTED → the LI is content-sized (~44px),
+                visually matching a merged-mode single-instance icon.
+            Pinned-but-not-running icons must therefore render at the narrow,
+            icon-only width even on hover. The child `cos-taskbarentry` already
+            renders its icon-only template for these icons because
+            `app.showLabel === 'hideLabel'` whenever isRunning is false (see
+            `getAppCurrentState` in taskbarentries.component.ts).
+          -->
+          <li class="taskBar-Entries-li"
+              [class.unmerged]="app.isRunning"
+              [class.is-active]="app.isRunning"
+              [class.is-focused]="app.isFocused"
+              [class.is-transfer]="app.isTransferActive"
+              [@taskbarEntryAnim]
+              *ngFor="let app of unMergedTaskBarIconList; let i = index"
+              id="tskbar-{{app.opensWith}}-{{app.pId}}"
+              (mouseenter)="onMouseEnter(app.opensWith, app.pId, app.iconPath)"
+              (mouseleave)="onMouseLeave(app.opensWith, app.pId)"
+              (click)="onTaskBarIconClick(app)"
+              (contextmenu)="onShowIconContextMenu($event, app)">
+
+               <cos-taskbarentry [taskBarPid]="app.pId" [taskBarIconImgUrl]="app.iconPath" [taskBarIconName]="app.displayName" (restoreOrMinimizeWindowEvent)="restoreOrMinimizeWindow($event)" [taskBarEntryType]="app.showLabel"></cos-taskbarentry>
           </li>
      </ol>
 </ng-template>

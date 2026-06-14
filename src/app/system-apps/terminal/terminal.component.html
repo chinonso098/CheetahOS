@@ -1,7 +1,16 @@
-<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name"  [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
+<cos-primarywindow 
+    [runningProcessID]="processId" 
+    [processAppIcon]="icon" 
+    [processAppName]="name"  
+    [isMaximizable]="isMaximizable"
+    [minimumWindowWidth]="MIN_WIDTH_PX" 
+    [minimumWindowHeight]="MIN_HEIGHT_PX" 
+    [priorUId]="priorUId">
+
     <div class="terminal-container" tabIndex="0" 
         (keydown)="onKeyDownOnWindow($event)" 
-        (drop)="onDrop($event)" (click)="focusWindow($event)" #terminalCntnr>
+        (drop)="onDrop($event)" (click)="focusWindow($event)"
+        (contextmenu)="silenceCtxEvt($event)" #terminalCntnr>
         <div class="terminal-output-section"  #terminalOutputCntnr>
             <ng-container  *ngIf="isBannerVisible">
                 <div class="terminal-banner-container" >

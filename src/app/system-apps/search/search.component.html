@@ -1,5 +1,5 @@
 <div class="main-search-cntnr" #cheetahSearchDiv>
-    <div class="main-search-bar-cntnr" (click)="shhhhh($event)">
+    <div class="main-search-bar-cntnr" (click)="stopEventPropagation($event)" (contextmenu)="silenceCtxEvt($event)">
         <div class="search-bar-option-cntnr">
             <figure  class="search-bar-option-fig" (click)="hideShowOptions($event)">
                 <img class="search-bar-option-img" [src]="defaultsearchIcon">
@@ -31,6 +31,7 @@
                     placeholder="{{searchPlaceHolder}}"
                     formControlName="searchBarText"
                     (click)="focusOnInput($event)"
+                    (keydown)="onSearchKeyDown($event)"
                     autofocus ="false" 
                     spellcheck="false"
                     autocomplete="off"
@@ -53,11 +54,10 @@
                     </div>
                     <div class="top-apps__items">
                         <ol class="ol-top-apps__grid">
-                            <li class="li-top-apps" *ngFor="let app of onlyTopApps; let i = index" id="ilElmnt-{{processId}}" >
+                            <li class="li-top-apps" *ngFor="let app of onlyTopApps; let i = index" >
                                 <div class="top-apps__item" role="button" (click)="handlePath(app, RUN_APP,  $event)"
                                     (mouseenter)="onMouseEnter(i)" 
-                                    (mouseleave)="onMouseLeave(i)"
-                                    id="btnElmnt-{{processId}}-{{i}}">
+                                    (mouseleave)="onMouseLeave(i)">
                                     
                                     <figure class="top-apps__figure">
                                         <img class="top-apps__img" [src]="app.iconPath" />
@@ -79,12 +79,12 @@
                     <div class="recent__items">
                         <ol class="ol-recent__grid">
                             <li class="li-recent__item" *ngFor="let recent of onlyRecents; let i = index">
-                                @if (![0, onlyRecents.length].includes(i)) {
+                                @if (i !== 0) {
                                     <div class="li-recent__line"></div>
                                 }
 
                                 <div class="recent__item-cntnr" 
-                                    (click)="handlePath(recent, RUN_APP,  $event)" id="lsls-{{i}}">
+                                    (click)="handlePath(recent, RUN_APP,  $event)">
                                     
                                     <div class="recent__item-head">
                                         <figure class="recent__item-figure">
@@ -108,12 +108,12 @@
                     <div class="recommend__items">
                         <ol class="ol-recommend__grid">
                             <li class="li-recommend__item" *ngFor="let recommend of onlyRecommends; let i = index">
-                                @if (![0, onlyRecommends.length].includes(i)) {
+                                @if (i !== 0) {
                                     <div class="li-recommend__line"></div>
                                 }
 
                                 <div class="recommend__item-cntnr" 
-                                    (click)="handlePath(recommend, RUN_APP,  $event)" id="lsls-{{i}}">
+                                    (click)="handlePath(recommend, RUN_APP,  $event)">
                                     
                                     <div class="recommend__item-head">
                                         <figure class="recommend__item-figure">

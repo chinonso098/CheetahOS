@@ -1,4 +1,9 @@
 
-<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
-    <div #doswindow tabindex="0" class="dosbox-container" style="height:600px; width:800px; position: relative;" (click)="focusWindow($event)"></div> 
+<cos-primarywindow 
+    [runningProcessID]="processId" 
+    [processAppIcon]="icon" 
+    [processAppName]="name" 
+    [isMaximizable]="isMaximizable" 
+    [priorUId]="priorUId">
+    <div #doswindow tabindex="0" class="dosbox-container" [style.width.px]="dosWidthPx" [style.height.px]="HEIGHT_PX" style="position: relative;" (click)="focusWindow($event)"></div> 
 </cos-primarywindow>

@@ -3,7 +3,7 @@
 [processAppIcon]="this.icon" 
 [processAppName]="this.name"
 [isDialog]="isDialog">
-    <div class="cheetah-main-container"   (click)="focusWindow($event)" id="cheetahAboutMainCntnr">
+    <div class="cheetah-main-container"   (contextmenu)="silenceCtxEvt($event)" (click)="focusWindow($event)" id="cheetahAboutMainCntnr">
         <div class="cheetah-body-container">
             <div class="os-info"> 
                 <div class="os-image">
@@ -19,7 +19,7 @@
                 <div class="cheetah-div"><p class="os-year">{{year}}</p></div>
             </div>
 
-           <div class="tooltip" id="cheetahAboutTooltip" (mouseenter)="onMouseEnter1()" (mouseleave)="onMouseLeave()">
+           <div #cheetahAboutTooltip class="tooltip" id="cheetahAboutTooltip" (mouseenter)="onMouseEnter1()" (mouseleave)="onMouseLeave()">
                 {{infoMessage}}
             </div>
         </div>

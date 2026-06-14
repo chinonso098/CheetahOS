@@ -1,14 +1,26 @@
 .pdf-viewer-main-cntnr{
-  width: 660px;
-  height: 490px;
+  /* Was 660x490 fixed. Now fills the primary window and stacks the
+     scroll viewport + control bar as a flex column so the bar pins to
+     the bottom of the WINDOW (not the viewport -- see below). */
+  width: 100%;
+  height: 100%;
+  min-width: 480px;
+  min-height: 320px;
   padding: 5px 5px 0px 5px;
+  box-sizing: border-box;
   background-color: #2d2d2df4;
+  display: flex;
+  flex-direction: column;
 }
 
 .pdf-viewer-cntnr {
   /* background-image: radial-gradient( circle farthest-corner at 83.7% 4.3%,  rgba(35,10,45,1) 0%, rgba(10,10,10,1) 90% ); */
-  width: 650px;
-  height: 450px;
+  /* Was 650x450 fixed. Fills whatever vertical space is left above the
+     30px control bar; rendered PDF canvases keep their intrinsic size
+     and scroll within this box. */
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto; /* Enable horizontal/vertical scrolling when needed */
 }
 
@@ -18,15 +30,20 @@ canvas {
 }
 
 .pdf-viewer-cntrl{
-  position: fixed;
+  /* Was position:fixed; bottom:0; width:650px -- pinned to the
+     VIEWPORT, so the bar floated outside the window when the user
+     moved/resized it. Now it flows inside .pdf-viewer-main-cntnr as
+     the last flex child, full width, fixed 30px tall. */
+  position: relative;
   display: flex;
   align-items: center; /* vertically align buttons and text */
   gap: 2px;           /* space between sections */
-  width: 650px;
+  width: 100%;
   height: 30px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  flex: 0 0 30px;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #ccc;
-  bottom: 0;
 }
 
 .section {

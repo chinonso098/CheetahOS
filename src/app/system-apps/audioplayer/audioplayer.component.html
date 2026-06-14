@@ -1,5 +1,13 @@
-<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
-  <div class="audio-container-main" tabindex="0" #audioContainer (click)="focusWindow($event)">
+<cos-primarywindow 
+  [runningProcessID]="processId" 
+  [processAppIcon]="icon" 
+  [processAppName]="name" 
+  [isMaximizable]="isMaximizable" 
+  [minimumWindowWidth]="MIN_WIDTH_PX" 
+  [minimumWindowHeight]="MIN_HEIGHT_PX"
+  [priorUId]="priorUId">
+  <div class="audio-container-main" tabindex="0" #audioContainer (click)="focusWindow($event)"
+    (contextmenu)="silenceCtxEvt($event)">
     <!-- Top Info -->
     <div class="basic-info-container">
       <div class="timer">{{timer}}</div>

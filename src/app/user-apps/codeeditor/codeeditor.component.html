@@ -1,7 +1,14 @@
-<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
+<cos-primarywindow 
+  [runningProcessID]="processId" 
+  [processAppIcon]="icon" 
+  [processAppName]="name" 
+  [isMaximizable]="isMaximizable" 
+  [minimumWindowWidth]="MIN_WIDTH_PX" 
+  [minimumWindowHeight]="MIN_HEIGHT_PX"
+  [priorUId]="priorUId">
 
   <div class="code-editor-shell" (click)="focusWindow($event)" #monacoContent >
-    <ngx-monaco-editor  class="my-code-editor"] [options]="editorOptions" [(ngModel)]="code" (onInit)="onEditorInit($event)">
+    <ngx-monaco-editor class="my-code-editor" [options]="editorOptions" [(ngModel)]="code" (onInit)="onEditorInit($event)">
     </ngx-monaco-editor>
 
     <div class="editor-statusbar">

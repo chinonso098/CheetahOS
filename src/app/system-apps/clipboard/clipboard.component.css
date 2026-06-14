@@ -1,0 +1,193 @@
+.clipboard-main-container {
+    width: 320px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    background-color: #2b2b2b;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+.clipboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    flex: 0 0 auto;
+}
+
+.clipboard-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.clear-all-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 3px;
+}
+
+.clear-all-btn:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.clear-all-btn:disabled {
+    color: #7a7a7a;
+    cursor: default;
+}
+
+.clipboard-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 12px 12px 12px;
+}
+
+.clipboard-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.clipboard-body::-webkit-scrollbar-thumb {
+    background-color: #5a5a5a;
+    border-radius: 4px;
+}
+
+.clipboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.clipboard-item {
+    position: relative;
+    background-color: #ffffff;
+    color: #1a1a1a;
+    border-radius: 4px;
+    padding: 10px 12px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    transition: box-shadow 0.12s ease;
+}
+
+.clipboard-item:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.item-toolbar {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+
+.clipboard-item:hover .item-toolbar {
+    opacity: 1;
+}
+
+.pinned-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    color: #5a5a5a;
+    margin-right: 4px;
+}
+
+.item-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.item-action:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+.item-action img {
+    width: 14px;
+    height: 14px;
+}
+
+.item-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 28px;
+    padding-right: 36px;
+}
+
+.item-icon {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    object-fit: contain;
+}
+
+.item-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.item-name {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-action-badge {
+    font-size: 10px;
+    color: #0067c0;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.item-action-badge.cut {
+    color: #b34700;
+}
+
+.clipboard-empty {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 24px;
+}
+
+.empty-icon {
+    width: 56px;
+    height: 56px;
+    opacity: 0.85;
+    margin-bottom: 14px;
+}
+
+.empty-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+}
+
+.empty-subtitle {
+    font-size: 12px;
+    color: #bdbdbd;
+    margin: 0;
+    line-height: 1.4;
+}

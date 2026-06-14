@@ -13,6 +13,8 @@ export interface FileTransferUpdate {
 
 export interface FileTransferCount{ fileCount: number; }
 
+export type Limiter = <T>(fn: () => Promise<T>) => Promise<T>;
+
 export interface FileTransferCopyOptions {
     arg0: string;
     srcPath: string;
@@ -22,11 +24,21 @@ export interface FileTransferCopyOptions {
     fileTransferCount: FileTransferCount;
     currentSize:number;
     signal: AbortSignal;
+    limiter?: Limiter;
 }
 
+export interface FolderMoveQueueItem {
+    src: string;
+    parentDest: string;
+    isRoot?: boolean;
+}
+
+export interface FileStat{ isDirectory: boolean; size: number; exists: boolean }
+
 export interface FileTransferMoveOptions {
-    destPath: string;
-    folderToProcessingQueue: string[];
+    // Per-folder queue: each item carries its own parent destination so siblings
+    // are not mistakenly treated as nested folders.
+    folderToProcessingQueue: FolderMoveQueueItem[];
     folderToDeleteStack: string[];
     filesToMoveCount: number;
     dialogPId: number;
@@ -35,7 +47,7 @@ export interface FileTransferMoveOptions {
     signal: AbortSignal;
     isRecycleBin?: boolean;
     moveFolderItself?: boolean; // true = move folder, false = move only contents
-    skipCounter?: number;
+    limiter?: Limiter;
 }
 
 export interface FileOperationCheck {

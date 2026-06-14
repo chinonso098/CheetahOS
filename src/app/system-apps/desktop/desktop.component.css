@@ -132,11 +132,21 @@
     grid-auto-flow: column;
     grid-template-columns:  repeat(auto-fill,90px);
     grid-template-rows: repeat(auto-fill,70px);
-    height: calc(100% - 40px);
+    height: calc(100vh - 40px);
     width: 100%;
     padding: 5px 0;
     row-gap: 25px;
     z-index: 1;
+}
+
+.ol-desktopIcon-grid{
+    /* existing rules ... */
+    user-select: none;
+    -webkit-user-select: none;
+}
+.ol-desktopIcon-grid:focus,
+.ol-desktopIcon-grid:focus-visible{
+    outline: none;
 }
 
 .li-desktopIcon-container{

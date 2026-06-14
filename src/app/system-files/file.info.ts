@@ -6,6 +6,7 @@ export class FileInfo {
     private _currentPath!: string;
     private _contentPath!: string;
     private _contentBuffer!: ArrayBuffer | null;
+    private _stringBuffer!: string;
     private _fileExtension!: string;
     private _fileType!: string;
     private _fileName!: string;
@@ -38,6 +39,7 @@ export class FileInfo {
         this._fileSizeUnit = 'B';
         this._mode = 0;
         this._contentBuffer = null;
+        this._stringBuffer = Constants.EMPTY_STRING;
     }
 
     get getIconPath() {
@@ -184,5 +186,13 @@ export class FileInfo {
 
     set setContentBuffer(contentBuffer: ArrayBuffer) {
         this._contentBuffer = contentBuffer;
+    }
+
+    get getStringBuffer() {
+        return this._stringBuffer;
+    }
+
+    set setStringBuffer(stringBuffer: string) {
+        this._stringBuffer = stringBuffer;
     }
 }

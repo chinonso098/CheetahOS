@@ -12,7 +12,7 @@ import { AppState } from "src/app/system-files/state/state.interface";
     providedIn: 'root'
 })
 
-export class SessionManagmentService implements BaseService{
+export class SessionManagementService implements BaseService{
 
     private _sessionName = "main-session";
     private _sessionDataDict: Map<string, unknown>; 
@@ -29,13 +29,12 @@ export class SessionManagmentService implements BaseService{
     description = 'handles load/save of user session';
         
     constructor(processIDService:ProcessIDService, runningProcessService:RunningProcessService){
-        if(localStorage.getItem(this._sessionName)){
-            const sessData = localStorage.getItem(this._sessionName) as string;
-            this._sessionDataDict = new Map(JSON.parse(sessData));
-        }
-        else{
-            this._sessionDataDict = new  Map<string, unknown>();
-        }
+        // Attempt to restore the consolidated session map from localStorage.
+        // This service is providedIn: 'root' and is built during app startup, so a
+        // corrupted/partial 'main-session' entry (truncated write, manual edit,
+        // quota eviction) must NOT throw here or it could break the entire boot.
+        // Fall back to an empty map if parsing fails for any reason.
+        this._sessionDataDict = this.loadSession();
 
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
@@ -52,7 +51,14 @@ export class SessionManagmentService implements BaseService{
 
     addAppSession(key:string, dataToAdd:AppState): void{
         const data =  JSON.stringify(dataToAdd);
-        localStorage.setItem(key, data);
+        // Guard the write so quota/storage errors are logged rather than thrown
+        // back to the caller.
+        try{
+            localStorage.setItem(key, data);
+        }
+        catch(error){
+            console.error(`${this.name}: failed to save app session '${key}'.`, error);
+        }
     }
 
     getSession(key:string):unknown{
@@ -63,8 +69,14 @@ export class SessionManagmentService implements BaseService{
     getAppSession(key:string):AppState | null{
         const appDataStr = localStorage.getItem(key);
         if(appDataStr){
-            const appData = JSON.parse(appDataStr) as AppState;
-            return appData;
+            // Guard against malformed JSON so a single corrupt app entry cannot
+            // throw and disrupt callers; treat unparsable data as "no session".
+            try{
+                return JSON.parse(appDataStr) as AppState;
+            }
+            catch{
+                return null;
+            }
         }
         return null;
     }
@@ -79,8 +91,11 @@ export class SessionManagmentService implements BaseService{
     }
 
     clearSession(): void{
-        this._sessionDataDict = new Map<string, unknown>;
-        localStorage.clear()
+        // Reset the in-memory map and wipe all persisted storage.
+        // Note: localStorage.clear() removes every key for this origin, not just
+        // the keys owned by this service.
+        this._sessionDataDict = new Map<string, unknown>();
+        localStorage.clear();
     }
 
     clearAppSession(): void{
@@ -90,20 +105,51 @@ export class SessionManagmentService implements BaseService{
         this.removeSession(appsInstanceUIDKey);
 
         const processWithWindows = this._runningProcessService.getProcesses().filter(x => x.getHasWindow === true);
-        for(const proccess of processWithWindows){
-            const uId = `${proccess.getProcessName}-${proccess.getProcessId}`;
+        for(const process of processWithWindows){
+            const uId = `${process.getProcessName}-${process.getProcessId}`;
             this.removeAppSession(uId);
         }
     }
 
+    // Loads and deserializes the consolidated session map from localStorage.
+    // Returns an empty map if nothing is stored or if the stored data is invalid.
+    private loadSession():Map<string, unknown>{
+        const sessData = localStorage.getItem(this._sessionName);
+        if(sessData){
+            try{
+                return new Map(JSON.parse(sessData));
+            }
+            catch{
+                // Corrupted/invalid payload: start clean rather than crash startup.
+                console.error(`${this.name}: failed to parse stored session, resetting.`);
+            }
+        }
+        return new Map<string, unknown>();
+    }
+
     private saveSession(sessionData:Map<string, unknown>){
         const data =  JSON.stringify(Array.from(sessionData.entries()));
-        localStorage.setItem(this._sessionName, data);
+        // Persisting can throw (e.g. QuotaExceededError in private mode or when
+        // storage is full). Swallow-and-log so a failed save never crashes the
+        // caller; the in-memory map remains the source of truth for this session.
+        try{
+            localStorage.setItem(this._sessionName, data);
+        }
+        catch(error){
+            console.error(`${this.name}: failed to save session.`, error);
+        }
     }
 
     addMapBasedSession(key: string, map: Map<string, string>): void {
         const serialized = JSON.stringify(Array.from(map.entries()));
-        localStorage.setItem(key, serialized);
+        // Guard the write so quota/storage errors are logged rather than thrown
+        // back to the caller.
+        try{
+            localStorage.setItem(key, serialized);
+        }
+        catch(error){
+            console.error(`${this.name}: failed to save map-based session '${key}'.`, error);
+        }
     }
 
     getMapBasedSession(key: string): Map<string, string> | null {

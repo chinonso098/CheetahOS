@@ -13,11 +13,9 @@ import { FormGroup, FormBuilder } from '@angular/forms';
 import { FileToolTip, ViewOptions, ViewOptionsCSS } from './fileexplorer.types';
 import {basename, dirname} from 'path';
 import { AppState } from 'src/app/system-files/state/state.interface';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { GeneralMenu, MenuPosition, NestedMenu, NestedMenuItem } from 'src/app/shared/system-component/menu/menu.types';
 import { Constants } from 'src/app/system-files/constants';
-import * as htmlToImage from 'html-to-image';
-import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { ActivityType, SortBys, UserNotificationType } from 'src/app/system-files/common.enums';
 import { DragEventInfo, FileTreeNode } from 'src/app/system-files/common.interfaces';
@@ -28,7 +26,6 @@ import { SystemNotificationService } from 'src/app/shared/system-service/system.
 import { MenuAction } from 'src/app/shared/system-component/menu/menu.enums';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types'
-import { file } from 'jszip';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
 
 @Component({
@@ -51,7 +48,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _runningProcessService!:RunningProcessService;
   private _fileService!:FileService;
   private _processHandlerService!:ProcessHandlerService;
-  private _sessionManagmentService!:SessionManagmentService;
+  private _sessionManagementService!:SessionManagementService;
   private _userNotificationService!:UserNotificationService;
   private _windowService!:WindowService;
   private _menuService!:MenuService;
@@ -267,7 +264,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, fileService:FileService, 
-              triggerProcessService:ProcessHandlerService, formBuilder: FormBuilder, sessionManagmentService:SessionManagmentService, 
+              triggerProcessService:ProcessHandlerService, formBuilder: FormBuilder, sessionManagementService:SessionManagementService, 
               menuService:MenuService, notificationService:UserNotificationService, windowService:WindowService, 
               audioService:AudioService, systemNotificationService:SystemNotificationService, activityHistoryService:ActivityHistoryService) { 
 
@@ -275,7 +272,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._runningProcessService = runningProcessService;
     this._fileService = fileService;
     this._processHandlerService = triggerProcessService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
     this._menuService = menuService;
     this._userNotificationService = notificationService;
     this._windowService = windowService;
@@ -378,6 +375,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   ngOnDestroy(): void {
+    
     this._systemNotificationService.removeAppIconNotication(this.processId);
     this._viewByNotifySub?.unsubscribe();
     this._sortByNotifySub?.unsubscribe();
@@ -435,11 +433,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
 
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
 
     if(appSessionData !== null  && appSessionData.appData != Constants.EMPTY_STRING){
       this.directory = appSessionData.appData as string;
@@ -712,7 +710,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFiles();
       await CommonFunctions.sleep(this.SECONDS_DELAY[4])
-      this.captureComponentImg();   
+      await this.captureComponentImg();   
     }
   }
 
@@ -774,7 +772,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.setNavPathIcon(folderName, this.directory);
       await this.loadFiles();
       await CommonFunctions.sleep(this.SECONDS_DELAY[4])
-      this.captureComponentImg();
+      await this.captureComponentImg();   
     }
   }
 
@@ -816,7 +814,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this.setNavPathIcon(folderName,this.directory);
       await this.loadFiles();
       await CommonFunctions.sleep(this.SECONDS_DELAY[4])
-      this.captureComponentImg(); 
+      await this.captureComponentImg(); 
     }
   }
 
@@ -972,11 +970,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // this.directory, will not be correct for all cases. Make sure to check
     for(const dirEntry of directoryEntries){
       const entryPath = `${Constants.USER_BASE_PATH}/${dirEntry}`;
-      const isFile =  await this._fileService.isDirectory(entryPath);
+      const stat =  await this._fileService.getStatAsync(entryPath);
       const ftn:FileTreeNode = {
         name : dirEntry,
         path : entryPath,
-        isFolder: isFile,
+        isFolder: stat.isDirectory,
         children: []
       }
 
@@ -997,11 +995,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       // this.directory, will not be correct for all cases. Make sure to check
       for(const dirEntry of directoryEntries){
         const entryPath = `${path}/${dirEntry}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
-        const isFile =  await this._fileService.isDirectory(entryPath);
+        const stat =  await this._fileService.getStatAsync(entryPath);
         const ftn:FileTreeNode = {
           name : dirEntry,
           path: entryPath,
-          isFolder: isFile,
+          isFolder: stat.isDirectory,
           children: []
         }
   
@@ -1097,7 +1095,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       await this.loadFiles(false);
 
     await CommonFunctions.sleep(this.SECONDS_DELAY[4])
-    this.captureComponentImg();
+    await this.captureComponentImg();
   }
 
   async navigateToFolder(data: string[]): Promise<void> {
@@ -1175,10 +1173,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       await this.loadFiles(false);
 
     await CommonFunctions.sleep(this.SECONDS_DELAY[4]);
-    this.captureComponentImg();
+    await this.captureComponentImg();
   }
-
-
 
 
   setNavPathIcon(fileName:string, directory:string):void{
@@ -1290,20 +1286,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     console.log('this._directoryTraversalList:', this._directoryTraversalList);
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.fileExplorerRootContainer.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
-
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+  async captureComponentImg():Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.fileExplorerRootContainer, this.processId, this.name, this.icon, this._windowService);
   }
   
   colorTabLayoutContainer():void{
@@ -3192,7 +3176,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     const shortCut:FileInfo = new FileInfo();
     const directory = this.directory;
     const fileContent = this.generateShortcuContent(selectedFile);
-    shortCut.setContentPath = fileContent;
+    shortCut.setStringBuffer = fileContent;
 
     if(directory === Constants.ROOT){
       const title = 'Shortcut';

@@ -32,7 +32,7 @@ export class ActivityHistoryService implements BaseService {
         this._runningProcessService = runningProcessService;
         this._activityHistory = [];
 
-        //this.loadFromStorage();
+        this.loadFromStorage();
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
@@ -119,11 +119,26 @@ export class ActivityHistoryService implements BaseService {
 
     private loadFromStorage(): void {
         const data = localStorage.getItem(this.STORAGE_KEY);
-        if (data) {
-        this._activityHistory = JSON.parse(data).map((h: any) => ({
-            ...h,
-            lastOpened: new Date(h.lastOpened) // restore Date objects
-        }));
+        if (!data) return;
+        try {
+            const parsed = JSON.parse(data) as ActivityHistory[];
+            if (Array.isArray(parsed)) {
+                // Field name on disk is lastInteractionTS (number, epoch ms).
+                // Earlier versions of this code referenced `lastOpened`; guard
+                // against legacy blobs by coercing/falling back to now().
+                this._activityHistory = parsed.map(h => ({
+                    type: h.type,
+                    name: h.name,
+                    path: h.path,
+                    count: typeof h.count === 'number' ? h.count : 1,
+                    lastInteractionTS: typeof h.lastInteractionTS === 'number'
+                        ? h.lastInteractionTS
+                        : Date.now(),
+                }));
+            }
+        } catch {
+            // Corrupt blob — start fresh rather than crash the OS boot path.
+            this._activityHistory = [];
         }
     }
 

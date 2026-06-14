@@ -1,6 +1,5 @@
 import { ElementRef } from "@angular/core";
-import { ClampedPosition, WindowPositionInfo } from "./windows.types";
-import { WindowService } from "../../system-service/window.service";
+import { ClampedPosition, WindowPositionInfo, WindowState } from "./windows.types";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace WindowHelper {
@@ -49,18 +48,25 @@ export namespace WindowHelper {
       return {pId:0, leftPx:winLeftPx, topPx:winTopPx};
     }
 
-    export const syncStatePositionSize =(windowService:WindowService, pId:number, windowLeftPx:number, 
-        windowTopPx:number, windowWidthPx:number, windowHeightPx:number, windowZIndex:string): void=>{
-      const ws = windowService.getWindowState(pId);
-      if (!ws) return;
-
-      ws.leftPx = windowLeftPx;
-      ws.topPx =  windowTopPx;
-      ws.widthPx =  windowWidthPx;
-      ws.heightPx = windowHeightPx;
-      ws.zIndex = Number(windowZIndex);
-
-      windowService.addWindowState(ws);
+    /**
+     * Pure: copies the supplied position/size/z-index fields onto `state`.
+     *
+     * No service lookup, no service write -- that's the caller's job. This
+     * makes the helper trivially testable (pass a plain object, assert
+     * fields) and keeps the WindowService dependency out of the helper
+     * namespace.
+     *
+     * `zIndex` is accepted as a string for convenience because components
+     * already hold the CSS-formatted value; we Number() it here so callers
+     * don't have to remember.
+     */
+    export const applyPositionSize = (state: WindowState, windowLeftPx: number, windowTopPx: number,
+        windowWidthPx: number, windowHeightPx: number, windowZIndex: string): void => {
+      state.leftPx   = windowLeftPx;
+      state.topPx    = windowTopPx;
+      state.widthPx  = windowWidthPx;
+      state.heightPx = windowHeightPx;
+      state.zIndex   = Number(windowZIndex);
     }
 
     export const  setFocusOnDiv =(winCmpntId:string):void =>{

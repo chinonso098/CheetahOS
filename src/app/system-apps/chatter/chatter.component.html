@@ -1,5 +1,12 @@
-<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
-    <div class="chatter-main-container" tabIndex="0" (click)="focusWindow($event)" #chatterContainer>
+<cos-primarywindow 
+  [runningProcessID]="processId" 
+  [processAppIcon]="icon" 
+  [processAppName]="name" 
+  [isMaximizable]="isMaximizable" 
+  [minimumWindowWidth]="MIN_WIDTH_PX" 
+  [minimumWindowHeight]="MIN_HEIGHT_PX"
+  [priorUId]="priorUId">
+    <div class="chatter-main-container" tabIndex="0" (click)="focusWindow($event)" (contextmenu)="silenceCtxEvt($event)" #chatterContainer>
       <div class="chatter-content-container">
 
         <!-- Side bar-->

@@ -3,9 +3,11 @@
   [processAppIcon]="this.icon"
   [processAppName]="this.name"
   [isMaximizable]="this.isMaximizable"
+  [minimumWindowWidth]="MIN_WIDTH_PX" [minimumWindowHeight]="MIN_HEIGHT_PX"
   [priorUId]="this.priorUId"
 >
-  <div class="editor-main-container" #editorRoot (click)="focusWindow($event)">
+  <div class="editor-main-container" #editorRoot (click)="focusWindow($event)"
+    (contextmenu)="silenceCtxEvt($event)">
     <!-- Quill mounts here -->
     <div class="editor-surface" #editorSurface></div>
 

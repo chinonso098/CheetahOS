@@ -30,6 +30,12 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
 
   isToolTipVisible = false;
 
+  private _showToolTipTimeoutId?: ReturnType<typeof setTimeout>;
+  private _hideToolTipTimeoutId?: ReturnType<typeof setTimeout>;
+  private _selfDestructTimeoutId?: ReturnType<typeof setTimeout>;
+  private _selfDestructCleanupTimeoutId?: ReturnType<typeof setTimeout>;
+  private _isDestroyed = false;
+
   clippyDurations:number[] = [4400,2400,13600,7500,1800,5500,8400,4100,6600,2200,3500,2800,3000,3000,5000,4500,1900,2600,8100,4800];
 
   clippyAnimations:string[] = ['clippy_correct','clippy_listen_music','clippy_relax','clippy_melt','clippy_look_down','clippy_boxed',
@@ -82,7 +88,11 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
   }
 
   ngOnDestroy():void{
-    1
+    this._isDestroyed = true;
+    if(this._showToolTipTimeoutId) clearTimeout(this._showToolTipTimeoutId);
+    if(this._hideToolTipTimeoutId) clearTimeout(this._hideToolTipTimeoutId);
+    if(this._selfDestructTimeoutId) clearTimeout(this._selfDestructTimeoutId);
+    if(this._selfDestructCleanupTimeoutId) clearTimeout(this._selfDestructCleanupTimeoutId);
   }
 
   randomIntFromInterval(min:number, max:number):number{ 
@@ -104,7 +114,8 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
     const showToolTipDelay = 500;
     const minToolTipDisplayDuration = 4500;
 
-    setTimeout(()=>{
+    this._showToolTipTimeoutId = setTimeout(()=>{
+      if(this._isDestroyed) return;
       this.clippyToolTip.nativeElement.style.visibility = 'visible';
       this.clippyToolTip.nativeElement.style.opacity = 1;
       this.clippyToolTip.nativeElement.style.transition = 'opacity 0.3s ease-in';
@@ -113,7 +124,8 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
       this.clippyToolTipText.nativeElement.style.opacity = 1;
       this.clippyToolTipText.nativeElement.style.transition = 'opacity 0.3s ease-in';
 
-      setTimeout(()=>{
+      this._hideToolTipTimeoutId = setTimeout(()=>{
+        if(this._isDestroyed) return;
         this.hideClippyToolTip();
       },minToolTipDisplayDuration) 
 
@@ -130,13 +142,42 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
     this.clippyToolTipText.nativeElement.style.visibility = 'hidden';
   }
 
-  private rotateClippyGif():void{
-    this.clippyGifImg.nativeElement.style.transform = 'rotate(360deg)';
-    this.clippyGifImg.nativeElement.style.transition = 'transform 0.99s linear';
+  /** Animation duration for the close sequence (ms). Kept in sync with the
+   *  cleanup delay so the process is only removed once the animation ends. */
+  private readonly CLOSE_ANIMATION_DURATION = 900;
+
+  private playCloseAnimation():void{
+    const gif = this.clippyGifImg?.nativeElement as HTMLElement | undefined;
+    const tip = this.clippyToolTip?.nativeElement as HTMLElement | undefined;
+    const tipText = this.clippyToolTipText?.nativeElement as HTMLElement | undefined;
+    const easing = 'cubic-bezier(0.4, 0.0, 0.2, 1)'; // standard material easing
+    const duration = `${this.CLOSE_ANIMATION_DURATION}ms`;
+
+    if(gif){
+      // Promote to its own layer for smoother GPU-accelerated animation.
+      gif.style.willChange = 'transform, opacity';
+      gif.style.transformOrigin = 'center center';
+      gif.style.transition = `transform ${duration} ${easing}, opacity ${duration} ${easing}`;
+      // Spin + shrink + fade in one combined transform.
+      gif.style.transform = 'rotate(360deg) scale(0.2)';
+      gif.style.opacity = '0';
+    }
+
+    // Fade the tooltip out alongside the gif so the whole widget exits together.
+    const tooltipFadeDuration = `${Math.round(this.CLOSE_ANIMATION_DURATION * 0.6)}ms`;
+    if(tip){
+      tip.style.willChange = 'opacity';
+      tip.style.transition = `opacity ${tooltipFadeDuration} ease-out`;
+      tip.style.opacity = '0';
+    }
+    if(tipText){
+      tipText.style.willChange = 'opacity';
+      tipText.style.transition = `opacity ${tooltipFadeDuration} ease-out`;
+      tipText.style.opacity = '0';
+    }
   }
 
   private selfDestruct():void{
-    const cleanUpDelay = 1000;
     const minGIFDisplayDuration = 6000;
     while(this.selectedDuration < minGIFDisplayDuration){
       const durationRatio = (this.selectedDuration / minGIFDisplayDuration);      
@@ -145,14 +186,16 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
       this.selectedDuration += durationIncrease;
     }
 
-    setTimeout(()=>{
-      this.rotateClippyGif();
-      setTimeout(()=>{
+    this._selfDestructTimeoutId = setTimeout(()=>{
+      if(this._isDestroyed) return;
+      this.playCloseAnimation();
+      this._selfDestructCleanupTimeoutId = setTimeout(()=>{
+        if(this._isDestroyed) return;
         const processToClose = this._runningProcessService.getProcess(this.processId);
         if(processToClose){
           this._runningProcessService.closeProcessNotify.next(processToClose);
         }
-      },cleanUpDelay) 
+      }, this.CLOSE_ANIMATION_DURATION) 
     },this.selectedDuration) 
   }
   

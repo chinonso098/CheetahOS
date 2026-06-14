@@ -64,3 +64,18 @@ export interface InformationUpdate{
     appName:string,
     info:string[]
 }
+
+export interface AppUsage{
+    name:string,
+    launchCount:number,
+    totalActiveMs:number,
+    lastLaunchTS:number
+}
+
+export interface SystemMetricsSnapshot{
+    sessionStartTS:number,
+    uptimeMs:number,
+    runningProcessCount:number,
+    runningServiceCount:number,
+    appUsage:AppUsage[]
+}

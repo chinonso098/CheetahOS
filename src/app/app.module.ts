@@ -35,6 +35,7 @@ import { MarkDownViewerComponent } from './user-apps/markdownviewer/markdownview
 import { FileTreeViewComponent } from './shared/system-component/filetreeview/filetreeview.component';
 import { CheetahComponent } from './system-apps/cheetah/cheetah.component';
 import { ClippyComponent } from "./system-apps/clippy/clippy.component";
+import { ClipboardComponent } from './system-apps/clipboard/clipboard.component';
 import { ChatterComponent } from './system-apps/chatter/chatter.component';
 import { RunSystemComponent } from './system-apps/runsystem/runsystem.component';
 import { VolumeControlComponent } from './system-apps/volumecontrol/volumecontrol.component';
@@ -95,6 +96,7 @@ import { AlphaNumericDirective } from './system-apps/chatter/chatter.textbox.dir
     FileTreeViewComponent,
     CheetahComponent,
     ClippyComponent,
+    ClipboardComponent,
     ChatterComponent,
     RunSystemComponent,
     VolumeControlComponent,

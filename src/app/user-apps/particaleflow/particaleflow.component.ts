@@ -9,7 +9,7 @@
 // import { Process } from 'src/app/system-files/process';
 // import { ComponentType } from 'src/app/system-files/system.types';
 // import { AppState } from 'src/app/system-files/state/state.interface';
-// import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+// import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 // import { ParticleScene } from './particle.types';
 
 // @Component({
@@ -27,7 +27,7 @@
 //   private _processIdService!:ProcessIDService;
 //   private _processHandlerService!:ProcessHandlerService;
 //   private _runningProcessService!:RunningProcessService;
-//   private _sessionManagmentService:SessionManagmentService;
+//   private _sessionManagementService:SessionManagementService;
 //   private _animationId = 0;
 
 
@@ -49,12 +49,12 @@
 
 
 //   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, private renderer: Renderer2,
-//               windowService:WindowService, triggerProcessService:ProcessHandlerService, sessionManagmentService:SessionManagmentService) { 
+//               windowService:WindowService, triggerProcessService:ProcessHandlerService, sessionManagementService:SessionManagementService) { 
                 
 //     this._processIdService = processIdService;
 //     this._windowService = windowService;
 //     this._processHandlerService = triggerProcessService;
-//     this._sessionManagmentService = sessionManagmentService;
+//     this._sessionManagementService = sessionManagementService;
 
 //     this.processId = this._processIdService.getNewProcessId();
 //     this._runningProcessService = runningProcessService;
@@ -180,11 +180,11 @@
 //       unique_id: uId,
 //       window: {app_name:'', pId:0, x_axis:0, y_axis:0, height:0, width:0, z_index:0, is_visible:true}
 //     }
-//     this._sessionManagmentService.addAppSession(uId, this._appState);
+//     this._sessionManagementService.addAppSession(uId, this._appState);
 //   }
   
 //   retrievePastSessionData():void{
-//     const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+//     const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
 //     if(appSessionData !== null && appSessionData.app_data !== Constants.EMPTY_STRING){
 //       //
 //     }
@@ -201,16 +201,18 @@
 
 
 import { Component, OnDestroy, OnInit, AfterViewInit, Input, Renderer2 } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
+import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
 import { BaseComponent } from 'src/app/system-base/base/base.component.interface';
 import { Constants } from 'src/app/system-files/constants';
 import { Process } from 'src/app/system-files/process';
 import { ComponentType } from 'src/app/system-files/system.types';
 import { AppState } from 'src/app/system-files/state/state.interface';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { ParticleScene } from './particle.types';
 import { getCurl } from './curl';
 
@@ -228,17 +230,27 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
   private _processIdService!:ProcessIDService;
   private _processHandlerService!:ProcessHandlerService;
   private _runningProcessService!:RunningProcessService;
-  private _sessionManagmentService:SessionManagmentService;
+  private _sessionManagementService:SessionManagementService;
   private _animationId = 0;
 
 
   private _appState!:AppState;
   private _particileScene!: ParticleScene;
+  private _canvas!: HTMLCanvasElement;
+  private _maximizeWindowSub!: Subscription;
+  private _minimizeWindowSub!: Subscription;
+  private _windowResizeSub!: Subscription;
+
+  /* Floors mirror the CSS min-width/min-height so the resize handler
+     ignores transient sub-min sizes during drag. */
+  readonly MIN_WIDTH_PX = 480;
+  readonly MIN_HEIGHT_PX = 320;
+
   private emitter!:any;
 
   name= 'particleflow';
   hasWindow = true;
-  isMaximizable=false;
+  isMaximizable=true;
   icon = `${Constants.IMAGE_BASE_PATH}particles.png`;
   processId = 0;
   type = ComponentType.User;
@@ -246,16 +258,32 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
 
 
   constructor(processIdService:ProcessIDService, runningProcessService:RunningProcessService, private renderer: Renderer2,
-              windowService:WindowService, triggerProcessService:ProcessHandlerService, sessionManagmentService:SessionManagmentService) { 
+              windowService:WindowService, triggerProcessService:ProcessHandlerService, sessionManagementService:SessionManagementService) { 
                 
     this._processIdService = processIdService;
     this._windowService = windowService;
     this._processHandlerService = triggerProcessService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
 
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService = runningProcessService;
     this._runningProcessService.addProcess(this.getComponentDetail());
+
+    /* The simulation reads width/height from _particileScene and from
+       the underlying <canvas> attributes. Both have to be re-sized
+       when the primary window grows/shrinks; otherwise the trail
+       buffer clips or leaves dead space. */
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() => {
+      this.maximizeWindow();
+    });
+    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe(() => {
+      this.minimizeWindow();
+    });
+    this._windowResizeSub = this._windowService.resizeProcessWindowNotify.subscribe((info:WindowResizeInfo) => {
+      if(info.pId !== this.processId) return;
+      if(info.widthPx < this.MIN_WIDTH_PX || info.heightPx < this.MIN_HEIGHT_PX) return;
+      this.onWindowResize();
+    });
   }
 
   ngOnInit(): void {
@@ -270,6 +298,9 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
 
   ngOnDestroy(): void {
     cancelAnimationFrame(this._animationId);
+    this._maximizeWindowSub?.unsubscribe();
+    this._minimizeWindowSub?.unsubscribe();
+    this._windowResizeSub?.unsubscribe();
   }
 
   initScene():void{
@@ -284,7 +315,43 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
     this.renderer.appendChild(nativeEl, canvas);
     canvas.width = width;
     canvas.height = height;
+    this._canvas = canvas;
     this._particileScene = {context:ctx, width:width, height:height};
+  }
+
+  /**
+   * Re-fit the runtime <canvas> and ParticleScene dimensions to the
+   * (now reflowed) host container. Re-assigning canvas.width/height
+   * also clears the bitmap, which is fine -- the trail rebuilds on
+   * the next animate() tick. The emitter reads scene.width/height on
+   * each tick, so the spawn origin re-centers automatically.
+   */
+  onWindowResize():void {
+    const nativeEl = document.getElementById('particleFlowCntnr') as HTMLElement | null;
+    if(!nativeEl || !this._canvas || !this._particileScene) return;
+    const width = nativeEl.offsetWidth;
+    const height = nativeEl.offsetHeight;
+    if(width <= 0 || height <= 0) return;
+    this._canvas.width = width;
+    this._canvas.height = height;
+    this._particileScene.width = width;
+    this._particileScene.height = height;
+  }
+
+  maximizeWindow():void {
+    const uId = `${this.name}-${this.processId}`;
+    if(this._runningProcessService.getEventOriginator() !== uId) return;
+    this._runningProcessService.removeEventOriginator();
+    /* The primary window's maximize animation reflows our host on the
+       next frame; refit after rAF to pick up the new size. */
+    requestAnimationFrame(() => this.onWindowResize());
+  }
+
+  minimizeWindow():void {
+    const uId = `${this.name}-${this.processId}`;
+    if(this._runningProcessService.getEventOriginator() !== uId) return;
+    this._runningProcessService.removeEventOriginator();
+    requestAnimationFrame(() => this.onWindowResize());
   }
 
   getParticle(opts:any):{ update: (t:any) => void;  render: (ctx: CanvasRenderingContext2D) => void;} {
@@ -373,6 +440,16 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the Task Manager (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu. 
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
+  }
   
   storeAppState(app_data:unknown):void{
     const uId = `${this.name}-${this.processId}`;
@@ -383,11 +460,11 @@ export class ParticaleFlowComponent implements BaseComponent, OnInit, OnDestroy,
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
   
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
       //
     }

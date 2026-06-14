@@ -4,6 +4,11 @@
   height: 100%;
   background-color: #ffffff;
   border-bottom: 1px solid #ccc; /* Add a border to the card */
+  /* Stack card-body (flex) + footer (45px) inside the card. */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
 }
   
 /* Custom styles for the card-body */
@@ -14,7 +19,13 @@
   background-color: #ffffff; /* Set the background color */
   color: #000; /* Set the text color */
   border-top: none; /*Add a top border to separate from the card header */
-  margin-bottom: 43px;
+  /* Was margin-bottom: 43px to clear the viewport-fixed footer. The
+     footer now flows inside .card as the second flex child, so the
+     reservation is unnecessary. */
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Additional styles for links inside the card-body (optional) */
@@ -61,8 +72,13 @@
 
 /* Custom styles for .table-responsive (Optional) */
 .tskmgr-table-cntnr {
-  width: 715px;
-  height:310px;
+  /* Was fixed 715x310. Now fills card-body so the table scrolls inside
+     whatever vertical space remains above the footer. */
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
   overflow: auto; /* Enable horizontal/vertical scrolling when needed */
   border-top:  none;
 }
@@ -70,8 +86,13 @@
 /* Custom styles for .table-responsive (Optional) */
 .tskmgr-table-svc-cntnr {
     /* width: 640px; */
-  width: 715px;
-  height:310px;
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   /* overflow: auto; Enable horizontal/vertical scrolling when needed */
   border-top:  none;
   /* padding-bottom: 10px; */
@@ -83,7 +104,14 @@
 .tskmgr-table, .tskmgr-table-svc {
     /*overflow: scroll; */   /* Enable horizontal scrolling when needed */
     border-collapse: collapse; /* Remove spacing between table cells */
-    width: 100%; /* Set the table width to 100% of its container */
+    /* Was width:100%, which combined with table-layout:auto made the
+       table stretch to the container. On grow the name column absorbed
+       all extra space; on shrink it couldn't drop below the inline
+       widths written by alignHeaderAndBodyWidth(). With max-content the
+       table sizes to its columns: narrower container -> horizontal
+       scroll via .tskmgr-table-cntnr overflow:auto; wider container ->
+       whitespace on the right (matches Windows Task Manager). */
+    width: max-content;
     margin: 1px 0; /* Add margin above and below the table */
     font-family: Arial, sans-serif; /* Set the font family for the table */
     table-layout: auto;
@@ -92,10 +120,47 @@
 /* Custom styles for the table */
 .taskmgr-table.mini {
   border-collapse: collapse; /* Remove spacing between table cells */
-  min-width: 100%; /* Set the table width to 100% of its container */
+  width: 100%; /* Fill the mini-view container so rows span full width */
   margin: 1px 0; /* Add margin above and below the table */
   font-family: Arial, sans-serif; /* Set the font family for the table */
   table-layout: auto;
+}
+
+/* Mini-view scroll container. Mirrors .tskmgr-table-cntnr so the process
+   list flexes inside .card-body and scrolls instead of pushing the footer
+   off-screen. (Previously the markup referenced a non-existent
+   ".taskmgr-table-cntnr" class, leaving the list unstyled.) */
+.taskmgr-table-cntnr {
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Mini-view rows/cells. The shared table styling targets ".tskmgr-table",
+   so the mini table ("taskmgr-table") needs its own row/cell rules to get
+   padding, hover and the selected-row highlight. */
+.taskmgr-table.mini td {
+  padding: 4px 5px;
+  font-size: 12px;
+  font-weight: lighter;
+  text-align: left;
+  border: none;
+}
+
+.taskmgr-table.mini tr {
+  background-color: #ffffff;
+}
+
+.taskmgr-table.mini tr:hover {
+  background-color: #e8f4fc;
+}
+
+.taskmgr-table.mini tr.active td {
+  background-color: #d0ecfc !important;
 }
 
 .tskmgr-table-svc-header-cntnr{ 
@@ -136,7 +201,11 @@
 }
 
 .tskmgr-table-svc-body-cntnr{
-  height: 280px;
+  /* Was a hard height: 280px. Now expands inside .tskmgr-table-svc-cntnr
+     so the services table scrolls within the available window height. */
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 tbody{
@@ -402,12 +471,31 @@ span {
   margin: 0 4px 0 0;
 }
 
+/* Root container of the detailed view. Was an unclassed <div> that
+   relied on its children having fixed pixel sizes. Now it stretches to
+   fill the primary window and stacks the nav bar + tabbed window as a
+   flex column so everything below can flex responsively. */
+.tskmgr-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 320px;
+  min-height: 240px;
+}
+
 /* Styles for the tabbed window container */
 .tskmgr-tabbed-window {
   min-width: 150px; /* Adjust the width as needed */
   border: 1px solid #ccc; /**/
   /* border-radius: 5px;
   overflow: scroll;  */
+  /* Fill the root and stack tabs + tab-content vertically. */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 
 .tskmgr-tabbed-window:first-child .tskmgr-tabbed-window:last-child {
@@ -451,6 +539,11 @@ span {
 .tskmgr-tab-content {
   padding: 0;
   border-top: none; 
+  /* Fill the tabbed window so the active pane (card + footer) can flex. */
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .tskmgr-tab-pane {
@@ -458,7 +551,11 @@ span {
 }
 
 .tskmgr-tab-pane.active {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 
 .just-for-one-span{
@@ -473,11 +570,14 @@ span {
 
 .tsksmgr-footer-div-cntnr{
   display:flex;
-  position: fixed;
-  bottom: 0;
-  left: 0%;
+  /* Was: position: fixed; bottom: 0; left: 0; width: 100%; — anchored
+     to the VIEWPORT, so the footer floated outside the window when
+     moved/resized and required card-body margin-bottom:43px. Now it
+     flows inside the .card as the second flex child. */
+  position: relative;
   width: 100%;
   height: 45px;
+  flex: 0 0 45px;
   font-size: small;
   font-weight: lighter;
   border-top: 1px solid #ccc; /* Cell border */
@@ -493,8 +593,11 @@ span {
 
 .tsksmgr-footer-div-cntnt1{
   display: flex;
+  /* Right-align the End task button and keep a 15px gap from the
+     window's right edge. */
+  justify-content: flex-end;
   position: relative;
-  padding-left: 5%;
+  padding-right: 15px;
   width: 50%;
   right: 0%
 }
@@ -509,7 +612,6 @@ span {
   font-size: 12px; /* Font size for the text */
   font-weight: normal;
   height: 22px;
-  right: -68%;
   top: 25%;
 }
 
@@ -523,7 +625,6 @@ span {
     font-size: 12px; /* Font size for the text */
     font-weight: normal;
     height: 22px;
-    right: -25%;
     top: 25%;
   }
 
@@ -700,72 +801,8 @@ span {
 /*-------------------------------------Navigation Menu End-----------------------------------*/
 
 
-/*-------------------------------------Column Header Context Menu Start-----------------------------------*/
-.tskmgr-vertical-menu {
-  position: absolute;
-  width: 180px;
-  box-shadow: 2px 2px rgba(0, 0, 0, 0.3);
-  border: 1px solid #9c9898;
-  z-index: 2;
-}
-
-.tskmgr-vertical-menu-item {
-  height: 24px;
-  background-color: #eee;
-  display: inline-flex;
-  width: 100%;
-  z-index: 2;
-}
-
-.tskmgr-vertical-menu-item:hover {
-  background-color: #98ccf4; 
-  text-decoration: none;
-}
-
-.tskmgr-span{
-  display: block;
-}
-
-.tskmgr-span.head{
-  max-width: 25%;
-  padding-left: 4px;
-}
-
-.tskmgr-span.head.active{
-  max-width: 25%;
-  padding-left: 4px;
-  background-color: #98ccf4;
-}
-
-.tskmgr-span.mid{
-  min-width: 50%;
-  padding: 0 4px;
-  color: black; /* Black text color */
-  text-align: left;
-  font-size: 12px;
-  font-weight: normal;
-}
-
-.tskmgr-span.tail{
-  max-width: 25%;
-  padding-left: 68px;
-}
-
-
-.tskmgr-img{
-  height: 16px;
-  width: 16px;
- 
-  position: relative;
-}
-
-.tskmgr-figure{
-  position: relative;
-  align-items: center;
-  display: inline-flex;
-  min-width: 18px;
-  top: 0;
-  left: 15%;
-}
-
+/*-------------------------------------Column Header Context Menu-----------------------------------*/
+/* The column show/hide menu now lives in the shared <cos-menu> component
+   (checkable variant); its styles live in menu.component.css. Only the
+   host positioning is applied here via the [style]="cntxtMenuStyle" binding. */
 /*-------------------------------------Column Header Context Menu End-----------------------------------*/

@@ -10,14 +10,13 @@ import { RunningProcessService } from 'src/app/shared/system-service/running.pro
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileInfo } from 'src/app/system-files/file.info';
 import { AppState } from 'src/app/system-files/state/state.interface';
-import { SessionManagmentService } from 'src/app/shared/system-service/session.management.service';
+import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { Constants } from 'src/app/system-files/constants';
-import * as htmlToImage from 'html-to-image';
-import { TaskBarPreviewImage } from '../taskbarpreview/taskbar.preview';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/common.functions';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { WindowResizeInfo } from 'src/app/shared/system-component/window/windows.types';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'cos-photoviewer',
@@ -47,8 +46,16 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _processHandlerService!:ProcessHandlerService;
-  private _sessionManagmentService!:SessionManagmentService;
+  private _sessionManagementService!:SessionManagementService;
   private _windowService!:WindowService;
+
+  private _maximizeWindowSub!: Subscription;
+  private _minimizeWindowSub!: Subscription;
+  private _windowResizeSub!: Subscription;
+
+  readonly MIN_WIDTH_PX = 480;
+  readonly MIN_HEIGHT_PX = 320;
+
   private _fileInfo!:FileInfo;
   private _appState!:AppState;
   private _picSrc = Constants.EMPTY_STRING;
@@ -161,21 +168,28 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   name= 'photoviewer';
   hasWindow = true;
   icon = `${Constants.IMAGE_BASE_PATH}photoviewer.png`;
-  isMaximizable = false;
+  isMaximizable = true;
   processId = 0;
   type = ComponentType.System;
   displayName = 'PhotoViewer';
 
   constructor(fileService:FileService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
-              triggerProcessService:ProcessHandlerService,  sessionManagmentService: SessionManagmentService, private changeDetectorRef: ChangeDetectorRef,
+              triggerProcessService:ProcessHandlerService,  sessionManagementService: SessionManagementService, private changeDetectorRef: ChangeDetectorRef,
               windowService:WindowService) { 
     this._fileService = fileService
     this._processIdService = processIdService;
     this._processHandlerService = triggerProcessService;
-    this._sessionManagmentService = sessionManagmentService;
+    this._sessionManagementService = sessionManagementService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
-    
+
+    this._maximizeWindowSub = this._windowService.maximizeProcessWindowNotify.subscribe(() =>{this.maximizeWindow()});
+    this._minimizeWindowSub = this._windowService.minimizeProcessWindowNotify.subscribe(() =>{this.minimizeWindow()});
+    this._windowResizeSub = this._windowService.resizeProcessWindowNotify.subscribe((info: WindowResizeInfo) => {
+      if(info.pId !== this.processId) return;
+      if(info.widthPx < this.MIN_WIDTH_PX || info.heightPx < this.MIN_HEIGHT_PX) return;
+      this.onWindowResize();
+    });
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
   }
@@ -193,8 +207,11 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
         this.imageFileList.push(this._fileInfo);
 
     //base64 imgs are generated screenshots, opened  immediately after creation
-    if(this.checkIfImgIsBase64(this._fileInfo.getContentPath)){
-      this.currentImg = this._fileInfo.getContentPath;
+    if(this.checkIfImgIsBase64(this._fileInfo.getStringBuffer)){
+      this.currentImg = this._fileInfo.getStringBuffer;
+      const imgByteSize = CommonFunctions.getBase64SizeInBytes(this._fileInfo.getStringBuffer);
+      this.imgSize = `${CommonFunctions.getReadableFileSizeValue(imgByteSize)} ${CommonFunctions.getFileSizeUnit(imgByteSize)}`;
+      this.imgFilePath = this._fileInfo.getCurrentPath;
       this._skipAfterInit = true;
       this.defaultView = this.PHOTO_VIEW;
       return;
@@ -202,6 +219,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     if(this.checkForBlobURI(this._fileInfo.getContentPath)){
       this.currentImg = this._fileInfo.getContentPath;
+      //this.imgFilePath = this._fileInfo.getCurrentPath;
       this.defaultView = this.PHOTO_VIEW;
       return;
     }
@@ -209,7 +227,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   async ngAfterViewInit():Promise<void> {
     await CommonFunctions.sleep(this.SECONDS_DELAY);
-    this.captureComponentImg();
+    await this.captureComponentImg();
     this.updateImg();
 
     if(this._skipAfterInit) return;
@@ -245,7 +263,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   ngOnDestroy(): void {
-    1
+    this._maximizeWindowSub?.unsubscribe();
+    this._minimizeWindowSub?.unsubscribe();
+    this._windowResizeSub?.unsubscribe();
   }
 
   setFirstView(file:FileInfo):void{
@@ -287,19 +307,8 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     });
   }
 
-  captureComponentImg():void{
-    htmlToImage.toPng(this.photoContainer.nativeElement).then(htmlImg =>{
-      //console.log('img data:',htmlImg);
-      const cmpntImg:TaskBarPreviewImage = {
-        pId: this.processId,
-        appName: this.name,
-        displayName: this.name,
-        icon : this.icon,
-        defaultIcon: this.icon,
-        imageData: htmlImg
-      }
-      this._windowService.addProcessPreviewImage(this.name, cmpntImg);
-    })
+  async captureComponentImg():Promise<void>{  
+    await CommonFunctions.captureComponentImgAsync(this.photoContainer, this.processId, this.name, this.icon, this._windowService);
   }
 
   updateImg():void{
@@ -447,24 +456,6 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
   showImageCarousel():void{
     this.showImageSlide = !this.showImageSlide;
-
-    const photosElmnt = document.getElementById('photosContainer') as HTMLDivElement;
-    if(photosElmnt){
-      if(this.showImageSlide){
-        photosElmnt.style.height = '682px';
-        /* original content height of 630, carousel height of 52, title bar of 30 */
-        const sum = 630 + 52 + 30;
-        const resize:WindowResizeInfo = {pId:this.processId, widthPx:1000, heightPx:sum}
-        this._windowService.resizeProcessWindowNotify.next(resize);
-      }
-      else{
-        photosElmnt.style.height = '630px';
-        /* original content height of 630, title bar of 30 */
-        const sum = 630 + 30;
-        const resize:WindowResizeInfo = {pId:this.processId, widthPx:1000, heightPx:sum}
-        this._windowService.resizeProcessWindowNotify.next(resize);
-      }
-    }
   }
 
   showImageInfoPane():void{
@@ -480,7 +471,8 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     evt.stopPropagation();
   }
 
-  toggleDropdown():void{
+  toggleDropdown(evt?:MouseEvent):void{
+    evt?.stopPropagation();
     this.isOpen = !this.isOpen;
   }
 
@@ -523,6 +515,16 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     }
 
     this.focusWindow();
+  }
+
+ silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the App (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu.
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
   }
 
   async getAllPicturesIntheCurrentPath():Promise<void>{
@@ -568,9 +570,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     const entries:string[] = await this._fileService.readDirectory(path);
     for(const entry of entries){
       const entryPath = `${path}/${entry}`;
-      const isDirectory = await this._fileService.isDirectory(entryPath);
+      const stat = await this._fileService.getStatAsync(entryPath);
 
-      if(isDirectory){
+      if(stat.isDirectory){
         await this.getAllPicturesInthePicturesFolder(entryPath);
       }else{
         const file =  await this._fileService.getFileInfo(entryPath);
@@ -692,11 +694,11 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
       uId: uId,
       window: {appName:'', pId:0, leftPx:0, topPx:0, heightPx:0, widthPx:0, zIndex:0, isVisible:true}
     }
-    this._sessionManagmentService.addAppSession(uId, this._appState);
+    this._sessionManagementService.addAppSession(uId, this._appState);
   }
 
   retrievePastSessionData():void{
-    const appSessionData = this._sessionManagmentService.getAppSession(this.priorUId);
+    const appSessionData = this._sessionManagementService.getAppSession(this.priorUId);
     if(appSessionData !== null && appSessionData.appData !== Constants.EMPTY_STRING){
         this._skipOnInit = true;
 
@@ -712,15 +714,28 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     const evtOriginator = this._runningProcessService.getEventOriginator();
 
     if(uId === evtOriginator){
-
       this._runningProcessService.removeEventOriginator();
-      const mainWindow = document.getElementById('vantaCntnr') as HTMLElement;
-      //window title and button bar, and windows taskbar height
-      const pixelTosubtract = 30 + 40;
-      // this.photoContainer.nativeElement.style.height = `${(mainWindow?.offsetHeight || 0 ) - pixelTosubtract}px`;
-      // this.photoContainer.nativeElement.style.width = `${mainWindow?.offsetWidth}px`;
-
+      this.onWindowResize();
     }
+  }
+
+  minimizeWindow():void{
+    const uId = `${this.name}-${this.processId}`;
+    const evtOriginator = this._runningProcessService.getEventOriginator();
+
+    if(uId === evtOriginator){
+      this._runningProcessService.removeEventOriginator();
+      this.onWindowResize();
+    }
+  }
+
+  onWindowResize():void{
+    // CSS flex chain owns layout; just strip any leftover inline px that older
+    // imperative code may have written to the photo container.
+    const el = this.photoContainer?.nativeElement as HTMLElement | undefined;
+    if(!el) return;
+    el.style.removeProperty('height');
+    el.style.removeProperty('width');
   }
 
   private getComponentDetail():Process{

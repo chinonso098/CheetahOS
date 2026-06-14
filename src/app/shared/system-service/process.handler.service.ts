@@ -13,7 +13,7 @@ import { BaseService } from "./base.service.interface";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { UserNotificationService } from "./user.notification.service";
-import { SessionManagmentService } from "./session.management.service";
+import { SessionManagementService } from "./session.management.service";
 
 import { ComponentReferenceService } from "./component.reference.service";
 import { PropertiesComponent } from "../system-component/properties/properties.component";
@@ -21,6 +21,7 @@ import { AudioPlayerComponent } from "src/app/system-apps/audioplayer/audioplaye
 import { ChatterComponent } from "src/app/system-apps/chatter/chatter.component";
 import { CheetahComponent } from "src/app/system-apps/cheetah/cheetah.component";
 import { ClippyComponent } from "src/app/system-apps/clippy/clippy.component";
+import { ClipboardComponent } from "src/app/system-apps/clipboard/clipboard.component";
 import { FileExplorerComponent } from "src/app/system-apps/fileexplorer/fileexplorer.component";
 import { PhotoViewerComponent } from "src/app/system-apps/photoviewer/photoviewer.component";
 import { RunSystemComponent } from "src/app/system-apps/runsystem/runsystem.component";
@@ -42,6 +43,7 @@ import { PdfViewerComponent } from "src/app/user-apps/pdf-viewer/pdf-viewer.comp
 import { SettingsComponent } from "src/app/system-apps/controlpanel/settings.component";
 import { DefaultService } from "./defaults.services";
 import { SystemNotificationService } from "./system.notification.service";
+import { SystemMetric } from "./system.metrics";
 
 
 @Injectable({
@@ -54,16 +56,17 @@ export class ProcessHandlerService implements BaseService{
     private _processIdService!:ProcessIDService;
     private _windowService!:WindowService;
     private _componentReferenceService!:ComponentReferenceService;
-    private _sessionMangamentServices!:SessionManagmentService;
+    private _sessionMangamentServices!:SessionManagementService;
     private _menuService!:MenuService;
     private _defaultService!: DefaultService;
     private _userNotificationService!:UserNotificationService;
     private _systemNotificationService!:SystemNotificationService;
+    private _systemMetric!:SystemMetric;
 
     private _appDirectory:AppDirectory;
     private _triggerMap:Map<string, FileInfo[]>;
 
-    private _onlyOneInstanceAllowed:string[] = ["audioplayer", "chatter", "cheetah", "jsdos", "photoviewer", 
+    private _onlyOneInstanceAllowed:string[] = ["audioplayer", "chatter", "cheetah", "clipboard", "jsdos", "photoviewer", 
         "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow", "settings"];
 
     private userOpenedAppsList:string[] = [];
@@ -88,37 +91,58 @@ export class ProcessHandlerService implements BaseService{
     private readonly BOIDS = "boids";
     private readonly STAR_FIELD = "starfield";
     private readonly PARTICLE_FLOW = "particleflow";
-       
-    //:TODO when you have more apps with a UI worth looking at, add a way to select the right component for the give
-    //appname
-    private apps: {type: Type<BaseComponent>}[] =[
-        {type: AudioPlayerComponent},
-        {type: ChatterComponent},
-        {type: CheetahComponent},
-        {type: ClippyComponent},
-        {type: FileExplorerComponent},
-        {type: TaskmanagerComponent},
-        {type: TerminalComponent},
-        {type: VideoPlayerComponent},
-        {type: PhotoViewerComponent},
-        {type: RunSystemComponent},
-        {type: TextEditorComponent},
-        {type: SettingsComponent},
-        {type: TitleComponent},
-        {type: GreetingComponent},
-        {type: JSdosComponent},
-        {type: RuffleComponent},
-        {type: CodeEditorComponent},
-        {type: MarkDownViewerComponent},
-        {type: WarpingstarfieldComponent},
-        {type: BoidsComponent},
-        {type: ParticaleFlowComponent},
-        {type: PdfViewerComponent}
+
+    /**
+     * Single-instance apps that simply re-focus their existing window when the user
+     * tries to launch them again. Unlike file-backed apps (audioplayer, photoviewer,
+     * etc.), these have no file content to (re)load, so re-launching only brings the
+     * already-running window to the front.
+     *
+     * NOTE: every entry here must also be present in `_onlyOneInstanceAllowed`; this
+     * list is the "focus instead of reload" subset of the single-instance apps.
+     */
+    private readonly _focusOnlyApps:string[] = [
+        this.BOIDS, this.CHATTER, this.CHEETAH, this.STAR_FIELD,
+        this.RUN_SYSTEM, this.TASK_MANAGER, this.PARTICLE_FLOW
     ];
 
+    /**
+     * Maps an application name to the component that should be instantiated for it.
+     *
+     * Keyed by name (instead of relying on array position) so the lookup no longer
+     * depends on this list staying perfectly in sync with `AppDirectory`'s ordering.
+     * Adding a new app is now a single, self-describing entry here.
+     */
+    private readonly _appComponentMap = new Map<string, Type<BaseComponent>>([
+        ["audioplayer", AudioPlayerComponent],
+        ["chatter", ChatterComponent],
+        ["cheetah", CheetahComponent],
+        ["clippy", ClippyComponent],
+        ["clipboard", ClipboardComponent],
+        ["fileexplorer", FileExplorerComponent],
+        ["taskmanager", TaskmanagerComponent],
+        ["terminal", TerminalComponent],
+        ["videoplayer", VideoPlayerComponent],
+        ["photoviewer", PhotoViewerComponent],
+        ["runsystem", RunSystemComponent],
+        ["texteditor", TextEditorComponent],
+        ["settings", SettingsComponent],
+        ["hello", TitleComponent],
+        ["greeting", GreetingComponent],
+        ["jsdos", JSdosComponent],
+        ["ruffle", RuffleComponent],
+        ["codeeditor", CodeEditorComponent],
+        ["markdownviewer", MarkDownViewerComponent],
+        ["starfield", WarpingstarfieldComponent],
+        ["boids", BoidsComponent],
+        ["particleflow", ParticaleFlowComponent],
+        ["pdfviewer", PdfViewerComponent]
+    ]);
+
     constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, windowService:WindowService, 
-        componentReferenceService:ComponentReferenceService, menuService:MenuService, sessionMangamentServices:SessionManagmentService,
-        userNotificationService:UserNotificationService, systemNotificationService:SystemNotificationService, defaultService: DefaultService){
+        componentReferenceService:ComponentReferenceService, menuService:MenuService, sessionMangamentServices:SessionManagementService,
+        userNotificationService:UserNotificationService, systemNotificationService:SystemNotificationService, defaultService: DefaultService,
+        systemMetric:SystemMetric){
 
         this._appDirectory = new AppDirectory();
         this._triggerMap = new Map<string, FileInfo[]>();
@@ -132,6 +156,7 @@ export class ProcessHandlerService implements BaseService{
         this._userNotificationService = userNotificationService;
         this._systemNotificationService = systemNotificationService;
         this._defaultService = defaultService;
+        this._systemMetric = systemMetric;
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
@@ -142,50 +167,67 @@ export class ProcessHandlerService implements BaseService{
     }
 
     public runApplication(file:FileInfo):void{
-        let msg = Constants.EMPTY_STRING;
-        if(this._appDirectory.appExist(file.getOpensWith)){
+        const appName = file.getOpensWith;
 
-            if(!this._runningProcessService.isProcessRunning(file.getOpensWith) 
-                || (this._runningProcessService.isProcessRunning(file.getOpensWith) 
-                    && !this._onlyOneInstanceAllowed.includes(file.getOpensWith))){
-                        
-                this.addTrigger(file.getOpensWith, file);
-                this.loadApps(file.getOpensWith);
-
-                return;
-            }else{
-                if(this._onlyOneInstanceAllowed.includes(file.getOpensWith)){
-                   const runningProcess = this._runningProcessService.getProcessByName(file.getOpensWith);
-                    // msg = `Only one instance of ${file.getOpensWith} is allowed to run.`;
-                    //this._userNotificationService.showInfoNotification(msg);
-
-                    if(runningProcess){
-                        if( runningProcess.getProcessName === this.BOIDS ||
-                            runningProcess.getProcessName === this.CHATTER || 
-                            runningProcess.getProcessName === this.CHEETAH ||
-                            runningProcess.getProcessName === this.STAR_FIELD || 
-                            runningProcess.getProcessName === this.RUN_SYSTEM || 
-                            runningProcess.getProcessName === this.TASK_MANAGER || 
-                            runningProcess.getProcessName === this.PARTICLE_FLOW ){
-                            this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
-                        }else{
-                            this.addTrigger(file.getOpensWith, file);
-                            this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
-
-                            const uId = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
-                            this._runningProcessService.addEventOriginator(uId);
-                            this._runningProcessService.changeProcessContentNotify.next();
-                        }
-                    }
-                    return;
-                }             
-            }
+        // Unknown app — surface an error and bail out early.
+        if(!this._appDirectory.appExist(appName)){
+            const msg = `C:/App Directory/${appName}`;
+            const title = msg;
+            this._userNotificationService.showErrorNotification(msg, title);
+            return;
         }
 
-        msg = `C:/App Directory/${file.getOpensWith}`;
-        const title = msg;
-        this._userNotificationService.showErrorNotification(msg, title);
-        return;
+        const isRunning = this._runningProcessService.isProcessRunning(appName);
+        const isSingleInstance = this._onlyOneInstanceAllowed.includes(appName);
+
+        // Launch a brand-new instance when the app isn't running yet, or when it is
+        // running but multiple instances are permitted.
+        if(!isRunning || !isSingleInstance){
+            this.addTrigger(appName, file);
+            this.loadApps(appName);
+            return;
+        }
+
+        // From here on: the app is a single-instance app that is already running, so we
+        // reuse the existing instance instead of creating a new one.
+        const runningProcess = this._runningProcessService.getProcessByName(appName);
+        if(!runningProcess){
+            return;
+        }
+
+        // Focus-only apps have no file content to refresh — just bring the window forward.
+        if(this._focusOnlyApps.includes(runningProcess.getProcessName)){
+            this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
+            return;
+        }
+
+        // File-backed single-instance apps (audioplayer, photoviewer, ...): hand the new
+        // file to the running instance, focus it, and ask it to refresh its content.
+        this.addTrigger(appName, file);
+        this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
+
+        const uId = `${runningProcess.getProcessName}-${runningProcess.getProcessId}`;
+        this._runningProcessService.addEventOriginator(uId);
+        this._runningProcessService.changeProcessContentNotify.next();
+    }
+
+    /**
+     * Toggle the clipboard flyout (summoned with Windows + V). Closes it when it
+     * is already open, otherwise launches a fresh single-instance window. The
+     * clipboard is launched directly (not via `runApplication`) because it has no
+     * backing file — it reads its contents from the clipboard data bank.
+     */
+    public toggleClipboard():void{
+        const isRunning = this._runningProcessService.isProcessRunning(Constants.CLIPBOARD);
+        if(isRunning){
+            const process = this._runningProcessService.getProcessByName(Constants.CLIPBOARD);
+            if(process){
+                this._runningProcessService.closeProcessNotify.next(process);
+            }
+            return;
+        }
+
+        this.loadApps(Constants.CLIPBOARD);
     }
 
     /**
@@ -213,25 +255,31 @@ export class ProcessHandlerService implements BaseService{
             return file;
         }
 
-        return new FileInfo;
+        return new FileInfo();
     }
 
     private async loadApps(appName:string, priorUId?:string):Promise<void>{
-        this.lazyLoadComponment(this._appDirectory.getAppPosition(appName), priorUId);
+        this.lazyLoadComponent(appName, priorUId);
     }
 
-    private async lazyLoadComponment(appPosition:number, priorUID?:string) {
-        const componentToLoad = this.apps[appPosition];
-        if(componentToLoad !== undefined){   
-            const cmpntRef =  this._componentReferenceService.createComponent(componentToLoad.type);
+    /**
+     * Create and register the component associated with `appName`.
+     * Looks the component type up by name, so it no longer depends on any array ordering.
+     */
+    private async lazyLoadComponent(appName:string, priorUId?:string) {
+        const componentToLoad = this._appComponentMap.get(appName);
+        if(componentToLoad !== undefined){
+            const cmpntRef =  this._componentReferenceService.createComponent(componentToLoad);
 
-            if(priorUID && (priorUID !== Constants.EMPTY_STRING)){
-                console.log('CLIPPY IS GETTING ON MY NERVES:', priorUID);
-                cmpntRef.setInput('priorUId',priorUID);
+            this._systemMetric.recordAppLaunch(appName);
+
+            // When restoring a prior session, pass the previous instance id so the
+            // component can re-hydrate its saved state.
+            if(priorUId && (priorUId !== Constants.EMPTY_STRING)){
+                cmpntRef.setInput('priorUId', priorUId);
             }
 
-
-            this.addEntryFromUserOpenedAppssAndSession(cmpntRef);
+            this.addEntryToUserOpenedAppsAndSession(cmpntRef);
             //alert subscribers
             if(this._runningProcessService !== undefined){
                 this._runningProcessService.processListChangeNotify.next();
@@ -251,6 +299,8 @@ export class ProcessHandlerService implements BaseService{
     }
 
     public closeApplicationProcess(process:Process):void{
+        this._systemMetric.recordAppClose(process.getProcessName);
+
         // remove component ref
         this._componentReferenceService.removeComponent(process.getProcessId);
 
@@ -301,7 +351,7 @@ export class ProcessHandlerService implements BaseService{
     }
 
 
-    private addEntryFromUserOpenedAppssAndSession(cmpntRef:ComponentRef<BaseComponent>):void{
+    private addEntryToUserOpenedAppsAndSession(cmpntRef:ComponentRef<BaseComponent>):void{
         const pName = cmpntRef.instance.name;
         const pId = cmpntRef.instance.processId;
         const uId = `${pName}-${pId}`;
