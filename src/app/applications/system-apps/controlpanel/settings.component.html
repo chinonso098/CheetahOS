@@ -1,0 +1,1176 @@
+<cos-primarywindow 
+    [runningProcessID]="processId" 
+    [processAppIcon]="icon" 
+    [processAppName]="name" 
+    [isMaximizable]="isMaximizable" 
+    [minimumWindowWidth]="MIN_WIDTH_PX" 
+    [minimumWindowHeight]="MIN_HEIGHT_PX"
+    [priorUId]="priorUId">
+    <div class="settings-main__container" (contextmenu)="silenceCtxEvt($event)" (click)="focusWindow($event)" #settingsContainer>
+
+        <ng-container [ngTemplateOutlet]="  currentView === HOME_VIEW ? homeView:
+                                            currentView === SYSTEM_VIEW ? systemView:
+                                            currentView === APPS_VIEW ? applicationView: personalizationView">
+        </ng-container>
+
+        <!-- Themed inline-SVG glyphs for the settings navigation icons. Render via
+             *ngTemplateOutlet with a { name } context; fill tracks --st-text. -->
+        <ng-template #settingsGlyph let-name="name">
+            <svg *ngIf="name === 'home'" class="cp-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M 16 2.59375 L 15.28125 3.28125 L 2.28125 16.28125 L 3.71875 17.71875 L 5 16.4375 L 5 28 L 14 28 L 14 18 L 18 18 L 18 28 L 27 28 L 27 16.4375 L 28.28125 17.71875 L 29.71875 16.28125 L 16.71875 3.28125 Z M 16 5.4375 L 25 14.4375 L 25 26 L 20 26 L 20 16 L 12 16 L 12 26 L 7 26 L 7 14.4375 Z"></path>
+            </svg>
+            <svg *ngIf="name === 'about'" class="cp-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M 16 3 C 8.832031 3 3 8.832031 3 16 C 3 23.167969 8.832031 29 16 29 C 23.167969 29 29 23.167969 29 16 C 29 8.832031 23.167969 3 16 3 Z M 16 5 C 22.085938 5 27 9.914063 27 16 C 27 22.085938 22.085938 27 16 27 C 9.914063 27 5 22.085938 5 16 C 5 9.914063 9.914063 5 16 5 Z M 15 10 L 15 12 L 17 12 L 17 10 Z M 15 14 L 15 22 L 17 22 L 17 14 Z"></path>
+            </svg>
+            <svg *ngIf="name === 'notification'" class="cp-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M 3 6 L 3 26 L 12.585938 26 L 16 29.414063 L 19.414063 26 L 29 26 L 29 6 Z M 5 8 L 27 8 L 27 24 L 18.585938 24 L 16 26.585938 L 13.414063 24 L 5 24 Z M 9 11 L 9 13 L 23 13 L 23 11 Z M 9 15 L 9 17 L 23 17 L 23 15 Z M 9 19 L 9 21 L 19 21 L 19 19 Z"></path>
+            </svg>
+            <svg *ngIf="name === 'storage'" class="cp-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M 6.21875 6 L 3 18.875 L 3 26 L 29 26 L 29 18.875 L 25.78125 6 Z M 7.78125 8 L 24.21875 8 L 26.71875 18 L 5.28125 18 Z M 5 20 L 27 20 L 27 24 L 5 24 Z M 24 21 C 23.449219 21 23 21.449219 23 22 C 23 22.550781 23.449219 23 24 23 C 24.550781 23 25 22.550781 25 22 C 25 21.449219 24.550781 21 24 21 Z"></path>
+            </svg>
+            <svg *ngIf="name === 'screen'" class="cp-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M 4 7 L 4 23 L 28 23 L 28 7 Z M 6 9 L 26 9 L 26 21 L 6 21 Z M 10 24 L 10 26 L 22 26 L 22 24 Z"></path>
+            </svg>
+            <svg *ngIf="name === 'clipboard'" class="cp-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M 15 3 C 13.742188 3 12.847656 3.890625 12.40625 5 L 5 5 L 5 28 L 13 28 L 13 30 L 27 30 L 27 14 L 25 14 L 25 5 L 17.59375 5 C 17.152344 3.890625 16.257813 3 15 3 Z M 15 5 C 15.554688 5 16 5.445313 16 6 L 16 7 L 19 7 L 19 9 L 11 9 L 11 7 L 14 7 L 14 6 C 14 5.445313 14.445313 5 15 5 Z M 7 7 L 9 7 L 9 11 L 21 11 L 21 7 L 23 7 L 23 14 L 13 14 L 13 26 L 7 26 Z M 15 16 L 25 16 L 25 28 L 15 28 Z"></path>
+            </svg>
+            <svg *ngIf="name === 'appsList'" class="cp-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M 5 5 L 5 28 L 14 28 L 14 5 Z M 7 7 L 12 7 L 12 12 L 7 12 Z M 8 8 L 8 11 L 11 11 L 11 8 Z M 16 8 L 16 10 L 28 10 L 28 8 Z M 7 14 L 12 14 L 12 19 L 7 19 Z M 9.5 15 C 8.671875 15 8 15.671875 8 16.5 C 8 17.328125 8.671875 18 9.5 18 C 10.328125 18 11 17.328125 11 16.5 C 11 15.671875 10.328125 15 9.5 15 Z M 16 15 L 16 17 L 28 17 L 28 15 Z M 7 21 L 12 21 L 12 26 L 7 26 Z M 9.5 22 L 8 25 L 11 25 Z M 16 22 L 16 24 L 28 24 L 28 22 Z"></path>
+            </svg>
+            <svg *ngIf="name === 'desktopBackground'" class="cp-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M 2 5 L 2 27 L 30 27 L 30 5 Z M 4 7 L 28 7 L 28 20.90625 L 22.71875 15.59375 L 22 14.875 L 17.46875 19.40625 L 11.71875 13.59375 L 11 12.875 L 4 19.875 Z M 24 9 C 22.894531 9 22 9.894531 22 11 C 22 12.105469 22.894531 13 24 13 C 25.105469 13 26 12.105469 26 11 C 26 9.894531 25.105469 9 24 9 Z M 11 15.71875 L 20.1875 25 L 4 25 L 4 22.71875 Z M 22 17.71875 L 28 23.71875 L 28 25 L 23.03125 25 L 18.875 20.8125 Z"></path>
+            </svg>
+            <svg *ngIf="name === 'taskbar'" class="cp-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M 5 5 L 5 6 L 5 27 L 27 27 L 27 5 L 5 5 z M 7 7 L 25 7 L 25 25 L 23 25 L 23 21 L 9 21 L 9 25 L 7 25 L 7 7 z M 11 23 L 21 23 L 21 25 L 11 25 L 11 23 z"></path>
+            </svg>
+            <svg *ngIf="name === 'lockScreen'" class="cp-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M 4 6 C 3.476563 6 2.941406 6.183594 2.5625 6.5625 C 2.183594 6.941406 2 7.476563 2 8 L 2 24 C 2 24.523438 2.183594 25.058594 2.5625 25.4375 C 2.941406 25.816406 3.476563 26 4 26 L 28 26 C 28.523438 26 29.058594 25.816406 29.4375 25.4375 C 29.816406 25.058594 30 24.523438 30 24 L 30 8 C 30 7.476563 29.816406 6.941406 29.4375 6.5625 C 29.058594 6.183594 28.523438 6 28 6 Z M 4 8 L 28 8 L 28 24 L 4 24 Z M 16 10 C 14.355469 10 13 11.355469 13 13 L 13 14 L 11 14 L 11 22 L 21 22 L 21 14 L 19 14 L 19 13 C 19 11.355469 17.644531 10 16 10 Z M 16 12 C 16.554688 12 17 12.445313 17 13 L 17 14 L 15 14 L 15 13 C 15 12.445313 15.445313 12 16 12 Z M 13 16 L 19 16 L 19 20 L 13 20 Z"></path>
+            </svg>
+            <svg *ngIf="name === 'color'" class="cp-glyph-svg" viewBox="0 0 48 48" aria-hidden="true">
+                <path d="M 23.5 5 C 11.772727 5 4 13.625 4 22.5 C 4 25.910242 6.8712406 29 10.5 29 C 11.994439 29 13.497579 28.725518 14.785156 28.470703 C 16.072734 28.215889 17.243398 28 17.5 28 C 18.873733 28 19.219456 28.3984 19.761719 29.503906 C 20.303982 30.609413 20.660355 32.421359 21.130859 34.355469 C 21.601364 36.289578 22.204404 38.393079 23.642578 40.117188 C 25.080752 41.841295 27.407577 43 30.578125 43 C 36.519332 43 44 36.672501 44 25.5 C 44 14.196269 34.803731 5 23.5 5 z M 23.5 8 C 33.182269 8 41 15.817731 41 25.5 C 41 35.313499 34.220918 40 30.578125 40 C 28.067673 40 26.855154 39.283705 25.947266 38.195312 C 25.039377 37.106921 24.488621 35.460422 24.046875 33.644531 C 23.605129 31.828641 23.292377 29.890587 22.455078 28.183594 C 21.617779 26.4766 19.874267 25 17.5 25 C 16.467602 25 15.442047 25.284111 14.203125 25.529297 C 12.964203 25.774482 11.610561 26 10.5 26 C 8.7427594 26 7 24.049758 7 22.5 C 7 15.375 13.227273 8 23.5 8 z M 23.5 11 A 2.5 2.5 0 0 0 23.5 16 A 2.5 2.5 0 0 0 23.5 11 z M 30.5 13 A 2.5 2.5 0 0 0 30.5 18 A 2.5 2.5 0 0 0 30.5 13 z M 34.5 19 A 2.5 2.5 0 0 0 34.5 24 A 2.5 2.5 0 0 0 34.5 19 z M 35.5 26 A 2.5 2.5 0 0 0 35.5 31 A 2.5 2.5 0 0 0 35.5 26 z M 30.5 31 A 2.5 2.5 0 0 0 30.5 36 A 2.5 2.5 0 0 0 30.5 31 z"></path>
+            </svg>
+        </ng-template>
+
+        <ng-template #homeView>
+            <div class="home-main__container">
+                <div class="home-main__heading-container">
+                    <p class="home-main__heading-p">Cheetah Settings</p>
+                </div>
+                <div class="home-search__container">
+                    <div class="search-bar__form-cntnr">
+                        <form [formGroup]="searchBarForm"  class="search-bar__form">
+                             <input
+                                appKeyPressCapture
+                                class="search-bar__textbox"
+                                placeholder="{{searchPlaceHolder}}"
+                                formControlName="searchBarText"
+                             
+                                autofocus ="false" 
+                                spellcheck="false"
+                                autocomplete="off"
+                                autocapitalize="off"
+                                id="setttingsSearchBarTxtBox"
+                            />
+                        </form> 
+                    </div>
+                </div>
+                <div class="home-search__empty-container"></div>
+                <div class="home-view__items">
+                    <ol class="ol-home-view__grid">
+                        <li class="li-home-view" *ngFor="let cpOption of settingsOptions; let i = index">
+                            <div class="home-view__item" role="button" (click)="handleSettingsPanelSelection(cpOption.title, $event)" >
+                                <div class="home-view__item-img">
+                                    <figure class="home-view__figure">
+                                        <svg class="home-view__img" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" [ngSwitch]="cpOption.title">
+                                            <path *ngSwitchCase="SYSTEM_VIEW" d="M 5 6 L 5 19.5625 L 2.71875 21.875 C 2.265625 22.328125 2 22.953125 2 23.59375 C 2 24.914063 3.085938 26 4.40625 26 L 27.59375 26 C 28.914063 26 30 24.914063 30 23.59375 C 30 22.953125 29.734375 22.328125 29.28125 21.875 L 27 19.5625 L 27 6 Z M 7 8 L 25 8 L 25 19 L 7 19 Z M 6.4375 21 L 25.5625 21 L 27.875 23.28125 C 27.953125 23.359375 28 23.484375 28 23.59375 C 28 23.835938 27.835938 24 27.59375 24 L 4.40625 24 C 4.164063 24 4 23.835938 4 23.59375 C 4 23.484375 4.046875 23.359375 4.125 23.28125 Z"></path>
+                                            <path *ngSwitchCase="APPS_VIEW" d="M 5 5 L 5 28 L 14 28 L 14 5 Z M 7 7 L 12 7 L 12 12 L 7 12 Z M 8 8 L 8 11 L 11 11 L 11 8 Z M 16 8 L 16 10 L 28 10 L 28 8 Z M 7 14 L 12 14 L 12 19 L 7 19 Z M 9.5 15 C 8.671875 15 8 15.671875 8 16.5 C 8 17.328125 8.671875 18 9.5 18 C 10.328125 18 11 17.328125 11 16.5 C 11 15.671875 10.328125 15 9.5 15 Z M 16 15 L 16 17 L 28 17 L 28 15 Z M 7 21 L 12 21 L 12 26 L 7 26 Z M 9.5 22 L 8 25 L 11 25 Z M 16 22 L 16 24 L 28 24 L 28 22 Z"></path>
+                                            <path *ngSwitchCase="PERSONALIZATION_VIEW" d="M 2 5 L 2 23 L 15 23 L 15 25 L 10 25 L 10 27 L 22 27 L 22 25 L 17 25 L 17 23 L 30 23 L 30 12.066406 L 28 14.066406 L 28 21 L 4 21 L 4 7 L 20.933594 7 L 22.933594 5 L 2 5 z M 27.003906 5.0058594 C 26.234842 5.0058594 25.465745 5.2959739 24.884766 5.8769531 L 18.535156 12.226562 L 18.134766 15 L 8 15 L 8 17 L 19.072266 17 L 22.773438 16.464844 L 29.123047 10.115234 C 30.285005 8.9532762 30.285005 7.0389117 29.123047 5.8769531 C 28.542068 5.2959739 27.77297 5.0058594 27.003906 5.0058594 z M 27.003906 6.9941406 C 27.256842 6.9941406 27.508011 7.0939476 27.707031 7.2929688 C 28.105073 7.6910102 28.105073 8.3031304 27.707031 8.7011719 L 21.830078 14.580078 L 20.181641 14.818359 L 20.419922 13.169922 L 26.298828 7.2929688 C 26.497849 7.0939479 26.75097 6.9941406 27.003906 6.9941406 z"></path>
+                                        </svg>
+                                    </figure>
+                                </div>
+                                <div class="home-view__item-text">
+                                    <div>
+                                        <p class="home-view__heading-p">{{ cpOption.title }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="home-view__sub-heading-p">{{ cpOption.subtitle }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+
+            </div>
+        </ng-template>
+
+        <ng-template #systemView>
+            <div class="system-option__panel">
+                <div class="system-option__first">
+                    <div class="secondary-search__empty-container"></div>
+                    <div class="fixed-home-option__item-cntnr" 
+                        (click)="handleMenuSelection(HOME_HOME, -1, $event, HOME_VIEW)">
+                        <div class="fixed-home-option__item-head">
+                            <div class="item-head__indication" ></div>
+                            <figure class="fixed-home-option__item-figure">
+                                <ng-container *ngTemplateOutlet="settingsGlyph; context: { name: 'home' }"></ng-container>
+                            </figure>
+                        </div>
+                        <div class="fixed-home-option__item-tail">
+                            <p class="fixed-home-option__item-p">{{ HOME_HOME }}</p>
+                        </div>
+                    </div>
+        
+                    <div class="secondary-search__container">
+                        <div class="secondary-search-bar__form-cntnr">
+                            <form [formGroup]="searchBarForm"  class="secondary-search-bar__form">
+                                    <input
+                                    appKeyPressCapture
+                                    class="secondary-search-bar__textbox"
+                                    placeholder="{{searchPlaceHolder}}"
+                                    formControlName="searchBarText"
+                                    
+                                    autofocus ="false" 
+                                    spellcheck="false"
+                                    autocomplete="off"
+                                    autocapitalize="off"
+                                    id="setttingsSearchBarTxtBox"
+                                />
+                            </form> 
+                        </div>
+                    </div>
+
+                    <div class="system-option__first-text">  
+                        <p class="system-option__first-p"> System </p>
+                    </div>
+                    <div class="secondary-search__empty-container"></div>
+                </div>
+                <ol class="ol-system-option__grid">
+                    <li class="li-system-option__item" *ngFor="let option of systemOptions; let i = index">
+                        <div class="system-option__item-cntnr" 
+                            (click)="handleMenuSelection(option.title, i, $event, SYSTEM_VIEW)">
+                            
+                            <div class="system-option__item-head">
+                                <div class="item-head__indication"   [class.active]="i === selectedIdx"></div>
+                                <figure class="system-option__item-figure">
+                                    <ng-container *ngIf="option.glyph; else sysLegacyIcon">
+                                        <ng-container *ngTemplateOutlet="settingsGlyph; context: { name: option.glyph }"></ng-container>
+                                    </ng-container>
+                                    <ng-template #sysLegacyIcon>
+                                        <img class="system-option__item-img" [src]="option.icon" />
+                                    </ng-template>
+                                </figure>
+                            </div>
+    
+                            <div class="system-option__item-tail">
+                                <p class="system-option__item-p">{{ option.title }}</p>
+                            </div>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+    
+            <div class="system-view__panel" >
+                <ng-container [ngTemplateOutlet]="selectedSystemOption === SYSTEM_SCREEN ? screenView:
+                                                  selectedSystemOption === SYSTEM_NOTIFICATION ? notificationView:
+                                                  selectedSystemOption === SYSTEM_STORAGE ? storageView:
+                                                  selectedSystemOption === SYSTEM_CLIPBOARD ? clipboardView: aboutView">
+                </ng-container>
+    
+                <ng-template #screenView>
+                    <div class="system-view__screenview-container"> 
+    
+                        <div class="screenview-block__content">
+                            <div class="screenview-block__heading">
+                                <p class="screenview-block-heading__p">Screen Settings</p>
+                            </div>
+    
+                            <div class="screenview-block__text">
+                                <p class="screenview-block-text__p"> {{screenViewText}} </p>
+                            </div>
+                        </div>
+
+    
+                        <div class="screenview-block__content">
+                            <div class="screenview-block__button">
+                                <label class="system-btn__toggle">
+                                    <input type="checkbox" [(ngModel)]="isEnforceViewPortBound" (change)="changeEnforceViewPortBoundState()">
+                                    <span class="system-btn__slider"></span>
+                                </label>
+    
+                                <div class="screenview-button__text">
+                                    <p class="screenview-button-text__p"> {{enforceViewPortBoundText}} </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+    
+                <ng-template #notificationView>
+                    <div class="system-view__notification-container">
+
+                        <div class="notification-block__heading">
+                            <p class="notification-block-heading__p">Notifications &amp; actions</p>
+                        </div>
+
+                        <div class="notification-block__subheading">
+                            <p class="notification-block-subheading__p">Notifications</p>
+                        </div>
+
+                        <!-- Disabled in the UI: mirrors Windows, where this option is greyed out. -->
+                        <div class="notification-block-content">
+                            <div class="notification-block__text">
+                                <p class="notification-block-miniheading__p notification-block-miniheading__p--disabled">
+                                    Show notifications on the lock screen
+                                </p>
+                            </div>
+
+                            <div class="notification-block__button">
+                                <label class="system-btn__toggle">
+                                    <input type="checkbox" disabled
+                                        [(ngModel)]="isShowNotificationsOnLockScreen"
+                                        (change)="changeShowNotificationsOnLockScreenState()">
+                                    <span class="system-btn__slider"></span>
+                                </label>
+
+                                <div class="notification-button__text">
+                                    <p class="notification-button-text__p"> {{ showNotificationsOnLockScreenText }} </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-block-content">
+                            <div class="notification-block__text">
+                                <p class="notification-block-miniheading__p">
+                                    Show reminders and incoming VoIP calls on the lock screen
+                                </p>
+                            </div>
+
+                            <div class="notification-block__button">
+                                <label class="system-btn__toggle">
+                                    <input type="checkbox"
+                                        [(ngModel)]="isShowRemindersAndVoipOnLockScreen"
+                                        (change)="changeShowRemindersAndVoipOnLockScreenState()">
+                                    <span class="system-btn__slider"></span>
+                                </label>
+
+                                <div class="notification-button__text">
+                                    <p class="notification-button-text__p"> {{ showRemindersAndVoipOnLockScreenText }} </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-block-content">
+                            <div class="notification-block__text">
+                                <p class="notification-block-miniheading__p">
+                                    Get notifications from apps and other senders
+                                </p>
+                            </div>
+
+                            <div class="notification-block__button">
+                                <label class="system-btn__toggle">
+                                    <input type="checkbox"
+                                        [(ngModel)]="isGetNotificationsFromApps"
+                                        (change)="changeGetNotificationsFromAppsState()">
+                                    <span class="system-btn__slider"></span>
+                                </label>
+
+                                <div class="notification-button__text">
+                                    <p class="notification-button-text__p"> {{ getNotificationsFromAppsText }} </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </ng-template>
+
+                <ng-template #storageView>
+                    <div class="system-view__storage-container">
+
+                        <div class="storage-block__heading">
+                            <p class="storage-block-heading__p">Storage</p>
+                        </div>
+
+                        <div class="storage-block__subheading">
+                            <p class="storage-block-subheading__p">Local storage</p>
+                        </div>
+
+                        <div class="storage-block__disk">
+                            <figure class="storage-disk__figure">
+                                <img class="storage-disk__img" [src]="storageDiskImg" alt="Local disk" />
+                            </figure>
+
+                            <div class="storage-disk__details">
+                                <p class="storage-disk__label">This PC (C:) - {{ storageCapacityText }}</p>
+
+                                <!-- Track is the full (free) bar; the inner element is the blue used portion. -->
+                                <div class="storage-disk__bar">
+                                    <div class="storage-disk__bar-used" [style.width.%]="storageUsedPercent"></div>
+                                </div>
+
+                                <div class="storage-disk__usage">
+                                    <p class="storage-disk__used-text">{{ storageUsedText }} used</p>
+                                    <p class="storage-disk__free-text">{{ storageFreeText }} free</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </ng-template>
+
+                <ng-template #clipboardView>
+                    <div class="system-view__clipboard-container"> 
+    
+                        <div class="clipboard-block__content">
+                            <div class="clipboard-block__heading">
+                                <p class="clipboard-block-heading__p">Clipboard</p>
+                            </div>
+    
+                            <div class="clipboard-block__text">
+                                <p class="clipboard-block-text__p"> {{clipboardText}} </p>
+                            </div>
+                        </div>
+    
+                        <div class="clipboard-block__content">
+                            <div class="clipboard-block__heading">
+                                <p class="clipboard-block-heading1__p">Clipboard history</p>
+                            </div>
+    
+                            <div class="clipboard-block__text">
+                                <p class="clipboard-block-text__p"> {{clipboardHistoryText}} </p>
+                            </div>
+                        </div>
+    
+                        <div class="clipboard-block__content">
+                            <div class="clipboard-block__button">
+                                <label class="system-btn__toggle">
+                                    <input type="checkbox" [(ngModel)]="isSaveClipboardHistory" (change)="changeSaveClipboardHistoryState()">
+                                    <span class="system-btn__slider"></span>
+                                </label>
+    
+                                <div class="clipboard-button__text">
+                                    <p class="clipboard-button-text__p"> {{clipboardSaveStateText}} </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+    
+                <ng-template #aboutView>
+                    <div class="system-view__about-container">
+
+                        <div class="about-block__heading">
+                            <p class="about-block-heading__p">About</p>
+                        </div>
+
+                        <div class="about-block__subheading">
+                            <p class="about-block-subheading__p">Cheetah specifications</p>
+                        </div>
+
+                        <!-- Label/value rows sourced from the OS_* constants via aboutSpecs. -->
+                        <ol class="ol-about-spec__list">
+                            <li class="li-about-spec__item" *ngFor="let spec of aboutSpecs">
+                                <p class="about-spec__label">{{ spec.label }}</p>
+                                <p class="about-spec__value">{{ spec.value }}</p>
+                            </li>
+                        </ol>
+
+                    </div>
+                </ng-template>
+            </div>
+        </ng-template>
+
+        <ng-template #personalizationView>
+            <div class="personalization-option__panel">
+                <div class="personalization-option__first">
+                    <div class="secondary-search__empty-container"></div>
+                    <div class="fixed-home-option__item-cntnr" 
+                        (click)="handleMenuSelection(HOME_HOME, -1, $event, HOME_VIEW)">
+                        <div class="fixed-home-option__item-head">
+                            <div class="item-head__indication" ></div>
+                            <figure class="fixed-home-option__item-figure">
+                                <ng-container *ngTemplateOutlet="settingsGlyph; context: { name: 'home' }"></ng-container>
+                            </figure>
+                        </div>
+                        <div class="fixed-home-option__item-tail">
+                            <p class="fixed-home-option__item-p">{{ HOME_HOME }}</p>
+                        </div>
+                    </div>
+        
+                    <div class="secondary-search__container">
+                        <div class="secondary-search-bar__form-cntnr">
+                            <form [formGroup]="searchBarForm"  class="secondary-search-bar__form">
+                                    <input
+                                    appKeyPressCapture
+                                    class="secondary-search-bar__textbox"
+                                    placeholder="{{searchPlaceHolder}}"
+                                    formControlName="searchBarText"
+                                    
+                                    autofocus ="false" 
+                                    spellcheck="false"
+                                    autocomplete="off"
+                                    autocapitalize="off"
+                                    id="setttingsSearchBarTxtBox"
+                                />
+                            </form> 
+                        </div>
+                    </div>
+
+                    <div class="personalization-option__first-text">  
+                        <p class="personalization-option__first-p"> Personalization </p>
+                    </div>
+                    <div class="secondary-search__empty-container"></div>
+                </div>
+                <ol class="ol-personalization-option__grid">
+                    <li class="li-personalization-option__item" *ngFor="let option of personalizationOptions; let i = index">
+                        <div class="personalization-option__item-cntnr" 
+                            (click)="handleMenuSelection(option.title, i, $event, PERSONALIZATION_VIEW)">
+                            
+                            <div class="personalization-option__item-head">
+                                <div class="item-head__indication"   [class.active]="i === selectedIdx"></div>
+                                <figure class="personalization-option__item-figure">
+                                    <ng-container *ngIf="option.glyph; else persLegacyIcon">
+                                        <ng-container *ngTemplateOutlet="settingsGlyph; context: { name: option.glyph }"></ng-container>
+                                    </ng-container>
+                                    <ng-template #persLegacyIcon>
+                                        <img class="personalization-option__item-img" [src]="option.icon" />
+                                    </ng-template>
+                                </figure>
+                            </div>
+    
+                            <div class="personalization-option__item-tail">
+                                <p class="personalization-option__item-p">{{ option.title }}</p>
+                            </div>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+    
+            <div class="personalization-view__panel" >
+                <ng-container [ngTemplateOutlet]="selectedPersonalizationOption === PERSONALIZATION_DESKTOP_BACKGROUND ? dsktpBackgroundView:
+                                                  selectedPersonalizationOption === PERSONALIZATION_COLORS ? colorsView:
+                                                  selectedPersonalizationOption === PERSONALIZATION_LOCKSCREEN ? lockScreenView: taskBarView">
+                </ng-container>
+
+                <ng-template #dsktpBackgroundView>
+                    <div class="personalization-view__desktop-container">
+                        <div class="desktop-block-heading desktop-heading-fixed">
+                            <p class="desktop-block-heading__p"> Desktop</p>
+                        </div>
+
+                        <div class="desktop-preview__container"  (click)="onPreviewClick($event)"  id="desktop_Preview"> 
+                            <!-- Desktop Img comes here -->
+                            <div class="desktop-overlay___container">
+                                <div class="desktop-overlay___sidebar">
+                                  <div class="desktop-overlay___menu">
+                                    <div></div><div></div><div></div><div></div>
+                                    <div></div><div></div><div></div><div></div>
+                                  </div>
+                                  <div class="desktop-overlay___grid">
+                                    <div class="desktop-overlay___large">Aa</div>
+                                    <div></div><div></div><div></div>
+                                    <div></div><div></div><div></div><div></div>
+                                    <div></div><div></div><div></div><div></div>
+                                  </div>
+                                </div>
+                                
+                                <!-- <div class="desktop-overlay___app">
+                                    <div class="desktop-overlay___heading">
+                                        <div class="desktop-overlay___white-bar"></div>
+                                    </div>
+                                    <div class="desktop-overlay___top-bar">Aa</div>
+                                </div> -->
+                                <div class="desktop-overlay___bottom-bar"></div>
+                            </div>
+                        </div>
+
+                        <div class="desktop-block-content">
+                            <div class="desktop-block__text">
+                                <p class="desktop-block-miniheading__p"> Background</p>
+                            </div>
+
+                            <div class="desktop-block-content">
+                                <div class="desktop-background-dropdown" (click)="toggleDesktopBkgrndDropdown($event)" [class.open]="isDesktopBkgrndDropDownOpen">
+                                    <div class="desktop-background-dropdown__selected">
+                                      {{ desktopBkgrndOption|| 'Select background' }}
+                                    </div>
+                                  
+                                    <span class="desktop-background-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+                                  
+                                    <ul class="desktop-background-dropdown__menu" *ngIf="isDesktopBkgrndDropDownOpen">
+                                      <li  *ngFor="let option of desktopBackgroundOptions"  (click)="handleDropDownChoiceAndSetBkgrnd(option, $event)"
+                                        [class.selected]="option.label === desktopBkgrndOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                            </div>
+                        </div>
+
+                        <ng-container [ngTemplateOutlet]="desktopBkgrndOption === DESKTOP_BACKGROUND_PICTURE || desktopBkgrndOption === DESKTOP_BACKGROUND_DYNAMIC ? desktopPictureView:
+                                                          desktopBkgrndOption === DESKTOP_BACKGROUND_SOLID_COLOR ? desktopSolidColorView: desktopSlideShow">
+                        </ng-container>
+
+                        <ng-template #desktopPictureView>
+                            <div class="desktop-block-content">
+                                <div class="desktop-block__text">
+                                    <p class="desktop-block-miniheading__p"> Choose your picture</p>
+                                </div>
+                                
+                                <div class="desktop-picture__block">
+                                    <ol class="ol-desktop-picture__grid">
+                                        <li class="li-desktop-picture-color" *ngFor="let option of desktopPictureOptions; let i = index">
+                                            <div class="desktop-picture__item" 
+                                                role="button" 
+                                                (click)="handleScreenPictureAndColorSelection(option, $event)" >
+                                                <img [src]="option"/>
+                                            </div>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </ng-template>
+
+                        <ng-template #desktopSolidColorView>
+                            <div class="desktop-block-content">
+                                <div class="desktop-block__text">
+                                    <p class="desktop-block-miniheading__p"> Choose you background color</p>
+                                </div>
+                                
+                                <div class="desktop-solid-color__block">
+                                    <ol class="ol-desktop-solid-color__grid">
+                                        <li class="li-desktop-solid-color" *ngFor="let option of colorOptions; let i = index">
+                                            <div class="desktop-solid-color__item" 
+                                                role="button" 
+                                                [class.selected]="option === retrievedBackgroundValue"
+                                                [style]="{'background-color': option}" 
+                                                (click)="handleScreenPictureAndColorSelection(option, $event)" >
+                                                <span class="color-swatch__marker" *ngIf="option === retrievedBackgroundValue">
+                                                    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M 28.28125 6.28125 L 11 23.5625 L 3.71875 16.28125 L 2.28125 17.71875 L 10.28125 25.71875 L 11 26.40625 L 11.71875 25.71875 L 29.71875 7.71875 Z"></path></svg>
+                                                </span>
+                                            </div>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </ng-template>
+
+                        <ng-template #desktopSlideShow></ng-template>
+
+                    </div>
+                </ng-template>
+    
+                <ng-template #lockScreenView>
+                    <div class="personalization-view__lockscreen-container">
+                        <div class="lockscreen-block-heading lockscreen-heading-fixed">
+                            <p class="lockscreen-block-heading__p"> Lock screen</p>
+                        </div>
+
+                        <div class="lockscreen-block-heading">
+                            <p class="lockscreen-block-subheading__p"> Preview</p>
+                        </div>
+
+                        <div class="lockscreen-preview__container"  (click)="onPreviewClick($event)"  id="lockScreen_Preview"> 
+                            <!-- New Additional Container -->
+                            <div class="lockscreen-preview__datetime-container">
+                        
+                                <div class="lockscreen-preview__space"></div>
+                        
+                                <div class="lockscreen-preview__time-section">
+                                    <p class="lockscreen-preview__time-p">{{ currentTime }}</p>
+                                </div>
+                        
+                                <div class="lockscreen-preview__date-section">
+                                    <p class="lockscreen-preview__date-p">{{ currentDate }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lockscreen-block-content">
+                            <div class="lockscreen-block__text">
+                                <p class="lockscreen-block-miniheading__p"> Background</p>
+                            </div>
+
+                            <div class="lockscreen-block-content">
+                                <div class="lockscreen-background-dropdown" (click)="toggleLockScreenBkgrndDropdown($event)" [class.open]="isLockScreenBkgrndDropDownOpen">
+                                    <div class="lockscreen-background-dropdown__selected">
+                                      {{ lockScreenBkgrndOption|| 'Select Background ' }}
+                                    </div>
+                                  
+                                    <span class="lockscreen-background-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+                                  
+                                    <ul class="lockscreen-background-dropdown__menu" *ngIf="isLockScreenBkgrndDropDownOpen">
+                                      <li  *ngFor="let option of lockScreenBackgroundOptions"  (click)="handleDropDownChoiceAndSetBkgrnd(option, $event)"
+                                        [class.selected]="option.label === lockScreenBkgrndOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                            </div>
+                        </div>
+
+                        <!-- <div class="lockscreen-empty-container"></div> -->
+
+                        <ng-container [ngTemplateOutlet]="lockScreenBkgrndOption === LOCKSCREEN_BACKGROUND_PICTURE ? lockScreenPictureView:
+                                                          lockScreenBkgrndOption === LOCKSCREEN_BACKGROUND_SOLID_COLOR ? lockScreenSolidColorView:
+                                                          lockScreenBkgrndOption === LOCKSCREEN_SLIDE_SHOW ? lockScreenSlideShowView: lockScreenMirrorView">
+                        </ng-container>
+
+                        <ng-template #lockScreenPictureView>
+                            <div class="lockscreen-block-content">
+                                <div class="lockscreen-block__text">
+                                    <p class="lockscreen-block-miniheading__p"> Choose your picture</p>
+                                </div>
+                                
+                                <div class="lockscreen-picture__block">
+                                    <ol class="ol-lockscreen-picture__grid">
+                                        <li class="li-lockscreen-picture-color" *ngFor="let option of lockScreenPictureOptions; let i = index">
+                                            <div class="lockscreen-picture__item" 
+                                                role="button" 
+                                                (click)="handleScreenPictureAndColorSelection(option, $event)" >
+                                                <img [src]="option"/>
+
+                                            </div>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </ng-template>
+
+                        <ng-template #lockScreenSolidColorView>
+                            <div class="lockscreen-block-content">
+                                <div class="lockscreen-block__text">
+                                    <p class="lockscreen-block-miniheading__p"> Choose you background color</p>
+                                </div>
+                                
+                                <div class="lockscreen-solid-color__block">
+                                    <ol class="ol-lockscreen-solid-color__grid">
+                                        <li class="li-lockscreen-solid-color" *ngFor="let option of colorOptions; let i = index">
+                                            <div class="lockscreen-solid-color__item" 
+                                                role="button" 
+                                                [class.selected]="option === retrievedBackgroundValue"
+                                                [style]="{'background-color': option}" 
+                                                (click)="handleScreenPictureAndColorSelection(option, $event)" >
+                                                <span class="color-swatch__marker" *ngIf="option === retrievedBackgroundValue">
+                                                    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M 28.28125 6.28125 L 11 23.5625 L 3.71875 16.28125 L 2.28125 17.71875 L 10.28125 25.71875 L 11 26.40625 L 11.71875 25.71875 L 29.71875 7.71875 Z"></path></svg>
+                                                </span>
+                                            </div>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </ng-template>
+
+                        <ng-template #lockScreenSlideShowView> 
+                            <div class="lockscreen-block-content">
+                                <div class="lockscreen-background-dropdown" (click)="toggleLockScreenSlideShowDropdown($event)" [class.open]="isLockScreenSlideShowDropDownOpen">
+                                    <div class="lockscreen-background-dropdown__selected">
+                                      {{ lockScreenSlideShowOption|| 'Select' }}
+                                    </div>
+                                  
+                                    <span class="lockscreen-background-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+                                  
+                                    <ul class="lockscreen-background-dropdown__menu" *ngIf="isLockScreenSlideShowDropDownOpen">
+                                      <li  *ngFor="let option of slideShowOptions"  (click)="handleLockScreenSlideShowChoice(option, $event)"
+                                        [class.selected]="option.label === lockScreenSlideShowOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                            </div>
+                        </ng-template>
+
+                        <ng-template #lockScreenMirrorView> </ng-template>
+
+                        <div class="lockscreen-block-content">
+                            <div class="lockscreen-block__text">
+                                <p class="lockscreen-block-miniheading__p"> Screen timeout</p>
+                            </div>
+
+                            <div class="lockscreen-block-content">
+                                <div class="lockscreen-timeout-dropdown" (click)="toggleLockScreenTimeOutDropdown($event)" [class.open]="isLockScreenTimeoutDropDownOpen">
+                                    <div class="lockscreen-timeout-dropdown__selected">
+                                      {{ lockScreenTimeoutOption || 'Select background' }}
+                                    </div>
+                                  
+                                    <span class="lockscreen-timeout-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+                                  
+                                    <ul class="lockscreen-timeout-dropdown__menu" *ngIf="isLockScreenTimeoutDropDownOpen">
+                                      <li  *ngFor="let option of lockScreenTimeOutOptions" (click)="onLockScreenTimeoutSelect(option, $event)" 
+                                        [class.selected]="option.label === lockScreenTimeoutOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                                  
+                            </div>
+                        </div>
+
+                        <div class="lockscreen-block-content">
+                            <div class="lockscreen-block__text">
+                                <p class="lockscreen-block-miniheading__p"> Turn on screen saver</p>
+                            </div>
+
+                            <div class="lockscreen-block__button">
+                                <label class="system-btn__toggle">
+                                    <input type="checkbox" [(ngModel)]="isScreenSaverActive" (change)="changeScreenSaverState()">
+                                    <span class="system-btn__slider"></span>
+                                </label>
+    
+                                <div class="lockscreen-button__text">
+                                    <p class="lockscreen-button-text__p"> {{isScreenSaverActiveText}} </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Screen-saver pickers: shown only while the saver is turned on. -->
+                        <div class="lockscreen-block-content" *ngIf="isScreenSaverActive">
+                            <div class="lockscreen-block__text">
+                                <p class="lockscreen-block-miniheading__p"> Screen saver type</p>
+                            </div>
+
+                            <!-- Dropdown 1: Video vs Dynamic. -->
+                            <div class="lockscreen-block-content">
+                                <div class="lockscreen-background-dropdown" (click)="toggleScreenSaverTypeDropdown($event)" [class.open]="isScreenSaverTypeDropDownOpen">
+                                    <div class="lockscreen-background-dropdown__selected">
+                                      {{ screenSaverTypeOption || 'Select type' }}
+                                    </div>
+
+                                    <span class="lockscreen-background-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+
+                                    <ul class="lockscreen-background-dropdown__menu" *ngIf="isScreenSaverTypeDropDownOpen">
+                                      <li *ngFor="let option of screenSaverTypeOptions" (click)="handleScreenSaverTypeChoice(option, $event)"
+                                        [class.selected]="option.label === screenSaverTypeOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dropdown 2: the saver itself; option list depends on the chosen type. -->
+                        <div class="lockscreen-block-content" *ngIf="isScreenSaverActive && screenSaverTypeOption">
+                            <div class="lockscreen-block__text">
+                                <p class="lockscreen-block-miniheading__p"> Choose your screen saver</p>
+                            </div>
+
+                            <div class="lockscreen-block-content">
+                                <div class="lockscreen-background-dropdown" (click)="toggleScreenSaverContentDropdown($event)" [class.open]="isScreenSaverContentDropDownOpen">
+                                    <div class="lockscreen-background-dropdown__selected">
+                                      {{ screenSaverContentOption || 'Select' }}
+                                    </div>
+
+                                    <span class="lockscreen-background-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+
+                                    <ul class="lockscreen-background-dropdown__menu" *ngIf="isScreenSaverContentDropDownOpen">
+                                      <li *ngFor="let option of (screenSaverTypeOption === SCREEN_SAVER_VIDEO ? videoScreenSaverOptions : dynamicScreenSaverOptions)"
+                                        (click)="handleScreenSaverContentChoice(option, $event)"
+                                        [class.selected]="option.label === screenSaverContentOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+
+                <ng-template #colorsView>
+                    <div class="personalization-view__desktop-container">
+                        <div class="desktop-block-heading desktop-heading-fixed">
+                            <p class="desktop-block-heading__p"> Colors</p>
+                        </div>
+
+                        <div class="desktop-preview__container"  (click)="onPreviewClick($event)"  id="color_Preview"> 
+                            <!-- Desktop Img comes here -->
+                            <div class="desktop-overlay___container">
+                                
+                                <div class="desktop-overlay___sidebar">
+                                  <div class="desktop-overlay___menu">
+                                    <div></div><div></div><div></div><div></div>
+                                    <div></div><div></div><div></div><div></div>
+                                  </div>
+                                  <div class="desktop-overlay___grid">
+                                    <div class="desktop-overlay___large">Aa</div>
+                                    <div></div><div></div><div></div>
+                                    <div></div><div></div><div></div><div></div>
+                                    <div></div><div></div><div></div><div></div>
+                                  </div>
+                                </div>
+
+                                <div class="desktop-overlay___app">
+                                    <div class="desktop-overlay___heading">
+                                        <div class="desktop-overlay___white-bar"></div>
+                                    </div>
+                                    <div class="desktop-overlay___top-bar">Aa</div>
+                                </div>
+
+                                <div class="desktop-overlay___bottom-bar"></div>
+                            </div>
+                        </div>
+  
+                        <div class="desktop-block-content">
+                            <div class="desktop-block-heading">
+                                <p class="desktop-block-subheading__p"> Choose your color</p>
+                            </div>
+                        </div>
+
+                        <div class="desktop-block-content">
+                            <div class="desktop-block__text">
+                                <p class="desktop-block-miniheading__p"> Recent colors</p>
+                            </div>
+                            
+                            <div class="color-solid-recent-cheetah-color__block">
+                                <ol class="ol-desktop-solid-color__grid">
+                                    <li class="li-desktop-solid-color" *ngFor="let option of recentColorOptions; let i = index">
+                                        <div class="desktop-solid-color__item" 
+                                            role="button" 
+                                            [class.selected]="option === accentColor"
+                                            [style]="{'background-color': option}" 
+                                            (click)="handleAccentColorSelection(option, $event)" >
+                                            <span class="color-swatch__marker" *ngIf="option === accentColor">
+                                                <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M 28.28125 6.28125 L 11 23.5625 L 3.71875 16.28125 L 2.28125 17.71875 L 10.28125 25.71875 L 11 26.40625 L 11.71875 25.71875 L 29.71875 7.71875 Z"></path></svg>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <div class="desktop-block-content">
+                            <div class="desktop-block__text">
+                                <p class="desktop-block-miniheading__p"> Cheetah colors</p>
+                            </div>
+                            
+                            <div class="color-solid-cheetah-color__block">
+                                <ol class="ol-desktop-solid-color__grid">
+                                    <li class="li-desktop-solid-color" *ngFor="let option of cheetahColorOptions; let i = index">
+                                        <div class="desktop-solid-color__item" 
+                                            role="button" 
+                                            [class.selected]="option === accentColor"
+                                            [style]="{'background-color': option}" 
+                                            (click)="handleAccentColorSelection(option, $event)" >
+                                            <span class="color-swatch__marker" *ngIf="option === accentColor">
+                                                <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M 28.28125 6.28125 L 11 23.5625 L 3.71875 16.28125 L 2.28125 17.71875 L 10.28125 25.71875 L 11 26.40625 L 11.71875 25.71875 L 29.71875 7.71875 Z"></path></svg>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+
+                       <div class="desktop-block-content">
+                            <div class="desktop-block-heading">
+                                <p class="desktop-block-subheading__p"> More options</p>
+                            </div>
+                        </div>
+
+                        <div class="desktop-block-content">
+                            <div class="desktop-block-heading">
+                                <p class="desktop-block-miniheading__p"> Show accent color on the following surfaces</p>
+                            </div>
+
+                            <div class="color-block__button  color-block__checkbox">
+                                <label class="system_checkbox__toggle">
+                                    <input type="checkbox" [(ngModel)]="showAccentColorOnStartMenuAndTaskbar" (change)="showAccentColorOnStartAndMenuChange()" >
+                                    <div class="box"></div>
+                                    <p>Start, taskbar, action center, and...</p>
+                                </label>
+
+                                <label class="system_checkbox__toggle">
+                                    <input type="checkbox" [(ngModel)]="showAccentColorOnTitleBarsAndWindowBoarder" (change)="onShowAccentColorOnTitleBarsChange()">
+                                    <div class="box"></div>
+                                    <p>Title bars and window borders</p>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="desktop-block-content">
+                            <div class="desktop-block__text">
+                                <p class="desktop-block-miniheading__p"> Transparency effects</p>
+                            </div>
+
+                            <div class="color-block__button">
+                                <label class="system-btn__toggle">
+                                    <input type="checkbox" [(ngModel)]="isTransparencyEffectsActive" (change)="changeTransparencyEffectsState()">
+                                    <span class="system-btn__slider"></span>
+                                </label>
+    
+                                <div class="color-button__text">
+                                    <p class="color-button-text__p"> {{isTransparencyEffectsActiveText}} </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="desktop-block-content">
+                            <div class="color-block__button  color-block__checkbox">
+
+                                <label class="system_checkbox__toggle">
+                                    <input type="checkbox" [(ngModel)]="applyTransparencyEffectOnTitleBarAndWindowBorder" (change)="onShowTransparencyEffectOnTitleBarAndWindowBorderChange()">
+                                    <div class="box"></div>
+                                    <p>Apply transparency effects to title bars and window borders</p>
+                                </label>
+
+                                <label class="system_checkbox__toggle">
+                                    <input type="checkbox" [(ngModel)]="applyTransparencyEffectToContextMenu" (change)="onApplyTransparencyEffectToContextMenuChange()">
+                                    <div class="box"></div>
+                                    <p>Apply transparency effects to context menus</p>
+                                </label>
+
+                                <label class="system_checkbox__toggle">
+                                    <input type="checkbox" [(ngModel)]="applyAccentColorToTransparentMenu" (change)="onApplyAccentColorToTransparentMenuChange()" [disabled]="!applyTransparencyEffectToContextMenu">
+                                    <div class="box"></div>
+                                    <p>Apply accent color to transparent context menus</p>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div  class="desktop-block-content">
+                            <div class="theme-mode-block">
+                                <div class="desktop-block__text">
+                                    <p class="desktop-block-miniheading__p"> Choose your default app mode</p>
+                                </div>
+                                <div class="theme-mode-toggle">
+                                    <button type="button" class="theme-mode-toggle__btn" [class.active]="!isLightTheme" (click)="setTheme(THEME_DARK)">Dark</button>
+                                    <button type="button" class="theme-mode-toggle__btn" [class.active]="isLightTheme" (click)="setTheme(THEME_LIGHT)">Light</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+    
+                <ng-template #taskBarView>
+                    <div class="personalization-view__taskbar-container">
+                        <div class="taskbar-block-heading">
+                            <p class="taskbar-block-heading__p"> Taskbar</p>
+                        </div>
+
+                        <div class="taskbar-block-content">
+                            <div class="taskbar-block__text">
+                                <p class="taskbar-block-miniheading__p"> Automatically hide the taskbar in desktop mode</p>
+                            </div>
+
+                            <div class="taskbar-block__button">
+                                <label class="system-btn__toggle">
+                                    <input type="checkbox" [(ngModel)]="isAutoHideTaskBar" (change)="changeAutoHideTaskBarState()">
+                                    <span class="system-btn__slider"></span>
+                                </label>
+    
+                                <div class="taskbar-button__text">
+                                    <p class="taskbar-button-text__p"> {{autoHideTaskBarText}} </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="taskbar-block-content">
+                            <div class="taskbar-block__text">
+                                <p class="taskbar-block-miniheading__p"> Taskbar location on screen</p>
+                            </div>
+
+                            <div class="taskbar-block-content">
+                                <div class="taskbar-background-dropdown" (click)="toggleTaskBarPositionDropdown($event)" [class.open]="isTaskbarPositionDropDownOpen">
+                                    <div class="taskbar-background-dropdown__selected">
+                                      {{ taskBarPositionOption|| 'Select' }}
+                                    </div>
+                                  
+                                    <span class="taskbar-background-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+                                  
+                                    <ul class="taskbar-background-dropdown__menu" *ngIf="isTaskbarPositionDropDownOpen">
+                                      <li  *ngFor="let option of taskbarPositionOptions" 
+                                        [class.selected]="option.label === taskBarPositionOption">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                            </div>
+                        </div>
+
+                        <div class="taskbar-block-content">
+                            <div class="taskbar-block__text">
+                                <p class="taskbar-block-miniheading__p"> Combine taskbar buttons</p>
+                            </div>
+
+                            <div class="taskbar-block-content">
+                                <div class="taskbar-background-dropdown" (click)="toggleTaskBarCombinationDropdown($event)" [class.open]="isTaskbarCombinationDropDownOpen">
+                                    <div class="taskbar-background-dropdown__selected">
+                                      {{ taskBarCombinationOption|| 'Select' }}
+                                    </div>
+                                  
+                                    <span class="taskbar-background-dropdown__icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                        <path 
+                                          d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192
+                                             c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7
+                                             86.6 169.4c-12.5-12.5-32.8-12.5-45.3
+                                             0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </span>
+                                  
+                                    <ul class="taskbar-background-dropdown__menu" *ngIf="isTaskbarCombinationDropDownOpen">
+                                      <li  *ngFor="let option of taskbarCombinationOptions" 
+                                        [class.selected]="option.label === taskBarCombinationOption" (click)="handleTaskBarCombinationSelection(option, $event)">
+                                        {{ option.label }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+            </div>
+        </ng-template>
+
+        <ng-template #applicationView>
+            <div class="application-option__panel">
+                <div class="application-option__first">
+                    <div class="secondary-search__empty-container"></div>
+                    <div class="fixed-home-option__item-cntnr"
+                        (click)="handleMenuSelection(HOME_HOME, -1, $event, HOME_VIEW)">
+                        <div class="fixed-home-option__item-head">
+                            <div class="item-head__indication"></div>
+                            <figure class="fixed-home-option__item-figure">
+                                <ng-container *ngTemplateOutlet="settingsGlyph; context: { name: 'home' }"></ng-container>
+                            </figure>
+                        </div>
+                        <div class="fixed-home-option__item-tail">
+                            <p class="fixed-home-option__item-p">{{ HOME_HOME }}</p>
+                        </div>
+                    </div>
+
+                    <div class="secondary-search__container">
+                        <div class="secondary-search-bar__form-cntnr">
+                            <form [formGroup]="searchBarForm" class="secondary-search-bar__form">
+                                <input
+                                    appKeyPressCapture
+                                    class="secondary-search-bar__textbox"
+                                    placeholder="{{searchPlaceHolder}}"
+                                    formControlName="searchBarText"
+
+                                    autofocus="false"
+                                    spellcheck="false"
+                                    autocomplete="off"
+                                    autocapitalize="off"
+                                    id="setttingsSearchBarTxtBox"
+                                />
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="application-option__first-text">
+                        <p class="application-option__first-p"> Apps </p>
+                    </div>
+                    <div class="secondary-search__empty-container"></div>
+                </div>
+                <ol class="ol-application-option__grid">
+                    <li class="li-application-option__item" *ngFor="let option of applicationOptions; let i = index">
+                        <div class="application-option__item-cntnr"
+                            (click)="handleMenuSelection(option.title, i, $event, APPS_VIEW)">
+
+                            <div class="application-option__item-head">
+                                <div class="item-head__indication" [class.active]="i === selectedIdx"></div>
+                                <figure class="application-option__item-figure">
+                                    <ng-container *ngIf="option.glyph; else appLegacyIcon">
+                                        <ng-container *ngTemplateOutlet="settingsGlyph; context: { name: option.glyph }"></ng-container>
+                                    </ng-container>
+                                    <ng-template #appLegacyIcon>
+                                        <img class="application-option__item-img" [src]="option.icon" />
+                                    </ng-template>
+                                </figure>
+                            </div>
+
+                            <div class="application-option__item-tail">
+                                <p class="application-option__item-p">{{ option.title }}</p>
+                            </div>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="application-view__panel">
+                <!-- Apps has a single sub-pane, so it is rendered directly. -->
+                <ng-container [ngTemplateOutlet]="appsFeaturesView"></ng-container>
+
+                <ng-template #appsFeaturesView>
+                    <div class="application-view__container">
+
+                        <div class="application-block__heading">
+                            <p class="application-block-heading__p">Apps &amp; features</p>
+                        </div>
+
+                        <div class="application-block__subheading">
+                            <p class="application-block-subheading__p">Installed apps</p>
+                        </div>
+
+                        <!-- One row per installed app, sourced from the AppDirectory catalogue. -->
+                        <ol class="ol-application-list__grid">
+                            <li class="li-application-list__item" *ngFor="let app of applicationList">
+                                <figure class="application-list__figure">
+                                    <img class="application-list__img" [src]="app.icon" [alt]="app.name" />
+                                </figure>
+                                <p class="application-list__name">{{ app.name }}</p>
+                            </li>
+                        </ol>
+
+                    </div>
+                </ng-template>
+            </div>
+        </ng-template>
+
+    </div>
+</cos-primarywindow> 

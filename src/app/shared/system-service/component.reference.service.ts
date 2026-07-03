@@ -1,12 +1,12 @@
 import { ComponentRef, Injectable, Type, ViewContainerRef, ViewRef } from "@angular/core";
-import { BaseService } from "./base.service.interface";
+import { BaseService } from "../../system-files/base/base.service.interface";
 import { Constants } from "src/app/system-files/constants";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { Process } from "src/app/system-files/process";
 import { ProcessType } from "src/app/system-files/system.types";
 import { Service } from "src/app/system-files/service";
-import { BaseComponent } from "src/app/system-base/base/base.component.interface";
+import { BaseComponent } from "src/app/system-files/base/base.component.interface";
 
 @Injectable({
     providedIn: 'root'

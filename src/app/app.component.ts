@@ -1,4 +1,6 @@
 import {Component,ViewChild, ViewContainerRef, AfterViewInit} from '@angular/core';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { filter } from 'rxjs/operators';
 
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from './shared/system-service/running.process.service';
@@ -35,6 +37,7 @@ export class AppComponent implements AfterViewInit {
   private _componentReferenceService:ComponentReferenceService;
   private _audioService!:AudioService;
   private _sessionManagementService:SessionManagementService;
+  private _swUpdate:SwUpdate;
 
 
   hasWindow = false;
@@ -52,7 +55,7 @@ export class AppComponent implements AfterViewInit {
   //circular reference error, should it be injected in the fileService
   constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, audioService:AudioService, 
               componentReferenceService:ComponentReferenceService, fileIndexerService: FileIndexerService, sessionManagementService:SessionManagementService,
-              defaultService:DefaultService){
+              defaultService:DefaultService, swUpdate:SwUpdate){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
 
@@ -60,8 +63,29 @@ export class AppComponent implements AfterViewInit {
     this._audioService = audioService;
     this._componentReferenceService = componentReferenceService; 
     this._sessionManagementService = sessionManagementService;
+    this._swUpdate = swUpdate;
 
     this._runningProcessService.addProcess(this.getComponentDetail());
+    this.listenForServiceWorkerUpdates();
+  }
+
+  /**
+   * When a new build is deployed, the service worker downloads it in the
+   * background. Once those assets are ready we activate them immediately so the
+   * NEXT page load serves the new version. We deliberately do NOT force a reload
+   * here: CheetahOS keeps live, unsaved desktop state, and yanking the page out
+   * from under the user would be jarring. Activating quietly gives a seamless
+   * "updates on next visit" behavior. No-ops in dev (worker disabled).
+   */
+  private listenForServiceWorkerUpdates():void{
+    if(!this._swUpdate.isEnabled)
+      return;
+
+    this._swUpdate.versionUpdates
+      .pipe(filter((evt):evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
+      .subscribe(() => {
+        this._swUpdate.activateUpdate();
+      });
   }
 
   async ngAfterViewInit(): Promise<void>{

@@ -1,0 +1,531 @@
+<!-- TODO (icons): The inline <svg> glyphs throughout this template (header
+     nav/help/refresh/history/search glyphs, footer view-toggle glyphs, etc.)
+     are placeholder, sub-par paths used as a stop-gap so they theme via
+     `fill="currentColor"`. Source/replace with better high-quality SVG icons
+     when available. -->
+<cos-primarywindow 
+    [runningProcessID]="processId" 
+    [processAppIcon]="icon" 
+    [processAppName]="displayName" 
+    [isMaximizable]="isMaximizable" 
+    [priorUId]="priorUId"
+    [minimumWindowWidth]="MIN_WIDTH_PX" 
+    [minimumWindowHeight]="MIN_HEIGHT_PX">
+
+    <div #fileExplorerRootContainer class="file_explrorer_root_container" tabindex="0" (click)="focusWindow($event)">
+
+        <!-- Refactor #11.d: hover styling is pure CSS now — see
+                .fileexp-header__question-cntnr:hover. id removed; no code
+                reads it. -->
+        <!-- <div class="fileexp-header__tab-container" >
+            <div class="fileexp-header__tabs">
+              <div class="fileexp-header__tab highlight-default">File</div>
+              <div class="fileexp-header__tab">Home</div>
+              <div class="fileexp-header__tab active">View</div> 
+
+
+              <div class="fileexp-header__question-cntnr" (click)="questionBtn()">
+                <figure class="fileexp-header__question-figure">  
+                    <img class="fileexp-header__question-img" [src]="'osdrive/Cheetah/System/Imageres/question.png'" alt="Help"/>
+                </figure>
+              </div>
+            </div>
+        </div>   -->
+
+        <div class="header-empty-line-container"></div>
+
+        <div class="fileexp-header__container">
+
+            <div class="fileexp-header__nav-btns-container">
+                <figure class="fileexp-header__nav-figure">  
+                    <div class="fileexp-header__nav-img">
+                        <svg xmlns="http://www.w3.org/2000/svg" (click)="goBackAlevel()" (mouseenter)="colorPrevNavBtn()" (mouseleave)="uncolorPrevNavBtn()" [style]="prevNavBtnStyle"
+                            height="16" width="16" 
+                            viewBox="0 0 512 512">
+                            <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/>
+                        </svg>
+                    </div>
+                </figure>
+    
+                <figure class="fileexp-header__nav-figure">
+                    <div class="fileexp-header__nav-img">
+                        <svg xmlns="http://www.w3.org/2000/svg" (click)="goForwardAlevel()" (mouseenter)="colorNextNavBtn()" (mouseleave)="uncolorNextNavBtn()"  [style]="nextNavBtnStyle"
+                            height="16" width="16" 
+                            viewBox="0 0 512 512">
+                            <path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/>
+                        </svg>
+                    </div>
+                </figure>
+    
+                <figure class="fileexp-header__nav-figure-chevron">
+                    <div class="fileexp-header__nav-img-chevron">
+                        <svg xmlns="http://www.w3.org/2000/svg" (mouseenter)="colorChevron()" (mouseleave)="unColorChevron()"  [style]="recentNavBtnStyle"
+                            height="10" width="10" 
+                            viewBox="0 200 512 512">
+                            <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                        </svg>
+                    </div>
+                </figure>
+    
+                <figure class="fileexp-header__nav-figure-up" (click)="goUpAlevel()" (mouseenter)="colorUpNavBtn()" (mouseleave)="uncolorUpNavBtn()" [style]="upNavBtnCntnrStyle">
+                    <div class="fileexp-header__nav-img-up">
+                        <svg xmlns="http://www.w3.org/2000/svg" [style]="upNavBtnStyle"
+                            height="16" width="16" 
+                            viewBox="0 0 512 512">
+                            <path d="M214.6 41.4c-12.5-12.5-32.8-12.5-45.3 0l-160 160c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 141.2V448c0 17.7 14.3 32 32 32s32-14.3 32-32V141.2L329.4 246.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-160-160z"/>
+                        </svg>
+                    </div>
+                </figure>
+            </div>
+    
+            <!-- Refactor #11.b: #navPathContainer ref replaces the per-instance id;
+                 used by hideshowPathHistory() to size the dropdown to match the
+                 current breadcrumb width. -->
+            <div #navPathContainer class="fileexp-header__nav-path-container">
+
+                <div class="fileexp-header__nav-anchor" (click)="showPathTextBox($event)" (focusout)="hidePathTextBox()">
+                    <div class="fileexp-header__nav-folder-img-container">
+                        <figure class="fileexp-header__nav-folder-figure">
+                            <img class="fileexp-header__nav-folder-img" [src]="navPathIcon | safeResourceUrl" alt="Folder"/>
+                        </figure>
+                    </div>
+
+                    <!-- Refactor #11.a: visibility driven by `isPathEditing` instead of
+                         document.getElementById('pathIconBox-{processId}').style.display. -->
+                    <div class="fileexp-header__nav-path-display"
+                         [style.display]="isPathEditing ? 'none' : 'flex'">
+                        <span class="span fileexp-header__nav-root-cntnr">
+                            <figure class="fileexp-header__nav-static-figure">
+                                <svg class="fileexp-header__nav-static-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" fill="currentColor" aria-hidden="true"><path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/></svg>
+                            </figure> 
+                        </span>
+
+                        <div class="fileexp-header__nav-dynamic-container" *ngFor="let dirTraversal of _directoryTraversalList let j = index">
+                            <span *ngIf="j > 0" class="span fileexp-header__nav-repeat-cntnr">
+                                <figure class="fileexp-header__nav-static-figure">
+                                    <svg class="fileexp-header__nav-static-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" fill="currentColor" aria-hidden="true"><path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/></svg>
+                                </figure> 
+                            </span>
+                            <span class="span mid-nav-path-gen-cntnr">{{dirTraversal}}</span>
+                        </div>
+                    </div>
+
+                    <!-- Refactor #11.a: form + input visibility driven by `isPathEditing`. -->
+                    <form 
+                        [formGroup]="pathForm"  
+                        class="fileexp-header__nav-path-form"
+                        (ngSubmit)="onPathSubmit()"
+                        [style.display]="isPathEditing ? 'flex' : 'none'">
+
+                        <input #pathInputRef
+                            class="fileexp-header__nav-input" 
+                            type="text" placeholder="{{directory}}" 
+                            formControlName="pathInput"  
+                            autofocus spellcheck="false"
+                            [style.display]="isPathEditing ? 'block' : 'none'" />
+                    </form>
+
+                
+                    <div class="fileexp-header__nav-show-cntnr" [class.active]="showPathHistory" (click)="hideshowPathHistory()">
+                        <figure class="fileexp-header__nav-show-figure">
+                            <svg class="fileexp-header__nav-show-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" role="img" aria-label="Show history"><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
+                        </figure>
+                    </div>
+                    <div class="fileexp-header__nav-refresh-cntnr" (click)="refresh($event)">
+                        <figure class="fileexp-header__nav-refresh-figure">
+                            <svg class="fileexp-header__nav-refresh-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" role="img" aria-label="Refresh"><path d="M463.5 224H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1c-87.5 87.5-87.5 229.3 0 316.8s229.3 87.5 316.8 0c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0c-62.5 62.5-163.8 62.5-226.3 0s-62.5-163.8 0-226.3c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5z"/></svg>
+                        </figure>
+                    </div>
+                </div>
+        
+    
+                <!-- Refactor #11.b: visibility + width driven by component fields
+                     instead of document.getElementById('pathHistory-{processId}'). -->
+                <div class="fileexp-header__nav-history-container"
+                     [style.display]="showPathHistory && pathHistory.length > 0 ? 'block' : 'none'"
+                     [style.width.px]="pathHistoryWidthPx">
+                    <div class="nav-path-entry-container" *ngFor="let entry1 of pathHistory; let k = index">
+                        <span class="span"><figure class="figure-nav-path-entry"><svg class="img-nav-path-entry" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C158.6 502.5 205.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></figure></span>
+                        <span class="span mid-nav-path-entry">{{entry1}}</span>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="header-nav-search-container">
+                <form [formGroup]="searchForm"  (ngSubmit)="onSearch()">
+                    <div class="search-container">
+                        <span class="span head-search-cntnr"><figure class="figure-search-cntnr"><svg class="img-search-cntnr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" role="img" aria-label="Search"><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg></figure></span>
+                        <!-- Refactor #11.c: id="searchTxtBox-{processId}" removed
+                             \u2014 no code reads it anymore (onInputChange and
+                             onClearSearchTextBox now use this.searchForm). -->
+                        <input class="search-input" type="text" placeholder="Search OSDisk(C:)" formControlName="searchInput" (click)="showSearchHistory($event)"  (focusout)="hideSearchHistory()" (input)="onInputChange()"  spellcheck="false" />
+                        <!-- Refactor #11.c: hover styling is now pure CSS — see
+                             span.head-search-cntnr1.active / .active:hover. -->
+                        <span class="span head-search-cntnr1" [class.active]="isSearchBoxNotEmpty" (click)="onClearSearchTextBox()"><figure class="figure-search-cntnr"><svg *ngIf="isSearchBoxNotEmpty" class="img-search-cntnr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" fill="currentColor" role="img" aria-label="Clear"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg></figure></span>
+                        <!-- Refactor #11.c: hover styling is now pure CSS — see
+                             span.head-search-cntnr2.active / .active:hover. -->
+                        <span class="span head-search-cntnr2" [class.active]="isSearchBoxNotEmpty" (click)="onSearch()"><figure class="figure-search-cntnr"><svg *ngIf="isSearchBoxNotEmpty" class="img-search-cntnr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor" role="img" aria-label="Go"><path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg></figure></span>
+                    </div>
+                </form>
+    
+                <!-- Refactor #11.b: visibility driven by isSearchHistoryVisible
+                     instead of document.getElementById('searchHistory-{processId}'). -->
+                <div class="search-history-container"
+                     [style.display]="isSearchHistoryVisible ? 'block' : 'none'">
+                    <div class="search-entry-container" *ngFor="let entry of searchHistory; let i = index">
+                        <span class="span"><figure class="figure-search-entry"><svg class="img-search-entry" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C158.6 502.5 205.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></figure></span>
+                        <span class="span mid-search-entry">{{entry}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="header-empty-line-container2"></div>
+        <div class="fileexp-main-container" tabindex="0" #fileExplorerMainContainer>
+            <div class="fileexp-content-container">
+                <ng-container *ngIf="showNavigationPane">
+                    <div class="navigation-content-container" 
+                        (mouseenter)="showExpandTreeIconBtn()" 
+                        (mouseleave)="hideExpandTreeIconBtn()" id="navExplorerContainer-{{processId}}"
+                        #navExplorerContainer>
+                        <div class="nav-tree-spacer"></div>
+                        <cos-filetreeview [pId] ="processId" [isHoverActive]="showExpandTreeIcon" [treeData]="fileTreeNode"></cos-filetreeview>
+                    </div>
+                </ng-container>
+
+                <div class="file-content-container" #fileExplorerContentContainer>
+
+                    <!-- Search loading overlay: shown while a search walk runs. -->
+                    <div class="fileexplorer-search-overlay" *ngIf="isSearching">
+                        <span class="fileexplorer-search-spinner"></span>
+                        <span class="fileexplorer-search-overlay-text">Searching {{directory}}&hellip;</span>
+                    </div>
+
+                    <!-- Empty search result: shown when a finished search found nothing. -->
+                    <div class="fileexplorer-search-overlay" *ngIf="isShowingSearchResults && !isSearching && fetchedFiles.length === 0">
+                        <span class="fileexplorer-search-overlay-text">No items match your search.</span>
+                    </div>
+
+                    <!-- ngResizable [rzHandles]="'w'" [rzMinWidth]="270" -->
+                    <!-- ngDraggable  [inBounds]="true" zIndex="1" [preventDefaultEvent]="true"
+                        (stopped)="onDragEnd($event)" (started)="onDragStart($event)" -->
+
+                
+                    <ol
+                        #fileExplorerListContainer
+                        tabindex="0"
+                        [ngClass]="[olClassName, viewSizeClass]" 
+                        (dragover)="onDragOver($event)"  
+                        (drop)="onDrop($event)" 
+                        (click)="hideIconContextMenu($event, name); handleIconHighLightState()" 
+                        (keydown)="onFileExplorerKeyDown($event)"
+                        (contextmenu)="onShowFileExplorerContextMenu($event)" 
+                        (mousedown)="activateMultiSelect($event)"
+                        (mouseup)="deActivateMultiSelect()"
+                        (mousemove)="updateDivWithAndSize($event)" 
+                        id="olElmnt-{{processId}}"> 
+
+                        <ng-container [ngTemplateOutlet]="currentViewOption === smallIconsView ? iconsView :
+                                                          currentViewOption === mediumIconsView ? iconsView :
+                                                          currentViewOption === largeIconsView ? iconsView : 
+                                                          currentViewOption === extraLargeIconsView ? iconsView : detailsView0">
+                        </ng-container>
+        
+                        <ng-template #iconsView>
+                            <li class="li-iconview-container" *ngFor="let file of fetchedFiles; let i = index" id="ilElmnt-{{processId}}" >
+                                <!-- Refactor #11.i: per-icon hover/selected styling now comes from
+                                     three [class.*] bindings driven by component fields, replacing
+                                     the imperative setBtnStyle/removeBtnStyle DOM mutations. The
+                                     `!markedBtnIds.has(i)` clauses keep the lasso class (11.h) in
+                                     charge whenever an icon is multi-selected. -->
+                                <!-- draggable="true" + (dragstart)/(dragend) make each icon a
+                                     drag SOURCE so files can be dragged out to the Desktop (or
+                                     another File Explorer). The actual payload is registered with
+                                     the shared FileService inside onDragStart — see the component. -->
+                                <div #iconBtn class="iconview-button" role="button" tabindex="0" (dblclick)="runApplication(file, false, $event)"
+                                    draggable="true"
+                                    (dragstart)="onDragStart($event, i)"
+                                    (dragend)="onDragEnd($event)"
+
+                                    [class.fileexplr-multi-select-highlight]="markedBtnIds.has(i)"
+                                    [class.is-hovered]="hoveredElementId === i && !(selectedElementId === i && isIconInFocusDueToCurrentAction) && !markedBtnIds.has(i)"
+                                    [class.is-selected-current]="selectedElementId === i && isIconInFocusDueToCurrentAction && !markedBtnIds.has(i)"
+                                    [class.is-selected-prior]="selectedElementId === i && isIconInFocusDueToPriorAction && hoveredElementId !== i && !markedBtnIds.has(i)"
+                                    MouseStop
+                                    [mouseStopDelay]="TOOL_TIP_DELAY"
+                                    (mouseStop)=" showToolTip($event, file)"
+                                    (mouseenter)="onMouseEnter(i)"
+                                    (mouseleave)="onMouseLeave(i)"
+                                    (contextmenu)="onShowIconContextMenu($event, file, i)" 
+                                    (click)="onBtnClick($event, i)" 
+                                    id="btnElmnt-{{processId}}-{{i}}">
+
+                                    <div class="iconview-img-container"  id="figElmnt-{{processId}}-{{i}}">
+                                        <div class="iconview-img-wrapper">
+                                            <!-- loading="lazy": off-screen file icons are only fetched/decoded once scrolled into view (cuts the request storm on large folders).
+                                                 decoding="async": decode off the main thread so it never blocks rendering/interaction. -->
+                                            <img class="iconview-image" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}" loading="lazy" decoding="async"/>
+                                        </div>
+                                        <div class="iconview-shortcut-wrapper" *ngIf="file.getIsShortCut">
+                                            <img class="iconview-shortcut-img" [src]="shortCutImg" alt="Shortcut" id="shortCut-{{processId}}-{{i}}"/>
+                                        </div>
+                                    </div>
+                                    <div class="iconview-caption-container">
+                                        <p class="iconview-caption"  id="figCapElmnt-{{processId}}-{{i}}">
+                                            {{file.getFileName}} 
+                                        </p>
+                                        <form [formGroup]="renameForm" 
+                                            id="renameForm-{{processId}}-{{i}}" 
+                                            class="iconview-rename-form" (ngSubmit)="isFormDirty()">
+                                            <textarea class="iconview-rename-textbox" 
+                                                formControlName="renameInput"  
+                                                (keydown)="onKeyPress($event)" 
+                                                autofocus spellcheck="false" 
+                                                title="Rename"
+                                                id="renameTxtBox-{{processId}}-{{i}}">
+                                            </textarea>
+                                        </form>
+                                    </div> 
+                                </div>
+                            </li>
+                        </ng-template>
+    
+
+                        <ng-template #detailsView0>
+                            <table class="detailsview-data-table">
+                                <thead>
+                                    <tr>
+                                        <th fxplrColumnResize id="th-1" (dataEvent)="updateTableFieldSize($event)" (mouseEvent)="enableDisableMultSelect($event)">
+                                            <p class="detailsview-ptag">Name</p>
+                                        </th>
+                                        <th fxplrColumnResize id="th-2" (dataEvent)="updateTableFieldSize($event)" (mouseEvent)="enableDisableMultSelect($event)">
+                                            <p class="detailsview-ptag">Date modified</p>
+                                        </th>
+                                        <th fxplrColumnResize id="th-3" (dataEvent)="updateTableFieldSize($event)" (mouseEvent)="enableDisableMultSelect($event)">
+                                            <p class="detailsview-ptag">Type</p>
+                                        </th>
+                                        <th>
+                                            <p class="detailsview-ptag">Size</p>
+                                        </th>
+                                        <!-- <th><p class="detailsview-ptag">Opening app</p></th> -->
+                                    </tr>
+                                </thead>
+                                <tbody id="tblBody-{{processId}}">
+                                    <!-- Bugfix follow-up to #11.i: details rows now use the
+                                         same selection-state classes as icon-view buttons
+                                         (.is-hovered / .is-selected-current / .is-selected-prior),
+                                         so clicking an empty area clears the highlight just like
+                                         the icon view does. The old `[class.active]="i === selectedRow"`
+                                         + `onProcessSelected` pair was parallel state that didn't
+                                         participate in the state machine. -->
+                                    <!-- draggable="true" + (dragstart)/(dragend): details-view rows
+                                         are drag sources too, mirroring the icon-view buttons above. -->
+                                    <tr class="li-detailsview-container" *ngFor='let file of fetchedFiles; let i = index'
+                                        draggable="true"
+                                        (dragstart)="onDragStart($event, i)"
+                                        (dragend)="onDragEnd($event)"
+                                        [class.fileexplr-multi-select-highlight]="markedBtnIds.has(i)"
+                                        [class.is-hovered]="hoveredElementId === i && !(selectedElementId === i && isIconInFocusDueToCurrentAction) && !markedBtnIds.has(i)"
+                                        [class.is-selected-current]="selectedElementId === i && isIconInFocusDueToCurrentAction && !markedBtnIds.has(i)"
+                                        [class.is-selected-prior]="selectedElementId === i && isIconInFocusDueToPriorAction && hoveredElementId !== i && !markedBtnIds.has(i)"
+                                        id="trElmnt-{{processId}}-{{i}}">
+                                        <td
+                                            MouseStop
+                                            [mouseStopDelay]="TOOL_TIP_DELAY"
+                                            (mouseStop)=" showToolTip($event, file)"
+                                            (mouseenter)="onMouseEnter(i)" 
+                                            (mouseleave)="onMouseLeave(i)"
+                                            (contextmenu)="onShowIconContextMenu($event, file, i)" 
+                                            (click)="onBtnClick($event, i)">
+
+                                            <!-- Bugfix (column-resize gap): the icon/caption flex
+                                                 layout lives on this wrapper, not on the <td>.
+                                                 `display: flex` on a <td> takes it out of the
+                                                 table's column-layout track, so the first cell's
+                                                 width stopped following its <th> until a resize
+                                                 forced a reflow — producing the ~10px gap. -->
+                                            <div class="detailsview-name-cell">
+                                                <div class="div-detailsview-figure-section">
+                                                    <figure class="figure-detailsview">
+                                                        <!-- loading="lazy" + decoding="async": defer off-screen list-row icons and decode asynchronously (same intent as the icon view). -->
+                                                        <img class="img-detailsview" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName" id="imgElmnt-{{processId}}-{{i}}" loading="lazy" decoding="async"/>
+                                                    </figure>
+                                                </div>
+                                                <div class="div-detailsview-caption-section">
+                                                    <figcaption class="figcaption-detailsview" id="figCapElmnt-{{processId}}-{{i}}">
+                                                        <p class="figcaption-detailsview-p" id="fileName-{{i}}"> {{file.getFileName}} </p>
+                                                    </figcaption>
+                                                    <form [formGroup]="renameForm" class="detailsview-rename-form"  id="renameForm-{{processId}}-{{i}}"
+                                                        (ngSubmit)="isFormDirty()">
+                                                        <input type="text" 
+                                                            formControlName="renameInput"  
+                                                            class="detailsview-rename-textbox"
+                                                            (keydown)="onKeyPress($event)" 
+                                                            autofocus spellcheck="false" 
+                                                            title="Rename"
+                                                            id="renameTxtBox-{{processId}}-{{i}}"
+                                                        />
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><p class="detailsview-ptag">{{ file.getDateModifiedUS }}</p></td>
+                                        <td>
+                                            @if(file.getIsFile){
+                                                <p class="detailsview-ptag">{{ getFileTypeName(file.getFileType) }}</p>
+                                            }@else{
+                                                <p class="detailsview-ptag">File folder</p>
+                                            }
+                                        </td>
+                                        <td><p class="detailsview-ptag-right" *ngIf="file.getIsFile">{{ file.getSize }} {{file.getFileSizeUnit}}</p></td>
+                                        <!-- <td><p class="detailsview-ptag">{{ file.getOpensWith }}</p></td> -->
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </ng-template>
+
+                    
+                        <!-- Refactor #11.f: transform bound to a component field
+                             instead of mutated via document.getElementById
+                             ('invalidChars-{processId}'). id removed; no code
+                             reads it anymore. -->
+                        <div class="tool-tip-container"
+                             [class.visible]="isShowFileNameWarning"
+                             [style.transform]="invalidCharsTooltipTransform">
+                            <div class="tool-tip-arrow"> </div>
+                            <div class="tool-tip-base"> A file name can't contain any of the following characters: <br /><br />
+                                 \ / : * ? " < > |'
+                            </div>
+                        </div>
+
+                       <cos-menu #iconCtxMenu [generalMenu]="menuData" *ngIf="showIconCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMngrMenuOption" [menuOrder]="menuOrder"> </cos-menu>
+                       <cos-menu #fileCtxMenu [nestedMenu]="fileExplrMenu" *ngIf="showFileExplrCntxtMenu" [style]="fileExplrCntxtMenuStyle" [menuType]="fileExplrMenuOption"> </cos-menu>
+
+                        <!-- Refactor #11.h: lasso pane geometry + visibility
+                             now bound to component fields. The previous
+                             `id="fileExplrMultiSelectPane"` (non-process-
+                             scoped) was removed because nothing reads it
+                             anymore; constant styling (bg, border, backdrop,
+                             position, z-index) moved to .lasso-pane CSS. -->
+                        <div #selectPaneContainer
+                             class="lasso-pane"
+                             [class.visible]="lassoVisible"
+                             [style.transform]="'translate(' + lassoLeftPx + 'px, ' + lassoTopPx + 'px)'"
+                             [style.width.px]="lassoWidthPx"
+                             [style.height.px]="lassoHeightPx"></div>
+                    </ol>
+
+                    <!-- Refactor #11.g: position + visibility bound here
+                         instead of mutated via document.getElementById
+                         ('fx-information-tip-{processId}'). id removed; no
+                         code reads it anymore. -->
+                    <div class="fx-information-tip-container"
+                         #infoTipContainer
+                         [class.visible]="isInfoTipVisible"
+                         [style.left.px]="infoTipLeftPx"
+                         [style.top.px]="infoTipTopPx">
+                        <div class="fx-information-tip-item-container" *ngFor="let tip of fileInfoTipData;" >
+                            <div class="fx-information-tip-item">{{tip.label}} {{tip.data}} </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="fileexp-footer__container"  #defaultFooterContainer>
+            <span class="fileexp-footer__span"> </span>
+            <span class="fileexp-footer__span">{{fetchedFiles.length}} items</span>
+            <span class="fileexp-footer__span">|</span>
+
+            <ng-container *ngIf="markedBtnIds.size > 0 || showFileSizeAndUnit">
+                <ng-container *ngIf="markedBtnIds.size > 0">
+                    <span class="fileexp-footer__span">{{markedBtnIds.size}} items selected</span>
+                    <span class="fileexp-footer__span"> {{selectFilesSizeSum}} {{selectFilesSizeUnit}}</span>
+                    <span class="fileexp-footer__span">|</span>
+                </ng-container>
+
+                <ng-container *ngIf="showFileSizeAndUnit">
+                    <span class="fileexp-footer__span">1 item selected</span>
+                    <span class="fileexp-footer__span"> {{selectFilesSizeSum}} {{selectFilesSizeUnit}}</span>
+                    <span class="fileexp-footer__span">|</span>
+                </ng-container>
+
+                <ng-container *ngIf="showAFolderSelected">
+                    <span class="fileexp-footer__span">{{markedBtnIds.size}} item selected</span>
+                </ng-container>
+            </ng-container>
+
+            <!-- Refactor #11.d: hover styling is pure CSS now — see
+                 .fileexp-footer__details-cntnr:hover.
+                 New: `.active` reflects the current view selection so the
+                 user can tell at a glance which mode is active. Details
+                 view is the only non-icon mode, so its highlight tracks
+                 currentViewOption === detailsView; the icon button's
+                 highlight covers all four icon sizes (the inverse). -->
+            <div class="fileexp-footer__details-cntnr"
+                 [class.active]="currentViewOption === detailsView"
+                 (click)="toggleDetailsView()">
+                <figure class="fileexp-footer__large-icon-figure">  
+                    <img class="fileexp-footer__img" [src]="'osdrive/Cheetah/System/Imageres/details_view.png'" alt="Details view"/>
+                </figure>
+            </div>
+
+            <!-- Refactor #11.d: hover styling is pure CSS now — see
+                 .fileexp-footer__large-icon-cntnr:hover. See note above
+                 about .active. -->
+            <div class="fileexp-footer__large-icon-cntnr"
+                 [class.active]="currentViewOption !== detailsView"
+                 (click)="toggleLargeIconsView()">
+                <figure class="fileexp-footer__large-icon-figure1">  
+                  <img class="fileexp-footer__img" [src]="'osdrive/Cheetah/System/Imageres/large_image.png'" alt="Large icons view"/>
+                </figure>
+            </div> 
+        </div>
+
+        <!-- <div class="fileexp-footer__container fileexp-footer__folder-bar" #folderBarFooterContainer>
+            <div class="fileexp-footer__folder-bar-section">
+                <label class="fileexp-footer__folder-label" for="folderPathInput-{{processId}}">Folder:</label>
+                <input class="fileexp-footer__folder-input" id="folderPathInput-{{processId}}" type="text" spellcheck="false" />
+            </div>
+            <div class="fileexp-footer__folder-btn-section">
+                <button class="fileexp-footer__folder-btn fileexp-footer__folder-btn--primary" type="button">Select Folder</button>
+                <button class="fileexp-footer__folder-btn" type="button">Cancel</button>
+            </div>
+        </div>
+
+        <div class="fileexp-footer__container fileexp-footer__folder-bar" #saveFileBarFooterContainer>
+            <div class="fileexp-footer__folder-bar-section">
+                <label class="fileexp-footer__folder-label" for="folderPathInput-{{processId}}">File name:</label>
+                <input class="fileexp-footer__folder-input" id="folderPathInput-{{processId}}" type="text" spellcheck="false" />
+            </div>
+            <div class="fileexp-footer__file-input-group">
+                <label class="fileexp-footer__file-label" for="fileTypeInput-{{processId}}">Save as type:</label>
+                <input class="fileexp-footer__file-input" id="fileTypeInput-{{processId}}" type="text" spellcheck="false" />
+            </div>
+
+            <div class="fileexp-footer__folder-btn-section">
+                <button class="fileexp-footer__folder-btn fileexp-footer__folder-btn--primary" type="button">Save</button>
+                <button class="fileexp-footer__folder-btn" type="button">Cancel</button>
+            </div>
+        </div>
+
+        <div class="fileexp-footer__container fileexp-footer__file-bar" #fileBarFooterContainer>
+            <div class="fileexp-footer__file-main-row">
+                <div class="fileexp-footer__file-input-group">
+                    <label class="fileexp-footer__file-label" for="fileNameInput-{{processId}}">File name:</label>
+                    <input class="fileexp-footer__file-input" id="fileNameInput-{{processId}}" type="text" spellcheck="false" />
+                </div>
+
+                <select class="fileexp-footer__file-select" aria-label="File type">
+                    <option>All Picture Files</option>
+                </select>
+            </div>
+
+            <div class="fileexp-footer__file-btn-group">
+                <button class="fileexp-footer__file-btn fileexp-footer__file-btn--primary" type="button">Open</button>
+                <button class="fileexp-footer__file-btn" type="button">Cancel</button>
+            </div>
+        </div> -->
+    </div>
+
+</cos-primarywindow>

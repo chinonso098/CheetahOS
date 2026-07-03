@@ -1,0 +1,9 @@
+.title{
+    font-size: 3.125rem;
+    text-align: center;
+    background-color: orange;
+    height: 100%;
+    min-width: 20rem;
+    min-height: 15rem;
+    width: 100%;
+}

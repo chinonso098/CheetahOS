@@ -1,0 +1,261 @@
+/* Thin custom scrollbar that overrides the host OS default. The thumb colour
+   swaps with the theme: near-black on the light (default) surface, grey on the
+   dark surface. The Run dropdown list is the main scroll area. */
+:host{
+  --run-scroll-thumb: rgba(0, 0, 0, 0.35);
+  --run-scroll-thumb-hover: rgba(0, 0, 0, 0.50);
+}
+
+:host(.theme-dark){
+  --run-scroll-thumb: rgba(255, 255, 255, 0.30);
+  --run-scroll-thumb-hover: rgba(255, 255, 255, 0.45);
+}
+
+:host *{
+  scrollbar-width: thin;
+  scrollbar-color: var(--run-scroll-thumb) transparent;
+}
+
+:host ::-webkit-scrollbar{
+  width: 4px;
+  height: 4px;
+}
+
+:host ::-webkit-scrollbar-track{
+  background: transparent;
+}
+
+:host ::-webkit-scrollbar-thumb{
+  background-color: var(--run-scroll-thumb);
+  border-radius: 2px;
+}
+
+:host ::-webkit-scrollbar-thumb:hover{
+  background-color: var(--run-scroll-thumb-hover);
+}
+
+.run-container {
+    width: 380px;
+    padding: 14px 12px 10px 12px;
+    background-color: #f0f0f0;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    font-size: 12px;
+    color: #000000;
+    box-sizing: border-box;
+}
+
+/* While the dropdown is open, reserve space so the (overflow:hidden) window
+   grows to contain the absolutely-positioned list instead of clipping it. */
+.run-container-expanded {
+    padding-bottom: 168px;
+}
+
+/* ───────────────── top prompt (icon + description) ───────────────── */
+.run-prompt {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 4px 4px 14px 4px;
+}
+
+.run-prompt-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.run-prompt-text {
+    margin: 0;
+    line-height: 1.35;
+}
+
+/* ───────────────── open: label + combo box ───────────────── */
+.run-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 4px 18px 4px;
+}
+
+.run-field-label {
+    flex-shrink: 0;
+}
+
+.run-combo {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    height: 23px;
+    border: 1px solid #7a7a7a;
+    background-color: #ffffff;
+    box-sizing: border-box;
+}
+
+.run-combo:focus-within {
+    border-color: #0078d7;
+}
+
+.run-combo-input {
+    flex: 1 1 auto;
+    border: none;
+    outline: none;
+    padding: 0 6px;
+    font-family: inherit;
+    font-size: 12px;
+    background-color: transparent;
+    min-width: 0;
+}
+
+.run-combo-arrow {
+    flex-shrink: 0;
+    width: 17px;
+    border: none;
+    border-left: 1px solid #c7c7c7;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.run-combo-arrow:hover {
+    background-color: #e5f1fb;
+}
+
+.run-combo-arrow:active {
+    background-color: #cce4f7;
+}
+
+/* ───────────────── dropdown list of apps ───────────────── */
+.run-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 1px;
+    list-style: none;
+    max-height: 168px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    border: 1px solid #7a7a7a;
+    border-top: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
+    z-index: 5;
+    box-sizing: border-box;
+}
+
+.run-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 24px;
+    padding: 0 6px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.run-dropdown-item:hover {
+    background-color: #cce4f7;
+}
+
+.run-dropdown-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+
+.run-dropdown-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ───────────────── action buttons ───────────────── */
+.run-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 4px;
+}
+
+.run-btn {
+    min-width: 75px;
+    height: 23px;
+    padding: 0 10px;
+    font-family: inherit;
+    font-size: 12px;
+    color: #000000;
+    background-color: #e1e1e1;
+    border: 1px solid #adadad;
+    cursor: pointer;
+}
+
+.run-btn:hover {
+    background-color: #e5f1fb;
+    border-color: #0078d7;
+}
+
+.run-btn:active {
+    background-color: #cce4f7;
+    border-color: #005499;
+}
+
+.run-btn:focus {
+    outline: 1px solid #0078d7;
+    outline-offset: -3px;
+}
+
+/* ───────────────── Dark theme ─────────────────
+   The host gets `.theme-dark` (driven by ThemeService via a HostBinding on the
+   component). Only colors flip; the light styling above stays the default. */
+:host(.theme-dark) .run-container {
+    background-color: #202020;
+    color: #ffffff;
+}
+
+:host(.theme-dark) .run-combo {
+    border-color: #3d3d3d;
+    background-color: #333333;
+}
+
+:host(.theme-dark) .run-combo-arrow {
+    color: #ffffff;
+    border-left-color: #4a4a4a;
+    background-color: #333333;
+}
+
+:host(.theme-dark) .run-combo-arrow:hover {
+    background-color: #3a3a3a;
+}
+
+:host(.theme-dark) .run-combo-arrow:active {
+    background-color: #454545;
+}
+
+:host(.theme-dark) .run-dropdown {
+    background-color: #2b2b2b;
+    border-color: #3d3d3d;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+:host(.theme-dark) .run-dropdown-item:hover {
+    background-color: #3a3a3a;
+}
+
+:host(.theme-dark) .run-btn {
+    color: #ffffff;
+    background-color: #2b2b2b;
+    border-color: #3d3d3d;
+}
+
+:host(.theme-dark) .run-btn:hover {
+    background-color: #3a3a3a;
+    border-color: #0078d7;
+}
+
+:host(.theme-dark) .run-btn:active {
+    background-color: #454545;
+    border-color: #2b88d8;
+}

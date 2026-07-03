@@ -1,0 +1,139 @@
+ <main class="main-desktop" id="vantaCntnr"  #desktopContainer> 
+    <ol class="ol-desktopIcon-grid" 
+        tabindex="0"
+        (contextmenu)="showDesktopContextMenu($event)" 
+        (click)="iconsHandler.handleIconHighLightState()"
+        (keydown)="iconsHandler.onDesktopKeyDown($event)"
+        (dragover)="iconsHandler.onDragOver($event)" 
+        (drop)="onDrop($event)" 
+        (mousedown)="iconsHandler.activateMultiSelect($event)"
+        (mouseup)="iconsHandler.deActivateMultiSelect()"
+        #desktopIconOl
+        id="desktopIcon_ol"> 
+        
+        <li class="li-desktopIcon-container" *ngFor="let file of iconFileOps.files; let i = index; trackBy: trackByDesktopIcon" id="desktopIcon_li{{i}}">
+            <div role="button" tabindex="0" class="desktopIcon-btn" 
+                (contextmenu)="iconFileOps.onShowDesktopIconCntxtMenu($event, file, i)" 
+                (click)="onDesktopIconClick($event, i)"
+
+                (dblclick)="runApplication(file)" 
+                (dragstart)="iconsHandler.onDragStart($event, i)"
+                (dragend)="iconsHandler.onDragEnd($event)"
+                
+                (mousedown)="iconsHandler.onMouseDown($event, i)"
+                (mouseenter)="iconsHandler.onMouseEnter(i)" 
+                (mouseleave)="iconsHandler.onMouseLeave(i)"  
+
+            id="iconBtn{{i}}"  [style]="iconsHandler.btnStyle">
+                <div class="desktopIcon-img-section"  id="desktopIcon_fig{{i}}">
+                    <div class="desktopIcon-img-container">
+                        <!-- decoding="async" only (no lazy): desktop icons are above-the-fold and shown on boot, so we decode off the main thread but still fetch them eagerly to avoid empty-icon flashes. -->
+                        <img class="desktopIcon-img-content" [src]="file.getIconPath | safeResourceUrl" [alt]="file.getFileName"  [style]="iconsHandler.iconSizeStyle" decoding="async"/>
+                    </div>
+                    <div class="desktopIcon-shortcut-img-container" *ngIf="file.getIsShortCut">
+                        <img class="desktopIcon-shortcut-img-content" [src]="shortCutImg"  id="shortCut{{i}}" [style]="iconsHandler.shortCutIconSizeStyle"/>
+                    </div>
+                </div>
+                <div class="desktopIcon-label-section">
+                    <p class="desktopIcon-caption"  id="figCap{{i}}" [style]="iconsHandler.figCapIconSizeStyle">
+                        {{file.getFileName}}
+                    </p>
+
+                    <form [formGroup]="iconFileOps.renameForm" 
+                        id="renameContainer{{i}}"
+                        class="desktopIcon-rename-form" (ngSubmit)="iconFileOps.isFormDirty()">
+                        <textarea class="desktopIcon-rename-textbox" 
+                            formControlName="renameInput"  
+                            (keydown)="iconFileOps.onInputChange($event)" 
+                            autofocus spellcheck="false" 
+                            id="renameTxtBox{{i}}">
+                        </textarea>
+                    </form>
+                </div>                
+            </div>
+        </li>
+
+        <ng-container  *ngIf="iconFileOps.showDesktopIconCntxtMenu">
+            <cos-menu [generalMenu]="iconFileOps.menuData" [style]="iconFileOps.iconCntxtMenuStyle" [menuType]="iconFileOps.dsktpMngrMenuOption" [menuOrder]="iconFileOps.menuOrder"> </cos-menu>
+        </ng-container>
+
+        <ng-container *ngIf="showDesktopCntxtMenu">
+            <cos-menu [nestedMenu]="deskTopMenu"  [style]="dskTopCntxtMenuStyle" [menuType]="deskTopMenuOption"> </cos-menu>
+        </ng-container>
+
+        <ng-container *ngIf="taskbarMenu.showPreviewWindow" >
+            <cos-taskbarpreview  [fadeState]="taskbarMenu.previewWindowState" [name]="taskbarMenu.appToPreview" [icon]="taskbarMenu.appToPreviewIcon"  [style]="taskbarMenu.previewWindowStyle">  </cos-taskbarpreview>
+        </ng-container>
+
+        <ng-container  *ngIf="taskbarMenu.showAppIconMenu" >
+            <cos-menu [generalMenu]="taskbarMenu.appIconMenuData" [style]="taskbarMenu.appIconMenuStyle" [menuType]="taskbarMenu.appIconMenuOption"> </cos-menu>
+        </ng-container>
+
+        <ng-container  *ngIf="taskbarMenu.showContextMenu">
+            <cos-menu [generalMenu]="taskbarMenu.contextMenuData"  [style]="taskbarMenu.contextMenuStyle" [menuType]="taskbarMenu.contextMenuOption"> </cos-menu>
+        </ng-container>
+
+        @if(showVolumeCntrl){
+            <cos-volumecontrol></cos-volumecontrol>
+        }
+
+        @if(showOverflowPane){
+            <cos-overflow></cos-overflow>
+        }
+        
+        @if(showDesktopScreenShotPreview){
+            <div [@slideStatusAnimation]="slideState" class="dsktp-screenshot__container" >
+                <div class="dsktp-screenshot__img-container" (click)="openPhotos()">
+                    <img [src]="dsktpPrevImg"/>
+                </div>
+                <div class="dsktp-screenshot__other-container">
+                    <div class="other__item-cntnr">
+                        <div class="other__item-head">
+                            <figure class="other__item-figure">
+                                <img class="other__item-img" [src]="cameraImg" />
+                            </figure>
+                        </div>
+
+                        <div class="other__item-mid">
+                            <p class="other__item-p">Screen shot</p>
+                        </div>
+
+                        <div class="other__item-tail">
+                            <figure class="other__item-figure" (click)="closeScreenShotPreview()">
+                                <img class="other__item-img" [src]="closeImg" />
+                            </figure>
+                        </div>
+                    </div>
+                    <div class="other__text-cntnr">
+                        <p class="other__text-p">{{screenShotText}}</p>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if(taskbarMenu.showToolTip){
+            <div class="tskbar-tooltip-container" [style]="taskbarMenu.toolTipStyle" >
+                <p class="tskbar-tooltip-txt"> {{taskbarMenu.toolTipText}}</p>
+            </div>
+        }
+    
+        <div #selectPaneContainer id="dskTopMultiSelectPane"></div>
+
+        <div #invalidCharsToolTip class="tool-tip-container" id="invalidChars">
+            <div class="tool-tip-arrow"> </div>
+            <div class="tool-tip-base"> A file name can't contain any of the following characters: <br /><br />
+                \ / : * ? " < > |' 
+            </div>
+        </div>
+
+        <div #desktopIconCloneCntnr class="desktopIcon-clone-container"  id="desktopIcon_clone_cntnr"> </div>
+        <cos-search></cos-search>
+        <ng-content> </ng-content>
+
+        <cos-taskbar> 
+            <cos-taskbarentries> </cos-taskbarentries>
+            <cos-systemtray></cos-systemtray>
+        </cos-taskbar>
+        <cos-startmenu ></cos-startmenu>
+    </ol>
+</main>

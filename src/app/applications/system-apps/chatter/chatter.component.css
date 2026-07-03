@@ -1,0 +1,852 @@
+/* Thin custom scrollbar that overrides the host OS default. The thumb colour
+   swaps with the theme: grey on the dark (default) surface, near-black on the
+   light surface. Applies to every chatter scroll area (online list, chat
+   window, message area). */
+:host{
+  --chatter-scroll-thumb: rgba(255, 255, 255, 0.30);
+  --chatter-scroll-thumb-hover: rgba(255, 255, 255, 0.45);
+}
+
+:host(.theme-light){
+  --chatter-scroll-thumb: rgba(0, 0, 0, 0.35);
+  --chatter-scroll-thumb-hover: rgba(0, 0, 0, 0.50);
+}
+
+:host *{
+  scrollbar-width: thin;
+  scrollbar-color: var(--chatter-scroll-thumb) transparent;
+}
+
+:host ::-webkit-scrollbar{
+  width: 4px;
+  height: 4px;
+}
+
+:host ::-webkit-scrollbar-track{
+  background: transparent;
+}
+
+:host ::-webkit-scrollbar-thumb{
+  background-color: var(--chatter-scroll-thumb);
+  border-radius: 2px;
+}
+
+:host ::-webkit-scrollbar-thumb:hover{
+  background-color: var(--chatter-scroll-thumb-hover);
+}
+
+span {
+    display: block;
+}
+
+.chatter-heading::before {
+    margin-right: 5px;
+    content: '-- ';
+}
+
+/* Main Container */
+.chatter-main-container {
+    width: 100%;
+    height: 100%;
+    min-width: 640px;
+    min-height: 480px;
+    background: #ccc;
+    /* Stack: content area (flex) + 24px footer */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Improve keyboard usability (tabIndex="0" elements) */
+.chatter-main-container :is([tabindex="0"], button, textarea, input):focus-visible {
+  outline-offset:0;
+}
+
+/* Slightly smoother scrolling on WebKit */
+.chatter-online-section,
+.chatter-chat-window-content,
+.chatter-area {
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* Content Layout */
+.chatter-content-container {
+   width: 100%;
+    display: flex;
+    background-color: #202020;
+    /* Fill all vertical space above the 24px footer; min-height:0 lets
+       inner flex children (chat scroll, online list) actually shrink. */
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* Sidebar Styles */
+.chatter-sidebar-container {
+    width: 50px;
+    flex: 0 0 50px;
+    background-color: #100c0c;
+    border-right: 1px solid #a6a4a4;
+}
+
+.chatter-sidebar-content {
+    width: 100%;
+    height: 50px;
+}
+
+.chatter-sidebar-icon {
+    position: relative;
+    width: 48px;
+    padding: 4px;
+    border: 2px solid transparent;
+    top: 4px;
+}
+
+.chatter-sidebar-figure {
+    display: flex;
+    align-items: center;
+    height: 24px;
+    padding-left: 4px;
+}
+
+.chatter-sidebar-img {
+    position: relative;
+    height: 24px;
+    width: 24px;
+}
+
+/* ---------------------------------------------------------------- */
+
+/* Chat Container */
+.chatter-chat-container {
+    width: 530px;
+    /* Take whatever horizontal space is left after sidebar + online panel,
+       and stack header / scroll area / textbox so the scroll area flexes. */
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* User Info Section */
+.chatter-user-info-container {
+    width: 100%;
+    display: flex;
+    height: 58px;
+    flex: 0 0 58px;
+    padding: 5px 0;
+    background-color: #201c1c;
+    border-bottom: 1px solid #a6a4a4;
+}
+
+.chatter-user-info-content {
+    height: fit-content;
+    padding: 5px;
+    background-color: #201c1c;
+    display: inline-flex;
+    width: 100%;
+}
+
+.chatter-user-acronym {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-weight: 500;
+    /* background-color: cadetblue; */
+    color: white;
+}
+
+span.chatter-head {
+    padding: 0 5px;
+}
+
+.chatter-head-figure {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 14px;
+    width: 14px;
+    top: 2px;
+}
+
+.chatter-head-img {
+    position: relative;
+    height: 14px;
+    width: 14px;
+}
+
+span.chatter-mid {
+    padding: 0 4px;
+    border: 1px solid transparent;
+}
+
+span.chatter-mid:hover {
+    padding: 0 4px;
+    border: 1px solid #a6a4a4;
+}
+
+.user-name-bold {
+    position: relative;
+    color: white;
+    text-align: left;
+    font-size: 20px;
+    font-weight: bold;
+    top: 6px;
+}
+
+
+/*Users Online Styles */
+.chatter-online-container{
+    width: 230px;
+    flex: 0 0 230px;
+    background-color: #201c1c;
+    border-right: 1px solid #a6a4a4;
+    /* Stack heading + scroll list so the list fills available height. */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.chatter-online-content{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+.chatter-online-heading{
+    width: 100%;
+    height: 58px;
+    flex: 0 0 58px;
+    border-bottom: 1px solid #a6a4a4;
+    padding: 5px 0 5px 15px;
+}
+
+.chatter-span-online-heading{
+    position: relative;
+    color: white;
+    text-align: left;
+    font-size: 25px;
+    font-weight: bold;
+    top: 8px;
+}
+
+.chatter-online-section{
+    width: 100%;
+    /* Fill remaining height after the 58px heading instead of a fixed 570px. */
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 8px 0px;
+    background-color: #201c1c;
+}
+
+/*Users Online Entries Styles */
+
+.chatter-online-item-cntnr{
+    width: 100%;
+}
+
+.chatter-online-item{
+    position: relative; /* anchor for .chatter-online-tail */
+    height: fit-content;
+    padding: 4px 0;
+    background-color: #201c1c;
+    display: inline-flex;
+    width: 100%;
+}
+
+.chatter-online-item:hover{
+    background-color: #302c2c;
+}
+
+.chatter-online-empty-line-container{
+    max-height: 10px;
+    min-height: 10px;
+    background-color: #201c1c;
+} 
+
+span.chatter-online-head{
+    padding-left: 10px;
+}
+
+span.chatter-online-mid{
+    color: white; /* Black text color */
+    text-align: left;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 12px 10px;
+}
+
+span.chatter-online-tail{
+    /* Was: position: fixed; left: 31.5%; — pinned to the viewport, which
+       broke the layout when the window moved or resized. Anchor to the
+       right edge of the online row instead so it stays inside the panel. */
+    position: absolute;
+    right: 12px;
+}
+
+.chatter-user-online-acronym {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-weight: 500;
+    /* background-color: cadetblue; */
+    color: white;
+}
+
+.chatter-online-fig{
+    position: relative;
+    align-items: center;
+    display: inline-flex;
+    min-width: 18px;
+    top: 0;
+    left: 15%;
+}
+
+.chatter-online-img{
+    height: 16px;
+    width: 16px;
+
+    position: relative;
+}
+
+.chatter-online-div-fig{
+    position: relative;
+    height: fit-content;
+    width: fit-content;
+    /* right: 2%; */
+    bottom: -8px;
+    /* background-color: #302c2c; */
+}
+
+.chatter-online-div-img{
+    height: 20px;
+    width: 20px;
+}
+
+/* Chat Window */
+.chatter-chat-window-content {
+    width: 100%;
+    /* Fill space between the 58px header and the 70px textbox row. */
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    background-color: #201c1c;
+    /* Right padding caps the gap between right-aligned bubbles and the
+       chat column's right edge (was 12px, user requested <=10px). */
+    padding: 8px 10px;
+}
+
+.chatter-empty-line-container {
+    height: 18px;
+    background-color: #201c1c;
+    flex-shrink: 0; /* Prevent it from shrinking */
+}
+
+.chatter-chat-msg-block{
+    display: flex;
+    flex-direction: column;  /* Stack children vertically */
+    align-items: flex-start; /* Default left alignment */
+    width: 100%;
+    /* Previously `max-width: 372px` capped this wrapper. That cap left
+       right-aligned messages (`.chatter-chat-output-content-right`)
+       flex-ending inside a 372px box pinned to the left of the chat
+       column, so bubbles never actually reached the right edge. The
+       bubble itself is still capped via `.chat-content { max-width:360px }`
+       and `.chat-user-txt-container-* { max-width:360px }`, so left-
+       aligned messages look identical without the wrapper cap. */
+}
+
+/* Chat Messages */
+.chatter-chat-output-content-left {
+    display: flex;
+    align-items: flex-start; /* Ensure alignment */
+}
+
+.chatter-chat-output-content-right {
+    display: flex;
+    justify-content: flex-end; /* Push content to the right */
+    align-items: flex-start;
+    width: 100%; /* Ensure it takes full width */
+    /* Removed margin-left: 128px — it caused horizontal overflow when the
+       chat column narrowed and prevented the bubble from sitting flush
+       with the right edge when it widened. justify-content already handles
+       the right-align. */
+}
+
+.chat-user-txt-container-left {
+    max-width: 360px;
+    padding: 1px 0px 0px 4px;
+}
+
+.chat-user-txt-container-left-sys {
+    max-width: 360px;
+    padding: 0px 0px 0px 4px;
+}
+
+.chat-user-txt-container-right {
+    max-width: 360px;
+    padding: 1px 4px 0px 0px;
+}
+
+.chat-username-and-date-left {
+    display: flex;
+    padding: 3px 0;
+}
+
+.chat-username-and-date-right {
+    display: flex;
+    padding: 3px 0;
+    justify-content: flex-end;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.chat-username {
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    font-size: 10px;
+    color: #fff;
+    padding-right: 12px;
+}
+
+.chat-date {
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 200;
+    font-size: 10px;
+    color: #fff;
+}
+
+.chat-content, .chat-content-sys {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 11.5px;
+    color: #848ada;
+    padding: 1px 2px;
+    outline: none;
+    min-height: 25px;
+    max-height: 250px;
+    min-width: 75px;
+    max-width: 360px;
+    resize: none;
+    overflow-y: auto;
+    text-align: left;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: 1px solid #302c2c;
+    background-color: #302c2c;
+    border-radius: 3px;
+}
+
+.chat-content-sys{
+    font-style: italic;
+    font-size: 10.5px;
+    color: #ccc;
+    line-height: 2;
+}
+
+/* Chat Input Section */
+
+.chatter-chat-texbox-container {
+    width: 100%;
+    display: flex;
+    height: 70px; /* Allows for padding */
+    flex: 0 0 70px;
+    padding: 10px 5px;
+    border-top: 1px solid #a6a4a4;
+    background-color: #201c1c;
+}
+
+.chatter-chat-texbox {
+    width: 90%;
+    height: 50px;
+}
+
+.chatter-chat-send {
+    width: 10%;
+    height: 50px;
+}
+
+.chatter-form {
+    display: flex;
+    width: 100%;
+    border-radius: 5px;
+    background-color: #302c2c;
+    border-bottom: 1.5px solid #ccc;
+}
+
+/* Textarea for Chat Input */
+.chatter-area {
+    position: relative;
+    left: 1.5%;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #ccc;
+    background: transparent;
+    border: 0;
+    outline: none;
+    width: 99%;
+    height: 50px;
+    resize: none;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.5;
+}
+
+/* Send Message Button */
+.chatter-send-msg-content {
+    position: relative;
+    width: 92%;
+    height: 50px;
+    border-radius: 5px;
+    left: 4px;
+    cursor: pointer;
+}
+
+.chatter-send-msg-icon {
+    position: relative;
+    width: 24px;
+    padding: 4px 0 4px 2px;
+    border: 2px solid transparent;
+    top: 6px;
+}
+
+.chatter-send-msg-figure {
+    display: flex;
+    align-items: center;
+    height: 24px;
+    width: fit-content;
+    padding-left: 4px;
+}
+
+.chatter-send-msg-img {
+    position: relative;
+    height: 24px;
+    width: 24px;
+    fill: currentColor;
+    color: #ccc;
+    transition: color 0.15s ease;
+}
+
+.chatter-send-msg-content:hover .chatter-send-msg-img {
+    color: #fff;
+}
+
+:host(.theme-light) .chatter-send-msg-img {
+    color: #555;
+}
+
+:host(.theme-light) .chatter-send-msg-content:hover .chatter-send-msg-img {
+    color: #1e1e1e;
+}
+
+/* Previous Messages & Output Styles */
+
+.chatter-msg {
+    position: relative;
+    color: #ccc;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    display: flex;
+    top: -2px;
+    left: 0.75%;
+    width: 100%;
+}
+
+.prev-chatter-msg {
+    position: relative;
+    color: #ccc;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.prev-chatter-output {
+    margin-top: 3px;
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    color: #ccc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    white-space: pre;
+}
+
+/*Chatter footer section*/
+
+.chatter-div-footer{
+    display: flex;
+    color: white;
+    font-size: 10px;
+    font-weight: normal;
+     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 4px 4px;
+}
+
+.chatter-div-footer-lm{
+    /* Fluid: was width: 225px which clipped on small windows. */
+    flex: 1 1 auto;
+    min-width: 0;
+    position: relative;
+    left: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chatter-div-footer-online{
+    width:150px; 
+    position: relative;
+    left:5%;
+}
+
+.chatter-div-footer-fig{
+    position: relative;
+    height: fit-content;
+    width: fit-content;
+    left: 8%;
+    top: 2px;
+    /* background-color: #302c2c; */
+}
+
+.chatter-div-footer-fig1{
+    position: relative;
+    height: fit-content;
+    width: fit-content;
+    left: 5%;
+    top: 2px;
+    /* background-color: #302c2c; */
+}
+
+.chatter-div-footer-img{
+    height: 20px;
+    width: 20px;
+    fill: currentColor;
+    color: #ccc;
+}
+
+.chatter-footer-container{
+    width: 100%;
+    height: 24px;
+    flex: 0 0 24px;
+    display: flex;
+    background-color: #302c2c;
+}
+
+/*Chat User Name Form*/
+.chat-user-form-card{
+    border: 1px solid #a6a4a4;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 8px;
+    background-color: #201c1c;
+    max-width: 250px;
+    margin: auto;
+    position: absolute;
+    z-index: 2;
+    /* Was: left: 41% — drifted off-screen on resize. Center horizontally
+       within the chat column instead. */
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .chat-user-form-body {
+    padding: 10px;
+  }
+  
+  .chat-user-form-footer {
+    padding: 5px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    padding-left: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 5px;
+    background-color: #302c2c;
+    border: 1px solid #a6a4a4;
+    color: #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  
+  .is-invalid {
+    border-color: #dc3545;
+  }
+  
+  .invalid-feedback {
+    color: #dc3545;
+    font-size: 13px;
+    margin-top: 5px;
+    display: block;
+  }
+  
+  .chatter_btn {
+    padding: 8px 6px;
+    font-size: 14px;
+    border-radius: 5px;
+  }
+  
+  .chatter_btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+  }
+  
+  .chatter_btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .chatter_btn-outline-primary {
+    border-color: #007bff;
+    color: #007bff;
+  }
+
+  .chatter_btn-outline-primary {
+    border-color: #007bff;
+    color: #007bff;
+  }
+
+  .chatter_btn-outline-primary:hover {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .chatter_btn-outline-disabled{
+    background-color: transparent;
+    border-color: transparent;
+    color: transparent;
+  }
+
+  .chatter_btn-outline-disabled:hover{
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+  }
+  
+  .alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 15px;
+    font-size: 14px;
+  }
+
+/* ───────────────── Light theme ─────────────────
+   The host gets `.theme-light` (driven by ThemeService via a HostBinding on the
+   component). Only colors flip; the dark styling above stays the default. */
+:host(.theme-light) .chatter-main-container {
+    background: #c8c8c8;
+}
+
+:host(.theme-light) .chatter-content-container,
+:host(.theme-light) .chatter-chat-window-content,
+:host(.theme-light) .chatter-empty-line-container {
+    background-color: #ffffff;
+}
+
+:host(.theme-light) .chatter-sidebar-container {
+    background-color: #ebebeb;
+    border-right-color: #d0d0d0;
+}
+
+:host(.theme-light) .chatter-user-info-container,
+:host(.theme-light) .chatter-user-info-content,
+:host(.theme-light) .chatter-online-container,
+:host(.theme-light) .chatter-online-section,
+:host(.theme-light) .chatter-online-item,
+:host(.theme-light) .chatter-online-empty-line-container,
+:host(.theme-light) .chatter-chat-texbox-container {
+    background-color: #f3f3f3;
+}
+
+:host(.theme-light) .chatter-user-info-container,
+:host(.theme-light) .chatter-online-container,
+:host(.theme-light) .chatter-online-heading,
+:host(.theme-light) .chatter-chat-texbox-container {
+    border-color: #d0d0d0;
+}
+
+:host(.theme-light) .chatter-online-item:hover {
+    background-color: #e4e4e4;
+}
+
+:host(.theme-light) span.chatter-mid:hover {
+    border-color: #b0b0b0;
+}
+
+:host(.theme-light) .user-name-bold,
+:host(.theme-light) .chatter-span-online-heading,
+:host(.theme-light) span.chatter-online-mid,
+:host(.theme-light) .chat-username,
+:host(.theme-light) .chatter-area,
+:host(.theme-light) .chatter-msg,
+:host(.theme-light) .prev-chatter-msg,
+:host(.theme-light) .prev-chatter-output,
+:host(.theme-light) .chatter-div-footer {
+    color: #1e1e1e;
+}
+
+:host(.theme-light) .chat-date,
+:host(.theme-light) .chat-content-sys {
+    color: #555555;
+}
+
+:host(.theme-light) .chatter-div-footer-img {
+    color: #1e1e1e;
+}
+
+:host(.theme-light) .chat-content,
+:host(.theme-light) .chat-content-sys {
+    background-color: #e8eaf6;
+    border-color: #c5cae9;
+}
+
+:host(.theme-light) .chat-content {
+    color: #3a3f9e;
+}
+
+:host(.theme-light) .chatter-form {
+    background-color: #ffffff;
+    border-bottom-color: #999999;
+}
+
+:host(.theme-light) .chatter-footer-container {
+    background-color: #e4e4e4;
+}
+
+:host(.theme-light) .chat-user-form-card {
+    background-color: #ffffff;
+    border-color: #d0d0d0;
+}
+
+:host(.theme-light) .form-control {
+    background-color: #ffffff;
+    border-color: #c0c0c0;
+    color: #1e1e1e;
+}
+  

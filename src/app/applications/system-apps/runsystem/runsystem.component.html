@@ -1,0 +1,46 @@
+<cos-secondarywindow
+    [runningProcessID]="this.processId"
+    [processAppIcon]="this.icon"
+    [processAppName]="this.name"
+    [displayMessage]="this.displayName"
+    [isDialog]="true"
+    [showTitleBarImg]="true">
+
+    <div class="run-container" [class.run-container-expanded]="isDropdownOpen" (click)="onInputChange(); focusWindow($event)" (contextmenu)="silenceCtxEvt($event)" #runContainer>
+
+
+        <div class="run-prompt">
+            <img class="run-prompt-icon" [src]="this.icon" alt="Run" />
+            <p class="run-prompt-text">Type the name of a program, folder, document, or Internet resource, and Windows will open it for you.</p>
+        </div>
+
+        <div class="run-field">
+            <label class="run-field-label" for="runOpenInput">Open:</label>
+            <div class="run-combo" (click)="$event.stopPropagation()">
+                <input id="runOpenInput" class="run-combo-input" type="text" autocomplete="off" spellcheck="false"
+                    [(ngModel)]="inputValue" (input)="onInputChange()" (keydown.enter)="onOk()" />
+                <button class="run-combo-arrow" type="button" title="Open" (click)="toggleDropdown($event)">
+                    <svg width="10" height="10" viewBox="0 0 10 6">
+                        <path d="M0 0l5 5 5-5z" fill="currentColor" />
+                    </svg>
+                </button>
+
+                @if(isDropdownOpen){
+                    <ul class="run-dropdown">
+                        @for(app of appList; track app.name){
+                            <li class="run-dropdown-item" (click)="selectApp(app, $event)">
+                                <img class="run-dropdown-icon" [src]="app.icon" [alt]="app.name" />
+                                <span class="run-dropdown-name">{{app.name}}</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+        <div class="run-actions">
+            <button class="run-btn" type="button" (click)="onOk()">OK</button>
+        </div>
+    </div>
+
+</cos-secondarywindow>

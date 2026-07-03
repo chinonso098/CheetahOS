@@ -1,0 +1,21 @@
+.taskbar-preview-main-container{
+    background-color: color-mix(in srgb, var(--surface-color) 60%, transparent);
+    backdrop-filter: blur(5px);
+    border: 0.2px solid color-mix(in srgb, var(--surface-color) 60%, transparent);
+    position: absolute;
+    display: inline-flex;
+    margin: 0 2px;
+}
+
+/* Transparency effects OFF -> solid preview surface, no backdrop blur. */
+:host(.solid-surface) .taskbar-preview-main-container{
+    background-color: var(--surface-color);
+    border-color: var(--surface-color);
+    backdrop-filter: none;
+}
+
+.taskbar-preview-content{
+    height: 100%;
+    width: 100%;
+    /* padding: 0 2px; */
+}

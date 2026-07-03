@@ -1,0 +1,638 @@
+
+/*
+  Theme tokens. Dark is the default palette; the light overrides apply when the
+  host carries the .theme-light class (mirrored from the global ThemeService by
+  MenuComponent). Every hardcoded colour below was replaced with one of these
+  variables so all context menus follow the system light/dark theme.
+*/
+:host { 
+    --menu-bg: #2b2b2b;
+    --menu-item-bg: #2b2b2b;
+    --menu-hover-bg: #484444;
+    --menu-border: #9c9898;
+    --menu-separator: #9c9898;
+    --menu-text: #ffffff;
+    --menu-text-disabled: #969696c6;
+    --menu-shadow: rgba(0, 0, 0, 0.3);
+    --menu-icon: #ffffff;
+    --menu-tskbar-bg: rgba(41, 41, 41, 0.7);
+    --menu-power-item-bg: rgba(0, 0, 0, 0.6);
+    --menu-check-bg: #2b2b2b;
+    --menu-check-text: #ffffff;
+    --menu-check-hover: #484444;
+    --menu-check-active: #3d5a73;
+}
+
+:host(.theme-light) {
+    --menu-bg: #f2f2f2;
+    --menu-item-bg: #f2f2f2;
+    --menu-hover-bg: #e2e2e2;
+    --menu-border: #c4c4c4;
+    --menu-separator: #d4d4d4;
+    --menu-text: #000000;
+    --menu-text-disabled: #00000066;
+    --menu-shadow: rgba(0, 0, 0, 0.2);
+    --menu-icon: #000000;
+    --menu-tskbar-bg: rgba(243, 243, 243, 0.75);
+    --menu-power-item-bg: rgba(255, 255, 255, 0.65);
+    --menu-check-bg: #eeeeee;
+    --menu-check-text: #000000;
+    --menu-check-hover: #98ccf4;
+    --menu-check-active: #cfe8fb;
+}
+
+/* Theme-aware inline-SVG menu glyphs (copy/paste/delete/rename/check/chevron). */
+.dm-glyph-svg {
+    width: 16px;
+    height: 16px;
+    color: var(--menu-icon);
+    fill: currentColor;
+}
+
+.dm-glyph-chevron {
+    width: 13px;
+    height: 13px;
+}
+
+.dm-glyph-radio {
+    width: 8px;
+    height: 8px;
+}
+
+.dm-vertical-menu, .dm-tskbar-vertical-menu{
+    position: absolute;
+    width: 205px;
+    box-shadow: 2px 2px var(--menu-shadow);
+    border: 1px solid var(--menu-border);
+}
+
+.dm-tskbar-cntxt-vertical-menu{
+    position: absolute;
+    width: 210px;
+    box-shadow: 2px 2px var(--menu-shadow);
+    border: 1px solid var(--menu-border);
+}
+
+.dm-power-vertical-menu{
+    position: absolute;
+    width: 120px;
+}
+
+.dm-vertical-menu-item-cntnr{
+    width: 100%;
+}
+
+.dm-vertical-menu-item, .dm-tskbar-vertical-menu-item, .dm-tskbar-cntxt-vertical-menu-item{
+    height: fit-content;
+    padding: 2px 0;
+    background-color: var(--menu-item-bg);
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+   /*  transition: background-color 0.3s ease; Add a transition for background-color */
+}
+
+.dm-power-vertical-menu-item{
+    height: fit-content;
+    padding: 2px 0;
+    background-color: var(--menu-power-item-bg);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+   /*  transition: background-color 0.3s ease; Add a transition for background-color */
+}
+
+.dm-vertical-menu .dm-vertical-menu-item:hover{
+    background-color: var(--menu-hover-bg);
+}
+
+.dm-tskbar-vertical-menu-item:hover{
+    background-color: var(--menu-hover-bg);
+}
+.dm-tskbar-cntxt-vertical-menu-item:hover{
+    background-color: var(--menu-hover-bg);
+}
+
+.dm-vertical-menu{
+    background-color: var(--menu-bg);
+}
+
+.dm-tskbar-cntxt-line-container{
+    max-height: 1px;
+    background-color: var(--menu-item-bg);
+}
+
+.dm-tskbar-cntxt-line {
+    border: 1px solid var(--menu-separator);
+    margin: 0 8px;
+}
+
+.dm-line {
+    position:relative;
+    height: 0.5px;
+    background-color: var(--menu-separator);
+    color: var(--menu-separator);
+    top: 0px;
+    margin: 0 8px;
+}
+
+.dm-empty-line-container , .dm-tskbar-empty-line-container, .dm-tskbar-cntxt-empty-line-container, .dm-power-empty-line-container {
+    height: 3px;
+    background-color: var(--menu-item-bg);
+}
+
+.dm-power-empty-line-container {
+    height: 3px;
+    background-color: inherit;
+}
+
+span{
+    display: block;
+}
+
+span.dm-head{
+    padding-left: 4px;
+}
+
+span.dm-mid{
+    position: relative;
+    top: -1px;
+    padding: 0 4px;
+    color: var(--menu-text);
+    text-align: left;
+    font-size: 11px;
+    font-weight: normal;
+}
+
+span.dm-tail{
+    padding-left: 47px;
+}
+
+.dm-fig-cntxt-menu{
+    position: relative;
+    align-items: center;
+    display: inline-flex;
+    min-width: 18px;
+    top: 0;
+    left: 15%;
+}
+
+
+.dm-img-alt{
+    height: 16px;
+    width: 16px;
+
+    position: relative;
+}
+
+.dm-figure-alt{
+    align-items: center;
+    display:inline-flex;
+    min-width: 18px;
+}
+
+/*Taskbar Menu CSS*/
+
+.dm-tskbar-empty-line-container{
+    background-color: transparent;
+}
+
+/* ── Taskbar menus (app-icon + context) surface ─────────────────────────────
+   Base surface = the light/dark theme bg. When the "Show accent color on Start
+   and taskbar" toggle is ON, the surface adopts the accent (mirroring the Start
+   menu / taskbar, incl. white text + a translucent-white hover). When the
+   transparency effect is ON, the surface becomes frosted glass (translucent +
+   heavy blur) so the colors behind show through, but not the detail. */
+.dm-tskbar-vertical-menu, .dm-tskbar-cntxt-vertical-menu{
+    --menu-surface-base: var(--menu-bg);
+    background-color: var(--menu-surface-base);
+    z-index: 5;
+}
+
+/* Accent ON -> accent-tinted surface + white text/icons + white-wash hover. */
+:host(.menu-accent-on) .dm-tskbar-vertical-menu,
+:host(.menu-accent-on) .dm-tskbar-cntxt-vertical-menu{
+    --menu-surface-base: var(--menu-accent);
+    --menu-text: #ffffff;
+    --menu-icon: #ffffff;
+    --menu-hover-bg: color-mix(in srgb, #ffffff 22%, transparent);
+}
+
+/* Transparency ON -> frosted glass. */
+:host(.menu-transparent) .dm-tskbar-vertical-menu,
+:host(.menu-transparent) .dm-tskbar-cntxt-vertical-menu{
+    background-color: color-mix(in srgb, var(--menu-surface-base) 68%, transparent);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+    backdrop-filter: blur(30px) saturate(140%);
+}
+
+/* Let the menu container provide the surface: keep the inner rows/separators
+   transparent so the accent tint / frost reads uniformly across the menu. */
+.dm-tskbar-cntxt-vertical-menu-item,
+.dm-tskbar-cntxt-line-container,
+.dm-tskbar-cntxt-empty-line-container{
+    background-color: transparent;
+}
+
+/* ── Other context menus (desktop + file-explorer context, icon menus, file
+   tree) surface ─────────────────────────────────────────────────────────────
+   Two DEDICATED toggles, independent of the taskbar menus and the global
+   transparency effect:
+   1) .menu-other-transparent frosts the menu using the light/dark theme surface
+      (translucent + heavy blur), with NO accent.
+   2) adding .menu-accent-other-on tints that frosted surface with a SOFT accent
+      (accent blended toward the theme bg) — accent therefore requires the
+      transparent state first.
+   Inner rows/separators are made transparent so the container surface reads
+   uniformly. */
+/* Flat context menus (icon menus, file tree) have no fly-out, so the frost is
+   applied directly to the container. */
+:host(.menu-other-transparent) .dm-vertical-menu{
+    --menu-item-bg: transparent;
+    background-color: color-mix(in srgb, var(--menu-bg) 68%, transparent);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+    backdrop-filter: blur(30px) saturate(140%);
+}
+
+/* Accent ON (only meaningful while transparent): soft accent tint under the frost. */
+:host(.menu-other-transparent.menu-accent-other-on) .dm-vertical-menu{
+    --menu-other-surface-base: color-mix(in srgb, var(--menu-accent) 24%, var(--menu-bg));
+    --menu-hover-bg: color-mix(in srgb, var(--menu-accent) 44%, var(--menu-bg));
+    background-color: color-mix(in srgb, var(--menu-other-surface-base) 68%, transparent);
+}
+
+/* Nested context menu: the frost is applied via a ::before layer instead of the
+   container element itself, so the container does NOT become a backdrop root.
+   That lets the fly-out submenu (a descendant) frost the desktop at FULL strength
+   too — if the container carried the backdrop-filter, the submenu could only
+   sample the (transparent) container and would look barely frosted. */
+:host(.menu-other-transparent) .dm-nested-vertical-menu{
+    --menu-item-bg: transparent;
+    --menu-frost-fill: color-mix(in srgb, var(--menu-bg) 68%, transparent);
+    background-color: transparent;
+}
+:host(.menu-other-transparent) .dm-nested-vertical-menu::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--menu-frost-fill);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+    backdrop-filter: blur(30px) saturate(140%);
+}
+:host(.menu-other-transparent.menu-accent-other-on) .dm-nested-vertical-menu{
+    --menu-other-surface-base: color-mix(in srgb, var(--menu-accent) 24%, var(--menu-bg));
+    --menu-hover-bg: color-mix(in srgb, var(--menu-accent) 44%, var(--menu-bg));
+    --menu-frost-fill: color-mix(in srgb, var(--menu-other-surface-base) 68%, transparent);
+}
+
+/* Fly-out submenu: a SEPARATE surface (not covered by the container's ::before),
+   frosted directly. Now that the container is no longer a backdrop root, this
+   samples the desktop at the SAME strength as the main menu. */
+:host(.menu-other-transparent) .dm-nested-vertical-sub-menu-content{
+    background-color: color-mix(in srgb, var(--menu-bg) 68%, transparent);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+    backdrop-filter: blur(30px) saturate(140%);
+}
+
+:host(.menu-other-transparent.menu-accent-other-on) .dm-nested-vertical-sub-menu-content{
+    background-color: color-mix(in srgb, var(--menu-other-surface-base) 68%, transparent);
+}
+
+.dm-vertical-menu-cntnr, .dm-tskbar-vertical-menu-cntnr, .dm-tskbar-cntxt-vertical-menu-cntnr, .dm-power-vertical-menu-cntnr{
+    width: 100%;
+}
+
+.dm-vertical-menu-cntnr{
+    background-color: var(--menu-item-bg);
+}
+
+.dm-tskbar-vertical-menu-item{ 
+    background-color: transparent;
+    z-index: 5;
+}
+
+.dm-tskbar-head, .dm-tskbar-cntxt-head, .dm-power-head{
+    max-width: 27%;
+    padding-left: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.dm-tskbar-mid, .dm-tskbar-cntxt-mid, .dm-power-mid{
+    min-width: 48%;
+    padding-left: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    color: var(--menu-text);
+    text-align: left;
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.dm-power-mid{
+    min-width: 60%;
+}
+
+.dm-p{
+    margin: 0;
+}
+
+.dm-tskbar-tail, .dm-tskbar-cntxt-tail, .dm-power-tail{
+    max-width: 25%;
+    padding-left: 48px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.dm-power-tail{
+    max-width: 5%;
+}
+
+.dm-tskbar-fig-cntxt-menu, .dm-tskbar-cntxt-fig-cntxt-menu, .dm-power-fig-menu{
+    position: relative;
+    align-items: center;
+    display: inline-flex;
+    min-width: 18px;
+    top: 0;
+    left: 15%;
+}
+
+.dm-tskbar-img-alt, .dm-tskbar-cntxt-img-alt, .dm-power-img-alt{
+    height: 18px;
+    width: 18px;
+    position: relative;
+}
+
+
+/*fileExplorer & desktop Menu CSS*/
+.dm-nested-vertical-menu {
+    position: absolute;
+    width: 210px;
+    box-shadow: 2px 2px var(--menu-shadow);
+    border: 1px solid var(--menu-border);
+    background-color: var(--menu-item-bg);
+    z-index: 2;
+}
+
+.dm-nested-vertical-menu-item {  
+    height: fit-content;
+    padding: 2px 0;
+    /* background-color: #eee; */
+    background-color: var(--menu-item-bg);
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    z-index: 2;
+}
+
+.dm-nested-line {
+    position:relative;
+    height: 0.5px;
+    background-color: var(--menu-separator);
+    color: var(--menu-separator);
+    top: 0px;
+    margin: 0 8px;
+}
+
+.dm-nested-empty-line-container {
+    max-height: 3px;
+    min-height: 3px;
+    /* background-color: #eee; */
+    background-color: var(--menu-item-bg);
+}
+
+.dm-nested-empty-line-container1 {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--menu-item-bg);
+}
+
+.dm-nested-vertical-sub-menu {
+    float: left;
+    overflow: hidden;
+    width: 100%;
+    outline: none;
+   /*  transition: all 0.5s ease 0.3s; Delay the transition for the sub-menu content */
+}
+
+.dm-nested-p{
+    margin: 0;
+}
+
+.dm-nested-vertical-sub-menu-content {
+    display: none;
+    position: absolute;
+    /* background-color: #f1f1f1; */
+    background-color: var(--menu-item-bg);
+    box-shadow: 2px 2px var(--menu-shadow);
+    border: 1px solid var(--menu-border);
+    width: 205px;
+    z-index: 2;
+    left: 98%;
+    margin-top: -29px;
+    animation: fade 1s ease forwards;
+    transition-delay:1s;
+}
+
+.turn-off-hover-effect {
+    pointer-events: none;
+}
+
+@keyframes fade {
+    from {
+      opacity: 0;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+}
+
+.dm-nested-vertical-menu .dm-nested-vertical-menu-item:hover {
+    /* background-color: #ccc; */
+    background-color: var(--menu-hover-bg);
+}
+
+.dm-nested-vertical-sub-menu:hover .dm-nested-vertical-sub-menu-content {
+    display: block;
+    transition-delay:1s;
+}
+
+.dm-nested-head{
+    max-width: 25%;
+    padding-left: 4px;
+}
+
+.dm-nested-mid, .dm-nested-mid-disabled{
+    position: relative;
+    top: -1px;
+    min-width: 50%;
+    padding: 0 4px;
+    color: var(--menu-text);
+    text-align: left;
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.dm-nested-mid-disabled{
+    color: var(--menu-text-disabled); 
+}
+
+.dm-nested-tail{
+    max-width: 25%;
+    padding-left: 62px;
+}
+
+.dm-nested-figure{
+    position: relative;
+    top: 1px;
+    align-items: center;
+    display:inline-flex;
+    width: 18px;
+    height: 18px;
+}
+  
+.dm-nested-img{
+    height: 18px;
+    width: 18px;
+
+    position: relative;
+    margin: 0 0;
+}
+  
+.dm-nested-img-alt{
+    height: 8px;
+    width: 8px;
+
+    position: relative;
+}
+
+.dm-nested-figure-alt{
+    position: relative;
+    align-items: center;
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    top: -25%;
+    left: 35%;
+}
+
+.dm-nested-img-alt2{
+    height: 16px;
+    width: 16px;
+
+    position: relative;
+}
+
+.dm-nested-figure-alt2{
+    position: relative;
+    align-items: center;
+    display: inline-flex;
+    min-width: 18px;
+    top: 0;
+    left: 15%;
+}
+
+
+/*-------------------------------------- Checkable Menu CSS (light theme) --------------------------------------*/
+/*
+  A light context menu where each row shows a checkmark for an on/off setting.
+  Kept visually close to the original Task Manager column menu (light grey
+  surface, blue hover/active) but rebuilt with flexbox so the checkmark,
+  label and trailing gutter align cleanly at any width.
+*/
+.dm-checkable-vertical-menu {
+    position: absolute;
+    width: 180px;
+    background-color: var(--menu-check-bg);
+    box-shadow: 2px 2px var(--menu-shadow);
+    border: 1px solid var(--menu-border);
+    z-index: 2;
+}
+
+/* Slim padding strips above and below the item list. */
+.dm-checkable-empty-line-container {
+    height: 3px;
+    background-color: var(--menu-check-bg);
+}
+
+.dm-checkable-vertical-menu-cntnr {
+    width: 100%;
+}
+
+.dm-checkable-vertical-menu-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 24px;
+    background-color: var(--menu-check-bg);
+    cursor: default;
+}
+
+.dm-checkable-vertical-menu-item:hover {
+    background-color: var(--menu-check-hover);
+    text-decoration: none;
+}
+
+/* Fixed-width leading gutter that holds the checkmark. */
+.dm-checkable-head {
+    flex: 0 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+/* Highlight the checkmark gutter when the item is active/checked. */
+.dm-checkable-head.active {
+    background-color: var(--menu-check-active);
+}
+.dm-checkable-vertical-menu-item:hover .dm-checkable-head.active {
+    background-color: var(--menu-check-hover);
+}
+
+/* Flexible label column. */
+.dm-checkable-mid {
+    flex: 1 1 auto;
+    padding: 0 4px;
+    color: var(--menu-check-text);
+    text-align: left;
+    font-size: 12px;
+    font-weight: normal;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Trailing gutter for visual balance (mirrors the leading checkmark gutter). */
+.dm-checkable-tail {
+    flex: 0 0 12px;
+    height: 100%;
+}
+
+.dm-checkable-p {
+    margin: 0;
+    line-height: 24px;
+}
+
+.dm-checkable-figure {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dm-checkable-figure .dm-glyph-svg {
+    color: var(--menu-check-text);
+}
+
+.dm-checkable-img {
+    height: 16px;
+    width: 16px;
+}

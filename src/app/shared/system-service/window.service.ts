@@ -1,15 +1,15 @@
 import { Injectable } from "@angular/core";
 import { Observable, Subject } from "rxjs";
-import { TaskBarPreviewImage } from "src/app/system-apps/taskbarpreview/taskbar.preview";
+import { TaskBarPreviewImage } from "src/app/system-shell/taskbarpreview/taskbar.preview";
 import { Constants } from "src/app/system-files/constants";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { ProcessType } from "src/app/system-files/system.types";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
-import { BaseService } from "./base.service.interface";
-import { WindowState, WindowBoundsState,  WindowResizeInfo} from "../system-component/window/windows.types";
-import { TaskBarPreviewPositionInfo } from "src/app/system-apps/taskbarentries/taskbar.entries.type";
+import { BaseService } from "../../system-files/base/base.service.interface";
+import { TaskBarPreviewPositionInfo } from "src/app/system-shell/taskbarentries/taskbar.entries.type";
+import { WindowBoundsState, WindowState, WindowResizeInfo } from "../system-ui-components/window/windows.types";
 
 @Injectable({
     providedIn: 'root'
@@ -96,6 +96,7 @@ export class WindowService implements BaseService{
         this._processWindowBounds = new Map<string, WindowBoundsState>();
         this._processWindowStates = [];
         this._hiddenOrVisibleWindows = [];
+        console.log('WindowService constructor called');
 
         this._processIdService = processIDService;
         this._runningProcessService = punningProcessService;
@@ -364,7 +365,7 @@ export class WindowService implements BaseService{
         return this._processWindowWithTheHighestZIndex;
     }
 
-    getEventOrginator():string{
+    public getEventOriginator():string{
         return this._eventOriginator;
     }
 

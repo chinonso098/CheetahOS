@@ -52,6 +52,7 @@ Special thanks to **Dustin Brett** for providing a much-needed how-to guide.
 - [Howler.js](https://github.com/goldfire/howler.js)  
 - [Quill.js](https://github.com/slab/quill/)  
 - [Print.js](https://github.com/crabbly/print.js)
+- [eSheep](https://github.com/Adrianotiger/web-esheep)
 
 ---
 
@@ -67,6 +68,19 @@ Special thanks to **Dustin Brett** for providing a much-needed how-to guide.
 
 ✨ _Thank you to all open-source contributors who make projects like this possible._
 
+---
+
+## 🤖 Development Assistance
+
+- **GitHub Copilot** — for the recent wave of changes across the project, including:
+  - Build, tooling & deployment (Docker, Angular 19→21 upgrade, production build pipeline, GitHub Pages sub-path hosting, service worker).
+  - Performance & memory work (leak fixes, static-hosting boot load optimization from ~101 MB to ~1.4 MB, lazy media streaming).
+  - Responsive windows across the app suite and the window-component refactor.
+  - Desktop, file explorer, file service & indexing, and terminal correctness/performance fixes.
+  - Lock screen / login / startup fixes, the Run and Clipboard apps, the Settings views, and assorted app reviews & refactors.
+  - Documentation & licensing updates, including this credits entry and the changelog.
+
+---
 
 <!--
 

@@ -5,11 +5,13 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
-import { BaseService } from "./base.service.interface";
+import { BaseService } from "../../system-files/base/base.service.interface";
 import { ComponentReferenceService } from "./component.reference.service";
-import { UserNotificationType } from "src/app/system-files/common.enums";
-import { DialogComponent } from "../system-component/dialog/dialog.component";
-import { FileInfo } from "src/app/system-files/file.info";
+import { UserNotificationType } from "src/app/system-files/commons/common.enums";
+import { OpensWith } from "src/app/system-files/commons/common.interfaces";
+import { FileInfo } from "src/app/system-files/fs/file.info";
+import { DialogComponent } from "../system-ui-components/dialog/dialog.component";
+
 
 
 @Injectable({
@@ -49,7 +51,8 @@ export class UserNotificationService implements BaseService{
             //dialogMsgType === UserNotificationType.Warning ||
             dialogMsgType === UserNotificationType.PowerOnOff ||
             dialogMsgType === UserNotificationType.FileTransferProgress||
-            dialogMsgType === UserNotificationType.FileDeleteProgress
+            dialogMsgType === UserNotificationType.FileDeleteProgress ||
+            dialogMsgType === UserNotificationType.CreateShortcut
         ){
           componentRef.setInput('inputMsg', msg);
           componentRef.setInput('inputTitle', title);
@@ -75,10 +78,25 @@ export class UserNotificationService implements BaseService{
         this.showDialogMsgBox(UserNotificationType.Info, msg, Constants.EMPTY_STRING, uId);
     }
 
-    // showWarningNotification(msg:string, title:string){
-    //     this.showDialogMsgBox(UserNotificationType.Warning, msg, title);
-    // }
+    async showApplicationSelectionNotification(opensWith:OpensWith): Promise<string> {
+        return new Promise((resolve) => {
+            const componentRef = this._componentReferenceService.createComponent(DialogComponent);
+            componentRef.setInput('notificationType', UserNotificationType.AppSelection);
+            componentRef.setInput('AppSelection', opensWith);
 
+            this.dialogPid = componentRef.instance.processId;
+      
+            // hook up close events
+            componentRef.instance.ok.subscribe((p:string) => {
+              resolve(p);
+            });
+      
+            // componentRef.instance.cancel.subscribe(() => {
+            //   resolve(false);
+            // });
+        });
+    }
+    
     async showWarningNotification(message: string, title: string, warningType:UserNotificationType = UserNotificationType.Warning, fileInfo?:FileInfo, uId:string = Constants.EMPTY_STRING): Promise<boolean> {
         return new Promise((resolve) => {
             const componentRef = this._componentReferenceService.createComponent(DialogComponent);
@@ -107,7 +125,6 @@ export class UserNotificationService implements BaseService{
         });
     }
 
-
     async showZipExtractNotification(filePath:string, uId:string = Constants.EMPTY_STRING): Promise<boolean> {
         return new Promise((resolve) => {
             const componentRef = this._componentReferenceService.createComponent(DialogComponent);
@@ -132,7 +149,19 @@ export class UserNotificationService implements BaseService{
             });
         });
     }
-    
+
+   async showCreateShortcutNotification(): Promise<string> {
+        return new Promise((resolve) => {
+            const componentRef = this._componentReferenceService.createComponent(DialogComponent);
+            componentRef.setInput('notificationType', UserNotificationType.CreateShortcut);
+            this.dialogPid = componentRef.instance.processId;
+      
+            // hook up close events
+            componentRef.instance.ok.subscribe((p:string) => {
+              resolve(p);
+            });
+        });
+    }
 
     showPowerOnOffNotification(msg:string){
         this.showDialogMsgBox(UserNotificationType.PowerOnOff, msg);

@@ -1,0 +1,275 @@
+<cos-primarywindow 
+  [runningProcessID]="processId" 
+  [processAppIcon]="icon" 
+  [processAppName]="name" 
+  [isMaximizable]="isMaximizable" 
+  [minimumWindowWidth]="MIN_WIDTH_PX" 
+  [minimumWindowHeight]="MIN_HEIGHT_PX"
+  [priorUId]="priorUId">
+    <div class="chatter-main-container" tabIndex="0" (click)="focusWindow($event)" (contextmenu)="silenceCtxEvt($event)" #chatterContainer>
+      <div class="chatter-content-container">
+
+        <!-- Side bar-->
+        <div  tabIndex="0" class="chatter-sidebar-container">
+          <div class="chatter-sidebar-content" (mouseenter)="1" (mouseleave)="1">
+            <div class="chatter-sidebar-icon">
+                <figure class="chatter-sidebar-figure">
+                    <img class="chatter-sidebar-img" [src]="'osdrive/Cheetah/System/Imageres/chatter_2.png'"/>
+                </figure>
+            </div>
+          </div>
+        </div>
+
+        <!-- online users-->
+        <div tabIndex="0" class="chatter-online-container">
+          <div class="chatter-online-content">
+            <div class="chatter-online-heading">
+              <span class="chatter-span-online-heading">Online</span>
+            </div>
+
+            <div class="chatter-online-section">
+
+              <div class="chatter-online-item-cntnr"  *ngFor="let onlineUser of onlineUsers; let i = index">
+                <ng-content *ngIf="onlineUser.userId !== userId">
+                  <div class="chatter-online-item">
+                    <span class="span chatter-online-head"> 
+                      <div class="chatter-user-online-acronym" [ngStyle]="{'background-color':onlineUser.color}"> {{onlineUser.userNameAcronym}} </div>
+                    </span>
+                    <span class="span chatter-online-mid">{{onlineUser.userName}}</span>
+                    <span class="span chatter-online-tail">
+                      <ng-container  *ngIf="onlineUser.isTyping">
+                        <div class="chatter-online-div-fig">
+                          <img class="chatter-online-div-img" [src]="'osdrive/Cheetah/System/Gifres/loading.gif'"/>
+                        </div>
+                      </ng-container>
+                    </span>
+                  </div>
+                  <div class="chatter-online-empty-line-container"></div>
+                </ng-content>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Container-->
+        <div tabIndex="0" class="chatter-chat-container">
+          <div class="chatter-user-info-container">
+            <div class="chatter-user-info-content" >
+              <span class="span chatter-head"> 
+                <div class="chatter-user-acronym" [ngStyle]="userNameAcronymStyle"> {{userNameAcronym}} </div>
+              </span>
+
+              <ng-container *ngIf="this.showUserNameForm">
+                <div class="chat-user-form-card"  #chatUserFormCntnr>
+                  <div class="chat-user-form-body">
+                    <form novalidate [formGroup]="chatUserForm">
+                      <div class="form-group row mb-2">
+  
+                        <div class="col-md-6">
+                          <input
+                            class="form-control"  id="firstNameId"
+                            type="text"  placeholder="First Name (required)"
+                            formControlName="firstName"
+                            [ngClass]="{
+                              'is-invalid':
+                                (chatUserForm.get('firstName')?.touched 
+                                ||  chatUserForm.get('firstName')?.dirty) 
+                                && !chatUserForm.get('firstName')?.valid
+                            }"
+                            appAlphaNumeric
+                          />
+                          <span class="invalid-feedback">
+                            <span *ngIf="(chatUserForm.get('firstName')?.touched && chatUserForm.get('firstName')?.errors?.['required'])">
+                              First name required.
+                            </span>
+                            <span *ngIf="(chatUserForm.get('firstName')?.errors?.['maxlength'])">
+                              10 characters max.
+                            </span>
+                            <span *ngIf="(chatUserForm.get('firstName')?.errors?.['profanity'])">
+                              Please choose an appropriate name.
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                
+                      <div class="form-group row mb-2">
+                        <div class="col-md-6">
+                          <input
+                            class="form-control"  id="lastNameId"
+                            type="text"  placeholder="Last Name (required)"
+                            formControlName="lastName"
+                            [ngClass]="{
+                              'is-invalid':
+                                (chatUserForm.get('lastName')?.touched 
+                                || chatUserForm.get('lastName')?.dirty) 
+                                &&  !chatUserForm.get('lastName')?.valid
+                            }"
+                            appAlphaNumeric
+                          />
+                          <span class="invalid-feedback">
+                            <span *ngIf="(chatUserForm.get('lastName')?.touched && chatUserForm.get('lastName')?.errors?.['required'])">
+                              last name required.
+                            </span>
+                            <span *ngIf="chatUserForm.get('lastName')?.errors?.['maxlength']">
+                              10 characters max.
+                            </span>
+                            <span *ngIf="chatUserForm.get('lastName')?.errors?.['profanity']">
+                              Please choose an appropriate name.
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                
+                  <div class="chat-user-form-footer">
+                    <button class="chatter_btn chatter_btn-outline-secondary mr-3"  
+                      style="width:60px" 
+                      (click)="showTheUserNameLabel()">
+                       Cancel
+                    </button>
+                
+                    <button
+                      class="chatter_btn chatter_btn-outline-primary mr-3"
+                      style="width:60px"
+                      type="submit"
+                      (click)="onUpdateUserName()"
+                      [disabled]="!chatUserForm.valid"
+                      [ngClass]="!chatUserForm.valid ? 'chatter_btn chatter_btn-outline-disabled mr-3':'chatter_btn chatter_btn-outline-primary mr-3'"
+                      >
+                     Update
+                    </button>
+                  </div>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="showUserNameLabel">
+                <span class="span chatter-mid"   (click)="showTheUserNameForm()" #chatUserLabelCntnr> 
+                  <span class="user-name-bold">
+                    {{this.userName}}
+                  </span>
+                </span>
+              </ng-container>
+            </div>
+          </div>
+          <div class="chatter-chat-window-content"  #chatHistoryOutput>
+            <ng-container  *ngFor="let msg of chatData"> 
+
+              <ng-container *ngIf="msg.getUserId === userId && msg.getIsAppMsg === false">
+                <div class="chatter-chat-msg-block">
+
+                  <div class="chatter-chat-output-content-left" >
+                    <span class="span chatter-head"> 
+                      <div class="chatter-user-acronym"  [ngStyle]="{'background-color':msg.getIconColor}"> {{msg.getUserNameAcronym}} </div>
+                    </span>
+  
+                    <div class="chat-user-txt-container-left">
+                      <div class="chat-username-and-date-left">
+                        <span  class="chat-username">{{msg.getUserName}}</span>
+                        <span  class= "chat-date">{{msg.getMsgDate}}</span>
+                      </div>
+                      <span  class="chat-content">{{msg.getMessage}}
+                      </span>
+                    </div>
+                  </div>
+  
+                  <div class="chatter-empty-line-container"> </div>
+                </div>
+              </ng-container>
+            
+              <ng-container  *ngIf="msg.getUserId !== userId && msg.getIsAppMsg === false">
+                <div class="chatter-chat-msg-block">
+
+                  <div class="chatter-chat-output-content-right">
+                    <div class="chat-user-txt-container-right">
+                      <div class="chat-username-and-date-right">
+                        <span  class="chat-username">{{msg.getUserName}}</span>
+                        <span  class= "chat-date">{{msg.getMsgDate}}</span>
+                      </div>
+                      <span  class="chat-content">{{msg.getMessage}}
+                      </span>
+                    </div>
+                    
+                    <span class="span chatter-head"> 
+                      <div class="chatter-user-acronym"  [ngStyle]="{'background-color':msg.getIconColor}"> {{msg.getUserNameAcronym}} </div>
+                    </span>
+                  </div>
+
+                  <div class="chatter-empty-line-container"> </div>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="msg.getUserId !== userId && msg.getIsAppMsg === true">
+                <div class="chatter-chat-msg-block">
+                  
+                  <div class="chatter-chat-output-content-left" >
+                    <span class="span chatter-head"> 
+                      <figure class="chatter-head-figure">
+                        <img class="chatter-head-figure" [src]=" msg.getIsUserNameEdit === false ? 'osdrive/Cheetah/System/Imageres/chatter_user.png': 'osdrive/Cheetah/System/Imageres/chatter_edit.png'"/>
+                    </figure>
+                    </span>
+                    <div class="chat-user-txt-container-left-sys">
+                      <span  class="chat-content-sys">{{msg.getMessage}}</span>
+                    </div>
+                  </div>
+                  <div class="chatter-empty-line-container"> </div>
+                </div>
+              </ng-container>
+              
+            </ng-container>
+          </div>
+          <div class="chatter-chat-texbox-container">
+            <div class="chatter-chat-texbox">
+              <form [formGroup]="chatterForm"  class="chatter-form" (click)="focusOnInput($event)">
+                <textarea
+                  appKeyPressCapture
+                  class="chatter-area"
+                  maxlength="300"
+                  formControlName="msgText"
+                  placeholder="{{chatPrompt}}"
+                  (keydown)="onKeyDownInInputBox($event)"
+                  autofocus="true"
+                  spellcheck="false"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  id="chatterMsgBox"
+                  rows="2">
+                </textarea>
+              </form>
+            </div>
+            <div class="chatter-chat-send">
+              <div class="chatter-send-msg-content" (click)="createChat()">
+                <div class="chatter-send-msg-icon">
+                    <figure class="chatter-send-msg-figure">
+                        <svg class="chatter-send-msg-img" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                          <path d="M 3 3 A 1 1 0 0 0 2 4 L 2 9.5957031 C 2 10.109703 2.3893906 10.538844 2.9003906 10.589844 L 17 12 L 2.9003906 13.410156 C 2.3893906 13.461156 2 13.890297 2 14.404297 L 2 20 A 1 1 0 0 0 3 21 A 1 1 0 0 0 3.5390625 20.84375 A 1 1 0 0 0 3.5410156 20.841797 L 21.339844 12.943359 L 21.337891 12.939453 A 1 1 0 0 0 22 12 A 1 1 0 0 0 21.337891 11.060547 L 21.339844 11.056641 L 3.5273438 3.1523438 A 1 1 0 0 0 3 3 z"/>
+                        </svg>
+                    </figure>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- footer-->
+      <div class="chatter-footer-container">
+        <div class="chatter-div-footer chatter-div-footer-lm">last received message:{{messageLastRecieved}} </div>
+        <div class="chatter-div-footer"></div>
+
+        <div class="chatter-div-footer-fig1 ">
+          <svg class="chatter-div-footer-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+            <path d="M 7 10 C 6.0833335 10 5.268559 10.379756 4.7519531 10.960938 C 4.2353472 11.542118 4 12.277778 4 13 C 4 13.598395 4.2736555 14.168046 4.6230469 14.689453 C 3.0871021 15.545377 2 17.126301 2 19 L 4 19 C 4 17.331516 5.3315161 16 7 16 C 8.5899999 16 9.8592854 17.213792 9.9765625 18.771484 C 8.752666 20.174345 8 21.997858 8 24 L 10 24 C 10 20.674438 12.674438 18 16 18 C 19.325562 18 22 20.674438 22 24 L 24 24 C 24 21.997858 23.247334 20.174345 22.023438 18.771484 C 22.140715 17.213792 23.41 16 25 16 C 26.668484 16 28 17.331516 28 19 L 30 19 C 30 17.162338 28.98378 15.56618 27.496094 14.697266 C 27.833941 14.18153 28 13.588902 28 13 C 28 12.277778 27.764653 11.542119 27.248047 10.960938 C 26.731441 10.379755 25.916666 10 25 10 C 24.083334 10 23.268559 10.379756 22.751953 10.960938 C 22.235347 11.542118 22 12.277778 22 13 C 22 13.588902 22.166059 14.18153 22.503906 14.697266 C 21.500772 15.283168 20.722526 16.196982 20.318359 17.300781 C 19.918789 17.042655 19.504314 16.806116 19.060547 16.621094 C 19.687203 15.867229 20 14.932322 20 14 C 20 13.027778 19.681319 12.042119 18.998047 11.273438 C 18.314774 10.504755 17.25 10 16 10 C 14.75 10 13.685226 10.504756 13.001953 11.273438 C 12.318681 12.042118 12 13.027778 12 14 C 12 14.932322 12.312797 15.867229 12.939453 16.621094 C 12.492994 16.807239 12.075526 17.044575 11.673828 17.304688 C 11.244466 16.190826 10.419506 15.270428 9.3769531 14.689453 C 9.7263445 14.168046 10 13.598395 10 13 C 10 12.277778 9.7646528 11.542119 9.2480469 10.960938 C 8.731441 10.379755 7.9166665 10 7 10 z M 7 12 C 7.4166663 12 7.6018927 12.120244 7.7519531 12.289062 C 7.9020136 12.457882 8 12.722222 8 13 C 8 13.277778 7.9020136 13.542119 7.7519531 13.710938 C 7.6018927 13.879755 7.4166663 14 7 14 C 6.5833337 14 6.3981073 13.879756 6.2480469 13.710938 C 6.0979864 13.542118 6 13.277778 6 13 C 6 12.722222 6.0979864 12.457881 6.2480469 12.289062 C 6.3981073 12.120245 6.5833337 12 7 12 z M 16 12 C 16.749999 12 17.185226 12.245244 17.501953 12.601562 C 17.81868 12.957882 18 13.472222 18 14 C 18 14.527778 17.81868 15.042119 17.501953 15.398438 C 17.185226 15.754755 16.749999 16 16 16 C 15.250001 16 14.814774 15.754756 14.498047 15.398438 C 14.18132 15.042118 14 14.527778 14 14 C 14 13.472222 14.18132 12.957881 14.498047 12.601562 C 14.814774 12.245245 15.250001 12 16 12 z M 25 12 C 25.416666 12 25.601893 12.120244 25.751953 12.289062 C 25.902014 12.457882 26 12.722222 26 13 C 26 13.277778 25.90201 13.542119 25.751953 13.710938 C 25.601893 13.879755 25.416666 14 25 14 C 24.583334 14 24.398107 13.879756 24.248047 13.710938 C 24.097986 13.542118 24 13.277778 24 13 C 24 12.722222 24.097986 12.457881 24.248047 12.289062 C 24.398107 12.120245 24.583334 12 25 12 z"/>
+          </svg>
+        </div>
+        <div class="chatter-div-footer chatter-div-footer-online">online:{{userCount}}</div>
+
+        <!-- <ng-container  *ngIf="isTyping">
+          <div class="chatter-div-footer-fig ">
+            <img class="chatter-div-footer-img" [src]="'osdrive/Cheetah/System/Gifres/loading.gif'"/>
+          </div>
+        </ng-container> -->
+        <div class="chatter-div-footer"></div>
+      </div>      
+    </div>
+</cos-primarywindow>

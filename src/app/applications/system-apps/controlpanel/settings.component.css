@@ -1,0 +1,1654 @@
+/* Theme tokens. Dark is the default (matches the system default theme); the
+   host gains `.theme-light` via an @HostBinding driven by ThemeService, which
+   swaps in the light palette below. (Mirrors File Explorer / Task Manager /
+   Photo Viewer.) The desktop/lock-screen preview mock-ups intentionally keep
+   their own colours since they depict the actual desktop, not Settings chrome. */
+:host{
+  --st-bg: #000000;
+  --st-sidebar-bg: #1f1f1f;
+  --st-text: #ffffff;
+  --st-text-dim: #9a9a9a;
+  --st-text-muted: #6e6e6e;
+
+  --st-accent: #0078d7;
+  --st-hover: #6d6d6d;
+  --st-app-hover: #2a2a2a;
+
+  --st-card-bg: #2b2b2b;
+  --st-card-border: #666666;
+  --st-card-border-hover: #f0f0f0;
+  --st-menu-border: #bbbbbb;
+
+  --st-track: #d6d6d6;
+  /* Selected = muted accent; selected+hover = brighter accent. Both track --st-accent. */
+  --st-dropdown-selected: color-mix(in srgb, var(--st-accent) 70%, #000 30%);
+  --st-dropdown-selected-hover: color-mix(in srgb, var(--st-accent) 80%, #fff 20%);
+
+  --st-toggle-off-track: #ffffff;
+  --st-toggle-off-knob: #000000;
+  --st-checkbox-toggle: #ffffff;
+
+  /* Category glyphs (cp_*.png) are monochrome white; leave them untouched in
+     dark mode and flip to black in light mode. */
+  --st-icon-filter: none;
+}
+
+:host(.theme-light){
+  --st-bg: #f3f3f3;
+  --st-sidebar-bg: #eaeaea;
+  --st-text: #1b1b1b;
+  --st-text-dim: #5a5a5a;
+  --st-text-muted: #8a8a8a;
+
+  --st-accent: #0078d7;
+  --st-hover: #d9d9d9;
+  --st-app-hover: #e4e4e4;
+
+  --st-card-bg: #ffffff;
+  --st-card-border: #c4c4c4;
+  --st-card-border-hover: #888888;
+  --st-menu-border: #c4c4c4;
+
+  --st-track: #d6d6d6;
+  --st-dropdown-selected: color-mix(in srgb, var(--st-accent) 70%, #000 30%);
+  --st-dropdown-selected-hover: color-mix(in srgb, var(--st-accent) 80%, #fff 20%);
+
+  --st-toggle-off-track: #c4c4c4;
+  --st-toggle-off-knob: #ffffff;
+  --st-checkbox-toggle: #000000;
+
+  --st-icon-filter: brightness(0) saturate(100%);
+}
+
+.settings-main__container{
+  display: flex;
+  /* Fill the primary window. Floor matches the legacy 900x600 fixed size
+     so two-panel views (250px sidebar + 650px content) still fit. */
+  width: 100%;
+  height: 100%;
+  min-width: 480px;
+  min-height: 320px;
+}
+
+/*home View Start*/
+.home-main__container{
+  display: flex;
+  flex-direction: column;
+  gap: 20px 0px;
+  padding: 15px;
+  /* Fill the outer container (was 900x600 fixed). */
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  background-color: var(--st-bg);
+}
+
+.home-main__heading-container{
+  display: flex;
+  justify-content: center; /* Horizontally centers the child */
+  align-items: center;
+  /* Was 870px (= 900 - 30 padding). Fill parent fluidly. */
+  width: 100%;
+  height: 60px;
+}
+
+.home-main__heading-p{
+  padding: 0 1px;
+  color: var(--st-text);
+  text-align: center;
+  font-size: 27px;
+  font-weight:200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
+  height: fit-content;
+}
+
+/*SearchBox Section Start*/
+.home-search__container, .secondary-search__container{
+  display: flex;
+  justify-content: center; /* Horizontally centers the child */
+  width: 100%;
+  height: 30px;
+}
+
+.secondary-search__container{
+  width: 250px;
+}
+
+.home-search__empty-container{
+  width: 100%;
+  height: 30px;
+}
+
+.secondary-search__empty-container{
+  width: 250px;
+  height: 1px;
+}
+
+.search-bar__form-cntnr, .secondary-search-bar__form-cntnr{
+  display: flex;
+  position: relative;
+  height: 30px;
+  width: 330px;
+}
+
+.secondary-search-bar__form-cntnr{
+  width: 215px;
+}
+
+.search-bar__form, .secondary-search-bar__form {
+  position: relative;
+  margin: 0;
+  height: 30px;
+  width: 330px;
+}
+
+.secondary-search-bar__form{
+  width: 215px;
+}
+
+.search-bar__form, .secondary-search-bar__form{
+  background-color: transparent;
+}
+
+.search-bar__textbox, .secondary-search-bar__textbox{
+  height: 30px;
+  width: 330px;
+  font-size: 13.5px;
+  font-weight:normal;
+  color: #000;
+  background-color: #fff;
+  border: 2px solid #666666;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.secondary-search-bar__textbox{
+  width: 215px;
+}
+
+.search-bar__textbox:focus, .secondary-search-bar__textbox:focus{
+  background-color: #fff;
+  border: 2px solid var(--st-accent);
+}
+
+/* Keep background white when it has text */
+.search-bar__textbox:not(:placeholder-shown), .secondary-search-bar__textbox:not(:placeholder-shown) {
+  background-color: #fff;
+}
+
+/*SearchBox Section End*/
+
+.home-view__items{
+  padding: 0px 20px;
+  width: 100%;
+  height: fit-content;
+}
+
+.ol-home-view__grid{
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns:  repeat(auto-fill, 262px);
+  grid-template-rows: repeat(auto-fill, 80px);
+  width: 100%;
+  gap: 0px 20px;
+}
+
+.li-home-view{
+  justify-content: center;
+  height: min-content;
+}
+
+.home-view__item{
+  display: flex;
+  height: 80px;
+  width: 262px;
+  border: 2px solid transparent;
+  padding: 8px 6px;
+}
+
+.home-view__item-text{
+  display: flex;
+  flex-direction: column;
+  padding-left:6px;
+}
+
+.home-view__item:hover{
+  border: 2px solid var(--st-accent);
+}
+
+.home-view__item-img{
+  width: 40px;
+  height: 80px;
+}
+
+.home-view__figure{
+  position: relative;
+  align-items: center;
+  height: 32px;
+  width: 32px;
+  top: 0px;
+}
+
+.home-view__img{
+  position: relative;
+  display: block;
+  height: 32px;
+  width: 32px;
+  /* Inline category SVG painted with the personalization accent. */
+  fill: var(--st-accent);
+}
+
+.home-view__heading-p, .home-view__sub-heading-p{
+  position: relative;
+  color: var(--st-text);
+  font-size:15px;
+  font-weight:normal;
+  text-align: left;
+  width: 100%;
+  word-wrap: break-word;
+}
+
+.home-view__sub-heading-p{
+  font-size:12px;
+  font-weight:normal;
+  top: 4px
+}
+/*home View End*/
+
+.system-option__panel, .personalization-option__panel, .application-option__panel{
+  display: block;
+  /* Sidebar: keep fixed 250px width, fill window height. */
+  width: 250px;
+  flex: 0 0 250px;
+  height: 100%;
+  /* Surface base = theme sidebar colour by default; swapped to the accent
+     colour below when "Show accent colour on Start and taskbar" is ON. */
+  --st-sidebar-surface: var(--st-sidebar-bg);
+  /* Transparency OFF (default): solid sidebar, no blur. */
+  background-color: var(--st-sidebar-surface);
+  backdrop-filter: none;
+  padding: 15px 0px;
+}
+
+/* Transparency ON: frosted glass — same recipe as the taskbar context /
+   app-icon menus. The blur itself is done by the primary window container
+   (which is the backdrop root); here the sidebar only lays down the 68% tint
+   over that already-frosted backdrop. The --st-sidebar-surface token already
+   carries the light/dark (or accent) value, so one rule covers both themes. */
+:host(.st-transparency-on) .system-option__panel,
+:host(.st-transparency-on) .personalization-option__panel,
+:host(.st-transparency-on) .application-option__panel{
+  background-color: color-mix(in srgb, var(--st-sidebar-surface) 68%, transparent);
+}
+
+/* Accent surfaces ON: sidebar adopts the accent colour (mirrors the Start menu /
+   taskbar), with white text/icons + a translucent-white hover for contrast.
+   Applies whether transparency is on (accent tint) or off (solid accent). */
+:host(.st-accent-surfaces) .system-option__panel,
+:host(.st-accent-surfaces) .personalization-option__panel,
+:host(.st-accent-surfaces) .application-option__panel{
+  --st-sidebar-surface: var(--st-accent);
+  --st-text: #ffffff;
+  --st-hover: color-mix(in srgb, #ffffff 18%, transparent);
+}
+
+/* Selected-row marker reads white on the accent surface. */
+:host(.st-accent-surfaces) .item-head__indication.active{
+  background-color: #ffffff;
+}
+
+
+.system-option__first, .personalization-option__first, .application-option__first{
+  display: flex;
+  flex-direction: column;
+  gap: 20px 0px;
+  width: 250px;
+}
+
+.system-option__first-text, .personalization-option__first-text, .application-option__first-text{
+  position: relative;
+  width: 100%;
+  height: fit-content;
+}
+
+.system-option__first-p, .personalization-option__first-p, .application-option__first-p{
+  position: relative;
+  color: var(--st-text);
+  font-size:13px;
+  font-weight:normal;
+  text-align: left;
+  left: 20px;
+  width: 100%;
+}
+
+.ol-system-option__grid, .ol-personalization-option__grid, .ol-application-option__grid{
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns:  repeat(auto-fill, 248px);
+  grid-template-rows: repeat(auto-fill, 40px);
+  width: 100%;
+  gap: 10px 0px;
+}
+
+.li-system-option__item, .li-personalization-option__item, .li-application-option__item{
+  width: 248px;
+  height: 40px;
+  padding: 5px 0px;
+}
+
+.system-option__item-cntnr, .personalization-option__item-cntnr, .application-option__item-cntnr, .fixed-home-option__item-cntnr{
+  display: inline-flex;
+  height: 30px;
+  width: 248px;
+}
+
+.fixed-home-option__item-cntnr{
+  height: 40px;
+  padding: 5px 0px;
+}
+
+.fixed-home-option__item-cntnr:hover{
+  background-color: var(--st-hover);
+}
+
+.li-system-option__item:hover, .li-personalization-option__item:hover, .li-application-option__item:hover{
+  background-color: var(--st-hover);
+}
+
+.system-option__item-p, .personalization-option__item-p, .application-option__item-p, .fixed-home-option__item-p{
+  position: relative;
+  width: 193px;
+  top: 7px;
+  left: 5px;
+  overflow: hidden;         
+  text-overflow: ellipsis; 
+  white-space: nowrap;
+}
+
+.system-option__item-head, .personalization-option__item-head, .application-option__item-head, .fixed-home-option__item-head{
+  display: inline-flex;
+  width: 45px;
+  height: 30px;
+}
+
+.item-head__indication{
+  width: 4px;
+  height: 30px;
+  margin-right: 15px;
+}
+
+.item-head__indication.active{
+  background-color: var(--st-accent);
+}
+
+.system-option__item-tail, .personalization-option__item-tail, .application-option__item-tail, .fixed-home-option__item-tail{
+  padding: 0 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 12px;
+  font-weight:normal;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 193px;
+  height: 30px;
+}
+
+.system-option__item-figure, .personalization-option__item-figure, .application-option__item-figure, .fixed-home-option__item-figure{
+  position: relative;
+  align-items: center;
+  height: 20px;
+  width: 20px;
+  top: 5px;
+}
+
+.system-option__item-img, .personalization-option__item-img, .application-option__item-img, .fixed-home-option__item-img{
+  height: 20px;
+  width: 20px;
+  position: relative;
+  filter: var(--st-icon-filter);
+}
+
+.cp-glyph-svg{
+  height: 20px;
+  width: 20px;
+  position: relative;
+  fill: var(--st-text);
+  color: var(--st-text);
+}
+
+.system-view__panel, .personalization-view__panel, .application-view__panel, .taskbar-view__panel{
+  display: block;
+  /* Content pane: fills whatever horizontal space remains after the
+     250px sidebar; height tracks the window. */
+  flex: 1 1 auto;
+  width: auto;
+  height: 100%;
+  min-width: 0;
+  padding: 15px;
+  background-color: var(--st-bg);
+  overflow: auto;
+  /* background-clip: padding-box; */
+}
+
+.personalization-view__panel{
+  overflow-y: auto;
+  padding: 0px;
+}
+
+/*Button CSS Start*/
+
+/* toggle container */
+.system-btn__toggle {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 18px;
+}
+
+/* Hide default checkbox */
+.system-btn__toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* slider background */
+.system-btn__slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--st-toggle-off-track); /* White when OFF */
+  transition: background-color 0.3s, box-shadow 0.3s;
+  border-radius: 18px;
+}
+
+/*slider knob */
+.system-btn__slider::before {
+  position: absolute;
+  content: "";
+  height: 10px;
+  width: 10px;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--st-toggle-off-knob); /* Black when OFF */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* ON (checked) state */
+.system-btn__toggle input:checked + .system-btn__slider {
+  background-color: var(--st-accent); /* Windows 10 blue */
+  box-shadow: 0 0 10px rgba(0, 120, 215, 0.6);
+}
+
+/* Knob slides right */
+.system-btn__toggle input:checked + .system-btn__slider::before {
+  transform: translateX(20px);
+  background-color: #ffffff; /* White knob when ON */
+  box-shadow: 0 0 12px rgba(0, 120, 215, 0.8);
+}
+
+/* Glow pulse animation when turned ON */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 8px rgba(0, 120, 215, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(0, 120, 215, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(0, 120, 215, 0.6);
+  }
+}
+
+/* Apply glow animation only when checked */
+.system-btn__toggle input:checked + .system-btn__slider {
+  animation: glow 1.5s ease-in-out;
+}
+
+/*Button CSS End*/
+
+/*Checkbox CSS Start*/
+.system_checkbox__toggle {
+    display: flex;
+    align-items: center;
+    margin: 16px 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.system_checkbox__toggle input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.system_checkbox__toggle .box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--st-checkbox-toggle);
+    background: transparent;
+    box-sizing: border-box;
+    margin-right: 12px;
+    position: relative;
+    transition: background-color .08s;
+}
+
+.system_checkbox__toggle input:checked + .box {
+    background: var(--st-accent);
+    border-color: var(--st-accent);
+}
+
+.system_checkbox__toggle input:checked + .box::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0px;
+  width: 6px;
+  height: 12px;
+  border: solid var(--st-checkbox-toggle);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.system_checkbox__toggle p {
+    /* line-height: 20px; */
+  color: var(--st-text);
+  text-align: left;
+  font-size: 14px;
+  font-weight:normal;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ }
+
+ .system_checkbox__toggle:hover .box {
+    border-color: var(--st-checkbox-toggle);
+}
+
+/* .system_checkbox__toggle input:focus + .box {
+    outline: 1px dotted var(--st-text);
+    outline-offset: 2px;
+} */
+
+.system_checkbox__toggle:active .box {
+    transform: scale(0.96);
+}
+/*Checkbox CSS End*/
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ SYSTEM  START @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+/*System ScreenView Start*/
+
+.system-view__screenview-container{
+  width: 100%;
+  height: 100%;
+}
+
+.screenview-block__content, 
+.screenview-block__heading, 
+.screenview-block__text{
+  width: 100%;
+  height: fit-content;
+}
+
+.screenview-block__content{
+  display: flex;
+  flex-direction: column;     /* stack vertically */
+  gap: 20px 0px;
+  padding-top: 15px;
+}
+
+.screenview-block__heading{
+  height: fit-content;
+}
+
+.screenview-block-heading__p, .screenview-block-heading1__p, .screenview-block-text__p, .screenview-button-text__p{
+  padding: 0 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 27px;
+  font-weight:200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  word-wrap: break-word;
+  -webkit-line-clamp:3;
+  line-clamp: 3;
+  white-space: pre;
+  width: fit-content;
+  height: fit-content;
+}
+
+.screenview-block-heading1__p{
+  font-size: 19px;
+  height: fit-content;
+}
+
+.screenview-block-text__p{
+  font-size: 13px;
+  font-weight: normal;
+  -webkit-line-clamp:2;
+  line-clamp: 2;
+}
+
+.screenview-block__button, .lockscreen-block__button, .color-block__button, .taskbar-block__button{
+  display: flex;
+  width: 100%;
+  height: fit-content;
+}
+
+.color-block__checkbox{
+  display: flex;
+  flex-direction: column;     /* stack vertically */
+  width: 100%;
+  height: fit-content;
+}
+
+.screenview-button__text, .lockscreen-button__text, .color-button__text, .taskbar-button__text{
+  position: relative;
+  left: 10px;
+  height: fit-content;
+}
+
+.screenview-button-text__p, .lockscreen-button-text__p, .color-button-text__p, .taskbar-button-text__p{
+  position: relative;
+  top: -1px;
+  font-size: 13px;
+  -webkit-line-clamp:2;
+  line-clamp: 2;
+}
+
+/*System ScreenView End*/
+
+
+/*System Clipboard Start*/
+
+.system-view__clipboard-container{
+  width: 100%;
+  height: 100%;
+}
+
+.clipboard-block__content, 
+.clipboard-block__heading, 
+.clipboard-block__text{
+  width: 100%;
+  height: fit-content;
+}
+
+.clipboard-block__content{
+  display: flex;
+  flex-direction: column;     /* stack vertically */
+  gap: 20px 0px;
+  padding-top: 15px;
+}
+
+.clipboard-block__heading{
+  height: fit-content;
+}
+
+.clipboard-block-heading__p, .clipboard-block-heading1__p, .clipboard-block-text__p, .clipboard-button-text__p{
+  padding: 0 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 27px;
+  font-weight:200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  word-wrap: break-word;
+  -webkit-line-clamp:3;
+  line-clamp: 3;
+  white-space: pre;
+  width: fit-content;
+  height: fit-content;
+}
+
+.clipboard-block-heading1__p{
+  font-size: 19px;
+  height: fit-content;
+}
+
+.clipboard-block-text__p{
+  font-size: 13px;
+  font-weight: normal;
+  -webkit-line-clamp:2;
+  line-clamp: 2;
+}
+
+.clipboard-block__button, .lockscreen-block__button, .color-block__button, .taskbar-block__button{
+  display: flex;
+  width: 100%;
+  height: fit-content;
+}
+
+.clipboard-button__text, .lockscreen-button__text, .color-button__text, .taskbar-button__text{
+  position: relative;
+  left: 10px;
+  height: fit-content;
+}
+
+.clipboard-button-text__p, .lockscreen-button-text__p, .color-button-text__p, .taskbar-button-text__p{
+  position: relative;
+  top: -1px;
+  font-size: 13px;
+  font-weight: normal;
+  -webkit-line-clamp:2;
+  line-clamp: 2;
+}
+
+/*System Clipboard End*/
+
+/*System Notifications Start*/
+
+.system-view__notification-container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px 0px;
+}
+
+/* Large "Notifications & actions" page title. */
+.notification-block-heading__p{
+  padding: 0 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 27px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* "Notifications" sub-title. */
+.notification-block-subheading__p{
+  padding: 18px 1px 6px 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 19px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* Each toggle option: label text on top, toggle + On/Off label below. */
+.notification-block-content{
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  padding-top: 14px;
+  width: 100%;
+}
+
+.notification-block__text{
+  width: 100%;
+  height: fit-content;
+}
+
+.notification-block-miniheading__p{
+  color: var(--st-text);
+  font-size: 13px;
+  font-weight: normal;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  word-wrap: break-word;
+}
+
+/* Greyed-out label for the disabled lock-screen notifications option. */
+.notification-block-miniheading__p--disabled{
+  color: var(--st-text-muted);
+}
+
+.notification-block__button{
+  display: flex;
+  width: 100%;
+  height: fit-content;
+}
+
+.notification-button__text{
+  position: relative;
+  left: 10px;
+  height: fit-content;
+}
+
+.notification-button-text__p{
+  position: relative;
+  top: -1px;
+  font-size: 13px;
+  color: var(--st-text);
+}
+
+/*System Notifications End*/
+
+/*System Storage Start*/
+
+.system-view__storage-container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px 0px;
+}
+
+/* Large "Storage" page title. */
+.storage-block-heading__p{
+  padding: 0 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 27px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* "Local storage" sub-title. */
+.storage-block-subheading__p{
+  padding: 8px 1px 0px 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 19px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* Disk row: icon on the left, label + bar + usage labels stacked on the right. */
+.storage-block__disk{
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0px 12px;
+  padding-top: 18px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.storage-disk__figure{
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.storage-disk__img{
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.storage-disk__details{
+  display: flex;
+  flex-direction: column;
+  gap: 6px 0px;
+  width: 100%;
+  min-width: 0;
+}
+
+.storage-disk__label{
+  color: var(--st-text);
+  font-size: 13px;
+  font-weight: normal;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* The full-width track represents total capacity and is coloured as the "free" portion. */
+.storage-disk__bar{
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background-color: var(--st-track);
+  overflow: hidden;
+}
+
+/* The blue inner bar represents the used portion; its width is driven by storageUsedPercent. */
+.storage-disk__bar-used{
+  height: 100%;
+  background-color: var(--st-accent);
+  transition: width 0.3s ease;
+}
+
+.storage-disk__usage{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.storage-disk__used-text{
+  color: var(--st-accent);
+  font-size: 12px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.storage-disk__free-text{
+  color: var(--st-text-dim);
+  font-size: 12px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/*System Storage End*/
+
+/*System About Start*/
+
+.system-view__about-container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px 0px;
+}
+
+/* Large "About" page title. */
+.about-block-heading__p{
+  padding: 0 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 27px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* "Windows specifications" sub-title. */
+.about-block-subheading__p{
+  padding: 18px 1px 0px 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 19px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* Specification rows: each row is a label (left) + value (right). */
+.ol-about-spec__list{
+  display: flex;
+  flex-direction: column;
+  gap: 4px 0px;
+  padding-top: 14px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.li-about-spec__item{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.about-spec__label{
+  flex: 0 0 110px;
+  color: var(--st-text);
+  font-size: 13px;
+  font-weight: normal;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.about-spec__value{
+  flex: 1 1 auto;
+  color: var(--st-text-dim);
+  font-size: 13px;
+  font-weight: normal;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  word-wrap: break-word;
+}
+
+/*System About End*/
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ SYSTEM  END @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ APPLICATION START @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+.application-view__container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px 0px;
+}
+
+/* Large "Apps & features" page title. */
+.application-block-heading__p{
+  padding: 0 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 27px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* "Installed apps" sub-title. */
+.application-block-subheading__p{
+  padding: 18px 1px 6px 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 19px;
+  font-weight: 200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* Vertical list of installed apps. */
+.ol-application-list__grid{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-top: 6px;
+}
+
+/* A single app row: icon on the left, name on the right. */
+.li-application-list__item{
+  display: flex;
+  align-items: center;
+  gap: 0 12px;
+  width: 100%;
+  height: 40px;
+  padding: 4px 6px;
+}
+
+.li-application-list__item:hover{
+  background-color: var(--st-app-hover);
+}
+
+.application-list__figure{
+  height: 24px;
+  width: 24px;
+}
+
+.application-list__img{
+  height: 24px;
+  width: 24px;
+}
+
+.application-list__name{
+  color: var(--st-text);
+  font-size: 13px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ APPLICATION END @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ PERSONALIZATION  START @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+/*Personalization Lockscreen, Desktop Start*/
+
+.personalization-view__lockscreen-container, 
+.personalization-view__desktop-container, 
+.personalization-view__taskbar-container{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  row-gap: 20px;
+  padding: 15px;
+}
+
+/* For Chrome, Safari, Edge */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: none; 
+}
+
+.lockscreen-block-content, .desktop-block-content, .taskbar-block-content,
+.lockscreen-block-heading, .desktop-block-heading, .taskbar-block-heading,
+.lockscreen-block-text, .desktop-block-text, .taskbar-block-text{
+  width: 100%;
+  height: fit-content;
+}
+
+.lockscreen-heading-fixed, 
+.desktop-heading-fixed, 
+.taskbar-heading-fixed{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--st-bg);
+}
+
+.lockscreen-block-content, 
+.desktop-block-content,
+.taskbar-block-content{
+  display: flex;
+  flex-direction: column;
+  gap: 10px 0px;
+}
+
+.lockscreen-empty-container, 
+.desktop-empty-container,
+.taskbar-empty-container{
+  width: 100%;
+  height: 10px;
+}
+
+.lockscreen-block-heading__p, .lockscreen-block-subheading__p, .lockscreen-block-miniheading__p,
+.desktop-block-heading__p, .desktop-block-subheading__p, .desktop-block-miniheading__p,
+.taskbar-block-heading__p, .taskbar-block-subheading__p, .taskbar-block-miniheading__p{
+  padding: 0 1px;
+  color: var(--st-text);
+  text-align: left;
+  font-size: 27px;
+  font-weight:200;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
+  height: fit-content;
+}
+
+.lockscreen-block__text, 
+.desktop-block__text
+.taskbar-block__text{
+  height: fit-content;
+}
+
+.lockscreen-block-subheading__p, 
+.desktop-block-subheading__p,
+.taskbar-block-subheading__p{
+  font-size: 18px;
+}
+
+.lockscreen-block-miniheading__p, 
+.desktop-block-miniheading__p,
+.taskbar-block-miniheading__p{
+  font-size: 13px;
+}
+
+/*DATE AND TIME OVERLAY START*/
+.lockscreen-preview__container, .desktop-preview__container{
+  width: 360px;
+  height: 240px;
+}
+
+.lockscreen-preview__datetime-container{
+  display: block;
+  position: relative;
+  top: 140px;
+  margin-left: 5px;
+}
+
+.lockscreen-preview__time-section, .lockscreen-preview__date-section{
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lockscreen-preview__space, .lockscreen-preview__space{
+  height: 5px;
+}
+
+.lockscreen-preview__time-p {
+  font-size: 28px;
+  font-weight:200;
+  color: #fff;
+}
+
+.lockscreen-preview__date-p{
+  position: relative;
+  left: 1px;
+  font-size: 12px;
+  font-weight:300;
+  color: #fff;
+}
+
+.lockscreen-preview__background-mirror-and-picture,
+.desktop-preview__background-mirror-and-picture{
+  backdrop-filter: none;
+  background-color: transparent;
+  background-size:cover;
+  background-repeat: no-repeat;
+  width: 360px;
+  min-height: 240px;
+}
+
+.lockscreen-preview__background-solid-color, .desktop-preview__background-solid-color{
+  background-image: none;
+  backdrop-filter: none;
+  width: 360px;
+  min-height: 240px;
+}
+
+
+.desktop-overlay___container {
+  width: 360px;
+  height: 240px;
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+
+  /* Live preview tokens. `--st-accent` is the host accent var (recolors with
+     the chosen accent). `--ov-surface` is the start-menu/taskbar surface base:
+     dark grey by default, accent-tinted when the "show accent on start menu &
+     taskbar" toggle is on (the :host(.st-accent-surfaces) rule below). The
+     translucent vs solid look is driven by :host(.st-transparency-on). */
+  --ov-accent: var(--st-accent, #0079d9);
+  --ov-surface: rgb(41 41 41);
+}
+
+/* Accent ON for start menu / taskbar -> tint the surfaces with the accent. */
+:host(.st-accent-surfaces) .desktop-overlay___container {
+  --ov-surface: color-mix(in srgb, var(--ov-accent) 45%, rgb(41 41 41));
+}
+
+.desktop-overlay___sidebar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 180px;
+  height: 150px;
+  /* Transparency OFF (default): solid surface, no blur. */
+  background-color: var(--ov-surface);
+  backdrop-filter: none;
+  display: flex;
+  padding: 5px;
+  gap: 5px;
+}
+
+/* Transparency ON: translucent glass + blur. */
+:host(.st-transparency-on) .desktop-overlay___sidebar {
+  background-color: color-mix(in srgb, var(--ov-surface) 75%, transparent);
+  backdrop-filter: blur(30px);
+}
+
+.desktop-overlay___menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 40px;
+  height: 100%;
+}
+
+.desktop-overlay___menu div {
+  height: 10px;
+  background: var(--ov-accent);
+  border-radius: 1px;
+}
+
+.desktop-overlay___grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 2px;
+}
+
+.desktop-overlay___grid div {
+  background: var(--ov-accent);
+}
+
+.desktop-overlay___grid .desktop-overlay___large {
+  grid-column: span 2;
+  grid-row: span 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: sans-serif;
+  font-size: 18px;
+  color: white;
+}
+
+/* The app window mirrors the active app theme (dark by default; light when the
+   host carries .theme-light). heading = title bar, top-bar = window body. */
+.desktop-overlay___app {
+  position: absolute;
+  top: 10px;
+  left: 250px;
+  width: fit-content;
+  height: fit-content;
+  background: #2b2b2b;
+  border-radius: 1px;
+  display: flex;
+  flex-direction: column;
+}
+
+.desktop-overlay___top-bar, .desktop-overlay___heading{
+  position: relative;
+  width: 80px;
+  height: 40px;
+  background: #2b2b2b;
+  border-radius: 1px;
+}
+
+.desktop-overlay___top-bar{
+  color: #e6e6e6;
+}
+
+/* The title-bar window controls stay white in every theme/accent state. */
+.desktop-overlay___white-bar{
+  position: absolute;
+  top: 3.5px;
+  left: 5px;
+  width: 60px;
+  height: 3px;
+  background: #ffffff;
+  border-radius: 1px;
+}
+
+.desktop-overlay___heading{
+  background: #1f1f1f;
+  height: 10px;
+}
+
+/* Title bar accent ON -> the heading matches the window accent color, like a
+   real primary window title bar. Takes precedence over the theme default. */
+:host(.st-titlebar-accent) .desktop-overlay___heading{
+  background: var(--ov-accent);
+}
+
+/* Light theme overrides for the app-window preview. */
+:host(.theme-light) .desktop-overlay___app,
+:host(.theme-light) .desktop-overlay___top-bar{
+  background: #ffffff;
+}
+
+:host(.theme-light) .desktop-overlay___top-bar{
+  color: #1a1a1a;
+}
+
+:host(.theme-light) .desktop-overlay___heading{
+  background: #e6e6e6;
+}
+
+/* Accent still wins over the light-theme heading default when enabled. */
+:host(.theme-light.st-titlebar-accent) .desktop-overlay___heading{
+  background: var(--ov-accent);
+}
+
+.desktop-overlay___bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  /* Transparency OFF (default): solid surface, no blur. */
+  background-color: var(--ov-surface);
+  backdrop-filter: none;
+}
+
+/* Transparency ON: translucent glass + blur. */
+:host(.st-transparency-on) .desktop-overlay___bottom-bar {
+  background-color: color-mix(in srgb, var(--ov-surface) 70%, transparent);
+  backdrop-filter: blur(10px);
+}
+/*DATE AND TIME OVERLAY END*/
+
+/*LOCK SCREEN BACKGROUND DROP DOWN OPTION START*/
+/* ===== Base Dropdown Styles ===== */
+.lockscreen-background-dropdown, 
+.lockscreen-timeout-dropdown, 
+.desktop-background-dropdown,
+.taskbar-background-dropdown  {
+  position: relative;
+  display: inline-block;
+  width: 260px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* .lockscreen-timeout-dropdown{
+  width: 160px;
+} */
+
+/* ===== Selected area ===== */
+.lockscreen-background-dropdown__selected, 
+.lockscreen-timeout-dropdown__selected, 
+.desktop-background-dropdown__selected,
+.taskbar-background-dropdown__selected   {
+  padding: 6px 36px 6px 10px;
+  background-color: var(--st-card-bg);
+  border: 2px solid var(--st-card-border);
+  border-radius: 0px;
+  font-size: 14px;
+  color: var(--st-text);
+  text-align: left;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.lockscreen-background-dropdown__selected:hover, 
+.lockscreen-timeout-dropdown__selected:hover, 
+.desktop-background-dropdown__selected:hover,
+.taskbar-background-dropdown__selected:hover  {
+  border-color: var(--st-card-border-hover);
+  /* background-color: #ccc; */
+  text-align: left;
+}
+
+/* ===== Icon ===== */
+.lockscreen-background-dropdown__icon, 
+.lockscreen-timeout-dropdown__icon, 
+.desktop-background-dropdown__icon,
+.taskbar-background-dropdown__icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  width: 12px;
+  height: 12px;
+}
+
+.lockscreen-background-dropdown__icon svg, 
+.lockscreen-timeout-dropdown__icon svg, 
+.desktop-background-dropdown__icon svg,
+.taskbar-background-dropdown__icon svg {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  top: -6px;
+  fill: var(--st-text);
+  transition: transform 0.2s ease;
+}
+
+.lockscreen-background-dropdown.open .lockscreen-background-dropdown__icon svg, 
+.lockscreen-timeout-dropdown.open .lockscreen-timeout-dropdown__icon svg,
+.desktop-background-dropdown.open .desktop-background-dropdown__icon svg
+.taskbar-background-dropdown.open .taskbar-background-dropdown__icon svg {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+/* ===== lockscreen-background-dropdown Menu ===== */
+.lockscreen-background-dropdown__menu, 
+.lockscreen-timeout-dropdown__menu, 
+.desktop-background-dropdown__menu,
+.taskbar-background-dropdown__menu {
+  position: absolute;
+  top: -4px; /* 👈 lifts the lockscreen-background-dropdown slightly higher */
+  left: 0;
+  text-align: left;
+  color: var(--st-text);
+  width: 100%;
+  background: var(--st-card-bg);
+  border: 1px solid var(--st-menu-border);
+  border-radius: 0px;
+  margin-top: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 0px 0;
+  list-style: none;
+  z-index: 1;
+  animation: fadeIn 0.15s ease;
+}
+
+/* ===== Option Item ===== */
+.lockscreen-background-dropdown__menu li, 
+.lockscreen-timeout-dropdown__menu li, 
+.desktop-background-dropdown__menu li,
+.taskbar-background-dropdown__menu li   {
+  padding: 6px 10px;
+  font-size: 14px;
+  color: var(--st-text);
+  transition: background-color 0.15s ease;
+}
+
+.lockscreen-background-dropdown__menu li:hover, 
+.lockscreen-timeout-dropdown__menu li:hover,
+.desktop-background-dropdown__menu li:hover,
+.taskbar-background-dropdown__menu li:hover  {
+  background-color: var(--st-hover); /*#404040;*/
+}
+
+.lockscreen-background-dropdown__menu li.selected, 
+.lockscreen-timeout-dropdown__menu li.selected,
+.desktop-background-dropdown__menu li.selected,
+.taskbar-background-dropdown__menu li.selected  {
+  background-color: var(--st-dropdown-selected);
+  font-weight: 200;
+}
+
+.lockscreen-background-dropdown__menu li.selected:hover, 
+.lockscreen-timeout-dropdown__menu li.selected:hover,
+.desktop-background-dropdown__menu li.selected:hover,
+.taskbar-background-dropdown__menu li.selected:hover  {
+  background-color: var(--st-dropdown-selected-hover);
+  font-weight: 200;
+}
+
+/* ===== Animation ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*LOCK SCREEN BACKGROUND DROP DOWN OPTION END*/
+
+.lockscreen-solid-color__block, .desktop-solid-color__block{
+  width: 418px;
+  height: 158px;
+}
+
+.color-solid-cheetah-color__block{
+  width: 418px;
+  height: 258px;
+}
+
+.color-solid-recent-cheetah-color__block{
+  width: 418px;
+  height: 58px;
+}
+
+.ol-lockscreen-solid-color__grid, .ol-desktop-solid-color__grid{
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns:  repeat(auto-fill, 50px);
+  grid-template-rows: repeat(auto-fill, 50px);
+  width: 100%;
+  gap: 2px 2px;
+}
+
+.li-lockscreen-solid-color, .lockscreen-solid-color__item,
+.li-desktop-solid-color, .desktop-solid-color__item{
+  width: 50px;
+  height: 50px;
+}
+
+.lockscreen-solid-color__item, .desktop-solid-color__item{
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.lockscreen-solid-color__item.selected, .desktop-solid-color__item.selected{
+  box-shadow: inset 0 0 0 2px #ffffff, 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.color-swatch__marker{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 24px 24px 0 0;
+  border-color: #ffffff transparent transparent transparent;
+  pointer-events: none;
+}
+
+.color-swatch__marker svg{
+  position: absolute;
+  top: -22px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  fill: #1a1a1a;
+}
+
+.lockscreen-picture__block, .desktop-picture__block{
+  width: 448px;
+  height: 189px;
+}
+
+.ol-lockscreen-picture__grid, .ol-desktop-picture__grid{
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns:  repeat(auto-fill, 108px);
+  grid-template-rows: repeat(auto-fill, 61px);
+  width: 100%;
+  gap: 2px 4px;
+}
+
+.li-lockscreen-picture, .lockscreen-picture__item,
+.li-desktop-picture, .desktop-picture__item{
+  width: 108px;
+  height: 61px;
+}
+
+.lockscreen-picture__item img, .desktop-picture__item img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ PERSONALIZATION  END @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+/*THEME MODE TOGGLE START*/
+.theme-mode-block{
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px 0px;
+  width: 100%;
+  height: fit-content;
+}
+
+.theme-mode-toggle{
+  display: inline-flex;
+  width: fit-content;
+  border: 2px solid var(--st-card-border);
+}
+
+.theme-mode-toggle__btn{
+  min-width: 90px;
+  padding: 6px 16px;
+  font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--st-text);
+  background-color: var(--st-card-bg);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.theme-mode-toggle__btn:hover{
+  background-color: var(--st-hover);
+}
+
+.theme-mode-toggle__btn.active{
+  background-color: var(--st-accent);
+  color: #fff;
+}
+/*THEME MODE TOGGLE END*/

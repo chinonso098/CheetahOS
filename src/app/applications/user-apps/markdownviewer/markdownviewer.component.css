@@ -1,0 +1,127 @@
+/* Thin custom scrollbar that overrides the host OS default. The thumb colour
+   swaps with the theme: near-black on the light (default) surface, grey on the
+   dark surface. */
+:host{
+  --mkd-scroll-thumb: rgba(0, 0, 0, 0.35);
+  --mkd-scroll-thumb-hover: rgba(0, 0, 0, 0.50);
+}
+
+:host(.theme-dark){
+  --mkd-scroll-thumb: rgba(255, 255, 255, 0.30);
+  --mkd-scroll-thumb-hover: rgba(255, 255, 255, 0.45);
+}
+
+:host *{
+  scrollbar-width: thin;
+  scrollbar-color: var(--mkd-scroll-thumb) transparent;
+}
+
+:host ::-webkit-scrollbar{
+  width: 4px;
+  height: 4px;
+}
+
+:host ::-webkit-scrollbar-track{
+  background: transparent;
+}
+
+:host ::-webkit-scrollbar-thumb{
+  background-color: var(--mkd-scroll-thumb);
+  border-radius: 2px;
+}
+
+:host ::-webkit-scrollbar-thumb:hover{
+  background-color: var(--mkd-scroll-thumb-hover);
+}
+
+.markdown-main-container{
+    width: 100%;
+    height: 100%;
+    /* Stack the inner .markdown-content as a flex child so it fills the
+       host instead of relying on its old fixed 800x600. */
+    display: flex;
+    flex-direction: column;
+    min-width: 480px;
+    min-height: 320px;
+}
+
+.markdown-content{
+    /* Was 800x600 fixed. Now fills .markdown-main-container so the
+       reader follows window drag-resize. overflow:auto kept so long
+       documents still scroll. */
+    width: 100%;
+    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    color: #000;
+    white-space: pre;
+    text-align: left;
+    overflow: auto;
+    background-color: #fff;
+    box-sizing: border-box;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 10px 10px;
+}
+
+.markdown-content h1,h2{
+
+    border-bottom: 1px solid #000;
+    margin: 5px 0;
+}
+
+
+.markdown-content nav{
+
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    margin-right: 10px;
+}
+
+
+.markdown-content > ul{
+
+    font-size: 14px;
+    list-style-type: none;
+    margin: 5px 0;
+    padding: 0;
+    position: sticky;
+    top: 5px;
+}
+
+.markdown-content > ul > li{
+
+    min-width: 125px;
+    padding: 0 15px;
+}
+
+/* ===== Dark theme overrides (host gains .theme-dark) ===== */
+:host(.theme-dark) .markdown-main-container{
+    background-color: #1e1e1e;
+}
+
+:host(.theme-dark) .markdown-content{
+    color: #e6e6e6;
+    background-color: #1e1e1e;
+}
+
+:host(.theme-dark) .markdown-content h1,
+:host(.theme-dark) .markdown-content h2{
+    border-bottom: 1px solid #555;
+}
+
+:host(.theme-dark) .markdown-content nav{
+    background: #2a2a2a;
+    border: 1px solid #444;
+}
+
+:host(.theme-dark) .markdown-content a{
+    color: #4ea1ff;
+}
+
+:host(.theme-dark) .markdown-content code,
+:host(.theme-dark) .markdown-content pre{
+    background: #2a2a2a;
+    color: #e6e6e6;
+}

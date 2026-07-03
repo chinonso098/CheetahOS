@@ -1,4 +1,5 @@
-import { WindowState } from "src/app/shared/system-component/window/windows.types";
+import { WindowState } from "src/app/shared/system-ui-components/window/windows.types";
+
 
 interface BaseState{
     pId: number,

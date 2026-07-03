@@ -1,0 +1,16 @@
+/*
+  Full-viewport overlay, same footprint as the lock screen. position:fixed +
+  inset:0 pins it to the viewport regardless of where the dynamic component is
+  inserted in the DOM (it mounts inside the desktop's processContainerRef).
+  A very high z-index keeps it above the desktop, taskbar, and any open windows.
+*/
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: block;
+  overflow: hidden;
+  background-color: #000;
+  /* Hide the cursor while the saver is up; the first move dismisses it anyway. */
+  cursor: none;
+}

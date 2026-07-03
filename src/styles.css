@@ -1,4 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
+
 *, *::before, *::after{
     box-sizing: border-box;
     border: 0;
@@ -7,6 +8,14 @@
     outline: 0;
 }
 
+/* Prevents the page from scrolling (bounce / rubber band effect) when the user reaches the top or bottom of the page. */
+*,
+*::before,
+*::after {
+    overscroll-behavior: none;
+}
+
+/* Prevents the user from selecting text on the page. */
 body{
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     user-select: none;

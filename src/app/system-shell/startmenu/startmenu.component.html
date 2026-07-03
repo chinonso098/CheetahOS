@@ -1,0 +1,135 @@
+<div class="start-menu-main-container" [@slideStartMenuAnimation]="slideState" id="the-window-startmenu"
+    role="menu" aria-label="Start menu"
+    [attr.inert]="isMenuOpen ? null : ''"
+    (keydown)="onMenuKeydown($event)"  (contextmenu)="silenceCtxEvt($event)">
+    <div class="start-menu-main-overlay-container">
+        <div class="start-menu-main-overlay-content">
+            <div class="start-menu-main-overlay-icon-text-container" id="sm-IconText-Overlay-Cntnr">
+            <div class="start-menu-main-overlay-icon-text-content"
+                (mouseenter)="startMenuOverlaySlideOut()"
+                (mouseleave)="startMenuOverlaySlideIn()">
+                <div class="start-menu-overlay-icon">
+                    <figure class="start-menu-overlay-figure">
+                        <img class="start-menu-overlay-img" [src]='hamburgerMenuImg'/>
+                    </figure>
+                </div>
+                <div class="start-menu-overlay-text"
+                    [class.start-menu-overlay-text--visible]="isOverlayExpanded">
+                    <p class="start-menu-overlay-text-p" style="font-weight: bold;">START</p>
+                </div>
+            </div>
+
+                <div style="height: 280px;"> </div>
+
+                <div class="start-menu-main-overlay-icon-text-content"
+                    role="menuitem" tabindex="0" aria-label="Open Documents"
+                    (click)="openFolderPath(Documents, $event)"
+                    (keydown.enter)="onFolderKeydown(Documents, $event)"
+                    (keydown.space)="onFolderKeydown(Documents, $event)"
+                    (focus)="startMenuOverlaySlideOut()"
+                    (blur)="startMenuOverlaySlideIn()"
+                    (mouseenter)="startMenuOverlaySlideOut()"
+                    (mouseleave)="startMenuOverlaySlideIn()">
+                    <div class="start-menu-overlay-icon">
+                        <figure class="start-menu-overlay-figure">
+                            <svg class="start-menu-overlay-img" viewBox="0 0 32 32" fill="rgba(255, 255, 255, 90%)" xmlns="http://www.w3.org/2000/svg"><path d="M28 8.578V32H2V0h17.422zM20 8h4.578L20 3.422V8zm6 22V10h-8V2H4v28h22z"></path></svg>
+                        </figure>
+                    </div>
+                    <div class="start-menu-overlay-text"
+                        [class.start-menu-overlay-text--visible]="isOverlayExpanded">
+                        <p class="start-menu-overlay-text-p">{{Documents}}</p>
+                    </div>
+                </div>
+
+                <div class="start-menu-main-overlay-icon-text-content"
+                    role="menuitem" tabindex="0" aria-label="Open Pictures"
+                    (click)="openFolderPath(Pictures, $event)"
+                    (keydown.enter)="onFolderKeydown(Pictures, $event)"
+                    (keydown.space)="onFolderKeydown(Pictures, $event)"
+                    (focus)="startMenuOverlaySlideOut()"
+                    (blur)="startMenuOverlaySlideIn()"
+                    (mouseenter)="startMenuOverlaySlideOut()"
+                    (mouseleave)="startMenuOverlaySlideIn()">
+                    <div class="start-menu-overlay-icon">
+                        <figure class="start-menu-overlay-figure">
+                            <svg class="start-menu-overlay-img" viewBox="0 0 32 32" fill="rgba(255, 255, 255, 90%)" xmlns="http://www.w3.org/2000/svg"><path d="M32 4v24H0V4h32zM2 6v10.578l7-6.984 10 10 4-4 7 6.984V6H2zm0 20h20.578L9 12.406l-7 7.016V26zm28 0v-.578l-7-7.016L20.406 21l5.016 5H30zm-5-14q-.406 0-.703-.297T24 11t.297-.703T25 10t.703.297T26 11t-.297.703T25 12z"></path></svg>
+                        </figure>
+                    </div>
+                    <div class="start-menu-overlay-text"
+                        [class.start-menu-overlay-text--visible]="isOverlayExpanded">
+                        <p class="start-menu-overlay-text-p">{{Pictures}}</p>
+                    </div>
+                </div>
+
+                <div class="start-menu-main-overlay-icon-text-content"
+                    role="menuitem" tabindex="0" aria-label="Open Videos"
+                    (click)="openFolderPath(Videos, $event)"
+                    (keydown.enter)="onFolderKeydown(Videos, $event)"
+                    (keydown.space)="onFolderKeydown(Videos, $event)"
+                    (focus)="startMenuOverlaySlideOut()"
+                    (blur)="startMenuOverlaySlideIn()"
+                    (mouseenter)="startMenuOverlaySlideOut()"
+                    (mouseleave)="startMenuOverlaySlideIn()">
+                    <div class="start-menu-overlay-icon">
+                        <figure class="start-menu-overlay-figure">
+                            <svg class="start-menu-overlay-img" viewBox="0 0 32 32" fill="rgba(255, 255, 255, 90%)" xmlns="http://www.w3.org/2000/svg"><path d="m32 24.125-8-4V24H0V8h24v3.875l8-4v16.25zM22 10H2v12h20V10zm8 1.109-6 3.016v3.75l6 3.016V11.11z"></path></svg>
+                        </figure>
+                    </div>
+                    <div class="start-menu-overlay-text"
+                        [class.start-menu-overlay-text--visible]="isOverlayExpanded">
+                        <p class="start-menu-overlay-text-p">{{Videos}}</p>
+                    </div>
+                </div>
+
+                <div class="start-menu-main-overlay-icon-text-content"
+                    role="menuitem" tabindex="0" aria-label="Power"
+                    (click)="power($event)"
+                    (keydown.enter)="onPowerKeydown($event)"
+                    (keydown.space)="onPowerKeydown($event)"
+                    (focus)="startMenuOverlaySlideOut()"
+                    (blur)="startMenuOverlaySlideIn()"
+                    (mouseenter)="startMenuOverlaySlideOut()"
+                    (mouseleave)="startMenuOverlaySlideIn()">
+                    <div class="start-menu-overlay-icon">
+                        <figure class="start-menu-overlay-figure">
+                            <svg class="start-menu-overlay-img" viewBox="0 0 32 32" fill="rgba(255, 255, 255, 90%)" xmlns="http://www.w3.org/2000/svg"><path d="M17 16h-2V0h2v16zm3.313-11.312q2.156.688 3.945 2t3.063 3.078 1.977 3.875.703 4.359q0 1.938-.5 3.727t-1.414 3.344-2.188 2.828-2.828 2.188-3.344 1.414-3.727.5-3.727-.5-3.344-1.414-2.828-2.188-2.188-2.828-1.414-3.344-.5-3.727q0-2.25.703-4.359t1.977-3.875 3.063-3.078 3.945-2l.625 1.891q-1.859.609-3.391 1.734t-2.625 2.625-1.695 3.305-.602 3.758q0 1.656.43 3.188t1.211 2.867 1.875 2.43 2.43 1.875 2.867 1.211 3.188.43 3.188-.43 2.867-1.211 2.43-1.875 1.875-2.43 1.211-2.867.43-3.188q0-1.953-.602-3.758t-1.695-3.305-2.625-2.625-3.391-1.734z" stroke="rgba(255, 255, 255, 90%)" stroke-width="1"></path></svg>
+                        </figure>
+                    </div>
+                    <div class="start-menu-overlay-text"
+                        [class.start-menu-overlay-text--visible]="isOverlayExpanded">
+                        <p class="start-menu-overlay-text-p">Power</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="start-menu-main-content-container">
+        <div class="start-menu-main-content-empty"></div>
+        <div class="start-menu-main-content-list-container">
+            <div class="start-menu-main-content-list-content">
+
+                <ol class="start-menu-list-ol" role="menu" aria-label="Apps" tabindex="-1"
+                    (mouseenter)="onBtnHover()" (keydown)="onAppListKeydown($event)"> 
+                    <li class="start-menu-list-li"
+                        *ngFor="let file of startMenuFiles; let i = index"
+                        id="start-menu-list-li-{{i}}">
+                        <button class="start-menu-list-btn" role="menuitem" (click)="runProcess(file, $event)">
+                            <div class="start-menu-list-head">
+                                <figure class="start-menu-list-fig">
+                                    <img class="start-menu-list-img" [src]="file.getIconPath"/>
+                                </figure>
+                            </div>
+                            <div class="start-menu-list-mid">
+                                <p class="start-menu-list-p">{{file.getFileName}}</p>
+                            </div>
+                            <div class="start-menu-list-tail">
+                                <figure class="start-menu-list-fig"></figure>
+                            </div>
+                        </button>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>

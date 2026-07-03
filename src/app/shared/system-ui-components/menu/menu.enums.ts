@@ -1,0 +1,51 @@
+export enum MenuAction { 
+    OPEN = 'Open',
+    OPEN_WITH = 'Open with...',
+
+    CUT = 'Cut',
+    COPY = 'Copy',
+    PASTE = 'Paste', 
+    DELETE = 'Delete',
+    REFRESH = 'Refresh',
+    SORTBY = 'Sort by',
+    VIEW = 'View',
+    NEW = 'New',
+
+    RENAME = 'Rename',
+    RESTORE = 'Restore',
+    PROPERTIES = 'Properties',
+    CREATE_SHORTCUT = 'Create shortcut',
+    PIN_TO_TASKBAR = 'Pin to taskbar',
+    UNPIN_FROM_TASKBAR = 'Unpin from taskbar',
+    CLOSE_WINDOW = 'Close window',
+    CLOSE_ALL_WINDOWS = 'Close all windows',
+    CONFIRM_DELETE = 'Confirm Delete',
+    RECYCLE_ON_DELETE = 'Recycle on Delete',
+    SCREEN_SHOT = 'Screen Shot',
+    NEXT_BACKGROUND = 'Next background',
+    PREVIOUS_BACKGROUND = 'Previous background',
+    PERSONALIZE = 'Personalize',
+    MANY_THANKS = 'Many Thanks',
+    TOGGLE_ESHEEP = 'Toggle eSheep',
+    STOP_ESHEEP = 'Stop eSheep',
+    START_ESHEEP = 'Start eSheep',
+
+    EXTRACT_ALL = 'Extract All...',
+    EMPTY_RECYCLE_BIN = 'Empty Recycle Bin',
+    PIN_TO_QUICK_ACCESS = 'Pin to Quick access',
+    OPEN_IN_TERMINAL = 'Open in Terminal',
+    OPEN_IN_NEW_WINDOW = 'Open in new window',
+    PIN_TO_START = 'Pin to Start',
+    SEND_TO_ZIP = 'Send to Zip',
+
+    SHOW_THE_DESKTOP = 'Show the desktop',
+    SHOW_OPEN_WINDOWS = 'Show open windows',
+    TASK_MANAGER = 'Task Manager',
+    HIDE_THE_TASKBAR = 'Hide the taskbar',
+    MERGE_TASKBAR_ICONS = 'Merge taskbar Icons',
+
+    UNMERGE_TASKBAR_ICONS = 'Unmerge taskbar Icons',
+    SHOW_THE_TASKBAR = 'Show the taskbar',
+
+
+}

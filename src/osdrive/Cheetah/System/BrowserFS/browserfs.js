@@ -12628,13 +12628,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (tree.hasOwnProperty(node)) {
 	                var children = tree[node];
 	                var name = pwd + "/" + node;
-	                if (children) {
+	                // Encoding contract (see make_http_index.js): directories are
+	                // objects; files are their numeric byte-size. Legacy `null`
+	                // entries are tolerated and treated as unknown-size files.
+	                // NOTE: test the TYPE here, not truthiness — a baked 0-byte
+	                // file is the number 0 (falsy) and would otherwise be
+	                // misread as a directory.
+	                if (children !== null && typeof children === 'object') {
 	                    idx._index[name] = inode = new DirInode();
 	                    queue.push([name, children, inode]);
 	                }
 	                else {
-	                    // This inode doesn't have correct size information, noted with -1.
-	                    inode = new FileInode(new Stats(FileType.FILE, -1, 0x16D));
+	                    // Use the baked size when present (a number, including 0).
+	                    // Fall back to -1 ("unknown") for legacy null so stat() can
+	                    // still resolve via a lazy HEAD only when the size truly
+	                    // isn't known. Baking a size can never truncate a read:
+	                    // XHR open() sets stats.size from the actual downloaded bytes.
+	                    var size = (typeof children === 'number') ? children : -1;
+	                    inode = new FileInode(new Stats(FileType.FILE, size, 0x16D));
 	                }
 	                if (parent) {
 	                    parent._ls[node] = inode;

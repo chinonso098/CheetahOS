@@ -22,7 +22,7 @@ export class AppDirectory {
     private readonly _systemProcessList: string[] = [
         "audioplayer", "chatter", "cheetah", "clippy", "clipboard", "fileexplorer",
         "taskmanager", "terminal", "videoplayer", "photoviewer",
-        "runsystem", "texteditor", "settings"
+        "runsystem", "texteditor", "settings", "screensaverviewer"
     ];
 
     /**
@@ -39,7 +39,7 @@ export class AppDirectory {
      */
     private readonly _processList: string[];
 
-    private _hiddenApps:string[] = ['cheetah', 'clippy', 'hello', 'runsystem', 'clipboard','greeting']
+    private _hiddenApps:string[] = ['cheetah', 'clippy', 'hello', 'runsystem', 'clipboard','greeting', 'screensaverviewer']
 
     /**
      * Maps an app name to its icon file name (relative to `Constants.IMAGE_BASE_PATH`).
@@ -69,6 +69,7 @@ export class AppDirectory {
         ["codeeditor", "vs_code.png"],
         ["markdownviewer", "markdown.png"],
         ["starfield", "star_field.png"],
+        ["screensaverviewer", "scrn_saver.png"],
         ["boids", "bird_oid.png"],
         ["particleflow", "particles.png"],
         ["pdfviewer", "pdf_js.png"],

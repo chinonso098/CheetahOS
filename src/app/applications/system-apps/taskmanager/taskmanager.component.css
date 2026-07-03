@@ -1,0 +1,967 @@
+/* Theme tokens. Dark is the default (matches the system default theme); the
+   host gains `.theme-light` via an @HostBinding driven by ThemeService, which
+   swaps in the light palette below. Every rule consumes these vars so the whole
+   app recolours from these two blocks. (Mirrors the File Explorer approach.) */
+:host{
+  --tm-bg: #1f1f1f;
+  --tm-surface: #252526;
+  --tm-text: #ffffff;
+  --tm-text-dim: #cccccc;
+  --tm-header-text: #d0d0d0;
+  --tm-accent-text: #5aa9ff;
+
+  --tm-scroll-thumb: rgba(255, 255, 255, 0.30);
+  --tm-scroll-thumb-hover: rgba(255, 255, 255, 0.45);
+
+  --tm-border: #3a3a3a;
+  --tm-border-soft: #2d2d2d;
+
+  --tm-row-hover: #2a2d2e;
+  --tm-row-selected: #094771;
+
+  --tm-tab-inactive: #2d2d2d;
+  --tm-tab-active: #1f1f1f;
+
+  --tm-nav-hover: #094771;
+  --tm-menu-bg: #252526;
+  --tm-menu-hover: #094771;
+
+  --tm-btn-bg: #3a3a3a;
+  --tm-btn-text: #e0e0e0;
+  --tm-btn-border: #555555;
+  --tm-btn-hover-bg: #094771;
+  --tm-btn-hover-border: #0a84ff;
+  --tm-btn-active-bg: #2a2a2a;
+
+  /* Dynamic resource-usage heat colours (low -> very high). Dark theme uses
+     the supplied blue ramp; brighter blue = heavier load (matches the guide). */
+  --tm-util-low: #112138;
+  --tm-util-med: #082b5e;
+  --tm-util-mod: #023175;
+  --tm-util-high: #023175;
+  --tm-util-vhigh: #0055a1;
+
+  /* Column-header heat bar (the sliding fill behind the % + label). */
+  --tm-th-heat: #082b5e;
+  --tm-th-heat-warn: #0055a1;
+}
+
+:host(.theme-light){
+  --tm-bg: #ffffff;
+  --tm-surface: #ffffff;
+  --tm-text: #000000;
+  --tm-text-dim: #333333;
+  --tm-header-text: #333333;
+  --tm-accent-text: #043e7c;
+
+  --tm-scroll-thumb: rgba(0, 0, 0, 0.35);
+  --tm-scroll-thumb-hover: rgba(0, 0, 0, 0.50);
+
+  --tm-border: #cccccc;
+  --tm-border-soft: #f0f0f0;
+
+  --tm-row-hover: #e8f4fc;
+  --tm-row-selected: #d0ecfc;
+
+  --tm-tab-inactive: #f2f2f2;
+  --tm-tab-active: #ffffff;
+
+  --tm-nav-hover: #98ccf4;
+  --tm-menu-bg: #ffffff;
+  --tm-menu-hover: #8cc8f6;
+
+  --tm-btn-bg: #d0cccc;
+  --tm-btn-text: #75787c;
+  --tm-btn-border: #bcbcbc;
+  --tm-btn-hover-bg: #84b3e4;
+  --tm-btn-hover-border: #0056b3;
+  --tm-btn-active-bg: #e4e4e1;
+
+  /* Light theme keeps the original warm usage ramp. */
+  --tm-util-low: #fff4c4;
+  --tm-util-med: #ffecac;
+  --tm-util-mod: #ffd464;
+  --tm-util-high: #ffa41c;
+  --tm-util-vhigh: #fc6c30;
+
+  --tm-th-heat: #d0ecfc;
+  --tm-th-heat-warn: #fcc4ac;
+}
+
+/* Thin custom scrollbar that overrides the host OS default. Thumb swaps with
+   the theme: grey on dark (default), near-black on light. */
+:host *{
+  scrollbar-width: thin;
+  scrollbar-color: var(--tm-scroll-thumb) transparent;
+}
+
+:host ::-webkit-scrollbar{
+  width: 4px;
+  height: 4px;
+}
+
+:host ::-webkit-scrollbar-track{
+  background: transparent;
+}
+
+:host ::-webkit-scrollbar-thumb{
+  background-color: var(--tm-scroll-thumb);
+  border-radius: 2px;
+}
+
+:host ::-webkit-scrollbar-thumb:hover{
+  background-color: var(--tm-scroll-thumb-hover);
+}
+
+/* Sort-direction chevrons in the table headers are inline <svg> with no fill
+   attribute, so they default to black and vanish on a dark background. Drive
+   their fill from the theme text colour. */
+.tskmgr-table svg,
+.tskmgr-table-svc svg {
+  fill: var(--tm-text);
+}
+
+/* Inline nav-menu glyphs (submenu arrow, refresh-rate radio dot) are inline
+   <svg fill="currentColor">; resolve currentColor from the theme text colour. */
+.tskmgr-nav-img,
+.tskmgr-nav-sub-menu-img {
+  color: var(--tm-text);
+}
+
+/* Custom styles for the card */
+.card {
+  width: 100%;
+  height: 100%;
+  background-color: var(--tm-bg);
+  border-bottom: 1px solid var(--tm-border); /* Add a border to the card */
+  /* Stack card-body (flex) + footer (45px) inside the card. */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+  
+/* Custom styles for the card-body */
+.card-body {
+  width: 100%;
+  height: 100%;
+  padding: 0; /* Add padding inside the card body */
+  background-color: var(--tm-bg); /* Set the background color */
+  color: var(--tm-text); /* Set the text color */
+  border-top: none; /*Add a top border to separate from the card header */
+  /* Was margin-bottom: 43px to clear the viewport-fixed footer. The
+     footer now flows inside .card as the second flex child, so the
+     reservation is unnecessary. */
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Additional styles for links inside the card-body (optional) */
+.card-body a {
+  text-decoration: none; /* Remove underlines from links */
+ /*  color: #007BFF; Set link color */
+}
+
+/* Hover effect for links (optional) */
+.card-body a:hover {
+  text-decoration: underline; /* Add underline on hover */
+}
+
+
+/* Custom styles for rows */
+.row {
+  margin: 10px 0px; /* Add margin above and below the row */
+  min-height: 10px;
+  min-width: 10px;
+}
+
+/* Custom styles for columns */
+.col {
+  padding: 10px; /* Add padding inside columns */
+  background-color: var(--tm-bg); /* Set a background color for columns */
+  border: 1px solid var(--tm-border); /* Add a border to columns */
+  /* border-radius: 1px; Add rounded corners to columns */
+  color: var(--tm-text); /* Set text color for columns */
+}
+
+/* Additional styles for links inside columns (optional) */
+.col a {
+  text-decoration: none; /* Remove underlines from links */
+  color: #007BFF; /* Set link color */
+}
+
+/* Hover effect for links (optional) */
+.col a:hover {
+  text-decoration: underline; /* Add underline on hover */
+}
+
+
+/*----------------------------------------Table CSS START --------------------------*/
+
+/* Custom styles for .table-responsive (Optional) */
+.tskmgr-table-cntnr {
+  /* Was fixed 715x310. Now fills card-body so the table scrolls inside
+     whatever vertical space remains above the footer. */
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto; /* Enable horizontal/vertical scrolling when needed */
+  border-top:  none;
+}
+
+/* Custom styles for .table-responsive (Optional) */
+.tskmgr-table-svc-cntnr {
+    /* width: 640px; */
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  /* overflow: auto; Enable horizontal/vertical scrolling when needed */
+  border-top:  none;
+  /* padding-bottom: 10px; */
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+/* Custom styles for the table */
+.tskmgr-table, .tskmgr-table-svc {
+    /*overflow: scroll; */   /* Enable horizontal scrolling when needed */
+    border-collapse: collapse; /* Remove spacing between table cells */
+    /* Was width:100%, which combined with table-layout:auto made the
+       table stretch to the container. On grow the name column absorbed
+       all extra space; on shrink it couldn't drop below the inline
+       widths written by alignHeaderAndBodyWidth(). With max-content the
+       table sizes to its columns: narrower container -> horizontal
+       scroll via .tskmgr-table-cntnr overflow:auto; wider container ->
+       whitespace on the right (matches Windows Task Manager). */
+    width: max-content;
+    margin: 1px 0; /* Add margin above and below the table */
+    font-family: Arial, sans-serif; /* Set the font family for the table */
+    table-layout: auto;
+}
+
+/* Custom styles for the table */
+.taskmgr-table.mini {
+  border-collapse: collapse; /* Remove spacing between table cells */
+  width: 100%; /* Fill the mini-view container so rows span full width */
+  margin: 1px 0; /* Add margin above and below the table */
+  font-family: Arial, sans-serif; /* Set the font family for the table */
+  table-layout: auto;
+}
+
+/* Mini-view scroll container. Mirrors .tskmgr-table-cntnr so the process
+   list flexes inside .card-body and scrolls instead of pushing the footer
+   off-screen. (Previously the markup referenced a non-existent
+   ".taskmgr-table-cntnr" class, leaving the list unstyled.) */
+.taskmgr-table-cntnr {
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Mini-view rows/cells. The shared table styling targets ".tskmgr-table",
+   so the mini table ("taskmgr-table") needs its own row/cell rules to get
+   padding, hover and the selected-row highlight. */
+.taskmgr-table.mini td {
+  padding: 4px 5px;
+  font-size: 12px;
+  font-weight: lighter;
+  text-align: left;
+  border: none;
+}
+
+.taskmgr-table.mini tr {
+  background-color: var(--tm-bg);
+}
+
+.taskmgr-table.mini tr:hover {
+  background-color: var(--tm-row-hover);
+}
+
+.taskmgr-table.mini tr.active td {
+  background-color: var(--tm-row-selected) !important;
+}
+
+.tskmgr-table-svc-header-cntnr{ 
+  height: 20px;
+}
+
+/* Custom styles for table headers */
+.tskmgr-table th , .tskmgr-table-svc th {
+  background-color: var(--tm-bg); /* Header background color */
+  color: var(--tm-header-text); /* Header text color */
+  padding: 0; /* Header cell padding */
+  text-align: left; /* Header text alignment */
+  font-weight:lighter;  /* Header text bold */
+  height: 40px;
+  min-width: 80px;
+  border: 0.5px solid var(--tm-border);   /* Cell border */
+  border-top: none;
+  vertical-align: middle;
+}
+
+.tskmgr-table thead th {
+  background: var(--tm-bg);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.tskmgr-table-svc th {
+  height: 20px;
+}
+
+.tskmgr-table-svc-body-cntnr{  
+  /* width:715px; */
+  /* width: 400px; */
+  height:260px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.tskmgr-table-svc-body-cntnr{
+  /* Was a hard height: 280px. Now expands inside .tskmgr-table-svc-cntnr
+     so the services table scrolls within the available window height. */
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+tbody{
+  border-left: 0;
+  border-right: 0;
+}
+  
+/* Custom styles for table rows */
+.tskmgr-table tr {
+  background-color: var(--tm-bg); /* Row background color */
+}
+ 
+.tskmgr-table-svc tr {
+  background-color: var(--tm-bg); /* Row background color */
+}
+
+/* Alternate row background color (zebra-striping) */
+.tskmgr-table tr:nth-child(even) {
+  background-color: var(--tm-bg); 
+}
+
+.tskmgr-table-svc tr:nth-child(even) {
+  background-color: var(--tm-bg); 
+}
+
+/* Custom styles for table cells */
+.tskmgr-table th {
+  min-width: 81px;
+}
+
+.tskmgr-table-svc th {
+  /* min-width: 130px; */
+}
+  
+/* Custom styles for table cells */
+.tskmgr-table td {
+  padding: 3px 5px; /* Cell padding */
+  min-width: 81px;
+  margin-left: 5px;
+  margin-right: 5px;
+  font-size: 12px;
+  font-weight:lighter; 
+  text-align: left; /* Header text alignment */
+  border: 0.5px solid var(--tm-border); /* Cell border  #1a127b*/
+  border-top:none; 
+  border-bottom:none;
+}
+
+.tskmgr-table-svc td {
+  padding: 3px 5px; /* Cell padding */
+  /* min-width: 130px; */
+  margin-left: 5px;
+  margin-right: 5px;
+  font-size: 12px;
+  font-weight:lighter; 
+  text-align: left; /* Header text alignment */
+  border: 0.5px solid var(--tm-border); /* Cell border  #1a127b*/
+  border-top:none; 
+  border-bottom:none;
+}
+
+.tskmgr-table td:first-child td:last-child{
+  border-left: 0;
+  border-right: 0;
+}
+
+.tskmgr-table-svc td:first-child td:last-child{
+  border-left: 0;
+  border-right: 0;
+}
+
+/* Add hover effect to table rows (optional) */
+.tskmgr-table tr:hover {
+  background-color: var(--tm-row-hover);
+}
+
+.tskmgr-table-svc tr:hover {
+  background-color: var(--tm-row-hover);
+}
+
+.tskmgr-table tr.active td {
+  background-color:var(--tm-row-selected) !important;
+}
+
+.tskmgr-table-svc tr.active td {
+  background-color:var(--tm-row-selected) !important;
+}
+
+/* Add this to your component's CSS or global styles */
+th[columnResize], td[columnResize] {
+  position: relative;
+}
+
+th[columnResize]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px; /* Adjust the handle width */
+  height: 100%;
+  cursor: col-resize;
+  background-color: var(--tm-border-soft); /* Handle background color */
+}
+
+
+.truncate, .truncate_svc, .truncate_svc1, .truncate_svc2 {
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add "..." when text overflows */
+  width: 80px; /* Set a fixed width */
+}
+
+.truncate_svc {
+  width: 106px; /* Set a fixed width */
+}
+
+.truncate_svc1 {
+  width: 120px; /* Set a fixed width */
+}
+
+.truncate_svc2{
+    width: 180px; /* Set a fixed width */
+}
+/*----------------------------------------Table CSS END --------------------------*/
+
+span {
+  display: block; /* Ensures each span is on a new line */
+}
+
+.tskmgr-th-div-name-cntnr-l{
+  display: flex;
+  padding-left:5px; 
+  height: 50%;
+}
+
+.tskmgr-svc-th-div-name-cntnr-l{
+  display: flex;
+  padding-left:5px; 
+  height:14px;
+}
+
+.tskmgr-th-div-name-cntnr-r{
+  display: flex;
+  padding-left:70%; 
+  height: 50%;
+}
+
+.tskmgr-sort-icon-cntnr-basic{
+  height: 50%;
+  margin-left:50%;
+}
+
+.tskmgr-svc-sort-icon-cntnr-basic{
+  height: 6px;
+  left:50%;
+}
+
+.tskmgr-sort-icon{
+  font-size:13px; 
+}
+
+.tskmgr-svc-sort-icon{
+  font-size:13px; 
+  align-items: center;
+}
+
+.tskmgr-th-span-name, .tskmgr-svc-th-span-name{
+  position: relative;
+  font-size: 12px;
+  font-weight: normal;
+  /* Light grey in dark mode; the accent blue in light mode (override below). */
+  color: #d0d0d0;
+  text-overflow: ellipsis;
+  top: 18%;
+}
+.tskmgr-svc-th-span-name{
+  top: 1%;
+}
+
+/* In light mode the grey heading text washes out on white, so use the
+   theme accent blue (matches Windows Task Manager column headers). */
+:host(.theme-light) .tskmgr-th-span-name,
+:host(.theme-light) .tskmgr-svc-th-span-name{
+  color: var(--tm-accent-text);
+}
+
+.tskmgr-numeric-th-div-cntnr{
+  display:flex;
+  width: 88px;
+  height:50%;
+}
+
+.tskmgr-sort-icon-cntnr{
+  display: flex;
+  width:40%; 
+  height:100%;
+}
+
+.tskmgr-sort-icon1{
+  font-size:13px; 
+  position: relative;
+  right: -20%;
+  top:0%;
+}
+
+.tskmgr-th-div-number-cntnr{
+  display: flex;
+  height:100%;
+  width:60%;
+}
+
+.tskmgr-th-div-number{
+  font-size:medium;
+  position: relative;
+  font-weight: normal;
+  width: 58%;
+  /* right: 0%; */
+  top:0%;
+}
+
+.tskmgr-th-div-symbol{
+  font-size:medium;
+  position: relative;
+  font-weight: normal;
+  width: 42%;
+  top:0%;
+}
+
+.tskmgr-numeric-th-name-cntnr{
+  position: relative;
+  height:50%;
+  width: 88px;
+  font-size:14px;
+}
+
+.tskmgr-th-span-name1{
+  position: relative;
+  font-size: 12px;
+  font-weight: normal;
+  /* Light grey in dark mode; the accent blue in light mode (override below). */
+  color: #d0d0d0;
+  text-overflow: ellipsis;
+  text-align: right;
+  padding-right: 5px;
+  top:18%
+}
+
+:host(.theme-light) .tskmgr-th-span-name1{
+  color: var(--tm-accent-text);
+}
+
+.taskmgr-table th:first-child th:last-child{
+  border-left: 0;
+  border-right: 0;
+}
+  
+.tskmgr-figure0{
+  align-items: center;
+  display:inline-flex;
+  width: fit-content;
+}
+
+.tskmgr-figcaption0{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.tskmgr-img0{
+  height: 18px;
+  width: 18px;
+  position: relative;
+  margin: 0 4px 0 0;
+}
+
+/* Footer "More details" / "Fewer details" toggle glyphs are inline
+   <svg class="tskmgr-img0" fill="currentColor">. Scope to svg (the same class
+   is also on the process/service icon <img>s, which must keep their size and
+   ignore colour). Resolve currentColor from the theme text colour so the glyph
+   is white in dark mode and black in light mode, and enlarge it a touch. */
+svg.tskmgr-img0{
+  height: 22px;
+  width: 22px;
+  color: var(--tm-text);
+}
+
+/* Root container of the detailed view. Was an unclassed <div> that
+   relied on its children having fixed pixel sizes. Now it stretches to
+   fill the primary window and stacks the nav bar + tabbed window as a
+   flex column so everything below can flex responsively. */
+.tskmgr-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 320px;
+  min-height: 240px;
+}
+
+/* Styles for the tabbed window container */
+.tskmgr-tabbed-window {
+  min-width: 150px; /* Adjust the width as needed */
+  border: 1px solid var(--tm-border); /**/
+  /* border-radius: 5px;
+  overflow: scroll;  */
+  /* Fill the root and stack tabs + tab-content vertically. */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.tskmgr-tabbed-window:first-child .tskmgr-tabbed-window:last-child {
+  border-left: 0;
+  border-right: 0;
+}
+  
+/* Styles for the tab navigation */
+.tskmgr-tabs {
+  display: flex;
+  background-color: var(--tm-bg);
+  color: var(--tm-text);
+  border-bottom: 0.5px solid var(--tm-border);
+}
+
+.tskmgr-tab {
+  flex: 1;
+  padding: 2px 5px;
+  background-color: var(--tm-tab-inactive); /*e3e0e0*/
+  color: var(--tm-text);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-weight: normal;
+  font-size: 12px;
+  border-left: 0.5px solid var(--tm-border);
+  border-right: 0.5px solid var(--tm-border);
+  border-top: 0.5px solid var(--tm-border);
+  max-width: fit-content;
+  max-height: fit-content;
+}
+
+.tskmgr-tab.active {
+  background-color: var(--tm-tab-active); /*f2f2f2*/
+  border-left: 0;
+  border-right: 0;
+  border-top: 0.5px solid var(--tm-border);
+  color: var(--tm-text);
+}
+
+/* Styles for tab content */
+.tskmgr-tab-content {
+  padding: 0;
+  border-top: none; 
+  /* Fill the tabbed window so the active pane (card + footer) can flex. */
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tskmgr-tab-pane {
+  display: none;
+}
+
+.tskmgr-tab-pane.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.just-for-one-span{
+  color: var(--tm-text); 
+  font-weight: normal;
+  padding-left: 2px;
+}
+
+.just-for-one-span::first-letter{
+  text-decoration: underline;
+}
+
+.tsksmgr-footer-div-cntnr{
+  display:flex;
+  /* Was: position: fixed; bottom: 0; left: 0; width: 100%; — anchored
+     to the VIEWPORT, so the footer floated outside the window when
+     moved/resized and required card-body margin-bottom:43px. Now it
+     flows inside the .card as the second flex child. */
+  position: relative;
+  width: 100%;
+  height: 45px;
+  flex: 0 0 45px;
+  font-size: small;
+  font-weight: lighter;
+  border-top: 1px solid var(--tm-border); /* Cell border */
+  background-color: var(--tm-bg);
+}
+
+.tsksmgr-footer-div-cntnt{
+  display: flex;
+  position: relative;
+  width: 50%;
+  left: 0%
+}
+
+.tsksmgr-footer-div-cntnt1{
+  display: flex;
+  /* Right-align the End task button and keep a 15px gap from the
+     window's right edge. */
+  justify-content: flex-end;
+  position: relative;
+  padding-right: 15px;
+  width: 50%;
+  right: 0%
+}
+
+  /* Custom styles for .btn.btn-primary */
+.btn.btn-primary {
+  position: relative;
+  background-color: var(--tm-btn-bg); /* Primary button background color */
+  color: var(--tm-btn-text); /* Text color for the primary button */
+  border: 1px solid var(--tm-btn-border); /* Border color for the primary button */
+  padding: 2px 20px; /* Padding for the primary button (adjust as needed) */
+  font-size: 12px; /* Font size for the text */
+  font-weight: normal;
+  height: 22px;
+  top: 25%;
+}
+
+  /* Custom styles for .btn.btn-primary */
+.btn.btn-primary-b {
+    position: relative;
+    background-color: var(--tm-btn-bg); /* Primary button background color */
+    color: var(--tm-btn-text); /* Text color for the primary button */
+    border: 1px solid var(--tm-btn-border); /* Border color for the primary button */
+    padding: 2px 20px; /* Padding for the primary button (adjust as needed) */
+    font-size: 12px; /* Font size for the text */
+    font-weight: normal;
+    height: 22px;
+    top: 25%;
+  }
+
+.btn.btn-primary::first-letter .btn.btn-primary-b::first-letter{
+  text-decoration: underline;
+}
+
+/* Hover state for the primary button */
+.btn.btn-primary:hover .btn.btn-primary-b:hover {
+  background-color: var(--tm-btn-hover-bg); /* Background color when hovered */
+  border: 1px solid var(--tm-btn-hover-border); /* Border color when hovered */
+  color: var(--tm-text); /* Text color when hovered */
+}
+
+/* Active (clicked) state for the primary button */
+.btn.btn-primary.active, .btn.btn-primary.focus  .btn.btn-primary-b.active, .btn.btn-primary-b.focus {
+  background-color: var(--tm-btn-active-bg); /* Background color when active or focused */
+  border: 1px solid var(--tm-border); /* Border color when active or focused */
+  color: var(--tm-text); /* Text color when active or focused */
+}
+
+.btn.btn-primary.active:hover {
+  border: 1px solid var(--tm-btn-hover-border); /* Border color for the primary button */
+  background-color: var(--tm-btn-hover-bg); /* Primary button background color */
+}
+
+/* Active (clicked) state for the primary button */
+.btn.btn-primary.head:active, .btn.btn-primary.head:focus {
+  background-color: var(--tm-btn-hover-border); /* Background color when active or focused */
+  border: 1px solid var(--tm-btn-hover-border); /* Border color when active or focused */
+  color: #fff; /* Text color when active or focused */
+}
+
+
+/*-------------------------------------Navigation Menu Start-----------------------------------*/
+
+.tskmgr-nav-btn-cntnr {
+  background-color: var(--tm-bg);
+  display:flex; 
+  position:relative;
+  /* Keep the nav bar (and its dropdowns) above the sticky table header,
+     which establishes its own stacking context at z-index:1. */
+  z-index: 10;
+}
+
+.tskmgr-nav-btn{
+  display: inline-flex;
+  border: 1px transparent;
+  padding: 1px 5px;
+  height: 20px;
+}
+
+.tskmgr-btn-span{
+  position: relative;
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--tm-text);
+  text-align: left;
+  top: 14%;
+}
+
+.tskmgr-nav-btn:hover{
+  background-color: var(--tm-nav-hover);
+  border-color:var(--tm-nav-hover) ;
+}
+
+
+.tskmgr-nav-menu-cntnr, .tskmgr-nav-menu-cntnr1{
+  display:none; 
+  position:absolute;
+  background-color: var(--tm-menu-bg);
+  color: var(--tm-text);
+  padding: 3px;
+  box-shadow: 2px 2px rgba(0,0,0,0.3);
+  z-index: 20;
+}
+
+/* .tskmgr-nav-btn:hover .tskmgr-nav-menu-cntnr{
+  display: block;
+  left: 2px;
+  top: 20px;
+} */
+/* .tskmgr-nav-btn:hover .tskmgr-nav-menu-cntnr1{
+  display: block;
+  left: 85px;
+  top: 20px;
+} */
+
+.tskmgr-nav-menu-item{
+  display:flex; 
+  position:relative;
+  background-color: var(--tm-menu-bg);
+  width: 140px;
+  padding: 4px 0;
+}
+
+.tskmgr-nav-sub-menu-cntnr{
+  display:none; 
+  position:absolute;
+  background-color: var(--tm-menu-bg);
+  padding: 3px;
+  box-shadow: 2px 2px rgba(0,0,0,0.3);
+  left: 95%;
+  top: -2px;
+  z-index: 20;
+}
+
+.tskmgr-nav-menu-item:hover{
+  background-color: var(--tm-menu-hover);
+}
+
+.tskmgr-nav-menu-item:hover .tskmgr-nav-sub-menu-cntnr{
+  display: block;
+}
+
+.tskmgr-nav-sub-menu-cntnr .tskmgr-nav-menu-item{
+  padding:1px 0;
+}
+
+.tskmgr-item-span{
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  padding-left: 10px;
+  font-size: 12px;
+  font-weight: normal;
+  text-align: left;
+}
+
+.tskmgr-nav-div{
+  padding-left: 22px;
+  height: 14px;
+}
+
+.tskmgr-nav-figure{
+  position: relative;
+  align-items: center;
+  place-content: center;
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  top: -2px;
+}
+
+.tskmgr-nav-img{
+  height: 12px;
+  width: 12px;
+ 
+  position: relative;
+}
+
+.tskmgr-nav-sub-menu-div{
+  display: block;
+  width: 19px;
+  height: 19px;
+}
+
+.tskmgr-nav-sub-menu-div.active{
+  background-color: var(--tm-nav-hover);
+}
+
+.tskmgr-nav-sub-menu-figure{
+  position: relative;
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  top: -2px;
+  left: 5px;
+}
+
+.tskmgr-nav-sub-menu-img{
+  height: 8px;
+  width: 8px;
+ 
+  position: relative;
+}
+
+
+/*-------------------------------------Navigation Menu End-----------------------------------*/
+
+
+/*-------------------------------------Column Header Context Menu-----------------------------------*/
+/* The column show/hide menu now lives in the shared <cos-menu> component
+   (checkable variant); its styles live in menu.component.css. Only the
+   host positioning is applied here via the [style]="cntxtMenuStyle" binding. */
+/*-------------------------------------Column Header Context Menu End-----------------------------------*/

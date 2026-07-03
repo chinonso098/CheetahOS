@@ -1,0 +1,90 @@
+.task-bar-nav{
+    display: block;
+    position: fixed;
+    background-color: color-mix(in srgb, var(--surface-color) 55%, transparent);
+    backdrop-filter: blur(1px);
+    height: 40px;
+    width: 100vw;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 4;
+}
+
+/* Transparency effects OFF: solid taskbar surface, no backdrop blur. The
+   surface color is the accent color (when enabled) or the default system color. */
+:host(.solid-surface) .task-bar-nav{
+    background-color: var(--surface-color);
+    backdrop-filter: none;
+}
+
+.cheetah-start-button{
+    color: white;
+    font-size: 20px;
+    display: flex;
+    place-content: center;
+    place-items: center;
+    position: absolute;
+    height: 100%;
+    width: 45px;
+    left: 0px;
+    background-color: unset;
+    /* bottom: 0; */
+}
+
+/* Hover styling moved out of inline [style] bindings into pure CSS. */
+.cheetah-start-button:hover{
+    /* A light, translucent wash of the accent color. */
+    background-color: color-mix(in srgb, var(--accent-color) 65%, transparent);
+}
+.cheetah-start-button.active{
+    /* A light, translucent wash of the accent color. */
+    background-color: color-mix(in srgb, var(--accent-color) 65%, transparent);
+}
+
+
+.cheetah-start-button svg{
+    fill: #fff;
+}
+
+.cheetah-start-button:hover svg{
+    fill: var(--accent-color);
+}
+
+.main-taskbar-search-cntnr{
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    left: 45px;
+}
+
+.main-taskbar-space{
+    height: 40px;
+    min-width: 2px;
+    position: absolute;
+    left: 85px;
+}
+
+.taskbar-search-fig{
+    align-items: center;
+    display:inline-flex;
+    width: 32px;
+    padding: 0 1px;
+    position: relative;
+    top: 8.5px;
+    left: 4.5px;
+}
+
+.taskbar-search-img{
+    height: 27px;
+    width: 27px;
+}
+
+.main-taskbar-search-cntnr:hover{
+    background-color: color-mix(in srgb, var(--accent-color) 65%, transparent);
+}
+
+.main-taskbar-search-cntnr:active,
+.main-taskbar-search-cntnr.active {
+  background-color: color-mix(in srgb, var(--accent-color) 60%, transparent);
+}

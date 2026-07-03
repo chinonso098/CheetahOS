@@ -1,0 +1,318 @@
+<!--
+  Reusable theme-aware inline-SVG glyphs. Each <svg> is filled with currentColor
+  (resolved to var(--menu-icon) in CSS) so the icons flip between light and dark
+  with the rest of the menu. A glyph is selected by the `name` context value,
+  produced by the component's glyphFor() helper.
+-->
+<ng-template #menuGlyph let-name="name">
+  <svg *ngIf="name === 'copy'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 4 4 L 4 24 L 11 24 L 11 22 L 6 22 L 6 6 L 18 6 L 18 7 L 20 7 L 20 4 Z M 12 8 L 12 28 L 28 28 L 28 8 Z M 14 10 L 26 10 L 26 26 L 14 26 Z"></path>
+  </svg>
+  <svg *ngIf="name === 'cut'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 6 6 C 3.800781 6 2 7.800781 2 10 C 2 12.199219 3.800781 14 6 14 C 6.957031 14 7.808594 13.628906 8.5 13.0625 L 13.71875 16.03125 L 8.5625 18.96875 C 7.863281 18.375 6.980469 18 6 18 C 3.800781 18 2 19.800781 2 22 C 2 24.199219 3.800781 26 6 26 C 8.199219 26 10 24.199219 10 22 C 10 21.507813 9.882813 21.03125 9.71875 20.59375 L 30 9 L 26 9 L 15.78125 14.84375 L 9.71875 11.40625 C 9.882813 10.96875 10 10.492188 10 10 C 10 7.800781 8.199219 6 6 6 Z M 6 8 C 7.117188 8 8 8.882813 8 10 C 8 11.117188 7.117188 12 6 12 C 4.882813 12 4 11.117188 4 10 C 4 9.859375 4.003906 9.726563 4.03125 9.59375 C 4.214844 8.675781 5.023438 8 6 8 Z M 19.09375 16.8125 L 17.09375 17.90625 L 26 23 L 30 23 Z M 6 20 C 7.117188 20 8 20.882813 8 22 C 8 23.117188 7.117188 24 6 24 C 4.882813 24 4 23.117188 4 22 C 4 21.859375 4.003906 21.726563 4.03125 21.59375 C 4.214844 20.675781 5.023438 20 6 20 Z"></path>
+  </svg>
+  <svg *ngIf="name === 'paste'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 15 3 C 13.742188 3 12.847656 3.890625 12.40625 5 L 5 5 L 5 28 L 13 28 L 13 30 L 27 30 L 27 14 L 25 14 L 25 5 L 17.59375 5 C 17.152344 3.890625 16.257813 3 15 3 Z M 15 5 C 15.554688 5 16 5.445313 16 6 L 16 7 L 19 7 L 19 9 L 11 9 L 11 7 L 14 7 L 14 6 C 14 5.445313 14.445313 5 15 5 Z M 7 7 L 9 7 L 9 11 L 21 11 L 21 7 L 23 7 L 23 14 L 13 14 L 13 26 L 7 26 Z M 15 16 L 25 16 L 25 28 L 15 28 Z"></path>
+  </svg>
+  <svg *ngIf="name === 'delete'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 15 4 C 14.476563 4 13.941406 4.183594 13.5625 4.5625 C 13.183594 4.941406 13 5.476563 13 6 L 13 7 L 7 7 L 7 9 L 8 9 L 8 25 C 8 26.644531 9.355469 28 11 28 L 23 28 C 24.644531 28 26 26.644531 26 25 L 26 9 L 27 9 L 27 7 L 21 7 L 21 6 C 21 5.476563 20.816406 4.941406 20.4375 4.5625 C 20.058594 4.183594 19.523438 4 19 4 Z M 15 6 L 19 6 L 19 7 L 15 7 Z M 10 9 L 24 9 L 24 25 C 24 25.554688 23.554688 26 23 26 L 11 26 C 10.445313 26 10 25.554688 10 25 Z M 12 12 L 12 23 L 14 23 L 14 12 Z M 16 12 L 16 23 L 18 23 L 18 12 Z M 20 12 L 20 23 L 22 23 L 22 12 Z"></path>
+  </svg>
+  <svg *ngIf="name === 'rename'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 17 4 L 17 6 C 18.464844 6 19.5625 6.289063 20.25 6.625 C 20.59375 6.792969 20.855469 6.980469 20.96875 7.09375 C 20.992188 7.117188 20.992188 7.109375 21 7.125 L 21 24.875 C 20.992188 24.890625 20.992188 24.882813 20.96875 24.90625 C 20.855469 25.019531 20.59375 25.207031 20.25 25.375 C 19.5625 25.710938 18.464844 26 17 26 L 17 28 C 18.734375 28 20.113281 27.648438 21.125 27.15625 C 21.464844 26.992188 21.742188 26.789063 22 26.59375 C 22.257813 26.789063 22.535156 26.992188 22.875 27.15625 C 23.886719 27.648438 25.265625 28 27 28 L 27 26 C 25.535156 26 24.4375 25.710938 23.75 25.375 C 23.40625 25.207031 23.144531 25.019531 23.03125 24.90625 C 23.007813 24.882813 23.007813 24.890625 23 24.875 L 23 7.125 C 23.007813 7.109375 23.007813 7.117188 23.03125 7.09375 C 23.144531 6.980469 23.40625 6.792969 23.75 6.625 C 24.4375 6.289063 25.535156 6 27 6 L 27 4 C 25.265625 4 23.886719 4.351563 22.875 4.84375 C 22.535156 5.007813 22.257813 5.210938 22 5.40625 C 21.742188 5.210938 21.464844 5.007813 21.125 4.84375 C 20.113281 4.351563 18.734375 4 17 4 Z M 1 10 L 1 22 L 19 22 L 19 20 L 3 20 L 3 12 L 19 12 L 19 10 Z M 25 10 L 25 12 L 29 12 L 29 20 L 25 20 L 25 22 L 31 22 L 31 10 Z M 5 14 L 5 18 L 13 18 L 13 14 Z"></path>
+  </svg>
+  <svg *ngIf="name === 'refresh'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 16 3 C 8.8324839 3 3 8.8324839 3 16 C 3 23.167516 8.8324839 29 16 29 C 23.167516 29 29 23.167516 29 16 L 27 16 C 27 22.086484 22.086484 27 16 27 C 9.9135161 27 5 22.086484 5 16 C 5 9.9135161 9.9135161 5 16 5 C 19.552687 5 22.700746 6.6836442 24.710938 9.2890625 L 22 12 L 29 12 L 29 5 L 26.132812 7.8671875 C 23.747961 4.9013293 20.093015 3 16 3 z"></path>
+  </svg>
+  <svg *ngIf="name === 'sort'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 9 4.09375 L 2.28125 10.8125 L 3.71875 12.21875 L 8 7.9375 L 8 20 L 10 20 L 10 7.9375 L 14.28125 12.21875 L 15.71875 10.8125 Z M 22 5 L 22 7 L 24 7 L 24 5 Z M 22 9 L 22 11 L 24 11 L 24 9 Z M 22 13 L 22 25.0625 L 17.71875 20.78125 L 16.28125 22.1875 L 23 28.90625 L 29.71875 22.1875 L 28.28125 20.78125 L 24 25.0625 L 24 13 Z M 8 22 L 8 24 L 10 24 L 10 22 Z M 8 26 L 8 28 L 10 28 L 10 26 Z"></path>
+  </svg>
+  <svg *ngIf="name === 'view'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 5 5 L 5 6 L 5 15 L 15 15 L 15 5 L 5 5 z M 17 5 L 17 6 L 17 15 L 27 15 L 27 5 L 17 5 z M 7 9 L 13 9 L 13 13 L 7 13 L 7 9 z M 19 9 L 25 9 L 25 13 L 19 13 L 19 9 z M 5 17 L 5 18 L 5 27 L 15 27 L 15 17 L 5 17 z M 17 17 L 17 18 L 17 27 L 27 27 L 27 17 L 17 17 z M 7 21 L 13 21 L 13 25 L 7 25 L 7 21 z M 19 21 L 25 21 L 25 25 L 19 25 L 19 21 z"></path>
+  </svg>
+  <svg *ngIf="name === 'check'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 28.28125 6.28125 L 11 23.5625 L 3.71875 16.28125 L 2.28125 17.71875 L 10.28125 25.71875 L 11 26.40625 L 11.71875 25.71875 L 29.71875 7.71875 Z"></path>
+  </svg>
+  <svg *ngIf="name === 'chevron'" class="dm-glyph-svg dm-glyph-chevron" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 22.5625 16 L 10.78125 27.78125 L 12.21875 29.21875 L 24.71875 16.71875 L 25.40625 16 L 24.71875 15.28125 L 12.21875 2.78125 L 10.78125 4.21875 Z"></path>
+  </svg>
+  <svg *ngIf="name === 'new_window'" class="dm-glyph-svg dm-glyph-chevron" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 18 5 L 18 7 L 23.5625 7 L 11.28125 19.28125 L 12.71875 20.71875 L 25 8.4375 L 25 14 L 27 14 L 27 5 Z M 5 9 L 5 27 L 23 27 L 23 14 L 21 16 L 21 25 L 7 25 L 7 11 L 16 11 L 18 9 Z"></path>
+  </svg>
+  <svg *ngIf="name === 'properties'" class="dm-glyph-svg" viewBox="0 0 48 48" aria-hidden="true">
+    <path d="M 30.841797 5.0019531 C 27.660142 4.9648973 24.470437 6.1538173 22.046875 8.578125 C 18.850723 11.774277 17.888708 16.292583 18.962891 20.378906 C 14.735674 24.606997 7.3647254 31.977071 6.7929688 32.548828 C 4.4146441 34.927153 4.4146442 38.828707 6.7929688 41.207031 C 9.1712933 43.585356 13.072847 43.585356 15.451172 41.207031 L 27.621094 29.037109 C 31.707347 30.111176 36.225793 29.149207 39.421875 25.953125 C 43.114857 22.260143 43.939807 16.785796 41.931641 12.275391 A 1.50015 1.50015 0 0 0 39.5 11.826172 L 32.941406 18.384766 C 32.010755 19.315417 30.547076 19.315988 29.615234 18.384766 C 28.685047 17.454579 28.685405 15.990502 29.615234 15.058594 L 29.615234 15.056641 L 36.173828 8.4980469 A 1.50015 1.50015 0 0 0 35.722656 6.0683594 C 34.59524 5.5662735 33.40822 5.2411151 32.203125 5.09375 C 31.751214 5.0384881 31.296319 5.0072468 30.841797 5.0019531 z M 30.816406 7.9980469 C 31.159439 8.0027419 31.502606 8.0259338 31.84375 8.0683594 C 31.982174 8.0855744 32.110315 8.1582254 32.248047 8.1816406 L 27.494141 12.935547 A 1.50015 1.50015 0 0 0 27.492188 12.9375 C 25.415409 15.015658 25.416745 18.42851 27.494141 20.505859 C 29.572299 22.582637 32.985151 22.583208 35.0625 20.505859 L 39.818359 15.75 C 40.304089 18.604041 39.511654 21.621159 37.300781 23.832031 C 34.674605 26.458208 30.89236 27.165512 27.621094 26.003906 A 1.50015 1.50015 0 0 0 26.058594 26.355469 L 13.330078 39.085938 C 12.098403 40.317613 10.145738 40.317613 8.9140625 39.085938 C 7.682387 37.854261 7.682387 35.901597 8.9140625 34.669922 C 9.5120625 34.071922 17.544409 26.040575 21.642578 21.941406 A 1.50015 1.50015 0 0 0 21.996094 20.378906 C 20.834488 17.10764 21.541792 13.325395 24.167969 10.699219 C 26.008719 8.8579012 28.415175 7.9651817 30.816406 7.9980469 z"></path>
+  </svg>
+  <svg *ngIf="name === 'shortcut'" class="dm-glyph-svg" viewBox="0 0 48 48" aria-hidden="true">
+    <path d="M 27.478516 7 A 1.50015 1.50015 0 0 0 26 8.5 L 26 16.285156 C 23.342281 16.581601 18.972916 17.343283 14.574219 20.191406 C 9.5799927 23.42513 5.1401785 29.370264 5.0371094 39.185547 C 5.0356094 39.193047 5.0307869 39.197598 5.0292969 39.205078 L 5.0332031 39.205078 C 5.0321348 39.313011 5 39.391123 5 39.5 A 1.50015 1.50015 0 0 0 7.9707031 39.794922 C 9.1580428 33.858682 12.859175 31.228006 16.960938 29.878906 C 20.422894 28.740243 23.812407 28.73987 26 28.855469 L 26 36.5 A 1.50015 1.50015 0 0 0 28.560547 37.560547 L 42.560547 23.560547 A 1.50015 1.50015 0 0 0 42.560547 21.439453 L 28.560547 7.4394531 A 1.50015 1.50015 0 0 0 27.478516 7 z M 29 12.121094 L 39.378906 22.5 L 29 32.878906 L 29 27.384766 A 1.50015 1.50015 0 0 0 27.640625 25.890625 C 25.556671 25.695502 20.789675 25.461646 16.023438 27.029297 C 13.79672 27.761681 11.585426 28.994302 9.6875 30.755859 C 11.206563 27.041671 13.545736 24.432841 16.205078 22.710938 C 20.579045 19.878826 25.605232 19.19049 27.609375 19.042969 A 1.50015 1.50015 0 0 0 29 17.546875 L 29 12.121094 z"></path>
+  </svg>
+  <svg *ngIf="name === 'new'" class="dm-glyph-svg" viewBox="0 0 48 48" aria-hidden="true">
+    <path d="M 11.5 6 C 8.4802259 6 6 8.4802259 6 11.5 L 6 36.5 C 6 39.519774 8.4802259 42 11.5 42 L 36.5 42 C 39.519774 42 42 39.519774 42 36.5 L 42 11.5 C 42 8.4802259 39.519774 6 36.5 6 L 11.5 6 z M 11.5 9 L 36.5 9 C 37.898226 9 39 10.101774 39 11.5 L 39 36.5 C 39 37.898226 37.898226 39 36.5 39 L 11.5 39 C 10.101774 39 9 37.898226 9 36.5 L 9 11.5 C 9 10.101774 10.101774 9 11.5 9 z M 23.976562 13.978516 A 1.50015 1.50015 0 0 0 22.5 15.5 L 22.5 22.5 L 15.5 22.5 A 1.50015 1.50015 0 1 0 15.5 25.5 L 22.5 25.5 L 22.5 32.5 A 1.50015 1.50015 0 1 0 25.5 32.5 L 25.5 25.5 L 32.5 25.5 A 1.50015 1.50015 0 1 0 32.5 22.5 L 25.5 22.5 L 25.5 15.5 A 1.50015 1.50015 0 0 0 23.976562 13.978516 z"></path>
+  </svg>
+  <svg *ngIf="name === 'next_background'" class="dm-glyph-svg" viewBox="0 0 48 48" aria-hidden="true">
+    <g transform="translate(48,0) scale(-1,1)">
+        <path d="M 11.5 6 C 8.4802259 6 6 8.4802259 6 11.5 L 6 36.5 C 6 39.519774 8.4802259 42 11.5 42 L 36.5 42 C 39.519774 42 42 39.519774 42 36.5 L 42 11.5 C 42 8.4802259 39.519774 6 36.5 6 L 11.5 6 z M 11.5 9 L 36.5 9 C 37.898226 9 39 10.101774 39 11.5 L 39 36.5 C 39 37.898226 37.898226 39 36.5 39 L 11.5 39 C 10.101774 39 9 37.898226 9 36.5 L 9 11.5 C 9 10.101774 10.101774 9 11.5 9 z M 17.476562 14.978516 A 1.50015 1.50015 0 0 0 16 16.5 L 16 31.5 A 1.50015 1.50015 0 1 0 19 31.5 L 19 27.265625 L 28.261719 32.550781 C 29.86569 33.464588 32 32.225031 32 30.378906 L 32 17.621094 C 32 16.235218 30.800637 15.191497 29.523438 15.142578 C 29.097704 15.126268 28.663115 15.220198 28.261719 15.449219 L 19 20.734375 L 19 16.5 A 1.50015 1.50015 0 0 0 17.476562 14.978516 z M 29 18.482422 L 29 29.517578 L 19.328125 24 L 29 18.482422 z"/>
+    </g>
+  </svg>
+  <svg *ngIf="name === 'prev_background'" class="dm-glyph-svg" viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M 11.5 6 C 8.4802259 6 6 8.4802259 6 11.5 L 6 36.5 C 6 39.519774 8.4802259 42 11.5 42 L 36.5 42 C 39.519774 42 42 39.519774 42 36.5 L 42 11.5 C 42 8.4802259 39.519774 6 36.5 6 L 11.5 6 z M 11.5 9 L 36.5 9 C 37.898226 9 39 10.101774 39 11.5 L 39 36.5 C 39 37.898226 37.898226 39 36.5 39 L 11.5 39 C 10.101774 39 9 37.898226 9 36.5 L 9 11.5 C 9 10.101774 10.101774 9 11.5 9 z M 17.476562 14.978516 A 1.50015 1.50015 0 0 0 16 16.5 L 16 31.5 A 1.50015 1.50015 0 1 0 19 31.5 L 19 27.265625 L 28.261719 32.550781 C 29.86569 33.464588 32 32.225031 32 30.378906 L 32 17.621094 C 32 16.235218 30.800637 15.191497 29.523438 15.142578 C 29.097704 15.126268 28.663115 15.220198 28.261719 15.449219 L 19 20.734375 L 19 16.5 A 1.50015 1.50015 0 0 0 17.476562 14.978516 z M 29 18.482422 L 29 29.517578 L 19.328125 24 L 29 18.482422 z"></path>
+  </svg>
+  <svg *ngIf="name === 'circle'" class="dm-glyph-svg dm-glyph-radio" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 16 4 A 12 12 0 0 0 4 16 A 12 12 0 0 0 16 28 A 12 12 0 0 0 28 16 A 12 12 0 0 0 16 4 z"></path>
+  </svg>
+  <svg *ngIf="name === 'pin'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 20.53125 2.5625 L 19.84375 3.5 L 14.9375 10.1875 C 12.308594 9.730469 9.527344 10.472656 7.5 12.5 L 6.78125 13.1875 L 12.09375 18.5 L 4 26.59375 L 4 28 L 5.40625 28 L 13.5 19.90625 L 18.8125 25.21875 L 19.5 24.5 C 21.527344 22.472656 22.269531 19.691406 21.8125 17.0625 L 28.5 12.15625 L 29.4375 11.46875 Z M 20.78125 5.625 L 26.375 11.21875 L 20.15625 15.78125 L 19.59375 16.1875 L 19.78125 16.84375 C 20.261719 18.675781 19.738281 20.585938 18.59375 22.1875 L 9.8125 13.40625 C 11.414063 12.261719 13.324219 11.738281 15.15625 12.21875 L 15.8125 12.40625 L 16.21875 11.84375 Z"></path>
+  </svg>
+  <svg *ngIf="name === 'unpin'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 3.71875 2.28125 L 2.28125 3.71875 L 28.28125 29.71875 L 29.71875 28.28125 L 21.75 20.3125 C 21.988281 19.230469 22.070313 18.113281 21.875 17 L 29.4375 11.46875 L 20.53125 2.5625 L 15 10.125 C 13.890625 9.925781 12.765625 10.015625 11.6875 10.25 Z M 20.78125 5.625 L 26.375 11.21875 L 19.59375 16.1875 L 19.78125 16.84375 C 19.929688 17.410156 20.007813 17.988281 20 18.5625 L 13.4375 12 C 14.011719 11.992188 14.589844 12.070313 15.15625 12.21875 L 15.8125 12.40625 Z M 8.21875 11.84375 C 7.964844 12.042969 7.730469 12.269531 7.5 12.5 L 6.78125 13.1875 L 12.09375 18.5 L 4 26.59375 L 4 28 L 5.40625 28 L 13.5 19.90625 L 18.8125 25.21875 L 19.5 24.5 C 19.730469 24.269531 19.957031 24.035156 20.15625 23.78125 Z"></path>
+  </svg>
+  <svg *ngIf="name === 'close'" class="dm-glyph-svg" viewBox="0 0 32 32" aria-hidden="true">
+    <path d="M 7.21875 5.78125 L 5.78125 7.21875 L 14.5625 16 L 5.78125 24.78125 L 7.21875 26.21875 L 16 17.4375 L 24.78125 26.21875 L 26.21875 24.78125 L 17.4375 16 L 26.21875 7.21875 L 24.78125 5.78125 L 16 14.5625 Z"></path>
+  </svg>
+</ng-template>
+
+<ng-container [ngTemplateOutlet]="menuType === fileExplrMngrMenuOption ? fileExplrMngrMenu :
+                                  menuType === tskBarAppIconMenuOption ? tskBarAppIconMenu :  
+                                  menuType === tskBarContextMenuOption ? tskBarCntxtMenu :
+                                  menuType === checkableMenuOption ? checkableMenu0 :
+                                  menuType === pwrMenuOption ? powerMenu : nestedMenu0">
+</ng-container>
+
+<ng-template #fileExplrMngrMenu>
+  <div class="dm-vertical-menu" id="dmfileExplrMngrMenu">
+    <div class="dm-empty-line-container"></div>
+
+    <div class="dm-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
+        <div class="dm-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
+            <span class="span dm-head"> 
+              <figure class="dm-fig-cntxt-menu">
+                <img *ngIf="menuItem.icon.length > 0 && !glyphFor(menuItem.label)" class="dm-tskbar-img-alt" [src]="menuItem.icon"/>
+                <ng-container *ngIf="glyphFor(menuItem.label) as g">
+                  <ng-container *ngTemplateOutlet="menuGlyph; context: { name: g }"></ng-container>
+                </ng-container>
+              </figure>
+            </span>
+            <span class="span dm-mid"><p class="dm-p">{{menuItem.label}}</p></span>
+            <span class="span dm-tail"> <figure class="dm-fig-cntxt-menu"> </figure> </span>
+        </div>
+
+        <ng-container *ngIf="menuOrder === fileExplrUniqueMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 3 || i === 4  || i === 5 || i === 6"></div>
+          <div class="dm-line" *ngIf="i  === 3 || i === 4  || i === 5 || i === 6"></div>
+          <div class="dm-empty-line-container" *ngIf="i  === 3 || i === 4  || i === 5 || i === 6"></div>
+        </ng-container>
+
+        <ng-container *ngIf="menuOrder === fileExplrFolderMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 3 || i === 4 || i === 6 || i === 9"></div>
+          <div class="dm-line" *ngIf="i === 3 || i === 4 || i === 6 || i === 9"></div>
+          <div class="dm-empty-line-container" *ngIf="i === 3 || i === 4 || i === 6 || i === 9"></div>
+        </ng-container>
+
+        <ng-container *ngIf="menuOrder === fileExplrFileMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 0 || i === 2 || i === 5"></div>
+          <div class="dm-line" *ngIf="i === 0 || i === 2 || i === 5"></div>
+          <div class="dm-empty-line-container" *ngIf="i === 0 || i === 2 || i === 5"></div>
+        </ng-container>
+
+        <ng-container *ngIf="menuOrder === defaultFileMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 2 || i === 4 || i === 6"></div>
+          <div class="dm-line" *ngIf="i === 2 || i === 4 || i === 6"></div>
+          <div class="dm-empty-line-container" *ngIf="i === 2 || i === 4 || i === 6"></div>
+        </ng-container>
+
+        <ng-container *ngIf="menuOrder === defaultFolderMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 4 || i === 6 || i === 8"></div>
+          <div class="dm-line" *ngIf="i === 4 || i === 6 || i === 8"></div>
+          <div class="dm-empty-line-container" *ngIf="i === 4 || i === 6 || i === 8"></div>
+        </ng-container>
+
+          <ng-container *ngIf="menuOrder === fileExplrRecycleBinMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 0 || i === 1|| i === 2"></div>
+          <div class="dm-line" *ngIf="i === 0 || i === 1|| i === 2"></div>
+          <div class="dm-empty-line-container" *ngIf="i === 0 || i === 1|| i === 2"></div>
+        </ng-container>
+
+        <ng-container *ngIf="menuOrder === recycleBinMenuOrder">
+          <div class="dm-empty-line-container" *ngIf="i === 1 || i === 2"></div>
+          <div class="dm-line" *ngIf="i === 1 || i === 2"></div>
+          <div class="dm-empty-line-container" *ngIf="i === 1 || i === 2"></div>
+        </ng-container>
+
+    </div>
+    <div class="dm-empty-line-container"></div>
+</div>
+</ng-template>
+
+<ng-template #tskBarAppIconMenu>
+  <div class="dm-tskbar-vertical-menu">
+    <div class="dm-tskbar-empty-line-container"></div>
+  
+    <div class="dm-tskbar-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
+        <div class="dm-tskbar-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
+            <div class="dm-tskbar-head"> 
+              <figure class="dm-tskbar-fig-cntxt-menu">
+                <img *ngIf="menuItem.icon.length > 0 && !glyphFor(menuItem.label)" class="dm-tskbar-img-alt" [src]="menuItem.icon"/>
+                <ng-container *ngIf="glyphFor(menuItem.label) as g">
+                  <ng-container *ngTemplateOutlet="menuGlyph; context: { name: g }"></ng-container>
+                </ng-container>
+              </figure>
+            </div>
+            <div class="dm-tskbar-mid"><p class="dm-p">{{menuItem.label}}</p></div>
+            <div class="dm-tskbar-tail"> <figure class="dm-tskbar-fig-cntxt-menu"> </figure> </div>
+        </div>
+    </div>
+  
+    <div class="dm-tskbar-empty-line-container"></div>
+  </div>
+  
+</ng-template>
+
+<ng-template #tskBarCntxtMenu>
+  <div class="dm-tskbar-cntxt-vertical-menu">
+    <div class="dm-tskbar-cntxt-empty-line-container"></div>
+  
+    <div class="dm-tskbar-cntxt-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
+        <div class="dm-tskbar-cntxt-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
+            <div class="dm-tskbar-cntxt-head"> 
+              <figure class="dm-tskbar-cntxt-fig-cntxt-menu">
+                <img *ngIf="menuItem.icon.length > 0 && !glyphFor(menuItem.label)" class="dm-tskbar-cntxt-img-alt" [src]="menuItem.icon"/>
+                  <ng-container *ngIf="glyphFor(menuItem.label) as g">
+                    <ng-container *ngTemplateOutlet="menuGlyph; context: { name: g }"></ng-container>
+                  </ng-container>
+              </figure>
+            </div>
+            <div class="dm-tskbar-cntxt-mid"><p class="dm-p">{{menuItem.label}}</p></div>
+            <div class="dm-tskbar-cntxt-tail"> <figure class="dm-tskbar-cntxt-fig-cntxt-menu"> </figure> </div>
+        </div>
+
+        <div class="dm-tskbar-cntxt-empty-line-container" *ngIf="i === 0 || i === 1"></div>
+        <div class="dm-tskbar-cntxt-line-container" *ngIf="i === 0 || i === 1">
+          <div class="dm-tskbar-cntxt-line"></div>
+        </div>
+        <div class="dm-tskbar-cntxt-empty-line-container" *ngIf="i === 0 || i === 1"></div>
+    </div>
+  
+    <div class="dm-tskbar-cntxt-empty-line-container"></div>
+  </div>
+</ng-template>
+
+<ng-template #nestedMenu0>
+  <div class="dm-nested-vertical-menu" id="dmNestedMenu">
+    <div class="dm-nested-empty-line-container" ></div>
+
+    <div class="dm-nested-vertical-sub-menu" *ngFor="let menuItem of nestedMenu; let i = index" >
+
+      <div  *ngIf="menuItem.label !== paste" class="dm-nested-vertical-menu-item" (click)="onMenuItemClick(menuItem.action, $event)" (mouseenter)="onMenuItemHover(menuItem.action1)">
+        <div class="dm-nested-head">
+          <figure class="dm-nested-figure">
+            <img *ngIf="menuItem.icon1 && !glyphFor(menuItem.label)" class="dm-nested-img" [src]="menuItem.icon1"/>
+            <ng-container *ngIf="glyphFor(menuItem.label) as g">
+              <ng-container *ngTemplateOutlet="menuGlyph; context: { name: g }"></ng-container>
+            </ng-container>
+          </figure>
+        </div>
+        <div class="dm-nested-mid"><p class="dm-nested-p"> {{menuItem.label}}</p></div>
+        <div class="dm-nested-tail"><figure class="dm-nested-figure"><ng-container *ngIf="menuItem.nest.length"><ng-container *ngTemplateOutlet="menuGlyph; context: { name: 'chevron' }"></ng-container></ng-container><img *ngIf="!menuItem.nest.length && menuItem.icon2" class="dm-nested-img" [src]="menuItem.icon2"/></figure></div>
+      </div>
+
+      <div  *ngIf="menuItem.label === paste  && isPasteActive" class="dm-nested-vertical-menu-item" (click)="onMenuItemClick(menuItem.action, $event)">
+        <div class="dm-nested-head"><figure class="dm-nested-figure"><img *ngIf="menuItem.icon1 && !glyphFor(menuItem.label)" class="dm-nested-img" [src]="menuItem.icon1"/><ng-container *ngIf="glyphFor(menuItem.label) as g"><ng-container *ngTemplateOutlet="menuGlyph; context: { name: g }"></ng-container></ng-container></figure></div>
+        <div class="dm-nested-mid"><p class="dm-nested-p"> {{menuItem.label}}</p></div>
+        <div class="dm-nested-tail"><figure class="dm-nested-figure"> <img *ngIf="menuItem.icon2" class="dm-nested-img" [src]="menuItem.icon2"/></figure></div>
+      </div>
+
+
+      <div  *ngIf="menuItem.label === paste  && !isPasteActive" class="dm-nested-vertical-menu-item turn-off-hover-effect ">
+        <div class="dm-nested-head">
+          <figure class="dm-nested-figure">
+            <img *ngIf="menuItem.icon1 && !glyphFor(menuItem.label)" class="dm-nested-img" [src]="menuItem.icon1"/>
+            <ng-container *ngIf="glyphFor(menuItem.label) as g"><ng-container *ngTemplateOutlet="menuGlyph; context: { name: g }"></ng-container>
+              </ng-container>
+            </figure>
+          </div>
+        <div class="dm-nested-mid-disabled"><p class="dm-nested-p"> {{menuItem.label}}</p></div>
+        <div class="dm-nested-tail"><figure class="dm-nested-figure"> <img *ngIf="menuItem.icon2" class="dm-nested-img" [src]="menuItem.icon2"/></figure></div>
+      </div>
+
+
+      <div  *ngIf="menuItem.nest.length" class="dm-nested-vertical-sub-menu-content" id="dmNestedMenu-{{i}}">
+        <div class="dm-nested-empty-line-container"></div>
+          <div *ngFor="let item of menuItem.nest" (click)="onMenuItemClick(item.action, $event)">
+            <div class="dm-nested-vertical-menu-item">
+              <div class="dm-nested-head"><figure [ngClass]=" item.styleOption === 'A' ?'dm-nested-figure-alt' : 'dm-nested-figure-alt2'">
+                                          <ng-container *ngIf="item.variables && item.styleOption === 'A'">
+                                            <ng-container *ngTemplateOutlet="menuGlyph; context: { name: 'circle' }"></ng-container>
+                                          </ng-container>
+
+                                          <ng-container *ngIf="item.variables && item.styleOption === 'B'">
+                                            <ng-container *ngTemplateOutlet="menuGlyph; context: { name: 'check' }"></ng-container>
+                                          </ng-container>
+                                          <img *ngIf="item.variables && item.styleOption === 'C'" class="dm-nested-img-alt2" [src]="item.icon"/>
+                                        </figure>
+              </div>
+              <div class="dm-nested-mid" *ngIf="item.styleOption === 'A' || item.styleOption === 'B'">{{item.label}}</div>
+              <div class="dm-nested-mid"  *ngIf="item.styleOption === 'C'" ><p class="dm-nested-p"> {{item.label}}</p></div>
+              <div class="dm-nested-tail"><figure class="dm-nested-figure"></figure></div>
+            </div>
+    
+            <div *ngIf="item.emptyline" class="dm-nested-empty-line-container"></div>
+            <div *ngIf="item.emptyline" class="dm-nested-line"></div>
+            <div *ngIf="item.emptyline" class="dm-nested-empty-line-container"></div>
+          </div>
+        <div class="dm-nested-empty-line-container"></div>
+      </div>
+
+      <div *ngIf="menuItem.emptyline" class="dm-nested-empty-line-container"></div>
+      <div *ngIf="menuItem.emptyline" class="dm-nested-line"></div>
+      <div *ngIf="menuItem.emptyline" class="dm-nested-empty-line-container"></div>
+    </div>
+    <div class="dm-nested-empty-line-container1"></div>  
+  </div>
+</ng-template>
+
+
+<ng-template #powerMenu>
+  <div class="dm-power-vertical-menu" (mouseenter)="onBtnHover()">
+    <div class="dm-power-empty-line-container" ></div>
+
+    <div class="dm-power-vertical-menu-cntnr" *ngFor="let menuItem of generalMenu; let i = index">
+      <div class="dm-power-vertical-menu-item"  (click)="onMenuItemClick(menuItem.action, $event)">
+          <div class="dm-power-head"> 
+            <figure class="dm-power-fig-menu">
+              <img class="dm-power-img-alt" [src]="menuItem.icon"/>
+            </figure>
+          </div>
+          <div class="dm-power-mid"><p class="dm-p">{{menuItem.label}}</p></div>
+          <div class="dm-power-tail"> <figure class="dm-power-fig-menu"> </figure> </div>
+      </div>
+    </div>
+    <div class="dm-power-empty-line-container" ></div>
+  </div>
+</ng-template>
+
+
+<!--
+  Checkable menu variant: a light-themed list where every row carries a
+  checkmark bound to its `checked` flag. Clicking a row runs its action
+  (which flips the underlying state) and intentionally leaves the menu open,
+  matching the show/hide-columns behaviour of Windows Task Manager.
+-->
+<ng-template #checkableMenu0>
+  <div class="dm-checkable-vertical-menu">
+    <div class="dm-checkable-empty-line-container"></div>
+
+    <div class="dm-checkable-vertical-menu-cntnr" *ngFor="let menuItem of checkableMenu">
+      <div class="dm-checkable-vertical-menu-item" (click)="onMenuItemClick(menuItem.action, $event)">
+        <span class="dm-checkable-head" [class.active]="menuItem.checked">
+          <figure class="dm-checkable-figure">
+            <ng-container *ngIf="menuItem.checked">
+              <ng-container *ngTemplateOutlet="menuGlyph; context: { name: 'check' }"></ng-container>
+            </ng-container>
+          </figure>
+        </span>
+        <span class="dm-checkable-mid"><p class="dm-checkable-p">{{menuItem.label}}</p></span>
+        <span class="dm-checkable-tail"><figure class="dm-checkable-figure"></figure></span>
+      </div>
+    </div>
+
+    <div class="dm-checkable-empty-line-container"></div>
+  </div>
+</ng-template>

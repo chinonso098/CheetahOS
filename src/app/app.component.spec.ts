@@ -1,7 +1,7 @@
 import {TestBed} from '@angular/core/testing';
 import {AppComponent} from './app.component';
-import {TitleComponent } from './user-apps/title/title.component';
-import {DesktopComponent} from './system-apps/desktop/desktop.component';
+import {TitleComponent } from './applications/user-apps/title/title.component';
+import {DesktopComponent} from './system-shell/desktop/desktop.component';
 import {PrimaryWindowComponent} from './shared/system-component/window/primarywindow/primarywindow.component'
 
 describe('AppComponent', () => {

@@ -1,0 +1,21 @@
+<cos-primarywindow 
+    [runningProcessID]="processId" 
+    [processAppIcon]="icon"
+    [processAppName]="displayName"
+    [isMaximizable]="isMaximizable" 
+    [minimumWindowWidth]="MIN_WIDTH_PX" 
+    [minimumWindowHeight]="MIN_HEIGHT_PX" 
+     [priorUId]="priorUId">
+    <div class="my-video-main-container" #mainVideoCntnr (click)="focusWindow($event)" (contextmenu)="silenceCtxEvt($event)">
+        <!-- <div class="video-top-menu-bar">
+            <button class=" btn btn-primary head" (click)="showMenu()"> File</button>
+                <span class="video-top-menu" *ngIf="showTopMenu">
+                    <span (click)="openFileExplorer()">Open</span>
+                    <span (click)="playPrevious()">Recent ></span>
+                </span>
+        </div> -->
+        <div class="my-video-container" #videoCntnr>
+            <video #videowindow class="video-js" controls muted playsinline preload="none" width="640" height="360"> </video>
+        </div>
+    </div>
+</cos-primarywindow>

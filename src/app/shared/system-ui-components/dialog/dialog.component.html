@@ -1,0 +1,510 @@
+<ng-container [ngTemplateOutlet]="notificationOption === errorNotification ? errorNotice :
+                                  notificationOption === warnNotification ? warningNotice :
+                                  notificationOption === infoNotification ? infoNotice :
+                                  notificationOption === pwrOnOffNotification ? shutDownRestartNotice : 
+                                  notificationOption === zipExtractNotification ? zipExtract :
+                                  notificationOption === createShortcutNotification ? createShortcut :
+                                  notificationOption === deleteWarnNotification ? deleteWarning :
+                                  notificationOption === inUseWarnNotification ? inUseWarning :
+                                  notificationOption === applicationSelectionNotification ? applicationSelection : fileTransfer">
+</ng-container>
+
+<ng-template #errorNotice>
+    <cos-secondarywindow 
+    [runningProcessID]="processId"
+    [displayMessage]="dialogTitle" 
+    [processAppName]="ERROR_DIALOG" 
+    [isDialog]="isDialog">
+
+        <div ngDraggable class="error-dialog-main-container">
+            <div class="error-dialog-mid-container">
+                <div class="error-dialog-mid-section1">
+                    <div class="error-dialog-mid-img1">
+                        <figure class="error-dialog-figure1">
+                            <img class="error-dialog-img1" [src]="errorIcon" alt="Error icon"/>
+                        </figure>
+                    </div>
+                    <div class="error-dialog-mid-txt1">
+                        <span class="error-dialog-mid-section1-msg">{{dialogMgs}}</span>
+                    </div>
+                </div>
+                <div class="error-dialog-mid-section2">
+                    @if(showExtraErrorMsg){
+                        <span class="error-dialog-mid-section2-msg">{{displayAdditionalMsg}}</span>
+                    }
+                </div>
+            </div>
+            <div class="error-dialog-tail-container">
+                <span class="footer-btn">
+                    <button class="btn btn-primary" (click)="onCloseDialogBox($event)" >
+                        OK
+                    </button>
+                </span>
+            </div>
+        </div>
+    </cos-secondarywindow>
+</ng-template>
+
+<ng-template #infoNotice>
+    <cos-secondarywindow 
+        [runningProcessID]="processId" 
+        [processAppName]="INFO_DIALOG" 
+        [isDialog]="isDialog" 
+        [callingProcessUId]="inputCallingProcessUId">
+
+        <div  class="info-dialog-main-container">    
+            <div class="info-dialog-mid-container" tabindex="0">
+                <div class="info-dialog-mid-section1">
+                    <div class="info-dialog-mid-img1">
+                        <figure class="info-dialog-figure1">
+                            <img class="info-dialog-img1" [src]="infoIcon" alt="Info icon"/>
+                        </figure>
+                    </div>
+                    <div class="info-dialog-mid-txt1">
+                        <span class="info-dialog-mid-section1-msg">{{dialogMgs}}</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="info-dialog-tail-container">
+                <span class="footer-btn">
+                    <button class="btn btn-primary" (click)="onCloseDialogBox($event)" >
+                        OK
+                    </button>
+                </span>
+            </div>
+        </div>
+    </cos-secondarywindow>
+</ng-template>
+
+<ng-template #shutDownRestartNotice>
+    <div (click)="onPwrDialogWindowClick($event)" class="shutdown-restart-dialog-main-container" id="shutdown-restart-dialog-{{processId}}">
+        <div class="shutdown-restart-dialog-header-container" tabindex="0">
+            <div  class="shutdown-restart-dialog-left-header-section">
+                <h1 class="shutdown-restart-dialog-h1">
+                    <figure class="shutdown-restart-dialog-figure">
+                        <!-- <img class="shutdown-restart-dialog-img" [src]="this.icon" [alt]="this.name"/> -->
+                        <figcaption class="shutdown-restart-dialog-figcaption"> {{dialogMgs}} </figcaption>
+                    </figure>
+                </h1>
+            </div>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="shutdown-restart-section shutdown-restart-section1">
+          <div class="sr-section1-img">
+            <svg class="sr-section1-img sr-cheetah-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-label="CheetahOS logo">
+                <path d="M32 53.188c-4.001 0-8 3-8 3s4 3.424 8 3.424 8-3.424 8-3.424S36.001 53.188 32 53.188zM57.76 6.76c-1.74-.92-3.81-.97-5.58-.13L44 11c0 0-6.04-2-12-2s-12 2-12 2l-8.18-4.37c-1.77-.84-3.84-.79-5.58.13-2.08 1.1-3.33 3.25-3.33 5.52 0 .47.05.93.16 1.4L10 44l7 5c0-12 6-17 6-17-4-2-6-3.33-6-3.33L18 27c5 0 8 1 8 1v3c-3.77 4.6-5.26 9.21-5.72 13.01.27.12.57.23.87.33.9.3 1.87.5 2.86.64l-.02 1.5c-1.06.11-2.15.15-3.26.07-.21-.01-.41-.03-.62-.06 0 .63.01 1.22.05 1.77.37.07.76.1 1.15.12.95.04 1.94-.03 2.93-.18l.4 1.45c-.99.4-2.03.74-3.12.97-.35.07-.7.13-1.07.17C20.7 52.19 21 53 21 53c5 0 9-4 9-4v-3l-4-3 1-2h10l1 2-4 3v3c0 0 4 4 9 4 0 0 .3-.81.55-2.21-.37-.04-.72-.1-1.07-.17-1.09-.23-2.13-.57-3.12-.97l.4-1.45c.99.15 1.98.22 2.93.18.39-.02.78-.05 1.15-.12.04-.55.05-1.14.05-1.77-.21.03-.41.05-.62.06-1.11.08-2.2.04-3.26-.07l-.02-1.5c.99-.14 1.96-.34 2.86-.64.3-.1.6-.21.87-.33C43.26 40.21 41.77 35.6 38 31v-3c0 0 3-1 8-1l1 1.67c0 0-2 1.33-6 3.33 0 0 6 5 6 17l7-5 6.93-30.32c.11-.47.16-.93.16-1.4C61.09 10.01 59.84 7.86 57.76 6.76zM8.54 21.3l-1.77-7.78c-.21-.91.21-1.84 1.04-2.28C8.1 11.08 8.44 11 8.77 11c.31 0 .6.06.87.2L15 13.71C11.45 17.04 9.51 19.73 8.54 21.3zM57.23 13.52l-1.77 7.78c-.97-1.57-2.91-4.26-6.46-7.59l5.36-2.51c.27-.14.56-.2.87-.2.33 0 .67.08.96.24C57.02 11.68 57.44 12.61 57.23 13.52zM14.593 35.236c.591.104 2.201.954 2.201.954l-2.25 4.598 0 0c-.799-.25-1.288-1.067-1.098-1.882.184-.788.302-1.831.071-2.911C13.371 35.31 14.269 35.179 14.593 35.236zM13.286 29.89c.273.248.305.661.074.948-.315.392-.773.979-1.217 1.613-.789 1.125-1.923-1.886-1.853-2.837C10.438 27.568 12.369 29.059 13.286 29.89zM12.666 25.852c-.778-.705-.933-2.179.035-3.147 1.259-1.259 2.966-.558 3.98.065.403.247.384.834-.037 1.049-1.5.768-2.683 1.628-3.227 2.05C13.194 26.041 12.876 26.042 12.666 25.852zM24.665 21.257c.837-.616 3.228-2.25 3.228.391s-2.87 2.12-2.87 2.12S22.317 22.985 24.665 21.257zM28.403 12.011c.468.029.55 1.918.559 2.992.004.547-.296 1.053-.779 1.31-.311.165-.645.243-.856.003-.489-.554-1.663-2.054-1.174-2.804S27.882 11.978 28.403 12.011zM18.196 17.646c-.059-1.537.999-3.069 2.837-2.478.53.17 1.005.978 1.31 1.625.237.502.158 1.096-.19 1.529l-.875 1.09c-.278.347-.699.548-1.144.548l0 0c-.503 0-.968-.257-1.239-.681C18.577 18.785 18.214 18.119 18.196 17.646zM50.483 35.995c-.232 1.08-.113 2.123.071 2.911.19.815-.299 1.633-1.098 1.882l0 0-2.25-4.598c0 0 1.61-.85 2.201-.954C49.731 35.179 50.629 35.31 50.483 35.995zM53.711 29.614c.071.951-1.064 3.962-1.853 2.837-.444-.634-.902-1.221-1.217-1.613-.231-.287-.199-.7.074-.948C51.631 29.059 53.562 27.568 53.711 29.614zM50.582 25.868c-.544-.421-1.727-1.282-3.227-2.05-.421-.215-.439-.802-.037-1.049 1.015-.622 2.721-1.324 3.98-.065.968.968.813 2.442.035 3.147C51.124 26.042 50.806 26.041 50.582 25.868zM38.976 23.768c0 0-2.87.522-2.87-2.12s2.391-1.008 3.228-.391C41.683 22.985 38.976 23.768 38.976 23.768zM37.847 13.511c.489.75-.685 2.25-1.174 2.804-.212.24-.546.162-.856-.003-.483-.257-.783-.763-.779-1.31.009-1.074.091-2.962.559-2.992C36.118 11.978 37.357 12.761 37.847 13.511zM45.106 19.281c-.271.424-.736.681-1.239.681h0c-.445 0-.865-.202-1.144-.548l-.875-1.09c-.348-.433-.427-1.027-.19-1.529.305-.648.78-1.455 1.31-1.625 1.838-.591 2.896.941 2.837 2.478C45.786 18.119 45.423 18.785 45.106 19.281z"></path>
+            </svg>
+          </div>
+          <div class="sr-section1-text-container">
+            <span>CheetahOS</span>
+          </div>
+        </div>
+    
+        <!-- Section 2 -->
+        <div class="shutdown-restart-section shutdown-restart-section2">
+          <div class="shutdown-restart-section2-left-part">
+            <img [src]="myComputer" class="sr-section2-img" alt="Computer">
+          </div>
+          <div class="right-part">
+            <div class="top-text">What do you want the computer to do?</div>
+
+            <div class="custom-select">
+                <select class="shutdown-restart-select" title="Power options" [(ngModel)]="selectedOption" (change)="onPwrOptionSelect($event)">
+                    <option class="shutdown-restart-option" *ngFor="let option of pwrOnOffOptions" [value]="option.value">
+                        {{ option.value }}
+                    </option>
+                </select>
+                <div class="custom-select-img-cntnr">
+                    <div class="custom-select-img"> 
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                        class="custom-select-chevron"
+                        height="10" width="10" 
+                        viewBox="0 0 512 512" style="position: relative; top: -5px;">
+                        <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+                    </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-text"> {{ pwrOnOffOptionsTxt }}</div>
+          </div>
+        </div>
+    
+        <!-- Section 3 -->
+        <div class="shutdown-restart-section shutdown-restart-section3">
+            <div class="sr-section3-question" [class.hidden]="isQuestionHidden">
+                <div class="sr-section3-chxbox">
+                    <input type="checkbox" [(ngModel)]="reOpenWindows" (change)="onReOpenWindowsCheckboxChange()" title="Reopen windows when logging back in">
+                </div>
+                <div class="sr-section3-txt">
+                    Reopen windows when loggin back in
+                </div>
+            </div>
+            <div class="sr-section3-btns">
+                <button class="btn btn-primary-pwr" (click)="onYesPowerDialogBox()" >OK</button>
+                <button class="btn btn-secondary-pwr" (click)="onCloseDialogBox()">Cancel</button>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<!-- File Transfer Dialog To be Added -->
+<ng-template #fileTransfer>
+    <cos-primarywindow 
+        [runningProcessID]="processId" 
+        [processAppIcon]="fileTransferIcon" 
+        [processAppName]="isInit? dialogTitle: progressUpdateText" 
+        [isMaximizable]="isMaximizable"
+        [turnOffWindowOpenCloseAnimation]="turnOffWindowOpenCloseAnimation"
+        [turnOffWindowStacking]="turnOffWindowStacking">
+        
+        <div class="file-transfer-dialog-main-container" tabindex="0">
+            <div class="file-transfer-dialog-content-container" id="fileTransferDialog-{{processId}}"> 
+
+                @if(isFileTransferInProgress){
+                    <div class="file-transfer-dialog-from-to">
+                        <p class="file-transfer-p1">{{srcToDestPart1}}</p>
+                        &nbsp;
+                        <p class="file-transfer-p2">{{from}}</p>
+                        &nbsp;
+                        <p class="file-transfer-p1">{{srcToDestPart2}}</p>
+                        &nbsp;
+                        <p class="file-transfer-p3">{{to}}</p>
+                    </div>
+    
+                    <div class="file-transfer-dialog-progress-text">
+                        <p>{{progressUpdateText}}</p>
+                    </div>
+    
+                    <div class="file-transfer-dialog-progress-container">
+                        <div class="file-transfer-dialog-progress-bar" [style.width.%]="transferProgress">
+                            <div class="progress-bar__light-effect"></div>
+                        </div>
+                    </div>
+                }
+
+                @if(isFileDeleteInProgress){
+                    <div class="file-transfer-dialog-from-to">
+                        <p class="file-transfer-p1">{{srcToDestPart1}}</p>
+                        &nbsp;
+                        <p class="file-transfer-p2">{{from}}</p>
+                    </div>
+    
+                    <div class="file-transfer-dialog-progress-text">
+                        <p>{{progressUpdateText}}</p>
+                    </div>
+    
+                    <div class="file-transfer-dialog-progress-container">
+                        <div class="file-transfer-dialog-progress-bar-1">
+                            <div class="progress-bar__light-effect-1"></div>
+                        </div>
+                    </div>
+                }
+
+                @if(showMoreDetails){
+                    <div class="file-transfer-dialog-progress-details">
+                        <p>Name: {{fileName}}</p>
+                        <p>Time remaining: {{timeRemaining}}</p>
+                        <p>Items remaining: {{itemsRemaining}}</p>
+                    </div>
+                }
+            </div>
+            <div class="file-transfer-dialog-tail-container" id="fileTransferDialogTail-{{processId}}">
+                <div class="file-tranfer__details-option">
+                    <div class="file-tranfer__icon" (click)="changeDetailsAmount()">
+                        @if(showMoreDetails){
+                            <svg class="file-tranfer__chevron" viewBox="0 0 32 32" aria-hidden="true">
+                                <path d="M 16 3 C 8.832031 3 3 8.832031 3 16 C 3 23.167969 8.832031 29 16 29 C 23.167969 29 29 23.167969 29 16 C 29 8.832031 23.167969 3 16 3 Z M 16 5 C 22.085938 5 27 9.914063 27 16 C 27 22.085938 22.085938 27 16 27 C 9.914063 27 5 22.085938 5 16 C 5 9.914063 9.914063 5 16 5 Z M 16 11.09375 L 15.28125 11.78125 L 9.28125 17.78125 L 10.71875 19.21875 L 16 13.9375 L 21.28125 19.21875 L 22.71875 17.78125 L 16.71875 11.78125 Z"></path>
+                            </svg>
+                        }@else{
+                            <svg class="file-tranfer__chevron" viewBox="0 0 32 32" aria-hidden="true">
+                                <path d="M 16 3 C 8.832031 3 3 8.832031 3 16 C 3 23.167969 8.832031 29 16 29 C 23.167969 29 29 23.167969 29 16 C 29 8.832031 23.167969 3 16 3 Z M 16 5 C 22.085938 5 27 9.914063 27 16 C 27 22.085938 22.085938 27 16 27 C 9.914063 27 5 22.085938 5 16 C 5 9.914063 9.914063 5 16 5 Z M 10.71875 12.78125 L 9.28125 14.21875 L 15.28125 20.21875 L 16 20.90625 L 16.71875 20.21875 L 22.71875 14.21875 L 21.28125 12.78125 L 16 18.0625 Z"></path>
+                            </svg>
+                        }
+                    </div>
+                    <div class="file-tranfer__info">{{detailsAmount}}</div>
+                </div>
+                <button class="btn btn-secondary file-transfer-btn-cancel" (click)="onCloseDialogBox()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </cos-primarywindow>
+</ng-template>
+
+<ng-template #zipExtract>
+    <cos-secondarywindow 
+        [runningProcessID]="processId" 
+        [displayMessage]="dialogTitle"
+        [processAppName]="INFO_DIALOG"
+        [isDialog]="isDialog"
+        [callingProcessUId]="inputCallingProcessUId">
+
+        <div class="zip-extract-dialog-main-container" tabindex="0">
+            <div class="zip-extract-dialog-content-container">
+                <p class="zip-extract-dialog-title">Select a Destination and Extract Files</p>
+
+                <p class="zip-extract-dialog-label">Files will be extracted to this folder:</p>
+
+                <div class="zip-extract-dialog-path-row">
+                    <input
+                        class="zip-extract-dialog-path-input"
+                        type="text"
+                        [(ngModel)]="zipExtractDestination"
+                        aria-label="Destination path" />
+                    <button class="btn btn-secondary zip-extract-dialog-browse-btn" (click)="onZipExtractBrowse()">
+                        Browse...
+                    </button>
+                </div>
+
+                <label class="zip-extract-dialog-checkbox-row">
+                    <input type="checkbox" [(ngModel)]="zipExtractShowOnComplete" />
+                    <span>Show extracted files when complete</span>
+                </label>
+            </div>
+
+            <div class="zip-extract-dialog-footer-container">
+                <span class="zip-extract-dialog-footer-btns">
+                    <button class="btn btn-primary" (click)="onZipExtract()">
+                        Extract
+                    </button>
+                    <button class="btn btn-secondary zip-extract-dialog-cancel-btn" (click)="onCloseDialogBox($event)">
+                        Cancel
+                    </button>
+                </span>
+            </div>
+        </div>
+    </cos-secondarywindow>
+</ng-template>
+
+<ng-template #createShortcut>
+    <cos-secondarywindow 
+        [runningProcessID]="processId" 
+        [displayMessage]="dialogTitle"
+        [processAppName]="INFO_DIALOG"
+        [isDialog]="isDialog"
+        [callingProcessUId]="inputCallingProcessUId">
+
+        <div class="create-shortcut-window" tabindex="0">
+            <div class="create-shortcut-titlebar">
+                <div class="create-shortcut-title-left">
+                    <button class="create-shortcut-back-btn" [disabled]="!shortcutSelectedApp" (click)="onShortcutBack()">
+                        <svg class="create-shortcut-back-icon" xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512" aria-hidden="true">
+                            <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/>
+                        </svg>
+                    </button>
+                    <span>Create Shortcut</span>
+                </div>
+                <!-- <button class="close-btn">✕</button> -->
+            </div>
+
+            <div class="create-shortcut-content">
+                <h1 class="create-shortcut-h1">What item would you like to create a shortcut for?</h1>
+                <p class="create-shortcut-p">
+                    This wizard helps you to create shortcuts to local or network
+                    programs, files, folders, computers, or Internet addresses.
+                </p>
+                <label class="create-shortcut-label">Select item from the list:</label>
+                <div class="create-shortcut-input-row">
+                    <input class="create-shortcut-input" type="text" readonly [value]="shortcutSelectedApp"
+                        placeholder="Select an item..." />
+                    <button class="create-shortcut-win-btn browse" (click)="onShortcutBrowse($event)">Browse...</button>
+
+                    @if(isShortcutDropdownOpen){
+                        <ul class="create-shortcut-dropdown">
+                            @for(app of shortcutAppList; track app.name){
+                                <li class="create-shortcut-dropdown-item" (click)="onSelectShortcutApp(app, $event)">
+                                    <img class="create-shortcut-dropdown-icon" [src]="app.icon" [alt]="app.name" />
+                                    <span class="create-shortcut-dropdown-name">{{app.name}}</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+
+                <p class="continue">
+                    Click Next to continue.
+                </p>
+            </div>
+
+            <div class="create-shortcut-footer">
+                <button class="create-shortcut-win-btn next" (click)="onNext()"  [disabled]="!shortcutSelectedApp">Next</button>
+                <button class="create-shortcut-win-btn cancel" (click)="onCloseDialogBox($event)">
+                    Cancel
+                </button>
+            </div>
+        </div>
+
+    </cos-secondarywindow>
+</ng-template>
+
+<ng-template #warningNotice>
+    <cos-secondarywindow 
+    [runningProcessID]="processId" 
+    [displayMessage]="dialogTitle" 
+    [processAppName]="WARNING_DIALOG" 
+    [isDialog]="isDialog"
+    [callingProcessUId]="inputCallingProcessUId">
+    
+        <div  class="warning-dialog-main-container"> 
+            <div class="warning-dialog-mid-container" tabindex="0">
+                <div class="warning-dialog-mid-section1">
+                    <div class="warning-dialog-mid-img1">
+                        <figure class="warning-dialog-figure1">
+                            <img class="warning-dialog-img1" [src]="warningIcon" alt="Warning icon"/>
+                        </figure>
+                    </div>
+                    <div class="warning-dialog-mid-txt1">
+                        <p class="warning-dialog-mid-section1-msg">{{dialogMgs}}</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="warning-dialog-tail-container">
+                <span class="footer-btn">
+                    <button class="btn btn-primary" (click)="onYesDialogBox()" >
+                        Yes
+                    </button>
+                    <div style="padding-left: 5px; display: inline;"></div>
+                    <button class="btn btn-secondary" (click)="onCloseDialogBox($event)" >
+                        No
+                    </button>
+                </span>
+            </div>
+        </div>
+    </cos-secondarywindow>
+</ng-template>
+
+<ng-template #deleteWarning>
+    <cos-secondarywindow 
+        [runningProcessID]="processId" 
+        [displayMessage]="dialogTitle" 
+        [processAppName]="WARNING_DIALOG" 
+        [isDialog]="isDialog" [callingProcessUId]="inputCallingProcessUId">
+        <div class="delete-warning__dialog-container"> 
+            <div class="delete-warning__dialog" tabindex="0">          
+              <div class="delete-warning__dialog-body">
+                <img [src]="deleteDialogIcon" alt="Recycle Bin" class="delete-warning__icon" />
+          
+                <div class="delete-warning__dialog-content">
+                  <p class="delete-warning__dialog-question">
+                     {{dialogMgs}}
+                  </p>
+          
+                  <div class="delete-warning__folder-info">
+                    <img [src]="fIcon" alt="Folder" class="delete-warning__folder-icon" />
+                    <div class="delete-warning__folder-metadata">
+                      <div class="delete-warning__folder-name">Name: {{fName}}</div>
+                      <div class="delete-warning__folder-date">Type: {{fType}}</div>
+                      <div class="delete-warning__folder-date">Size: {{fSize}}</div>
+                      <div class="delete-warning__folder-date"> Date created: {{fDateCreated | date: 'dd MMM yyyy HH:mm' }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          
+              <div class="delete-warning__dialog-buttons">
+                <span class="footer-btn1">
+                    <button class="btn btn-primary" (click)="onYesDialogBox()" >
+                        Yes
+                    </button>
+                    <div style="padding-left: 10px; display: inline;"></div>
+                    <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
+                        No
+                    </button>
+                </span>
+              </div>
+            </div>
+        </div> 
+    </cos-secondarywindow>
+</ng-template>
+
+<ng-template #inUseWarning>
+    <cos-secondarywindow 
+        [runningProcessID]="processId"  
+        [processAppIcon]="fileTransferIcon"  
+        [displayMessage]="dialogTitle" 
+        [processAppName]="WARNING_DIALOG" 
+        [isDialog]="isDialog" [callingProcessUId]="inputCallingProcessUId" [showTitleBarImg]="showTitleBarImg">
+        <div class="in-use-warning__dialog-container" > 
+            <div class="in-use-warning__dialog" tabindex="0">          
+              <div class="in-use-warning__dialog-body">
+                <div class="in-use-warning__dialog-content">
+                  <p class="in-use-warning__dialog-warning"> {{dialogMgs}} </p>
+                  <p class="in-use-warning__dialog-suggestion"> {{inUseSuggestion}}</p>
+          
+                  <div class="in-use-warning__folder-info">
+                    <img [src]="fIcon" alt="Folder" class="in-use-warning__folder-icon" />
+                    <div class="in-use-warning__folder-metadata">
+                      <div class="in-use-warning__folder-name">Name: {{fName}}</div>
+                      <div class="in-use-warning__folder-date">Type: {{fType}}</div>
+                      <div class="in-use-warning__folder-date">Size: {{fSize}}</div>
+                      <div class="in-use-warning__folder-date"> Date created: {{fDateCreated | date: 'dd MMM yyyy HH:mm' }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          
+              <div class="in-use-warning__dialog-buttons" [class.folder]="isFolder">
+                <span class="footer-btn1">
+                    <button class="btn btn-primary" (click)="onYesDialogBox()" >
+                        Retry
+                    </button>
+                    <div style="padding-left: 10px; display: inline;"></div>
+                    <button class="btn btn-secondary" (click)="onCloseDialogBox()" >
+                        No
+                    </button>
+                </span>
+              </div>
+            </div>
+        </div> 
+    </cos-secondarywindow>
+</ng-template>
+
+<ng-template #applicationSelection>
+    <div class="app-selection-dialog-main-container" id="app-selection-dialog-{{processId}}">
+        <div class="app-selection-dialog-header" tabindex="0">
+            <span class="app-selection-dialog-title">How do you want to open this file?</span>
+        </div>
+
+        <div class="app-selection-dialog-list">
+            @for(app of applicationOptions; track app.appName){
+                <div class="app-selection-dialog-item"
+                    [class.selected]="app.appName === selectedAppName"
+                    (click)="onAppOptionSelect(app.appName, $event)">
+                    <div class="app-selection-dialog-item-img">
+                        <img class="app-selection-dialog-icon" [src]="app.appIcon" [alt]="app.appName"/>
+                    </div>
+                    <div class="app-selection-dialog-item-name">
+                        <span>{{ app.appName }}</span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="app-selection-dialog-more">
+            @if(showAnotherAppText){
+                <span class="app-selection-dialog-more-link clicked">😋😋😋😋😋😋</span>
+            }@else{
+                <span class="app-selection-dialog-more-link" (click)="onLookForAnotherApp()">Look for another app on this PC</span>
+            }
+        </div>
+
+        <div class="app-selection-dialog-always">
+            <label class="app-selection-dialog-checkbox-row"  (click)="shhhhhh($event)">
+                <input type="checkbox" [(ngModel)]="alwaysUseSelectedApp"/>
+                <span class="app-selection-checkbox__box"></span>
+                <span>Always use this app to open .{{ applicationExt }} files</span>
+            </label>
+        </div>
+
+        <div class="app-selection-dialog-footer">
+            <span class="app-selection-dialog-footer-btns">
+                <button class="app-selection-dialog-ok-btn" (click)="onYesDialogBox()">
+                    OK
+                </button>
+            </span>
+        </div>
+    </div>
+</ng-template>

@@ -57,13 +57,7 @@
             ],
             "styles": [
               "src/styles.css",
-              "src/css/videoplayer/video-js.min.css",
-              "src/css/quill/quill.snow.css",
-              "src/osdrive/Program-Files/jsdos/js-dos.css",
               "node_modules/angular2-draggable/css/resizable.min.css"
-            ],
-            "scripts": [
-              "src/osdrive/Cheetah/System/ThreeJS/three.min.js"
             ]
           },
           "configurations": {
@@ -86,7 +80,10 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "serviceWorker": true,
+              "ngswConfigPath": "ngsw-config.json",
+              "baseHref": "https://chinonso098.github.io/cheetahos.github.io/"
             },
             "development": {
               "buildOptimizer": false,

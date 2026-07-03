@@ -246,7 +246,63 @@ io.on('connection', (socket) => {
 
     //console.log('User disconnected:', socket.id);
   });
+
+  socket.on('fetchPriorMessages', (msg) => {
+    // Reply to the requesting socket only with the most recent slice of history.
+    const mgs = messageList.slice(-asNumber(msg)); // last x messages
+    socket.emit('priorMessages', mgs);
+  });
+
 });
+
+/** =========================
+ * Scheduled history purge
+ * ========================= */
+
+// Number of most-recent messages to retain after each purge.
+const PURGE_KEEP_LAST = 500;
+
+// Cadence in days; each purge fires at 23:59:00 (11:59pm) local time.
+const PURGE_INTERVAL_DAYS = 7;
+
+/**
+ * Trim messageList in place down to the most recent PURGE_KEEP_LAST entries.
+ * Splicing in place preserves the shared array reference used by the socket
+ * handlers (fetchPriorMessages / newMessage), so no re-binding is needed.
+ */
+function purgeOldMessages() {
+  const excess = messageList.length - PURGE_KEEP_LAST;
+  if (excess > 0) {
+    messageList.splice(0, excess);
+    console.log(`purge: trimmed ${excess} message(s); ${messageList.length} kept`);
+  }
+}
+
+/**
+ * Milliseconds from now until the next purge instant: PURGE_INTERVAL_DAYS days
+ * ahead at 23:59:00 local time. Recomputed each cycle so the schedule stays
+ * anchored to 11:59pm across DST shifts and never accumulates setInterval drift.
+ * @returns {number}
+ */
+function msUntilNextPurge() {
+  const now = new Date();
+  const next = new Date(now);
+  next.setDate(now.getDate() + PURGE_INTERVAL_DAYS);
+  next.setHours(23, 59, 0, 0);
+  return Math.max(0, next.getTime() - now.getTime());
+}
+
+/**
+ * Arm a one-shot timer for the next purge instant, then re-arm itself after it
+ * fires. Recursive setTimeout (not setInterval) so each cycle re-anchors to
+ * 11:59pm. 7 days (~6.05e8 ms) is well within the setTimeout 32-bit limit.
+ */
+function scheduleWeeklyPurge() {
+  setTimeout(() => {
+    purgeOldMessages();
+    scheduleWeeklyPurge();
+  }, msUntilNextPurge());
+}
 
 /** =========================
  * Start server
@@ -254,4 +310,5 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
   console.log(`listening on *:${PORT}`);
   console.log(`socket namespace: /chat`);
+  scheduleWeeklyPurge();
 });

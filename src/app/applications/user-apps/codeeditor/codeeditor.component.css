@@ -1,0 +1,59 @@
+.code-editor-shell{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 480px;
+  min-height: 320px;
+  box-sizing: border-box;
+}
+
+.my-code-editor{
+  flex: 1 1 auto;
+  min-height: 0;   /* IMPORTANT so Monaco can compute height in flex */
+  width: 100%;
+  font-family: monospace;
+  font-size: 10pt;
+  letter-spacing: normal;
+  text-align: left;
+}
+
+/* Status bar */
+.editor-statusbar{
+  flex: 0 0 auto;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-size: 12px;
+  background: #1e1e1e;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.85);
+  user-select: none;
+}
+
+.sb-left, .sb-right{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sep{
+  opacity: 0.5;
+}
+
+.save-indicator{
+  opacity: 0.9;
+}
+
+.save-indicator.dirty{
+  opacity: 1;
+}
+
+/* ===== Light theme overrides (host gains .theme-light) ===== */
+:host(.theme-light) .editor-statusbar{
+  background: #f3f3f3;
+  border-top: 1px solid rgba(0,0,0,0.12);
+  color: rgba(0,0,0,0.85);
+}

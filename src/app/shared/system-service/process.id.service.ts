@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { RunningProcessService } from "./running.process.service";
 import { Constants } from "src/app/system-files/constants";
 import { ProcessType } from "src/app/system-files/system.types";
-import { BaseService } from "./base.service.interface";
+import { BaseService } from "../../system-files/base/base.service.interface";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 

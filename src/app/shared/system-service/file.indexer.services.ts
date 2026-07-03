@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Constants } from "src/app/system-files/constants";
 import { ProcessType } from "src/app/system-files/system.types";
-import { BaseService } from "./base.service.interface";
+import { BaseService } from "../../system-files/base/base.service.interface";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 import { AppDirectory } from "src/app/system-files/app.directory";
@@ -9,10 +9,10 @@ import { AppDirectory } from "src/app/system-files/app.directory";
 import { FileService } from "./file.service";
 import { RunningProcessService } from "./running.process.service";
 import { ProcessIDService } from "./process.id.service";
-import { fileIndexChangeOperationType, FileIndexIDs } from "src/app/system-files/common.enums";
+import { fileIndexChangeOperationType, FileIndexIDs } from "src/app/system-files/commons/common.enums";
 
 import {extname, basename, dirname} from 'path';
-import { FileSearchIndex } from "src/app/system-files/common.interfaces";
+import { FileSearchIndex } from "src/app/system-files/commons/common.interfaces";
 import { BehaviorSubject, Subject } from "rxjs";
 
 /**
@@ -224,7 +224,10 @@ export class FileIndexerService implements BaseService{
             if(directoryEntries.length === 0 && filePath !== Constants.USER_BASE_PATH){
                 const isFile = false;
                 const entry = basename(filePath);
-                const fileInfo = await this._fileService.getFileInfo(filePath);
+                // Metadata only (loadContent=false): the index never uses decoded file
+                // bytes, only path/icon/opensWith/date. Keeps the boot-time drive walk
+                // from downloading multi-MB media/swf/pdf content.
+                const fileInfo = await this._fileService.getFileInfoAsync(filePath, false);
                 // Prefer the real values from FileInfo; fall back to sensible
                 // defaults only when the service couldn't resolve them.
                 const iconPath = fileInfo.getIconPath || this.handleNonAppIcons(entry, isFile);
@@ -259,8 +262,17 @@ export class FileIndexerService implements BaseService{
         const entryPath =  path;
         if(this.isInRecycleBin(entryPath) || entry === this.ENTRY_TO_EXCLUDE) return;
 
+        // Skip shortcut (.url) files BEFORE any filesystem read. Their target is
+        // indexed instead, so reading the shortcut here would be a pure wasted
+        // network GET (getFileInfo fetches content). Doing this first avoids that.
+        if(extname(entry) === Constants.URL) return;
+
         const stat = (await this._fileService.getStatAsync(entryPath));
-        const fileInfo = await this._fileService.getFileInfo(entryPath);
+        // Metadata only (loadContent=false): the search index stores path/icon/
+        // opensWith/date, never the decoded blob. This is the hot path of the
+        // recursive boot walk, so deferring content here is what prevents the whole
+        // drive's media/swf/pdf from being downloaded at startup.
+        const fileInfo = await this._fileService.getFileInfoAsync(entryPath, false);
         if(stat.isDirectory){
             const isFile = false;
             const iconPath = fileInfo.getIconPath || this.handleNonAppIcons(entry, isFile);
@@ -272,9 +284,9 @@ export class FileIndexerService implements BaseService{
         }else{
             const isFile = true;
             const hasExt = false;
-            // Exclude shortcut files (.url); their target is indexed instead.
+            // Extension is still needed below for icon synthesis (the .url skip
+            // is now handled earlier, before the filesystem reads).
             const ext = extname(entry);
-            if(ext === Constants.URL) return;
 
             // Choose icon: prefer the resolved icon on FileInfo, otherwise
             // synthesize one based on whether the file has an extension.
@@ -303,7 +315,7 @@ export class FileIndexerService implements BaseService{
         if(this._appsIndexed) return;
 
         const entryPath = 'None';
-        const installApps = this._appDirectory.getAppList();
+        const installApps = this._appDirectory.getAppList().filter(appName => !this._appDirectory.getHiddenApp().includes(appName));
         const date = new Date('1970-01-01');
         for(const app of installApps){
             this.pushIfAbsent(this.getFileSearchIndex(FileIndexIDs.APPS, app, entryPath, Constants.EMPTY_STRING,
@@ -362,7 +374,7 @@ export class FileIndexerService implements BaseService{
         }else{
             if(hasExt){
                 const opensWith = this._fileService.getOpensWith(extname(fileName));
-                return `${Constants.IMAGE_BASE_PATH}${opensWith.appIcon}`;
+                return `${Constants.IMAGE_BASE_PATH}${opensWith.apps[0].appIcon}`;
             }else{
                 return `${Constants.IMAGE_BASE_PATH}${unknownIcon}`;
             }
@@ -423,7 +435,7 @@ export class FileIndexerService implements BaseService{
             // recurse so children are indexed too. Failures fetching folder
             // info are non-fatal; we still try to walk children.
             try{
-                const fileInfo = await this._fileService.getFileInfo(path);
+                const fileInfo = await this._fileService.getFileInfoAsync(path, false);
                 const iconPath = fileInfo.getIconPath || this.handleNonAppIcons(fileName, false);
                 this.pushIfAbsent(this.getFileSearchIndex(
                     FileIndexIDs.FOLDERS, fileName, fileInfo.getCurrentPath || path,

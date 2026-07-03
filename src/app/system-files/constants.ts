@@ -22,6 +22,16 @@ export namespace Constants{
     export const URL = '.url';
     export const SHORTCUT = 'Shortcut';
     export const BASE = 'osdrive';
+
+    /**
+     * Sentinel written to a launch trigger's currentPath to mark a Settings launch
+     * as a deep-link (e.g. the desktop "Personalize" context-menu entry) rather than
+     * a normal launch. Kept distinct from any real OS path so it can never collide
+     * with a file. The deep-link target is carried in the trigger's contentPath as
+     * "<view>:<option>".
+     */
+    export const SETTINGS_DEEP_LINK = 'settings-deep-link';
+
     export const IMAGE_BASE_PATH = 'osdrive/Cheetah/System/Imageres/';
     export const LOCK_SCREEN_IMAGE_BASE_PATH = 'osdrive/Cheetah/Themes/LockScreen/';
     export const DESKTOP_IMAGE_BASE_PATH = 'osdrive/Cheetah/Themes/Desktop/';
@@ -29,7 +39,8 @@ export namespace Constants{
     export const ACCT_IMAGE_BASE_PATH = 'osdrive/Cheetah/System/Acct/';
     export const GIF_BASE_PATH = 'osdrive/Cheetah/System/Gifres/';
     export const AUDIO_BASE_PATH = 'osdrive/Cheetah/System/Media/';
-    export const SCREEN_SAVER_BASE_PATH = 'osdrive/Cheetah/Themes/ScreenSavers/';
+    export const VIDEO_SCREEN_SAVER_BASE_PATH = 'osdrive/Cheetah/Themes/ScreenSavers/Videos/';
+    export const WEBGL_SCREEN_SAVER_BASE_PATH = 'osdrive/Cheetah/Themes/ScreenSavers/WebGL/';
     export const RECYCLE_BIN_PATH = '/Users/Desktop/Recycle Bin';
     export const DESKTOP_PATH = '/Users/Desktop';
     export const DOCUMENTS_PATH = '/Users/Documents';
@@ -40,9 +51,11 @@ export namespace Constants{
     export const DESKTOP = 'desktop';
     export const FOLDER = 'folder';
     export const NEW_FOLDER = 'New Folder';
+    export const NEW_TEXT_FILE = 'New Text File.txt';
     export const CHEETAH = 'cheetah';
     export const CLIPBOARD = 'clipboard';
     export const WIN_EXPLR = 'win_explr_';
+    export const NONE = 'None';
 
     export const DEFAULT_MENU_ORDER = 'DefaultMenuOrder';
     export const DEFAULT_FILE_MENU_ORDER = 'DefaultFileMenuOrder';
@@ -64,7 +77,7 @@ export namespace Constants{
     export const OS_NAME = 'Cheetah OS';
     export const OS_VERSION = '5.6.8';
     export const OS_COPYRIGHT = '© 2026 Cheetah Software Inc. All rights reserved.';
-    export const OS_BUILD = '260609' //date-based build number, in the format YYMMDD, used to track specific builds and updates of the OS.;
+    export const OS_BUILD = '260626' //date-based build number, in the format YYMMDD, used to track specific builds and updates of the OS.;
     export const OS_ARCHITECTURE = 'WEB-BASED';
 
     export const ON = 'On';
@@ -87,8 +100,15 @@ export namespace Constants{
     export const CHEETAH_LOGON_KEY = 'cheetahLogonKey';
     export const CHEETAH_MOBILE_BANNER_KEY = 'cheetahMobileBannerKey';
     export const CHEETAH_DEFAULT_SETTINGS_KEY = 'cheetahDefaultSettingsKey';
+    export const CHEETAH_DEFAULT_APP_OVERRIDE_KEY = 'cheetahDefaultAppOverrideKey';
     export const FILE_SVC_RESTORE_KEY = 'fileServiceRestoreKey';
     export const FILE_SVC_FILE_ITERATE_KEY = 'fileServiceFileIterateKey';
+
+
+
+    /** Must match the maximizeRestoreAnimation duration (0.50s) in
+    window.animations.ts.**/
+    export const MAXIMIZE_RESTORE_ANIM_MS = 550;
 
     export const DEFAULT_LOCK_SCREEN_TIMEOUT = 'DEFAULT_LOCK_SCREEN_TIMEOUT';
     export const DEFAULT_LOCK_SCREEN_BACKGROUND = 'DEFAULT_LOCK_SCREEN_BACKGROUND';
@@ -126,6 +146,15 @@ export namespace Constants{
     export const DEFAULT_SCREEN_SAVER_STATE = 'DEFAULT_SCREEN_SAVER_STATE';
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_SCREEN_SAVER_STATE_VALUE = OFF;
+
+    // The chosen screen saver, persisted as "Type:fileName" (e.g. "Dynamic:flowerbox.ssvr").
+    export const DEFAULT_SCREEN_SAVER = 'DEFAULT_SCREEN_SAVER';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_SCREEN_SAVER_VALUE = 'Dynamic:flowerbox.ssvr';
+
+    export const SCREEN_SAVER_VIDEO = 'Video';
+    export const SCREEN_SAVER_DYNAMIC = 'Dynamic';
+
     export const PRIMARY_SCREEN_SAVER_DELAY = 30000; //30 secs
     export const SECONDARY_SCREEN_SAVER_DELAY = 5000; //5 secs
 
@@ -154,9 +183,10 @@ export namespace Constants{
 
     export const CHEETAH_TASKBAR_ENTRY_OPTION_KEY = 'cheetahTskBarEntryOptKey';
 
+    export let D = 0;
     export const RSTRT_ORDER_LOCK_SCREEN = 0;
     export const RSTRT_ORDER_PWR_ON_OFF_SCREEN = 1;
-    export const STORAGE_CAPACITY = 512_050_500;
+    export const STORAGE_CAPACITY = 1024_100_500;
 
     export const DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG = 'DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG';
     /**⚠️ WARNING: Do not reference directly.*/
@@ -180,6 +210,55 @@ export namespace Constants{
     
     /**⚠️ WARNING: Do not reference directly.*/
     export const DEFAULT_ENFORCE_VIEWPORT_BOUNDS_VALUE = TRUE;
+
+    export const DEFAULT_SYSTEM_COLOR = '#000000';
+    export const DEFAULT_SYSTEM_COLOR_2 = '#ffffff';
+    
+
+    // System-wide light/dark theme. Persisted as one of THEME_DARK / THEME_LIGHT.
+    export const THEME_DARK = 'dark';
+    export const THEME_LIGHT = 'light';
+    export const DEFAULT_THEME = 'DEFAULT_THEME';
+
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_THEME_VALUE = THEME_DARK;
+
+    export const RECENT_CHEETAH_COLORS = 'RECENT_CHEETAH_COLORS';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const RECENT_CHEETAH_COLORS_VALUE = EMPTY_STRING;
+
+    export const DEFAULT_ACCENT_COLOR = 'DEFAULT_ACCENT_COLOR';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_ACCENT_COLOR_VALUE = '#0078d7';
+
+    export const DEFAULT_SHOW_ACCENT_COLOR_START_MENU_AND_TASKBAR = 'DEFAULT_SHOW_ACCENT_COLOR_START_MENU_AND_TASKBAR';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_SHOW_ACCENT_COLOR_START_MENU_AND_TASKBAR_VALUE = FALSE;
+    
+    export const DEFAULT_SHOW_ACCENT_COLOR_TITLE_BARS_AND_WINDOW_BORDERS = 'DEFAULT_SHOW_ACCENT_COLOR_TITLE_BARS_AND_WINDOW_BORDERS';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_SHOW_ACCENT_COLOR_TITLE_BARS_AND_WINDOW_BORDERS_VALUE = FALSE;
+
+    export const DEFAULT_SHOW_TRANSPARENCY_EFFECT_ON_TITLE_BAR_AND_WINDOW_BORDER = 'DEFAULT_SHOW_TRANSPARENCY_EFFECT_ON_TITLE_BAR_AND_WINDOW_BORDER';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_SHOW_TRANSPARENCY_EFFECT_ON_TITLE_BAR_AND_WINDOW_BORDER_VALUE = FALSE;
+
+    export const DEFAULT_APPLY_TRANSPARENCY_EFFECT_TO_CONTEXT_MENU = 'DEFAULT_APPLY_TRANSPARENCY_EFFECT_TO_CONTEXT_MENU';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_APPLY_TRANSPARENCY_EFFECT_TO_CONTEXT_MENU_VALUE = FALSE;
+
+    export const DEFAULT_APPLY_ACCENT_COLOR_TO_TRANSPARENT_MENU = 'DEFAULT_APPLY_ACCENT_COLOR_TO_TRANSPARENT_MENU';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_APPLY_ACCENT_COLOR_TO_TRANSPARENT_MENU_VALUE = FALSE;
+
+    export const DEFAULT_SHOW_TRANSPARENCY_EFFECT = 'DEFAULT_SHOW_TRANSPARENCY_EFFECT';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_SHOW_TRANSPARENCY_EFFECT_VALUE = FALSE;
+
+    export const DEFAULT_WHO_IS_THIS = 'DEFAULT_WHO_IS_THIS';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const UNKNOWN = "Unknown";
+    export const DEFAULT_WHO_IS_THIS_VALUE = UNKNOWN;
 
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
@@ -242,7 +321,8 @@ export namespace Constants{
         '.jsdos',
         '.swf',
         '.pdf',
-        '.zip'
+        '.zip',
+        '.ssvr'
     ]
 
     export const FILE_EXTENSION_MAP = [
@@ -255,7 +335,7 @@ export namespace Constants{
         ['.swf','Small Web Format'],
         ['.jsdos','JSDos File'],
         ['.pdf','PDF File'],
-
+        ['.ssvr','Screen Saver File'],
         ['.jpg',  'JPEG File'],
         ['.png',  'PNG File'],
         ['.avif', 'AV1 Image File Format'],
@@ -308,6 +388,14 @@ export namespace Constants{
         '#008386', '#45695f', '#525f54', '#7e7360', '#4c4a48', '#4f5d6b', '#4a545a', '#000203'
     ]
 
+    export const CHEETAH_COLORS =[
+        '#ffb900', '#ff8c00', '#f7630c', '#ca5010', '#da3b01', '#ef6950', '#871499', '#d13438',
+        '#e74856', '#e81123', '#ea005e', '#c30052', '#e3008c', '#bf0077', '#c239b3', '#9a0089',
+        '#0078d7', '#0063b1', '#8e8cd8', '#6b69d6', '#8764b8', '#744da9', '#b146c2', '#881798',
+        '#0099bc', '#2d7d9a', '#00b7c3', '#038387', '#00b294', '#018574', '#00cc6a', '#10893e',
+        '#7a7574', '#5d5a58', '#68768a', '#515c6b', '#567c73', '#486860', '#498205', '#107c10'
+    ]
+
     export const LOCKSCREEN_PICTURE_SET = [
         'bamboo_moon.jpg', 'duck_lake.jpeg', 'forza_5.jpeg', 'highland_view.jpg',
         'leaf_colors.jpg', 'lofi_coffee.jpeg', 'mountain_babel.jpg', 'mystic_isle.jpg', 
@@ -320,25 +408,16 @@ export namespace Constants{
         'mineral_heart.jpg', 'summer_vibe.jpg', 'sun_set.jpg', 'win_seven.jpg']
 
 
-    export const FILE_SVC_FILE_TITLE ='File';
-    export const FILE_SVC_FOLDER_TITLE ='Folder';
+    //Other Z-Indexes
+    export const Z_INDEX_TASKBAR_ELEMENTS = 5;
+    //export const Z_INDEX_LOGIN_MENU = 6;
+    export const Z_INDEX_DESKTOP_ICON_CONTEXT_MENU = 4;   
+    export const Z_INDEX_DESKTOP_CONTEXT_MENU = 4;
+    export const Z_INDEX_FILE_EXPLORER_CONTEXT_MENU = 20;
 
-    export const FILE_SVC_PERMANENTLY_DELETE_FILE_MSG = 'Are you sure that you want to permanently delete this file?';
-    export const FILE_SVC_PERMANENTLY_DELETE_FOLDER_MSG = 'Are you sure that you want to permanently delete this folder?';
 
-    export const FILE_SVC_FILE_IN_USE_TITLE = 'File in use';
-    export const FILE_SVC_FILE_IN_USE_MSG = `The action can't be completed because the file is open in another program`;
-
-    export const FILE_SVC_FOLDER_IN_USE_TITLE = 'Folder in use';
-    export const FILE_SVC_FOLDER_IN_USE_MSG = `The action can't be completed because the folder or a file in it is open in another program`;
-
-    export const FILE_SVC_MOVE_FILE_TO_RECYCLE_BIN_MSG = 'Are you sure that you want to move this file to the Recycle Bin?';
-    export const FILE_SVC_MOVE_FOLDER_TO_RECYCLE_BIN_MSG = 'Are you sure that you want to move this folder to the Recycle Bin?';
-
-    export const FILE_SVC_DELETE_FILE_TITLE = 'Delete file';
-    export const FILE_SVC_DELETE_FOLDER_TITLE = 'Delete folder';
-    export const FILE_SVC_DELETE_CONFIRMATION_TITLE = 'Delete Confirmation';
-    export const FILE_SVC_DELETE_SHORTCUT_TITLE = 'Delete Shortcut';
-
-        
+    export const USER_DEV = 'dev';
+    export const USER_GUEST = 'guest';  
+    export const USER_GUEST_PASSWORD = '1234';
+    
 }

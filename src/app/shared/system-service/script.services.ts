@@ -5,7 +5,7 @@ import { ProcessIDService } from './process.id.service';
 import { RunningProcessService } from './running.process.service';
 import { Process } from 'src/app/system-files/process';
 import { Service } from 'src/app/system-files/service';
-import { BaseService } from './base.service.interface';
+import { BaseService } from '../../system-files/base/base.service.interface';
 
 interface Asset {
   name: string;

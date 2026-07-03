@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="620" viewBox="0 0 1080 620" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#5a6472"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2e7d32"/>
+    </marker>
+    <marker id="arrowGrey" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#b0b6bf"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1080" height="620" fill="#ffffff"/>
+  <text x="540" y="40" text-anchor="middle" font-size="24" font-weight="700" fill="#1a1f29">WindowService subscription model — refactor</text>
+
+  <!-- ============ BEFORE ============ -->
+  <rect x="30" y="70" width="490" height="510" rx="12" fill="#fbf3f2" stroke="#e0c4c1"/>
+  <text x="275" y="100" text-anchor="middle" font-size="18" font-weight="700" fill="#9b2b22">Before — broadcast Subject</text>
+  <text x="275" y="124" text-anchor="middle" font-size="13" fill="#9b2b22">O(N) deliveries per pid-targeted event</text>
+
+  <!-- publisher -->
+  <rect x="180" y="145" width="190" height="46" rx="8" fill="#ffffff" stroke="#5a6472"/>
+  <text x="275" y="168" text-anchor="middle" font-size="13" fill="#1a1f29">publisher</text>
+  <text x="275" y="184" text-anchor="middle" font-size="11" fill="#5a6472">…Notify.next(pid)</text>
+
+  <!-- subject -->
+  <ellipse cx="275" cy="248" rx="86" ry="30" fill="#fdecea" stroke="#c0392b"/>
+  <text x="275" y="245" text-anchor="middle" font-size="13" font-weight="700" fill="#9b2b22">Subject&lt;number&gt;</text>
+  <text x="275" y="262" text-anchor="middle" font-size="11" fill="#9b2b22">broadcast</text>
+
+  <line x1="275" y1="191" x2="275" y2="216" stroke="#5a6472" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- windows -->
+  <g font-size="12">
+    <rect x="55"  y="330" width="190" height="60" rx="8" fill="#ffffff" stroke="#2e7d32"/>
+    <text x="150" y="356" text-anchor="middle" fill="#1a1f29">Window (pid = 42)</text>
+    <text x="150" y="374" text-anchor="middle" fill="#2e7d32">pid === this.pid ✓ handle</text>
+
+    <rect x="305" y="330" width="190" height="60" rx="8" fill="#ffffff" stroke="#b0392b"/>
+    <text x="400" y="356" text-anchor="middle" fill="#1a1f29">Window (pid = 7)</text>
+    <text x="400" y="374" text-anchor="middle" fill="#b0392b">pid !== this.pid ✗ drop</text>
+
+    <rect x="55"  y="430" width="190" height="60" rx="8" fill="#ffffff" stroke="#b0392b"/>
+    <text x="150" y="456" text-anchor="middle" fill="#1a1f29">Window (pid = 13)</text>
+    <text x="150" y="474" text-anchor="middle" fill="#b0392b">pid !== this.pid ✗ drop</text>
+
+    <rect x="305" y="430" width="190" height="60" rx="8" fill="#ffffff" stroke="#b0392b"/>
+    <text x="400" y="456" text-anchor="middle" fill="#1a1f29">Window (pid = N)</text>
+    <text x="400" y="474" text-anchor="middle" fill="#b0392b">pid !== this.pid ✗ drop</text>
+  </g>
+
+  <path d="M230,272 C190,300 165,310 150,328" fill="none" stroke="#b0b6bf" stroke-width="1.6" marker-end="url(#arrowGrey)"/>
+  <path d="M320,272 C360,300 385,310 400,328" fill="none" stroke="#2e7d32" stroke-width="1.8" marker-end="url(#arrowGreen)"/>
+  <path d="M250,276 C190,360 160,400 150,428" fill="none" stroke="#b0b6bf" stroke-width="1.6" marker-end="url(#arrowGrey)"/>
+  <path d="M300,276 C360,360 390,400 400,428" fill="none" stroke="#b0b6bf" stroke-width="1.6" marker-end="url(#arrowGrey)"/>
+
+  <text x="275" y="540" text-anchor="middle" font-size="12" fill="#9b2b22">Every window receives the event; all but one</text>
+  <text x="275" y="558" text-anchor="middle" font-size="12" fill="#9b2b22">discard it via a `pid !== this.pid` guard.</text>
+
+  <!-- ============ AFTER ============ -->
+  <rect x="560" y="70" width="490" height="510" rx="12" fill="#f1f8f2" stroke="#bcdcc0"/>
+  <text x="805" y="100" text-anchor="middle" font-size="18" font-weight="700" fill="#1f6b2a">After — per-pid keyed dispatch</text>
+  <text x="805" y="124" text-anchor="middle" font-size="13" fill="#1f6b2a">O(1) delivery — only the target window</text>
+
+  <!-- publisher (unchanged) -->
+  <rect x="710" y="145" width="190" height="46" rx="8" fill="#ffffff" stroke="#5a6472"/>
+  <text x="805" y="168" text-anchor="middle" font-size="13" fill="#1a1f29">publisher (unchanged)</text>
+  <text x="805" y="184" text-anchor="middle" font-size="11" fill="#5a6472">…Notify.next(pid)</text>
+
+  <!-- bridge -->
+  <rect x="700" y="218" width="210" height="44" rx="8" fill="#eafaef" stroke="#2e7d32"/>
+  <text x="805" y="240" text-anchor="middle" font-size="12" font-weight="700" fill="#1f6b2a">bridge (ctor subscribe)</text>
+  <text x="805" y="256" text-anchor="middle" font-size="11" fill="#1f6b2a">Map.get(pid).next()</text>
+  <line x1="805" y1="191" x2="805" y2="216" stroke="#5a6472" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- map -->
+  <rect x="700" y="290" width="210" height="62" rx="8" fill="#ffffff" stroke="#2e7d32"/>
+  <text x="805" y="313" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1f29">Map&lt;pid, Subject&gt;</text>
+  <text x="805" y="331" text-anchor="middle" font-size="11" fill="#5a6472">_focusOnNextByPid, _closeByPid …</text>
+  <text x="805" y="346" text-anchor="middle" font-size="11" fill="#5a6472">lazy create · O(1) lookup</text>
+  <line x1="805" y1="262" x2="805" y2="288" stroke="#2e7d32" stroke-width="1.6" marker-end="url(#arrowGreen)"/>
+
+  <!-- only target window -->
+  <rect x="660" y="400" width="290" height="62" rx="8" fill="#ffffff" stroke="#2e7d32"/>
+  <text x="805" y="425" text-anchor="middle" font-size="13" fill="#1a1f29">Window (pid = 7)</text>
+  <text x="805" y="444" text-anchor="middle" font-size="11" fill="#1f6b2a">onXxxFor(7).subscribe(…) — no guard</text>
+  <path d="M805,352 L805,398" fill="none" stroke="#2e7d32" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <text x="805" y="500" text-anchor="middle" font-size="12" fill="#1f6b2a">Other windows are never notified.</text>
+  <text x="805" y="518" text-anchor="middle" font-size="12" fill="#1f6b2a">Subscribe in ngOnInit (inputs are set);</text>
+  <text x="805" y="536" text-anchor="middle" font-size="12" fill="#1f6b2a">releaseChannelsForPid(pid) on teardown.</text>
+
+  <!-- divider arrow -->
+  <path d="M524,325 L556,325" stroke="#9aa1ab" stroke-width="2" marker-end="url(#arrow)"/>
+</svg>

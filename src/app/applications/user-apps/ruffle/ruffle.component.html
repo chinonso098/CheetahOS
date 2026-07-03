@@ -1,0 +1,8 @@
+<cos-primarywindow 
+  [runningProcessID]="processId" 
+  [processAppIcon]="icon" 
+  [processAppName]="displayName" 
+  [isMaximizable]="isMaximizable" 
+  [priorUId]="priorUId">
+    <div #ruffleContainer [style.width.px]="WIDTH_PX" [style.height.px]="HEIGHT_PX" style="position: relative;"  (contextmenu)="focusWindow($event)" (click)="focusWindow($event)"></div> 
+</cos-primarywindow>

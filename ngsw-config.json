@@ -1,0 +1,69 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+
+  "assetGroups": [
+    {
+      "name": "app-shell",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "boot-chrome-icons",
+      "installMode": "prefetch",
+      "updateMode": "lazy",
+      "resources": {
+        "files": [
+          "/osdrive/Cheetah/System/Imageres/**"
+        ]
+      }
+    }
+  ],
+
+  "dataGroups": [
+    {
+      "name": "osdrive-app-scripts-and-styles",
+      "urls": [
+        "/osdrive/Program-Files/**/*.js",
+        "/osdrive/Program-Files/**/*.css",
+        "/osdrive/Program-Files/**/*.wasm",
+        "/osdrive/Program-Files/**/*.map",
+        "/assets/monaco/**"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 400,
+        "maxAge": "30d",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "osdrive-themes-and-misc-images",
+      "urls": [
+        "/osdrive/Cheetah/Themes/**",
+        "/osdrive/Cheetah/System/Acct/**",
+        "/osdrive/**/*.png",
+        "/osdrive/**/*.jpg",
+        "/osdrive/**/*.jpeg",
+        "/osdrive/**/*.gif",
+        "/osdrive/**/*.webp",
+        "/osdrive/**/*.svg",
+        "/osdrive/**/*.ico"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 300,
+        "maxAge": "14d",
+        "timeout": "5s"
+      }
+    }
+  ]
+}

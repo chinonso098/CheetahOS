@@ -1,7 +1,7 @@
 import { ComponentRef, Injectable, Type} from "@angular/core";
 
 import { AppDirectory } from "src/app/system-files/app.directory";
-import { FileInfo } from "src/app/system-files/file.info";
+import { FileInfo } from "src/app/system-files/fs/file.info";
 import { Constants } from "src/app/system-files/constants";
 import { ProcessType } from "src/app/system-files/system.types";
 import { Process } from "src/app/system-files/process";
@@ -9,41 +9,44 @@ import { Service } from "src/app/system-files/service";
 
 import { MenuService } from "./menu.services";
 import { WindowService } from "./window.service";
-import { BaseService } from "./base.service.interface";
+import { BaseService } from "../../system-files/base/base.service.interface";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { UserNotificationService } from "./user.notification.service";
 import { SessionManagementService } from "./session.management.service";
 
 import { ComponentReferenceService } from "./component.reference.service";
-import { PropertiesComponent } from "../system-component/properties/properties.component";
-import { AudioPlayerComponent } from "src/app/system-apps/audioplayer/audioplayer.component";
-import { ChatterComponent } from "src/app/system-apps/chatter/chatter.component";
-import { CheetahComponent } from "src/app/system-apps/cheetah/cheetah.component";
-import { ClippyComponent } from "src/app/system-apps/clippy/clippy.component";
-import { ClipboardComponent } from "src/app/system-apps/clipboard/clipboard.component";
-import { FileExplorerComponent } from "src/app/system-apps/fileexplorer/fileexplorer.component";
-import { PhotoViewerComponent } from "src/app/system-apps/photoviewer/photoviewer.component";
-import { RunSystemComponent } from "src/app/system-apps/runsystem/runsystem.component";
-import { TaskmanagerComponent } from "src/app/system-apps/taskmanager/taskmanager.component";
-import { TerminalComponent } from "src/app/system-apps/terminal/terminal.component";
-import { TextEditorComponent } from "src/app/system-apps/texteditor/texteditor.component";
-import { VideoPlayerComponent } from "src/app/system-apps/videoplayer/videoplayer.component";
-import { BaseComponent } from "src/app/system-base/base/base.component.interface";
-import { BoidsComponent } from "src/app/user-apps/boids/boids.component";
-import { CodeEditorComponent } from "src/app/user-apps/codeeditor/codeeditor.component";
-import { GreetingComponent } from "src/app/user-apps/greeting/greeting.component";
-import { JSdosComponent } from "src/app/user-apps/jsdos/jsdos.component";
-import { MarkDownViewerComponent } from "src/app/user-apps/markdownviewer/markdownviewer.component";
-import { RuffleComponent } from "src/app/user-apps/ruffle/ruffle.component";
-import { TitleComponent } from "src/app/user-apps/title/title.component";
-import { WarpingstarfieldComponent } from "src/app/user-apps/warpingstarfield/warpingstarfield.component";
-import { ParticaleFlowComponent } from "src/app/user-apps/particaleflow/particaleflow.component";
-import { PdfViewerComponent } from "src/app/user-apps/pdf-viewer/pdf-viewer.component";
-import { SettingsComponent } from "src/app/system-apps/controlpanel/settings.component";
+import { PropertiesComponent } from "../system-ui-components/properties/properties.component";
+import { AudioPlayerComponent } from "src/app/applications/system-apps/audioplayer/audioplayer.component";
+import { ChatterComponent } from "src/app/applications/system-apps/chatter/chatter.component";
+import { CheetahComponent } from "src/app/applications/system-apps/cheetah/cheetah.component";
+import { ClippyComponent } from "src/app/applications/system-apps/clippy/clippy.component";
+import { ClipboardComponent } from "src/app/applications/system-apps/clipboard/clipboard.component";
+import { FileExplorerComponent } from "src/app/applications/system-apps/fileexplorer/fileexplorer.component";
+import { PhotoViewerComponent } from "src/app/applications/system-apps/photoviewer/photoviewer.component";
+import { RunSystemComponent } from "src/app/applications/system-apps/runsystem/runsystem.component";
+import { TaskmanagerComponent } from "src/app/applications/system-apps/taskmanager/taskmanager.component";
+import { TerminalComponent } from "src/app/applications/system-apps/terminal/terminal.component";
+import { TextEditorComponent } from "src/app/applications/system-apps/texteditor/texteditor.component";
+import { VideoPlayerComponent } from "src/app/applications/system-apps/videoplayer/videoplayer.component";
+import { BaseComponent } from "src/app/system-files/base/base.component.interface";
+import { BoidsComponent } from "src/app/applications/user-apps/boids/boids.component";
+import { CodeEditorComponent } from "src/app/applications/user-apps/codeeditor/codeeditor.component";
+import { GreetingComponent } from "src/app/applications/user-apps/greeting/greeting.component";
+import { JSdosComponent } from "src/app/applications/user-apps/jsdos/jsdos.component";
+import { MarkDownViewerComponent } from "src/app/applications/user-apps/markdownviewer/markdownviewer.component";
+import { RuffleComponent } from "src/app/applications/user-apps/ruffle/ruffle.component";
+import { TitleComponent } from "src/app/applications/user-apps/title/title.component";
+import { WarpingstarfieldComponent } from "src/app/applications/user-apps/warpingstarfield/warpingstarfield.component";
+import { ParticaleFlowComponent } from "src/app/applications/user-apps/particaleflow/particaleflow.component";
+import { PdfViewerComponent } from "src/app/applications/user-apps/pdf-viewer/pdf-viewer.component";
+import { ScreenSaverViewerComponent } from "src/app/applications/system-apps/screensaverviewer/screensaverviewer.component";
+import { SettingsComponent } from "src/app/applications/system-apps/controlpanel/settings.component";
 import { DefaultService } from "./defaults.services";
 import { SystemNotificationService } from "./system.notification.service";
 import { SystemMetric } from "./system.metrics";
+import { FileService } from "./file.service";
+import { DialogMessage } from "../system-ui-components/dialog/dialog.types";
 
 
 @Injectable({
@@ -62,9 +65,24 @@ export class ProcessHandlerService implements BaseService{
     private _userNotificationService!:UserNotificationService;
     private _systemNotificationService!:SystemNotificationService;
     private _systemMetric!:SystemMetric;
+    private _fileService!:FileService;
 
     private _appDirectory:AppDirectory;
     private _triggerMap:Map<string, FileInfo[]>;
+    private _defaultAppOverRideMap!:Map<string, string>;
+    private readonly _defaultAppOverRideKey = Constants.CHEETAH_DEFAULT_APP_OVERRIDE_KEY;
+
+    /**
+     * Apps that render a file by handing the file's decoded blob straight to a
+     * third-party renderer (Ruffle for .swf, pdf.js for .pdf, the photo viewer for
+     * images). Directory listings intentionally no longer pre-download this
+     * (potentially multi-MB) content (see FileService.loadDirectoryFiles), so it is
+     * materialized here — lazily, the moment the file is actually opened.
+     *
+     * Audio/video are deliberately NOT in this list: they stream directly from an
+     * osdrive URL (see the audio/video players) instead of buffering a blob.
+     */
+    private readonly _blobContentApps:string[] = ['ruffle', 'pdfviewer', 'photoviewer'];
 
     private _onlyOneInstanceAllowed:string[] = ["audioplayer", "chatter", "cheetah", "clipboard", "jsdos", "photoviewer", 
         "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow", "settings"];
@@ -85,6 +103,7 @@ export class ProcessHandlerService implements BaseService{
     description = 'inits components';
 
     private readonly TASK_MANAGER = "taskmanager";
+    private readonly SETTINGS = "settings";
     private readonly CHATTER ="chatter";
     private readonly RUN_SYSTEM = "runsystem";
     private readonly CHEETAH = "cheetah";
@@ -136,13 +155,14 @@ export class ProcessHandlerService implements BaseService{
         ["starfield", WarpingstarfieldComponent],
         ["boids", BoidsComponent],
         ["particleflow", ParticaleFlowComponent],
-        ["pdfviewer", PdfViewerComponent]
+        ["pdfviewer", PdfViewerComponent],
+        ["screensaverviewer", ScreenSaverViewerComponent]
     ]);
 
     constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, windowService:WindowService, 
         componentReferenceService:ComponentReferenceService, menuService:MenuService, sessionMangamentServices:SessionManagementService,
         userNotificationService:UserNotificationService, systemNotificationService:SystemNotificationService, defaultService: DefaultService,
-        systemMetric:SystemMetric){
+        systemMetric:SystemMetric, fileService:FileService){
 
         this._appDirectory = new AppDirectory();
         this._triggerMap = new Map<string, FileInfo[]>();
@@ -157,6 +177,9 @@ export class ProcessHandlerService implements BaseService{
         this._systemNotificationService = systemNotificationService;
         this._defaultService = defaultService;
         this._systemMetric = systemMetric;
+        this._fileService = fileService;
+        this._defaultAppOverRideMap = new Map<string, string>()
+        this.retrieveDefaultAppOverRides();
 
         this.processId = this._processIdService.getNewProcessId();
         this._runningProcessService.addProcess(this.getProcessDetail());
@@ -166,16 +189,22 @@ export class ProcessHandlerService implements BaseService{
         this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.closeApplicationProcess(p)})
     }
 
-    public runApplication(file:FileInfo):void{
+    public async runApplication(file:FileInfo, overrideDefaultApp:boolean=false):Promise<void>{
         const appName = file.getOpensWith;
 
         // Unknown app — surface an error and bail out early.
         if(!this._appDirectory.appExist(appName)){
-            const msg = `C:/App Directory/${appName}`;
+            const msg = DialogMessage.PROCESS_SVC_APP_NOT_FOUND.replace(DialogMessage.placeholder, appName);
             const title = msg;
             this._userNotificationService.showErrorNotification(msg, title);
             return;
         }
+
+        // Lazily materialize heavy file content now that the file is actually being
+        // opened (it is no longer pre-loaded during directory listing). For most apps
+        // this is a cheap no-op; only blob-backed viewers (Ruffle/PDF/PhotoViewer)
+        // trigger a real read here.
+        file = await this.hydrateFileContentIfNeeded(appName, file);
 
         const isRunning = this._runningProcessService.isProcessRunning(appName);
         const isSingleInstance = this._onlyOneInstanceAllowed.includes(appName);
@@ -183,9 +212,44 @@ export class ProcessHandlerService implements BaseService{
         // Launch a brand-new instance when the app isn't running yet, or when it is
         // running but multiple instances are permitted.
         if(!isRunning || !isSingleInstance){
-            this.addTrigger(appName, file);
-            this.loadApps(appName);
-            return;
+            //Open - open a file with the default app, in the file mapping
+            //Open With... overrides the default app mapping for the file extension, 
+            // so we launch the app specified by the user instead of the default app.
+
+            // If the file has an explicit "opensWith" app, we add the file to the trigger map and load the app
+            // and set overrideDefaultApp to true.
+            //  This ensures that the app will have access to the file when it starts.
+            if(overrideDefaultApp){
+                this.addTrigger(appName, file);
+                this.loadApps(appName);
+                return;
+            }
+
+            // If the file has no extension (or if the default app override map is empty), 
+            // we add the file to the trigger map and load the app. 
+            // This ensures that the app will have access to the file when it starts.
+            if((file.getFileExtension === Constants.EMPTY_STRING || this._defaultAppOverRideMap.size === 0)
+                || ((file.getFileExtension !== Constants.EMPTY_STRING 
+                    && this._defaultAppOverRideMap.size > 0 
+                    && !this._defaultAppOverRideMap.has(file.getFileExtension)))){
+
+                this.addTrigger(appName, file);
+                this.loadApps(appName);
+                return;
+            }
+
+            // The file has an extension AND an override is registered for it (every
+            // other case returned above). Honour the override — including when it
+            // resolves to the file's own default app.
+            if(file.getFileExtension !== Constants.EMPTY_STRING 
+                && this._defaultAppOverRideMap.has(file.getFileExtension)){
+                const defaultApp = this.getDefaultAppOverRide(file.getFileExtension);
+                if(defaultApp !== Constants.EMPTY_STRING){
+                    this.addTrigger(defaultApp, file);
+                    this.loadApps(defaultApp);
+                    return;
+                }
+            }
         }
 
         // From here on: the app is a single-instance app that is already running, so we
@@ -195,6 +259,9 @@ export class ProcessHandlerService implements BaseService{
             return;
         }
 
+        //When a single-instance app is already running, we either re-focus it (if it has no file content to refresh) or we hand it the new file and ask it to refresh its content.
+        // The "focus-only" apps are a subset of the single-instance apps, so they are
+        // listed separately here for clarity.
         // Focus-only apps have no file content to refresh — just bring the window forward.
         if(this._focusOnlyApps.includes(runningProcess.getProcessName)){
             this._windowService.focusOnCurrentProcessWindowNotify.next(runningProcess.getProcessId);
@@ -212,7 +279,7 @@ export class ProcessHandlerService implements BaseService{
     }
 
     /**
-     * Toggle the clipboard flyout (summoned with Windows + V). Closes it when it
+     * Toggle the clipboard flyout (summoned with Ctrl + Shift + V). Brings it into focus when it
      * is already open, otherwise launches a fresh single-instance window. The
      * clipboard is launched directly (not via `runApplication`) because it has no
      * backing file — it reads its contents from the clipboard data bank.
@@ -221,13 +288,49 @@ export class ProcessHandlerService implements BaseService{
         const isRunning = this._runningProcessService.isProcessRunning(Constants.CLIPBOARD);
         if(isRunning){
             const process = this._runningProcessService.getProcessByName(Constants.CLIPBOARD);
-            if(process){
-                this._runningProcessService.closeProcessNotify.next(process);
-            }
-            return;
+            if(process)
+                this._windowService.focusOnCurrentProcessWindowNotify.next(process.getProcessId);
+        }
+        else
+            this.loadApps(Constants.CLIPBOARD);
+    }
+
+    /**
+     * Materialize a file's content on open, when (and only when) the target app
+     * needs the decoded blob and that content was deferred during listing.
+     *
+     * Directory listings now skip downloading multi-MB media/blob content
+     * (FileService.loadDirectoryFiles -> getFileInfo(path, false)). As a result the
+     * FileInfo handed to a blob-backed viewer (Ruffle/PDF/PhotoViewer) can arrive
+     * with an empty contentPath. Here we re-resolve the file *with* content so the
+     * viewer receives exactly the same fully-populated FileInfo it always has.
+     *
+     * Guards keep this safe and cheap:
+     *  - only the blob-backed apps in `_blobContentApps` are hydrated;
+     *  - only real files (getIsFile) with a concrete currentPath qualify;
+     *  - already-populated files (contentPath/stringBuffer set) are left untouched;
+     *  - any read error falls back to the original FileInfo.
+     */
+    private async hydrateFileContentIfNeeded(appName:string, file:FileInfo):Promise<FileInfo>{
+        const needsContent = this._blobContentApps.includes(appName)
+            && file.getIsFile
+            && file.getCurrentPath !== Constants.EMPTY_STRING
+            && file.getCurrentPath !== Constants.NONE
+            && file.getContentPath === Constants.EMPTY_STRING
+            && file.getStringBuffer === Constants.EMPTY_STRING;
+
+        if(!needsContent){
+            return file;
         }
 
-        this.loadApps(Constants.CLIPBOARD);
+        try{
+            // Default loadContent=true: this is the open path, so we DO want the bytes.
+            const hydrated = await this._fileService.getFileInfoAsync(file.getCurrentPath);
+            return hydrated ?? file;
+        }catch(err){
+            console.error('hydrateFileContentIfNeeded: failed to load content for', file.getCurrentPath, err);
+            return file; // fall back to the original; the viewer can still try currentPath
+        }
     }
 
     /**
@@ -396,6 +499,43 @@ export class ProcessHandlerService implements BaseService{
         this.openedAppInstanceUId = [];
         this.priorUserOpenedAppsList = [];
         this.priorOpenedAppInstanceUId= [];
+    }       
+
+    /**
+     * 
+     * @param ext The file extension for which the default app override is being set.
+     * @param appName The name of the application to set as the default for the given extension.
+     */
+    public setDefaultAppOverRide(ext:string, appName:string):void{
+        this._defaultAppOverRideMap.set(ext, appName);
+        // Persist to localStorage (via SessionManagementService) so the choice
+        // survives a browser refresh / restart.
+        this._sessionMangamentServices.addMapBasedSession(this._defaultAppOverRideKey, this._defaultAppOverRideMap);
+    }
+
+    /**
+     * Rehydrate the extension -> default-app overrides saved in a prior session.
+     * Called once at construction; a missing/corrupt payload simply leaves the
+     * in-memory map empty (first-run behaviour).
+     */
+    private retrieveDefaultAppOverRides():void{
+        const savedOverrides = this._sessionMangamentServices.getMapBasedSession(this._defaultAppOverRideKey);
+        if(savedOverrides && savedOverrides.size > 0){
+            this._defaultAppOverRideMap = savedOverrides;
+        }
+    }
+
+    /**
+     * 
+     * @param ext The file extension for which the default app override is being retrieved.
+     * @returns The name of the application set as the default for the given extension, or an empty string if none is set.
+     */
+    private getDefaultAppOverRide(ext:string):string{
+        if(this._defaultAppOverRideMap.has(ext)){
+            return this._defaultAppOverRideMap.get(ext)!;
+        }
+
+        return Constants.EMPTY_STRING;
     }
 
     private shouldRestoreUserOpenedApps(): boolean{

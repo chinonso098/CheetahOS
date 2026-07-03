@@ -1,0 +1,138 @@
+  /* ── Layout ── */
+
+.file-tree-view-main {
+  /* Was `height: 100%`. The host (cos-filetreeview) is inline, so this block
+     child resolved its percentage height against the file-explorer nav pane's
+     definite height — making the tree always fill the full pane. Combined with
+     the 10px `.nav-tree-spacer` sibling above it, total content became
+     `100% + 10px`, a constant overflow that kept the vertical scrollbar on
+     permanently. It also hid real overflow: a tall tree would spill past the
+     locked-height main without the pane ever scrolling. Letting the height be
+     content-driven fixes both. */
+  height: auto;
+  width: 100%;
+}
+
+.ul-file-tree-view {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.li-file-tree-view0 {
+  margin: 0;
+  padding: 0;
+}
+
+.li-file-tree-view {
+  margin: 0;
+  padding: 0 0 0 10px;
+}
+
+/* ── Visibility toggling ── */
+
+.nested {
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+/* ── Caret rotation states ── */
+
+.root-caret-active {
+  position: relative;
+  transform: rotate(0deg);
+}
+
+.caret-active {
+  position: relative;
+  transform: rotate(90deg);
+}
+
+.root-caret-nested {
+  position: relative;
+  transform: rotate(270deg);
+}
+
+.caret-nested {
+  position: relative;
+  transform: rotate(0deg);
+}
+
+/* ── Tree-view row ── */
+
+.tree-view-cntnr {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  padding: 2px 0;
+}
+
+.fxtreeview-nested-p {
+  /* Was `position: relative; top: 10%`, which offset the text by a fractional
+     percentage and left it sitting on sub-pixel coordinates — the root cause of
+     the fuzzy/blurred look. Vertical centring is now handled by `align-items:
+     center` on the flex row, so the paragraph can sit on a whole-pixel
+     baseline. */
+  margin: 0;
+}
+
+.fxtreeview-head {
+  padding-left: 5px;
+}
+
+.fxtreeview-mid {
+  padding-left: 2px;
+  padding-right: 3px;
+}
+
+.fxtreeview-tail {
+  padding: 0 5px;
+  /* Theme-aware text colour. `--fx-text` is defined on the File Explorer host
+     and inherits down into this child component via the CSS custom-property
+     cascade (it pierces Angular's emulated encapsulation). Falls back to white
+     when the tree is used outside a themed host. Fixes white-on-white text in
+     light mode. */
+  color: var(--fx-text, white);
+  text-align: left;
+  font-size: 12px;
+  /* Was `200` (ultra-thin), which renders faint and fuzzy at this small size.
+     A normal weight gives crisp, fully-hinted glyphs. */
+  font-weight: 400;
+}
+
+/* ── Chevron icon (10×10) ── */
+
+.fxtreeview-img {
+  height: 10px;
+  width: 10px;
+  position: relative;
+}
+
+.fxtreeview-figure {
+  position: relative;
+  align-items: center;
+  display: inline-flex;
+  min-width: 10px;
+  top: 0;
+  left: 15%;
+}
+
+/* ── Node icon (17×17) ── */
+
+.fxtreeview-img1 {
+  height: 17px;
+  width: 17px;
+  position: relative;
+}
+
+.fxtreeview-figure1 {
+  position: relative;
+  align-items: center;
+  display: inline-flex;
+  min-width: 17px;
+  top: 0;
+  left: 15%;
+}

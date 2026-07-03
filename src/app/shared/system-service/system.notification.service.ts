@@ -6,9 +6,9 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
-import { BaseService } from "./base.service.interface";
-import { DragEventInfo, InformationUpdate } from "src/app/system-files/common.interfaces";
-import { TooltipPositionInfo } from "src/app/system-apps/taskbarentries/taskbar.entries.type";
+import { BaseService } from "../../system-files/base/base.service.interface";
+import { DragEventInfo, InformationUpdate } from "src/app/system-files/commons/common.interfaces";
+import { TooltipPositionInfo } from "src/app/system-shell/taskbarentries/taskbar.entries.type";
 
 @Injectable({
     providedIn: 'root'
@@ -23,6 +23,7 @@ export class SystemNotificationService implements BaseService{
     private _dragEventInfo:DragEventInfo | undefined = undefined;
     private _isScreenLocked = true;
     private _pwrDialogPID = 0;
+    private _appSelectionDialogPID = 0;
 
     lockScreenNotify: Subject<void> = new Subject<void>();
     logOffNotify: Subject<void> = new Subject<void>();
@@ -73,6 +74,10 @@ export class SystemNotificationService implements BaseService{
         this._pwrDialogPID = pId;
     }
 
+    setAppSelectionDialogPid(pId:number):void{
+        this._appSelectionDialogPID = pId;
+    }
+
     setAppIconNotication(msgKey:number, msgValue:string[]):void{
         this._appIconNotificationStore.set(msgKey, msgValue);
     }
@@ -103,6 +108,12 @@ export class SystemNotificationService implements BaseService{
     getPwrDialogPid():number{
         const tmp = this._pwrDialogPID;
         this._pwrDialogPID = 0;
+        return tmp;
+    }
+
+    getAppSelectionDialogPid():number{
+        const tmp = this._appSelectionDialogPID;
+        this._appSelectionDialogPID = 0;
         return tmp;
     }
 

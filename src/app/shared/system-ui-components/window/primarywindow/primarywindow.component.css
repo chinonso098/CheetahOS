@@ -1,0 +1,175 @@
+
+.window-container{
+  background-color: #808080;
+  position: absolute;
+  /* `clip` (not `hidden`): the container carries ~4.8px of sub-pixel overflow
+     (scrollHeight > clientHeight). With `hidden` it is still a programmatically
+     scrollable box, so on a composited layer (will-change:transform) the browser
+     can render it scrolled ~4.8px -- the app content visibly floats UP and only
+     snaps back on the next repaint (e.g. hovering a title-bar button). This is
+     the same desync fixed on `.window-content-container`; surfaced again here
+     when the title-bar accent toggle repaints the header. `clip` is not a scroll
+     container, so there is no scrollTop to desync. */
+  overflow: clip;
+
+  width: auto;
+  height: auto;
+
+  /* Stack header + content so the content area can flex to fill
+     whatever space the user resizes the window to. */
+  display: flex;
+  flex-direction: column;
+
+  /* IMPORTANT: all animations happen here */
+  will-change: transform, opacity;
+  transform-origin: bottom center;
+  /* transform-origin: top center; */
+}
+
+/* Transparency effect ON: drop the solid window fill AND perform the acrylic
+   blur here, on the window container itself. This element carries
+   `will-change: transform`, which makes it a *backdrop root* for its
+   descendants -- so a `backdrop-filter` on an inner panel (e.g. the Settings
+   sidebar) can only sample content *inside* the window and the desktop bleeds
+   through unblurred. Blurring at this level samples the desktop correctly; the
+   inner panels then only need to tint on top of the already-frosted backdrop. */
+.window-container.window-transparent{
+  background-color: transparent;
+  backdrop-filter: blur(30px) saturate(140%);
+  -webkit-backdrop-filter: blur(30px) saturate(140%);
+}
+
+.header-container{
+  width: 100%;
+  position: relative;
+  display: flex;
+}
+
+.left-header-section{
+  flex: 1 1 auto;
+  height: 30px;
+  min-width: 0; /* critical so figcaption ellipsis works */
+}
+
+.right-header-section{
+  flex: 0 0 auto;
+  height: 30px;
+}
+
+.window-content-container{
+  width: 100%;
+  position: relative;
+
+  /* Fill all space left over after the 30px header. Children that set
+     width/height: 100% will then track the window size live. */
+  flex: 1 1 auto;
+  min-height: 0;
+
+  /* `clip` (not `hidden`): both clip overflow, but `hidden` makes this a
+     scroll container that the browser can scroll programmatically -- focusing
+     a control inside a window (e.g. a Settings checkbox or Dark/Light toggle)
+     triggers scrollIntoView, which scrolled this slot and pushed all the app
+     content up, exposing the window's dark background below. `clip` does NOT
+     create a scroll container, so focus/scrollIntoView can't move it; the
+     app's own inner scroll containers still scroll normally. */
+  overflow: clip;
+}
+
+.window-dd-box {
+  justify-content: center;
+  align-items: center;
+  background: rgb(18, 18, 18);
+  outline: 1px hsl(0deg 0% 20%/70%);
+  /* border-radius: 4px; */
+  transition: box-shadow 200ms cubic-bezier(0, 0, 0.2, 1);
+  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2),
+              0 2px 2px 0 rgba(0, 0, 0, 0.14),
+              0 1px 5px 0 rgba(0, 0, 0, 0.12);
+  /* box-shadow: 0 0 20px 0 rgba(0, 0, 0, 50%); */
+}
+
+.window-dd-box:active {
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+              0 8px 10px 1px rgba(0, 0, 0, 0.14),
+              0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.header-container h1{
+  margin: 0;
+  padding: 0;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  color: #fff;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.header-container img{
+  height: 18px;
+  width: 18px;
+  margin: 0 6px 0 8px; 
+}
+
+.header-container figure{
+  display: flex;
+  align-items: center;
+  height: 30px;
+  /* gap: 6px; */
+  min-width: 0; /* enables ellipsis */
+  width: 100%;
+}
+
+.header-container figcaption{
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-container button{
+  border-left: 1px transparent #183c7c;
+  box-sizing: content-box;
+  color: #fff;
+  display: flex;
+  font-size: 20px;
+  width: 45px;
+  place-content: center;
+  place-items: center;
+}
+
+
+.header-container svg{
+  fill: #fff;
+  margin-bottom: 2px;
+  /* width: 10px; */
+}
+
+nav{
+  display: flex;
+  /* position: absolute; */
+  width: fit-content;
+  right: 0;
+  height: 30px;
+}
+
+/* change cursor style to normal*/
+.ng-draggable {
+  cursor: auto;
+}
+
+.ng-dragging {
+  cursor: auto;
+}
+
+/* Hide draggable corner*/
+.ng-resizable-diagonal{ 
+  border-bottom: 12px solid transparent; 
+}
+
+.non-interactive {
+  pointer-events: none;
+}

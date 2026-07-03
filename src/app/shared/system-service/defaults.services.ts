@@ -6,7 +6,7 @@ import { ProcessType } from "src/app/system-files/system.types";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 
-import { BaseService } from "./base.service.interface";
+import { BaseService } from "../../system-files/base/base.service.interface";
 import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { SessionManagementService } from "./session.management.service";
@@ -63,11 +63,22 @@ export class DefaultService implements BaseService{
             [Constants.DEFAULT_AUTO_HIDE_TASKBAR, Constants.DEFAULT_AUTO_HIDE_TASKBAR_VALUE],
             [Constants.DEFAULT_CLIP_BOARD_STATE, Constants.DEFAULT_CLIP_BOARD_STATE_VALUE],
             [Constants.DEFAULT_SCREEN_SAVER_STATE, Constants.DEFAULT_SCREEN_SAVER_STATE_VALUE],
+            [Constants.DEFAULT_SCREEN_SAVER, Constants.DEFAULT_SCREEN_SAVER_VALUE],
             [Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG, Constants.DEFAULT_DISPLAY_DELETE_CONFIRMATION_DIALOG_VALUE],
             [Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE, Constants.DEFAULT_MOVE_TO_RECYCLE_BIN_ON_DELETE_VALUE],
             [Constants.DEFAULT_RESTORE_USER_OPENED_APPS, Constants.DEFAULT_RESTORE_USER_OPENED_APPS_VALUE],
             [Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED, Constants.DEFAULT_IS_USER_OPENED_APPS_RESTORED_VALUE],
-            [Constants.DEFAULT_ENFORCE_VIEWPORT_BOUNDS, Constants.DEFAULT_ENFORCE_VIEWPORT_BOUNDS_VALUE]
+            [Constants.DEFAULT_ENFORCE_VIEWPORT_BOUNDS, Constants.DEFAULT_ENFORCE_VIEWPORT_BOUNDS_VALUE],
+            [Constants.DEFAULT_THEME, Constants.DEFAULT_THEME_VALUE],
+            [Constants.RECENT_CHEETAH_COLORS, Constants.RECENT_CHEETAH_COLORS_VALUE],
+            [Constants.DEFAULT_ACCENT_COLOR, Constants.DEFAULT_ACCENT_COLOR_VALUE],
+            [Constants.DEFAULT_SHOW_ACCENT_COLOR_START_MENU_AND_TASKBAR, Constants.DEFAULT_SHOW_ACCENT_COLOR_START_MENU_AND_TASKBAR_VALUE],
+            [Constants.DEFAULT_SHOW_ACCENT_COLOR_TITLE_BARS_AND_WINDOW_BORDERS, Constants.DEFAULT_SHOW_ACCENT_COLOR_TITLE_BARS_AND_WINDOW_BORDERS_VALUE],
+            [Constants.DEFAULT_SHOW_TRANSPARENCY_EFFECT_ON_TITLE_BAR_AND_WINDOW_BORDER, Constants.DEFAULT_SHOW_TRANSPARENCY_EFFECT_ON_TITLE_BAR_AND_WINDOW_BORDER_VALUE],
+            [Constants.DEFAULT_APPLY_TRANSPARENCY_EFFECT_TO_CONTEXT_MENU, Constants.DEFAULT_APPLY_TRANSPARENCY_EFFECT_TO_CONTEXT_MENU_VALUE],
+            [Constants.DEFAULT_APPLY_ACCENT_COLOR_TO_TRANSPARENT_MENU, Constants.DEFAULT_APPLY_ACCENT_COLOR_TO_TRANSPARENT_MENU_VALUE],
+            [Constants.DEFAULT_SHOW_TRANSPARENCY_EFFECT, Constants.DEFAULT_SHOW_TRANSPARENCY_EFFECT_VALUE],
+            [Constants.DEFAULT_WHO_IS_THIS, Constants.DEFAULT_WHO_IS_THIS_VALUE]
         ]);
     }
 

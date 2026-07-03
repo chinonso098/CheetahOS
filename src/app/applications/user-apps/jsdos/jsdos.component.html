@@ -1,0 +1,9 @@
+
+<cos-primarywindow 
+    [runningProcessID]="processId" 
+    [processAppIcon]="icon" 
+    [processAppName]="displayName" 
+    [isMaximizable]="isMaximizable" 
+    [priorUId]="priorUId">
+    <div #doswindow tabindex="0" class="dosbox-container" [style.width.px]="dosWidthPx" [style.height.px]="HEIGHT_PX" style="position: relative;" (click)="focusWindow($event)"></div> 
+</cos-primarywindow>

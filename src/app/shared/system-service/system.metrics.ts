@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { AppUsage, SystemMetricsSnapshot } from 'src/app/system-files/common.interfaces';
-import { BaseService } from './base.service.interface';
+import { AppUsage, SystemMetricsSnapshot } from 'src/app/system-files/commons/common.interfaces';
+import { BaseService } from '../../system-files/base/base.service.interface';
 import { Constants } from 'src/app/system-files/constants';
 import { ProcessType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';

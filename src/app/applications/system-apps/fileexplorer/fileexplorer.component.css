@@ -1,0 +1,1783 @@
+:host{
+  /* surfaces */
+  --fx-bg: #202020;
+  --fx-panel: #191919;
+  --fx-header: #080404;
+
+  /* borders / lines */
+  --fx-border: #5a5a5a;
+  --fx-border-soft: #2d2d2d;
+  --fx-border-light: #9d9d9d;
+
+  /* text */
+  --fx-text: #ffffff;
+  --fx-text-dim: #cccccc;
+
+  /* accents */
+  --fx-accent: #0464ac;
+  --fx-hover: #3f3e3e;
+
+  /* extended surfaces (were hardcoded; tokenized so light mode can override) */
+  --fx-tab-bg: #000000;
+  --fx-divider: #333333;
+  --fx-footer-bg: #303438;
+  --fx-footer-folder-bar: #383838;
+  --fx-footer-file-bar: #3a3a3a;
+  --fx-input-bg: #2f2f2f;
+  --fx-btn-hover-bg: #cccccc;
+
+  /* icon hover / selection states */
+  --fx-icon-hover-bg: #4c4c4c;
+  --fx-icon-hover-border: #3c3c3c;
+  --fx-icon-selected-bg: #787474;
+
+  /* thin custom scrollbar (overrides the host OS default). Grey on dark. */
+  --fx-scroll-thumb: rgba(255, 255, 255, 0.30);
+  --fx-scroll-thumb-hover: rgba(255, 255, 255, 0.45);
+
+  /* sizing */
+  --fx-font: 11px;
+  --fx-font-sm: 10px;
+  --fx-font-md: 12px;
+
+  --fx-row: 24px;
+  --fx-radius: 2px;
+
+  --fx-gap-xs: 2px;
+  --fx-gap-sm: 4px;
+  --fx-gap-md: 6px;
+  --fx-gap-lg: 10px;
+}
+
+/* Light theme: the host gets `.theme-light` (driven by ThemeService via an
+   @HostBinding on the component). Only the colour tokens are overridden —
+   every rule below consumes these vars, so the whole app recolours from
+   this single block. Sizing tokens are intentionally left untouched. */
+:host(.theme-light){
+  --fx-bg: #ffffff;
+  --fx-panel: #f3f3f3;
+  --fx-header: #e6e6e6;
+
+  --fx-border: #b6b6b6;
+  --fx-border-soft: #d4d4d4;
+  --fx-border-light: #c2c2c2;
+
+  --fx-text: #1b1b1b;
+  --fx-text-dim: #5a5a5a;
+
+  --fx-accent: #0464ac;
+  --fx-hover: #e5e5e5;
+
+  --fx-tab-bg: #dcdcdc;
+  --fx-divider: #d0d0d0;
+  --fx-footer-bg: #eaeaea;
+  --fx-footer-folder-bar: #ededed;
+  --fx-footer-file-bar: #f2f2f2;
+  --fx-input-bg: #ffffff;
+  --fx-btn-hover-bg: #d0d0d0;
+
+  --fx-icon-hover-bg: #e5f1fb;
+  --fx-icon-hover-border: #cfe7fb;
+  --fx-icon-selected-bg: #cce4f7;
+
+  /* Darker, near-black thin scrollbar on light surfaces. */
+  --fx-scroll-thumb: rgba(0, 0, 0, 0.35);
+  --fx-scroll-thumb-hover: rgba(0, 0, 0, 0.50);
+}
+
+/* Thin themed scrollbar shared by every scroll area in File Explorer. The
+   colour tokens swap with the theme; sizing stays constant. Firefox uses the
+   scrollbar-* longhands, WebKit/Blink the ::-webkit-scrollbar pseudo set. */
+:host *{
+  scrollbar-width: thin;
+  scrollbar-color: var(--fx-scroll-thumb) transparent;
+}
+
+:host ::-webkit-scrollbar{
+  width: 4px;
+  height: 4px;
+}
+
+:host ::-webkit-scrollbar-track{
+  background: transparent;
+}
+
+:host ::-webkit-scrollbar-thumb{
+  background-color: var(--fx-scroll-thumb);
+  border-radius: 2px;
+}
+
+:host ::-webkit-scrollbar-thumb:hover{
+  background-color: var(--fx-scroll-thumb-hover);
+}
+
+.file_explrorer_root_container{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-width: 560px;
+    /* The primary window opens at the intrinsic height of this container
+       (window-container is height:auto and reads offsetHeight on open) and
+       has a 30px header. So this floor = 360px window minimum − 30px header
+       = 330px. That makes the window open at 360px tall AND fit exactly
+       inside the projected content area during resize, so the fixed footer
+       is never clipped (was 360px here, which overflowed by 30px and the
+       parent's `overflow: hidden` cut off the footer). */
+    min-height: 330px;
+    box-sizing: border-box;
+}
+
+/* A sane baseline */
+.fileexp-main-container{
+    width: 100%;
+    /* Was `height: 100%`, which made this claim the full root height and push
+       the fixed-height footer (its flex sibling) out of view when the window
+       shrank during resize. Flexing to fill the remaining space instead keeps
+       the footer always visible. */
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; 
+
+    /* color: var(--fx-text);
+    font-size: var(--fx-font); */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+}
+
+
+.fileexp-content-container{
+    width: 100%;
+    display: flex;
+    flex: 1 1 auto; /* take remaining space */
+    min-height: 0;  /* critical */
+    background-color: var(--fx-bg);
+}
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Header Tabs View Started@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+/* ── Frosted header surfaces ─────────────────────────────────────────────────
+   When the dedicated title-bar/border transparency toggle is ON (.fx-transparent,
+   mirrored from DEFAULT_SHOW_TRANSPARENCY_EFFECT_ON_TITLE_BAR_AND_WINDOW_BORDER),
+   the header surfaces — the tab strip (.fileexp-header__tab-container's painted
+   child), the nav container, and the spacer — go translucent so the window's
+   acrylic frost (done on .window-container.window-transparent) shows through,
+   mirroring the frosted title bar. Adding .fx-titlebar-accent (the "Title bars
+   and window borders" accent toggle) tints them with a SOFT accent. The toggle
+   OFF keeps the solid theme surfaces. */
+:host(.fx-transparent){
+    --fx-header-frost: color-mix(in srgb, var(--fx-header) 68%, transparent);
+    --fx-panel-frost: color-mix(in srgb, var(--fx-panel) 68%, transparent);
+}
+:host(.fx-transparent.fx-titlebar-accent){
+    --fx-header-frost: color-mix(in srgb, color-mix(in srgb, var(--fx-tab-accent) 24%, var(--fx-header)) 68%, transparent);
+    --fx-panel-frost: color-mix(in srgb, color-mix(in srgb, var(--fx-tab-accent) 24%, var(--fx-panel)) 68%, transparent);
+}
+:host(.fx-transparent) .fileexp-header__tabs{
+    background-color: var(--fx-header-frost);
+}
+:host(.fx-transparent) .fileexp-header__container,
+:host(.fx-transparent) .header-empty-line-container,
+:host(.fx-transparent) .header-empty-line-container2{
+    background-color: var(--fx-panel-frost);
+}
+
+/* The search box sits on the header surface, so frost its solid --fx-panel fill
+   too (input + its active clear-button container) — otherwise it reads as a solid
+   block against the translucent header. */
+:host(.fx-transparent) .search-input,
+:host(.fx-transparent) span.head-search-cntnr1.active{
+    background-color: var(--fx-panel-frost);
+}
+
+/* Styles for the tabbed window container */
+.fileexp-header__tab-container {
+    width: 100%;
+    min-width: 0;
+    position: relative; /* so the absolute help-button anchors here */
+    /* border:0.5px solid var(--fx-border-light); */
+}
+  
+/* Styles for the tab navigation */
+.fileexp-header__tabs {
+    display: flex;
+    background-color: var(--fx-header);
+}
+
+.fileexp-header__tab {
+    /* flex: 1; */
+    width: 55px;
+    padding: 4px 8px;
+    margin: 0 4px;
+    font-weight: normal;
+    font-size: 11px;
+    text-align: center;
+    cursor:default;
+    background-color: var(--fx-tab-bg);
+    color: var(--fx-text);
+    transition: background-color 0.3s;
+}
+
+.fileexp-header__tab.highlight-default {
+    margin: 0px 0px;
+    background-color: var(--fx-tab-accent, var(--fx-accent));
+    color: var(--fx-text);
+}
+
+.fileexp-header__tab.active {
+    border:0.3px solid var(--fx-border-soft);
+    border-bottom: none;
+    background-color: var(--fx-bg);
+    color: var(--fx-text);
+}
+
+/* Styles for tab content */
+
+.img-header-tab{
+    padding-left: 2.5px;
+    height: 10px; 
+    width: 10px;
+}
+
+.fileexp-header__question-cntnr{
+    position: absolute;
+    height: 25px;
+    width: 15px;
+    right: 1%;
+}
+
+/* Refactor #11.d — hover color used to be applied imperatively via
+   document.getElementById('fileMngr-QuestionBtn-' + processId).style.
+   backgroundColor in colorBtnCntnr/uncolorBtnCntnr. Default state is the
+   surrounding --fx-header (#080404), so no explicit base rule is needed. */
+.fileexp-header__question-cntnr:hover{
+    background-color: var(--fx-btn-hover-bg);
+}
+
+.fileexp-header__question-figure{
+    position: relative;
+    height: 15px; 
+    width: 15px;
+    top: 5px;
+}
+
+.fileexp-header__question-img{
+    height: 15px; 
+    width: 15px;
+    color: var(--fx-text);
+}
+  
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Header Tabs View Ended@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+
+/*****************************Header navigation view Started*****************************/
+
+.fileexp-header__container{
+    width: 100%;
+    display: flex;
+    background-color: var(--fx-panel);
+}
+
+.header-empty-line-container {
+    height: 6px;
+    background-color: var(--fx-panel);
+}
+.header-empty-line-container2 {
+    height: 7px;
+    background-color: var(--fx-panel);
+}
+
+
+/*++++++++++++++++++++++++++++++++Header navigation btn section Started++++++++++++++++++++++++++++++++*/
+
+.fileexp-header__nav-btns-container{
+    left: 0;
+    height: var(--fx-row);
+    width: fit-content;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.fileexp-header__nav-img{
+    height: 16px;
+    width: 16px;
+    position: relative;
+}
+
+.fileexp-header__nav-figure{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    margin: 0 6px;
+}
+
+.fileexp-header__nav-img-chevron{
+    height: 10px;
+    width: 10px;
+    top: -2px;
+    position: relative;
+}
+
+.fileexp-header__nav-figure-chevron{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    margin: 0 2px;
+}
+
+.fileexp-header__nav-figure-up{
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin: 0 6px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: 0;
+}
+
+.fileexp-header__nav-img-up{
+    height: 16px;
+    width: 16px;
+    position: relative;
+    transform: translateX(2px);
+}
+/*++++++++++++++++++++++++++++++++Header navigation btn section Ended++++++++++++++++++++++++++++++++*/
+
+/*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxHeader navigation path box Startedxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
+.fileexp-header__nav-path-container{
+    width:100%;
+    /* Without this, the breadcrumb chain's max-content width propagates up to
+       the absolutely-positioned .window-container (which is `width:auto` and
+       therefore shrink-to-fits its content). Result: opening a FileExplorer
+       on /Users/Desktop/Test1 made the window noticeably wider than one
+       opened on /. `min-width:0` lets this flex item shrink below its
+       natural content width. */
+    min-width: 0;
+    display:flex;
+    padding: 0 0 0 2px;
+}
+
+.fileexp-header__nav-anchor{
+    display:flex;
+    width: 100%;
+    align-items: center;
+    min-width: 0;
+}
+
+.fileexp-header__nav-folder-figure{
+    position: relative;
+    min-width: 18px;
+    top: 2px;
+}
+
+.fileexp-header__nav-folder-img{
+    height: 18px;
+    width: 15px;
+    margin: 0 3px;
+
+    position: relative;
+}
+
+.fileexp-header__nav-folder-img-container{
+    height: var(--fx-row);
+    align-items: center;
+    display:inline-flex;
+    border: 0.5px solid var(--fx-border-light);
+    border-right: none;
+}
+
+.fileexp-header__nav-path-form, .fileexp-header__nav-path-display{
+    display:flex;
+    height: var(--fx-row);
+    /* width: 450px; this was min-width before*/
+    flex: 1;
+    min-width: 0;
+    border: 0.5px solid var(--fx-border-light);
+    border-left: none;
+    border-right: none;
+}
+
+.fileexp-header__nav-path-display{
+  flex: 1 1 auto;
+  min-width: 0;
+
+  overflow: hidden;
+  white-space: nowrap;
+
+  /* `contain: inline-size` isolates this element's inline-size from its
+     content. Combined with overflow:hidden + the parent's min-width:0, the
+     long breadcrumb chain inside no longer contributes to the ancestor
+     intrinsic-width calculation, so .window-container (width:auto at first
+     paint, before its inline width takes effect) stops shrink-to-fitting
+     wider for instances with deep paths. Two FileExplorers now open at the
+     SAME width regardless of which directory they were spawned in. */
+  contain: inline-size;
+
+  /* Soft visual indicator that the breadcrumb chain is being clipped on the
+     right. A short fade-to-transparent mask is layered over the right edge;
+     when content fits within the available width, no visible fade lands on
+     anything because the mask only consumes the trailing 18px. */
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent 100%);
+          mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent 100%);
+
+  /* show rightmost content by aligning to end */
+  /* justify-content: flex-end; */
+}
+
+
+/* Optional: keep crumbs in a single line */
+.fileexp-header__nav-dynamic-container,
+.fileexp-header__nav-root-cntnr,
+.fileexp-header__nav-repeat-cntnr{
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.fileexp-header__nav-dynamic-container{
+    display:inline-flex;
+    width: fit-content;
+}
+
+.fileexp-header__nav-dynamic-container:hover{
+    background-color: var(--fx-hover);
+}
+
+span.fileexp-header__nav-root-cntnr{
+    align-items: center;
+    display:inline-flex;
+}
+
+span.fileexp-header__nav-root-cntnr:hover{
+    background-color: var(--fx-hover);
+}
+
+span.fileexp-header__nav-repeat-cntnr{
+    align-items: center;
+    display:inline-flex;
+}
+
+/* span.fileexp-header__nav-repeat-cntnr.active{
+    align-items: center;
+    display:inline-flex;
+    border: 0.5px solid var(--fx-border-light);
+} */
+
+.fileexp-header__nav-dynamic-container:hover span.fileexp-header__nav-repeat-cntnr{
+    align-items: center;
+    display:inline-flex;
+    border-right: 0.5px solid var(--fx-panel);
+}
+
+span.mid-nav-path-gen-cntnr{
+    display: flex;
+    align-items: center;
+    margin: 0 4px;
+    color: var(--fx-text-dim); 
+    text-align: left;
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.fileexp-header__nav-static-figure{
+    position: relative;
+    min-width: 14px;
+}
+
+.fileexp-header__nav-static-img{
+    height: 11px;
+    width: 11px;
+    position: relative;
+    color: var(--fx-text-dim);
+}
+
+.fileexp-header__nav-show-figure{
+    position: relative;
+    min-width: 18px;
+}
+
+.fileexp-header__nav-show-img{
+    height: 10px;
+    width: 10px;
+    margin: 0 6px;
+    position: relative;
+    color: var(--fx-text-dim);
+}
+
+.fileexp-header__nav-show-cntnr{
+    align-items: center;
+    display:inline-flex;
+    height: var(--fx-row);
+    border: 0.5px solid var(--fx-border-light);
+    border-left: none;
+    border-right: none;
+}
+
+.fileexp-header__nav-show-cntnr.active{
+    border: 0.5px solid var(--fx-border-light);
+    background-color: var(--fx-hover);
+}
+
+.fileexp-header__nav-show-cntnr:hover{
+    border: 0.5px solid rgb(18, 107, 240);
+    transition: border-color 0.3s ease;
+}
+
+.fileexp-header__nav-refresh-figure{
+    position: relative;
+    min-width: 20px;
+}
+
+.fileexp-header__nav-refresh-img{
+    height: 12px;
+    width: 12px;
+    margin: 0 6px;
+
+    position: relative;
+    color: var(--fx-text-dim);
+}
+
+.fileexp-header__nav-refresh-cntnr{
+    align-items: center;
+    display:inline-flex;
+    height: var(--fx-row);
+    border: 0.5px solid var(--fx-border-light);
+}
+
+.fileexp-header__nav-refresh-cntnr.active{
+    border: 0.5px solid var(--fx-border-light);
+    background-color: var(--fx-hover);
+}
+
+.fileexp-header__nav-refresh-cntnr:hover{
+    border: 0.5px solid rgb(18, 107, 240);
+    transition: border-color 0.3s ease;
+}
+
+.fileexp-header__nav-input{
+    position: relative;
+    /*width: 440px; this was min-width before*/
+
+    flex: 1;
+    min-width: 0;
+    height: var(--fx-row);
+    border: 0.5px solid var(--fx-border-light);
+    border-left: none;
+    border-right: none;
+    color: var(--fx-text);
+    background-color: var(--fx-panel);
+    display: none;
+}
+
+.fileexp-header__nav-history-container{
+    position: absolute;
+   /* width: 405px; this was min-width before*/
+    width: clamp(260px, 40vw, 520px);
+    border: 1px solid var(--fx-border-light);
+    margin-right: 10px;
+    max-height: 180px;
+    overflow-y: auto;
+    background-color: var(--fx-panel);
+    z-index: 2;
+    top: 55px;
+    display: none;
+}
+
+.nav-path-entry-container{
+    display: inline-flex;
+    width: 100%;
+    margin: 8px 8px 8px 0;
+    overflow-y: hidden;
+}
+
+.figure-nav-path-entry{
+    position: relative;
+    align-items: center;
+    min-width: 8px;
+}
+
+.img-nav-path-entry{
+    height: 12px;
+    width: 12px;
+    top:0px;
+    margin: 0 8px;
+
+    position: relative;
+    color: var(--fx-text-dim);
+}
+
+span.mid-nav-path-entry{
+    padding: 0 2px;
+    color: var(--fx-text);
+    text-align: left;
+    font-size: 10px;
+    font-weight: normal;
+    white-space: nowrap; 
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+     
+}
+
+/*xxxxxxxxxxxxxxxxxxxxxxxxxxHeader navigation path box Endedxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
+
+/*--------------------------Header navigation search box Started-----------------------------*/
+
+.header-nav-search-container{
+    width:fit-content;
+    right: 0;
+    margin: 0 10px;
+}
+
+.search-input{
+    position: relative;
+    min-width: 105px;
+    max-width: 100%;
+    height: var(--fx-row);
+    border: 0.5px solid var(--fx-border-light);
+    border-left: none;
+    border-right: none;
+    color: var(--fx-text-dim);
+    background-color: var(--fx-panel);
+}
+
+.search-container{
+    display:flex;
+    width: 100%;
+}
+
+.figure-search-cntnr{
+    position: relative;
+    min-width: 28px;
+}
+
+.img-search-cntnr{
+    height: 12px;
+    width: 12px;
+    margin: 0 8px;
+
+    position: relative;
+    color: var(--fx-text-dim);
+}
+
+span.head-search-cntnr{
+    align-items: center;
+    display:inline-flex;
+    border: 0.5px solid var(--fx-border-light);
+    border-right: none;
+}
+
+span.head-search-cntnr1{
+    align-items: center;
+    display:inline-flex;
+    border: 0.5px solid var(--fx-border-light);
+    border-left: none;
+    border-right: none;
+}
+
+/* Refactor #11.c — these used to be driven by [style]="clearSearchStyle" +
+   (mouseenter)/(mouseleave). Now pure CSS: when the search box has content
+   the parent flips `.active` on, and these rules paint the background +
+   hover hover state. The `transition` lives on the active rule so the
+   first hover after `.active` flips still animates. */
+span.head-search-cntnr1.active{
+    background-color: var(--fx-panel);
+    transition: background-color 0.3s ease;
+}
+
+span.head-search-cntnr1.active:hover{
+    background-color: var(--fx-hover);
+}
+
+span.head-search-cntnr2{
+    align-items: center;
+    display:inline-flex;
+    border: 0.5px solid var(--fx-border-light);
+    border-left: none;
+}
+
+span.head-search-cntnr2.active{
+    align-items: center;
+    display:inline-flex;
+    border: 0.5px solid var(--fx-border-light);
+    background-color: blue;
+    transition: background-color 0.3s ease;
+}
+
+/* Refactor #11.c — hover-on-active for the search (go) button. */
+span.head-search-cntnr2.active:hover{
+    background-color: rgb(18, 107, 240);
+}
+
+.search-history-container{
+    position: absolute;
+    width: inherit;
+    border: 1px solid var(--fx-border-light);
+    margin-right: 10px;
+    max-height: 180px;
+    overflow-y: auto;
+    background-color: var(--fx-panel);
+    z-index: 2;
+    display: none;
+}
+
+.search-entry-container{
+    display: inline-flex;
+    width: 100%;
+    margin: 8px 8px 8px 0;
+    overflow-y: hidden;
+}
+
+.figure-search-entry{
+    position: relative;
+    align-items: center;
+    min-width: 8px;
+}
+
+.img-search-entry{
+    height: 12px;
+    width: 12px;
+    top:0px;
+    margin: 0 8px;
+
+    position: relative;
+    color: var(--fx-text-dim);
+}
+
+span.mid-search-entry{
+    padding: 0 2px;
+    color: var(--fx-text);
+    text-align: left;
+    font-size: 10px;
+    font-weight: normal;
+    white-space: nowrap; 
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+     
+}
+
+/*----------------------------Header navigation search box End------------------------*/
+
+/*****************************Header navigation view Ended*****************************/
+
+/*****************************navigation pane view Started*****************************/
+
+.navigation-content-container{
+    min-width: 180px;
+    background-color: var(--fx-panel);
+    /* Vertical scroll only when the tree actually overflows. Horizontal is
+       clipped: nested tree rows add `padding-left` while staying `width:100%`,
+       so deep nodes render wider than the pane. With `overflow:auto` that
+       horizontal overflow forced a horizontal scrollbar, which stole vertical
+       space and made the vertical scrollbar appear permanently. */
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+    flex: 0 0 180px;  /* stable left pane (adjustable later) */
+    min-height: 0;
+}
+
+/*****************************navigation pane view Ended*****************************/
+
+.file-content-container{
+    border-left: 0.5px solid var(--fx-border);
+    width: 100%;
+    min-width: 0;     /* critical: allow shrinking */
+    overflow: auto;
+    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative; /* anchor for the absolute search overlay */
+}
+
+/* Search loading / empty-result overlay (covers the content area). */
+.fileexplorer-search-overlay{
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.75);
+    color: #333;
+    font-size: 13px;
+    pointer-events: none; /* don't swallow clicks meant for the list */
+}
+
+.fileexplorer-search-overlay-text{
+    max-width: 80%;
+    text-align: center;
+    word-break: break-word;
+}
+
+.fileexplorer-search-spinner{
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(18, 107, 240, 0.25);
+    border-top-color: rgb(18, 107, 240);
+    border-radius: 50%;
+    animation: fileexplorer-search-spin 0.8s linear infinite;
+}
+
+@keyframes fileexplorer-search-spin{
+    to { transform: rotate(360deg); }
+}
+
+/*****************************icon view and layout Started*****************************/
+
+.fileexplr-default-view-cntnr{
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 5px  5px;
+}
+
+/* Section container */
+.fileexlpr-frequent-folders-section, .fileexlpr-recent-files-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+/* Section heading */
+.fileexlpr-frequent-folders-heading, .fileexlpr-recent-files-heading {
+    display: flex;
+    align-items: center;
+    font-family: sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--fx-text);
+    margin-bottom: 10px;
+    padding: 0 10px;
+}
+
+/* Heading text (label + count) */
+.fileexlpr-frequent-folders-heading p, .fileexlpr-recent-files-heading p {
+    margin: 0;
+    padding-right: 8px;
+}
+
+/* Content grid inside each section */
+.fileexlpr-frequent-folders-cntnt, .fileexlpr-recent-files-cntnt {
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fill, 90px);
+    grid-template-rows: repeat(auto-fill, 70px);
+    gap: 34px 5px;
+    padding: 0px 10px;
+    width: 100%;
+}
+
+.fileexlpr-frequent-folders-cntnt1, .fileexlpr-devices-and-drives-cntnt{
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns:  repeat(auto-fill,250px);
+    grid-template-rows: repeat(auto-fill,50px);
+    height: calc(100% - 5px);
+    width: 100%;
+    padding: 2px 2px;
+    row-gap: 4px;
+    column-gap: 6px;
+}
+
+/* Line that stretches next to the heading */
+.fileexlpr-nested-line-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.fileexlpr-nested-line {
+    border-bottom: 1px solid var(--fx-divider);
+    width: 100%;
+    height: 1px;
+}
+
+
+/*-------------------------Icon Size View Start -------------------------------*/
+.ol-iconview-grid{
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns:  repeat(auto-fill, 90px);
+    /* `grid-auto-rows` (not `grid-template-rows: repeat(auto-fill, 70px)`)
+       so rows always pack from the top at a fixed height. With auto-fill
+       template rows the explicit tracks were spread to fill `height:100%`,
+       so sparse folders sat lower than dense ones — content visibly shifted
+       up when navigating into a folder with many items. */
+    grid-auto-rows: 70px;
+    align-content: start;
+    height: calc(100% - 5px);
+    width: 100%;
+    padding: 5px 10px;
+    gap: 34px 5px;
+}
+
+/* Refactor #11.j: per-icon-size dimensions used to be written imperatively
+   by `changeIconViewBtnSize` + `changeOrderedlistStyle`, which looped over
+   `fetchedFiles` setting inline `width`, `height`, `gridTemplateColumns`,
+   etc. on every <button>, <img>, <figcaption>, shortcut <img> and the <ol>
+   itself. Now the component just sets a single size class on the <ol>
+   (`view-small` / `view-medium` / `view-large` / `view-xlarge`) and all
+   descendants inherit the right sizes via these rules.
+   `view-medium` matches the base `.ol-iconview-grid` + `.iconview-*`
+   declarations, so no overrides are needed there. */
+.ol-iconview-grid.view-small{
+    grid-template-columns: repeat(auto-fill, 70px);
+    grid-auto-rows: 50px;
+}
+.ol-iconview-grid.view-small .iconview-button{ width: 70px; }
+.ol-iconview-grid.view-small .iconview-image{ width: 30px; height: 30px; }
+.ol-iconview-grid.view-small .iconview-caption{ max-width: 70px; }
+.ol-iconview-grid.view-small .iconview-shortcut-img{ width: 8px; height: 8px; bottom: -12px; }
+
+.ol-iconview-grid.view-large{
+    grid-template-columns: repeat(auto-fill, 120px);
+    grid-auto-rows: 100px;
+}
+.ol-iconview-grid.view-large .iconview-button{ width: 120px; }
+.ol-iconview-grid.view-large .iconview-image{ width: 80px; height: 80px; }
+.ol-iconview-grid.view-large .iconview-caption{ max-width: 120px; }
+.ol-iconview-grid.view-large .iconview-shortcut-img{ width: 21px; height: 21px; bottom: 1px; }
+
+.ol-iconview-grid.view-xlarge{
+    grid-template-columns: repeat(auto-fill, 140px);
+    grid-auto-rows: 120px;
+}
+.ol-iconview-grid.view-xlarge .iconview-button{ width: 140px; }
+.ol-iconview-grid.view-xlarge .iconview-image{ width: 96px; height: 96px; }
+.ol-iconview-grid.view-xlarge .iconview-caption{ max-width: 140px; }
+.ol-iconview-grid.view-xlarge .iconview-shortcut-img{ width: 25px; height: 25px; bottom: 5px; }
+
+
+.li-iconview-container{
+    display: flex;
+    justify-content: center;
+    /* padding: 2px; */
+    height: min-content;
+    z-index: 1;
+}
+
+.iconview-image {
+    position: relative;
+    height: 45px;
+    width: 45px;
+    bottom: 0;
+}
+
+.iconview-img-wrapper {
+    width: fit-content;
+    display: block;
+    max-width: 96px;
+    max-height: 96px;
+}
+
+.iconview-shortcut-wrapper{
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 22px; /* Adjust size as needed */
+    height: 22px;
+}
+
+.iconview-button {
+    background-color: transparent;
+    border: 0.5px solid transparent;
+    width: 90px;
+    height: min-content;
+    transition: transform 0.1s ease-in-out;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: sans-serif;
+}
+
+.iconview-shortcut-img{
+    position: relative;
+    height: 12px; 
+    width: 12px;
+    bottom: -8px;
+}
+
+.iconview-img-container {
+    margin-bottom: -2px;
+    place-items: center;
+    display: inline-block;
+    position: relative;
+}
+
+.iconview-caption-container {
+    position: relative;
+    height: min-content;
+    /* bottom: -4px; */
+}
+
+.iconview-caption {
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    color: var(--fx-text);
+    font-size: 12px;
+    letter-spacing: 0.1px;
+    /* Clamp to 4 lines using the legacy -webkit-box recipe (display:-webkit-box
+       + -webkit-box-orient:vertical + overflow:hidden, above/below). Do NOT add
+       the bare standard `line-clamp: N` here: in current browsers that shorthand
+       expands to max-lines/block-ellipsis/continue:discard, which takes the clamp
+       away from -webkit-line-clamp but only works on a real block container — not
+       this -webkit-box — so clamping silently stops and the full caption shows. */
+    -webkit-line-clamp: 4;
+    position: relative;
+    text-align:center;
+    padding: 2px 0;
+    top: 2px;
+    line-height: normal;
+    overflow: hidden;
+    width: 100%;
+    max-width: 90px;
+}
+
+.iconview-rename-form, .iconview-rename-textbox{
+    position: relative;
+    display: none;
+    margin: 0;
+}
+
+.iconview-rename-textbox{
+    position: relative;
+    display: none;
+    text-align:center;
+    top: 2px;
+    font-size: 12px;
+    font-weight:200;
+    margin-bottom: 1px;
+    width: 90px;
+    height: 20px;
+    border: 0.5px solid var(--fx-text-dim);
+    overflow:hidden;
+    resize: none;
+ }
+
+/*-------------------------Icon Size View End -------------------------------*/
+
+
+/*-------------------------Details Icon View Start ----------------------------------*/
+
+.ol-detailsview-grid{
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding:0px 4px !important;
+}
+
+.li-detailsview-container{
+    padding: 2px;
+    height: fit-content;
+    z-index: 1;
+}
+
+.detailsview-data-table {
+  width: 100%;
+  border-collapse: collapse; /* Collapses the borders between cells */
+  /* Bugfix (column resize / ellipsis): without `table-layout: fixed` the
+     browser uses the default auto algorithm, which sizes each column to
+     fit its widest cell. That meant fxplrColumnResize couldn't shrink a
+     column below the longest filename and ellipsis never triggered.
+     With `fixed`, columns honour their declared widths (from <th>s and
+     the inline widths the directive writes), and over-long content is
+     clipped by the cell's existing overflow:hidden so the <p>'s
+     text-overflow:ellipsis can take effect. */
+  table-layout: fixed;
+  /* margin-top: 20px; */
+}
+
+.detailsview-data-table th {
+    border: 0.5px solid var(--fx-bg); /* Adds a border to each header and data cell */
+    padding: 8px;
+    width: 155px;
+    text-align: left; /* Aligns text to the left */
+    font-weight: bold; /* Make header text bold */
+}
+
+.detailsview-data-table th:first-child{
+    width: 200px;
+}
+
+.detailsview-data-table thead th {
+  background: var(--fx-bg);
+  position: sticky;
+  top: -1px;
+  z-index: 1;
+}
+
+.detailsview-data-table td {
+    border: 0.5px solid transparent; 
+    height: 27px;
+    width: 155px;
+    text-align: left; /* Aligns text to the left */
+}
+
+.detailsview-data-table td:first-child {
+    /* Bugfix (column-resize gap): td stays as a normal table cell so it
+       inherits the column track width from its <th> and the inline width
+       written by fxplrColumnResize on every drag tick. The icon/caption
+       flex layout is on the .detailsview-name-cell wrapper inside.
+       Bugfix (1px shorter highlight): box-sizing intentionally left as
+       the default `content-box` so the first td renders exactly the
+       same total height as the other tds (which also default to
+       content-box). Using border-box here made the first cell's
+       computed height 24px vs 25px on the others, clipping the
+       highlight by 1px at the bottom. */
+    overflow: hidden;
+    border: 0.5px solid transparent;
+    height: 27px;
+    text-align: left;
+    padding: 0 1px;
+}
+
+.detailsview-name-cell {
+    /* Bugfix (row height): bumped to 27px to match the new td height so
+       the wrapper fills the cell exactly and the highlight extends edge
+       to edge top and bottom. */
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 27px;
+    overflow: hidden;
+}
+
+/* Bugfix: details-view selection now uses the same .is-* class scheme as
+   icon-view buttons (see template). is-selected-prior matches icon view
+   exactly: transparent background + white border. The inset box-shadow
+   technique is used because <td> borders inside `border-collapse: collapse`
+   tables are merged with the table border, so `border: 1px solid white`
+   would either disappear or shift the layout. box-shadow:inset doesn't
+   take up layout space and renders crisply at any column width. */
+.li-detailsview-container.is-hovered td {
+    background-color: #e5f3fb;
+}
+.li-detailsview-container.is-selected-current td {
+    background-color: #cce4f7;
+}
+.li-detailsview-container.is-selected-prior td {
+    background-color: transparent;
+    box-shadow: inset 0 1px 0 #ffffff, inset 0 -1px 0 #ffffff;
+}
+.li-detailsview-container.is-selected-prior td:first-child {
+    box-shadow: inset 1px 1px 0 #ffffff, inset 0 -1px 0 #ffffff;
+}
+.li-detailsview-container.is-selected-prior td:last-child {
+    box-shadow: inset -1px 1px 0 #ffffff, inset 0 -1px 0 #ffffff;
+}
+.li-detailsview-container.fileexplr-multi-select-highlight td {
+    background-color: #cce4f7;
+}
+
+/* Add this to your component's CSS or global styles */
+th[fxplrColumnResize], td[fxplrColumnResize] {
+  position: relative;
+}
+
+th[fxplrColumnResize]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px; /* Adjust the handle width */
+  height: 100%;
+  cursor: col-resize;
+  background-color: #f0f0f0; /* Handle background color */
+}
+
+/* Bugfix (column-resize regression): the figure section was 13.5% wide and
+   the caption section 87.5%, both scaling with the td width. When the Name
+   column was resized the icon either pulled away from the text (column wide)
+   or overlapped it (column narrow). Switched to flexbox: icon stays at a
+   fixed natural width (icon + small margin), caption fills the remaining
+   space and provides ellipsis. `min-width: 0` lets the caption's inner <p>
+   actually trigger overflow inside the flex item. */
+.div-detailsview-figure-section{
+    /* Bugfix (vertical alignment): switched to flex with center alignment
+       so the figure/icon is vertically centered inside the cell regardless
+       of the figure's own intrinsic size. Removed the fixed 25px height —
+       the parent .detailsview-name-cell already governs row height, and
+       hard-coding 25px here was forcing the wrapper to be taller than the
+       td's content box, which shifted the highlight up by 1–2px. */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex: 0 0 auto;
+    width: 24px;
+}
+
+.div-detailsview-caption-section{
+    /* Bugfix (vertical alignment): flex-center so caption text is centered
+       vertically within the row. See .div-detailsview-figure-section above
+       for why the fixed 25px height was removed. */
+    display: flex;
+    align-items: center;
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.figure-detailsview{
+    /* Bugfix (image off-center / row taller than expected): the browser
+       default for <figure> is `margin: 1em 40px` — the 16px top/bottom
+       margins were pushing the image down and inflating the row height,
+       which is also why the highlight appeared shorter at the top. Reset
+       to 0 so the figure's own 20x20 box is all that takes space. */
+    margin: 0;
+    display: flex;
+    position: relative;
+    height: 20px;
+    width: 20px;
+    place-items:center;
+}
+
+.img-detailsview{
+    height: 20px; 
+    width: 20px;
+    margin: 0 1px;
+}
+
+.figcaption-listview{
+    display: flex;
+    position: relative;
+    width: 100%;
+    align-items: center;
+}
+
+/* Bugfix (caption not vertically centered, too short for text): the
+   <figcaption class="figcaption-detailsview"> previously had no rule of
+   its own, so it rendered as a default block element whose intrinsic
+   height collapsed to the inner <p>'s line-height. With the parent
+   caption-section being a flex container with align-items:center, the
+   figcaption needs to fill the section so its inner <p> can also be
+   centered against the row height. */
+.figcaption-detailsview{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+.figcaption-detailsview-p, .detailsview-ptag, .detailsview-ptag-right{
+    position: relative;
+    text-align: left;
+    color: var(--fx-text);
+    font-size: 12px;
+    font-weight:200;
+    top: 0px;
+    /* Bugfix (column-resize): name <p> previously had a fixed `width: 120px`,
+       which capped its ellipsis point and let the figure section drift away
+       as the column grew. Width:100% lets it fill the flex caption section
+       so ellipsis kicks in at the actual available width. The non-name
+       ptags (date / type / size) live in their own <td>s and inherit the
+       same rule — 100% width is correct there too. */
+    width: 100%;
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add "..." when text overflows */
+    /* Bugfix (text too short / clipped): line-height 13px was tighter than
+       the 12px font's actual rendered ascent+descent, clipping descenders
+       (g, p, y). Bumped to 16px so the text box matches typical Segoe UI
+       metrics. Margin reset removes the default <p> 1em top/bottom margin
+       that was inflating the row and pushing text out of view. */
+    line-height: 16px;
+    margin: 0;
+}
+
+.figcaption-detailsview-p{
+    /* Bugfix (text clipped at bottom): previously `top: 4px` shifted the
+       text down 4px via `position: relative`, which pushed descenders
+       past the cell's overflow:hidden clip line. The caption section is
+       now a flex container with `align-items: center` (see
+       .div-detailsview-caption-section above), so vertical centering is
+       handled by flexbox — no manual offset needed. */
+    top: 0;
+}
+
+.detailsview-ptag{
+    padding-left: 5px;
+}
+
+.detailsview-ptag-right{
+    text-align: right;
+}
+
+.detailsview-rename-form, .detailsview-rename-textbox{
+    position: relative;
+    display: none;
+    margin: 0;
+}
+
+.detailsview-rename-textbox{
+    position: relative;
+    display: none;
+    top: 0px;
+    margin-bottom: 2px;
+    width: 100%;
+    /* max-width: 228px; */
+    height: 22px;
+    border: 1px solid var(--fx-text-dim);
+    overflow:hidden;
+    font-size: 12px;
+    font-weight:200;
+    background-color: var(--fx-text);
+    color: black;
+ }
+/*-------------------------Details Icon View End ----------------------------------*/
+
+
+/*****************************icon view and layout Started*****************************/
+
+
+/*-----################################---Footer View Started-----################################---*/
+
+.fileexp-footer__container{
+    width: 100%;
+    height: 24px ;
+    display: inline-flex;
+    position: relative; /* anchor for the absolute footer buttons below */
+    flex: 0 0 24px;
+    /* background-color: #383434; */ 
+    background-color: var(--fx-footer-bg);
+}
+
+.fileexp-footer__span{
+    color: var(--fx-text);
+    font-size: 11px;
+    font-weight: normal;
+    margin: 5px 4px;
+}
+
+
+.fileexp-footer__details-cntnr{
+    position: absolute;
+    width: 20px;
+    height: var(--fx-row);
+    /* Sit one button-width (20px) + a 4px gap to the left of the large-icon
+       button (which is at right:1%), so the two stay 4px apart at any width. */
+    right: calc(1% + 20px + 4px);
+}
+.fileexp-footer__large-icon-cntnr{
+    position: absolute;
+    width: 20px;
+    height: var(--fx-row);
+    right: 1%;
+}
+
+/* Refactor #11.d — hover color was previously toggled by colorBtnCntnr
+   /uncolorBtnCntnr. Now pure CSS, matching the question-btn rule above. */
+.fileexp-footer__details-cntnr:hover,
+.fileexp-footer__large-icon-cntnr:hover{
+    /* background-color: var(--fx-btn-hover-bg);
+    border: 1px solid var(--fx-text); */
+    background-color: #b4d7f1;
+    border: 1px solid #3289cc;
+}
+
+/* Active view indicator: the footer toggle for the current view stays
+   highlighted so it's clear which mode is selected. Slightly darker than
+   :hover so the two states are distinguishable when the mouse is over
+   the active button. */
+.fileexp-footer__details-cntnr.active,
+.fileexp-footer__large-icon-cntnr.active{
+    background-color: #b4d7f1;
+    border: 1px solid #3289cc;
+}
+
+.fileexp-footer__large-icon-figure, .fileexp-footer__large-icon-figure1{
+    position: relative;
+    width: 15px;
+    height: 14px;
+    /*a poor attempt at centering the image*/
+    top: 3.5px;
+    left: 2px;
+}
+
+.fileexp-footer__large-icon-figure1{
+    top: 3px;
+}
+
+.fileexp-footer__img{
+    height: 14px; 
+    width: 14px;
+    color: var(--fx-text);
+}
+
+/*-----################################---Folder Footer Bar Started-----################################---*/
+
+.fileexp-footer__folder-bar{
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 10px;
+    min-height: 70px;
+    padding: 6px 10px 8px;
+    box-sizing: border-box;
+    background-color: var(--fx-footer-folder-bar);
+}
+
+.fileexp-footer__folder-bar-section{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: min(82%, 760px);
+    margin: 0 1% 0 auto;
+}
+
+.fileexp-footer__folder-btn-section{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+    gap: 6px;
+    width: min(82%, 760px);
+    margin: 0 1% 0 auto;
+}
+
+.fileexp-footer__folder-label{
+    color: var(--fx-text);
+    font-size: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+.fileexp-footer__folder-input{
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+    height: 22px;
+    padding: 0 6px;
+    font-size: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--fx-text);
+    background-color: var(--fx-footer-folder-bar);
+    border: 1px solid var(--fx-border-light);
+    box-sizing: border-box;
+    outline: none;
+}
+
+.fileexp-footer__folder-input:focus{
+    border-color: #0078d7;
+    box-shadow: inset 0 0 0 1px #fff;
+}
+
+.fileexp-footer__folder-btn{
+    min-width: 96px;
+    height: 24px;
+    padding: 0 14px;
+    font-size: 11px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #ffffff;
+    background: linear-gradient(to bottom, #333333 0%, #333333 100%);
+    border: 1px solid #adadad;
+    box-shadow: inset 0 1px 0 #333333;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.fileexp-footer__folder-btn:hover{
+    border-color: #7eb4ea;
+    background: linear-gradient(to bottom, #333333 0%, #333333 100%);
+}
+
+.fileexp-footer__folder-btn:active{
+    background: linear-gradient(to bottom, #d8e9fb 0%, #f8fbff 100%);
+}
+
+.fileexp-footer__folder-btn--primary{
+    border-color: #0078d7;
+    box-shadow: inset 0 0 0 1px #ffffff, 0 0 0 1px #0078d7;
+}
+
+/*-----################################---file Footer Bar Started-----################################---*/
+
+.fileexp-footer__file-bar{
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 8px 12px 10px;
+    box-sizing: border-box;
+    background-color: var(--fx-footer-file-bar);
+}
+
+.fileexp-footer__file-main-row{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.fileexp-footer__file-input-group{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.fileexp-footer__file-label{
+    color: var(--fx-text);
+    font-size: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    white-space: nowrap;
+}
+
+.fileexp-footer__file-input{
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 24px;
+    padding: 0 8px;
+    color: var(--fx-text);
+    background-color: var(--fx-input-bg);
+    border: 1px solid #a6a6a6;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.fileexp-footer__file-input:focus,
+.fileexp-footer__file-select:focus{
+    border-color: #8bb9f1;
+}
+
+.fileexp-footer__file-select{
+    flex: 0 0 190px;
+    height: 24px;
+    padding: 0 28px 0 8px;
+    color: var(--fx-text);
+    font-size: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--fx-input-bg);
+    border: 1px solid #a6a6a6;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, #d7d7d7 50%), linear-gradient(135deg, #d7d7d7 50%, transparent 50%);
+    background-position: calc(100% - 15px) 10px, calc(100% - 10px) 10px;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    outline: none;
+}
+
+.fileexp-footer__file-btn-group{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.fileexp-footer__file-btn{
+    min-width: 88px;
+    height: 24px;
+    padding: 0 14px;
+    color: #ffffff;
+    font-size: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #3a3a3a;
+    border: 1px solid #d8d8d8;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.fileexp-footer__file-btn:hover{
+    border-color: #ffffff;
+}
+
+.fileexp-footer__file-btn:active{
+    background-color: #2f2f2f;
+}
+
+.fileexp-footer__file-btn--primary{
+    border-color: #ffffff;
+}
+
+/*-----################################---file Footer Bar Ended-----################################---*/
+
+/*-----################################---Folder Footer Bar Ended-----################################---*/
+
+/*-----################################---Footer View Ended-----################################---*/
+
+
+
+.rename-textbox{
+    position: relative;
+    display: none;
+    top: 2px;
+    margin-bottom: 2px;
+    max-width: 75px;
+    max-height: 16px;
+    border: 1px solid var(--fx-text-dim);
+    overflow:hidden;
+    z-index: 2;
+ }
+
+.file_explrorer_root_container input{
+    text-align: left;      /* or center if you want it centered */
+    font-size: 11.5px;
+    padding-left: 4px;
+}
+
+.file_explrorer_root_container input::selection{
+    background-color: #0056b3;
+    color: var(--fx-text);
+}
+
+
+.tool-tip-container{
+    position: absolute;
+    width: max-content;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+    border-radius: 0 0 5px 5px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(0,0); 
+    transition: opacity 0.25s ease, visibility 0s linear 0.5s;
+}
+
+.tool-tip-container.visible{
+    opacity: 1;
+    z-index: 2;
+    visibility: visible;
+    transition: opacity 0.25s ease;
+}
+
+
+.tool-tip-base{
+    width: fit-content;
+    height: 40px;
+    line-height: 5px;
+    padding: 10px;
+    font-size: 10px;
+    font-weight: normal;
+    text-align: center;
+    color: black;
+    background: var(--fx-text);
+    border: 4px solid var(--fx-text);
+    border-radius: 5px;
+    /* text-shadow: rgba(0, 0, 0, 0.1) 1px 1px 1px;
+    box-shadow: rgba(0, 0, 0, 0.1) 1px 1px 2px 0px; */
+}
+
+.tool-tip-arrow {
+    content: "";
+    position: relative;
+    width: 0;
+    height: 0;
+    border-width: 10px;
+    border-style: solid;
+    border-color: var(--fx-text) transparent transparent transparent; 
+    left: 20px;
+    transform: rotate(180deg);
+}
+
+.fx-information-tip-container{
+    /* (Option 1) Rendered on document.body so it can overflow the window.
+       position: fixed → coordinates are viewport-relative (set in the
+       component from evt.clientX/clientY). */
+    position: fixed;
+    z-index: -3;
+    width: fit-content;
+    border: 1px solid var(--fx-border);
+    background-color: var(--fx-bg);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out;
+    pointer-events: none; /* makes it non-interactive */
+}
+
+.fx-information-tip-container.visible{
+    opacity: 1;
+    /* Above all windows/taskbar now that it lives at the body level. */
+    z-index: 20;
+    visibility: visible;
+}
+
+.fx-information-tip-item-container {
+    width: 100%;
+    height: 100%;
+}
+
+.fx-information-tip-item {
+    max-width: 250px;
+    min-width: 0;
+    padding: 2px 2px;
+    font-size: 11px;
+    text-align: left;
+    color: var(--fx-text);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.fileexplr-clone-container{
+    width: fit-content;
+    height: fit-content;
+    z-index:  3;
+    position: absolute;
+}
+
+.fileexplr-multi-select-highlight {
+    background-color: var(--fx-icon-hover-bg);
+    border: 0.5px solid var(--fx-icon-hover-border);
+}
+
+/* Refactor #11.i — per-icon hover / selected styling. Each class corresponds
+   to exactly one state in the legacy setBtnStyle/removeBtnStyle truth table:
+     .is-hovered          — non-selected hover         (was setBtnStyle(id,true) outer branch)
+     .is-selected-current — just clicked / ctx menu    (was setBtnStyle(id,*)+isInFocusDueToCurrent)
+     .is-selected-prior   — post-click ring            (was setBtnStyle(id,false)+isInFocusDueToPrior)
+   Bindings in the template guarantee at most one of {is-selected-current,
+   is-selected-prior} is on at a time, and the lasso class suppresses all
+   three. The legacy "remove" state (transparent border) is just absence of
+   every class, so no explicit rule is needed. */
+.iconview-button.is-hovered {
+    background-color: var(--fx-icon-hover-bg);
+    border: 0.5px solid var(--fx-icon-hover-border);
+}
+.iconview-button.is-selected-current {
+    background-color: var(--fx-icon-selected-bg);
+    border: 0.5px solid var(--fx-icon-hover-border);
+}
+.iconview-button.is-selected-prior {
+    background-color: transparent;
+    border: 0.5px solid var(--fx-text);
+}
+
+/* Refactor #11.h — lasso pane. Constant styling lives here so we don't
+   re-apply 9 inline styles per mousemove tick. Geometry (transform + w/h)
+   and visibility are bound via Angular [style.*] / [class.visible]. */
+.lasso-pane {
+    position: absolute;
+    display: none;
+    width: 0;
+    height: 0;
+    background-color: rgba(4, 124, 212, 0.2);
+    border: 1px solid #047cd4;
+    backdrop-filter: blur(5px);
+    z-index: 0;
+    pointer-events: none;
+}
+.lasso-pane.visible {
+    display: block;
+    z-index: 2;
+}
+
+.nav-tree-spacer {
+    height: 10px;
+    width: 100%;
+}

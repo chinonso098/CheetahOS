@@ -1,5 +1,6 @@
 import { Constants } from "./constants";
-import { FileInfo } from "./file.info";
+import { FileInfo } from "./fs/file.info";
+
 
 export class Process{
 

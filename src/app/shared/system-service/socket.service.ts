@@ -8,7 +8,7 @@ import { Constants } from 'src/app/system-files/constants';
 import { ProcessType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { Service } from 'src/app/system-files/service';
-import { BaseService } from './base.service.interface';
+import { BaseService } from '../../system-files/base/base.service.interface';
 
 //For the moment, this service has only one consumer, And should close when the consumer is terminated
 @Injectable()

@@ -31,7 +31,11 @@ function rdSync(dpath, tree, name) {
                 rdSync(fpath, child, file);
             }
             else {
-                tree[file] = null;
+                // Bake the file's byte-size into the index (a number) instead of null.
+                // This lets BrowserFS answer stat() from memory with NO network HEAD,
+                // which is what collapses the per-file request storm on first load.
+                // Encoding contract: directories => objects, files => numeric size.
+                tree[file] = fstat.size;
             }
         }
         catch (e) {

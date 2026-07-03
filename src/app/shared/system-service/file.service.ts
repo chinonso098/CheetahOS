@@ -1,22 +1,22 @@
 import { Injectable } from "@angular/core";
-import { FileInfo } from "src/app/system-files/file.info";
-import { InformationUpdate, ShortCut } from "src/app/system-files/common.interfaces";
+import { FileInfo } from "src/app/system-files/fs/file.info";
+import { InformationUpdate, ShortCut } from "src/app/system-files/commons/common.interfaces";
 import {extname, basename, dirname} from 'path';
 import { Constants } from "src/app/system-files/constants";
 import { FSModule } from "src/osdrive/Cheetah/System/BrowserFS/node/core/FS";
-import { FileMetaData } from "src/app/system-files/file.metadata";
+import { FileMetaData } from "src/app/system-files/fs/file.metadata";
 
 import { Subject } from "rxjs";
 import * as BrowserFS from 'src/osdrive/Cheetah/System/BrowserFS/browserfs'
 import { Buffer} from 'buffer';
 import osDriveFileSystemIndex from '../../../osdrive.json';
 import ini  from 'ini';
-import { FileContent } from "src/app/system-files/common.interfaces";
+import { FileContent } from "src/app/system-files/commons/common.interfaces";
 import { ProcessType } from "src/app/system-files/system.types";
 import { Process } from "src/app/system-files/process";
 import { Service } from "src/app/system-files/service";
 
-import { BaseService } from "./base.service.interface";
+import { BaseService } from "../../system-files/base/base.service.interface";
 import { DefaultService } from "./defaults.services";
 import { ProcessIDService } from "./process.id.service";
 import { FileIndexerService } from "./file.indexer.services";
@@ -25,11 +25,13 @@ import { UserNotificationService } from "./user.notification.service";
 import { SessionManagementService } from "./session.management.service";
 import { SystemNotificationService } from "./system.notification.service";
 
-import { OpensWith } from "src/app/system-files/common.interfaces";
+import { OpensWith } from "src/app/system-files/commons/common.interfaces";
 import { zipSync, unzipSync } from "fflate";
-import { CommonFunctions } from "src/app/system-files/common.functions";
-import { FileTransferUpdate, FileTransferCopyOptions, FileTransferCount, FileTransferMoveOptions, FileOperationCheck, FolderMoveQueueItem, FileStat } from "src/app/system-files/file.system.types";
-import { UserNotificationType } from "src/app/system-files/common.enums";
+import { CommonFunctions } from "src/app/system-files/commons/common.functions";
+import { FileTransferUpdate, FileTransferCopyOptions, FileTransferCount, FileTransferMoveOptions, FileOperationCheck, FolderMoveQueueItem, FileStat } from "src/app/system-files/fs/file.system.types";
+import { UserNotificationType } from "src/app/system-files/commons/common.enums";
+import { AppDirectory } from "src/app/system-files/app.directory";
+import { DialogMessage, DialogTitle } from "../system-ui-components/dialog/dialog.types";
 
 
 @Injectable({
@@ -42,9 +44,11 @@ export class FileService implements BaseService{
     private _fileSystem!:FSModule;
     private _initPromise!:Promise<boolean>;
     private _fileExistsMap!:Map<string, string>; 
+    private _newFileOrFolderNameMap!:Map<string, string>; 
     private _fileAndAppIconAssociation!:Map<string,string>; 
     private _restorePoint!:Map<string,string>; 
     private _fileDragAndDrop!:FileInfo[];
+    private _appDirectory!:AppDirectory;
     private _eventOriginator = Constants.EMPTY_STRING;
     private _mountedZips:Map<string, string> = new Map<string, string>(); // mountPoint -> srcPath
     private static readonly _utf8Decoder = new TextDecoder('utf-8', { fatal: true });
@@ -106,6 +110,8 @@ export class FileService implements BaseService{
         this._fileExistsMap =  new Map<string, string>();
         this._restorePoint =  new Map<string, string>();
         this._fileAndAppIconAssociation =  new Map<string, string>();
+        this._newFileOrFolderNameMap = new Map<string, string>();
+        this._appDirectory = new AppDirectory();
         this._fileDragAndDrop = [];
 
         this._processIdService = processIDService;
@@ -195,7 +201,10 @@ export class FileService implements BaseService{
 
     private async postInitBrowserFs(): Promise<void> {
         const delay = 100; //100ms
-        await this.calculateUsedStorage();
+        // NOTE: the full-drive storage walk is intentionally NOT performed here.
+        // It is deferred and computed lazily on first access via
+        // getUsedStorageAsync() (Settings storage pane / drive Properties),
+        // keeping the boot path free of an expensive whole-drive traversal.
         this._fileIndexerService = FileIndexerService.instance;
 
         await CommonFunctions.sleep(delay);
@@ -253,8 +262,8 @@ export class FileService implements BaseService{
         const isDirectory = (isFile === undefined) ? (await this.getStatAsync(srcPath)).isDirectory : !isFile;
 
         const filesTrasnferedCount:FileTransferCount = { fileCount: 0};
-        const firstMsg = 'Estimating';
-        const title = 'Copying';
+        const firstMsg = DialogMessage.FILE_SVC_ESTIMATING;
+        const title = DialogTitle.FILE_SVC_COPYING;
         const dialogPId = this.initFileTransfer(firstMsg, title);
         const abortController = new AbortController();
         this._abortControllers.set(dialogPId, abortController);
@@ -290,8 +299,10 @@ export class FileService implements BaseService{
             this._abortControllers.delete(dialogPId);
         }
 
-        if(result && deltaSize > 0){
+        if(result && deltaSize > 0 && this._isCalculated){
             // Incremental update avoids re-scanning the whole drive after every transfer.
+            // Only applied once a baseline exists; before that the next
+            // getUsedStorageAsync() computes a fresh, correct total from scratch.
             this._usedStorageSizeInBytes += deltaSize;
         }
         return result;
@@ -409,11 +420,16 @@ export class FileService implements BaseService{
         return !(fileFailed || subFailed);
     }
 
-    public async createFolderAsync(directory: string, folderName: string): Promise<{ ok: boolean; finalPath: string }> {
-        const folderPath = `${directory}/${folderName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+    public async createFolderAsync(directory: string, folderName: string, requestId: string =Constants.EMPTY_STRING): Promise<{ ok: boolean; finalPath: string }> {
+        const folderPath =  CommonFunctions.removeDoubleSlashes(`${directory}/${folderName}`);
         const result = await this.createFolderHandlerAsync(folderPath);
 
         if(result.ok){
+            console.log(`createFolderAsync: folder created at ${result.finalPath}`);
+            console.log(`folderName: folder created is ${basename(result.finalPath)}`);
+            if (requestId !== Constants.EMPTY_STRING) {
+                this._newFileOrFolderNameMap.set(requestId, basename(result.finalPath));
+            }
             // Best-effort: indexer may not be ready on very early folder creates.
             await this.fileIndexer?.addNotify(result.finalPath, false);
         }
@@ -438,7 +454,7 @@ export class FileService implements BaseService{
 
         if (createResult === 1) {
             for (let attempt = 0; attempt < this.MAX_DUPLICATE_RETRIES; attempt++) {
-                const uniqueFolderPath = this.IncrementFileName(folderPath).replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+                const uniqueFolderPath = CommonFunctions.removeDoubleSlashes(this.IncrementFileName(folderPath));
                 const retryResult = await this.createFolderRawAsync(uniqueFolderPath);
 
                 if (retryResult === 0) {
@@ -502,7 +518,7 @@ export class FileService implements BaseService{
         });
     }
 
-    public async geFileMetaData(path: string): Promise<FileMetaData> {
+    public async geFileMetaDataAsync(path: string): Promise<FileMetaData> {
         return new Promise((resolve) =>{
             this._fileSystem.exists(path, (exists)=>{
                 if(!exists){
@@ -558,6 +574,45 @@ export class FileService implements BaseService{
             return Constants.EMPTY_STRING;
     }
 
+    /**
+     * Build the *direct* HTTP URL for a file that physically lives in the
+     * read-only osdrive layer. BrowserFS mounts that layer with
+     * `baseUrl = ${location.href}osdrive`, so a virtual path such as
+     * `/Users/Videos/clip.mp4` is served at `osdrive/Users/Videos/clip.mp4`
+     * (the same relative form already used to load scripts/styles elsewhere,
+     * e.g. `osdrive/Program-Files/Videojs/video.min.js`).
+     *
+     * Returning a direct URL — instead of reading the whole file into a blob —
+     * lets the browser stream large media via HTTP range requests (supported by
+     * static hosts such as GitHub Pages), so a 25 MB video is not fully
+     * downloaded (and pinned in memory) before playback can begin.
+     *
+     * NOTE: this only resolves files in the pristine osdrive image. Files the
+     * user created/copied live in the writable IndexedDB overlay and are NOT
+     * reachable by this URL, so callers must keep a blob fallback for them.
+     */
+    public getDirectFileUrl(path: string): string {
+        if(!path) return Constants.EMPTY_STRING;
+        const normalized = path.startsWith(Constants.ROOT) ? path : `${Constants.ROOT}${path}`;
+        return this.toAbsoluteOsdriveUrl(`osdrive${normalized}`);
+    }
+
+    /**
+     * Resolve an already-osdrive-prefixed relative path (e.g. `osdrive/Users/Music/song.mp3`)
+     * to an ABSOLUTE url anchored at the document base (<base href>).
+     *
+     * When the app is hosted under a sub-path (e.g. a GitHub Pages project site
+     * served from /<repo>/), media libraries such as Howler and Video.js re-resolve
+     * a relative or root-absolute string against the origin root instead of
+     * <base href>, producing 404s like `https://host/osdrive/...` instead of
+     * `https://host/<repo>/osdrive/...`. Anchoring to document.baseURI yields the
+     * correct url in every deploy layout (dev `/`, project sub-path, custom domain).
+     */
+    public toAbsoluteOsdriveUrl(osdriveRelativePath: string): string {
+        if(!osdriveRelativePath) return Constants.EMPTY_STRING;
+        return new URL(osdriveRelativePath, document.baseURI).href;
+    }
+
     private async readRawAsync(srcPath: string): Promise<Buffer | undefined>{
         return new Promise((resolve) => {
             this._fileSystem.readFile(srcPath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING)) => {
@@ -609,9 +664,15 @@ export class FileService implements BaseService{
             // bad entry doesn't blank the whole listing.
             const limiter = this.createLimiter(this.CONCURRENCY_LIMIT);
             const results = await Promise.all(directoryEntries.map(entry => limiter(async () => {
-                const entryPath = `${path}/${entry}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+                const entryPath = CommonFunctions.removeDoubleSlashes(`${path}/${entry}`);
                 try {
-                    return await this.getFileInfo(entryPath);
+                    // PERF: a directory *listing* must never download heavy file
+                    // *content* (video/audio/swf/pdf can be tens of MB each, fetched
+                    // over HTTP by the osdrive backend). Pass loadContent=false so only
+                    // lightweight metadata + generic type icons are resolved here; the
+                    // real content is materialized later, on open (see
+                    // ProcessHandlerService.runApplication / the media players).
+                    return await this.getFileInfoAsync(entryPath, false);
                 } catch(err) {
                     console.error('loadDirectoryFiles: entry failed', entryPath, err);
                     return null;
@@ -624,25 +685,28 @@ export class FileService implements BaseService{
 		}
 	}
 
-	public async getFileInfo(path:string):Promise<FileInfo>{
+	public async getFileInfoAsync(path:string, loadContent = true):Promise<FileInfo>{
  
         const defaultOpensWith = Constants.EMPTY_STRING;
         let fileInfo = new FileInfo();
 
         const useImage = true;
-		const isFile = true;
+		let isFile = true;
         const extension = extname(path);
-        const fileMetaData = await this.geFileMetaData(path);
+        const fileMetaData = await this.geFileMetaDataAsync(path);
         //await this.updateAccessTimeAsync(path, fileMetaData.getModifiedDate); //##.
         fileMetaData.setAccessDate = new Date();
         
-        if(!extension){
+        if(!extension){ // 9.9 out of 10 times, this is a folder (no extension) and not a file (with extension)
             const fc = await this.setOtherFolderProps(path, fileMetaData.getIsDirectory) as FileContent;
             fileInfo = this.populateFileInfo(path, fileMetaData, !isFile, defaultOpensWith, Constants.EMPTY_STRING, !useImage, undefined, fc);
             fileInfo.setIconPath = await this.changeFolderIcon(fc.fileName, fc.iconPath, path);
+            fileInfo.setOpensWith = Constants.FILE_EXPLORER;
+            fileInfo.setIsFile = false;
+            isFile = false;
         }
         else if(extension === Constants.URL){
-            const sc = await this.getShortCutFromURL(path);
+            const sc = await this.getShortCutFromURLAsync(path);
             fileInfo = this.populateFileInfo(path, fileMetaData, isFile, defaultOpensWith, Constants.EMPTY_STRING, useImage, sc);
             fileInfo.setIsShortCut = true;
         }
@@ -651,22 +715,36 @@ export class FileService implements BaseService{
 			|| Constants.AUDIO_FILE_EXTENSIONS.includes(extension)
 			|| Constants.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension)){
 
-			let fileContent:FileContent| undefined = undefined;
+			let fileContent:FileContent | undefined = undefined;
 			const resolved = this.getOpensWith(extension);
 
-			if(resolved.fileType === 'image' ||resolved.fileType === 'video' || resolved.fileType === 'audio' )
-                fileContent = await this.getFileContentFromB64DataUrl(path, resolved.fileType) as FileContent;
+			// PERF: image/video/audio content can each be many megabytes, and NONE of
+			// it is needed to *list* or *index* a file — the explorer and desktop always
+			// render a generic per-type icon (image_file.png, video_file.png,
+			// music_file.png; see getOpensWith/populateFileInfo), never the file's actual
+			// bytes. The decoded content is only consumed by the viewers themselves
+			// (photoviewer/videoplayer/audioplayer), so we materialize it solely when the
+			// file is being opened (loadContent === true) and skip it while listing.
+			// Source files are never pre-loaded here (the code editor reads them on open).
+			const fileType = resolved.fileType;
+			const isPreviewableMedia = fileType === 'image' || fileType === 'video' || fileType === 'audio';
 
-            fileInfo = this.populateFileInfo(path, fileMetaData, isFile, resolved.appName, resolved.appIcon, !useImage, undefined, fileContent);
+			if(isPreviewableMedia && loadContent)
+                fileContent = await this.getFileContentFromB64DataUrlAsync(path, resolved.fileType) as FileContent;
+
+            fileInfo = this.populateFileInfo(path, fileMetaData, isFile, resolved.apps[0].appName, resolved.apps[0].appIcon, !useImage, undefined, fileContent);
 
         }else if(Constants.KNOWN_FILE_EXTENSIONS.includes(extension)){
             const resolved = this.getOpensWith(extension);
 
-            let fileContent:FileContent| undefined = undefined;
-			if(resolved.fileType === 'swf' ||resolved.fileType === 'pdf')
-                fileContent = await this.getFileContentFromB64DataUrl(path, resolved.fileType) as FileContent;
+            let fileContent:FileContent | undefined = undefined;
+			// PERF: swf/pdf are the only "known" types whose content is pre-loaded, and
+			// like audio/video above it can be large — so defer it until the file is
+			// opened (loadContent === true) and skip it during listing/indexing.
+			if((resolved.fileType === 'swf' ||resolved.fileType === 'pdf') && loadContent)
+                fileContent = await this.getFileContentFromB64DataUrlAsync(path, resolved.fileType) as FileContent;
 
-            fileInfo = this.populateFileInfo(path, fileMetaData, isFile, resolved.appName, resolved.appIcon, !useImage, undefined, fileContent);
+            fileInfo = this.populateFileInfo(path, fileMetaData, isFile, resolved.apps[0].appName, resolved.apps[0].appIcon, !useImage, undefined, fileContent);
 		} else{
             fileInfo.setIconPath=`${Constants.IMAGE_BASE_PATH}unknown.png`;
             fileInfo.setCurrentPath = path;
@@ -678,7 +756,7 @@ export class FileService implements BaseService{
             fileInfo.setFileName = basename(path, extname(path));
             fileInfo.setFileExtension = extension;
         }
-        this.addAppAssociaton(fileInfo.getOpensWith, fileInfo.getIconPath);
+        this.addAppAssociaton(fileInfo.getOpensWith, fileInfo.getIconPath, isFile);
 
         return fileInfo;
     }
@@ -687,39 +765,45 @@ export class FileService implements BaseService{
 		const empty = Constants.EMPTY_STRING;
 		const isAudioFile = Constants.AUDIO_FILE_EXTENSIONS.includes(extension);
 		if(isAudioFile)
-			return {fileType:'audio', appName:'audioplayer', appIcon: 'music_file.png'};
+			return {fileType:'audio', apps: [{ isDefault: true, appName: 'audioplayer', appIcon: 'music_file.png' }]};
 
 		const isVideoFile = Constants.VIDEO_FILE_EXTENSIONS.includes(extension);
 		if(isVideoFile)
-			return {fileType:'video', appName:'videoplayer', appIcon: 'video_file.png'};
+			return {fileType:'video', apps: [{ isDefault: true, appName: 'videoplayer', appIcon: 'video_file.png' }]};
 
 		const isImageFile = Constants.IMAGE_FILE_EXTENSIONS.includes(extension);
 		if(isImageFile)
-			return {fileType:'image', appName:'photoviewer', appIcon: 'image_file.png'};
+			return {fileType:'image', apps: [{ isDefault: true, appName: 'photoviewer', appIcon: 'image_file.png' }]};
 
 		const isSourceFile = Constants.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension);
 		if(isSourceFile)
-			return {fileType:'source', appName:'codeeditor', appIcon: 'code_file.png'};
+			return {fileType:'source', apps: [{ isDefault: true, appName: 'codeeditor', appIcon: 'code_file.png' }] };
 
 
 		const cleanedExt = extension.replace(Constants.DOT, empty);
 		const knownFileHandlers: Record<string, OpensWith> = {
-			'.wasm': { fileType: cleanedExt, appName: 'codeeditor', appIcon: 'wasm_file.png' },
-			'.txt': { fileType: cleanedExt, appName: 'texteditor', appIcon: 'file.png' },
-			'.properties': { fileType: cleanedExt, appName: 'texteditor', appIcon: 'file.png' },
-			'.log': { fileType: cleanedExt, appName: 'texteditor', appIcon: 'file.png' },
-			'.md': { fileType: cleanedExt, appName: 'markdownviewer', appIcon: 'markdown_file.png' },
-			'.jsdos': { fileType: cleanedExt, appName: 'jsdos', appIcon: 'js-dos_file.png' },
-			'.swf': { fileType: cleanedExt, appName: 'ruffle', appIcon: 'swf_file.png' },
-			'.pdf': { fileType: cleanedExt, appName: 'pdfviewer', appIcon: 'pdf_file.png' },
-            '.zip': { fileType: cleanedExt, appName: 'fileexplorer', appIcon: 'zip_file.png' },
+			'.wasm': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'codeeditor', appIcon: 'wasm_file.png' }] },
+			'.txt': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'texteditor', appIcon: 'text_file.png' },
+                                                    { isDefault: false, appName: 'codeeditor', appIcon: 'code_file.png' }]},
+			'.properties': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'texteditor', appIcon: 'text_file.png' },
+                                                    { isDefault: false, appName: 'codeeditor', appIcon: 'code_file.png' }] },
+			'.log': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'texteditor', appIcon: 'text_file.png' },
+                                                    { isDefault: false, appName: 'codeeditor', appIcon: 'code_file.png' }] },
+			'.md': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'markdownviewer', appIcon: 'markdown_file.png' },
+                                                    { isDefault: false, appName: 'codeeditor', appIcon: 'code_file.png' }] },
+			'.jsdos': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'jsdos', appIcon: 'js-dos_file.png' }] },
+			'.swf': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'ruffle', appIcon: 'swf_file.png' }] },
+			'.pdf': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'pdfviewer', appIcon: 'pdf_file.png' }] },
+            '.zip': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'fileexplorer', appIcon: 'zip_file.png' }] },
+            '.ssvr': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'screensaverviewer', appIcon: 'scrn_saver.png' }, 
+                                                    { isDefault: false, appName: 'codeeditor', appIcon: 'code_file.png' }] },
 		};
 
 		if (knownFileHandlers[extension]) {
 			return knownFileHandlers[extension];
 		}
 
-		return {fileType:empty, appName:empty, appIcon: empty};
+		return {fileType:empty, apps: [{ isDefault: true, appName: empty, appIcon: empty }]};
     }
 
 	populateFileInfo(path:string, fileMetaData:FileMetaData, isFile:boolean, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut, fileCntnt?:FileContent):FileInfo{
@@ -752,7 +836,7 @@ export class FileService implements BaseService{
         return fileInfo;
     }
 
-    public async getFileContentFromB64DataUrl(path:string, contentType:string):Promise<FileContent> {
+    public async getFileContentFromB64DataUrlAsync(path:string, contentType:string):Promise<FileContent> {
 
         return new Promise<FileContent>((resolve)  =>{
             this._fileSystem.readFile(path, (err, contents = Buffer.from(Constants.EMPTY_STRING)) =>{
@@ -819,7 +903,7 @@ export class FileService implements BaseService{
         }
 	}
 
-    public async getShortCutFromURL(path: string): Promise<ShortCut> {
+    public async getShortCutFromURLAsync(path: string): Promise<ShortCut> {
         await this._initPromise;
         return new Promise<ShortCut>((resolve) => {
             this._fileSystem.readFile(path, (err, contents = Buffer.from(Constants.EMPTY_STRING)) => {
@@ -923,8 +1007,8 @@ export class FileService implements BaseService{
 
         const directoryExists = await this.exists(destPath);
         if(directoryExists){
-            const msg = `Folder: ${newName}, already exists`;
-            const title = 'Folder Matching Name Present';
+            const title = DialogTitle.FILE_SVC_FOLDER_EXISTS;
+            const msg =  DialogMessage.FILE_SVC_FOLDER_EXISTS.replace(DialogMessage.placeholder, newName);
             this._userNotificationService.showErrorNotification(msg, title);
             return false;
         }
@@ -939,8 +1023,9 @@ export class FileService implements BaseService{
         const dirFilesCount = stats.files;
         const folderSize = stats.size;
 
-        const firstMsg = 'Estimating';
-        const title = 'Moving';
+        const firstMsg = DialogMessage.FILE_SVC_ESTIMATING;
+        const title = DialogTitle.FILE_SVC_MOVING;
+
         const dialogPId = this.initFileTransfer(firstMsg, title);
         const abortController = new AbortController();
         this._abortControllers.set(dialogPId, abortController);
@@ -972,6 +1057,13 @@ export class FileService implements BaseService{
             await this.deleteEmptyFolders(folderToDeleteStack);
         }
 
+        // An empty folder (or one containing only empty sub-folders) has 0 files to
+        // move, so moveHandlerAsync never emits a per-file progress update and the
+        // transfer dialog never receives the 100%-complete signal that auto-closes
+        // it. Close it explicitly so it doesn't hang on "Estimating..." forever.
+        if(dirFilesCount === 0)
+            this._userNotificationService.closeDialogMsgBox(dialogPId);
+
         return isRenameSuccessful;
     }
 
@@ -985,7 +1077,7 @@ export class FileService implements BaseService{
 
         const isDirectory = (isFile === undefined) ? (await this.getStatAsync(srcPath)).isDirectory : !isFile;
 
-        let firstMsg = 'Estimating';
+        let firstMsg = DialogMessage.FILE_SVC_ESTIMATING;
         let dialogPId = 0;
         const filesMovedCount:FileTransferCount = { fileCount: 0};
         
@@ -1002,12 +1094,16 @@ export class FileService implements BaseService{
                 const size = CommonFunctions.getReadableFileSizeValue(folderSize);         
                 const sizeUnit  = CommonFunctions.getFileSizeUnit(folderSize);
         
-                const title = `Preparing to recycle:from:${basename(srcPath)}`;
-                firstMsg = `Discovered ${dirFilesCount} items  (${size} ${sizeUnit})...`;
+                const title = DialogTitle.FILE_SVC_PREPAIRING_TO_RECYCLE.replace(DialogTitle.placeholder, `from:${basename(srcPath)}`);
+                firstMsg = DialogMessage.FILE_SVC_PREPAIRING_TO_RECYCLE
+                    .replace(DialogMessage.placeholder, `${dirFilesCount}`)
+                    .replace(DialogMessage.placeholder1, `${size}`)
+                    .replace(DialogMessage.placeholder2, `${sizeUnit}`);
+                    
                 dialogPId = this.initDeleteProcess(firstMsg, title);
                 this.sendUpdate(dialogPId);
             }else{
-                const title = 'Moving';
+                const title = DialogTitle.FILE_SVC_MOVING;
                 dialogPId = this.initFileTransfer(firstMsg, title);
                 this.sendUpdate(dialogPId);
             }
@@ -1059,6 +1155,14 @@ export class FileService implements BaseService{
    
                 await this.deleteEmptyFolders(folderToDeleteStack);
             }
+
+            // An empty folder (or one containing only empty sub-folders) has 0 files to
+            // move, so moveHandlerAsync never emits a per-file progress update and the
+            // transfer/delete dialog never receives the 100%-complete signal that
+            // auto-closes it. Close it explicitly so it doesn't hang indefinitely.
+            if(dirFilesCount === 0)
+                this._userNotificationService.closeDialogMsgBox(dialogPId);
+
             return result;
         }else{
             if(isRecycleBin)
@@ -1149,12 +1253,12 @@ export class FileService implements BaseService{
         return true;
     }
 
-    //virtual filesystem, use copy and then delete. There is a BrowserFS bug causing an error to be thrown
+    //virtual filesystem, use copy and then delete.
     private async moveFileAsync(srcPath: string, destPath: string, generatePath?: boolean, isRecycleBin?: boolean): Promise<boolean> {
         let destinationPath = Constants.EMPTY_STRING;
         if (generatePath === undefined || generatePath){
             const fileName = this.getNameFromPath(srcPath);
-            destinationPath = `${destPath}/${fileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+            destinationPath = CommonFunctions.removeDoubleSlashes(`${destPath}/${fileName}`);
         } else {
             destinationPath = destPath;
         }
@@ -1170,7 +1274,7 @@ export class FileService implements BaseService{
 
         if(writeResult === 1 && allowRename){
             for (let attempt = 0; attempt < this.MAX_DUPLICATE_RETRIES && writeResult === 1; attempt++) {
-                destinationPath = this.IncrementFileName(destinationPath);
+                destinationPath = CommonFunctions.removeDoubleSlashes(this.IncrementFileName(destinationPath));
                 writeResult = await this.writeRawAsync(destinationPath, readResult, 'wx');
             }
         }
@@ -1237,7 +1341,7 @@ export class FileService implements BaseService{
 
         if(writeResult === 1){
             for (let attempt = 0; attempt < this.MAX_DUPLICATE_RETRIES; attempt++) {
-                const newFileName = this.IncrementFileName(destPath);
+                const newFileName = CommonFunctions.removeDoubleSlashes(this.IncrementFileName(destPath));
                 const writeRetry = await this.writeRawAsync(newFileName, cntnt, 'wx');
 
                 if(writeRetry === 0){
@@ -1279,22 +1383,38 @@ export class FileService implements BaseService{
         return results.every(r => r === true);
     }
 
-    public async writeFileAsync(path:string, file:FileInfo):Promise<boolean>{
+    /**
+     * Writes a file to the specified path. If a requestId is provided, the file's final path
+     * will be stored in the `_newFileOrFolderNameMap` for later retrieval. The method ensures that
+     * if a file with the same name already exists, a unique name will be generated to avoid overwriting.
+     * @param path 
+     * @param file 
+     * @param requestId 
+     * @returns 
+     */
+    public async writeFileAsync(path:string, file:FileInfo, requestId: string=Constants.EMPTY_STRING):Promise<boolean>{
         const cntnt = (file.getStringBuffer === Constants.EMPTY_STRING)
             ? file.getContentBuffer 
             : file.getStringBuffer;
 
-        const destPath = `${this.pathCorrection(path)}/${file.getFileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+        const destPath = CommonFunctions.removeDoubleSlashes(`${this.pathCorrection(path)}/${file.getFileName}`);
 
         const writeRes = await this.writeRawHandlerAsync(destPath, cntnt);
         if(writeRes.ok){
             // Best-effort: indexer may not be ready on very early writes
             // (e.g. a screenshot save fired before BrowserFS post-init has
             // resolved FileIndexerService.instance).
+            if(requestId !== Constants.EMPTY_STRING){
+                console.log(`writeFileAsync: storing final path for requestId ${requestId}: ${writeRes.finalPath}`);
+                console.log(`writeFileAsync: storing final basename for requestId ${requestId}: ${basename(writeRes.finalPath)}`);
+                this._newFileOrFolderNameMap.set(requestId, basename(writeRes.finalPath));
+            }
             await this.fileIndexer?.addNotify(writeRes.finalPath, true);
-            // Incremental storage update — avoid full drive rescan.
+            // Incremental storage update — avoid full drive rescan. Only applied
+            // once a baseline exists (see getUsedStorageAsync); otherwise the
+            // next lazy read recomputes the total from scratch.
             const meta = await this.getStatAsync(writeRes.finalPath);
-            if(meta.exists) this._usedStorageSizeInBytes += meta.size;
+            if(meta.exists && this._isCalculated) this._usedStorageSizeInBytes += meta.size;
         }
 
         return writeRes.ok;
@@ -1331,9 +1451,11 @@ export class FileService implements BaseService{
             return false;
         }
 
-        // Incremental storage delta — avoid full drive rescan.
+        // Incremental storage delta — avoid full drive rescan. Only applied once
+        // a baseline exists (see getUsedStorageAsync); otherwise the next lazy
+        // read recomputes the total from scratch.
         const afterMeta = await this.getStatAsync(destPath);
-        if(afterMeta.exists){
+        if(afterMeta.exists && this._isCalculated){
             this._usedStorageSizeInBytes += (afterMeta.size - oldSize);
         }
 
@@ -1347,7 +1469,7 @@ export class FileService implements BaseService{
             return false;
         }
 
-        const rename = `${dirname(path)}/${newFileName}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+        const rename = CommonFunctions.removeDoubleSlashes(`${dirname(path)}/${newFileName}`);
         const isDirectory = (isFile === undefined) ? (await this.getStatAsync(path)).isDirectory : !isFile;
 
         return isDirectory
@@ -1361,7 +1483,7 @@ export class FileService implements BaseService{
             // special case
             return await this.renameURLFiles(path, newFileName);
         }else{
-            const newPath = `${dirname(path)}/${newFileName}${extname(path)}`.replace(Constants.DOUBLE_SLASH, Constants.ROOT);
+            const newPath = CommonFunctions.removeDoubleSlashes(`${dirname(path)}/${newFileName}${extname(path)}`);
             return await this.moveFileAsync(path, newPath, false);
         }
     }
@@ -1369,7 +1491,7 @@ export class FileService implements BaseService{
     private async renameURLFiles(srcPath:string, fileName:string): Promise<boolean> {
 
         const destPath = dirname(srcPath);
-        const shortCutData = await this.getShortCutFromURL(srcPath) as ShortCut;
+        const shortCutData = await this.getShortCutFromURLAsync(srcPath) as ShortCut;
         if(!shortCutData){
             console.warn('renameURLFiles: No shortcut data found for', srcPath);
             return false;
@@ -1556,18 +1678,18 @@ OpensWith=${shortCutData.opensWith}
 
         if((file.getCurrentPath.includes(Constants.RECYCLE_BIN_PATH))) { // is file or folder already in them recycle bin
             msg = (file.getIsFile) 
-            ? Constants.FILE_SVC_PERMANENTLY_DELETE_FILE_MSG
-            : Constants.FILE_SVC_PERMANENTLY_DELETE_FOLDER_MSG;
+            ? DialogMessage.FILE_SVC_PERMANENTLY_DELETE_FILE
+            : DialogMessage.FILE_SVC_PERMANENTLY_DELETE_FOLDER;
         }
         else{
             msg = (file.getIsFile) 
-            ? Constants.FILE_SVC_MOVE_FILE_TO_RECYCLE_BIN_MSG
-            : Constants.FILE_SVC_MOVE_FOLDER_TO_RECYCLE_BIN_MSG;
+            ? DialogMessage.FILE_SVC_MOVE_FILE_TO_RECYCLE_BIN
+            : DialogMessage.FILE_SVC_MOVE_FOLDER_TO_RECYCLE_BIN;
         }
 
         const title = (file.getIsFile && file.getFileType === Constants.URL)
-            ? Constants.FILE_SVC_DELETE_SHORTCUT_TITLE
-            : `${file.getIsFile ? Constants.FILE_SVC_FILE_TITLE : Constants.FILE_SVC_FOLDER_TITLE}`;
+            ? DialogTitle.FILE_SVC_DELETE_SHORTCUT
+            : `${file.getIsFile ? DialogTitle.FILE_SVC_FILE : DialogTitle.FILE_SVC_FOLDER}`;
 
         return await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.DeleteWarning, file, callerUId);
     }
@@ -1575,12 +1697,12 @@ OpensWith=${shortCutData.opensWith}
     async showFileInUseNotification(file:FileInfo, callerUId:string = Constants.EMPTY_STRING):Promise<boolean>{
         const isDir = !file.getIsFile;
         const title = isDir 
-            ? Constants.FILE_SVC_FOLDER_IN_USE_TITLE 
-            : Constants.FILE_SVC_FILE_IN_USE_TITLE;
+            ? DialogTitle.FILE_SVC_FOLDER_IN_USE 
+            : DialogTitle.FILE_SVC_FILE_IN_USE;
 
         const msg = isDir
-            ? Constants.FILE_SVC_FOLDER_IN_USE_MSG
-            : Constants.FILE_SVC_FILE_IN_USE_MSG;
+            ? DialogMessage.FILE_SVC_FOLDER_IN_USE
+            : DialogMessage.FILE_SVC_FILE_IN_USE;
 
         await this._userNotificationService.showWarningNotification(msg, title, UserNotificationType.InUseWarning, file, callerUId);
         return false;
@@ -2023,7 +2145,7 @@ OpensWith=${shortCutData.opensWith}
      * @param path - The original file or folder path.
      * @returns The new unique path with an incremented counter suffix.
      */
-    public IncrementFileName(path:string):string{
+    private IncrementFileName(path:string):string{
         const extension = extname(path);
         const filename = basename(path, extension);
 
@@ -2042,7 +2164,7 @@ OpensWith=${shortCutData.opensWith}
      * generated entry is cleaned up.
      * @param path - The file or folder path being removed.
      */
-    public DecrementFileName(path:string):void{
+    private DecrementFileName(path:string):void{
         // Resolve the base path only if this is a generated duplicate the map knows about.
         // Avoids false positives on legitimate user-named files like "Report (2).txt".
         const originalPath = this.getOriginalPathFromGenerated(path);
@@ -2079,20 +2201,50 @@ OpensWith=${shortCutData.opensWith}
         return `${dirname(path)}/${match[1]}${extension}`;
     }
 
-    private addAppAssociaton(appname:string, img:string):void{
+    private addAppAssociaton(appname:string, img:string, isFile:boolean):void{
         if(!this._fileAndAppIconAssociation.get(appname)){
-            if(appname === 'photoviewer' || appname === 'videoplayer' || appname === 'audioplayer' || appname === 'ruffle'){
-                this._fileAndAppIconAssociation.set(appname,`${Constants.IMAGE_BASE_PATH}${appname}.png`);
-            }else{
-                this._fileAndAppIconAssociation.set(appname, img);
-            }
+            if(isFile){
+                if(appname === 'photoviewer' || appname === 'videoplayer' || appname === 'audioplayer' || appname === 'ruffle'){
+                    this._fileAndAppIconAssociation.set(appname,`${Constants.IMAGE_BASE_PATH}${appname}.png`);
+                }else{
+                    this._fileAndAppIconAssociation.set(appname, img);
+                }
+            }else
+                this._fileAndAppIconAssociation.set(Constants.FILE_EXPLORER, `${Constants.IMAGE_BASE_PATH}file_explorer.png`);  
         }
     }
 
+    /**
+     * Retrieves the icon path associated with a given application name.
+     * by default, it first checks the `_fileAndAppIconAssociation` map. If not found, it falls back to the `_appDirectory` service to get the app icon.
+     * @param appname The name of the application.
+     * @returns The icon path, or an empty string if not found.
+     */
     public getAppAssociaton(appname:string):string{
-        return this._fileAndAppIconAssociation.get(appname) || Constants.EMPTY_STRING;
+        //return this._fileAndAppIconAssociation.get(appname) || Constants.EMPTY_STRING;
+        return  this._fileAndAppIconAssociation.get(appname) || this._appDirectory.getAppIcon(appname); 
     }
 
+    /**
+     * Retrieves and removes the folder name associated with a given request ID.
+     * @param requestId The request ID.
+     * @returns The folder name, or an empty string if not found.
+     */
+    public getFileOrFolderNameByRequestId(requestId: string): string {
+        if(this._newFileOrFolderNameMap.has(requestId)) {
+            const folderName = this._newFileOrFolderNameMap.get(requestId) || Constants.EMPTY_STRING;
+            this._newFileOrFolderNameMap.delete(requestId);
+            return folderName;
+        }
+        
+        return Constants.EMPTY_STRING;
+    }
+
+    /**
+     * sanitizes a path by removing any trailing slashes, ensuring consistent formatting.
+     * @param path The path to sanitize.
+     * @returns The sanitized path.
+     */
     private pathCorrection(path:string):string{
         if(path.slice(-1) === Constants.ROOT)
             return path.slice(0, -1);
@@ -2108,6 +2260,18 @@ OpensWith=${shortCutData.opensWith}
         return this._usedStorageSizeInBytes;
     }
 
+    /**
+     * Lazily returns total drive usage in bytes. The first call performs the
+     * one-time full-drive walk (deferred off the boot path); subsequent calls
+     * return the cached value kept current incrementally by
+     * write/copy/update/delete operations. Used by the Settings storage pane
+     * and the drive Properties dialog.
+     */
+    async getUsedStorageAsync():Promise<number>{
+        await this.calculateUsedStorage(); // self-guarded: walks the drive once
+        return this._usedStorageSizeInBytes;
+    }
+
     private async calculateUsedStorage():Promise<void>{
         if(this._isCalculated) return;
 
@@ -2116,6 +2280,11 @@ OpensWith=${shortCutData.opensWith}
     }
 
     private async recalculateUsedStorage():Promise<void>{
+        // Stay lazy until a baseline has actually been requested. Pre-baseline we
+        // skip the expensive full-drive rewalk entirely; the next
+        // getUsedStorageAsync() computes a fresh, correct value. Post-baseline
+        // behavior is unchanged (full recompute after delete/zip/unzip).
+        if(!this._isCalculated) return;
         this._usedStorageSizeInBytes = await this.getFolderSizeAsync(Constants.ROOT);
     }
 
