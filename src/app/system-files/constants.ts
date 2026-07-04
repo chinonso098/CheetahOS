@@ -75,9 +75,9 @@ export namespace Constants{
 
     export const RESERVED_ID_RUNNING_PROCESS_SERVICE = 4;
     export const OS_NAME = 'Cheetah OS';
-    export const OS_VERSION = '5.6.8';
+    export const OS_VERSION = '5.7.3';
     export const OS_COPYRIGHT = '© 2026 Cheetah Software Inc. All rights reserved.';
-    export const OS_BUILD = '260626' //date-based build number, in the format YYMMDD, used to track specific builds and updates of the OS.;
+    export const OS_BUILD = '260703' //date-based build number, in the format YYMMDD, used to track specific builds and updates of the OS.;
     export const OS_ARCHITECTURE = 'WEB-BASED';
 
     export const ON = 'On';
@@ -259,6 +259,15 @@ export namespace Constants{
     /**⚠️ WARNING: Do not reference directly.*/
     export const UNKNOWN = "Unknown";
     export const DEFAULT_WHO_IS_THIS_VALUE = UNKNOWN;
+
+    export const PROD_END_POINT = 'https://chinonso098.github.io/cheetahos.github.io/';
+    export const ENVIRONMENT = 'ENVIRONMENT';
+    export const PROD = 'PROD';
+    export const NON_PROD = 'NON-PROD';
+
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const ENVIRONMENT_VALUE = NON_PROD;
+
 
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',

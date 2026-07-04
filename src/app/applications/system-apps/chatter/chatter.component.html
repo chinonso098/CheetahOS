@@ -144,7 +144,7 @@
               </ng-container>
 
               <ng-container *ngIf="showUserNameLabel">
-                <span class="span chatter-mid"   (click)="showTheUserNameForm()" #chatUserLabelCntnr> 
+                <span class="span chatter-mid" [class.chatter-mid-first-run]="showFirstRunHighlight"  (click)="showTheUserNameForm()" #chatUserLabelCntnr> 
                   <span class="user-name-bold">
                     {{this.userName}}
                   </span>

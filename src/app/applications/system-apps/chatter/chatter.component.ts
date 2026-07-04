@@ -8,6 +8,7 @@ import { WindowService } from 'src/app/shared/system-service/window.service';
 import { AudioService } from 'src/app/shared/system-service/audio.services';
 import { SessionManagementService } from 'src/app/shared/system-service/session.management.service';
 import { SocketService } from 'src/app/shared/system-service/socket.service';
+import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { ThemeService } from 'src/app/shared/system-theme/theme';
 
 import { BaseComponent } from 'src/app/system-files/base/base.component.interface';
@@ -18,6 +19,7 @@ import { Process } from 'src/app/system-files/process';
 import { ChatMessage } from './model/chat.message';
 import { IUser, IUserData } from './model/chat.interfaces';
 import { ProfanityFilter } from './model/profanity.filter';
+import { ReservedNameValidator } from './model/reserved.name.validator';
 import { Subscription } from 'rxjs';
 import { AppState } from 'src/app/system-files/state/state.interface';
 import { ChatterService } from 'src/app/application-services/chatter.service';
@@ -47,6 +49,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _audioService!:AudioService;
   private _sessionManagementService: SessionManagementService;
   private _defaultService: DefaultService;
+  private _systemNotificationService: SystemNotificationService;
 
   private _themeService!:ThemeService;
   // Tracks the system light/dark theme so the chat UI can recolor. Bound to the
@@ -80,6 +83,9 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   showUserNameForm = false;
   isTyping = false;
   isFirstOnlineUserUpdateResponse = true;
+  // Drives the one-time "welcome" border animation on the username label
+  // (pulsating -> steady purple -> transparent). Only true on first launch.
+  showFirstRunHighlight = false;
   messageLastRecieved = Constants.EMPTY_STRING;
   scrollCounter = 0;
   userCount = 0;
@@ -98,6 +104,15 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   RETRIEVAL_DELAY = 150;
   currIteration = 0;
   prevScrollHeight = 0;
+
+  // Leading-edge throttle for keeping the lock screen awake while typing.
+  // The first keystroke resets the idle timer immediately; further keys are
+  // ignored until the cooldown elapses, at which point the next keystroke
+  // fires again. Cheaper than resetting on every keystroke, and (unlike a
+  // sleep-and-refire loop) never fires once typing has actually stopped.
+  private readonly LOCK_AWAKE_THROTTLE_MS = 5000;
+  private _lockAwakeCoolingDown = false;
+  private _lockAwakeThrottleId?: ReturnType<typeof setTimeout>;
 
   logonAudio = `${Constants.AUDIO_BASE_PATH}cheetah_logon.wav`;
   newMsgAudio = `${Constants.AUDIO_BASE_PATH}cheetah_notify_messaging.wav`;
@@ -120,7 +135,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   constructor(socketService:SocketService, processIdService:ProcessIDService, runningProcessService:RunningProcessService, 
               windowService:WindowService, formBuilder:FormBuilder, chatService:ChatterService, audioService:AudioService,
               sessionManagementService:SessionManagementService, themeService:ThemeService, private _cdr:ChangeDetectorRef,
-              defaultService:DefaultService){ 
+              defaultService:DefaultService, systemNotificationService:SystemNotificationService){ 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._windowService = windowService;
@@ -130,6 +145,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._sessionManagementService = sessionManagementService;
     this._themeService = themeService;
     this._defaultService = defaultService;
+    this._systemNotificationService = systemNotificationService;
 
     this._chatService.setSocketInstance(socketService);
     this._chatService.setSubscriptions();
@@ -171,10 +187,29 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this.chatUserForm = this._formBuilder.group({
       firstName: ["",[Validators.required,Validators.minLength(1),Validators.maxLength(10),ProfanityFilter.validator]],
       lastName: ["",[Validators.required,Validators.minLength(1),Validators.maxLength(10),ProfanityFilter.validator]],
-    });
+    }, { validators: ReservedNameValidator.validator });
 
     // set as my timestamp for when i came online
     this._chatService.setComeOnlineTS(Date.now());
+
+    // First time the app is opened, briefly highlight the username label so the
+    // user notices they can click it to set their name.
+    this.showFirstRunHighlight = this.isFirstAppLaunch();
+  }
+
+  /** True if this app has been launched at most once, per the persisted
+   *  `system_metrics` usage log. A missing entry also counts as first-run. */
+  private isFirstAppLaunch(): boolean {
+    try {
+      const raw = localStorage.getItem('system_metrics');
+      if (!raw) return true;
+      const usage = JSON.parse(raw) as { name: string; launchCount: number }[];
+      if (!Array.isArray(usage)) return true;
+      const entry = usage.find((u) => u?.name === this.name);
+      return !entry || (entry.launchCount ?? 0) <= 1;
+    } catch {
+      return false;
+    }
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -214,6 +249,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._windowResizeSub?.unsubscribe();
     this._themeChangeSub?.unsubscribe();
     this._socketService.disconnect();
+    clearTimeout(this._lockAwakeThrottleId);
     
     const ssPid = this._socketService.processId;
     const socketProccess = this._runningProcessService.getProcess(ssPid);
@@ -301,11 +337,12 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   // }
 
   setDefaults():void{
+    const DEV = 'Dev';
     const whoami = this._defaultService.getDefaultSetting(Constants.DEFAULT_WHO_IS_THIS) ?? Constants.UNKNOWN;
     const uData = this._chatService.getUserData() as IUserData;
     if(!uData){
       this.userId = this.generateUserID();
-      this.userName = (whoami === Constants.USER_DEV) ? 'Dev' : `User_${this.getRandomNum()}`;
+      this.userName = (whoami === Constants.USER_DEV) ? DEV : `User_${this.getRandomNum()}`;
       this.userNameAcronym = (whoami === Constants.USER_DEV) ? 'D ' : 'AU';
       this.bkgrndIconColor = this.geIconColor();
 
@@ -406,6 +443,10 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   async onKeyDownInInputBox(evt:KeyboardEvent):Promise<void>{
+    // Any key press counts as user activity, so keep the lock screen awake.
+    // Throttled internally, so this is cheap even during fast typing.
+    this.keepLockScreenAwake();
+
     if(evt.key === "Enter"){
       this.createChat();
     }else{
@@ -421,6 +462,20 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         this._chatService.sendUserTypingStateMessage(this.isTyping)
       }
     }
+  }
+
+  /** Leading-edge throttle: resets the lock-screen idle timer on the first
+   *  keystroke, then ignores keys until LOCK_AWAKE_THROTTLE_MS elapses. The
+   *  next keystroke after the cooldown fires again, so continuous typing keeps
+   *  the screen unlocked while idle typing pauses let it lock normally. */
+  private keepLockScreenAwake():void{
+    if(this._lockAwakeCoolingDown) return;
+
+    this._systemNotificationService.resetLockScreenTimeOutNotify.next();
+    this._lockAwakeCoolingDown = true;
+    this._lockAwakeThrottleId = setTimeout(() => {
+      this._lockAwakeCoolingDown = false;
+    }, this.LOCK_AWAKE_THROTTLE_MS);
   }
 
   async createChat():Promise<void>{
@@ -496,7 +551,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     const loadedMessages = this._chatService.getChatData();
 
     // Load the last 40 messages initially
-    if (loadedMessages.length >= minNoOfMsgs) {
+    if (loadedMessages.length >= 0) {
         this.chatData = loadedMessages.slice(-minNoOfMsgs);
         setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
 

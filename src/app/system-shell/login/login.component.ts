@@ -189,9 +189,10 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly devIcon = `${Constants.ACCT_IMAGE_BASE_PATH}admin_user.png`;
   accountIcon = this.userIcon;
 
+  readonly unknown = Constants.BLANK_SPACE;
   readonly guestName = 'Guest, User';
   readonly devName = 'Dev, User';
-  accountName = 'Anonymous, User';
+  accountName = this.unknown;
 
   pwrBtnIcon = `${Constants.IMAGE_BASE_PATH}cheetah_power_shutdown.png`;
   loadingGif = `${Constants.GIF_BASE_PATH}cheetah_loading.gif`;
@@ -249,10 +250,17 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
     // during the rest of ngOnInit (e.g. showLockScreenNotify.next() inside
     // thingsToDoFirstOnInit) can still be observed by interested subscribers.
     this.registerNotificationHandlers();
-
     this.getLockScreenBackgroundData();
     this.thingsToDoFirstOnInit();
     this.retrievePastSessionData();
+
+    const whoIsThis = this._defaultService.getDefaultSetting(Constants.DEFAULT_WHO_IS_THIS);
+    if(whoIsThis !== Constants.UNKNOWN){
+      this.accountName = (whoIsThis === Constants.USER_DEV) ? this.devName : this.guestName;
+      this.accountIcon = (whoIsThis === Constants.USER_DEV) ? this.devIcon : this.userIcon;
+    }
+    else
+      this.accountName = this.unknown;
 
     if(this.isUserLogedIn)
       await this.showDesktop();

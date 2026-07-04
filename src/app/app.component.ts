@@ -1,4 +1,4 @@
-import {Component,ViewChild, ViewContainerRef, AfterViewInit} from '@angular/core';
+import {Component,ViewChild, ViewContainerRef, AfterViewInit, OnInit} from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
 
@@ -13,6 +13,7 @@ import { AudioService } from './shared/system-service/audio.services';
 import { SessionManagementService } from './shared/system-service/session.management.service';
 import { FileIndexerService } from './shared/system-service/file.indexer.services';
 import { DefaultService } from './shared/system-service/defaults.services';
+import { CommonFunctions } from './system-files/commons/common.functions';
 
 @Component({
   selector: 'cos-root',
@@ -25,7 +26,7 @@ import { DefaultService } from './shared/system-service/defaults.services';
 /**
  *  This is the main app component
  */
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements AfterViewInit, OnInit {
  
   // @ViewChild('processContainerRef',  { read: ViewContainerRef })
   // private itemViewContainer!: ViewContainerRef
@@ -35,19 +36,17 @@ export class AppComponent implements AfterViewInit {
   private _processIdService!:ProcessIDService;
   private _runningProcessService!:RunningProcessService;
   private _componentReferenceService:ComponentReferenceService;
-  private _audioService!:AudioService;
-  private _sessionManagementService:SessionManagementService;
+  private _defaultService:DefaultService;
   private _swUpdate:SwUpdate;
 
 
   hasWindow = false;
   icon = `${Constants.IMAGE_BASE_PATH}generic_program.png`;
-  name = 'system';
+  readonly name = 'system';
   processId = 0;
   type = ComponentType.System;
   displayName = Constants.EMPTY_STRING;
 
-  noAudio = `${Constants.AUDIO_BASE_PATH}no_audio.mp3`;
 
   // the order of the service init matter.
   //runningProcesssService must come first
@@ -58,54 +57,54 @@ export class AppComponent implements AfterViewInit {
               defaultService:DefaultService, swUpdate:SwUpdate){
     this._processIdService = processIdService
     this.processId = this._processIdService.getNewProcessId()
-
     this._runningProcessService = runningProcessService;
-    this._audioService = audioService;
     this._componentReferenceService = componentReferenceService; 
-    this._sessionManagementService = sessionManagementService;
+    this._defaultService = defaultService;
     this._swUpdate = swUpdate;
 
     this._runningProcessService.addProcess(this.getComponentDetail());
     this.listenForServiceWorkerUpdates();
   }
 
-  /**
-   * When a new build is deployed, the service worker downloads it in the
-   * background. Once those assets are ready we activate them immediately so the
-   * NEXT page load serves the new version. We deliberately do NOT force a reload
-   * here: CheetahOS keeps live, unsaved desktop state, and yanking the page out
-   * from under the user would be jarring. Activating quietly gives a seamless
-   * "updates on next visit" behavior. No-ops in dev (worker disabled).
-   */
-  private listenForServiceWorkerUpdates():void{
-    if(!this._swUpdate.isEnabled)
-      return;
+    /**
+     * When a new build is deployed, the service worker downloads it in the
+     * background. Once those assets are ready we activate them immediately so the
+     * NEXT page load serves the new version. We deliberately do NOT force a reload
+     * here: CheetahOS keeps live, unsaved desktop state, and yanking the page out
+     * from under the user would be jarring. Activating quietly gives a seamless
+     * "updates on next visit" behavior. No-ops in dev (worker disabled).
+     */
+    private listenForServiceWorkerUpdates():void{
+      if(!this._swUpdate.isEnabled)
+        return;
 
-    this._swUpdate.versionUpdates
-      .pipe(filter((evt):evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
-      .subscribe(() => {
-        this._swUpdate.activateUpdate();
-      });
-  }
+      this._swUpdate.versionUpdates
+        .pipe(filter((evt):evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
+        .subscribe(() => {
+          this._swUpdate.activateUpdate();
+        });
+    }
 
-  async ngAfterViewInit(): Promise<void>{
+    ngOnInit(): void{
+      const currentURL = CommonFunctions.getCurrentURL();
+      if(currentURL.includes(Constants.PROD_END_POINT)){
+        this._defaultService.updateDefaultData(Constants.ENVIRONMENT, Constants.PROD);
+      }else{
+        this._defaultService.updateDefaultData(Constants.ENVIRONMENT, Constants.NON_PROD);
+      }
 
-    if(this.itemViewContainer)
-      this._componentReferenceService.setViewContainerRef(this.itemViewContainer);
+    }
 
-    // This quiets the - audioservice error
-    // const cheetahLogonKey = this._sessionManagementService.getSession(Constants.CHEETAH_LOGON_KEY) as string;
-    // const cheetahPwrKey = this._sessionManagementService.getSession(Constants.CHEETAH_PWR_KEY) as string;
+    async ngAfterViewInit(): Promise<void>{
 
-    // if(cheetahPwrKey === Constants.SYSTEM_ON && cheetahLogonKey === Constants.SIGNED_IN){
-    //   this._audioService.play(this.noAudio);
-    // }
+      if(this.itemViewContainer)
+        this._componentReferenceService.setViewContainerRef(this.itemViewContainer);
 
-    // console.log("OS:", CommonFunctions.getOS());
-    // console.log("Browser:", CommonFunctions.getBrowser());
-  }
+      // console.log("OS:", CommonFunctions.getOS());
+      // console.log("Browser:", CommonFunctions.getBrowser());
+    }
 
-  private getComponentDetail():Process{
-    return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
-  }
+    private getComponentDetail():Process{
+      return new Process(this.processId, this.name, this.icon, this.hasWindow, this.type)
+    }
 }

@@ -249,7 +249,12 @@ io.on('connection', (socket) => {
 
   socket.on('fetchPriorMessages', (msg) => {
     // Reply to the requesting socket only with the most recent slice of history.
-    const mgs = messageList.slice(-asNumber(msg)); // last x messages
+    // Guard the count: asNumber() yields 0 for a missing/invalid payload, and
+    // slice(-0) === slice(0) would return the ENTIRE list, so fall back to a
+    // sane default when the requested count isn't a positive number.
+    const requested = asNumber(msg);
+    const count = requested > 0 ? requested : 150; // default: last 150 messages
+    const mgs = messageList.slice(-count);
     socket.emit('priorMessages', mgs);
   });
 

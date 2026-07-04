@@ -9,6 +9,7 @@ import { ProcessType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import { Service } from 'src/app/system-files/service';
 import { BaseService } from '../../system-files/base/base.service.interface';
+import { DefaultService } from './defaults.services';
 
 //For the moment, this service has only one consumer, And should close when the consumer is terminated
 @Injectable()
@@ -16,6 +17,9 @@ export class SocketService implements BaseService {
   private readonly socket: Socket;
   private _runningProcessService!: RunningProcessService;
   private _processIdService!: ProcessIDService;
+
+  readonly productionSocketUrl = 'https://chattersvc.com';
+  readonly developmentSocketUrl = 'http://localhost:3000';
 
   name = 'socket_svc';
   icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -25,9 +29,19 @@ export class SocketService implements BaseService {
   hasWindow = false;
   description = Constants.EMPTY_STRING;
 
-  constructor(processIDService: ProcessIDService, runningProcessService: RunningProcessService) {
-    //this.socket = io('http://chinonsosnas.local:3000');
-    this.socket = io('http://localhost:3000', {
+  constructor(processIDService: ProcessIDService, runningProcessService: RunningProcessService, private defaultService: DefaultService) {
+
+    // Select the socket endpoint by comparing the stored environment flag
+    // EXPLICITLY against PROD. The setting is a non-empty string in every case
+    // ('PROD' or 'NON-PROD'), so a plain truthiness check treated 'NON-PROD' as
+    // production and made the dev branch unreachable -- pointing local clients at
+    // the production server instead of the localhost node server that holds the
+    // chat history. Equality against PROD restores correct routing.
+    const isProd = this.defaultService.getDefaultSetting(Constants.ENVIRONMENT) === Constants.PROD;
+    const socketUrl = isProd ? this.productionSocketUrl : this.developmentSocketUrl;
+    //console.log(`SocketService: connecting to ${socketUrl} (isProd=${isProd})`);
+
+    this.socket = io(socketUrl, {
       transports: ['websocket', 'polling'], // safe default; socket.io decides best
       autoConnect: true,
     });

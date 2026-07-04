@@ -94,7 +94,7 @@ export class FileService implements BaseService{
     // Concurrency limit (adjust as needed)
     private readonly CONCURRENCY_LIMIT = 8;
     // Maximum number of retries when generating unique file/folder names
-    private readonly MAX_DUPLICATE_RETRIES = 10;
+    private readonly MAX_DUPLICATE_RETRIES = 25;
 
     name = 'file_svc';
     icon = `${Constants.IMAGE_BASE_PATH}svc.png`;
@@ -153,7 +153,7 @@ export class FileService implements BaseService{
         if(this._fileSystem)
             return true;
  
-        const currentURL = window.location.href;
+        const currentURL = CommonFunctions.getCurrentURL();
         console.log('currentURL:',currentURL);
         
         return new Promise<boolean>((resolve) => {

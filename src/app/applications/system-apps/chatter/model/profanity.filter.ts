@@ -14,7 +14,8 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
  *   - leetspeak substitutions (f4ck, sh1t, @ss, $hit, b00bs ...),
  *   - repeated letters (fuuuuck),
  *   - separators wedged between letters (f.u.c.k, s h i t, f-u-c-k, f*ck),
- *   - accents (fück), and case.
+ *   - accents (fück), case,
+ *   - and reversed spellings (yssup, kcuf, tihs).
  * Word boundaries are still respected so innocent substrings (class, Scunthorpe,
  * assassin, etc.) are NOT flagged.
  */
@@ -72,25 +73,41 @@ export class ProfanityFilter {
     return text.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
   }
 
-  /** True if the text contains any banned word. */
+  /** Reverse a string (defeats backwards evasion like "yssup", "kcuf"). */
+  private static reverse(text: string): string {
+    return text.split('').reverse().join('');
+  }
+
+  /** True if the text contains any banned word (forwards OR backwards). */
   static isProfane(text: string): boolean {
     if (!text) return false;
     const normalized = this.normalize(text);
+    const reversed = this.reverse(normalized);
     return this.buildPatterns().some((re) => {
       re.lastIndex = 0;
-      return re.test(normalized);
+      if (re.test(normalized)) return true;
+      re.lastIndex = 0;
+      return re.test(reversed);
     });
   }
 
   /** Replace any banned word with asterisks (length-preserving, min 3). */
   static clean(text: string): string {
     if (!text) return text;
+    const censor = (m: string) => '*'.repeat(Math.max(3, m.length));
     let out = this.normalize(text);
     for (const re of this.buildPatterns()) {
       re.lastIndex = 0;
-      out = out.replace(re, (m) => '*'.repeat(Math.max(3, m.length)));
+      out = out.replace(re, censor);
     }
-    return out;
+    // Second pass on the reversed string catches backwards spellings
+    // ("yssup", "kcuf"). Asterisks are symmetric, so reversing back is safe.
+    let rev = this.reverse(out);
+    for (const re of this.buildPatterns()) {
+      re.lastIndex = 0;
+      rev = rev.replace(re, censor);
+    }
+    return this.reverse(rev);
   }
 
   /** Angular reactive-forms validator: rejects profane control values. */

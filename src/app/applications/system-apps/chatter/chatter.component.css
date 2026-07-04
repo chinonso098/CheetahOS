@@ -187,6 +187,30 @@ span.chatter-mid:hover {
     border: 1px solid #a6a4a4;
 }
 
+/* First-run welcome cue on the username label:
+   0s–5s : border pulsates purple (5 cycles)
+   5s–10s: steady purple
+   after : transparent (default). `forwards` keeps the final transparent state. */
+span.chatter-mid.chatter-mid-first-run {
+    animation: chatter-first-run-highlight 10s linear forwards;
+}
+
+@keyframes chatter-first-run-highlight {
+    0%   { border-color: rgba(127, 0, 255, 1);   box-shadow: 0 0 6px 1px rgba(127, 0, 255, 0.85); }
+    5%   { border-color: rgba(127, 0, 255, 0.15); box-shadow: 0 0 0 0 rgba(127, 0, 255, 0); }
+    10%  { border-color: rgba(127, 0, 255, 1);   box-shadow: 0 0 6px 1px rgba(127, 0, 255, 0.85); }
+    15%  { border-color: rgba(127, 0, 255, 0.15); box-shadow: 0 0 0 0 rgba(127, 0, 255, 0); }
+    20%  { border-color: rgba(127, 0, 255, 1);   box-shadow: 0 0 6px 1px rgba(127, 0, 255, 0.85); }
+    25%  { border-color: rgba(127, 0, 255, 0.15); box-shadow: 0 0 0 0 rgba(127, 0, 255, 0); }
+    30%  { border-color: rgba(127, 0, 255, 1);   box-shadow: 0 0 6px 1px rgba(127, 0, 255, 0.85); }
+    35%  { border-color: rgba(127, 0, 255, 0.15); box-shadow: 0 0 0 0 rgba(127, 0, 255, 0); }
+    40%  { border-color: rgba(127, 0, 255, 1);   box-shadow: 0 0 6px 1px rgba(127, 0, 255, 0.85); }
+    45%  { border-color: rgba(127, 0, 255, 0.15); box-shadow: 0 0 0 0 rgba(127, 0, 255, 0); }
+    50%  { border-color: rgba(127, 0, 255, 1);   box-shadow: 0 0 0 0 rgba(127, 0, 255, 0); }
+    99%  { border-color: rgba(127, 0, 255, 1);   box-shadow: 0 0 0 0 rgba(127, 0, 255, 0); }
+    100% { border-color: transparent;            box-shadow: 0 0 0 0 rgba(127, 0, 255, 0); }
+}
+
 .user-name-bold {
     position: relative;
     color: white;

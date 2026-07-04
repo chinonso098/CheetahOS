@@ -460,6 +460,10 @@ export namespace CommonFunctions {
     return `${browserName} ${fullVersion}`;
   }
 
+  export const getCurrentURL = (): string => {
+    return window.location.href;;
+  }
+
   /**
    * Generates a random ID string of the specified length.
    * @param lengthOfID The length of the ID to generate. Defaults to 15.
