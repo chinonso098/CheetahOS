@@ -202,6 +202,15 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
 
   updateComponentImg():void{
     this._intervalId = setInterval(async() => {
+        // Skip the expensive frame grab (captureStream + grabFrame + toDataURL)
+        // when there is no visible preview to refresh: the browser tab is
+        // backgrounded, or this window is minimized. A missing window state
+        // (very early in the window's life) is treated as visible so the first
+        // thumbnail is still captured.
+        // if(document.hidden) return;
+        const ws = this._windowService.getWindowState(this.processId);
+        if(ws && !ws.isVisible) return;
+
         await this.captureComponentImg()
     }, this.SECONDS_DELAY);
   }
@@ -209,31 +218,23 @@ export class JSdosComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   focusWindow(evt:MouseEvent):void{
     evt.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
     this.dosWindow.nativeElement.focus();
   }
 
   getGamesSrc(file: FileInfo):string {
-    //console.log('getGamesSrc:', file);
+    const contentPath = file?.getContentPath ?? Constants.EMPTY_STRING;
+    const currentPath = file?.getCurrentPath ?? Constants.EMPTY_STRING;
 
-    const { getCurrentPath, getContentPath } = file;
+    // Restored session (no trigger): reuse the stored src.
+    if(currentPath === Constants.EMPTY_STRING && contentPath === Constants.EMPTY_STRING) return this._gameSrc;
 
-    if(getCurrentPath !== Constants.EMPTY_STRING && getCurrentPath.endsWith(Constants.URL)){ 
-      return getContentPath;
-    }
-
-    if ((getCurrentPath !== Constants.EMPTY_STRING && getContentPath !== Constants.EMPTY_STRING)
-        || (getCurrentPath !== Constants.EMPTY_STRING && getContentPath === Constants.EMPTY_STRING)) {
-      return getCurrentPath;
-    }
-
-    if (getCurrentPath === Constants.EMPTY_STRING && getContentPath === Constants.EMPTY_STRING) {
-      return this._gameSrc;
-    }
-
-    return Constants.EMPTY_STRING;
+    // A real file reads from its own path; a .url shortcut reads from the
+    // (normalized) target it points at.
+    return this._fileService.resolveContentPath(file);
   }
 
   storeAppState(app_data:unknown):void{

@@ -6,12 +6,13 @@
         tabindex="0" 
         cdkDrag
         [cdkDragBoundary]="'#vantaCntnr'"
-        (mousedown)="onMouseDown(this.processId)"
-        (cdkDragEnded)="onDragEnded($event)"
+        (mousedown)="onMouseDown(this.processId, $event)"
+        (cdkDragEnded)="onDragEnded($event)"    
         id="secWinCmpnt-{{uniqueId}}">
 
     <div class="header-container"
         appHighlight
+        (click)="onHeaderClick($event)"
         [class.accent-titlebar]="isTitleBarAccentActive"
         [ngStyle]="headerActiveStyles">
         <div class="left-header-section" cdkDragHandle>

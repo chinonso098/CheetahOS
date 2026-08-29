@@ -1,5 +1,5 @@
 <div class="task-bar-nav" [@tskBarSlideStatusAnimation]="slideState" [style.opacity]="taskBarOpacity" 
-    (click)="hideContextMenus()" 
+    (click)="onTaskBarClick($event)" 
     (contextmenu)="showTaskBarContextMenu($event)" id="the-window-taskbar"> 
     <button 
         type="button"

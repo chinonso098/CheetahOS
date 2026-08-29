@@ -11,6 +11,7 @@ export class FileInfo {
     private _fileExtension!: string;
     private _fileType!: string;
     private _fileName!: string;
+    private _fileNameWithExtension!: string;
     private _opensWith!: string;
     private _dateAccessed!: Date;
     private _dateCreated!: Date;
@@ -20,15 +21,20 @@ export class FileInfo {
     private _isFile!: boolean;
     private _isShortCut!: boolean;
     private _fileSizeUnit!: string;
+    private _isHidable!: boolean;
+    private _isHidden!: boolean;
     private _mode!: number;
 
     constructor() {
         this._IconPath = Constants.EMPTY_STRING;
         this._currentPath = Constants.EMPTY_STRING;
         this._contentPath = Constants.EMPTY_STRING;
+        this._contentBuffer = null;
+        this._stringBuffer = Constants.EMPTY_STRING;
         this._fileExtension = Constants.EMPTY_STRING;
         this._fileType = Constants.EMPTY_STRING;
         this._fileName = Constants.EMPTY_STRING;
+        this._fileNameWithExtension = Constants.EMPTY_STRING;
         this._opensWith = Constants.EMPTY_STRING;
         this._dateModified = new Date('1990-01-01');
         this._dateCreated = new Date('1990-01-01');
@@ -37,10 +43,11 @@ export class FileInfo {
         this._blkSize = 0;
         this._isFile = true;
         this._isShortCut = false;
+        this._isHidable = false;
+        this._isHidden = false;
         this._fileSizeUnit = 'B';
         this._mode = 0;
-        this._contentBuffer = null;
-        this._stringBuffer = Constants.EMPTY_STRING;
+
     }
 
     get getIconPath() {
@@ -83,6 +90,13 @@ export class FileInfo {
     }
     set setFileName(fileName: string) {
         this._fileName = fileName;
+    }
+    
+    get getFileNameWithExtension() {
+        return this._fileNameWithExtension;
+    }
+    set setFileNameWithExtension(fileNameWithExtension: string) {
+        this._fileNameWithExtension = fileNameWithExtension;
     }
 
     get getOpensWith() {
@@ -195,5 +209,39 @@ export class FileInfo {
 
     set setStringBuffer(stringBuffer: string) {
         this._stringBuffer = stringBuffer;
+    }
+
+    get getIsHidable() {
+        return this._isHidable;
+    }
+
+    set setIsHidable(isHidable: boolean) {
+        this._isHidable = isHidable;
+    }
+
+    get getIsHidden() {
+        return this._isHidden;
+    }
+
+    set setIsHidden(isHidden: boolean) {
+        this._isHidden = isHidden;
+    }
+
+    /**
+     * True when this is a .url shortcut that points at a real file path.
+     * (Type-agnostic: the target's extension is not checked here.)
+     */
+    isUrlShortcut(): boolean {
+        return this._isShortCut
+            && this._fileType !== Constants.URL   // for shortcuts the OS-derived fileType differs from the '.url' name extension
+            && this._fileExtension === Constants.URL
+            && CommonFunctions.isValidPathFormat(this._contentPath);
+    }
+
+    /** True when this is a real (non-shortcut) file whose extension is in `extensions`. */
+    isRealFile(extensions: string[]): boolean {
+        return !this._isShortCut
+            && this._fileType !== Constants.URL
+            && extensions.includes(this._fileExtension);
     }
 }

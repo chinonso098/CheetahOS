@@ -22,7 +22,7 @@ import { AppDirectory } from 'src/app/system-files/app.directory';
 import { ScreenshotSetting, SettingsMenuOption } from './settings.interface';
 import { SettingsHelper } from './settings.helper';
 import { CommonFunctions } from 'src/app/system-files/commons/common.functions';
-import { MenuService } from 'src/app/shared/system-service/menu.services';
+
 
 
 @Component({
@@ -196,6 +196,7 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     settings: 'Settings', hello: 'Hello', greeting: 'Greeting', jsdos: 'JS-DOS',
     ruffle: 'Ruffle', codeeditor: 'Code Editor', markdownviewer: 'Markdown Viewer',
     starfield: 'Starfield', boids: 'Boids', particleflow: 'Particle Flow',
+    snippingtool: 'Snipping Tool',
     pdfviewer: 'PDF Viewer'
   };
 
@@ -337,7 +338,6 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     private _themeService:ThemeService,
     private _fileService:FileService,
     private _processHandlerService:ProcessHandlerService,
-    private _menuService:MenuService,
     private _formBuilder:FormBuilder) {
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
@@ -645,10 +645,9 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     evt.stopPropagation();
     this.onOutsideClick();
 
-    if(this._menuService.getIsContextMenuOpen())
-      this._menuService.closeAllContextMenus();
-
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
+      
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
@@ -660,9 +659,6 @@ export class SettingsComponent implements OnInit, AfterViewInit, OnDestroy {
     //  - stopPropagation(): keep the event from reaching the desktop root.
     evt?.preventDefault();
     evt?.stopPropagation();
-
-    if(this._menuService.getIsContextMenuOpen())
-      this._menuService.closeAllContextMenus();
   }
 
   generateControlPanelOptions():SettingsMenuOption[]{

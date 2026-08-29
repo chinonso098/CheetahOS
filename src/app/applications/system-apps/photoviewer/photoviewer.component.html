@@ -6,12 +6,14 @@
     [minimumWindowWidth]="MIN_WIDTH_PX" 
     [minimumWindowHeight]="MIN_HEIGHT_PX" 
     [priorUId]="this.priorUId">
-    <div class="main-photos__container"  id="photosContainer" #photoContainer>
+    <div class="main-photos__container"  id="photosContainer"
+    (contextmenu)="focusHere($event); silenceCtxEvt($event)" (click)="focusHere($event)"
+     #photoContainer>
         <ng-container [ngTemplateOutlet]="defaultView === GALLERY_VIEW ? galleryView : photoView ">
         </ng-container>
         
         <ng-template #galleryView> 
-            <div class="main-gallery__container" (contextmenu)="focusHere($event); silenceCtxEvt($event)" (click)="focusHere($event)" >
+            <div class="main-gallery__container">
                 
                 <div class="gallery-option__panel">
                     <ol class="ol-gallery-option__grid">
@@ -94,7 +96,7 @@
         </ng-template>
     
         <ng-template #photoView>
-            <div class="main-photo-viewer__container" (contextmenu)="focusHere($event)" (click)="focusHere($event)" >
+            <div class="main-photo-viewer__container">
                 <div  class="photo-viewer-container"> 
                     <div class="photo-viewer__controls-container">
                         <div class="photos_top_toolbar">

@@ -1,21 +1,68 @@
+/* Dark is the default and lives on :root rather than the component root, because
+   the information tip and both context menus are relocated to document.body and
+   would otherwise lose every token. */
 :root{
   /* surfaces */
   --fx-bg: #202020;
   --fx-panel: #191919;
   --fx-header: #080404;
+  --fx-tab-bg: #000000;
+  --fx-footer-bg: #303438;
+  --fx-input-bg: #191919;
 
   /* borders / lines */
   --fx-border: #5a5a5a;
   --fx-border-soft: #2d2d2d;
   --fx-border-light: #9d9d9d;
+  --fx-divider: #333333;
 
   /* text */
   --fx-text: #ffffff;
   --fx-text-dim: #cccccc;
+  /* Stays light in both themes: only ever sits on an accent-filled surface. */
+  --fx-on-accent: #ffffff;
 
   /* accents */
   --fx-accent: #0464ac;
+  --fx-accent-bright: rgb(18, 107, 240);
   --fx-hover: #3f3e3e;
+  --fx-btn-hover-bg: #cccccc;
+  --fx-selection-bg: #0056b3;
+
+  /* ribbon surfaces + button states */
+  --fx-ribbon-box: #302c2c;
+  --fx-ribbon-box-hover: #403c3c;
+  --fx-ribbon-btn-active: #605c5c;
+  --fx-ribbon-btn-hover: #807c7c;
+
+  /* icon hover / selection states */
+  --fx-icon-hover-bg: #4c4c4c;
+  --fx-icon-hover-border: #3c3c3c;
+  --fx-icon-selected-bg: #787474;
+  --fx-row-selected-bg: #d0ecfc;
+
+  /* footer view-mode buttons */
+  --fx-footer-btn-bg: #b4d7f1;
+  --fx-footer-btn-border: #3289cc;
+
+  /* progress bar */
+  --fx-progress-track: #e6e6e6;
+  --fx-progress-border: #bcbcbc;
+  --fx-progress-bar: #26a0da;
+
+  /* search overlay + lasso */
+  --fx-overlay-bg: rgba(255, 255, 255, 0.75);
+  --fx-overlay-text: #333333;
+  --fx-lasso-bg: rgba(4, 124, 212, 0.2);
+  --fx-lasso-border: #047cd4;
+
+  /* rename inputs + hover tooltip: light surfaces in both themes */
+  --fx-field-bg: #ffffff;
+  --fx-field-text: #000000;
+  --fx-field-border: #cccccc;
+
+  /* details-view column-resize handle */
+  --fx-resize-handle: #f0f0f0;
 
   /* sizing */
   --fx-font: 11px;
@@ -29,6 +76,71 @@
   --fx-gap-sm: 4px;
   --fx-gap-md: 6px;
   --fx-gap-lg: 10px;
+
+  /* thin custom scrollbar (ported from fileexplorer) */
+  --fx-scroll-thumb: rgba(255, 255, 255, 0.30);
+  --fx-scroll-thumb-hover: rgba(255, 255, 255, 0.45);
+}
+
+/* Light theme. A plain class (not :host(.theme-light) as in fileexplorer) because
+   this component uses ViewEncapsulation.None, where :host never matches. The
+   component puts it on the root container AND on the nodes it relocates to
+   document.body. Only colour tokens are overridden; sizing is theme-agnostic. */
+.fx-theme-light{
+  --fx-bg: #ffffff;
+  --fx-panel: #f3f3f3;
+  --fx-header: #e6e6e6;
+  --fx-tab-bg: #dcdcdc;
+  --fx-footer-bg: #eaeaea;
+  --fx-input-bg: #ffffff;
+
+  --fx-border: #b6b6b6;
+  --fx-border-soft: #d4d4d4;
+  --fx-border-light: #c2c2c2;
+  --fx-divider: #d0d0d0;
+
+  --fx-text: #1b1b1b;
+  --fx-text-dim: #5a5a5a;
+
+  --fx-hover: #e5e5e5;
+  --fx-btn-hover-bg: #d0d0d0;
+
+  --fx-ribbon-box: #f7f7f7;
+  --fx-ribbon-box-hover: #ededed;
+  --fx-ribbon-btn-active: #cce4f7;
+  --fx-ribbon-btn-hover: #e5f1fb;
+
+  --fx-icon-hover-bg: #e5f1fb;
+  --fx-icon-hover-border: #cfe7fb;
+  --fx-icon-selected-bg: #cce4f7;
+
+  --fx-overlay-bg: rgba(255, 255, 255, 0.85);
+  --fx-resize-handle: #c8c8c8;
+
+  --fx-scroll-thumb: rgba(0, 0, 0, 0.35);
+  --fx-scroll-thumb-hover: rgba(0, 0, 0, 0.50);
+}
+
+/* Thin themed scrollbars for the file explorer subtree. Scoped to the root
+   container (this component uses ViewEncapsulation.None, so :host is unavailable
+   and unscoped selectors would leak to the whole app). */
+.file_explrorer_root_container *{
+    scrollbar-width: thin;
+    scrollbar-color: var(--fx-scroll-thumb) transparent;
+}
+.file_explrorer_root_container ::-webkit-scrollbar{
+    width: 4px;
+    height: 4px;
+}
+.file_explrorer_root_container ::-webkit-scrollbar-track{
+    background: transparent;
+}
+.file_explrorer_root_container ::-webkit-scrollbar-thumb{
+    background-color: var(--fx-scroll-thumb);
+    border-radius: 2px;
+}
+.file_explrorer_root_container ::-webkit-scrollbar-thumb:hover{
+    background-color: var(--fx-scroll-thumb-hover);
 }
 
 /* Common text primitives */
@@ -58,18 +170,33 @@
 .file_explrorer_root_container{
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-width: 560px;
+    /* Opening-height floor: the window-container is height:auto on open and
+       sizes to this container's offsetHeight, so min-height keeps the window
+       from opening too short. It is also the content's real minimum height.
+       CRITICAL: the window shell's minimum resize height (<cos-primarywindow>
+       minimumWindowHeight = MIN_HEIGHT_PX) MUST be >= this min-height + the
+       30px title bar (i.e. >= 360px). Otherwise the window can be dragged so
+       the projected content slot (windowHeight - 30) is shorter than this
+       min-height; the root then overflows the slot's `overflow: clip` and the
+       fixed footer (the last flex child) gets cut off. */
+    min-height: 330px;
+    box-sizing: border-box;
 }
+
 
 /* A sane baseline */
 .fileexp-main-container{
     width: 100%;
-    height: 100%;
+    /* Flex to fill the space left by the header + footer instead of claiming the
+       full height (`height:100%` pushed the fixed footer out of view on resize). */
+    flex: 1 1 auto;
     display: flex;
-    /* flex-direction: column;
-    min-height: 0; 
-
-    color: var(--fx-text);
-    font-size: var(--fx-font); */
+    flex-direction: column;
+    min-height: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -77,21 +204,23 @@
 .fileexp-content-container{
     width: 100%;
     display: flex;
-    background-color: #202020;
+    flex: 1 1 auto;   /* take the remaining vertical space */
+    min-height: 0;    /* critical: let the children scroll instead of overflowing */
+    background-color: var(--fx-bg);
 }
 
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Header Tabs View Started@@@@@@@@@@@@@@@@@@@@@@@@@@*/
 /* Styles for the tabbed window container */
 .fileexp-header-tab-container {
     width: 100%;
-    min-width: 700px;
+    min-width: 0;   /* was 700px, which blocked the window from shrinking */
     /* border:0.5px solid #9d9d9d; */
 }
   
 /* Styles for the tab navigation */
 .fileexp-header-tabs {
     display: flex;
-    background-color: #080404;
+    background-color: var(--fx-header);
 }
 
 .fileexp-tab {
@@ -103,22 +232,22 @@
     font-size: 11px;
     text-align: center;
     cursor:default;
-    background-color: #000;
-    color: white;
+    background-color: var(--fx-tab-bg);
+    color: var(--fx-text);
     transition: background-color 0.3s;
 }
 
 .fileexp-tab.highlight-default {
     margin: 0px 0px;
-    background-color: #0464ac;
-    color: white;
+    background-color: var(--fx-accent);
+    color: var(--fx-on-accent);
 }
 
 .fileexp-tab.active {
-    border:0.3px solid #2d2d2d;
+    border:0.3px solid var(--fx-border-soft);
     border-bottom: none;
-    background-color: #202020;
-    color: white;
+    background-color: var(--fx-bg);
+    color: var(--fx-text);
 }
 
 /* Styles for tab content */
@@ -140,17 +269,24 @@
     height: 25px;
     width: 15px;
     right: 4%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .figure-header-tab{
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 10px; 
     width: 10px;
-    top: 6px
+    margin: 0;
 }
 
 .img-header-tab{
-    padding-left: 2.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 10px; 
     width: 10px;
 }
@@ -160,18 +296,34 @@
     height: 25px;
     width: 15px;
     right: 1%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .question-figure-header-tab{
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 15px; 
     width: 15px;
-    top: 5px;
+    margin: 0;
 }
 
 .question-img-header-tab{
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 15px; 
     width: 15px;
+}
+
+/* Hover highlight for the ribbon-toggle + help(?) buttons. Replaces the
+   imperative colorBtnCntnr/uncolorBtnCntnr DOM styling. Base is transparent
+   (shows the header behind); hover paints the button-hover token. */
+.figure-header-toggle:hover,
+.question-header-cntnr:hover{
+    background-color: var(--fx-btn-hover-bg);
 }
 
   
@@ -182,14 +334,16 @@
 .view-tab-pane-container{
     width: fit-content;
     height: 94px;
-    background-color: #191919;
-    border-bottom: 1px solid #2d2d2d;
-    border-top: 1px solid #2d2d2d;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--fx-panel);
+    border-bottom: 1px solid var(--fx-border-soft);
+    border-top: 1px solid var(--fx-border-soft);
 }
 
 .tab-empty-line-container {
     height: 2.5px;
-    background-color: #191919; 
+    background-color: var(--fx-panel); 
 }
 
 .tab-empty-space{
@@ -202,21 +356,27 @@
 
 .view-tab-pane-top-cntnr{
     display: flex;
+    align-items: center;
     width: 100%;
-    /* padding-top: 4px;
-    padding-bottom: 5px; */
-    border-right: 0.5px solid #9d9d9d;
+    border-right: 0.5px solid var(--fx-border-light);
 }
 
 .view-tab-pane-top1{
-    padding-left: 4.5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px 0;
     border: 0.5px solid transparent;
+    cursor: default;
 }
 
 .figure-tab-view-pane{
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 8px;
-    place-items:center;
+    margin: 0;
 }
 
 .img-tab-view-pane{
@@ -225,50 +385,69 @@
 }
 
 .span-tab-view-pane{
-    position: relative;
     text-align: center;
-    color: white;
+    color: var(--fx-text);
     font-size: 11px;
     font-weight: normal;
-    top: -3px;
+    line-height: 1.15;
 }
 
 .span-tab-view-pane1{
-    position: relative;
     text-align: center;
-    color: white;
+    color: var(--fx-text);
     font-size: 11px;
     font-weight: normal;
-    top: -10px;
+    line-height: 1.15;
 }
 
 .view-tab-pane-top2{
-    display: block;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     padding-right: 2px;
 }
 
 .tab-pane-top2-1, .tab-pane-top2-2{
-    position: relative;
     width: fit-content;
     height: fit-content;
-    top: 1.5px;
     border: 0.5px solid transparent;
-    
+    cursor: default;
 }
-.tab-pane-top2-2{
-    top: 0px;
+
+/* Pane-button hover + selected highlight (replaces the imperative onNav/Prev/
+   DetailPaneBtn Enter/Leave + setPaneBtnStyle/removePaneBtnStyle DOM styling).
+   The base transparent borders above let the border reveal without layout shift.
+   .active = the pane is open (showPreviewPane / showDetailsPane). */
+.view-tab-pane-top1:hover{
+    border-color: var(--fx-text-dim);
+    background-color: var(--fx-ribbon-btn-hover);
+}
+
+.tab-pane-top2-1:hover,
+.tab-pane-top2-2:hover,
+.tab-pane-top2-1.active,
+.tab-pane-top2-2.active{
+    border-color: var(--fx-text-dim);
+    background-color: var(--fx-ribbon-btn-active);
+}
+
+.tab-pane-top2-1.active:hover,
+.tab-pane-top2-2.active:hover{
+    background-color: var(--fx-ribbon-btn-hover);
 }
 
 .span-tab-pane-cntnr{
     display: flex;
-    padding: 2px 2px;
+    align-items: center;
+    padding: 2px 3px;
 }
 
 .figure-tab-view-pane1{
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 16px; 
     width: 17px;
-    place-items:center;
 }
 
 .img-tab-view-pane1{
@@ -279,26 +458,25 @@
 
 .div-tab-view-pane{
     display: flex;
+    align-items: center;
     width: 71px;
     margin: 0 1px;
 }
 
 .span-tab-view-pane-cntnt{
-    position: relative;
-    text-align: center;
-    color: white;
+    text-align: left;
+    color: var(--fx-text);
     font-size: 11px;
     font-weight: normal;
-    top: 1px;
 }
 
 .view-tab-pane-bottom{
-    position: relative;
     font-size: 11px;
-    color: white;
+    color: var(--fx-text);
     font-weight:normal;
     text-align: center;
-    top: 1px;
+    margin-top: auto;
+    margin-bottom: 4px;
 }
 /*----------------------------------------- Panes Control Ended---------------------------------*/
 
@@ -306,9 +484,11 @@
 .view-tab-layout-container{
     width: fit-content;
     height: 94px;
-    background-color: #191919;
-    border-bottom: 1px solid #2d2d2d;
-    border-top: 1px solid #2d2d2d;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--fx-panel);
+    border-bottom: 1px solid var(--fx-border-soft);
+    border-top: 1px solid var(--fx-border-soft);
     padding-left: 4px;
     padding-right: 4px;
 }
@@ -322,19 +502,26 @@
     margin-top:4px;
     width: 345px;
     height: 68px;
-    background-color: #302c2c;
-    border: 1px solid #2d2d2d;
+    background-color: var(--fx-ribbon-box);
+    border: 1px solid var(--fx-border-soft);
+}
+
+/* Ribbon layout box hover (replaces imperative colorTabLayoutContainer/
+   unColorTabLayoutContainer). */
+.view-tab-layout-top1:hover{
+    background-color: var(--fx-ribbon-box-hover);
 }
 
 .view-tab-layout-top2{
     width: 4px;
     height: 72px;
-    border-right: 0.5px solid #9d9d9d;
+    border-right: 0.5px solid var(--fx-border-light);
     /* padding-left: 1px; */
 }
 
 .view-tab-layout-content, .view-tab-layout-content1, .view-tab-layout-content2{
     display: flex;
+    align-items: center;
     padding: 1px 2px;
     width: 100%;
 }
@@ -348,10 +535,11 @@
 }
 
 .figure-tab-view-layout{
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 16px; 
     width: 20px;
-    place-items:center;
 }
 
 .img-tab-view-layout{
@@ -362,8 +550,24 @@
 
 .span-tab-layout-cntnr{
     display: flex;
+    align-items: center;
     border: 0.5px solid transparent;
     padding: 2px 0;
+}
+
+/* Ribbon view-mode button hover + selected highlight (replaces imperative
+   changeTabLayoutIconCntnrCSS). .active = currentViewOptionId === N; the base
+   transparent border lets the border reveal without layout shift. */
+.span-tab-layout-cntnr:hover{
+    border-color: var(--fx-text-dim);
+    background-color: var(--fx-ribbon-box-hover);
+}
+.span-tab-layout-cntnr.active{
+    border-color: var(--fx-text-dim);
+    background-color: var(--fx-ribbon-btn-active);
+}
+.span-tab-layout-cntnr.active:hover{
+    background-color: var(--fx-ribbon-btn-hover);
 }
 
 .div-tab-view-layout{
@@ -372,19 +576,18 @@
     align-items: center;
     vertical-align: top;
     text-align: left;
-    color: white;
+    color: var(--fx-text);
     font-size: 11px;
     font-weight:normal;
     margin: 0 1px;
 }
 
 .view-tab-layout-bottom{
-    position: relative;
     font-size: 11px;
-    color: white;
+    color: var(--fx-text);
     font-weight: normal;
     text-align: center;
-    top: 1px;
+    margin-top: auto;
     margin-bottom: 4px;
 }
 /*+++++++++++++++++++++++++++++++++++++++++ Layout Control Ended+++++++++++++++++++++++++++++++++++++++++*/
@@ -393,9 +596,9 @@
     display: flex;
     width: 100%;
     height: 94px;
-    background-color: #191919;
-    border-bottom: 1px solid #2d2d2d;
-    border-top: 1px solid #2d2d2d;
+    background-color: var(--fx-panel);
+    border-bottom: 1px solid var(--fx-border-soft);
+    border-top: 1px solid var(--fx-border-soft);
 }
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Header Tabs Controls  Ended%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -406,16 +609,16 @@
 .fileexp-header-container{
     width: 100%;
     display: flex;
-    background-color: #191919;
+    background-color: var(--fx-panel);
 }
 
 .header-empty-line-container {
     height: 6px;
-    background-color: #191919;
+    background-color: var(--fx-panel);
 }
 .header-empty-line-container2 {
     height: 7px;
-    background-color: #191919;
+    background-color: var(--fx-panel);
 }
 
 
@@ -426,52 +629,80 @@
     height: 24px;
     width: fit-content;
     display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .img-alt-left-right{
     height: 16px;
     width: 16px;
-    top:5px;
-
     position: relative;
 }
 
 .figure-alt{
-    position: relative;
+    display: flex;
     align-items: center;
+    justify-content: center;
     width: fit-content;
-    margin: 0 10px;
+    margin: 0 6px;
 }
 
 .img-alt-chevron{
-    height: 9px;
-    width: 9px;
-
+    height: 10px;
+    width: 10px;
+    top: -2px;
     position: relative;
-    top: 5px
 }
 
 .figure-alt-chevron{
-    position: relative;
+    display: flex;
     align-items: center;
+    justify-content: center;
     width: fit-content;
-    margin: 0 1px;
+    margin: 0 2px;
 }
 
 .figure-alt-up{
-    position: relative;
+    box-sizing: border-box;
+    display: flex;
     align-items: center;
-    width: fit-content;
-    padding: 0 0 0 5px;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin: 0 6px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: 0;
 }
 
 .img-alt-up{
     height: 16px;
     width: 16px;
-    top:6px;
-
     position: relative;
+    transform: translateX(2px);
 }
+
+/* Nav-button icon fill + hover (replaces the imperative setNavButtonsColor /
+   colorChevron / colorPrev|Next|UpNavBtn [style] fill bindings). .fx-nav-enabled
+   is bound to isPrevBtnActive / isNextBtnActive / isUpBtnActive.
+   Back/forward: dimmed when disabled, full text colour when enabled, accent blue
+   on enabled-hover. Up adds a hover background on its container. */
+.img-alt-left-right svg{ fill: var(--fx-text-dim); }
+.img-alt-left-right svg.fx-nav-enabled{ fill: var(--fx-text); }
+.img-alt-left-right svg.fx-nav-enabled:hover{ fill: var(--fx-accent-bright); }
+
+.img-alt-chevron svg{ fill: var(--fx-text-dim); }
+.img-alt-chevron svg:hover{ fill: var(--fx-accent-bright); }
+
+.figure-alt-up .img-alt-up svg{ fill: var(--fx-text-dim); }
+.figure-alt-up.fx-nav-enabled .img-alt-up svg{ fill: var(--fx-text); }
+.figure-alt-up.fx-nav-enabled:hover{
+    background-color: var(--fx-hover);
+    transition: background-color 0.3s ease;
+}
+
+/* Ribbon-toggle chevron icon (was [style]="ribbonMenuBtnStyle", a static #fff). */
+.img-header-tab svg{ fill: var(--fx-text); }
 /*++++++++++++++++++++++++++++++++Header navigation btn section Ended++++++++++++++++++++++++++++++++*/
 
 /*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxHeader navigation path box Startedxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
@@ -487,21 +718,22 @@
 
 .figure-nav-path-cntnr{
     position: relative;
-    min-width: 18px;
+    width: 22px;
+    height: 22px;
 }
 
 .img-nav-path-cntnr{
     height: 18px;
-    width: 15px;
-    margin: 0 3px;
-
+    width: 18px;
+    margin: 0 2px;
+    top: 2px;
     position: relative;
 }
 
 span.head-nav-path-cntnr{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid #9d9d9d;
+    border: 0.5px solid var(--fx-border-light);
     border-right: none;
 }
 
@@ -510,7 +742,7 @@ span.head-nav-path-cntnr{
     height: 24px;
     width: 450px; /*this was min-width before*/
     width: 100%;
-    border: 0.5px solid #9d9d9d;
+    border: 0.5px solid var(--fx-border-light);
     border-left: none;
     border-right: none;
 }
@@ -523,7 +755,7 @@ span.head-nav-path-cntnr{
 .nav-path-gen-container:hover{
     display:inline-flex;
     width: fit-content;
-    background-color: #3f3e3e;
+    background-color: var(--fx-hover);
 }
 
 span.head-nav-path-gen-cntnr0{
@@ -534,7 +766,7 @@ span.head-nav-path-gen-cntnr0{
 span.head-nav-path-gen-cntnr0:hover{
     align-items: center;
     display:inline-flex;
-    background-color: #3f3e3e;
+    background-color: var(--fx-hover);
 }
 
 span.head-nav-path-gen-cntnr{
@@ -545,20 +777,20 @@ span.head-nav-path-gen-cntnr{
 span.head-nav-path-gen-cntnr.active{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid #9d9d9d;
+    border: 0.5px solid var(--fx-border-light);
 }
 
 .nav-path-gen-container:hover span.head-nav-path-gen-cntnr{
     align-items: center;
     display:inline-flex;
-    border-right: 0.5px solid #191919;
+    border-right: 0.5px solid var(--fx-panel);
 }
 
 span.mid-nav-path-gen-cntnr{
     display: flex;
     align-items: center;
     margin: 0 4px;
-    color: #ccc; 
+    color: var(--fx-text-dim); 
     text-align: left;
     font-size: 11px;
     font-weight: normal;
@@ -566,7 +798,8 @@ span.mid-nav-path-gen-cntnr{
 
 .figure-nav-path-gen-cntnr{
     position: relative;
-    min-width: 14px;
+    width: 14px;
+    height: 22px;
 }
 
 .img-nav-path-gen-cntnr{
@@ -575,11 +808,13 @@ span.mid-nav-path-gen-cntnr{
     /* margin: 0 4px; */
 
     position: relative;
+    color: var(--fx-text-dim);
 }
 
 .figure-nav-path-cntnr1{
     position: relative;
     min-width: 18px;
+    height: 22px;
 }
 
 .img-nav-path-cntnr1{
@@ -588,12 +823,13 @@ span.mid-nav-path-gen-cntnr{
     margin: 0 6px;
 
     position: relative;
+    color: var(--fx-text-dim);
 }
 
 span.head-nav-path-cntnr1{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid #9d9d9d;
+    border: 0.5px solid var(--fx-border-light);
     border-left: none;
     border-right: none;
 }
@@ -601,14 +837,14 @@ span.head-nav-path-cntnr1{
 span.head-nav-path-cntnr1.active{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid #9d9d9d;
-    background-color: #3f3e3e;
+    border: 0.5px solid var(--fx-border-light);
+    background-color: var(--fx-hover);
 }
 
 span.head-nav-path-cntnr1:hover{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid rgb(18, 107, 240);
+    border: 0.5px solid var(--fx-accent-bright);
     transition: border-color 0.3s ease;
 }
 
@@ -623,25 +859,26 @@ span.head-nav-path-cntnr1:hover{
     margin: 0 6px;
 
     position: relative;
+    color: var(--fx-text-dim);
 }
 
 span.head-nav-path-cntnr2{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid #9d9d9d;
+    border: 0.5px solid var(--fx-border-light);
 }
 
 span.head-nav-path-cntnr2.active{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid #9d9d9d;
-    background-color: #3f3e3e;
+    border: 0.5px solid var(--fx-border-light);
+    background-color: var(--fx-hover);
 }
 
 span.head-nav-path-cntnr2:hover{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid rgb(18, 107, 240);
+    border: 0.5px solid var(--fx-accent-bright);
     transition: border-color 0.3s ease;
 }
 
@@ -650,22 +887,21 @@ span.head-nav-path-cntnr2:hover{
     width: 440px; /*this was min-width before*/
     width: 100%;
     height: 24px;
-    border: 0.5px solid #9d9d9d;
+    border: 0.5px solid var(--fx-border-light);
     border-left: none;
     border-right: none;
-    color: #fff;
-    background-color: #191919;
-    display: none;
+    color: var(--fx-text);
+    background-color: var(--fx-input-bg);
 }
 
 .nav-path-containter1{
     position: absolute;
     width: 405px; /*this was min-width before*/
-    border: 1px solid #9d9d9d;
+    border: 1px solid var(--fx-border-light);
     margin-right: 10px;
     max-height: 180px;
     overflow-y: auto;
-    background-color: #191919;
+    background-color: var(--fx-panel);
     z-index: 2;
     display: none;
 }
@@ -690,11 +926,12 @@ span.head-nav-path-cntnr2:hover{
     margin: 0 8px;
 
     position: relative;
+    color: var(--fx-text-dim);
 }
 
 span.mid-nav-path-entry{
     padding: 0 2px;
-    color: white; /* white text color */
+    color: var(--fx-text);
     text-align: left;
     font-size: 10px;
     font-weight: normal;
@@ -720,11 +957,11 @@ span.mid-nav-path-entry{
     min-width: 105px;
     max-width: 100%;
     height: 24px;
-    border: 0.5px solid #9d9d9d;
+    border: 0.5px solid var(--fx-border-light);
     border-left: none;
     border-right: none;
-    color: #ccc;
-    background-color: #191919;
+    color: var(--fx-text-dim);
+    background-color: var(--fx-input-bg);
 }
 
 .search-container{
@@ -743,45 +980,68 @@ span.mid-nav-path-entry{
     margin: 0 8px;
 
     position: relative;
+    color: var(--fx-text-dim);
+}
+
+/* The go(->) glyph sits on the accent-filled button, so it needs the on-accent
+   token rather than the dim body colour. */
+.file_explrorer_root_container span.head-search-cntnr2 .img-search-cntnr{
+    color: var(--fx-on-accent);
 }
 
 span.head-search-cntnr{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid #9d9d9d;
+    border: 0.5px solid var(--fx-border-light);
     border-right: none;
 }
 
 span.head-search-cntnr1{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid #9d9d9d;
+    border: 0.5px solid var(--fx-border-light);
     border-left: none;
     border-right: none;
+}
+
+/* Refactor: the search clear(x) button background was driven by
+   [style]="clearSearchStyle" + (mouseenter)/(mouseleave). Now pure CSS: .active
+   is bound to isSearchBoxNotEmpty; these paint the base + hover backgrounds. */
+span.head-search-cntnr1.active{
+    background-color: var(--fx-panel);
+    transition: background-color 0.3s ease;
+}
+span.head-search-cntnr1.active:hover{
+    background-color: var(--fx-hover);
 }
 
 span.head-search-cntnr2{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid #9d9d9d;
+    border: 0.5px solid var(--fx-border-light);
     border-left: none;
 }
 
+/* Refactor: the search go(->) button was [style]="searchStyle" + hover handlers. */
 span.head-search-cntnr2.active{
     align-items: center;
     display:inline-flex;
-    border: 0.5px solid #9d9d9d;
-    background-color: blue;
+    border: 0.5px solid var(--fx-border-light);
+    background-color: var(--fx-accent);
+    transition: background-color 0.3s ease;
+}
+span.head-search-cntnr2.active:hover{
+    background-color: var(--fx-accent-bright);
 }
 
 .search-history-containter{
     position: absolute;
     width: inherit;
-    border: 1px solid #9d9d9d;
+    border: 1px solid var(--fx-border-light);
     margin-right: 10px;
     max-height: 180px;
     overflow-y: hidden;
-    background-color: #191919;
+    background-color: var(--fx-panel);
     z-index: 2;
     display: none;
 }
@@ -806,11 +1066,12 @@ span.head-search-cntnr2.active{
     margin: 0 8px;
 
     position: relative;
+    color: var(--fx-text-dim);
 }
 
 span.mid-search-entry{
     padding: 0 2px;
-    color: white; /* white text color */
+    color: var(--fx-text);
     text-align: left;
     font-size: 10px;
     font-weight: normal;
@@ -829,26 +1090,67 @@ span.mid-search-entry{
 
 .navigation-content-container{
     min-width: 180px;
-    background-color: #191919;
+    background-color: var(--fx-panel);
     overflow-y: auto;
-    height: 440px;
+    overflow-x: hidden;
+    height: 100%;
+    flex: 0 0 180px;  /* stable left pane, full height */
+    min-height: 0;
 }
 
 
 /*****************************navigation pane view Ended*****************************/
 
 .file-content-container{
-    border-left: 0.5px solid #5a5a5a;
-    min-width: 720px; /*This was 100px before, change it when you've got window resize working properly*/
-    width: 100%; /* Set a maximum width for the responsive container */
-    overflow-y: auto;
-    height: 440px;
+    border-left: 0.5px solid var(--fx-border);
+    width: 100%;
+    min-width: 0;      /* was 720px, which blocked the window from shrinking */
+    overflow: auto;
+    height: 100%;
+    flex: 1 1 auto;    /* fill the remaining horizontal space */
+    min-height: 0;
+    position: relative; /* anchor for the absolutely-positioned search overlay */
+}
+
+/* Search loading / empty-result overlay (ported from fileexplorer). */
+.fileexplorer-search-overlay{
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: var(--fx-overlay-bg);
+    color: var(--fx-overlay-text);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.fileexplorer-search-overlay-text{
+    max-width: 80%;
+    text-align: center;
+    word-break: break-word;
+}
+
+.fileexplorer-search-spinner{
+    width: 28px;
+    height: 28px;
+    border: 3px solid color-mix(in srgb, var(--fx-accent-bright) 25%, transparent);
+    border-top-color: var(--fx-accent-bright);
+    border-radius: 50%;
+    animation: fileexplorer-search-spin 0.8s linear infinite;
+}
+
+@keyframes fileexplorer-search-spin{
+    to { transform: rotate(360deg); }
 }
 
 .previewOrdetails-content-container{
     min-width: 200px;
-    border-left: 0.5px solid #5a5a5a;
-    background-color: #202020;
+    border-left: 0.5px solid var(--fx-border);
+    background-color: var(--fx-bg);
     /* display: none; */
 }
 
@@ -877,7 +1179,7 @@ span.mid-search-entry{
     font-family: sans-serif;
     font-size: 13px;
     font-weight: 300;
-    color: #fff;
+    color: var(--fx-text);
     margin-bottom: 10px;
     padding: 0 10px;
 }
@@ -906,7 +1208,7 @@ span.mid-search-entry{
     grid-template-rows: repeat(auto-fill,50px);
     height: calc(100% - 5px);
     width: 100%;
-    padding: 2px 2px;
+    padding: 2px 8px;
     row-gap: 4px;
     column-gap: 6px;
 }
@@ -919,7 +1221,7 @@ span.mid-search-entry{
 }
 
 .fileexlpr-nested-line {
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--fx-divider);
     width: 100%;
     height: 1px;
 }
@@ -928,15 +1230,14 @@ span.mid-search-entry{
     display: block;
     width: 180px;
     height: 14px;
-    background-color: #eee;
-    /* border-radius: 15px; */
+    background-color: var(--fx-progress-track);
     overflow: hidden;
-    border: 2px solid #ccc;
+    border: 2px solid var(--fx-progress-border);
 }
 
 .progress-bar {
     height: 100%;
-    background-color: #2da6da;
+    background-color: var(--fx-progress-bar);
     transition: width 0.3s ease-in-out;
 }
 
@@ -946,12 +1247,49 @@ span.mid-search-entry{
     display: grid;
     grid-auto-flow: row;
     grid-template-columns:  repeat(auto-fill, 90px);
-    grid-template-rows: repeat(auto-fill, 70px);
+    /* grid-auto-rows (not grid-template-rows: repeat(auto-fill,70px)) so rows
+       pack from the top at a fixed height; auto-fill template rows spread to
+       fill height:100%, making sparse folders sit lower than dense ones. */
+    grid-auto-rows: 70px;
+    align-content: start;
     height: calc(100% - 5px);
     width: 100%;
     padding: 5px 10px;
     gap: 34px 5px;
 }
+
+/* Refactor: per-icon-size dimensions were written imperatively by
+   changeIconViewBtnSize + changeOrderedlistStyle (looping fetchedFiles, setting
+   inline width/height/grid styles that didn't survive *ngFor re-renders). Now
+   the component sets ONE size class on the <ol> (view-small / view-medium /
+   view-large / view-xlarge) and every descendant inherits via the cascade.
+   view-medium matches the base rules above, so it needs no overrides. */
+.ol-iconview-grid.view-small{
+    grid-template-columns: repeat(auto-fill, 70px);
+    grid-auto-rows: 50px;
+}
+.ol-iconview-grid.view-small .iconview-button{ width: 70px; }
+.ol-iconview-grid.view-small .iconview-image{ width: 30px; height: 30px; }
+.ol-iconview-grid.view-small .iconview-caption{ max-width: 70px; }
+.ol-iconview-grid.view-small .iconview-shortcut-img{ width: 8px; height: 8px; bottom: -12px; }
+
+.ol-iconview-grid.view-large{
+    grid-template-columns: repeat(auto-fill, 120px);
+    grid-auto-rows: 100px;
+}
+.ol-iconview-grid.view-large .iconview-button{ width: 120px; }
+.ol-iconview-grid.view-large .iconview-image{ width: 80px; height: 80px; }
+.ol-iconview-grid.view-large .iconview-caption{ max-width: 120px; }
+.ol-iconview-grid.view-large .iconview-shortcut-img{ width: 21px; height: 21px; bottom: 1px; }
+
+.ol-iconview-grid.view-xlarge{
+    grid-template-columns: repeat(auto-fill, 140px);
+    grid-auto-rows: 120px;
+}
+.ol-iconview-grid.view-xlarge .iconview-button{ width: 140px; }
+.ol-iconview-grid.view-xlarge .iconview-image{ width: 96px; height: 96px; }
+.ol-iconview-grid.view-xlarge .iconview-caption{ max-width: 140px; }
+.ol-iconview-grid.view-xlarge .iconview-shortcut-img{ width: 25px; height: 25px; bottom: 5px; }
 
 .li-iconview-container{
     display: flex;
@@ -961,12 +1299,22 @@ span.mid-search-entry{
     z-index: 1;
 }
 
+.li-iconview-container.is-hidable{
+    opacity: 0.4;
+}
+
+.li-iconview-container.is-hidden{
+    display: none;
+}
+
 .iconview-image {
     position: relative;
     height: 45px;
     width: 45px;
     bottom: 0;
 }
+
+
 
 .iconview-img-wrapper {
     width: fit-content;
@@ -1019,7 +1367,7 @@ span.mid-search-entry{
 .iconview-caption {
     -webkit-box-orient: vertical;
     display: -webkit-box;
-    color: #fff;
+    color: var(--fx-text);
     font-size: 12px;
     letter-spacing: 0.1px;
     -webkit-line-clamp:4;
@@ -1050,7 +1398,7 @@ span.mid-search-entry{
     margin-bottom: 1px;
     width: 90px;
     height: 20px;
-    border: 0.5px solid #ccc;
+    border: 0.5px solid var(--fx-field-border);
     overflow:hidden;
     resize: none;
  }
@@ -1073,6 +1421,14 @@ span.mid-search-entry{
     z-index: 1;
 }
 
+.li-detailsview-container.is-hidable{
+    opacity: 0.4;
+}
+
+.li-detailsview-container.is-hidden{
+    display: none;
+}
+
 /* src/app/app.component.css */
 .detailsview-data-table {
   width: 100%;
@@ -1081,7 +1437,7 @@ span.mid-search-entry{
 }
 
 .detailsview-data-table th {
-    border: 0.5px solid #202020; /* Adds a border to each header and data cell */
+    border: 0.5px solid var(--fx-bg); /* Adds a border to each header and data cell */
     padding: 8px;
     width: 155px;
     text-align: left; /* Aligns text to the left */
@@ -1093,7 +1449,7 @@ span.mid-search-entry{
 }
 
 .detailsview-data-table thead th {
-  background: #202020;
+  background: var(--fx-bg);
   position: sticky;
   top: -1px;
   z-index: 1;
@@ -1117,7 +1473,8 @@ span.mid-search-entry{
 
 
 .detailsview-data-table tr.active td {
-  background-color:#d0ecfc !important;
+  background-color: var(--fx-row-selected-bg) !important;
+  color: var(--fx-field-text);
 }
 
 /* Add this to your component's CSS or global styles */
@@ -1133,7 +1490,7 @@ th[fxplrColumnResize]::after {
   width: 1px; /* Adjust the handle width */
   height: 100%;
   cursor: col-resize;
-  background-color: #f0f0f0; /* Handle background color */
+  background-color: var(--fx-resize-handle); /* Handle background color */
 }
 
 .div-detailsview-figure-section{
@@ -1173,7 +1530,7 @@ th[fxplrColumnResize]::after {
 .figcaption-detailsview-p, .detailsview-ptag, .detailsview-ptag-right{
     position: relative;
     text-align: left;
-    color: white;
+    color: var(--fx-text);
     font-size: 12px;
     font-weight:200;
     top: 0px;
@@ -1210,12 +1567,12 @@ th[fxplrColumnResize]::after {
     width: 100%;
     /* max-width: 228px; */
     height: 22px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--fx-field-border);
     overflow:hidden;
     font-size: 12px;
     font-weight:200;
-    background-color: white;
-    color: black;
+    background-color: var(--fx-field-bg);
+    color: var(--fx-field-text);
  }
 /*-------------------------Details Icon View End ----------------------------------*/
 
@@ -1241,6 +1598,14 @@ th[fxplrColumnResize]::after {
     padding-left:15px;
     height: fit-content;
     z-index: 1;
+}
+
+.li-listview-container.is-hidable{
+    opacity: 0.4;
+}
+
+.li-listview-container.is-hidden{
+    display: none;
 }
 
 .div-listview{
@@ -1284,7 +1649,7 @@ th[fxplrColumnResize]::after {
 .figcaption-listview-p{
     position: relative;
     text-align: left;
-    color: white;
+    color: var(--fx-text);
     padding-left:4px;
     font-size: 12px;
     font-weight:200;
@@ -1319,12 +1684,12 @@ th[fxplrColumnResize]::after {
     width: 100%;
     max-width: 228px;
     height: 22px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--fx-field-border);
     overflow:hidden;
     font-size: 12px;
     font-weight:200;
-    background-color: white;
-    color: black;
+    background-color: var(--fx-field-bg);
+    color: var(--fx-field-text);
  }
 
 /*-------------------------List View End-------------------------------*/
@@ -1352,16 +1717,29 @@ th[fxplrColumnResize]::after {
     z-index: 1;
 }
 
+.li-tilesview-container.is-hidable{
+    opacity: 0.4;
+}
+
+.li-tilesview-container.is-hidden{
+    display: none;
+}
+
 .div-tilesview{
     display: flex;
+    align-items: center;
+    gap: 8px;
     margin: 0px 2px;
     height: 50px;
 }
 
 .figure-tilesview{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
     height: 48px; 
     width: 48px;
-    place-items:center;
 }
 
 .img-tilesview{
@@ -1371,29 +1749,31 @@ th[fxplrColumnResize]::after {
 }
 
 .div-figcaption-tilesview-container{
-    display: block;
-    width: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 188px;
     height: 48px;
 }
 
 .div-figcaption-tilesview{
-   display: block;
+   display: flex;
+   align-items: center;
    height: 16px;
    width: 100%;
 }
 
 .figcaption-tilesview-p{
-    position: relative;
+    margin: 0;
     text-align: left;
-    color: white;
+    color: var(--fx-text);
     font-size: 12px;
     font-weight:200;
-    top: 2px;
-    width: 200px;
+    width: 188px;
     white-space: nowrap; /* Prevent text from wrapping */
     overflow: hidden; /* Hide overflow */
     text-overflow: ellipsis; /* Add "..." when text overflows */
-    line-height: 13px; 
+    line-height: 16px; 
 }
 
 .tilesview-rename-form, .tilesview-rename-textbox{
@@ -1407,12 +1787,12 @@ th[fxplrColumnResize]::after {
     width: 100%;
     max-width: 200px;
     height: 16px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--fx-field-border);
     overflow:hidden;
     font-size: 12px;
     font-weight:200;
-    background-color: white;
-    color: black;
+    background-color: var(--fx-field-bg);
+    color: var(--fx-field-text);
  }
 
 .button-tilesview{
@@ -1427,6 +1807,11 @@ th[fxplrColumnResize]::after {
 
 .ol-contentview-grid{
     display: grid;
+    /* Content view = one full-width row per item. Columns/rows were previously
+       set imperatively in changeOrderedlistStyle (getBoundingClientRect +
+       inline grid styles); declared here instead. */
+    grid-template-columns: 1fr;
+    grid-auto-rows: 43px;
     height: calc(100% - 5px);
     width: 100%;
     padding: 0px !important;
@@ -1442,6 +1827,14 @@ th[fxplrColumnResize]::after {
     padding-left:15px;
     height: fit-content;
     z-index: 1;
+}
+
+.li-contentview-container.is-hidable{
+    opacity: 0.4;
+}
+
+.li-contentview-container.is-hidden{
+    display: none;
 }
 
 .div-contentview{
@@ -1483,7 +1876,7 @@ th[fxplrColumnResize]::after {
     position: relative;
     align-items: center;
     text-align: left;
-    color: white;
+    color: var(--fx-text);
     font-size: 12px;
     font-weight:300;
     margin: 0 1px;
@@ -1507,7 +1900,7 @@ th[fxplrColumnResize]::after {
     position: relative;
     width: 220px;
     text-align: left;
-    color: white;
+    color: var(--fx-text);
     font-size: 11px;
     font-weight:200;
     text-overflow: ellipsis;
@@ -1525,12 +1918,12 @@ th[fxplrColumnResize]::after {
 .line-container {
     position: relative;
     height: 0.25px;
-    background-color: #202020;
+    background-color: var(--fx-bg);
     top: -5px;
 }
 
 .line {
-    border: 0.2px solid white;
+    border: 0.2px solid var(--fx-text);
 }
 
 .contentview-rename-form, .contentview-rename-textbox{
@@ -1544,12 +1937,12 @@ th[fxplrColumnResize]::after {
     width: 100%;
     max-width: 320px;
     height: 20px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--fx-field-border);
     overflow:hidden;
     font-size: 12px;
     font-weight:200;
-    background-color: white;
-    color: black;
+    background-color: var(--fx-field-bg);
+    color: var(--fx-field-text);
  }
 /*-------------------------Content View End-------------------------------*/
 
@@ -1561,13 +1954,15 @@ th[fxplrColumnResize]::after {
 .fileexp-footer-container{
     width: 100%;
     height: 24px ;
+    flex: 0 0 24px;  /* fixed-height footer; never shrinks out of view */
     display: inline-flex;
+    position: relative; /* anchor for the absolutely-positioned footer toggle buttons */
     /* background-color: #383434; */ 
-    background-color: #303438;
+    background-color: var(--fx-footer-bg);
 }
 
 .span-footer{
-    color: white;
+    color: var(--fx-text);
     font-size: 11px;
     font-weight: normal;
     margin: 5px 4px;
@@ -1575,26 +1970,45 @@ th[fxplrColumnResize]::after {
 
 
 .fileexp-footer-img-cntnr-1{
-    position: fixed;
+    position: absolute;
+    width: 20px;
     height: 24px;
-    right: 4%;
+    /* Sit one button-width (20px) + a 4px gap to the left of the large-icon
+       button (at right:1%), so the two stay 4px apart at any width. */
+    right: calc(1% + 20px + 4px);
+    border: 1px solid transparent;
 }
 .fileexp-footer-img-cntnr-2{
-    position: fixed;
+    position: absolute;
+    width: 20px;
     height: 24px;
     right: 1%;
+    border: 1px solid transparent;
+}
+
+/* Hover + active view highlight (ported from fileexplorer). Replaces the
+   imperative colorBtnCntnr/uncolorBtnCntnr DOM styling. The transparent base
+   border above keeps hover/active from shifting layout. */
+.fileexp-footer-img-cntnr-1:hover,
+.fileexp-footer-img-cntnr-2:hover,
+.fileexp-footer-img-cntnr-1.active,
+.fileexp-footer-img-cntnr-2.active{
+    background-color: var(--fx-footer-btn-bg);
+    border-color: var(--fx-footer-btn-border);
 }
 
 .fileexp-footer-figure{
     position: relative;
     width: 15px;
-    height: 15px;
-    top: 5.5px;
+    height: 14px;
+    /* a poor attempt at centering the image */
+    top: 3.5px;
+    left: 2px;
 }
 
 .fileexp-footer-img{
-    height: 15px; 
-    width: 15px;
+    height: 14px; 
+    width: 14px;
 }
 /*-----################################---Footer View Ended-----################################---*/
 
@@ -1607,7 +2021,7 @@ th[fxplrColumnResize]::after {
     margin-bottom: 2px;
     max-width: 75px;
     max-height: 16px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--fx-field-border);
     overflow:hidden;
     z-index: 2;
  }
@@ -1619,8 +2033,8 @@ input{
 }
 
 input::selection{
-    background-color: #0056b3;
-    color: white;
+    background-color: var(--fx-selection-bg);
+    color: var(--fx-on-accent);
 }
 
 
@@ -1652,9 +2066,9 @@ input::selection{
     font-size: 10px;
     font-weight: normal;
     text-align: center;
-    color: black;
-    background: rgb(255, 255, 255);
-    border: 4px solid rgb(255, 255, 255);
+    color: var(--fx-field-text);
+    background: var(--fx-field-bg);
+    border: 4px solid var(--fx-field-bg);
     border-radius: 5px;
     /* text-shadow: rgba(0, 0, 0, 0.1) 1px 1px 1px;
     box-shadow: rgba(0, 0, 0, 0.1) 1px 1px 2px 0px; */
@@ -1667,26 +2081,30 @@ input::selection{
     height: 0;
     border-width: 10px;
     border-style: solid;
-    border-color: #FFFFFF transparent transparent transparent; 
+    border-color: var(--fx-field-bg) transparent transparent transparent; 
     left: 20px;
     transform: rotate(180deg);
 }
 
-.fx-information-tip-container, .fx-information-tip-container-qa-files, .fx-information-tip-container-qa-folder{
-    position: absolute;
+.fx-information-tip-container{
+    /* Rendered on document.body so it can overflow the window. position: fixed
+       → coordinates are viewport-relative (set from evt.clientX/clientY, with
+       flip/clamp, in showFileExplorerToolTip). */
+    position: fixed;
     z-index: -3;
     width: fit-content;
-    border: 1px solid #5a5a5a;
-    background-color: #202020;
+    border: 1px solid var(--fx-border);
+    background-color: var(--fx-bg);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease-in-out;
     pointer-events: none; /* makes it non-interactive */
 }
 
-.fx-information-tip-container.visible, .fx-information-tip-container-qa-files.visible, .fx-information-tip-container-qa-folder.visible {
+.fx-information-tip-container.visible {
     opacity: 1;
-    z-index: 4;
+    /* Above all windows/taskbar now that it lives at the body level. */
+    z-index: 20;
     visibility: visible;
 }
 
@@ -1699,7 +2117,7 @@ input::selection{
     padding: 2px 2px;
     font-size: 11px;
     text-align: left;
-    color: white;
+    color: var(--fx-text);
 }
 
 
@@ -1711,6 +2129,50 @@ input::selection{
 }
 
 .fileexplr-multi-select-highlight {
-    background-color: #4c4c4c;
-    border: 0.5px solid #3c3c3c;
+    background-color: var(--fx-icon-hover-bg);
+    border: 0.5px solid var(--fx-icon-hover-border);
+}
+
+/* Class-based hover / click highlight (ported from fileexplorer, replacing the
+   imperative setBtnStyle/removeBtnStyle DOM mutation). Prefixed names because
+   this component uses ViewEncapsulation.None (unprefixed .is-* would leak app-wide). */
+.fileexplr-is-hovered {
+    background-color: var(--fx-icon-hover-bg);
+    border: 0.5px solid var(--fx-icon-hover-border);
+}
+
+.fileexplr-is-selected-current {
+    background-color: var(--fx-icon-selected-bg);
+    border: 0.5px solid var(--fx-icon-hover-border);
+}
+
+.fileexplr-is-selected-prior {
+    background-color: transparent;
+    border: 0.5px solid var(--fx-text);
+}
+
+/* The main grid <ol> is now focusable (tabindex=0) for keyboard navigation;
+   hide the default focus ring. Scoped to the explorer root (encapsulation None). */
+.file_explrorer_root_container ol:focus {
+    outline: none;
+}
+
+/* Lasso multi-select pane (ported from fileexplorer). Geometry + visibility are
+   bound in the template ([style.transform]/[style.width|height.px]/[class.visible]);
+   this rule owns the appearance only \u2014 no more imperative setDivWithAndSize. */
+.lasso-pane {
+    position: absolute;
+    display: none;
+    width: 0;
+    height: 0;
+    background-color: var(--fx-lasso-bg);
+    border: 1px solid var(--fx-lasso-border);
+    backdrop-filter: blur(5px);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.lasso-pane.visible {
+    display: block;
+    z-index: 2;
 }

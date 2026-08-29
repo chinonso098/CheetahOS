@@ -1,15 +1,13 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit, Renderer2, Input, HostBinding} from '@angular/core';
 import { Subscription } from 'rxjs';
-import { BaseComponent } from 'src/app/system-files/base/base.component.interface';
-import { ComponentType } from 'src/app/system-files/system.types';
+import { BaseComponent } from 'src/app/system-files/base/base.component.interface';import { ComponentType } from 'src/app/system-files/system.types';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { Process } from 'src/app/system-files/process';
 import { AppState } from 'src/app/system-files/state/state.interface';
 
-import {extname} from 'path';
 import { ScriptService } from 'src/app/shared/system-service/script.services';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { FileInfo } from 'src/app/system-files/fs/file.info';
@@ -112,7 +110,7 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   async ngAfterViewInit(): Promise<void>{
     const imgUpdateDelay = 4500; //4.5 seconds to allow for the initial render and any async script loading
     this.fileSrc = (this.fileSrc !== Constants.EMPTY_STRING)? 
-    this.fileSrc : this.getFileSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+    this.fileSrc : this._fileService.resolveContentPath(this._fileInfo);
 
     // displayName is set in ngOnInit (before the view is checked) to avoid NG0100.
 
@@ -165,7 +163,8 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
   focusWindow(evt:MouseEvent):void{
     evt.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
@@ -178,32 +177,6 @@ export class MarkDownViewerComponent implements BaseComponent,  OnDestroy, After
     //  - stopPropagation(): keep the event from reaching the desktop root.
     evt?.preventDefault();
     evt?.stopPropagation();
-  }
-
-  getFileSrc(pathOne:string, pathTwo:string):string{
-    let fileSrc = Constants.EMPTY_STRING;
-
-    if(this.checkForExt(pathOne,pathTwo)){
-      fileSrc = Constants.ROOT + this._fileInfo.getContentPath;
-    }else{
-      fileSrc =  this._fileInfo.getCurrentPath;
-    }
-
-    return fileSrc;
-  }
-
-  checkForExt(contentPath:string, currentPath:string):boolean{
-    const contentExt = extname(contentPath);
-    const currentPathExt = extname(currentPath);
-    const ext = ".md";
-    let res = false;
-
-    if(contentExt !== Constants.EMPTY_STRING && contentExt == ext){
-      res = true;
-    }else if( currentPathExt == ext){
-      res = false;
-    }
-    return res;
   }
 
   storeAppState(app_data:unknown):void{

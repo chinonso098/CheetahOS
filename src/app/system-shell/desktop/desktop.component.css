@@ -11,119 +11,6 @@
     background-color: #00adef;
 }
 
-/*Screen shot start*/
-
-.dsktp-screenshot__container{
-    display: block;
-    z-index: 2;
-    position: absolute;
-    height: fit-content;
-    width: fit-content;
-    right: 8px;
-    bottom: 8px;
-    border: 1px solid #ccc;
-    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
-    background-color: #2b2b2b;
-}
-
-.dsktp-screenshot__img-container{
-  display: inline-block;
-  max-width: 360px;
-  max-height: 270px;
-  overflow: hidden;
-}
-
-.dsktp-screenshot__img-container img{
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.dsktp-screenshot__other-container{
-    padding: 12px;
-    width: 360px;
-    height: 100px;
-    background-color: #2b2b2b;
-}
-
-.other__item-cntnr{
-    display: inline-flex;
-    height: 25px;
-    width: 100%;
-    padding-bottom: 10px;
-}
-.other__text-cntnr{
-    display: inline-flex;
-    height: 45px;
-    width: 100%;
-}
-
-.other__item-p{
-    position: relative;
-    left: 5px;
-    width: 260px;
-    top: 1px;
-    overflow: hidden;         
-    word-wrap: break-word;
-}
-
-.other__text-p{
-    position: relative;
-    left: 1px;
-    width: 330px;
-    top: -12px;
-    overflow: hidden;         
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    color: #fff;
-    text-align: left;
-    font-size: 12px;
-    font-weight:normal;
-    line-height: 14px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.other__item-head{
-    width: 30px;
-    height: 25px;
-}
-
-.other__item-mid{
-    padding: 0 1px;
-    color: #fff;
-    text-align: left;
-    font-size: 12px;
-    font-weight:normal;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    width: 360px;
-    height: 25px;
-}
-
-.other__item-tail{
-    width: 30px;
-    height: 25px;
-}
-
-.other__item-tail:hover{
-    background-color: #ccc;
-}
-
-.other__item-figure{
-    position: relative;
-    align-items: center;
-    height: 20px;
-    width: 20px;
-    left: 5px;
-}
-
-.other__item-img{
-    height: 20px;
-    width: 20px;
-    position: relative;
-}
-
-/*Screen shot end*/
-
 /*Desktop Icon Start*/
 .ol-desktopIcon-grid{
     /* column-gap: 1px; */
@@ -154,6 +41,14 @@
     justify-content: center;
     /* padding: 2px; */
     height: min-content;
+}
+
+.li-desktopIcon-container.is-hidable{
+    opacity: 0.4;
+}
+
+.li-desktopIcon-container.is-hidden{
+    display: none;
 }
 
 .desktopIcon-btn{
@@ -378,3 +273,158 @@
   height: 100%;
   overflow: hidden; prevents going outside 
 }*/
+
+
+
+/*Screen shot preview start*/
+
+.desktop-screenshot-preview__container{
+    display: block;
+    z-index: 2;
+    position: absolute;
+    height: fit-content;
+    width: fit-content;
+    right: 8px;
+    bottom: 8px;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
+    background-color: #2b2b2b;
+}
+
+.desktop-screenshot-preview__img-container{
+  display: inline-block;
+  max-width: 360px;
+  max-height: 270px;
+  overflow: hidden;
+}
+
+.desktop-screenshot-preview__img-container img{
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.desktop-screenshot-preview__other-container{
+    padding: 12px;
+    width: 360px;
+    height: 100px;
+    background-color: #2b2b2b;
+}
+
+.other__item-cntnr{
+    display: inline-flex;
+    height: 25px;
+    width: 100%;
+    padding-bottom: 10px;
+}
+.other__text-cntnr{
+    display: inline-flex;
+    height: 45px;
+    width: 100%;
+}
+
+.other__item-p{
+    position: relative;
+    left: 5px;
+    width: 260px;
+    top: 1px;
+    overflow: hidden;         
+    word-wrap: break-word;
+}
+
+.other__text-p{
+    position: relative;
+    left: 1px;
+    width: 330px;
+    top: -12px;
+    overflow: hidden;         
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    color: #fff;
+    text-align: left;
+    font-size: 12px;
+    font-weight:normal;
+    line-height: 14px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.other__item-head{
+    width: 30px;
+    height: 25px;
+}
+
+.other__item-mid{
+    padding: 0 1px;
+    color: #fff;
+    text-align: left;
+    font-size: 12px;
+    font-weight:normal;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 360px;
+    height: 25px;
+}
+
+.other__item-tail{
+    width: 30px;
+    height: 25px;
+}
+
+.other__item-tail:hover{
+    background-color: #ccc;
+}
+
+.other__item-figure{
+    position: relative;
+    align-items: center;
+    height: 20px;
+    width: 20px;
+    left: 5px;
+}
+
+.other__item-img{
+    height: 20px;
+    width: 20px;
+    position: relative;
+}
+
+/*Screen shot preview end*/
+
+
+/*Screen shot start*/
+
+.desktop_screen_shot_container { 
+    position: fixed;
+    /* 4px gap on every side so the red border sits fully inside the
+       viewport (naturally centered) and no edge gets clipped. */
+    inset: 0.5px;
+    box-sizing: border-box;
+    display: none; 
+    user-select: none; 
+    z-index: 25;
+    border: 2px solid red;
+    cursor: crosshair;
+}
+
+.desktop_screen_shot_container.is-visible { display: block; }
+
+.desktop_screen_shot_container.is-red-border-hidden { border: 2px solid transparent; }
+
+.desktop_screen_shot_container img { 
+    display: block;
+    /* The screenshot is captured at device-pixel resolution, so on HiDPI
+       screens its intrinsic size is larger than the viewport. Constrain it
+       to the container so it doesn't overflow and paint over the red border
+       (which looked like a down-right shift). */
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+}
+
+.desktop_screen_shot_lasso { 
+    position: absolute; 
+    border: 1px dashed #fff;
+    background: rgba(255,255,255,0.2); 
+    pointer-events: none; 
+}
+
+/*Screen shot end*/

@@ -250,7 +250,8 @@ export class BoidsComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }

@@ -14,7 +14,6 @@ import { Process } from 'src/app/system-files/process';
 import { FileInfo } from 'src/app/system-files/fs/file.info';
 import { AppState } from 'src/app/system-files/state/state.interface';
 
-import {extname} from 'path';
 import { Subscription } from 'rxjs';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { CommonFunctions } from 'src/app/system-files/commons/common.functions';
@@ -114,7 +113,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     // triggers NG0100 (ExpressionChangedAfterItHasBeenCheckedError).
     this.fileSrc = (this.fileSrc !== Constants.EMPTY_STRING)
       ? this.fileSrc
-      : this.getFileSrc(this._fileInfo?.getContentPath ?? Constants.EMPTY_STRING, this._fileInfo?.getCurrentPath ?? Constants.EMPTY_STRING);
+      : this._fileService.resolveContentPath(this._fileInfo);
 
     if (this.fileSrc && this.fileSrc !== this.none) {
       // A file was opened; use its name as the window title.
@@ -130,7 +129,7 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
     try {
       this.fileSrc = (this.fileSrc !== Constants.EMPTY_STRING)
         ? this.fileSrc
-        : this.getFileSrc(this._fileInfo?.getContentPath ?? Constants.EMPTY_STRING, this._fileInfo?.getCurrentPath ?? Constants.EMPTY_STRING);
+        : this._fileService.resolveContentPath(this._fileInfo);
 
       if (!this.fileSrc || this.fileSrc === Constants.EMPTY_STRING) {
         // No file path available; still allow an empty editor.
@@ -344,35 +343,10 @@ export class TextEditorComponent  implements BaseComponent, OnDestroy, AfterView
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
-  }
-
-  getFileSrc(pathOne:string, pathTwo:string):string{
-    let fileSrc = Constants.EMPTY_STRING;
-
-    if(this.checkForExt(pathOne,pathTwo)){
-      fileSrc = Constants.ROOT + this._fileInfo.getContentPath;
-    }else{
-      fileSrc =  this._fileInfo.getCurrentPath;
-    }
-
-    return fileSrc;
-  }
-
-  checkForExt(contentPath:string, currentPath:string):boolean{
-    const contentExt = extname(contentPath);
-    const currentPathExt = extname(currentPath);
-    const ext = ".txt";
-    let res = false;
-
-    if(contentExt != Constants.EMPTY_STRING && contentExt == ext){
-      res = true;
-    }else if( currentPathExt == ext){
-      res = false;
-    }
-    return res;
   }
 
   storeAppState(app_data:unknown):void{

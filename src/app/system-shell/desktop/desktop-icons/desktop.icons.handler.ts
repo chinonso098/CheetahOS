@@ -164,7 +164,8 @@ export class DesktopIconsHandler {
         rebuildDesktopMenu: () => { /* set via init() */ },
         hideDesktopContextMenuAndOthers: () => { /* set via init() */ },
         isFormDirty: () => { /* set via init() */ },
-        getIsRenameActive: () => false,
+        getIsRenameActive: () => false, 
+        removeWindowFocus: () => { /* set via init() */ },
         getIsWindowDragActive: () => false,
         getIsStartMenuOpen: () => false,
         clearDragAndDropFile: () => { /* set via init() */ },
@@ -434,6 +435,9 @@ export class DesktopIconsHandler {
      */
     private static readonly IS_DESKTOP_THE_CALLER = true;
 
+    /** Overlay chrome that is a DOM child of the desktop root but is not the desktop surface. */
+    private static readonly OVERLAY_CHROME_SELECTOR = 'cos-taskbar';
+
     /**
      * `currIconId` is the id of the icon that received the most recent
      * click (or -1 when no icon is selected). `prevIconId` lags one
@@ -549,6 +553,10 @@ export class DesktopIconsHandler {
     onDesktopIconClick(evt: MouseEvent, id: number): void {
         evt.preventDefault();
         evt.stopPropagation();
+        // Clicking a desktop icon deactivates the focused window's title bar,
+        // same as clicking empty desktop space (this click is stopPropagation'd
+        // here, so it never reaches the desktop root's handleIconHighLightState).
+        this._callbacks.removeWindowFocus();
         this.executeIconClickTasks(id);
         DesktopStyleHelper.setBtnStyle(id, true, this.currIconId, this.isIconInFocusDueToPriorAction);
     }
@@ -743,8 +751,16 @@ export class DesktopIconsHandler {
      * doesn't wipe the selection), and threads rename commit/abort
      * through `isFormDirty` for the "click-away" case (1a).
      */
-    handleIconHighLightState(): void {
+    handleIconHighLightState(evt?: MouseEvent): void {
         this._callbacks.hideDesktopContextMenuAndOthers(DesktopIconsHandler.IS_DESKTOP_THE_CALLER);
+
+        // The taskbar is nested inside the desktop root, so its clicks bubble here.
+        // It decides for itself whether a click should deactivate the focused window
+        // (see TaskBarComponent.onTaskBarClick); re-deciding here would undo a
+        // taskbar entry's restore-and-focus in the same click.
+        const target = evt?.target as HTMLElement | null;
+        if (!target?.closest(DesktopIconsHandler.OVERLAY_CHROME_SELECTOR))
+            this._callbacks.removeWindowFocus();
 
         if (!this._callbacks.getIsRenameActive()) {
             this.btnStyleAndValuesReset();

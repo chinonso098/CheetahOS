@@ -1,123 +1,87 @@
 
-<ng-container [ngTemplateOutlet]=" (isFile && !isInRecycleBin) ? fileView : 
+<ng-container [ngTemplateOutlet]=" (isFolderOptions) ? folderOptionsView :
+                                   (isFile && !isInRecycleBin) ? fileView : 
                                    (!isFile && !isInRecycleBin && !isRootFolder) ? folderView :
                                    (!isFile && !isInRecycleBin && isRootFolder) ? rootFolderView : deletedView">
 </ng-container>
 
 <ng-template #fileView>
-    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg"  (click)="setPropertyWindowToFocus(this.processId)">
-        <div class="properties-main-container" id="propDisplay-{{processId}}">
-            <div class="properties-body-container">
-                <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
-                <div class="properties-header-tab-container">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg" (click)="setPropertyWindowToFocus(this.processId)">
+        <div class="properties-main-container item-properties-main" id="propDisplay-{{processId}}">
+            <div class="properties-body-container item-properties-body">
+                <div class="item-properties-top-space"></div>
+                <div class="properties-header-tab-container item-properties-tabs">
                     <div class="properties-header-tabs">
-                    <div class="properties-tab active">General</div>
+                        <div class="properties-tab active">General</div>
                     </div>
-            
-                    <div class="properties-header-tab-content-container">
+
+                    <div class="properties-header-tab-content-container item-properties-content">
                         <div class="properties-tab-pane active">
-                            <div class="general-tab-containter">
-                                <div style="width: 100%; height: 5px;"> </div>
-
-                                <div class="general-tab-section">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="iconPath"/></figure></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p">{{this.name}}</p></div>
-                                    </div>
-
+                            <div class="item-properties-container">
+                                <div class="item-properties-identity">
+                                    <img class="item-properties-icon" [src]="iconPath" alt="">
+                                    <div class="item-properties-name" title="{{name}}">{{name}}</div>
                                 </div>
-                                <div class="general-tab-line"></div>
 
-                            <div class="general-tab-section2">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Type of file:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileInput.getFileExtension}}</p></div>
+                                <div class="item-properties-divider"></div>
+
+                                <div class="item-properties-section">
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Type of file:</span>
+                                        <span class="item-properties-value">{{fileInput.getFileExtension}}</span>
                                     </div>
-
-                                    <ng-container *ngIf="fileInput.getFileExtension === URL">
-                                        <div class="general-tab-content" style="height: 16px;">
-                                            <div class="general-tab-head"><p class="general-tab-p1"> Opens with:</p></div>
-                                            <div class="general-tab-mid"></div>
-                                            <div class="general-tab-tail">
-                                                <div class="openswith-container">
-                                                    <div class="openswith-head">
-                                                        <figure class="openswith-tab-figure"><img class="openswith-tab-img" [src]="icon"/></figure>
-                                                    </div>
-                                                    <div class="openswith-mid"></div>
-                                                    <div class="openswith-tail"><p class="general-tab-p1"> {{opensWith}}</p></div>
-                                                </div>
-                                            </div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Opens with:</span>
+                                        <div class="item-properties-value item-properties-app">
+                                            <img *ngIf="fileInput.getFileExtension === URL" class="item-properties-app-icon" [src]="icon" alt="">
+                                            <span>{{opensWith}}</span>
                                         </div>
-                                    </ng-container>
-                                    
-                                    <ng-container *ngIf="fileInput.getFileExtension !== URL">
-                                        <div class="general-tab-content" style="height: 13px;">
-                                            <div class="general-tab-head"><p class="general-tab-p1"> Opens with:</p></div>
-                                            <div class="general-tab-mid"></div>
-                                            <div class="general-tab-tail"><p class="general-tab-p1"> {{opensWith}} </p></div>
-                                        </div>
-                                    </ng-container>
-                                </div>
-
-                                <div class="general-tab-line"></div>
-                                <div class="general-tab-section2">
-
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Location:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{location}}</div>
-                                    </div>
-
-
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Size:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSize}} {{fileSizeUnit}} ({{fileSize2 | number:'1.0-2'}} bytes)</p></div>
-                                    </div>
-
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Size on disk:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSizeOnDisk}} {{fileSizeUnit}} ({{fileSizeOnDisk2 | number:'1.0-2'}} bytes) </p></div>
                                     </div>
                                 </div>
-                                <div class="general-tab-line"></div>
-                                <div class="general-tab-section2">
 
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1">Created:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1">{{ createdfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }}</p></div>
+                                <div class="item-properties-divider"></div>
+
+                                <div class="item-properties-section">
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Location:</span>
+                                        <span class="item-properties-value" title="{{location}}">{{location}}</span>
                                     </div>
-
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1">Modified:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1">{{ modifiedfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }}</p></div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Size:</span>
+                                        <span class="item-properties-value">{{fileSize}} {{fileSizeUnit}} ({{fileSize2 | number:'1.0-2'}} bytes)</span>
                                     </div>
-
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Accessed:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{ accessedfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }} </p></div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Size on disk:</span>
+                                        <span class="item-properties-value">{{fileSizeOnDisk}} {{fileSizeUnit}} ({{fileSizeOnDisk2 | number:'1.0-2'}} bytes)</span>
                                     </div>
                                 </div>
-                                <div class="general-tab-line"></div>
-                                <div class="general-tab-section2">
-                                    <div style="width: 100%; height: 60px;"> </div>
+
+                                <div class="item-properties-divider"></div>
+
+                                <div class="item-properties-section">
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Created:</span>
+                                        <span class="item-properties-value">{{createdfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a'}}</span>
+                                    </div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Modified:</span>
+                                        <span class="item-properties-value">{{modifiedfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a'}}</span>
+                                    </div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Accessed:</span>
+                                        <span class="item-properties-value">{{accessedfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a'}}</span>
+                                    </div>
                                 </div>
+
+                                <div class="item-properties-fill"></div>
                             </div>
                         </div>
                     </div>
-                </div> 
+                </div>
             </div>
-            <div class="properties-footer-container">
+            <div class="properties-footer-container item-properties-footer">
                 <span class="footer-btn">
-                    <button class="btn btn-primary accent" (click)="onClosePropertyView()" >
-                     OK
-                    </button>
+                    <button class="btn btn-primary accent" (click)="onClosePropertyView()">OK</button>
                 </span>
             </div>
         </div>
@@ -126,85 +90,66 @@
 
 
 <ng-template #folderView>
-    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg"  (click)="setPropertyWindowToFocus(this.processId)">
-        <div class="properties-main-container" id="propDisplay-{{processId}}">
-            <div class="properties-body-container">
-                <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
-                <div class="properties-header-tab-container">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg" (click)="setPropertyWindowToFocus(this.processId)">
+        <div class="properties-main-container item-properties-main" id="propDisplay-{{processId}}">
+            <div class="properties-body-container item-properties-body">
+                <div class="item-properties-top-space"></div>
+                <div class="properties-header-tab-container item-properties-tabs">
                     <div class="properties-header-tabs">
-                    <div class="properties-tab active">General</div>
+                        <div class="properties-tab active">General</div>
                     </div>
-            
-                    <div class="properties-header-tab-content-container">
+
+                    <div class="properties-header-tab-content-container item-properties-content">
                         <div class="properties-tab-pane active">
-                            <div class="general-tab-containter">
-                                <div style="width: 100%; height: 5px;"> </div>
-
-                                <div class="general-tab-section">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="iconPath"/></figure></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p">{{this.name}}</p></div>
-                                    </div>
-
+                            <div class="item-properties-container">
+                                <div class="item-properties-identity">
+                                    <img class="item-properties-icon" [src]="iconPath" alt="">
+                                    <div class="item-properties-name" title="{{name}}">{{name}}</div>
                                 </div>
-                                <div class="general-tab-line"></div>
 
-                                <div class="general-tab-section2">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Type:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileFolder}}</p></div>
+                                <div class="item-properties-divider"></div>
+
+                                <div class="item-properties-section">
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Type:</span>
+                                        <span class="item-properties-value">{{fileFolder}}</span>
                                     </div>
-
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Location:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{location}}</div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Location:</span>
+                                        <span class="item-properties-value" title="{{location}}">{{location}}</span>
                                     </div>
-
-
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Size:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSize}} {{fileSizeUnit}} ({{fileSize2 | number:'1.0-2'}} bytes)</p></div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Size:</span>
+                                        <span class="item-properties-value">{{fileSize}} {{fileSizeUnit}} ({{fileSize2 | number:'1.0-2'}} bytes)</span>
                                     </div>
-
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Size on disk:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSizeOnDisk}} {{fileSizeUnit}} ({{fileSizeOnDisk2 | number:'1.0-2'}} bytes)</p></div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Size on disk:</span>
+                                        <span class="item-properties-value">{{fileSizeOnDisk}} {{fileSizeUnit}} ({{fileSizeOnDisk2 | number:'1.0-2'}} bytes)</span>
                                     </div>
-
-
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Contains:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{contains}}</p></div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Contains:</span>
+                                        <span class="item-properties-value">{{contains}}</span>
                                     </div>
                                 </div>
-                                <div class="general-tab-line"></div>
-                                <div class="general-tab-section2">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1">Created:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1">{{ createdfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }}</p></div>
+
+                                <div class="item-properties-divider"></div>
+
+                                <div class="item-properties-section">
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Created:</span>
+                                        <span class="item-properties-value">{{createdfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a'}}</span>
                                     </div>
                                 </div>
-                                <div class="general-tab-line"></div>
-                                <div class="general-tab-section2">
-                                    <div style="width: 100%; height: 60px;"> </div>
-                                </div>
+
+                                <div class="item-properties-fill"></div>
                             </div>
                         </div>
                     </div>
-                </div> 
+                </div>
             </div>
-            <div class="properties-footer-container">
+            <div class="properties-footer-container item-properties-footer">
                 <span class="footer-btn">
-                    <button class="btn btn-primary accent" (click)="onClosePropertyView()" >
-                        OK
-                    </button>
+                    <button class="btn btn-primary accent" (click)="onClosePropertyView()">OK</button>
                 </span>
             </div>
         </div>
@@ -212,118 +157,78 @@
 </ng-template>
 
 <ng-template #rootFolderView>
-    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg"  (click)="setPropertyWindowToFocus(this.processId)">
-        <div class="properties-main-container" id="propDisplay-{{processId}}">
-            <div class="properties-body-container">
-                <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
-                <div class="properties-header-tab-container">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg" (click)="setPropertyWindowToFocus(this.processId)">
+        <div class="properties-main-container item-properties-main" id="propDisplay-{{processId}}">
+            <div class="properties-body-container item-properties-body">
+                <div class="item-properties-top-space"></div>
+                <div class="properties-header-tab-container item-properties-tabs">
                     <div class="properties-header-tabs">
-                    <div class="properties-tab active">General</div>
+                        <div class="properties-tab active">General</div>
                     </div>
-            
-                    <div class="properties-header-tab-content-container">
+
+                    <div class="properties-header-tab-content-container item-properties-content">
                         <div class="properties-tab-pane active">
-                            <div class="general-tab-containter">
-                                <div style="width: 100%; height: 5px;"> </div>
-
-                                <div class="general-tab-section">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="iconPath"/></figure></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p">{{osDisk}}</p></div>
-                                    </div>
-
+                            <div class="item-properties-container drive-properties-container">
+                                <div class="item-properties-identity">
+                                    <img class="item-properties-icon" [src]="iconPath" alt="">
+                                    <div class="item-properties-name" title="{{osDisk}}">{{osDisk}}</div>
                                 </div>
-                                <div class="general-tab-line"></div>
-                                <div class="general-tab-section2">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Type:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileFolder}}</p></div>
-                                    </div>
 
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> File system:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1" title="{{location}}" > {{location}}</div>
+                                <div class="item-properties-divider"></div>
+
+                                <div class="item-properties-section">
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Type:</span>
+                                        <span class="item-properties-value">{{fileFolder}}</span>
+                                    </div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">File system:</span>
+                                        <span class="item-properties-value" title="{{location}}">{{location}}</span>
                                     </div>
                                 </div>
-                                <div class="general-tab-line"></div>
-                                <div class="general-tab-section2">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head1">
-                                            <div class="used"></div>
-                                            <p class="general-tab-p1"> Used space:</p>
-                                        </div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSizeOnDisk2 | number:'1.0-2'}} bytes &nbsp;&nbsp;&nbsp;&nbsp; {{fileSizeOnDisk}} {{fileSizeUnit}}</p></div>
-                                    </div>
 
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head1">
-                                            <div class="free"></div>
-                                            <p class="general-tab-p1"> Free space:</p>
-                                        </div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{availableSpace | number:'1.0-2'}} bytes &nbsp;&nbsp;&nbsp;&nbsp; {{availableSpace2}} {{availableSpaceUnit}}</p></div>
+                                <div class="item-properties-divider"></div>
+
+                                <div class="drive-space-table">
+                                    <div class="drive-space-row">
+                                        <span class="drive-space-label"><span class="drive-space-swatch used"></span>Used space:</span>
+                                        <span class="drive-space-bytes">{{fileSizeOnDisk2 | number:'1.0-2'}} bytes</span>
+                                        <span class="drive-space-readable">{{fileSizeOnDisk}} {{fileSizeUnit}}</span>
+                                    </div>
+                                    <div class="drive-space-row">
+                                        <span class="drive-space-label"><span class="drive-space-swatch free"></span>Free space:</span>
+                                        <span class="drive-space-bytes">{{availableSpace | number:'1.0-2'}} bytes</span>
+                                        <span class="drive-space-readable">{{availableSpace2}} {{availableSpaceUnit}}</span>
                                     </div>
                                 </div>
-                                <div class="general-tab-line"></div>
-                                <div class="general-tab-section2">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1" style="margin-left:18px;">Capacity:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1">{{capacity | number:'1.0-2'}} bytes &nbsp;&nbsp;&nbsp;&nbsp; {{capacity2}} {{capacityUnit}}</p></div>
-                                    </div>
-                                    <div class="general-tab-content">
-                                        <div class="svg-container">
-                                            <svg viewBox="0 0 100 100">
-                                                <!-- Background circle (white, acts as the track) -->
-                                                <circle
-                                                    cx="50"
-                                                    cy="50"
-                                                    [attr.r]="35"
-                                                    fill="none"
-                                                    stroke="#acacac"
-                                                    [attr.stroke-width]="15"
-                                                ></circle>
 
-                                                <!-- Foreground circle (blue, shows progress) -->
-                                                <circle
-                                                    cx="50"
-                                                    cy="50"
-                                                    [attr.r]="35"
-                                                    fill="none"
-                                                    stroke="#2da6da"
-                                                    [attr.stroke-width]="15"
-                                                    [attr.stroke-dasharray]="circumference"
-                                                    [attr.stroke-dashoffset]="strokeDashoffset"
-                                                    stroke-linecap="square"
-                                                    transform="rotate(-90 50 50)"
-                                                ></circle>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                   <div class="general-tab-content">
-                                        <div class="general-tab-head"></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1" style="margin-left:20px;">Drive C:</p></div>
+                                <div class="item-properties-divider"></div>
+
+                                <div class="drive-space-table">
+                                    <div class="drive-space-row">
+                                        <span class="drive-space-label drive-space-label--capacity">Capacity:</span>
+                                        <span class="drive-space-bytes">{{capacity | number:'1.0-2'}} bytes</span>
+                                        <span class="drive-space-readable">{{capacity2}} {{capacityUnit}}</span>
                                     </div>
                                 </div>
-                                <div class="general-tab-line"></div>
-                                <div class="general-tab-section2">
-                                    <div style="width: 100%; height: 60px;"> </div>
+
+                                <div class="drive-chart">
+                                    <svg class="drive-chart-svg" viewBox="0 0 100 100" role="img" aria-label="Drive storage usage">
+                                        <circle cx="50" cy="50" [attr.r]="35" fill="none" stroke="#acacac" [attr.stroke-width]="15"></circle>
+                                        <circle cx="50" cy="50" [attr.r]="35" fill="none" stroke="#2da6da" [attr.stroke-width]="15"
+                                                [attr.stroke-dasharray]="circumference" [attr.stroke-dashoffset]="strokeDashoffset"
+                                                stroke-linecap="square" transform="rotate(-90 50 50)"></circle>
+                                    </svg>
+                                    <span class="drive-chart-caption">Drive C:</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div> 
+                </div>
             </div>
-            <div class="properties-footer-container">
+            <div class="properties-footer-container item-properties-footer">
                 <span class="footer-btn">
-                    <button class="btn btn-primary accent" (click)="onClosePropertyView()" >
-                     OK
-                    </button>
+                    <button class="btn btn-primary accent" (click)="onClosePropertyView()">OK</button>
                 </span>
             </div>
         </div>
@@ -331,74 +236,180 @@
 </ng-template>
 
 <ng-template #deletedView>
-    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg"  (click)="setPropertyWindowToFocus(this.processId)">
-        <div class="properties-main-container" id="propDisplay-{{processId}}">
-            <div class="properties-body-container">
-                <div style="width: 100%; height: 10px; background-color:#f0f0f0;"> </div>
-                <div class="properties-header-tab-container">
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg" (click)="setPropertyWindowToFocus(this.processId)">
+        <div class="properties-main-container item-properties-main" id="propDisplay-{{processId}}">
+            <div class="properties-body-container item-properties-body">
+                <div class="item-properties-top-space"></div>
+                <div class="properties-header-tab-container item-properties-tabs">
                     <div class="properties-header-tabs">
-                    <div class="properties-tab active">General</div>
+                        <div class="properties-tab active">General</div>
                     </div>
-            
-                    <div class="properties-header-tab-content-container">
+
+                    <div class="properties-header-tab-content-container item-properties-content">
                         <div class="properties-tab-pane active">
-                            <div class="general-tab-containter">
-                                <div style="width: 100%; height: 5px;"> </div>
-
-                                <div class="general-tab-section">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><figure class="general-tab-figure"><img class="general-tab-img" [src]="iconPath"/></figure></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p0">{{this.name}}</p></div>
-                                    </div>
-
+                            <div class="item-properties-container">
+                                <div class="item-properties-identity">
+                                    <img class="item-properties-icon" [src]="iconPath" alt="">
+                                    <div class="item-properties-name item-properties-name--plain" title="{{name}}">{{name}}</div>
                                 </div>
-                                <div class="general-tab-line"></div>
 
-                                <div class="general-tab-section2">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Type:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileFolder}}</p></div>
+                                <div class="item-properties-divider"></div>
+
+                                <div class="item-properties-section">
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Type:</span>
+                                        <span class="item-properties-value">{{fileFolder}}</span>
                                     </div>
-
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Origin:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{origin}}</div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Origin:</span>
+                                        <span class="item-properties-value" title="{{origin}}">{{origin}}</span>
                                     </div>
-
-
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1"> Size:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1"> {{fileSize}} {{fileSizeUnit}}</p></div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Size:</span>
+                                        <span class="item-properties-value">{{fileSize}} {{fileSizeUnit}}</span>
                                     </div>
                                 </div>
-                                <div class="general-tab-line"></div>
-                                <div class="general-tab-section2">
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1">Deleted:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1">{{ modifiedfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }}</p></div>
-                                    </div>
 
-                                    <div class="general-tab-content">
-                                        <div class="general-tab-head"><p class="general-tab-p1">Created:</p></div>
-                                        <div class="general-tab-mid"></div>
-                                        <div class="general-tab-tail"><p class="general-tab-p1">{{ createdfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a' }}</p></div>
+                                <div class="item-properties-divider"></div>
+
+                                <div class="item-properties-section">
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Deleted:</span>
+                                        <span class="item-properties-value">{{modifiedfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a'}}</span>
+                                    </div>
+                                    <div class="item-properties-row">
+                                        <span class="item-properties-label">Created:</span>
+                                        <span class="item-properties-value">{{createdfileDate | date: 'EEE, MMM dd, yyyy, HH:mm.ss a'}}</span>
                                     </div>
                                 </div>
-                                <div class="general-tab-line"></div>
-                                <div class="general-tab-section2">
-                                    <div style="width: 100%; height: 60px;"> </div>
-                                </div>
+
+                                <div class="item-properties-fill"></div>
                             </div>
                         </div>
                     </div>
-                </div> 
+                </div>
             </div>
-            <div class="properties-footer-container">
+            <div class="properties-footer-container item-properties-footer">
+                <span class="footer-btn">
+                    <button class="btn btn-primary accent" (click)="onClosePropertyView()">OK</button>
+                </span>
+            </div>
+        </div>
+    </cos-secondarywindow>
+</ng-template>
+
+
+<ng-template #folderOptionsView>
+    <cos-secondarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.displayMsg" (click)="setPropertyWindowToFocus(this.processId)">
+        <div class="properties-main-container folder-options-main" id="propDisplay-{{processId}}">
+            <div class="properties-body-container folder-options-body">
+                <div class="folder-options-top-space"></div>
+                <div class="properties-header-tab-container folder-options-tabs">
+                    <div class="properties-header-tabs" role="tablist" aria-label="File Explorer Options">
+                        <div class="properties-tab active" role="tab" aria-selected="true">General</div>
+                    </div>
+
+                    <div class="properties-header-tab-content-container folder-options-content">
+                        <div class="properties-tab-pane active">
+                            <div class="folder-options-container">
+
+                                <!-- Open File Explorer to -->
+                                <div class="fo-open-row">
+                                    <p class="fo-inline-label">Open File Explorer to:</p>
+                                    <select class="fo-select" (change)="onOpenFileExplorerToChange($event)">
+                                        <option [value]="openToQuickAccess" [selected]="openFileExplorerTo === openToQuickAccess">{{openToQuickAccess}}</option>
+                                        <option [value]="openToThisPc" [selected]="openFileExplorerTo === openToThisPc">{{openToThisPc}}</option>
+                                    </select>
+                                </div>
+
+                                <!-- Browse folders -->
+                                <fieldset class="fo-group">
+                                    <legend>Browse folders</legend>
+                                    <div class="fo-group-layout">
+                                        <img class="fo-section-img" [src]="openInIconState" alt="">
+                                        <div class="fo-section-body">
+                                            <label class="fo-option">
+                                                <input type="radio" name="fo-browse-folders"
+                                                       [checked]="openFolderInSameWindow"
+                                                       (change)="onBrowseFoldersChange(true)">
+                                                <span>Open each folder in the same window</span>
+                                            </label>
+                                            <label class="fo-option">
+                                                <input type="radio" name="fo-browse-folders"
+                                                       [checked]="!openFolderInSameWindow"
+                                                       (change)="onBrowseFoldersChange(false)">
+                                                <span>Open each folder in its own window</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                <!-- Hidden files and folders -->
+                                <fieldset class="fo-group">
+                                    <legend>Hidden files and folders</legend>
+                                    <div class="fo-group-layout">
+                                        <img class="fo-section-img" [src]="hideShowIcon" alt="">
+                                        <div class="fo-section-body">
+                                            <label class="fo-option">
+                                                <input type="radio" name="fo-hidden-files"
+                                                       [checked]="!showHiddenFilesAndFolders"
+                                                       (change)="onHiddenFilesChange(false)">
+                                                <span>Don't show hidden files or folders</span>
+                                            </label>
+                                            <label class="fo-option">
+                                                <input type="radio" name="fo-hidden-files"
+                                                       [checked]="showHiddenFilesAndFolders"
+                                                       (change)="onHiddenFilesChange(true)">
+                                                <span>Show hidden files and folders</span>
+                                            </label>
+                                            <label class="fo-option">
+                                                <input type="checkbox"
+                                                       [checked]="showFileExtensions"
+                                                       (change)="onToggleShowFileExtensions()">
+                                                <span>Show file extensions</span>
+                                            </label>
+                                            <label class="fo-option">
+                                                <input type="checkbox"
+                                                       [checked]="displayFullPathInTitleBar"
+                                                       (change)="onToggleDisplayFullPath()">
+                                                <span>Display the full path in the title bar</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                <!-- Privacy -->
+                                <fieldset class="fo-group fo-group--privacy">
+                                    <legend>Privacy</legend>
+                                    <div class="fo-group-layout">
+                                        <img class="fo-section-img" [src]="quickAccessHistoryIcon" alt="">
+                                        <div class="fo-section-body">
+                                            <label class="fo-option">
+                                                <input type="checkbox"
+                                                       [checked]="showRecentlyUsedFiles"
+                                                       (change)="onToggleRecentlyUsedFiles()">
+                                                <span>Show recently used files in Quick access</span>
+                                            </label>
+                                            <label class="fo-option">
+                                                <input type="checkbox"
+                                                       [checked]="showFrequentlyUsedFolders"
+                                                       (change)="onToggleFrequentlyUsedFolders()">
+                                                <span>Show frequently used folders in Quick access</span>
+                                            </label>
+                                            <div class="fo-clear-row">
+                                                <span>Clear File Explorer history</span>
+                                                <button type="button" class="fo-button fo-clear-btn" (click)="onClearFileExplorerHistory()">Clear</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="properties-footer-container folder-options-footer">
                 <span class="footer-btn">
                     <button class="btn btn-primary accent" (click)="onClosePropertyView()" >
                      OK

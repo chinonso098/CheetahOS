@@ -1,4 +1,10 @@
 
-<cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId" >
-    <p  class="title" #titleContent (click)="focusWindow($event)"> Hello, World! </p>
+<cos-primarywindow
+     [runningProcessID]="this.processId" 
+     [processAppIcon]="this.icon" 
+     [processAppName]="this.name"
+     [minimumWindowWidth]="MIN_WIDTH_PX" 
+     [minimumWindowHeight]="MIN_HEIGHT_PX" 
+     [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId" >
+    <p  class="title" #titleContent (click)="focusWindow($event)" (contextmenu)="silenceCtxEvt($event)"> Hello, World! </p>
 </cos-primarywindow>

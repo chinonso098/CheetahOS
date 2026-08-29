@@ -688,7 +688,7 @@ export class TaskbarMenuHandler {
         const empty = Constants.EMPTY_STRING;
         this.contextMenuData = [            
             { icon: empty, label: MenuAction.SHOW_THE_DESKTOP, action: this.showTheDesktop.bind(this) },
-            { icon: empty, label: MenuAction.TASK_MANAGER, action: () => this._taskManagerLauncher() },
+            { icon: `${Constants.IMAGE_BASE_PATH}taskmanager_2.png`, label: MenuAction.TASK_MANAGER, action: () => this._taskManagerLauncher() },
             { icon: empty, label: MenuAction.HIDE_THE_TASKBAR, action: this.hideTheTaskBar.bind(this) },
             { icon: empty, label: MenuAction.MERGE_TASKBAR_ICONS, action: this.mergeTaskBarButton.bind(this) },
         ];

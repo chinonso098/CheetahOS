@@ -477,6 +477,67 @@ span.chatter-online-tail{
     line-height: 2;
 }
 
+/* ── Editable own-message affordance ──────────────────────────────────────
+   Only the user's own messages get `.chatter-editable`. On hover (or while an
+   edit is in progress) the bubble gains a 1px theme-coloured border and a
+   pencil button appears at the top-right. Clicking either the text or the
+   pencil loads the message into the textbox for editing. */
+.chatter-chat-output-content-left.chatter-editable {
+    position: relative;
+}
+
+.chatter-editable .chat-content {
+    cursor: text;
+    transition: border-color 120ms ease;
+}
+
+/* 1px border on hover / while editing — white on dark (default), black on light. */
+.chatter-editable:hover .chat-content,
+.chatter-editable.chatter-editing .chat-content {
+    border: 1px solid #fff;
+}
+:host(.theme-light) .chatter-editable:hover .chat-content,
+:host(.theme-light) .chatter-editable.chatter-editing .chat-content {
+    border: 1px solid #000;
+}
+
+/* Pencil button, top-right of the bubble, revealed on hover. */
+.chatter-edit-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 2px;
+    margin: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.chatter-editable:hover .chatter-edit-btn,
+.chatter-editable.chatter-editing .chatter-edit-btn {
+    display: inline-flex;
+}
+
+.chatter-edit-icon {
+    width: 15px;
+    height: 15px;
+    fill: #fff;               /* dark theme (default) */
+    pointer-events: none;
+    opacity: 0.85;
+}
+.chatter-edit-btn:hover .chatter-edit-icon {
+    opacity: 1;
+}
+:host(.theme-light) .chatter-edit-icon {
+    fill: #000;               /* light theme */
+}
+
 /* Chat Input Section */
 
 .chatter-chat-texbox-container {

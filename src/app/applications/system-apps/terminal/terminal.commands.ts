@@ -16,7 +16,7 @@ import { Constants } from 'src/app/system-files/constants';
 //import { ActivityType } from "src/app/system-files/common.enums";
 import { CommonFunctions } from "src/app/system-files/commons/common.functions";
 import { ActivityHistoryService } from "src/app/shared/system-service/activity.tracking.service";
-import { SystemMetric } from "src/app/shared/system-service/system.metrics";
+import { SystemMetricService } from "src/app/shared/system-service/system.metrics.sservice";
 
 
 export interface OctalRepresentation {
@@ -30,7 +30,7 @@ export class TerminalCommandProcessor{
     private _processHandlerService!:ProcessHandlerService;
     private _runningProcessService!:RunningProcessService;
     private _activityHistoryService!:ActivityHistoryService;
-    private _systemMetric!:SystemMetric;
+    private _systemMetric!:SystemMetricService;
     private _systemNotificationService!:SystemNotificationService;
     private _windowService!:WindowService;
     private _defaultService!:DefaultService;
@@ -53,7 +53,7 @@ export class TerminalCommandProcessor{
     private fallBackDirPath = Constants.EMPTY_STRING;
 
     constructor(controlProcessService:ProcessHandlerService, runningProcessService:RunningProcessService, fileService:FileService,
-                activityHistoryService:ActivityHistoryService, systemMetric:SystemMetric, systemNotificationService:SystemNotificationService,
+                activityHistoryService:ActivityHistoryService, systemMetric:SystemMetricService, systemNotificationService:SystemNotificationService,
                 windowService:WindowService, defaultService:DefaultService, sessionManagementService:SessionManagementService) { 
         this._processHandlerService = controlProcessService;
         this._runningProcessService = runningProcessService;
@@ -126,7 +126,7 @@ list --apps -i                  get a list of all installed apps
 list --apps -a                  get a list of all running apps
 sysmetric                       show session uptime, app usage, and process counts
 sysrestart [0|1]                restart the OS (0=don't reopen apps, 1=reopen; default 0)
-syssdwn [0|1]                    shut down the OS (0=don't reopen apps, 1=reopen; default 0)
+syssdwn [0|1]                   shut down the OS (0=don't reopen apps, 1=reopen; default 0)
 sysreset                        shut down, clear localStorage and restore all defaults
 
 All commands:
@@ -343,7 +343,7 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
 
         await CommonFunctions.sleep(eventDelay);
         this._systemNotificationService.restartSystemNotify.next(Constants.RSTRT_ORDER_LOCK_SCREEN);
-        return `Restarting...apps will ${reopen ? '' : 'not '}be re-opened after login.`;
+        return `Restarting...apps will ${reopen ? Constants.EMPTY_STRING : 'not '}be re-opened after login.`;
     }
 
     /** Shut the system down. Optional 0|1 controls re-opening apps after next login. */
@@ -354,7 +354,7 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
             this._runningProcessService, this._processHandlerService, this._windowService, this._defaultService);
 
         this._systemNotificationService.shutDownSystemNotify.next();
-        return `Shutting down...apps will ${reopen ? '' : 'not '}be re-opened after login.`;
+        return `Shutting down...apps will ${reopen ? Constants.EMPTY_STRING : 'not '}be re-opened after login.`;
     }
 
     /** Shut down, then wipe localStorage and restore all settings to factory defaults. */
@@ -492,7 +492,6 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
         }else{
             return `${arg1}: No matching application found.`
         }
-
     }
 
     close(arg0:string, arg1:string):string{
@@ -523,12 +522,10 @@ src:<uri>  dpath:<path>(Optional: default location is downloads folder) filename
     }
 
     exit(arg0:number):void{
-        
         const pId = arg0
         const processToClose = this._runningProcessService.getProcess(pId);
-        if(processToClose){
+        if(processToClose)
             this._runningProcessService.closeProcessNotify.next(processToClose);
-        }
     }
 
     /**

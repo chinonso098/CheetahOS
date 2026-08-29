@@ -27,8 +27,11 @@ export class WindowService implements BaseService{
     private _hiddenOrVisibleWindows:number[];
     private _eventOriginator = Constants.EMPTY_STRING;
     private _processWindowWithTheHighestZIndex = 0;
+    private _isWindowInFocus = false;
+    private _isWindowDragActive = false;
 
     focusOnCurrentProcessWindowNotify: Subject<number> = new Subject<number>();
+    removeFocusOnThisProcessWindowNotify: Subject<number> = new Subject<number>();
     focusOnNextProcessWindowNotify: Subject<number> = new Subject<number>();
 
     currentProcessInFocusNotify: Subject<number> = new Subject<number>();
@@ -51,8 +54,8 @@ export class WindowService implements BaseService{
     restoreProcessWindowOnMouseLeaveNotify: Subject<number> = new Subject<number>();
     restoreProcessesWindowNotify: Subject<void> = new Subject<void>();
 
-    windowDragIsActive: Subject<void> = new Subject<void>();
-    windowDragIsInActive: Subject<void> = new Subject<void>();
+    //windowDragIsActive: Subject<void> = new Subject<void>();
+    //windowDragIsInActive: Subject<void> = new Subject<void>();
     closeWindowProcessNotify:Subject<number> = new Subject<number>();
 
     // ────────────────────────────────────────────────────────────────────
@@ -76,6 +79,7 @@ export class WindowService implements BaseService{
     // is torn down so the Map entries don't leak.
     // ────────────────────────────────────────────────────────────────────
     private readonly _focusOnCurrentByPid = new Map<number, Subject<void>>();
+    private readonly _removeFocusOnThisByPid = new Map<number, Subject<void>>();
     private readonly _focusOnNextByPid    = new Map<number, Subject<void>>();
     private readonly _restoreOrMinByPid   = new Map<number, Subject<void>>();
     private readonly _closeByPid          = new Map<number, Subject<void>>();
@@ -96,7 +100,6 @@ export class WindowService implements BaseService{
         this._processWindowBounds = new Map<string, WindowBoundsState>();
         this._processWindowStates = [];
         this._hiddenOrVisibleWindows = [];
-        console.log('WindowService constructor called');
 
         this._processIdService = processIDService;
         this._runningProcessService = punningProcessService;
@@ -109,6 +112,7 @@ export class WindowService implements BaseService{
         // existing publishers keep working unchanged. Each bridge is a single
         // Map.get + .next() per emission (O(1) regardless of window count).
         this.focusOnCurrentProcessWindowNotify.subscribe(pid => this._getOrCreateChannel(this._focusOnCurrentByPid, pid).next());
+        this.removeFocusOnThisProcessWindowNotify.subscribe(pid => this._getOrCreateChannel(this._removeFocusOnThisByPid, pid).next());
         this.focusOnNextProcessWindowNotify   .subscribe(pid => this._getOrCreateChannel(this._focusOnNextByPid,    pid).next());
         this.restoreOrMinimizeProcessWindowNotify.subscribe(pid => this._getOrCreateChannel(this._restoreOrMinByPid, pid).next());
         this.closeWindowProcessNotify         .subscribe(pid => this._getOrCreateChannel(this._closeByPid,          pid).next());
@@ -138,6 +142,12 @@ export class WindowService implements BaseService{
     /** Emits only when `focusOnCurrentProcessWindowNotify` fires with `pid`. */
     onFocusOnCurrentFor(pid: number): Observable<void> {
         return this._getOrCreateChannel(this._focusOnCurrentByPid, pid).asObservable();
+    }
+
+    /** Emits only when `removeFocusOnThisProcessWindowNotify` fires with `pid`. */
+    onRemoveFocusFor(pid: number): Observable<void> {
+        // if(this._processWindowWithTheHighestZIndex !== pid) return new Observable<void>();
+        return this._getOrCreateChannel(this._removeFocusOnThisByPid, pid).asObservable();
     }
 
     /** Emits only when `focusOnNextProcessWindowNotify` fires with `pid`. */
@@ -173,6 +183,7 @@ export class WindowService implements BaseService{
     releaseChannelsForPid(pid: number): void {
         const maps: Map<number, Subject<unknown>>[] = [
             this._focusOnCurrentByPid as unknown as Map<number, Subject<unknown>>,
+            this._removeFocusOnThisByPid as unknown as Map<number, Subject<unknown>>,
             this._focusOnNextByPid    as unknown as Map<number, Subject<unknown>>,
             this._restoreOrMinByPid   as unknown as Map<number, Subject<unknown>>,
             this._closeByPid          as unknown as Map<number, Subject<unknown>>,
@@ -237,10 +248,15 @@ export class WindowService implements BaseService{
 
     addProcessWindowIDWithHighestZIndex(pId:number):void{
         this._processWindowWithTheHighestZIndex = pId;
+        this._isWindowInFocus = true;
     }
 
     addProcessIDToHiddenOrVisibleWindows(pId:number):void{
         this._hiddenOrVisibleWindows.push(pId);
+    }
+
+    getIsWindowDragActive():boolean{
+        return this._isWindowDragActive;
     }
 
     // removeProcessPreviewImages(appName:string):void{
@@ -267,6 +283,14 @@ export class WindowService implements BaseService{
         const appName = uId.split(Constants.DASH)[0];
         if(this._processWindowBounds.has(appName))
             this._processWindowBounds.delete(appName);
+    }
+
+    removeThisWindowFromFocus():void{
+        // Central "no window is the active one" flag. Set only on this explicit
+        // deactivation path so the per-window header repaint stays presentational
+        // and focus-switch ordering can't accidentally flip it.
+        this._isWindowInFocus = false;
+        this.removeFocusOnThisProcessWindowNotify.next(this._processWindowWithTheHighestZIndex);
     }
 
     isProcessWindowInWindows(uId:string):boolean{
@@ -364,6 +388,20 @@ export class WindowService implements BaseService{
     getProcessWindowIDWithHighestZIndex():number{
         return this._processWindowWithTheHighestZIndex;
     }
+
+    getIsWindowInFocus():boolean{
+        return this._isWindowInFocus;
+    }
+
+
+    setWindowDragActive():void{
+        this._isWindowDragActive = true;
+    }
+
+    setWindowDragInActive():void{
+        this._isWindowDragActive = false;
+    }
+
 
     public getEventOriginator():string{
         return this._eventOriginator;

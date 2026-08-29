@@ -129,16 +129,17 @@ export namespace CommonFunctions {
     }
 
     const slideShowIntervalId = setInterval(() => {
-      if(counter < contentSet.length - 1 ){
-        counter = counter + 1;
-        currentContent = contentSet[counter];
+      // Advance with modulo so EVERY item is shown on each pass, including
+      // index 0 when the cycle wraps. The previous two-`if` form reset the
+      // counter to 0 but let the next tick immediately increment past it,
+      // so index 0 was displayed once at init and then skipped forever.
+      counter = (counter + 1) % contentSet.length;
+      currentContent = contentSet[counter];
 
-        if(setType === Constants.BACKGROUND_SLIDE_SHOW_SOLID_COLOR)
-          screenPrevElmnt.style.backgroundColor =  currentContent;
-        else
+      if(setType === Constants.BACKGROUND_SLIDE_SHOW_SOLID_COLOR)
+        screenPrevElmnt.style.backgroundColor =  currentContent;
+      else
         screenPrevElmnt.style.backgroundImage = `url(${currentContent})`;
-      }
-      if(counter === contentSet.length - 1) counter = 0;
 
     }, Constants.COLOR_AND_PICTURE_SLIDE_DELAY); //1 secs
 
@@ -487,13 +488,68 @@ export namespace CommonFunctions {
     return path.replace(/\/{2,}/g, Constants.ROOT);
   }
 
+  /**
+ * Returns true when `path` is a well-formed absolute virtual-FS path
+ * (format only — does not touch the file system).
+ */
+export function isValidPathFormat(path: unknown): path is string {
+    if (typeof path !== 'string') return false;
+
+    let trimmed = path.trim();
+    if (trimmed.length === 0) return false;
+
+    // Content paths (e.g. a .url shortcut's target) come in two forms: an
+    // absolute virtual path ('/Users/Videos/clip.mp4') or an osdrive-prefixed
+    // relative path ('osdrive/Users/Videos/clip.mp4'). Normalize the latter to
+    // the former so both validate the same way.
+    const osdrivePrefix = `${Constants.BASE}/`; // 'osdrive/'
+    if (trimmed.startsWith(osdrivePrefix)) {
+        trimmed = trimmed.slice(Constants.BASE.length); // 'osdrive/Users/..' -> '/Users/..'
+    }
+
+    // Must be an absolute path within the virtual drive.
+    if (!trimmed.startsWith('/')) return false;
+
+    // Reject characters that are invalid in this file system.
+    // (Windows-style illegal chars; forward slash is the separator.)
+    if (/[<>:"\\|?*\x00-\x1F]/.test(trimmed)) return false;
+
+    // No empty ("//") or dot-only ("/./", "/../") segments.
+    const segments = trimmed.split('/').slice(1);
+    if (segments.some(s => s === '' || s === '.' || s === '..')) return false;
+
+    return true;
+}
+
+
+export function isValidPathFormat__(path: unknown): path is string {
+    if (typeof path !== 'string') return false;
+
+    const trimmed = path.trim();
+    if (trimmed.length === 0) return false;
+
+    // Must be an absolute path within the virtual drive.
+    if (!trimmed.startsWith('/')) return false;
+
+    // Reject characters that are invalid in this file system.
+    // (Windows-style illegal chars; forward slash is the separator.)
+    if (/[<>:"\\|?*\x00-\x1F]/.test(trimmed)) return false;
+
+    // No empty ("//") or dot-only ("/./", "/../") segments.
+    const segments = trimmed.split('/').slice(1);
+    if (segments.some(s => s === '' || s === '.' || s === '..')) return false;
+
+    return true;
+}
+
+
 
   /**
- * A deliberately convoluted routine. It manufactures a pile of meaningless
- * noise, folds it through several dead-end transforms, then reconstructs a
- * fixed magnitude from a positional encoding and cancels the noise back out.
- * The returned value is invariant regardless of input.
- */
+   * A deliberately convoluted routine. It manufactures a pile of meaningless
+   * noise, folds it through several dead-end transforms, then reconstructs a
+   * fixed magnitude from a positional encoding and cancels the noise back out.
+   * The returned value is invariant regardless of input.
+   */
   export function computeNoiseBasedValue(seed: number = Math.random()): number {
       // Reconstruct a fixed magnitude via a positional (Horner) decode. The
       // radix and coefficients look arbitrary and reveal nothing on their own.

@@ -27,7 +27,7 @@ import { Constants } from 'src/app/system-files/constants';
 
 import { TaskBarIconInfo } from '../taskbarentries/taskbar.entries.type';
 
-import { IconsSizes } from './desktop.types';
+import { IconsSizes, LassoSelection } from './desktop.types';
 import { DesktopGeneralHelper } from './desktop.general.helper';
 import { DesktopContextMenuHelper } from './desktop.context.menu.helper';
 import { DesktopStyleHelper } from './desktop.style.helper';
@@ -84,6 +84,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   @ViewChild('desktopIconCloneCntnr',  {static: true}) desktopIconCloneCntnr!: ElementRef<HTMLElement>;
   @ViewChild('selectPaneContainer',    {static: true}) selectPaneContainer!: ElementRef<HTMLElement>;
   @ViewChild('invalidCharsToolTip',    {static: true}) invalidCharsToolTip!: ElementRef<HTMLElement>;
+  @ViewChild('pidDiv') pidDiv!: ElementRef<HTMLDivElement>;
+  @ViewChild('pic')    pic!: ElementRef<HTMLImageElement>;
 
   // #region Fields & Component State
 
@@ -159,12 +161,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   // `onDrop` (the only remaining consumer).
   isDesktopTheCaller = true;
   showDesktopScreenShotPreview = false;
+  showDesktopScreenShotCntnr = false;
   showVolumeCntrl = false;
   showOverflowPane = false;
   // `confirmDelete` + `moveToRecycleBinOnDelete` moved to
   // DesktopIconFileOpsHandler (§1.1.4.5).
 
-  dsktpPrevImg = Constants.EMPTY_STRING;
+  dsktpScreenShotPrevImg = Constants.EMPTY_STRING;
   slideState = 'slideOut';
 
   // `startVantaWaveColorChg` and the wave-color interval state moved to
@@ -209,6 +212,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   private readonly TASK_MANAGER_APP ="taskmanager";
   // CLIPPY_APP moved into ClippyService (§1.1.1).
   private readonly PHOTOS_APP = "photoviewer";
+  private readonly SNIPPING_TOOL_APP = "snippingtool";
 
   // Vanta config objects, lookup tables, picture list, walker constants,
   // current-index, and the in-flight switch guard moved to
@@ -242,8 +246,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   // notes on `isMultiSelectActive` and `activateMultiSelect` in
   // DesktopIconsHandler.)
   // Component reads/writes the public ones via `iconsHandler.<field>`.
-
-  isWindowDragActive = false;
 
   // `selectedFile` and `propertiesViewFile` moved to
   // DesktopIconFileOpsHandler (§1.1.4.4). Both PUBLIC on the
@@ -282,6 +284,15 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   Screenshots are saved in the screenshots folder.
   Click on the image to view it in photos app.
   `;
+
+
+  base64Img = Constants.EMPTY_STRING;                 // your source image
+  lassoVisible = false;
+  lasso:LassoSelection = { x: 0, y: 0, w: 0, h: 0 };
+  private startX = 0;
+  private startY = 0;
+  private dragging = false;
+
 
   // `movedBtnIds` moved to DesktopIconsHandler (§1.1.4.3).
   // `files:FileInfo[]` moved to DesktopIconFileOpsHandler (§1.1.4.5).
@@ -355,8 +366,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     this._windowService.hideProcessPreviewWindowNotify.subscribe(() => { this.taskbarMenu.hidePreview(); });
     this._windowService.keepProcessPreviewWindowNotify.subscribe(() => { this.taskbarMenu.keepPreview(); });
-    this._windowService.windowDragIsActive.subscribe(() => {this.isWindowDragActive = true;});
-    this._windowService.windowDragIsInActive.subscribe(() => {this.isWindowDragActive = false;}); 
     this._audioService.hideVolumeControlNotify.subscribe(() => { this.hideVolumeControl()});
     this._windowService.showProcessPreviewWindowNotify.subscribe((p) => { this.taskbarMenu.showPreview(p); });
 
@@ -474,7 +483,8 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         this.hideDesktopContextMenuAndOthers(isDesktopTheCaller),
       isFormDirty: () => this.iconFileOps.isFormDirty(),
       getIsRenameActive: () => this.iconFileOps.isRenameActive,
-      getIsWindowDragActive: () => this.isWindowDragActive,
+      getIsWindowDragActive: () =>  this._windowService.getIsWindowDragActive(),//this.isWindowDragActive
+      removeWindowFocus: () => this._windowService.removeThisWindowFromFocus(),
       getIsStartMenuOpen: () => this._menuService.isStartMenuOpen,
       clearDragAndDropFile: () => this._fileService.removeDragAndDropFile(),
       getUniqueId: () => this.uniqueId,
@@ -594,8 +604,10 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
    * is always present) so the shortcut works regardless of which surface has
    * focus. Currently handles:
    *   - Ctrl + Shift + V  → toggle the clipboard flyout.
-   *   - Windows + V       → toggle the clipboard flyout (best-effort).
    *   - Ctrl + Shift + L  → lock the screen.
+   *   - Ctrl + Shift + K  → capture a screenshot of the desktop for cropping.
+   *   - Shift + K         → capture a screenshot of the desktop and save it to the screenshots folder.
+   *   - Escape            → cancel the crop overlay and discard the captured screenshot.  
    *
    * NOTE: Windows + V is the OS-level Clipboard History shortcut. The operating
    * system intercepts it before the browser ever sees the event, so we cannot
@@ -605,15 +617,22 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
    * reach the page.
    */
   @HostListener('window:keydown', ['$event'])
-  onGlobalKeyDown(evt: KeyboardEvent): void {
+  async onGlobalKeyDown(evt: KeyboardEvent): Promise<void> {
     const isV = evt.key === 'v' || evt.key === 'V';
     const isL = evt.key === 'l' || evt.key === 'L';
-    if (!isV && !isL) {
+    const isK = evt.key === 'k' || evt.key === 'K';
+    const isEsc = evt.key === 'Escape' || evt.key === 'Esc';
+
+    if (!isV && !isL && !isK && !isEsc) {
       return;
     }
 
     const ctrlShift = evt.ctrlKey && evt.shiftKey && !evt.altKey && !evt.metaKey;
+    const shiftOnly = evt.shiftKey && !evt.ctrlKey && !evt.altKey && !evt.metaKey;
     const winV = evt.metaKey;
+
+    const isScreenLocked = this._systemNotificationServices.getIsScreenLocked();
+    if (isScreenLocked) return; // already locked, ignore the shortcut}
 
     if (ctrlShift && isV || winV) {
       evt.preventDefault();
@@ -622,10 +641,29 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
 
     if (ctrlShift && isL) {
       evt.preventDefault();
-      const isScreenLocked = this._systemNotificationServices.getIsScreenLocked();
-      if (isScreenLocked) return; // already locked, ignore the shortcut}
- 
       this._systemNotificationServices.lockScreenNotify.next();
+    }
+
+    if (ctrlShift && isK) {
+      evt.preventDefault();
+      await this.generateDesktopScreenShot();
+      this.showDesktopScreenShotCntnr = true;
+    }
+
+    if(shiftOnly && isK){
+      evt.preventDefault();
+      await this.generateDesktopScreenshotOnly();
+    }
+
+    // Escape cancels the crop overlay while the red border is visible:
+    // dismiss the overlay and discard the captured screenshot.
+    if (isEsc && this.showDesktopScreenShotCntnr) {
+      evt.preventDefault();
+      this.showDesktopScreenShotCntnr = false;
+      this.base64Img = Constants.EMPTY_STRING;
+      this.lassoVisible = false;
+      this.dragging = false;
+      this.resetLasso();
     }
   }
 
@@ -719,7 +757,188 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     }
   }
 
-  async captureComponentImg(): Promise<void>{
+  async generateDesktopScreenShot(): Promise<void>{
+    const colorOff = 'transparent';
+    const colorOn = '#00adef';
+
+    await CommonFunctions.sleep(100) // sleep for a bit to let the cntxt menu dis-appear 
+
+    try{
+      // §1.4 — helpers now receive their target element from the
+      // caller instead of looking it up via `document.getElementById`.
+      DesktopStyleHelper.changeMainDkstpBkgrndColor(colorOff, this.desktopContainer.nativeElement);
+      //'#vanta > canvas'
+      const dsktpCntnr = this.desktopContainer.nativeElement;
+      const canvasElmnt = document.querySelector('.vanta-canvas') as HTMLCanvasElement;
+
+      if(!dsktpCntnr){
+        console.error('Desktop container or Vanta canvas not found.');
+        return;
+      }
+
+      if(!canvasElmnt){
+        console.warn('Vanta canvas not found. Skipping Vanta');
+      }
+
+      this.showDesktopScreenShotPreview = true;
+      this.base64Img = await this.mergeGeneratedImages(dsktpCntnr, canvasElmnt);
+      DesktopStyleHelper.changeMainDkstpBkgrndColor(colorOn, this.desktopContainer.nativeElement);
+
+    }catch (err){
+      console.error('Screenshot capture failed:', err);
+      DesktopStyleHelper.changeMainDkstpBkgrndColor(colorOn, this.desktopContainer.nativeElement);
+    }
+  }
+
+  startLasso(e: MouseEvent) {
+    const rect = this.pidDiv.nativeElement.getBoundingClientRect();
+    this.startX = e.clientX - rect.left;
+    this.startY = e.clientY - rect.top;
+    this.lasso = { x: this.startX, y: this.startY, w: 0, h: 0 };
+    this.lassoVisible = true;
+    this.dragging = true;
+  }
+
+  /**
+   * While the mouse button is held, size the lasso rectangle relative to the
+   * overlay (pidDiv). `Math.min` / `Math.abs` let the user drag in any
+   * direction (up-left, down-right, etc.) and still get a positive-size box.
+   */
+  moveLasso(e: MouseEvent): void {
+    if(!this.dragging)
+      return;
+
+    const rect = this.pidDiv.nativeElement.getBoundingClientRect();
+    const curX = e.clientX - rect.left;
+    const curY = e.clientY - rect.top;
+
+    this.lasso = {
+      x: Math.min(this.startX, curX),
+      y: Math.min(this.startY, curY),
+      w: Math.abs(curX - this.startX),
+      h: Math.abs(curY - this.startY),
+    };
+  }
+
+  /**
+   * On mouse-up: crop `base64Img` to the region the lasso overlaps, preview +
+   * save the cropped image, then tear down the red-bordered overlay. Tiny
+   * (accidental single-click) selections are ignored.
+   */
+  async hidePicLasso(): Promise<void>{
+    this.dragging = false;
+    this.lassoVisible = false;
+
+    // Ignore a stray click / zero-area drag.
+    if(this.lasso.w < 1 || this.lasso.h < 1){
+      this.resetLasso();
+      return;
+    }
+
+    try{
+      const cropped = await this.cropImage();
+      if(cropped){
+        const delayBeforeSlideIn = 250; // .25 sec
+        const storeImgDelay = 500; // .5 sec
+        const slideOutDelay = 3000; // 3 secs
+        const hideDesktopScreenShotDelay = 1000; // 1 secs
+
+        this.showDesktopScreenShotCntnr = false;
+        await CommonFunctions.sleep(delayBeforeSlideIn);
+
+        this.showDesktopScreenShotPreview = true;
+        this.slideState = 'slideIn';
+        this.dsktpScreenShotPrevImg = cropped;
+
+        await this._audioService.play(this.systemNotificationAudio);
+        await CommonFunctions.sleep(storeImgDelay);
+        await this.saveGeneratedImage(cropped);
+
+        await CommonFunctions.sleep(storeImgDelay);
+
+        if(this._runningProcessService.isProcessRunning(Constants.FILE_EXPLORER))
+          this._fileService.dirFilesUpdateNotify.next();
+
+        await CommonFunctions.sleep(slideOutDelay);
+        this.slideState = 'slideOut';
+
+        await CommonFunctions.sleep(hideDesktopScreenShotDelay);
+        this.showDesktopScreenShotPreview = false;
+      }
+    }catch(err){
+      console.error('Image crop failed:', err);
+      this.showDesktopScreenShotPreview = false;
+    }finally{
+      this.base64Img = Constants.EMPTY_STRING;
+      this.resetLasso();
+    }
+  }
+
+  /**
+   * Draw the lasso-selected sub-region of `base64Img` onto a canvas and return
+   * it as a base64 PNG. The overlay is displayed at CSS-pixel size while the
+   * source image is at its natural resolution, so on-screen lasso coordinates
+   * are scaled up to source pixels and clamped to the image bounds (the
+   * "overlap" region) before cropping.
+   */
+  private cropImage(): Promise<string>{
+    return new Promise((resolve, reject) => {
+      if(!this.base64Img){
+        reject(new Error('No source image to crop.'));
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        const cntnr = this.pidDiv.nativeElement;
+        const scaleX = img.naturalWidth  / cntnr.clientWidth;
+        const scaleY = img.naturalHeight / cntnr.clientHeight;
+
+        // Clamp the lasso to the overlay/image bounds so we only keep the
+        // part that actually overlaps the picture.
+        let sx = this.lasso.x;
+        let sy = this.lasso.y;
+        let sw = this.lasso.w;
+        let sh = this.lasso.h;
+        if(sx < 0){ sw += sx; sx = 0; }
+        if(sy < 0){ sh += sy; sy = 0; }
+        if(sx + sw > cntnr.clientWidth)  sw = cntnr.clientWidth  - sx;
+        if(sy + sh > cntnr.clientHeight) sh = cntnr.clientHeight - sy;
+        if(sw <= 0 || sh <= 0){
+          reject(new Error('Lasso does not overlap the image.'));
+          return;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width  = Math.round(sw * scaleX);
+        canvas.height = Math.round(sh * scaleY);
+
+        const ctx = canvas.getContext('2d');
+        if(!ctx){
+          reject(new Error('Failed to get 2D rendering context.'));
+          return;
+        }
+
+        // Map display coords -> source (natural) coords via drawImage's
+        // 9-argument (source-rect) form.
+        ctx.drawImage(
+          img,
+          sx * scaleX, sy * scaleY, sw * scaleX, sh * scaleY,
+          0, 0, canvas.width, canvas.height
+        );
+
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = () => reject(new Error('Source image failed to load.'));
+      img.src = this.base64Img;
+    });
+  }
+
+  private resetLasso():void{
+    this.lasso = { x: 0, y: 0, w: 0, h: 0 };
+  }
+
+  async generateDesktopScreenshotOnly(): Promise<void>{
     const storeImgDelay = 500; // .5 sec
     const slideOutDelay = 3000; // 3 secs
     const hideDesktopScreenShotDelay = 1000; // 1 secs
@@ -750,14 +969,16 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       DesktopStyleHelper.changeMainDkstpBkgrndColor(colorOn, this.desktopContainer.nativeElement);
 
       this.slideState = 'slideIn';
-      this.dsktpPrevImg = finalImg;
+      this.dsktpScreenShotPrevImg = finalImg;
 
       await this._audioService.play(this.systemNotificationAudio);
       await CommonFunctions.sleep(storeImgDelay);
       await this.saveGeneratedImage(finalImg);
 
       await CommonFunctions.sleep(storeImgDelay);
-      this._fileService.dirFilesUpdateNotify.next();
+
+      if(this._runningProcessService.isProcessRunning(Constants.FILE_EXPLORER))
+        this._fileService.dirFilesUpdateNotify.next();
 
       await CommonFunctions.sleep(slideOutDelay);
       this.slideState = 'slideOut';
@@ -786,11 +1007,13 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
     this.screenShot.setStringBuffer = finalImg;
     this.screenShot.setIconPath = finalImg;
     this.screenShot.setFileType = '.png';
+    this.screenShot.setFileExtension = '.png';
 
     await this._fileService.writeFileAsync(this.DESKTOP_SCREEN_SHOT_DIRECTORY, this.screenShot);
-    this.screenShot.setOpensWith = 'photoviewer';
+    this.screenShot.setOpensWith = this.PHOTOS_APP;
 
     //###. if file explr is not running at the time of creation, this may be skipped 
+    if(!this._runningProcessService.isProcessRunning(Constants.FILE_EXPLORER)) return;
     this._fileService.addEventOriginator(Constants.FILE_EXPLORER);
   }
 
@@ -987,6 +1210,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
       this._userNotificationService.closeDialogMsgBox(pId);
     }
   }
+  
 
   // `showTaskBarTemporarily` moved to TaskbarMenuHandler (§1.1.3.3).
   // The dead self-cancelling `setInterval(10ms)` helper that used to
@@ -1123,10 +1347,21 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   }
 
   async openPhotos(): Promise<void>{
-    const delay = 1000; //1 sec
+    const delay = 1200; //1.2 sec
     this.showDesktopScreenShotPreview = false;
     await CommonFunctions.sleep(delay);
     this.launchApp(this.PHOTOS_APP, this.screenShot);
+  }
+
+  // Opens the captured screenshot in the Snipping Tool editor. This preview
+  // click is the ONLY launch path for the Snipping Tool — it is hidden from the
+  // Start menu, search, Run, and every other installed-app catalogue.
+  async openSnippingTool(): Promise<void>{
+    const delay = 1200; //1.2 sec
+    this.showDesktopScreenShotPreview = false;
+    await CommonFunctions.sleep(delay);
+    this.screenShot.setOpensWith = this.SNIPPING_TOOL_APP;
+    this.launchApp(this.SNIPPING_TOOL_APP, this.screenShot);
   }
 
   // #endregion
@@ -1203,7 +1438,7 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
         {icon1:empty,  icon2:empty, label: MenuAction.REFRESH, nest:[], action:this.iconFileOps.refresh.bind(this.iconFileOps), action1: ()=> empty, emptyline:true},
         {icon1:empty,  icon2:empty, label: MenuAction.PASTE, nest:[], action:this.iconFileOps.onPaste.bind(this.iconFileOps), action1: ()=> empty, emptyline:false},
         {icon1:`${Constants.IMAGE_BASE_PATH}terminal.png`, icon2:empty, label:MenuAction.OPEN_IN_TERMINAL, nest:[], action: this.openTerminal.bind(this), action1: ()=> '', emptyline:false},
-        {icon1:`${Constants.IMAGE_BASE_PATH}camera.png`, icon2:empty, label:MenuAction.SCREEN_SHOT, nest:[], action: this.captureComponentImg.bind(this), action1: ()=> '', emptyline:false},
+        {icon1:`${Constants.IMAGE_BASE_PATH}camera.png`, icon2:empty, label:MenuAction.SCREEN_SHOT, nest:[], action: this.generateDesktopScreenshotOnly.bind(this), action1: ()=> '', emptyline:false},
         {icon1:empty,  icon2:empty, label:MenuAction.NEXT_BACKGROUND, nest:[], action: this.nextBackground.bind(this), action1: ()=> empty, emptyline:false},
         {icon1:empty,  icon2:empty, label:MenuAction.PREVIOUS_BACKGROUND, nest:[], action: this.previousBackground.bind(this), action1: ()=> empty, emptyline:false},
         {icon1:`${Constants.IMAGE_BASE_PATH}personalize.png`, icon2:empty, label:MenuAction.PERSONALIZE, nest:[], action: this.openPersonalizationSettings.bind(this), action1: ()=> empty, emptyline:true},
@@ -1422,7 +1657,6 @@ export class DesktopComponent implements OnInit, OnDestroy, AfterViewInit{
   // #region Desktop Icon: Run / Click / Context Menu / Properties
 
   async runApplication(file:FileInfo):Promise<void>{
-    console.log('DesktopIconFileOpsHandler.onTriggerRunApplication', file);
     await this._audioService.play(this.cheetahNavAudio);
     CommonFunctions.handleTracking(this._activityHistoryService, file);
     this._processHandlerService.runApplication(file);

@@ -6,8 +6,10 @@
     [isDialog]="true"
     [showTitleBarImg]="true">
 
-    <div class="run-container" [class.run-container-expanded]="isDropdownOpen" (click)="onInputChange(); focusWindow($event)" (contextmenu)="silenceCtxEvt($event)" #runContainer>
-
+    <div class="run-container" 
+        [class.run-container-expanded]="isDropdownOpen" 
+        (click)="onInputChange(); focusWindow($event)" 
+        (contextmenu)="silenceCtxEvt($event)" #runContainer>
 
         <div class="run-prompt">
             <img class="run-prompt-icon" [src]="this.icon" alt="Run" />

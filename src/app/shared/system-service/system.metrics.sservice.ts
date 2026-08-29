@@ -18,7 +18,7 @@ import { RunningProcessService } from './running.process.service';
 @Injectable({
     providedIn: 'root'
 })
-export class SystemMetric implements BaseService {
+export class SystemMetricService implements BaseService {
 
     private _processIdService!: ProcessIDService;
     private _runningProcessService!: RunningProcessService;

@@ -62,12 +62,15 @@ export namespace FileExplorerPathHelper {
      *  - /Users/Bob/Documents        -> [THISPC, Users, Bob, Documents]
      *  - /System/Library             -> [THISPC, System, Library]
      *  - root "/"                     -> [THISPC, OSDISK]
+     *
+     * When `displayFullPathInTitleBar` is false the trail collapses to just the
+     * leaf segment (e.g. [Documents]) and drops the leading THISPC.
      */
-    export const buildBreadCrumbs = (directory:string, labels:BreadCrumbLabels):string[] => {
+    export const buildBreadCrumbs = (directory:string, labels:BreadCrumbLabels, displayFullPathInTitleBar = true):string[] => {
         const segments = directory.split(labels.root).filter(x => x !== labels.empty);
 
-        // Breadcrumb trail always starts at THISPC.
-        const trail:string[] = [labels.thisPc, ...segments];
+        const crumbs = displayFullPathInTitleBar ? segments : segments.slice(-1);
+        const trail:string[] = displayFullPathInTitleBar ? [labels.thisPc, ...crumbs] : [...crumbs];
 
         // Special case: Recycle Bin.
         if(directory === labels.recycleBinPath){

@@ -19,7 +19,7 @@ import { StartMenuComponent } from './system-shell/startmenu/startmenu.component
 import { TaskBarPreviewComponent } from './system-shell/taskbarpreview/taskbarpreview.component';
 import { TaskBarEntriesComponent } from './system-shell/taskbarentries/taskbarentries.component';
 import { TaskBarEntryComponent } from './system-shell/taskbarentry/taskbarentry.component';
-import { FileExplorerComponent } from './applications/system-apps/fileexplorer/fileexplorer.component';
+import { FileExplorerComponent } from './applications/system-apps/fileexplorer_old/fileexplorer.component';
 import { PrimaryWindowComponent } from './shared/system-ui-components/window/primarywindow/primarywindow.component';
 import { GreetingComponent } from './applications/user-apps/greeting/greeting.component';
 import { TaskmanagerComponent } from './applications/system-apps/taskmanager/taskmanager.component';
@@ -29,6 +29,7 @@ import { AudioPlayerComponent } from './applications/system-apps/audioplayer/aud
 import { TerminalComponent } from './applications/system-apps/terminal/terminal.component';
 import { MenuComponent } from './shared/system-ui-components/menu/menu.component';
 import { PhotoViewerComponent } from './applications/system-apps/photoviewer/photoviewer.component';
+import { SnippingToolComponent } from './applications/system-apps/snippingtool/snippingtool.component';
 import { TextEditorComponent } from './applications/system-apps/texteditor/texteditor.component';
 import { RuffleComponent } from './applications/user-apps/ruffle/ruffle.component';
 import { DialogComponent } from './shared/system-ui-components/dialog/dialog.component';
@@ -58,14 +59,14 @@ import { ScreenSaverViewerComponent } from './applications/system-apps/screensav
 
 import { SafeUrlPipe } from './shared/system-pipes/safe.resource.url.pipe';
 import { TruncatePipe } from './shared/system-pipes/string.shorten.pipe';
-import { GlobalErrorHandler } from './shared/system-service/global.error.handler';
+import { GlobalErrorHandler } from './application-services/global.error.handler';
 
 import { HighlightDirective } from './shared/system-ui-components/window/window.btn.highlight.directives';
 import { MouseStopDirective } from './applications/system-apps/fileexplorer/mouse.stop.directive';
 import { TaskBarEntryHighlightDirective } from './system-shell/taskbarentries/taskbar.entries.highlight.directives';
 import { LongPressDirective } from './applications/system-apps/audioplayer/long.press.directive';
 import { ColumnResizeDirective } from './applications/system-apps/taskmanager/taskmanager.column-resize.directive';
-import { FileExplorerColumnResizeDirective } from './applications/system-apps/fileexplorer/fileexplorer.column-resize.directive';
+import { FileExplorerColumnResizeDirective } from './applications/system-apps/fileexplorer_old/fileexplorer.column-resize.directive';
 import { KeyPressCaptureDirective } from './applications/system-apps/terminal/key.press.capture.directive';
 import { AlphaNumericDirective } from './applications/system-apps/chatter/chatter.textbox.directives';
 
@@ -92,6 +93,7 @@ import { AlphaNumericDirective } from './applications/system-apps/chatter/chatte
     TerminalComponent,
     MenuComponent,
     PhotoViewerComponent,
+    SnippingToolComponent,
     TextEditorComponent,
     PropertiesComponent,
     RuffleComponent,

@@ -317,7 +317,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     // below so an already-focused window still closes the menu.
     this.hideContextMenu();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
     this.hideContextMenu();
@@ -769,6 +770,8 @@ export class TaskmanagerComponent implements BaseComponent,OnInit,OnDestroy,Afte
     evt?.stopPropagation();
 
     const processToClose = this._runningProcessService.getProcess(this.processIdToClose);
+    if(!processToClose) return;
+    
     if(!this.closingNotAllowed.includes(processToClose.getProcessName)){
       this._runningProcessService.closeProcessNotify.next(processToClose);
     }else{

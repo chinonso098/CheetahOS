@@ -1,80 +1,79 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { Subject } from 'rxjs';
 
 import { TaskbarComponent } from './taskbar.component';
-import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
-import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { MenuService } from 'src/app/shared/system-service/menu.services';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
+import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 import { Constants } from 'src/app/system-files/constants';
 
 describe('TaskbarComponent', () => {
   let component: TaskbarComponent;
   let fixture: ComponentFixture<TaskbarComponent>;
-
-  // Minimal stubs: the component only assigns a process id, registers a process,
-  // and subscribes to / emits on the subjects below, so light fakes are enough.
-  const processIdServiceStub = {
-    getNewProcessId: () => 1,
-  };
-  const runningProcessServiceStub = {
-    addProcess: () => undefined,
-    getEventOriginator: () => Constants.EMPTY_STRING,
-    addEventOriginator: () => undefined,
-  };
-  const menuServiceStub = {
-    hideStartMenu: new Subject<void>(),
-    showStartMenu: new Subject<void>(),
-    hideSearchBox: new Subject<string>(),
-    showSearchBox: new Subject<void>(),
-    hideContextMenus: new Subject<string>(),
-    showTaskBarConextMenu: new Subject<MouseEvent>(),
-  };
-  const systemNotificationServiceStub = {
-    showLockScreenNotify: new Subject<void>(),
-    showDesktopNotify: new Subject<void>(),
-    showTaskBarNotify: new Subject<void>(),
-    hideTaskBarNotify: new Subject<void>(),
-    showTaskBarToolTipNotify: new Subject<unknown>(),
-    hideTaskBarToolTipNotify: new Subject<void>(),
-  };
+  let menuService: MenuService;
+  let systemNotificationService: SystemNotificationService;
+  let defaultService: DefaultService;
 
   beforeEach(async () => {
+    // Every service the taskbar touches is dependency-light, so the real ones
+    // are used and the assertions run against genuine notification plumbing.
     await TestBed.configureTestingModule({
       declarations: [TaskbarComponent],
       imports: [NoopAnimationsModule],
-      providers: [
-        { provide: ProcessIDService, useValue: processIdServiceStub },
-        { provide: RunningProcessService, useValue: runningProcessServiceStub },
-        { provide: MenuService, useValue: menuServiceStub },
-        { provide: SystemNotificationService, useValue: systemNotificationServiceStub },
-      ],
-    })
-    .compileComponents();
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    menuService = TestBed.inject(MenuService);
+    systemNotificationService = TestBed.inject(SystemNotificationService);
+    defaultService = TestBed.inject(DefaultService);
 
     fixture = TestBed.createComponent(TaskbarComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('drives taskbar opacity from lock-screen / desktop notifications', () => {
-    component.lockScreenIsActive();
+  it('drives taskbar opacity from the lock-screen / desktop notifications', () => {
+    systemNotificationService.showLockScreenNotify.next();
     expect(component.taskBarOpacity).toBe(0);
 
-    component.desktopIsActive();
+    systemNotificationService.showDesktopNotify.next();
     expect(component.taskBarOpacity).toBe(1);
   });
 
-  it('collapses the search box when toggled while already open', async () => {
+  it('slides out of view and back on the hide / show taskbar notifications', () => {
+    systemNotificationService.hideTaskBarNotify.next();
+    expect(component.slideState).toBe('slideDown');
+
+    systemNotificationService.showTaskBarNotify.next();
+    expect(component.slideState).toBe('slideUp');
+  });
+
+  it('keeps the start menu and the search box mutually exclusive', async () => {
+    const evt = { stopPropagation: jest.fn() } as unknown as MouseEvent;
+    let searchBoxHidden = false;
+    menuService.hideSearchBox.subscribe(() => (searchBoxHidden = true));
+
     component.isSearchWindowVisible = true;
+    await component.showStartMenu(evt);
 
-    await component.hideShowSearch(new MouseEvent('click'));
+    expect(component.isStartMenuVisible).toBe(true);
+    expect(searchBoxHidden).toBe(true);
+  });
 
-    expect(component.isSearchWindowVisible).toBe(false);
+  it('paints the surface with the accent color only while the accent toggle is on', () => {
+    const raiseEvent = true;
+    const accent = defaultService.getDefaultSetting(Constants.DEFAULT_ACCENT_COLOR);
+
+    defaultService.updateDefaultData(
+        Constants.DEFAULT_SHOW_ACCENT_COLOR_START_MENU_AND_TASKBAR, Constants.TRUE, raiseEvent);
+    expect(component.surfaceColor).toBe(accent);
+
+    defaultService.updateDefaultData(
+        Constants.DEFAULT_SHOW_ACCENT_COLOR_START_MENU_AND_TASKBAR, Constants.FALSE, raiseEvent);
+    expect(component.surfaceColor).toBe(Constants.DEFAULT_SYSTEM_COLOR);
   });
 });

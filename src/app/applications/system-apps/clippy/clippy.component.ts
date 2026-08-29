@@ -192,9 +192,9 @@ export class ClippyComponent implements BaseComponent, OnInit, OnDestroy, OnChan
       this._selfDestructCleanupTimeoutId = setTimeout(()=>{
         if(this._isDestroyed) return;
         const processToClose = this._runningProcessService.getProcess(this.processId);
-        if(processToClose){
+        if(processToClose)
           this._runningProcessService.closeProcessNotify.next(processToClose);
-        }
+        
       }, this.CLOSE_ANIMATION_DURATION) 
     },this.selectedDuration) 
   }

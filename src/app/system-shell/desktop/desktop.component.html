@@ -2,7 +2,7 @@
     <ol class="ol-desktopIcon-grid" 
         tabindex="0"
         (contextmenu)="showDesktopContextMenu($event)" 
-        (click)="iconsHandler.handleIconHighLightState()"
+        (click)="iconsHandler.handleIconHighLightState($event)"
         (keydown)="iconsHandler.onDesktopKeyDown($event)"
         (dragover)="iconsHandler.onDragOver($event)" 
         (drop)="onDrop($event)" 
@@ -11,7 +11,12 @@
         #desktopIconOl
         id="desktopIcon_ol"> 
         
-        <li class="li-desktopIcon-container" *ngFor="let file of iconFileOps.files; let i = index; trackBy: trackByDesktopIcon" id="desktopIcon_li{{i}}">
+        <li class="li-desktopIcon-container" 
+        *ngFor="let file of iconFileOps.files; let i = index; trackBy: trackByDesktopIcon" 
+        id="desktopIcon_li{{i}}"
+        [class.is-hidable]="file.getIsHidable"
+        [class.is-hidden]="file.getIsHidden">
+        
             <div role="button" tabindex="0" class="desktopIcon-btn" 
                 (contextmenu)="iconFileOps.onShowDesktopIconCntxtMenu($event, file, i)" 
                 (click)="onDesktopIconClick($event, i)"
@@ -24,7 +29,7 @@
                 (mouseenter)="iconsHandler.onMouseEnter(i)" 
                 (mouseleave)="iconsHandler.onMouseLeave(i)"  
 
-            id="iconBtn{{i}}"  [style]="iconsHandler.btnStyle">
+                id="iconBtn{{i}}" [style]="iconsHandler.btnStyle">
                 <div class="desktopIcon-img-section"  id="desktopIcon_fig{{i}}">
                     <div class="desktopIcon-img-container">
                         <!-- decoding="async" only (no lazy): desktop icons are above-the-fold and shown on boot, so we decode off the main thread but still fetch them eagerly to avoid empty-icon flashes. -->
@@ -82,11 +87,11 @@
         }
         
         @if(showDesktopScreenShotPreview){
-            <div [@slideStatusAnimation]="slideState" class="dsktp-screenshot__container" >
-                <div class="dsktp-screenshot__img-container" (click)="openPhotos()">
-                    <img [src]="dsktpPrevImg"/>
+            <div [@slideStatusAnimation]="slideState" class="desktop-screenshot-preview__container" >
+                <div class="desktop-screenshot-preview__img-container" (click)="openSnippingTool()">
+                    <img [src]="dsktpScreenShotPrevImg"/>
                 </div>
-                <div class="dsktp-screenshot__other-container">
+                <div class="desktop-screenshot-preview__other-container">
                     <div class="other__item-cntnr">
                         <div class="other__item-head">
                             <figure class="other__item-figure">
@@ -137,3 +142,21 @@
         <cos-startmenu ></cos-startmenu>
     </ol>
 </main>
+
+<div class="desktop_screen_shot_container"
+     [class.is-visible]="showDesktopScreenShotCntnr"
+     [class.is-red-border-hidden]="lassoVisible"
+     (mousedown)="startLasso($event)"
+     (mousemove)="moveLasso($event)"
+     (mouseup)="hidePicLasso()"
+      #pidDiv>
+
+     <img #pic [src]="base64Img" draggable="false" />
+
+   <div class="desktop_screen_shot_lasso" #picLasso [hidden]="!lassoVisible"
+       [style.left.px]="lasso.x"
+       [style.top.px]="lasso.y"
+       [style.width.px]="lasso.w"
+       [style.height.px]="lasso.h">
+    </div>
+</div>

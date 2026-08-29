@@ -746,6 +746,7 @@ export class TaskBarEntriesComponent implements OnInit, AfterViewInit {
   }
 
   onTaskBarIconClick(file:TaskBarIconInfo):void{
+
     if(!this._runningProcessService.isProcessRunning(file.opensWith)){
       const tmpFile:FileInfo = new FileInfo();
       tmpFile.setOpensWith = file.opensWith;

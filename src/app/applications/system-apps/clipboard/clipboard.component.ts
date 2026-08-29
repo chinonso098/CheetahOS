@@ -88,7 +88,8 @@ export class ClipboardComponent implements BaseComponent, OnInit, OnDestroy {
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
@@ -133,7 +134,8 @@ export class ClipboardComponent implements BaseComponent, OnInit, OnDestroy {
 
   private closeWindow(): void {
     const processToClose = this._runningProcessService.getProcess(this.processId);
-    this._runningProcessService.closeProcessNotify.next(processToClose);
+    if(processToClose)
+      this._runningProcessService.closeProcessNotify.next(processToClose);
   }
 
   private getComponentDetail(): Process {

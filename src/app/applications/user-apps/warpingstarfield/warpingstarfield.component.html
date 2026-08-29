@@ -1,6 +1,6 @@
 <cos-primarywindow [runningProcessID]="this.processId" [processAppIcon]="this.icon" [processAppName]="this.name" [isMaximizable]="this.isMaximizable" [priorUId]="this.priorUId">
-    <div class="starfield-cntnr" id="starfieldApp" #starfield (click)="focusWindow($event)"
-     (contextmenu)="silenceCtxEvt($event)">
+    <div class="starfield-cntnr" id="starfieldApp" #starfield 
+    (click)="focusWindow($event)" (contextmenu)="silenceCtxEvt($event)">
         <canvas #canvas></canvas>
     </div>
 </cos-primarywindow>

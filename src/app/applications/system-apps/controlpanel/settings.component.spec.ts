@@ -5,7 +5,8 @@ import { Subject } from 'rxjs';
 
 import { SettingsComponent } from './settings.component';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
-import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
+import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
+import { FileService } from 'src/app/shared/system-service/file.service';
 import { WindowService } from 'src/app/shared/system-service/window.service';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 import { Constants } from 'src/app/system-files/constants';
@@ -21,8 +22,13 @@ describe('SettingsComponent', () => {
   const processIdServiceStub = {
     getNewProcessId: () => 1,
   };
-  const runningProcessServiceStub = {
-    addProcess: () => undefined,
+  // ProcessHandlerService and FileService bootstrap the virtual file system, so
+  // they are replaced with the two members SettingsComponent actually touches.
+  const processHandlerServiceStub = {
+    getLastProcessTrigger: () => undefined,
+  };
+  const fileServiceStub = {
+    getFolderSizeAsync: () => Promise.resolve(0),
   };
   const windowServiceStub = {
     focusOnCurrentProcessWindowNotify: new Subject<number>(),
@@ -30,6 +36,7 @@ describe('SettingsComponent', () => {
     addProcessPreviewImage: () => undefined,
   };
   const defaultServiceStub = {
+    defaultSettingsChangeNotify: new Subject<string>(),
     getDefaultSetting: () => Constants.EMPTY_STRING,
     updateDefaultData: () => undefined,
   };
@@ -44,7 +51,8 @@ describe('SettingsComponent', () => {
       imports: [ReactiveFormsModule, FormsModule],
       providers: [
         { provide: ProcessIDService, useValue: processIdServiceStub },
-        { provide: RunningProcessService, useValue: runningProcessServiceStub },
+        { provide: ProcessHandlerService, useValue: processHandlerServiceStub },
+        { provide: FileService, useValue: fileServiceStub },
         { provide: WindowService, useValue: windowServiceStub },
         { provide: DefaultService, useValue: defaultServiceStub },
       ],
@@ -69,5 +77,36 @@ describe('SettingsComponent', () => {
 
     expect(component.clipboardSaveStateText).toBe(Constants.OFF);
     expect(updateSpy).toHaveBeenCalledWith(Constants.DEFAULT_CLIP_BOARD_STATE, Constants.FALSE);
+  });
+
+  it('persists the viewport-bounds preference when toggled on', () => {
+    const updateSpy = jest.spyOn(defaultServiceStub, 'updateDefaultData');
+
+    component.isEnforceViewPortBound = true;
+    component.changeEnforceViewPortBoundState();
+
+    expect(component.enforceViewPortBoundText).toBe(Constants.ON);
+    expect(updateSpy).toHaveBeenCalledWith(Constants.DEFAULT_ENFORCE_VIEWPORT_BOUNDS, Constants.TRUE);
+  });
+
+  it('opens the requested pane and remembers which sidebar row is active', async () => {
+    const clipboardIdx = 3;
+    const evt = { stopPropagation: jest.fn() } as unknown as MouseEvent;
+
+    await component.handleMenuSelection('Clipboard', clipboardIdx, evt, 'System');
+
+    expect(component.selectedSystemOption).toBe('Clipboard');
+    expect(component.selectedIdx).toBe(clipboardIdx);
+    expect(evt.stopPropagation).toHaveBeenCalled();
+  });
+
+  it('builds the settings landing page and its sub-panes', () => {
+    const homeTitles = component.generateControlPanelOptions().map(o => o.title);
+    const systemTitles = component.generateSystemOptions().map(o => o.title);
+
+    expect(homeTitles.length).toBe(3);
+    expect(systemTitles).toContain('Clipboard');
+    expect(component.generateApplicationOptions().length).toBe(1);
+    expect(component.generatePersonalizationOptions().length).toBe(4);
   });
 });

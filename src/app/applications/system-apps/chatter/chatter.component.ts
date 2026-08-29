@@ -18,6 +18,7 @@ import { Process } from 'src/app/system-files/process';
 
 import { ChatMessage } from './model/chat.message';
 import { IUser, IUserData } from './model/chat.interfaces';
+import { ChatterBot } from './chatter.bot';
 import { ProfanityFilter } from './model/profanity.filter';
 import { ReservedNameValidator } from './model/reserved.name.validator';
 import { Subscription } from 'rxjs';
@@ -58,6 +59,11 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   private _themeChangeSub!: Subscription;
 
   private _newChatMessageSub!: Subscription;
+  private _messageUpdateSub!: Subscription;
+  // The message currently open for editing (null = normal compose mode). Only
+  // the user's OWN, non-app messages are editable; submitting sends a
+  // messageUpdate rather than a newMessage.
+  private _editingMsg: ChatMessage | null = null;
   private _priorMessagesSub!: Subscription;
   private _userCountChangeSub!: Subscription;
   private _newUserInfomationSub!: Subscription;
@@ -104,6 +110,39 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   RETRIEVAL_DELAY = 150;
   currIteration = 0;
   prevScrollHeight = 0;
+
+  // ── Chatter bot ────────────────────────────────────────────────────────
+  // Client-side companion that becomes active when the room is empty or nearly
+  // so (0 or 1 other humans online). It replies to the user's posts and shows
+  // up in the online-user list so a lone user isn't left talking to no one.
+  private readonly _chatterBot = new ChatterBot();
+  // Routing policy for the user<->bot exchange while the user is alone.
+  //   true  (default) -> those messages (the user's posts, their edits, and the
+  //                      bot's own lines) stay entirely on this machine.
+  //   false           -> they are sent to the server like any normal chat.
+  keepUserAndBotChatLocal = false;
+  // Number of OTHER humans online (server count minus self). Source of truth
+  // for bot activation; `userCount` below is the display value (may include the
+  // bot). Kept separate so activation never reads its own bot-inflated count.
+  private _humanOthersOnline = 0;
+  // Guards the one-time greeting; only posted after history has loaded so the
+  // initial `chatData = priorMessages` assignment can't wipe it out.
+  private _botGreeted = false;
+  private _priorMessagesLoaded = false;
+  // Ensures we only ever schedule ONE pending greeting attempt at a time.
+  private _greetingScheduled = false;
+  // Short pause before greeting so the server's online-user count can settle
+  // after join. We then re-read the freshest count and only greet if the user
+  // is genuinely alone — never a stale "no one else is around" when someone was
+  // already in the room.
+  private readonly BOT_GREETING_DELAY = 1500;
+  // Tracks the bot's active state across refreshes so we can detect the
+  // active -> inactive transition (a second human joined) and fire a one-shot
+  // snarky farewell before the bot bows out.
+  private _botWasActive = false;
+  // Pending bot reply timers, cleared on destroy so a closing window never
+  // fires a late reply against a torn-down view.
+  private readonly _botTimeoutIds = new Set<ReturnType<typeof setTimeout>>();
 
   // Leading-edge throttle for keeping the lock screen awake while typing.
   // The first keystroke resets the idle timer immediately; further keys are
@@ -161,7 +200,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     });
 
 
-    this._newChatMessageSub = this._chatService.newMessageNotify.subscribe(()=> this.updateChatData());
+    this._newChatMessageSub = this._chatService.newMessageNotify.subscribe((msg)=> this.updateChatData(msg));
+    this._messageUpdateSub = this._chatService.messageUpdateNotify.subscribe((msg)=> this.applyIncomingMessageUpdate(msg));
     this._userCountChangeSub = this._chatService.userCountChangeNotify.subscribe((p)=> this.updateOnlineUserCount(p));
     this._newUserInfomationSub = this._chatService.newUserInformationNotify.subscribe(()=> this.updateOnlineUserList());
     this._updateOnlineUserListSub =  this._chatService.updateOnlineUserListNotify.subscribe(()=> this.updateOnlineUserList());
@@ -213,19 +253,20 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   async ngAfterViewInit(): Promise<void> {
-    const delay = 50;
+    const userOnlineSendDelay = 250;
     const audioDelay = 1500; //1s
+    const fetchPriorMessagesDelay = 2000; //2s
 
     await CommonFunctions.sleep(audioDelay);
     await this._audioService.play(this.logonAudio);
 
-    await CommonFunctions.sleep(delay);
+    await CommonFunctions.sleep(userOnlineSendDelay);
     this._chatService.sendUserOnlineAddInfoMessage(this.chatUserData);
     this.generateAndSendAppMessages(this.A_NEW_USER_HAS_JOINED_THE_CHAT_MSG);
 
     // Request the chat history from the server. The reply is handled by the
     // priorMessagesNotify subscription, which then calls retrieveEarlierMessages().
-    await CommonFunctions.sleep(audioDelay * 2);
+    await CommonFunctions.sleep(fetchPriorMessagesDelay);
     const whoami = this._defaultService.getDefaultSetting(Constants.DEFAULT_WHO_IS_THIS) ?? Constants.UNKNOWN;
     this._chatService.sendFetchPriorMessagesMessage(whoami);
 
@@ -241,6 +282,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
     await CommonFunctions.sleep(delay);
     this._newChatMessageSub?.unsubscribe();
+    this._messageUpdateSub?.unsubscribe();
     this._priorMessagesSub?.unsubscribe();
     this._userCountChangeSub?.unsubscribe();
     this._newUserInfomationSub?.unsubscribe();
@@ -250,23 +292,39 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     this._themeChangeSub?.unsubscribe();
     this._socketService.disconnect();
     clearTimeout(this._lockAwakeThrottleId);
+
+    // Cancel any pending bot replies so a closing window can't fire late.
+    this._botTimeoutIds.forEach(id => clearTimeout(id));
+    this._botTimeoutIds.clear();
     
     const ssPid = this._socketService.processId;
     const socketProccess = this._runningProcessService.getProcess(ssPid);
-    this._runningProcessService.removeProcess(socketProccess);
+    if(socketProccess)
+      this._runningProcessService.removeProcess(socketProccess);
 
     // ChatterService is now component-scoped, so it registers a process on every
     // open. Remove it here to mirror the socket cleanup and avoid leaking entries.
     this._chatService.terminateSubscriptions();
     const csPid = this._chatService.processId;
     const chatterProcess = this._runningProcessService.getProcess(csPid);
-    this._runningProcessService.removeProcess(chatterProcess);
+    if(chatterProcess)
+      this._runningProcessService.removeProcess(chatterProcess);
   }
 
-  async updateChatData():Promise<void>{
+  async updateChatData(newMsg?:ChatMessage):Promise<void>{
     const delay = 500; //500ms
-    const data = this._chatService.getChatData();
-    this.chatData = data
+
+    // Append ONLY the newly-received message rather than replacing the whole
+    // view with the service's history. The service only holds server-fetched
+    // history + messages from OTHER users; the local user's own posts and all
+    // bot messages live only in `this.chatData`. A full replace (the old
+    // behaviour) wiped those the instant a networked message arrived — e.g.
+    // when a second user joined. Appending preserves the local conversation.
+    if(newMsg){
+      this.chatData.push(newMsg);
+    }else{
+      this.chatData = this._chatService.getChatData();
+    }
     this.setMessageLastReceievedTime();
 
     await this._audioService.play(this.newMsgAudio);
@@ -289,18 +347,12 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     });
   }
 
-  updateOnlineUserCount(value:number):void{
-    //0 is add_and_broadcast
-    // 1 is add
+  updateOnlineUserCount(_value:number):void{
+    // `_value` is a legacy add/broadcast flag; the authoritative count comes
+    // from the service. Subtract 1 to exclude yourself → OTHER humans online.
     const currentUserCount = this._chatService.getUserCount();
-
-    if(value === 0){
-      //subtract 1 to account for yourself
-      this.userCount = currentUserCount - 1;
-    }else{
-      //subtract 1 to account for yourself
-      this.userCount = currentUserCount - 1;
-    }
+    this._humanOthersOnline = Math.max(0, currentUserCount - 1);
+    this.refreshBotPresence();
   }
 
   generateAndSendAppMessages(msgType:number, userName?:string):void{
@@ -315,7 +367,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     }
 
     const chatObj = new ChatMessage(chatInput, this.userId, this.userName);
-    chatObj.setIsAppMgs = true;
+    chatObj.setIsAppMsg = true;
 
     if(msgType === this.USER_CHANGED_NAME_MSG)
         chatObj.setIsUserNameEdit = true;
@@ -326,8 +378,125 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   }
 
   updateOnlineUserList():void{
-    const data = this._chatService.getListOfOnlineUsers();
-    this.onlineUsers = data;
+    this.onlineUsers = this._chatService.getListOfOnlineUsers();
+    // The service roster overwrites onlineUsers, so re-attach the bot entry
+    // (and re-sync the displayed count) whenever it changes.
+    this.refreshBotPresence();
+  }
+
+  /**
+   * Keep the bot's roster entry and the displayed online count in sync with
+   * whether the bot is currently active (i.e. the room is empty or nearly so).
+   * Also posts the one-time greeting, but only once history has loaded so it
+   * can't be clobbered by the initial prior-messages assignment.
+   */
+  private refreshBotPresence():void{
+    const active = this._chatterBot.isActive(this._humanOthersOnline);
+
+    // Rebuild the roster: strip any stale bot entry, re-add when active.
+    this.onlineUsers = this.onlineUsers.filter(u => u.userId !== ChatterBot.BOT_USER_ID);
+    if(active)
+      this.onlineUsers = [...this.onlineUsers, this._chatterBot.userData];
+
+    // Footer reflects the bot's presence so it never reads "online:0".
+    this.userCount = this._humanOthersOnline + (active ? 1 : 0);
+
+    // Looks like we're alone and history is ready: line up a greeting. It's
+    // scheduled (not posted inline) so we can pause, re-check the freshest
+    // online count, and back out if someone was actually already here.
+    if(active && this._priorMessagesLoaded && !this._botGreeted){
+      this.scheduleGreeting();
+    }
+
+    // A second human just joined (active -> inactive): drop a parting jab, but
+    // only if the bot had actually been in the conversation (greeted), so
+    // joining an already-busy room never triggers a phantom goodbye.
+    if(this._botWasActive && !active && this._botGreeted){
+      this.postBotMessage(this._chatterBot.farewell(), true);
+    }
+    this._botWasActive = active;
+
+    this._cdr.detectChanges();
+  }
+
+  /**
+   * Wait a beat, re-read the most recent online-user count, and greet ONLY if
+   * the user is still genuinely alone. This closes the join race where the
+   * server hadn't yet reported an existing user when we first thought the room
+   * was empty — which used to produce a wrong "no one else is around" greeting.
+   */
+  private scheduleGreeting():void{
+    if(this._greetingScheduled || this._botGreeted) return;
+    this._greetingScheduled = true;
+
+    const id = setTimeout(() => {
+      this._botTimeoutIds.delete(id);
+
+      // Pull the freshest authoritative count (minus self).
+      const currentUserCount = this._chatService.getUserCount();
+      this._humanOthersOnline = Math.max(0, currentUserCount - 1);
+
+      // Re-sync roster/footer (and any farewell) against the fresh count.
+      this.refreshBotPresence();
+
+      if(this._chatterBot.isActive(this._humanOthersOnline) && !this._botGreeted){
+        this._botGreeted = true;
+        this.postBotMessage(this._chatterBot.greeting(), false);
+      }else{
+        // Someone was actually here. Stand down quietly and allow another
+        // attempt later if the room truly empties out.
+        this._greetingScheduled = false;
+      }
+    }, this.BOT_GREETING_DELAY);
+
+    this._botTimeoutIds.add(id);
+  }
+
+  /**
+   * If the bot is active, schedule a delayed, "typed" reply to the user's post.
+   * The reply is local-only (never sent over the socket).
+   */
+  private botRespondTo(userText:string):void{
+    if(!this._chatterBot.isActive(this._humanOthersOnline)) return;
+
+    // Show the bot as typing in the roster while it "thinks".
+    this._chatterBot.setTyping(true);
+    this.refreshBotPresence();
+
+    const id = setTimeout(() => {
+      this._botTimeoutIds.delete(id);
+      this._chatterBot.setTyping(false);
+      this.refreshBotPresence();
+      this.postBotMessage(this._chatterBot.replyTo(userText), true);
+    }, this._chatterBot.thinkingDelayMs());
+
+    this._botTimeoutIds.add(id);
+  }
+
+  /** Append a bot message to the local chat view and scroll to it. */
+  /** True when the current message must stay on this machine: the bot is the
+   *  only "participant" (user is alone) AND `keepUserAndBotChatLocal` is on.
+   *  Drives every send-gate below. */
+  private keepChatLocal():boolean{
+    return this.keepUserAndBotChatLocal && this._chatterBot.isActive(this._humanOthersOnline);
+  }
+
+  private async postBotMessage(message:ChatMessage, playSound:boolean):Promise<void>{
+    const delay = 300;
+    this.chatData.push(message);
+    // When we're NOT keeping the exchange local, broadcast the bot's line too so
+    // the full back-and-forth is visible/persisted server-side.
+    if(!this.keepUserAndBotChatLocal){
+      this._chatService.sendChatMessage(message);
+    }
+    this.setMessageLastReceievedTime();
+    this._cdr.detectChanges();
+
+    if(playSound)
+      await this._audioService.play(this.newMsgAudio);
+
+    await CommonFunctions.sleep(delay);
+    this.scrollToBottom();
   }
 
   // getTimeOut():number{
@@ -338,7 +507,7 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
 
   setDefaults():void{
     const DEV = 'Dev';
-    const whoami = this._defaultService.getDefaultSetting(Constants.DEFAULT_WHO_IS_THIS) ?? Constants.UNKNOWN;
+    const whoami = this._defaultService.getDefaultSetting(Constants.DEFAULT_WHO_IS_THIS);
     const uData = this._chatService.getUserData() as IUserData;
     if(!uData){
       this.userId = this.generateUserID();
@@ -447,6 +616,11 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     // Throttled internally, so this is cheap even during fast typing.
     this.keepLockScreenAwake();
 
+    if(evt.key === "Escape"){
+      this.cancelEdit();
+      return;
+    }
+
     if(evt.key === "Enter"){
       this.createChat();
     }else{
@@ -483,15 +657,41 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     const delay = 10;
 
     if(chatInput!== null &&  chatInput.trim().length === 0) {
+      // While editing, an empty box cancels the edit instead of erroring.
+      if(this._editingMsg){
+        this.cancelEdit();
+        return;
+      }
       this.chatPrompt = 'message box can not be empty';
       return;
     }
 
     const cleanInput = ProfanityFilter.clean(chatInput);
+
+    // Edit path: update an existing OWN message rather than posting a new one.
+    if(this._editingMsg){
+      await this.submitMessageEdit(cleanInput);
+      return;
+    }
+
     const chatObj = new ChatMessage(cleanInput, this.userId, this.userName, this.userNameAcronym, this.bkgrndIconColor);
     this.chatData.push(chatObj);
-    this._chatService.sendChatMessage(chatObj);
+
+    // Routing follows `keepUserAndBotChatLocal`. While the bot is the only
+    // participant (user alone) and the flag is ON, the message stays local so we
+    // don't persist a one-sided, context-free exchange to shared history. With
+    // the flag OFF — or once real people are present — it's sent to the server.
+    const botActive = this._chatterBot.isActive(this._humanOthersOnline);
+    const keepLocal = this.keepChatLocal();
+    if(!keepLocal){
+      this._chatService.sendChatMessage(chatObj);
+    }
     this.chatterForm.reset();
+
+    // When alone, let the bot reply to the post (its routing follows the flag).
+    if(botActive){
+      this.botRespondTo(cleanInput);
+    }
 
     await CommonFunctions.sleep(delay);
     this.chatterForm.controls[this.formCntrlName].setValue(null);
@@ -504,6 +704,84 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
     // Scroll to bottom
     await CommonFunctions.sleep(this.SCROLL_DELAY);
     this.scrollToBottom();
+  }
+
+  /** True when `msg` is the message currently open for editing (drives the
+   *  persistent border highlight while its text sits in the textbox). */
+  isEditingMsg(msg:ChatMessage):boolean{
+    return !!this._editingMsg && this._editingMsg.getMsgId === msg.getMsgId;
+  }
+
+  /** Enter edit mode for one of the user's OWN messages: load its text into the
+   *  textbox so it can be changed. Ignores app messages and other users' posts. */
+  editMessage(msg:ChatMessage):void{
+    if(msg.getUserId !== this.userId || msg.getIsAppMsg) return;
+
+    this._editingMsg = msg;
+    this.chatterForm.controls[this.formCntrlName].setValue(msg.getMessage);
+    this.chatPrompt = 'Edit your message, then press Enter';
+
+    const box = document.getElementById('chatterMsgBox') as HTMLInputElement | null;
+    box?.focus();
+    this.focusWindow();
+    this._cdr.detectChanges();
+  }
+
+  /** Leave edit mode without changing anything and clear the textbox. */
+  private cancelEdit():void{
+    if(!this._editingMsg) return;
+
+    this._editingMsg = null;
+    this.chatPrompt = 'Type a message';
+    this.chatterForm.reset();
+    this.chatterForm.controls[this.formCntrlName].setValue(null);
+    this.chatterForm.controls[this.formCntrlName].markAsUntouched();
+    this._cdr.detectChanges();
+  }
+
+  /** Commit an edit: update the message text in place (optimistic) and, when
+   *  real people are present, broadcast a messageUpdate so their copies update
+   *  too. Mirrors createChat's "keep it local while alone" rule. */
+  private async submitMessageEdit(cleanInput:string):Promise<void>{
+    const delay = 10;
+    const target = this._editingMsg;
+    const keepLocal = this.keepChatLocal();
+
+    this._editingMsg = null;
+    this.chatPrompt = 'Type a message';
+
+    if(target){
+      // Optimistic in-place update — same object reference rendered in chatData.
+      target.setMessage = cleanInput;
+      if(!keepLocal){
+        this._chatService.sendMessageUpdate(target);
+      }
+    }
+
+    this.chatterForm.reset();
+    await CommonFunctions.sleep(delay);
+    this.chatterForm.controls[this.formCntrlName].setValue(null);
+    this.chatterForm.controls[this.formCntrlName].markAsUntouched();
+
+    this.isTyping = false;
+    this.chatUserData.isTyping = false;
+    if(!keepLocal){
+      this._chatService.sendUserTypingStateMessage(this.isTyping);
+    }
+
+    this._cdr.detectChanges();
+    await CommonFunctions.sleep(this.SCROLL_DELAY);
+    this.scrollToBottom();
+  }
+
+  /** A message edit arrived from another user: swap the matching entry in the
+   *  local view so everyone sees the same edited text. */
+  private applyIncomingMessageUpdate(updated:ChatMessage):void{
+    const idx = this.chatData.findIndex(m => m.getMsgId === updated.getMsgId);
+    if(idx !== -1){
+      this.chatData[idx] = updated;
+      this._cdr.detectChanges();
+    }
   }
   
   getRandomNum(min?:number, max?:number):number {
@@ -562,6 +840,11 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
         this.chatData = loadedMessages;
         setTimeout(() => this.scrollToBottom(), this.SCROLL_DELAY);
     }
+
+    // History is now in place; it's safe for the bot to greet without being
+    // wiped by the assignments above.
+    this._priorMessagesLoaded = true;
+    this.refreshBotPresence();
   }
 
   loadMessagesInBatches(loadedMessages: ChatMessage[], batchSize: number) {
@@ -604,7 +887,8 @@ export class ChatterComponent implements BaseComponent, OnInit, OnDestroy, After
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }

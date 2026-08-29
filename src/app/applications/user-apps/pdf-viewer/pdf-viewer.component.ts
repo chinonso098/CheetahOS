@@ -1,7 +1,6 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, OnInit, AfterViewInit, OnDestroy, Input } from '@angular/core';
 
-import {extname} from 'path';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { BaseComponent } from 'src/app/system-files/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
@@ -99,7 +98,7 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
     const firstPage = 1;
     this.pdfFileSrc = (this.pdfFileSrc !== Constants.EMPTY_STRING)
       ? this.pdfFileSrc
-      : this.getPDFSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+      : this._fileService.resolveContentPath(this._fileInfo);
 
     // pdf.mjs is a real ES module (uses import.meta), so it MUST be loaded as
     // type="module". The browser caches ES modules in its module map by URL,
@@ -317,7 +316,8 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
   focusWindow(evt:MouseEvent):void{
     evt.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
@@ -330,32 +330,6 @@ export class PdfViewerComponent  implements BaseComponent, OnInit, AfterViewInit
     //  - stopPropagation(): keep the event from reaching the desktop root.
     evt?.preventDefault();
     evt?.stopPropagation();
-  }
-
-  getPDFSrc(pathOne:string, pathTwo:string):string{
-    let pdfSrc = Constants.EMPTY_STRING;
-
-    if(this.checkForExt(pathOne,pathTwo)){
-      pdfSrc = Constants.ROOT + this._fileInfo.getContentPath;
-    }else{
-      pdfSrc =  this._fileInfo.getCurrentPath;
-    }
-
-    return pdfSrc;
-  }
-
-  checkForExt(contentPath:string, currentPath:string):boolean{
-    const contentExt = extname(contentPath);
-    const currentPathExt = extname(currentPath);
-    const ext = ".jsdos";
-    let res = false;
-
-    if(contentExt !== Constants.EMPTY_STRING && contentExt == ext){
-      res = true;
-    }else if( currentPathExt === ext){
-      res = false;
-    }
-    return res;
   }
 
   storeAppState(app_data:unknown):void{

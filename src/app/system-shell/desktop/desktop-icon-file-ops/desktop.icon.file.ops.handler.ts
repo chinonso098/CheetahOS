@@ -19,6 +19,7 @@ import { DesktopContextMenuHelper } from '../desktop.context.menu.helper';
 import { DesktopStyleHelper } from '../desktop.style.helper';
 import { DesktopRootElements } from '../desktop.types';
 import { DialogMessage, DialogTitle } from 'src/app/shared/system-ui-components/dialog/dialog.types';
+import { QuickAccessService } from 'src/app/shared/system-service/quick.access.service';
 
 
 /**
@@ -111,6 +112,7 @@ export class DesktopIconFileOpsHandler {
         private readonly _audioService: AudioService,
         private readonly _activityHistoryService: ActivityHistoryService,
         private readonly _userNotificationService: UserNotificationService,
+        private readonly _quickAccessService: QuickAccessService,
         private readonly _formBuilder: FormBuilder,
         private readonly _iconsHandler: DesktopIconsHandler,
     ) {
@@ -227,7 +229,7 @@ export class DesktopIconFileOpsHandler {
         { icon: Constants.EMPTY_STRING, label: MenuAction.OPEN, action: () => this.onTriggerRunApplication() },
         { icon: Constants.EMPTY_STRING, label: MenuAction.OPEN_WITH, action: () => this.showOpenWithDialog() },
         { icon: `${Constants.IMAGE_BASE_PATH}recycle bin_folder_small.png`, label: MenuAction.EMPTY_RECYCLE_BIN, action: () => this.onEmptyRecycleBin() },
-        { icon: Constants.EMPTY_STRING, label: MenuAction.PIN_TO_QUICK_ACCESS, action: () => this.doNothing() },
+        { icon: Constants.EMPTY_STRING, label: MenuAction.PIN_TO_QUICK_ACCESS, action: () => this.pinToQuickAccess() },
         { icon: `${Constants.IMAGE_BASE_PATH}terminal.png`, label: MenuAction.OPEN_IN_TERMINAL, action: () => this.openInTerminal() },
         { icon: Constants.EMPTY_STRING, label: MenuAction.PIN_TO_START, action: () => this.doNothing() },
         { icon: Constants.EMPTY_STRING, label: MenuAction.PIN_TO_TASKBAR, action: () => this.pinIconToTaskBar() },
@@ -473,6 +475,18 @@ export class DesktopIconFileOpsHandler {
     doNothing(): void {
         console.log('do nothing called');
     }
+
+      /**
+     * Context-menu "Pin to Quick access": explicitly add the selected item to the
+     * Quick Access list (same store the open-tracking uses — pinning just seeds
+     * the entry). Refresh the panes so a pin made while This PC is showing appears
+     * immediately.
+     */
+    pinToQuickAccess():void{
+        if(!this.selectedFile || this.selectedFile.getIsShortCut) return;
+        this._quickAccessService.add(this.selectedFile);
+    }
+
 
     /**
      * "Open in Terminal" menu row — launch the terminal app pointed at

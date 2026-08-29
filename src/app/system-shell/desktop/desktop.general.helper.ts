@@ -14,6 +14,7 @@ export namespace DesktopGeneralHelper {
     const MARKDOWN_VIEWER_APP ="markdownviewer";
     const CLIPPY_APP = "clippy";
     const PHOTOS_APP = "photoviewer";
+    const SNIPPING_TOOL_APP = "snippingtool";
 
   /**
    * Builds the `FileInfo` for an app launch and decides whether the launch
@@ -28,8 +29,12 @@ export namespace DesktopGeneralHelper {
     file.setOpensWith = arg0;
 
     if (arg0 === MARKDOWN_VIEWER_APP) {
-      file.setCurrentPath = Constants.DESKTOP_PATH;
-      file.setContentPath = '/Users/Documents/Credits.md';
+      const creditsPath = '/Users/Documents/Credits.md';
+      //file.setCurrentPath = Constants.DESKTOP_PATH;
+      file.setCurrentPath = creditsPath;
+      file.setIsFile = true;
+      file.setIsShortCut = false;
+      file.setOpensWith = MARKDOWN_VIEWER_APP;
     }
 
     let activityToTrack: Activity | null = null;
@@ -37,7 +42,7 @@ export namespace DesktopGeneralHelper {
       activityToTrack = CommonFunctions.getTrackingActivity(ActivityType.APPS, arg0, appPath);
     }
 
-    if (arg0 === PHOTOS_APP) {
+    if (arg0 === PHOTOS_APP || arg0 === SNIPPING_TOOL_APP) {
       file = (screenShot) ? screenShot : new FileInfo();
       // Mirrors prior behaviour: the photos branch always tracks, even though
       // the if-tree above also produced an activity for the same arg0.

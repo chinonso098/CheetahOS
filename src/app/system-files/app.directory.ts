@@ -22,7 +22,7 @@ export class AppDirectory {
     private readonly _systemProcessList: string[] = [
         "audioplayer", "chatter", "cheetah", "clippy", "clipboard", "fileexplorer",
         "taskmanager", "terminal", "videoplayer", "photoviewer",
-        "runsystem", "texteditor", "settings", "screensaverviewer"
+        "runsystem", "texteditor", "settings", "screensaverviewer", "snippingtool"
     ];
 
     /**
@@ -62,6 +62,7 @@ export class AppDirectory {
         ["terminal", "terminal.png"],
         ["videoplayer", "videoplayer.png"],
         ["photoviewer", "photoviewer.png"],
+        ["snippingtool", "snip_tool.png"],
         ["runsystem", "run.png"],
         ["texteditor", "quill.png"],
         ["jsdos", "js-dos_emulator.png"],

@@ -147,6 +147,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       case MenuAction.DELETE: return 'delete';
       case MenuAction.REFRESH: return 'refresh';
       case MenuAction.RENAME: return 'rename';
+      case MenuAction.RESTORE: return 'restore';
       case MenuAction.PROPERTIES: return 'properties';
       case MenuAction.CREATE_SHORTCUT: return 'shortcut';
       case MenuAction.PIN_TO_TASKBAR: return 'pin';
@@ -161,6 +162,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       case MenuAction.PREVIOUS_BACKGROUND: return 'prev_background';
       case MenuAction.NEXT_BACKGROUND: return 'next_background';
       case MenuAction.OPEN_IN_NEW_WINDOW: return 'new_window';
+      case MenuAction.OPTIONS: return 'options';
 
       // case MenuAction.OPEN_IN_TERMINAL: return 'terminal';
       // case MenuAction.TASK_MANAGER: return 'task_manager';

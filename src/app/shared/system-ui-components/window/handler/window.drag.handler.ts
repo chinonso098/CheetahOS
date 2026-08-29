@@ -38,9 +38,12 @@ export class WindowDragHandler {
      * subsystems (silhouettes, hover previews) can step back, then
      * promotes this window to focus.
      */
-    onMouseDown(pId: number): void {
+    onMouseDown(pId: number, evt:MouseEvent): void {
+        evt.stopPropagation();
+        
         if (this._host.processId !== pId) return;
-        this._windowService.windowDragIsActive.next();
+        
+        this._windowService.setWindowDragActive();
         this._host.setFocusOnThisWindow(pId);
         this._windowService.currentProcessInFocusNotify.next(pId);
     }
@@ -60,7 +63,7 @@ export class WindowDragHandler {
 
         if (host.isWindowInFullScreenMode) {
             // dragging full-screen window is not allowed
-            this._windowService.windowDragIsInActive.next();
+            this._windowService.setWindowDragInActive();
             return;
         }
 
@@ -85,7 +88,7 @@ export class WindowDragHandler {
 
         // IMPORTANT: reset the drag transform so we don't accumulate drift.
         event.source.reset();
-        this._windowService.windowDragIsInActive.next();
+        this._windowService.setWindowDragInActive();
     }
 
     /**

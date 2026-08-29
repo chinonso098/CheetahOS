@@ -141,7 +141,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     //this.setAudioWindowToFocus(this.processId); 
     this.audioSrc = (this.audioSrc !== Constants.EMPTY_STRING)? 
-      this.audioSrc :this.getAudioSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+      this.audioSrc :this._fileService.resolveContentUrl(this._fileInfo);
 
       // These are UMD bundles, not ES modules. They MUST be loaded as classic
       // scripts (isModule = false). If loaded as type="module" the browser
@@ -219,7 +219,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
    */
   private async retryAudioWithBlobAsync():Promise<any>{
     if(this._triedBlobFallback) return null;
-    if(this.audioSrc.includes('blob:http')) return null;
+    if(this.audioSrc.includes(Constants.BLOB_URI_PREFIX)) return null;
     if(this._fileInfo.getCurrentPath === Constants.EMPTY_STRING) return null;
 
     this._triedBlobFallback = true;
@@ -246,7 +246,7 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
       this._runningProcessService.updateProccess(updatedProcesss);
 
       this.audioSrc = (this.audioSrc !== Constants.EMPTY_STRING)? 
-      this.audioSrc :this.getAudioSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+      this.audioSrc :this._fileService.resolveContentUrl(this._fileInfo);
 
       const fileName = this._fileInfo?.getFileName;
       if (fileName && fileName !== Constants.EMPTY_STRING) {
@@ -425,7 +425,8 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
@@ -523,6 +524,8 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
           // The streamed direct URL failed (commonly an IndexedDB-only file with
           // no direct osdrive URL). Try once to reload it as a blob, which works
           // for both FS layers; otherwise surface the original error.
+          console.warn(`Initial load failed, retrying with blob.
+             This may happen if the file is only available in the overlay layer and not in the pristine OS drive:`, err);
           this.retryAudioWithBlobAsync()
             .then(retryHowl => { retryHowl ? resolve(retryHowl) : reject(err); })
             .catch(() => reject(err));
@@ -592,40 +595,6 @@ export class AudioPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     }
   }
 
-
-  getAudioSrc(pathOne:string, pathTwo:string):string{
-    // pathOne = contentPath, pathTwo = currentPath.
-    //
-    // 1) An already-materialized blob URL (session restore, or a file living in
-    //    the writable IndexedDB layer) is played as-is.
-    if(pathOne.includes('blob:http')){
-      return pathOne;
-    }
-    // 2) Legacy form where contentPath itself is an audio path with an extension
-    //    (e.g. opened via a .url shortcut whose resolved target is the track).
-    //    Anchor it to <base href> so it resolves under a sub-path deploy instead
-    //    of hitting the origin root (which 404s on GitHub Pages project sites).
-    if(this.checkForExt(pathOne, pathTwo)){
-      return this._fileService.toAbsoluteOsdriveUrl(this._fileInfo.getContentPath);
-    }
-    // 3) Default (the common case): stream straight from the file's direct
-    //    osdrive URL so Howler range-fetches the bytes instead of us reading the
-    //    whole track into memory first.
-    return this._fileService.getDirectFileUrl(pathTwo);
-  }
-
-  checkForExt(contentPath:string, currentPath:string):boolean{
-    const contentExt = extname(contentPath);
-    const currentPathExt = extname(currentPath);
-    let res = false;
-
-    if(Constants.AUDIO_FILE_EXTENSIONS.includes(contentExt)){
-      res = true;
-    }else if(Constants.AUDIO_FILE_EXTENSIONS.includes(currentPathExt)){
-      res = false;
-    }
-    return res;
-  }
 
   getExt(contentPath:string, currentPath:string):string{
     const contentExt = extname(contentPath);

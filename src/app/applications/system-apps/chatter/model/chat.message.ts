@@ -1,6 +1,9 @@
+import { CommonFunctions } from "src/app/system-files/commons/common.functions";
+
 export class ChatMessage {
     private _msg: string;
     private _userId:string;
+    private _msgId:string;
     private _userName:string;
     private _userNameAcronym:string;
     private _msgDate:string;
@@ -8,10 +11,12 @@ export class ChatMessage {
     private _isAppMsg:boolean;
     private _isUserNameEdit:boolean;
 
-    constructor(msg?:string, userId?:string, userName?:string, userNameAcronym?:string, iconColor?:string, msgDate?:string ){
+    constructor(msg?:string, userId?:string, userName?:string, userNameAcronym?:string, iconColor?:string, msgDate?:string, msgId?:string){
         this._msg = (msg === undefined)?'':msg
 
         this._userId = (userId === undefined)?'': userId;
+
+        this._msgId = (msgId === undefined)? CommonFunctions.generateID(7) : msgId;
 
         this._userName = (userName === undefined)?'': userName;
 
@@ -39,6 +44,10 @@ export class ChatMessage {
         this._userId= userId;
     }
 
+    set setMsgId(msgId:string){
+        this._msgId= msgId;
+    }
+
     set setUserName(userName:string){
         this._userName= userName;
     }
@@ -55,7 +64,7 @@ export class ChatMessage {
         this._iconColor= iconColor;
     }
 
-    set setIsAppMgs(isAppMsg:boolean){
+    set setIsAppMsg(isAppMsg:boolean){
         this._isAppMsg = isAppMsg;
     }
 
@@ -69,6 +78,10 @@ export class ChatMessage {
 
     get getUserId(){
         return this._userId;
+    }
+
+    get getMsgId(){
+        return this._msgId;
     }
 
     get getUserName(){

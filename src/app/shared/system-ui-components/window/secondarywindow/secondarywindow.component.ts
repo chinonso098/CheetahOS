@@ -256,6 +256,7 @@ const INACTIVE_BORDER_COLOR = 'rgb(43,43,43)'; // #2b2b2b
       const pid = this.processId;
       this._subs.add(this._windowService.onFocusOnNextFor(pid).subscribe(() => this.setWindowToFocusByPid(pid)));
       this._subs.add(this._windowService.onFocusOnCurrentFor(pid).subscribe(() => this.setFocusOnThisWindow(pid)));
+      this._subs.add(this._windowService.onRemoveFocusFor(pid).subscribe(() => this.setHeaderInActiveStyle()));
       this._subs.add(this._windowService.onShowOrSetFocusFor(pid).subscribe(() => this.showOrSetProcessWindowToFocusOnClick(pid)));
       this._subs.add(this._windowService.onCloseWindowFor(pid).subscribe(() => this.closeWindow()));
     }
@@ -573,10 +574,16 @@ const INACTIVE_BORDER_COLOR = 'rgb(43,43,43)'; // #2b2b2b
     // ════════════════════════════════════════════════════════════════════════
     // Mouse / drag handlers
     // ════════════════════════════════════════════════════════════════════════
-    onMouseDown(pId:number):void{
-      this._windowService.windowDragIsActive.next();
+    onMouseDown(pId:number, evt:MouseEvent):void{
+      evt.stopPropagation();
+      this._windowService.setWindowDragActive();
       this.setFocusOnThisWindow(pId);
       this._windowService.currentProcessInFocusNotify.next(pId);
+    }
+
+    onHeaderClick(evt:MouseEvent):void{
+      evt.stopPropagation();
+      //this._windowFocusHandler.onHeaderClick(evt);
     }
 
     onDragEnded(event: CdkDragEnd): void {
@@ -596,7 +603,7 @@ const INACTIVE_BORDER_COLOR = 'rgb(43,43,43)'; // #2b2b2b
 
       // Important: reset the drag transform so we don't accumulate drift
       event.source.reset();
-      this._windowService.windowDragIsInActive.next();
+      this._windowService.setWindowDragInActive();
     }
 
 
@@ -687,6 +694,9 @@ const INACTIVE_BORDER_COLOR = 'rgb(43,43,43)'; // #2b2b2b
      */
     setFocusOnThisWindow(pId:number):void{
       this._windowFocusHandler.setFocusOnThisWindow(pId);
+
+      if(this._menuService.getIsContextMenuOpen())
+        this._menuService.closeAllContextMenus();
     }
 
     setFocusOnWindowAfterInit(pId:number):void{

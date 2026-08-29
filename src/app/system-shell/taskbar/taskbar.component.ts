@@ -7,6 +7,7 @@ import { Process } from 'src/app/system-files/process';
 import { Constants } from 'src/app/system-files/constants';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
+import { WindowService } from 'src/app/shared/system-service/window.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
 import { TooltipPositionInfo } from '../taskbarentries/taskbar.entries.type';
@@ -39,6 +40,7 @@ export class TaskbarComponent implements AfterViewInit{
   private _menuService!:MenuService;
   private _systemNotificationService!:SystemNotificationService;
   private _defaultService!:DefaultService;
+  private _windowService!:WindowService;
   private _el: ElementRef;
 
   isStartMenuVisible = false;
@@ -95,12 +97,14 @@ export class TaskbarComponent implements AfterViewInit{
   displayName = Constants.EMPTY_STRING;
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, menuService:MenuService,
-    systemNotificationServices:SystemNotificationService, el: ElementRef, defaultService:DefaultService) { 
+    systemNotificationServices:SystemNotificationService, el: ElementRef, defaultService:DefaultService,
+    windowService:WindowService) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
     this._menuService = menuService;
     this._systemNotificationService = systemNotificationServices;
     this._defaultService = defaultService;
+    this._windowService = windowService;
     this._el = el;
     
     this.processId = this._processIdService.getNewProcessId()
@@ -162,6 +166,23 @@ export class TaskbarComponent implements AfterViewInit{
 
   hideContextMenus():void{
     this._menuService.closeAllContextMenus(this.name);
+  }
+
+  /**
+   * Taskbar background click. Closes context menus, then deactivates the
+   * focused window's title bar -- unless the click hit a taskbar entry, which
+   * focuses/restores its own window instead. Does NOT dim the taskbar entry
+   * highlight (no noProcessInFocusNotify emitted).
+   */
+  onTaskBarClick(evt: MouseEvent): void {
+    this.hideContextMenus();
+
+    // Match the entries host, not the inner `cos-taskbarentry`: the clickable
+    // element is the `li`, so padding/gutter clicks are outside the inner component.
+    const clickedEntry = !!(evt.target as HTMLElement | null)?.closest('cos-taskbarentries');
+    if (!clickedEntry) {
+      this._windowService.removeThisWindowFromFocus();
+    }
   }
 
   showTaskBarContextMenu(evt:MouseEvent):void{

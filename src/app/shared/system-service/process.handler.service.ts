@@ -14,16 +14,21 @@ import { ProcessIDService } from "./process.id.service";
 import { RunningProcessService } from "./running.process.service";
 import { UserNotificationService } from "./user.notification.service";
 import { SessionManagementService } from "./session.management.service";
-
 import { ComponentReferenceService } from "./component.reference.service";
+import { DefaultService } from "./defaults.services";
+import { SystemNotificationService } from "./system.notification.service";
+import { SystemMetricService } from "./system.metrics.sservice";
+import { FileService } from "./file.service";
+
 import { PropertiesComponent } from "../system-ui-components/properties/properties.component";
 import { AudioPlayerComponent } from "src/app/applications/system-apps/audioplayer/audioplayer.component";
 import { ChatterComponent } from "src/app/applications/system-apps/chatter/chatter.component";
 import { CheetahComponent } from "src/app/applications/system-apps/cheetah/cheetah.component";
 import { ClippyComponent } from "src/app/applications/system-apps/clippy/clippy.component";
 import { ClipboardComponent } from "src/app/applications/system-apps/clipboard/clipboard.component";
-import { FileExplorerComponent } from "src/app/applications/system-apps/fileexplorer/fileexplorer.component";
+import { FileExplorerComponent } from "src/app/applications/system-apps/fileexplorer_old/fileexplorer.component";
 import { PhotoViewerComponent } from "src/app/applications/system-apps/photoviewer/photoviewer.component";
+import { SnippingToolComponent } from "src/app/applications/system-apps/snippingtool/snippingtool.component";
 import { RunSystemComponent } from "src/app/applications/system-apps/runsystem/runsystem.component";
 import { TaskmanagerComponent } from "src/app/applications/system-apps/taskmanager/taskmanager.component";
 import { TerminalComponent } from "src/app/applications/system-apps/terminal/terminal.component";
@@ -42,10 +47,7 @@ import { ParticaleFlowComponent } from "src/app/applications/user-apps/particale
 import { PdfViewerComponent } from "src/app/applications/user-apps/pdf-viewer/pdf-viewer.component";
 import { ScreenSaverViewerComponent } from "src/app/applications/system-apps/screensaverviewer/screensaverviewer.component";
 import { SettingsComponent } from "src/app/applications/system-apps/controlpanel/settings.component";
-import { DefaultService } from "./defaults.services";
-import { SystemNotificationService } from "./system.notification.service";
-import { SystemMetric } from "./system.metrics";
-import { FileService } from "./file.service";
+
 import { DialogMessage } from "../system-ui-components/dialog/dialog.types";
 
 
@@ -64,7 +66,7 @@ export class ProcessHandlerService implements BaseService{
     private _defaultService!: DefaultService;
     private _userNotificationService!:UserNotificationService;
     private _systemNotificationService!:SystemNotificationService;
-    private _systemMetric!:SystemMetric;
+    private _systemMetric!:SystemMetricService;
     private _fileService!:FileService;
 
     private _appDirectory:AppDirectory;
@@ -85,7 +87,7 @@ export class ProcessHandlerService implements BaseService{
     private readonly _blobContentApps:string[] = ['ruffle', 'pdfviewer', 'photoviewer'];
 
     private _onlyOneInstanceAllowed:string[] = ["audioplayer", "chatter", "cheetah", "clipboard", "jsdos", "photoviewer", 
-        "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow", "settings"];
+        "ruffle", "runsystem", "taskmanager", "videoplayer", "starfield", "boids", "particleflow", "settings", "snippingtool"];
 
     private userOpenedAppsList:string[] = [];
     private openedAppInstanceUId:string[] = [];
@@ -143,6 +145,7 @@ export class ProcessHandlerService implements BaseService{
         ["terminal", TerminalComponent],
         ["videoplayer", VideoPlayerComponent],
         ["photoviewer", PhotoViewerComponent],
+        ["snippingtool", SnippingToolComponent],
         ["runsystem", RunSystemComponent],
         ["texteditor", TextEditorComponent],
         ["settings", SettingsComponent],
@@ -162,7 +165,7 @@ export class ProcessHandlerService implements BaseService{
     constructor(runningProcessService:RunningProcessService, processIdService:ProcessIDService, windowService:WindowService, 
         componentReferenceService:ComponentReferenceService, menuService:MenuService, sessionMangamentServices:SessionManagementService,
         userNotificationService:UserNotificationService, systemNotificationService:SystemNotificationService, defaultService: DefaultService,
-        systemMetric:SystemMetric, fileService:FileService){
+        systemMetric:SystemMetricService, fileService:FileService){
 
         this._appDirectory = new AppDirectory();
         this._triggerMap = new Map<string, FileInfo[]>();
@@ -186,6 +189,7 @@ export class ProcessHandlerService implements BaseService{
         this._runningProcessService.addService(this.getServiceDetail());
 
         this._menuService.showPropertiesView.subscribe((p) => this.showPropertiesWindow(p));
+        this._menuService.showFolderOptionsView.subscribe(() => this.showFolderOptionsWindow());
         this._runningProcessService.closeProcessNotify.subscribe((p) =>{this.closeApplicationProcess(p)})
     }
 
@@ -396,6 +400,20 @@ export class ProcessHandlerService implements BaseService{
         if(!process){
             const cmpntRef =  this._componentReferenceService.createComponent(PropertiesComponent);
             cmpntRef.setInput('fileInput',fileInput);
+        }else{
+            this._windowService.focusOnCurrentProcessWindowNotify.next(process.getProcessId);
+        }
+    }
+
+    private showFolderOptionsWindow():void{
+        // Reuse the properties window shell in its Folder Options mode. Dedup on the same
+        // hidden process name the component assigns itself so a second request just focuses
+        // the already-open dialog instead of stacking duplicates.
+        const processName = `${Constants.WIN_EXPLR + Constants.FOLDER_OPTIONS_TITLE}`;
+        const process = this._runningProcessService.getProcessByName(processName);
+        if(!process){
+            const cmpntRef = this._componentReferenceService.createComponent(PropertiesComponent);
+            cmpntRef.setInput('isFolderOptions', true);
         }else{
             this._windowService.focusOnCurrentProcessWindowNotify.next(process.getProcessId);
         }

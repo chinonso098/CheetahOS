@@ -42,7 +42,12 @@ export class SocketService implements BaseService {
     //console.log(`SocketService: connecting to ${socketUrl} (isProd=${isProd})`);
 
     this.socket = io(socketUrl, {
-      transports: ['websocket', 'polling'], // safe default; socket.io decides best
+      // Polling FIRST (Socket.IO default order): establishes the connection over
+      // plain HTTP immediately, then transparently upgrades to websocket when
+      // possible. Leading with websocket breaks clients whose cross-site WS is
+      // blocked (extensions/tracking protection/proxies) because each reconnect
+      // retries websocket instead of falling back.
+      transports: ['polling', 'websocket'],
       autoConnect: true,
     });
 

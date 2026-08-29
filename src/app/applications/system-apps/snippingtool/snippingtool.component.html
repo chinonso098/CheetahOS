@@ -1,0 +1,219 @@
+<cos-primarywindow
+    [runningProcessID]="processId"
+    [processAppIcon]="icon"
+    [processAppName]="name"
+    [isMaximizable]="isMaximizable"
+    [minimumWindowWidth]="MIN_WIDTH_PX"
+    [minimumWindowHeight]="MIN_HEIGHT_PX"
+    [priorUId]="this.priorUId">
+  <div class="snip-root" (contextmenu)="silenceCtxEvt($event)">
+
+  <!-- ── Info banner ─────────────────────────────────────────────────── -->
+  <div class="snip-banner" *ngIf="showBanner">
+    <span class="snip-banner__icon">
+      <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" fill="#0a84ff"/><rect x="11" y="10" width="2" height="7" fill="#fff"/><rect x="11" y="6.5" width="2" height="2" fill="#fff"/></svg>
+    </span>
+    <span class="snip-banner__text"><b>Screenshots are automatically saved</b> to your Screen-Shots folder.</span>
+    <button class="snip-banner__close" (click)="dismissBanner()" title="Dismiss">
+      <svg viewBox="0 0 12 12" width="11" height="11"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+    </button>
+  </div>
+
+  <!-- ── Toolbar ─────────────────────────────────────────────────────── -->
+  <div class="snip-toolbar" (click)="silenceCtxEvt($event)">
+
+    <!-- Left zone: capture controls -->
+    <div class="snip-tb-zone">
+      <button class="snip-new-btn" (click)="onNewSnip()" [disabled]="isBusy" title="New screenshot (Ctrl+N)">
+        <svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+        <span>New</span>
+      </button>
+
+      <div class="snip-mode snip-active" title="Snip mode">
+        <svg viewBox="0 0 20 20" width="16" height="16"><rect x="2.5" y="4.5" width="15" height="11" rx="1.5" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="10" cy="10" r="2.2" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+      </div>
+
+      <div class="snip-dropdown">
+        <button class="snip-tb-btn snip-caret" (click)="toggleModeMenu($event)" title="Snipping mode">
+          <span class="snip-caret__label">{{ selectedModeLabel }}</span>
+          <svg viewBox="0 0 10 6" width="9" height="6"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+        </button>
+        <div class="snip-menu" *ngIf="showModeMenu">
+          <button class="snip-menu__item" *ngFor="let m of captureModes" (click)="selectMode(m.mode)" [class.snip-menu__item--sel]="captureMode === m.mode">
+            {{ m.label }}
+          </button>
+        </div>
+      </div>
+
+      <div class="snip-dropdown">
+        <button class="snip-tb-btn snip-caret" (click)="toggleDelayMenu($event)" title="Delay snip">
+          <svg viewBox="0 0 20 20" width="16" height="16"><circle cx="10" cy="11" r="6.5" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M10 11V7.5M8 2.5h4" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 10 6" width="9" height="6"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+        </button>
+        <div class="snip-menu" *ngIf="showDelayMenu">
+          <button class="snip-menu__item" *ngFor="let d of delayOptions" (click)="selectDelay(d)" [class.snip-menu__item--sel]="selectedDelay === d">
+            {{ d === 0 ? 'No delay' : d + '-second delay' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center zone: annotation tools (editing only) -->
+    <div class="snip-tb-zone snip-tb-zone--center" *ngIf="hasImage">
+      <div class="snip-dropdown">
+        <button class="snip-tb-btn" (click)="selectTool('pen')" [class.snip-active]="tool === 'pen'" (contextmenu)="togglePenMenu($event)" title="Ballpoint pen">
+          <svg viewBox="0 0 20 20" width="18" height="18"><path d="M13.5 3.5l3 3-9 9-3.5.5.5-3.5z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/></svg>
+          <span class="snip-swatch" [style.background]="penColor"></span>
+          <span class="snip-btn-caret" (click)="togglePenMenu($event)">
+            <svg viewBox="0 0 10 6" width="8" height="5"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+          </span>
+        </button>
+        <div class="snip-menu snip-menu--pad" *ngIf="showPenMenu" (click)="silenceCtxEvt($event)">
+          <div class="snip-menu__title">Colors</div>
+          <div class="snip-palette">
+            <button class="snip-palette__dot" *ngFor="let c of palette" [style.background]="c"
+              [class.snip-palette__dot--sel]="penColor === c" (click)="pickPenColor(c)"></button>
+          </div>
+          <div class="snip-menu__title">Size</div>
+          <input type="range" min="1" max="24" [(ngModel)]="penSize" class="snip-range" />
+        </div>
+      </div>
+
+      <div class="snip-dropdown">
+        <button class="snip-tb-btn" (click)="selectTool('highlighter')" [class.snip-active]="tool === 'highlighter'" (contextmenu)="toggleHighlighterMenu($event)" title="Highlighter">
+          <svg viewBox="0 0 20 20" width="18" height="18"><path d="M5 15l2-2 5 5H7z" fill="currentColor"/><path d="M7 13l7-7 2 2-7 7z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/></svg>
+          <span class="snip-swatch" [style.background]="highlighterColor"></span>
+          <span class="snip-btn-caret" (click)="toggleHighlighterMenu($event)">
+            <svg viewBox="0 0 10 6" width="8" height="5"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+          </span>
+        </button>
+        <div class="snip-menu snip-menu--pad" *ngIf="showHighlighterMenu" (click)="silenceCtxEvt($event)">
+          <div class="snip-menu__title">Colors</div>
+          <div class="snip-palette">
+            <button class="snip-palette__dot" *ngFor="let c of palette" [style.background]="c"
+              [class.snip-palette__dot--sel]="highlighterColor === c" (click)="pickHighlighterColor(c)"></button>
+          </div>
+          <div class="snip-menu__title">Size</div>
+          <input type="range" min="6" max="40" [(ngModel)]="highlighterSize" class="snip-range" />
+        </div>
+      </div>
+
+      <button class="snip-tb-btn" (click)="selectTool('eraser')" [class.snip-active]="tool === 'eraser'" title="Eraser">
+        <svg viewBox="0 0 20 20" width="18" height="18"><path d="M4 13l6-6 4 4-4 4H6z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/><path d="M9 17h7" stroke="currentColor" stroke-width="1.3"/></svg>
+      </button>
+
+      <div class="snip-dropdown">
+        <button class="snip-tb-btn" (click)="selectTool('shape')" [class.snip-active]="tool === 'shape'" (contextmenu)="toggleShapeMenu($event)" title="Shapes">
+          <svg viewBox="0 0 20 20" width="18" height="18"><rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="13" cy="13" r="4.5" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+          <span class="snip-btn-caret" (click)="toggleShapeMenu($event)">
+            <svg viewBox="0 0 10 6" width="8" height="5"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+          </span>
+        </button>
+        <div class="snip-menu" *ngIf="showShapeMenu" (click)="silenceCtxEvt($event)">
+          <button class="snip-menu__item" *ngFor="let s of shapeKinds" (click)="pickShape(s)" [class.snip-menu__item--sel]="shapeKind === s">
+            {{ s | titlecase }}
+          </button>
+        </div>
+      </div>
+
+      <button class="snip-tb-btn" (click)="selectTool('crop')" [class.snip-active]="tool === 'crop'" title="Crop">
+        <svg viewBox="0 0 20 20" width="18" height="18"><path d="M6 2v12h12M2 6h12v12" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+      </button>
+
+      <div class="snip-sep"></div>
+
+      <button class="snip-tb-btn" (click)="undo()" [disabled]="!canUndo" title="Undo (Ctrl+Z)">
+        <svg viewBox="0 0 20 20" width="18" height="18"><path d="M7 6L3 10l4 4M3 10h9a5 5 0 0 1 0 10" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="snip-tb-btn" (click)="redo()" [disabled]="!canRedo" title="Redo (Ctrl+Y)">
+        <svg viewBox="0 0 20 20" width="18" height="18"><path d="M13 6l4 4-4 4M17 10H8a5 5 0 0 0 0 10" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <!-- Right zone: actions -->
+    <div class="snip-tb-zone snip-tb-zone--right">
+      <button class="snip-tb-btn" *ngIf="hasImage" (click)="saveSnip()" title="Save as (Ctrl+S)">
+        <svg viewBox="0 0 20 20" width="18" height="18"><path d="M4 3h9l3 3v11H4z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/><path d="M7 3v4h6V3M7 17v-5h6v5" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+      </button>
+      <button class="snip-tb-btn" *ngIf="hasImage" (click)="copySnip()" title="Copy (Ctrl+C)">
+        <svg viewBox="0 0 20 20" width="18" height="18"><rect x="6" y="6" width="10" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M4 13V3h10" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+      </button>
+
+      <div class="snip-dropdown">
+        <button class="snip-tb-btn" (click)="toggleOverflowMenu($event)" title="See more">
+          <svg viewBox="0 0 20 20" width="18" height="18"><circle cx="4" cy="10" r="1.6" fill="currentColor"/><circle cx="10" cy="10" r="1.6" fill="currentColor"/><circle cx="16" cy="10" r="1.6" fill="currentColor"/></svg>
+        </button>
+        <div class="snip-menu snip-menu--right" *ngIf="showOverflowMenu" (click)="silenceCtxEvt($event)">
+          <div class="snip-menu__row" (click)="toggleZoomMenu($event)">
+            <span>Zoom</span><span class="snip-menu__hint">{{ zoomLabel }} ›</span>
+            <div class="snip-menu snip-submenu" *ngIf="showZoomMenu">
+              <button class="snip-menu__item" (click)="setZoom(1)">100%</button>
+              <button class="snip-menu__item" (click)="zoomIn()">Zoom in</button>
+              <button class="snip-menu__item" (click)="zoomOut()">Zoom out</button>
+              <button class="snip-menu__item" (click)="fitToWindow(); setZoom(zoom)">Fit to window</button>
+            </div>
+          </div>
+          <button class="snip-menu__item" (click)="toggleRuler()" [class.snip-menu__item--sel]="showRuler">Show ruler</button>
+          <button class="snip-menu__item" (click)="triggerOpenFile()">Open file</button>
+          <button class="snip-menu__item" (click)="openScreenshotsFolder()">Open screenshots folder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Editor surface ──────────────────────────────────────────────── -->
+  <div class="snip-editor" id="snipEditor-{{processId}}" #editorArea>
+    <div class="snip-empty" *ngIf="!hasImage && phase !== 'countdown'">
+      <p class="snip-empty__hint">
+        Press <kbd class="snip-kbd">Ctrl</kbd> + <kbd class="snip-kbd">Shift</kbd> + <kbd class="snip-kbd">K</kbd> to start a snip
+      </p>
+    </div>
+
+    <div class="snip-countdown" *ngIf="phase === 'countdown'">
+      <div class="snip-countdown__num">{{ countdownValue }}</div>
+    </div>
+
+    <div class="snip-canvas-wrap" [class.snip-hidden]="!hasImage"
+      [class.snip-cursor-draw]="tool !== 'none' && tool !== 'crop'"
+      [class.snip-cursor-crop]="tool === 'crop'">
+      <canvas #editorCanvas class="snip-canvas" [ngStyle]="canvasStyle"
+        (mousedown)="onCanvasDown($event)" (mousemove)="onCanvasMove($event)"
+        (mouseup)="onCanvasUp($event)" (mouseleave)="onCanvasLeave()"></canvas>
+      <div class="snip-ruler" *ngIf="showRuler && hasImage" title="Ruler: strokes snap to a straight line"></div>
+    </div>
+  </div>
+  </div>
+</cos-primarywindow>
+
+<!-- ── Full-viewport selection overlay. Rendered as a sibling of the window so it
+     covers the whole viewport instead of being clipped to the draggable,
+     CSS-transformed window container. ─────────────────────────────── -->
+  <div class="snip-overlay" *ngIf="phase === 'selecting'"
+    (mousedown)="onSelectionDown($event)" (mousemove)="onSelectionMove($event)" (mouseup)="onSelectionUp($event)">
+    <img class="snip-overlay__img" [src]="srcDataUrl" alt="capture" />
+    <div class="snip-overlay__dim"></div>
+
+    <div class="snip-overlay__hint" *ngIf="captureMode !== 'window'">
+      Drag to {{ captureMode === 'freeform' ? 'draw a freeform region' : 'select a region' }} · Esc to cancel
+    </div>
+    <div class="snip-overlay__hint" *ngIf="captureMode === 'window'">
+      Click a window to capture it · Esc to cancel
+    </div>
+
+    <!-- Rectangle selection -->
+    <div class="snip-sel-rect" *ngIf="captureMode === 'rectangle'"
+      [style.left.px]="selectionRect.left" [style.top.px]="selectionRect.top"
+      [style.width.px]="selectionRect.width" [style.height.px]="selectionRect.height"></div>
+
+    <!-- Freeform path -->
+    <svg class="snip-sel-svg" *ngIf="captureMode === 'freeform' && freeformPath.length > 1">
+      <polyline [attr.points]="freeformPoints" fill="rgba(0,173,239,0.15)" stroke="#00adef" stroke-width="1.5"/>
+    </svg>
+
+    <!-- Window highlight -->
+    <div class="snip-win-hi" *ngIf="captureMode === 'window' && hoverWindowIndex >= 0"
+      [style.left.px]="windowRects[hoverWindowIndex].left" [style.top.px]="windowRects[hoverWindowIndex].top"
+      [style.width.px]="windowRects[hoverWindowIndex].width" [style.height.px]="windowRects[hoverWindowIndex].height"></div>
+  </div>
+
+  <input #fileInput type="file" accept="image/*" class="snip-file-input" (change)="onFileChosen($event)" />

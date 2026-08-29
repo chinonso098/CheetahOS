@@ -107,6 +107,7 @@ export interface DesktopIconsHandlerInit {
     isFormDirty: () => void;
     getIsRenameActive: () => boolean;
     getIsWindowDragActive: () => boolean;
+    removeWindowFocus: () => void;
     /**
      * Whether the start menu is currently open. When true the desktop keyboard
      * handler stands down so the start menu owns navigation and the two don't
@@ -229,4 +230,12 @@ export interface DragStartResult {
     draggedElementId: number;
     /** Files the caller should register on `FileService` as the drag payload. */
     filesToRegister: FileInfo[];
+}
+
+
+export interface LassoSelection {
+    x:number,
+    y:number,
+    w:number,
+    h:number,
 }

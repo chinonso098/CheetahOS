@@ -59,6 +59,7 @@ export class ChatterService implements BaseService {
   // setSubscriptions() and torn down together in terminateSubscriptions()
   // when the chatter window closes.
   private _newMessageReceivedSub!: Subscription;
+  private _messageUpdateReceivedSub!: Subscription;
   private _priorMessagesSub!: Subscription;
   private _newUserInformationSub!: Subscription;
   private _updateOnlineUserListSub!: Subscription;
@@ -69,6 +70,7 @@ export class ChatterService implements BaseService {
   private _userStoppedTypingSub!: Subscription;
 
   private readonly NEW_MSG_EVT = 'newMessage';
+  private readonly MSG_UPDATE_EVT = 'messageUpdate';
   private readonly NEW_USER_INFO_EVT = 'newUserInfo';
   private readonly UPDATE_USER_NAME_EVT = 'updateUserName';
   private readonly REMOVE_USER_INFO_EVT = 'removeUserInfo';
@@ -82,7 +84,8 @@ export class ChatterService implements BaseService {
 
   // UI-facing notifiers. ChatterComponent subscribes to these and refreshes its
   // view whenever the service mutates chat/user state from an inbound event.
-  newMessageNotify: Subject<void> = new Subject<void>();
+  newMessageNotify: Subject<ChatMessage> = new Subject<ChatMessage>();
+  messageUpdateNotify: Subject<ChatMessage> = new Subject<ChatMessage>();
   userCountChangeNotify: Subject<number> = new Subject<number>();
   newUserInformationNotify: Subject<void> = new Subject<void>();
   updateOnlineUserListNotify: Subject<void> = new Subject<void>();
@@ -117,6 +120,10 @@ export class ChatterService implements BaseService {
     this._socketService.sendMessage(this.NEW_MSG_EVT, data);
   }
 
+  sendMessageUpdate(data: ChatMessage) {
+    this._socketService.sendMessage(this.MSG_UPDATE_EVT, data);
+  }
+
   sendUserOnlineAddInfoMessage(data: IUserData) {
     this._socketService.sendMessage(this.NEW_USER_INFO_EVT, data);
   }
@@ -147,8 +154,8 @@ export class ChatterService implements BaseService {
   // Ask the server for the full chat history. The reply arrives asynchronously
   // on the PRIOR_MSG_EVT channel and is handled by raisePriorMessagesReceived().
   sendFetchPriorMessagesMessage(account:string) {
-    const devMsgCount = 500;
-    const userMsgCount = 150;
+    const devMsgCount = 1000;
+    const userMsgCount = 200;
     const msgCount = account === Constants.USER_DEV ? devMsgCount : userMsgCount;
     this._socketService.sendMessage(this.FETCH_PRIOR_MSG_EVT, msgCount);
   }
@@ -197,6 +204,7 @@ export class ChatterService implements BaseService {
     // Payloads currently use underscore-prefixed fields (ChatMessage shape).
     const msg = sNE(chatMsg['_msg']);
     const userId = sNE(chatMsg['_userId']);
+    const msgId = sNE(chatMsg['_msgId']);
     const userName = sNE(chatMsg['_userName']);
 
     if (!msg || !userId || !userName) return;
@@ -207,12 +215,12 @@ export class ChatterService implements BaseService {
     const isAppMsg = b(chatMsg['_isAppMsg']);
     const isUserNameEdit = b(chatMsg['_isUserNameEdit']);
 
-    const newChatData = new ChatMessage(msg, userId, userName, userNameAcronym, iconColor, msgDate);
-    newChatData.setIsAppMgs = isAppMsg;
+    const newChatData = new ChatMessage(msg, userId, userName, userNameAcronym, iconColor, msgDate, msgId);
+    newChatData.setIsAppMsg = isAppMsg;
     newChatData.setIsUserNameEdit = isUserNameEdit;
 
     this._chatData.push(newChatData);
-    this.newMessageNotify.next();
+    this.newMessageNotify.next(newChatData);
   }
 
   // The server returned the stored chat history (a flat record per message).
@@ -227,6 +235,7 @@ export class ChatterService implements BaseService {
 
       const msg = sNE(rec['msg']);
       const userId = sNE(rec['userId']);
+      const msgId = sNE(rec['msgId']);
       const userName = sNE(rec['userName']);
       if (!msg || !userId || !userName) continue;
 
@@ -234,6 +243,7 @@ export class ChatterService implements BaseService {
       const iconColor = s(rec['iconColor']);
 
       const chatMessage = new ChatMessage(msg, userId, userName, userNameAcronym, iconColor);
+      chatMessage.setMsgId = msgId;
       // Preserve the real send time from the stored numeric timestamp, formatted
       // to match ChatMessage's own date style.
       const timestamp = typeof rec['timestamp'] === 'number' ? rec['timestamp'] : Date.now();
@@ -243,14 +253,43 @@ export class ChatterService implements BaseService {
         minute: '2-digit',
         hour12: true,
       });
-      chatMessage.setIsAppMgs = b(rec['isAppMsg']);
+      chatMessage.setIsAppMsg = b(rec['isAppMsg']);
       chatMessage.setIsUserNameEdit = b(rec['isUserNameEdit']);
+
 
       restored.push(chatMessage);
     }
 
     this._chatData = restored;
     this.priorMessagesNotify.next();
+  }
+
+  private raiseMessageUpdateReceived(chatMsg: any): void {
+    if (!isObj(chatMsg)) return;
+
+    const msg = sNE(chatMsg['_msg']);
+    const userId = sNE(chatMsg['_userId']);
+    const msgId = sNE(chatMsg['_msgId']);
+    const userName = sNE(chatMsg['_userName']);
+
+    if (!msg || !userId || !userName || !msgId) return;
+
+    const userNameAcronym = s(chatMsg['_userNameAcronym']);
+    const iconColor = s(chatMsg['_iconColor']);
+    const msgDate = s(chatMsg['_msgDate'] );
+    const isAppMsg = b(chatMsg['_isAppMsg']);
+    const isUserNameEdit = b(chatMsg['_isUserNameEdit']);
+
+    const updatedChatData = new ChatMessage(msg, userId, userName, userNameAcronym, iconColor, msgDate, msgId);
+    updatedChatData.setIsAppMsg = isAppMsg;
+    updatedChatData.setIsUserNameEdit = isUserNameEdit;
+
+    // Find the existing message in the local history and update it in place.
+    const idx = this._chatData.findIndex((x) => x.getMsgId === msgId);
+    if (idx !== -1) {
+      this._chatData[idx] = updatedChatData;
+      this.messageUpdateNotify.next(updatedChatData);
+    }
   }
 
   // Add the user to the online list, or update the existing entry in place.
@@ -370,6 +409,7 @@ export class ChatterService implements BaseService {
   // no-op, so an extra call can never throw.
   terminateSubscriptions(): void {
     this._newMessageReceivedSub?.unsubscribe();
+    this._messageUpdateReceivedSub?.unsubscribe();
     this._priorMessagesSub?.unsubscribe();
     this._newUserInformationSub?.unsubscribe();
     this._updateOnlineUserListSub?.unsubscribe();
@@ -423,6 +463,10 @@ export class ChatterService implements BaseService {
     this._userOfflineRemoveUserInfoSub = this._socketService
       .onMessageEvent(this.REMOVE_USER_INFO_EVT)
       .subscribe((t) => this.raiseRemoveUserFromOnlineListReceived(t));
+
+    this._messageUpdateReceivedSub = this._socketService
+      .onMessageEvent(this.MSG_UPDATE_EVT)
+      .subscribe((d) => this.raiseMessageUpdateReceived(d));
   }
 
   private getProcessDetail(): Process {

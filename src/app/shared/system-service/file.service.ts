@@ -48,6 +48,8 @@ export class FileService implements BaseService{
     private _fileAndAppIconAssociation!:Map<string,string>; 
     private _restorePoint!:Map<string,string>; 
     private _fileDragAndDrop!:FileInfo[];
+    private _hiddenFilePaths!:string[];
+    private _hiddenFolderPaths!:string[];
     private _appDirectory!:AppDirectory;
     private _eventOriginator = Constants.EMPTY_STRING;
     private _mountedZips:Map<string, string> = new Map<string, string>(); // mountPoint -> srcPath
@@ -113,6 +115,9 @@ export class FileService implements BaseService{
         this._newFileOrFolderNameMap = new Map<string, string>();
         this._appDirectory = new AppDirectory();
         this._fileDragAndDrop = [];
+        const defaultHiddenPaths = this.getDefaultHiddenPaths();
+        this._hiddenFolderPaths = defaultHiddenPaths.folders;
+        this._hiddenFilePaths = defaultHiddenPaths.files;
 
         this._processIdService = processIDService;
         this._runningProcessService = runningProcessService;
@@ -217,6 +222,16 @@ export class FileService implements BaseService{
             console.warn('postInitBrowserFs: FileIndexerService.instance not ready; skipping initial index walk');
         }
     }   
+
+    private getDefaultHiddenPaths(): { files: string[]; folders: string[] } {
+        const defaultHiddenFiles: string[] = [];
+        const defaultHiddenFolders: string[] = ['/AppData', '/Program-Files', '/Cheetah/Themes', '/Cheetah/System/Acct', '/Cheetah/System/Imageres'];
+
+        return {
+            files: defaultHiddenFiles,
+            folders: defaultHiddenFolders,
+        };
+    }
 
     // public async isDirectory(path:string):Promise<boolean> {
     //     await this._initPromise;
@@ -613,6 +628,77 @@ export class FileService implements BaseService{
         return new URL(osdriveRelativePath, document.baseURI).href;
     }
 
+    /**
+     * Normalize a shortcut's target path to a canonical absolute virtual-FS path.
+     * Handles both stored forms: 'osdrive/Users/..' and '/Users/..'.
+     */
+    private toVirtualPath(path: string): string {
+        if(!path) return path;
+        const stripped = path.startsWith(`${Constants.BASE}${Constants.ROOT}`) ? path.slice(Constants.BASE.length) : path;
+        return stripped.startsWith(Constants.ROOT) ? stripped : `${Constants.ROOT}${stripped}`;
+    }
+
+    /**
+     * Resolve a file to a virtual-FS path for readers that pull bytes in
+     * (pdf, text, code, markdown, jsdos — via getFileAsText/BlobAsync).
+     */
+    public resolveContentPath(file: FileInfo): string {
+        if(file.isUrlShortcut()) 
+            return this.toVirtualPath(file.getContentPath);    // shortcut target
+
+        return file.getCurrentPath;                                                 // real file / blank
+    }
+
+    /**
+     * Resolve a file to a fetchable URL for streaming players (audio, video, ruffle).
+     * Order: already-materialized blob → .url shortcut target → the file's own path.
+     */
+    public resolveContentUrl(file: FileInfo): string {
+        const contentPath = file.getContentPath;
+        if(contentPath.startsWith(Constants.BLOB_URI_PREFIX)) return contentPath;   // blob as-is
+
+        if(file.isUrlShortcut()) 
+            return this.getDirectFileUrl(this.toVirtualPath(contentPath));
+
+        return this.getDirectFileUrl(file.getCurrentPath);                          // real file
+    }
+
+    /**
+     * Asynchronously resolve a file to a fetchable URL for streaming players (audio, video, ruffle).
+     * Order: already-materialized blob → .url shortcut target → the file's own path.
+     * If the file is already materialized as a blob, that URL is returned directly; otherwise, the method attempts to resolve a direct URL or read the file as a blob.
+     * @returns A fetchable URL for the file, either a blob URL or a direct URL.
+     */
+    private async resolveContentUrlAsync(file: FileInfo): Promise<string> {
+        const contentPath = file.getContentPath;
+        if (contentPath.startsWith(Constants.BLOB_URI_PREFIX)) return contentPath;
+
+        const virtualPath = file.isUrlShortcut() 
+        ? this.toVirtualPath(contentPath) 
+        : file.getCurrentPath;
+        
+        // pristine read-only layer → stream via direct URL; overlay-only → read as blob
+        return this.isInPristineOsdrive(virtualPath)
+            ? this.getDirectFileUrl(virtualPath)
+            : this.getFileAsBlobAsync(virtualPath);
+    }
+
+    /**
+     * 
+     * @param virtualPath The virtual-FS path to check.
+     * @returns True if the path exists in the pristine OS drive, false otherwise.
+     */
+    private isInPristineOsdrive(virtualPath: string): boolean {
+        const segments = virtualPath.split(Constants.ROOT).filter(s => s.length > 0);
+        let node: any = osDriveFileSystemIndex;
+        for (const seg of segments) {
+            if (node === null || typeof node !== 'object' || !(seg in node)) return false;
+            node = node[seg];
+        }
+        return typeof node === 'number'; // a file (size); folders are objects
+    }
+
+
     private async readRawAsync(srcPath: string): Promise<Buffer | undefined>{
         return new Promise((resolve) => {
             this._fileSystem.readFile(srcPath, (readErr, contents = Buffer.from(Constants.EMPTY_STRING)) => {
@@ -704,6 +790,12 @@ export class FileService implements BaseService{
             fileInfo.setOpensWith = Constants.FILE_EXPLORER;
             fileInfo.setIsFile = false;
             isFile = false;
+
+            if(this._hiddenFolderPaths.some(hidden => path === hidden || path.startsWith(hidden + Constants.ROOT))){
+                fileInfo.setIsHidable = true;
+                fileInfo.setIsHidden = true;
+            }
+
         }
         else if(extension === Constants.URL){
             const sc = await this.getShortCutFromURLAsync(path);
@@ -736,7 +828,7 @@ export class FileService implements BaseService{
 
         }else if(Constants.KNOWN_FILE_EXTENSIONS.includes(extension)){
             const resolved = this.getOpensWith(extension);
-
+  
             let fileContent:FileContent | undefined = undefined;
 			// PERF: swf/pdf are the only "known" types whose content is pre-loaded, and
 			// like audio/video above it can be large — so defer it until the file is
@@ -756,8 +848,10 @@ export class FileService implements BaseService{
             fileInfo.setFileName = basename(path, extname(path));
             fileInfo.setFileExtension = extension;
         }
+
         this.addAppAssociaton(fileInfo.getOpensWith, fileInfo.getIconPath, isFile);
 
+        //console.log('getFileInfoAsync: fileInfo:', fileInfo);
         return fileInfo;
     }
 
@@ -809,19 +903,21 @@ export class FileService implements BaseService{
 	populateFileInfo(path:string, fileMetaData:FileMetaData, isFile:boolean, opensWith:string, imageName?:string, useImage=false, shortCut?:ShortCut, fileCntnt?:FileContent):FileInfo{
         const fileInfo = new FileInfo();
         const img = `${Constants.IMAGE_BASE_PATH}${imageName}`;
+        let fileName = Constants.EMPTY_STRING;
 
         fileInfo.setCurrentPath = path;
         if(shortCut !== undefined){
             fileInfo.setIconPath = (useImage)? shortCut.iconPath || img : img;
             fileInfo.setContentPath = shortCut.contentPath || Constants.EMPTY_STRING;
             fileInfo.setFileType = shortCut.fileType || extname(path);
-            fileInfo.setFileName = shortCut.fileName || basename(path, extname(path));
+            fileName = shortCut.fileName || basename(path, extname(path));
+
             fileInfo.setOpensWith = shortCut.opensWith || opensWith;
         }else{
             fileInfo.setIconPath = (useImage)? fileCntnt?.iconPath || img : img;
             fileInfo.setContentPath = fileCntnt?.contentPath || Constants.EMPTY_STRING;
             fileInfo.setFileType = fileCntnt?.fileType || extname(path);
-            fileInfo.setFileName = fileCntnt?.fileName || basename(path, extname(path));
+            fileName = fileCntnt?.fileName || basename(path, extname(path));
             fileInfo.setOpensWith = fileCntnt?.opensWith || opensWith;
         }
         fileInfo.setIsFile = isFile;
@@ -832,6 +928,8 @@ export class FileService implements BaseService{
         fileInfo.setBlkSizeInBytes = fileMetaData.getBlkSize;
         fileInfo.setMode = fileMetaData.getMode;
         fileInfo.setFileExtension = extname(path);
+        fileInfo.setFileName = fileName;
+        fileInfo.setFileNameWithExtension = (isFile) ? `${fileName}${extname(path)}` : fileName;
 
         return fileInfo;
     }
@@ -1405,10 +1503,9 @@ export class FileService implements BaseService{
             // (e.g. a screenshot save fired before BrowserFS post-init has
             // resolved FileIndexerService.instance).
             if(requestId !== Constants.EMPTY_STRING){
-                console.log(`writeFileAsync: storing final path for requestId ${requestId}: ${writeRes.finalPath}`);
-                console.log(`writeFileAsync: storing final basename for requestId ${requestId}: ${basename(writeRes.finalPath)}`);
                 this._newFileOrFolderNameMap.set(requestId, basename(writeRes.finalPath));
             }
+            
             await this.fileIndexer?.addNotify(writeRes.finalPath, true);
             // Incremental storage update — avoid full drive rescan. Only applied
             // once a baseline exists (see getUsedStorageAsync); otherwise the
@@ -1654,6 +1751,8 @@ OpensWith=${shortCutData.opensWith}
         return confirmationState === Constants.TRUE;
     }
 
+    //I didn't account for .URL files ####
+    //Come back to this later
     isFileInUse(filePath:string):boolean{
         const processes = this._runningProcessService.getProcesses();
         return processes.some(process => {

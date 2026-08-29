@@ -356,8 +356,8 @@ span.dm-tail{
     align-items: center;
     display: inline-flex;
     min-width: 18px;
-    top: 0;
-    left: 15%;
+    top: 2px;
+    left: 13%;
 }
 
 .dm-tskbar-img-alt, .dm-tskbar-cntxt-img-alt, .dm-power-img-alt{

@@ -14,6 +14,17 @@ export interface ActivityHistory{
     lastInteractionTS:number
 }
 
+export interface QuickAccessEntry{
+    path:string,        // getCurrentPath — identity key (unique per entry)
+    name:string,        // getFileName
+    icon:string,        // getIconPath   — lets the tile render without a disk read
+    opensWith:string,   // getOpensWith  — lets a click launch without re-resolving
+    fileType:string,    // getFileType   — needed to rebuild a usable FileInfo (folder vs file)
+    isFile:boolean,     // getIsFile
+    count:number,       // number of opens; higher rises to the top
+    lastInteractionTS:number // tie-breaker when counts are equal
+}
+
 export interface Activity{
     type:string, 
     name:string, 

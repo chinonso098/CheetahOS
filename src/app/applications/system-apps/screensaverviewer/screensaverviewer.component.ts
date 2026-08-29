@@ -181,9 +181,9 @@ export class ScreenSaverViewerComponent implements BaseComponent, OnInit, OnDest
     this.removeDismissListeners();
 
     const processToClose = this._runningProcessService.getProcess(this.processId);
-    if (processToClose) {
+    if (processToClose) 
       this._runningProcessService.closeProcessNotify.next(processToClose);
-    }
+    
   }
 
   private getComponentDetail(): Process {

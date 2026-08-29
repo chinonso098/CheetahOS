@@ -1,6 +1,7 @@
 /* eslint-disable @angular-eslint/prefer-standalone */
 import { Component, ElementRef, ViewChild, OnDestroy, AfterViewInit, OnInit, Input, HostBinding } from '@angular/core';
 import { Subscription } from 'rxjs';
+import {extname} from 'path';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
@@ -120,7 +121,12 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
 
 
   async ngAfterViewInit(): Promise<void> {
-    const fileExt = this._fileInfo.getFileExtension;
+    // Resolve which file to load: a real file reads from its own path; a .url
+    // shortcut reads from the target it points at.
+    const fileSrc = this._fileService.resolveContentPath(this._fileInfo);
+    // Derive the language from the resolved target. A .url shortcut's own
+    // extension is '.url'; the file it points at is what we actually edit.
+    const fileExt = extname(fileSrc) || this._fileInfo.getFileExtension;
     this._languageType = this.getFileTypeMap(fileExt);
 
     this.editorOptions = {
@@ -148,7 +154,7 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
 
     // Load file text
     this._isApplyingFileLoad = true;
-    this.code = await this._fileService.getFileAsTextAsync(this._fileInfo.getCurrentPath);
+    this.code = await this._fileService.getFileAsTextAsync(fileSrc);
     this._isApplyingFileLoad = false;
 
     // displayName is set in ngOnInit (before the view is checked) to avoid NG0100.
@@ -342,7 +348,9 @@ export class CodeEditorComponent  implements BaseComponent,  OnDestroy, AfterVie
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() !== this.processId){
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() !== this.processId
+      && this._windowService.getIsWindowInFocus()){
+
       this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
     }
 

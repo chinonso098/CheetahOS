@@ -100,14 +100,21 @@
                             </figure> 
                         </span>
 
-                        <div class="fileexp-header__nav-dynamic-container" *ngFor="let dirTraversal of _directoryTraversalList let j = index">
-                            <span *ngIf="j > 0" class="span fileexp-header__nav-repeat-cntnr">
-                                <figure class="fileexp-header__nav-static-figure">
-                                    <svg class="fileexp-header__nav-static-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" fill="currentColor" aria-hidden="true"><path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/></svg>
-                                </figure> 
-                            </span>
-                            <span class="span mid-nav-path-gen-cntnr">{{dirTraversal}}</span>
-                        </div>
+                        @if(displayFullPathInTitleBar){
+                            <div class="fileexp-header__nav-dynamic-container" *ngFor="let dirTraversal of _directoryTraversalList let j = index">
+                                <span *ngIf="j > 0" class="span fileexp-header__nav-repeat-cntnr">
+                                    <figure class="fileexp-header__nav-static-figure">
+                                        <svg class="fileexp-header__nav-static-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" fill="currentColor" aria-hidden="true"><path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/></svg>
+                                    </figure> 
+                                </span>
+                                <span class="span mid-nav-path-gen-cntnr">{{dirTraversal}}</span>
+                            </div>
+                        }
+                        @else{
+                            <div class="fileexp-header__nav-dynamic-container">
+                                <span class="span mid-nav-path-gen-cntnr">{{_directoryTraversalList[0]}}</span>
+                            </div>
+                        }
                     </div>
 
                     <!-- Refactor #11.a: form + input visibility driven by `isPathEditing`. -->
@@ -231,7 +238,9 @@
                         </ng-container>
         
                         <ng-template #iconsView>
-                            <li class="li-iconview-container" *ngFor="let file of fetchedFiles; let i = index" id="ilElmnt-{{processId}}" >
+                            <li class="li-iconview-container" *ngFor="let file of fetchedFiles; let i = index; trackBy: trackByFile" id="ilElmnt-{{processId}}" 
+                            [class.is-hidable]="file.getIsHidable"
+                            [class.is-hidden]="file.getIsHidden && !showHiddenFilesAndFolders" >
                                 <!-- Refactor #11.i: per-icon hover/selected styling now comes from
                                      three [class.*] bindings driven by component fields, replacing
                                      the imperative setBtnStyle/removeBtnStyle DOM mutations. The
@@ -271,7 +280,7 @@
                                     </div>
                                     <div class="iconview-caption-container">
                                         <p class="iconview-caption"  id="figCapElmnt-{{processId}}-{{i}}">
-                                            {{file.getFileName}} 
+                                            @if(showFileExtensions){{{file.getFileNameWithExtension}}} @else {{{file.getFileName}}}
                                         </p>
                                         <form [formGroup]="renameForm" 
                                             id="renameForm-{{processId}}-{{i}}" 
@@ -319,7 +328,7 @@
                                          participate in the state machine. -->
                                     <!-- draggable="true" + (dragstart)/(dragend): details-view rows
                                          are drag sources too, mirroring the icon-view buttons above. -->
-                                    <tr class="li-detailsview-container" *ngFor='let file of fetchedFiles; let i = index'
+                                    <tr class="li-detailsview-container" *ngFor='let file of fetchedFiles; let i = index; trackBy: trackByFile'
                                         draggable="true"
                                         (dragstart)="onDragStart($event, i)"
                                         (dragend)="onDragEnd($event)"
@@ -352,7 +361,7 @@
                                                 </div>
                                                 <div class="div-detailsview-caption-section">
                                                     <figcaption class="figcaption-detailsview" id="figCapElmnt-{{processId}}-{{i}}">
-                                                        <p class="figcaption-detailsview-p" id="fileName-{{i}}"> {{file.getFileName}} </p>
+                                                        <p class="figcaption-detailsview-p" id="fileName-{{i}}"> @if(showFileExtensions){{{file.getFileNameWithExtension}}} @else {{{file.getFileName}}} </p>
                                                     </figcaption>
                                                     <form [formGroup]="renameForm" class="detailsview-rename-form"  id="renameForm-{{processId}}-{{i}}"
                                                         (ngSubmit)="isFormDirty()">

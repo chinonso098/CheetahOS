@@ -61,4 +61,40 @@ describe('TaskbarpreviewsComponent', () => {
     systemNotificationServiceStub.taskBarPreviewUnHighlightNotify.next('chrome-42');
     expect(component.isHighlighted).toBe(false);
   });
+
+  it('truncates long app names for the preview header', () => {
+    const appNameCharLimit = 30;
+    component.name = 'a'.repeat(appNameCharLimit + 5);
+    component.ngOnInit();
+    expect(component.appInfo).toBe(`${'a'.repeat(appNameCharLimit)}...`);
+
+    component.name = 'terminal';
+    component.ngOnInit();
+    expect(component.appInfo).toBe('terminal');
+  });
+
+  it('dismisses the fly-out and closes the window when close is clicked', () => {
+    const process = { getProcessId: 42 };
+    const getProcessSpy = jest.spyOn(runningProcessServiceStub, 'getProcess')
+      .mockReturnValue(process as never);
+    let closed: unknown;
+    let restored = 0;
+    runningProcessServiceStub.closeProcessNotify.subscribe((p) => (closed = p));
+    windowServiceStub.restoreProcessWindowOnMouseLeaveNotify.subscribe(() => restored++);
+
+    component.onClosePreviewWindow(42);
+
+    expect(closed).toBe(process);
+    expect(restored).toBe(1);
+    getProcessSpy.mockRestore();
+  });
+
+  it('never emits a close for a process that is already gone', () => {
+    let closeCount = 0;
+    runningProcessServiceStub.closeProcessNotify.subscribe(() => closeCount++);
+
+    component.onClosePreviewWindow(999);
+
+    expect(closeCount).toBe(0);
+  });
 });

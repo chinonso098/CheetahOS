@@ -64,10 +64,7 @@ export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   async ngAfterViewInit(): Promise<void> {
     //this.setTitleWindowToFocus(this.processId); 
 
-    setTimeout(()=>{
-
-    },this.SECONDS_DELAY) 
-
+    setTimeout(()=>{}, this.SECONDS_DELAY);
     await CommonFunctions.sleep(this.SECONDS_DELAY);
     await this.captureComponentImg();
   }
@@ -75,50 +72,27 @@ export class TitleComponent implements BaseComponent, OnInit, OnDestroy, AfterVi
   ngOnDestroy():void{
   }
 
-
   async captureComponentImg(): Promise<void>{  
     await CommonFunctions.captureComponentImgAsync(this.titleContent, this.processId, this.name, this.icon, this._windowService);
-  }
-
-  maximizeWindow():void{
-
-    const uId = `${this.name}-${this.processId}`;
-    const evtOriginator = this._runningProcessService.getEventOriginator();
-
-    if(uId === evtOriginator){
-      this._runningProcessService.removeEventOriginator();
-      /* The host (.title) is already width:100%/height:100%, so the
-         primary window's maximize animation reflows us for free. We
-         just strip any inline px that an older pass may have written. */
-      const host = this.titleContent?.nativeElement as HTMLElement | undefined;
-      if(host){
-        host.style.width = '';
-        host.style.height = '';
-      }
-    }
-  }
-
-  /**
-   * Restore-from-maximized. Mirror of maximizeWindow: clear any inline
-   * sizes so the fluid CSS regains control.
-   */
-  minimizeWindow():void{
-    const uId = `${this.name}-${this.processId}`;
-    if(this._runningProcessService.getEventOriginator() !== uId) return;
-    this._runningProcessService.removeEventOriginator();
-    const host = this.titleContent?.nativeElement as HTMLElement | undefined;
-    if(host){
-      host.style.width = '';
-      host.style.height = '';
-    }
   }
 
   focusWindow(evt:MouseEvent):void{
     evt.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
+  }
+
+  silenceCtxEvt(evt?:MouseEvent):void{
+    // Right-clicking anywhere on the Task Manager (outside the header row,
+    // which opens our own column menu) should NOT pop the desktop's context
+    // menu. 
+    //  - preventDefault(): suppress the native browser context menu.
+    //  - stopPropagation(): keep the event from reaching the desktop root.
+    evt?.preventDefault();
+    evt?.stopPropagation();
   }
 
   storeAppState(app_data:unknown):void{

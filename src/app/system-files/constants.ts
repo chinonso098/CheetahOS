@@ -18,10 +18,15 @@ export namespace Constants{
     export const NEW_LINE = '\n';
     export const OSDISK = 'OSDisk (C:)';
     export const THISPC = 'This PC';
+    export const QUICK_ACCESS = 'Quick access';
     export const RECYCLE_BIN = 'Recycle Bin';
     export const URL = '.url';
     export const SHORTCUT = 'Shortcut';
     export const BASE = 'osdrive';
+    // Object URL prefix. The blob's origin mirrors the page origin, so it's
+    // 'blob:http://...' on the local dev server but 'blob:https://...' on
+    // gh-pages — checking the bare 'blob:' prefix covers both.
+    export const BLOB_URI_PREFIX = 'blob:';
 
     /**
      * Sentinel written to a launch trigger's currentPath to mark a Settings launch
@@ -48,6 +53,7 @@ export namespace Constants{
     export const USER_BASE_PATH = '/Users';
 
     export const FILE_EXPLORER = 'fileexplorer';
+    export const FILE_EXPLORER_NAME = 'File Explorer';
     export const DESKTOP = 'desktop';
     export const FOLDER = 'folder';
     export const NEW_FOLDER = 'New Folder';
@@ -55,6 +61,7 @@ export namespace Constants{
     export const CHEETAH = 'cheetah';
     export const CLIPBOARD = 'clipboard';
     export const WIN_EXPLR = 'win_explr_';
+    export const FOLDER_OPTIONS_TITLE = 'Folder Options';
     export const NONE = 'None';
 
     export const DEFAULT_MENU_ORDER = 'DefaultMenuOrder';
@@ -75,9 +82,9 @@ export namespace Constants{
 
     export const RESERVED_ID_RUNNING_PROCESS_SERVICE = 4;
     export const OS_NAME = 'Cheetah OS';
-    export const OS_VERSION = '5.7.3';
+    export const OS_VERSION = '5.8.28';
     export const OS_COPYRIGHT = '© 2026 Cheetah Software Inc. All rights reserved.';
-    export const OS_BUILD = '260703' //date-based build number, in the format YYMMDD, used to track specific builds and updates of the OS.;
+    export const OS_BUILD = '260828' //date-based build number, in the format YYMMDD, used to track specific builds and updates of the OS.;
     export const OS_ARCHITECTURE = 'WEB-BASED';
 
     export const ON = 'On';
@@ -268,6 +275,39 @@ export namespace Constants{
     /**⚠️ WARNING: Do not reference directly.*/
     export const ENVIRONMENT_VALUE = NON_PROD;
 
+    export const DEFAULT_SHOW_HIDDEN_FILES_AND_FOLDERS = 'DEFAULT_SHOW_HIDDEN_FILES_AND_FOLDERS';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_SHOW_HIDDEN_FILES_AND_FOLDERS_VALUE = FALSE;
+
+    export const DEFAULT_SHOW_FILE_EXTENSIONS = 'DEFAULT_SHOW_FILE_EXTENSIONS';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_SHOW_FILE_EXTENSIONS_VALUE = FALSE;
+
+    export const DEFAULT_DISPLAY_FULL_PATH_IN_TITLE_BAR = 'DEFAULT_DISPLAY_FULL_PATH_IN_TITLE_BAR';    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_DISPLAY_FULL_PATH_IN_TITLE_BAR_VALUE = FALSE;
+
+    export const DEFAULT_OPEN_FILE_EXPLORER_TO = 'DEFAULT_OPEN_FILE_EXPLORER_TO';
+    export const OPEN_FILE_EXPLORER_TO_QUICK_ACCESS = 'Quick access';
+    export const OPEN_FILE_EXPLORER_TO_THIS_PC = 'This PC';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_OPEN_FILE_EXPLORER_TO_VALUE = OPEN_FILE_EXPLORER_TO_QUICK_ACCESS;
+
+    export const DEFAULT_OPEN_FOLDER_IN_SAME_WINDOW = 'DEFAULT_OPEN_FOLDER_IN_SAME_WINDOW';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_OPEN_FOLDER_IN_SAME_WINDOW_VALUE = TRUE;
+
+    export const DEFAULT_SHOW_RECENTLY_USED_FILES = 'DEFAULT_SHOW_RECENTLY_USED_FILES';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_SHOW_RECENTLY_USED_FILES_VALUE = TRUE;
+
+    export const DEFAULT_SHOW_FREQUENTLY_USED_FOLDERS = 'DEFAULT_SHOW_FREQUENTLY_USED_FOLDERS';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_SHOW_FREQUENTLY_USED_FOLDERS_VALUE = TRUE;
+
+    export const DEFAULT_SHOW_KNOWN_FILE_TYPES = 'DEFAULT_SHOW_KNOWN_FILE_TYPES';
+    /**⚠️ WARNING: Do not reference directly.*/
+    export const DEFAULT_SHOW_KNOWN_FILE_TYPES_VALUE = TRUE;
+
 
     export const IMAGE_FILE_EXTENSIONS = [
         '.jpg',
@@ -425,7 +465,7 @@ export namespace Constants{
     export const Z_INDEX_FILE_EXPLORER_CONTEXT_MENU = 20;
 
 
-    export const USER_DEV = 'dev';
+    export const USER_DEV = 'dev_dev';
     export const USER_GUEST = 'guest';  
     export const USER_GUEST_PASSWORD = '1234';
     

@@ -11,9 +11,11 @@ import { ProcessIDService } from '../../system-service/process.id.service';
 import { RunningProcessService } from '../../system-service/running.process.service';
 import { WindowService } from '../../system-service/window.service';
 import { FileService } from '../../system-service/file.service';
+import { DefaultService } from '../../system-service/defaults.services';
 import { ThemeService } from 'src/app/shared/system-theme/theme';
 import { CommonFunctions } from 'src/app/system-files/commons/common.functions';
 import { FileInfo } from 'src/app/system-files/fs/file.info';
+import { QuickAccessService } from '../../system-service/quick.access.service';
 
 @Component({
   selector: 'cos-properties',
@@ -24,8 +26,25 @@ import { FileInfo } from 'src/app/system-files/fs/file.info';
 
 export class PropertiesComponent implements BaseComponent, OnChanges, OnDestroy{
   @Input() fileInput!:FileInfo;
+  // When true the window renders the "Folder Options" settings view instead of a file/folder
+  // properties view. In this mode no `fileInput` is supplied.
+  @Input() isFolderOptions = false;
   // Mirrors the system theme onto the host so the dialog picks up the dark palette.
   @HostBinding('class.theme-dark') isDarkTheme = false;
+
+  // ---- Folder Options (General tab) state ---------------------------------
+  // Each control persists its value to DefaultService the moment it changes, so the
+  // dialog needs no Apply/Cancel — OK just closes the window.
+  readonly folderOptionsTitle = Constants.FOLDER_OPTIONS_TITLE;
+  readonly openToQuickAccess = Constants.OPEN_FILE_EXPLORER_TO_QUICK_ACCESS;
+  readonly openToThisPc = Constants.OPEN_FILE_EXPLORER_TO_THIS_PC;
+  openFileExplorerTo = Constants.OPEN_FILE_EXPLORER_TO_QUICK_ACCESS;
+  openFolderInSameWindow = true;
+  showHiddenFilesAndFolders = false;
+  showFileExtensions = false;
+  displayFullPathInTitleBar = false;
+  showRecentlyUsedFiles = true;
+  showFrequentlyUsedFolders = true;
 
   fileFolder = 'File folder';
   osDisk = 'OSDisk';
@@ -74,6 +93,13 @@ export class PropertiesComponent implements BaseComponent, OnChanges, OnDestroy{
 
   private hiddenName = Constants.EMPTY_STRING
   private hiddenIcon = `${Constants.IMAGE_BASE_PATH}file_explorer.png`;
+  private openInWindowIcon = `${Constants.IMAGE_BASE_PATH}open_in_window.png`;
+  private openInNewWindowIcon = `${Constants.IMAGE_BASE_PATH}open_in_new_window.png`;
+  quickAccessHistoryIcon = `${Constants.IMAGE_BASE_PATH}quick_access_history.png`;
+  hideShowIcon = `${Constants.IMAGE_BASE_PATH}hide_show.png`;
+
+  openInIconState = this.openInWindowIcon;
+
   private _themeSub?:Subscription;
 
   // Services are injected directly as readonly constructor parameters, which removes the
@@ -82,7 +108,9 @@ export class PropertiesComponent implements BaseComponent, OnChanges, OnDestroy{
               private readonly _runningProcessService:RunningProcessService,
               private readonly _windowService:WindowService,
               private readonly _fileService:FileService,
-              private readonly _themeService:ThemeService){
+              private readonly _defaultService:DefaultService,
+              private readonly _themeService:ThemeService,
+              private readonly _quickAccessService:QuickAccessService){
     // Reserve a process id as soon as the component is created so it stays stable for the
     // lifetime of this properties window.
     this.processId = this._processIdService.getNewProcessId();
@@ -97,6 +125,16 @@ export class PropertiesComponent implements BaseComponent, OnChanges, OnDestroy{
   }
 
   async ngOnChanges(changes: SimpleChanges):Promise<void>{
+    // Folder Options mode: no `fileInput` is bound, so skip the file/folder detail work
+    // entirely and seed the settings view instead. The backing process is registered once.
+    if(this.isFolderOptions){
+      if(changes['isFolderOptions']?.firstChange){
+        this.initFolderOptions();
+        this._runningProcessService.addProcess(this.getComponentDetail());
+      }
+      return;
+    }
+
     // Recompute the displayed details whenever the bound file/folder changes.
     await this.doStuff();
 
@@ -107,6 +145,95 @@ export class PropertiesComponent implements BaseComponent, OnChanges, OnDestroy{
     if(changes['fileInput']?.firstChange){
       this._runningProcessService.addProcess(this.getComponentDetail());
     }
+  }
+
+  // ---- Folder Options ------------------------------------------------------
+
+  private initFolderOptions():void{
+    this.name = this.folderOptionsTitle;
+    this.displayMsg = this.folderOptionsTitle;
+    this.hiddenName = `${Constants.WIN_EXPLR + this.folderOptionsTitle}`;
+    this.icon = this.hiddenIcon;
+    this.iconPath = this.hiddenIcon;
+
+    this.openFileExplorerTo =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_OPEN_FILE_EXPLORER_TO) || Constants.OPEN_FILE_EXPLORER_TO_QUICK_ACCESS;
+    this.openFolderInSameWindow =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_OPEN_FOLDER_IN_SAME_WINDOW) !== Constants.FALSE;
+
+    if(this.openFolderInSameWindow){
+      this.openInIconState = this.openInWindowIcon;
+    } else {
+      this.openInIconState = this.openInNewWindowIcon;
+    }
+
+    this.showHiddenFilesAndFolders =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_HIDDEN_FILES_AND_FOLDERS) === Constants.TRUE;
+    this.showFileExtensions =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_FILE_EXTENSIONS) === Constants.TRUE;
+    this.displayFullPathInTitleBar =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_DISPLAY_FULL_PATH_IN_TITLE_BAR) === Constants.TRUE;
+    this.showRecentlyUsedFiles =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_RECENTLY_USED_FILES) !== Constants.FALSE;
+    this.showFrequentlyUsedFolders =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_FREQUENTLY_USED_FOLDERS) !== Constants.FALSE;
+  }
+
+  private persistFolderOption(key:string, value:boolean):void{
+    // raiseEvent:true — open File Explorer windows subscribe and apply the change live.
+    const raiseEvent = true;
+    this._defaultService.updateDefaultData(key, value ? Constants.TRUE : Constants.FALSE, raiseEvent);
+  }
+
+  onBrowseFoldersChange(sameWindow:boolean):void{
+    this.openFolderInSameWindow = sameWindow;
+
+    if(this.openFolderInSameWindow){
+      this.openInIconState = this.openInWindowIcon;
+    } else {
+      this.openInIconState = this.openInNewWindowIcon;
+    }
+
+    this.persistFolderOption(Constants.DEFAULT_OPEN_FOLDER_IN_SAME_WINDOW, sameWindow);
+  }
+
+  onOpenFileExplorerToChange(evt:Event):void{
+    const value = (evt.target as HTMLSelectElement).value;
+    this.openFileExplorerTo = value;
+   const raiseEvent = true;
+    // String-valued setting (not a boolean flag), so it bypasses persistFolderOption.
+    this._defaultService.updateDefaultData(Constants.DEFAULT_OPEN_FILE_EXPLORER_TO, value, raiseEvent);
+  }
+
+  onHiddenFilesChange(show:boolean):void{
+    this.showHiddenFilesAndFolders = show;
+    this.persistFolderOption(Constants.DEFAULT_SHOW_HIDDEN_FILES_AND_FOLDERS, show);
+  }
+
+  onToggleShowFileExtensions():void{
+    this.showFileExtensions = !this.showFileExtensions;
+    this.persistFolderOption(Constants.DEFAULT_SHOW_FILE_EXTENSIONS, this.showFileExtensions);
+  }
+
+  onToggleDisplayFullPath():void{
+    this.displayFullPathInTitleBar = !this.displayFullPathInTitleBar;
+    this.persistFolderOption(Constants.DEFAULT_DISPLAY_FULL_PATH_IN_TITLE_BAR, this.displayFullPathInTitleBar);
+  }
+
+  onToggleRecentlyUsedFiles():void{
+    this.showRecentlyUsedFiles = !this.showRecentlyUsedFiles;
+    this.persistFolderOption(Constants.DEFAULT_SHOW_RECENTLY_USED_FILES, this.showRecentlyUsedFiles);
+  }
+
+  onToggleFrequentlyUsedFolders():void{
+    this.showFrequentlyUsedFolders = !this.showFrequentlyUsedFolders;
+    this.persistFolderOption(Constants.DEFAULT_SHOW_FREQUENTLY_USED_FOLDERS, this.showFrequentlyUsedFolders);
+  }
+
+  onClearFileExplorerHistory():void{
+    // Placeholder: no File Explorer history store exists yet. Kept as a no-op so the
+    // Privacy section's Clear button is wired and ready when history lands.
+    this._quickAccessService.clear();
   }
 
   async doStuff():Promise<void> {
@@ -120,7 +247,7 @@ export class PropertiesComponent implements BaseComponent, OnChanges, OnDestroy{
     this.hiddenName = `${Constants.WIN_EXPLR + this.fileInput.getFileName}`;
     this.isFile = this.fileInput.getIsFile;
     this.isInRecycleBin = (currPath.includes(Constants.RECYCLE_BIN_PATH));
-    this.isRootFolder = (currPath === Constants.ROOT);
+    this.isRootFolder = (currPath === Constants.ROOT) && (this.fileInput.getCurrentPath === Constants.ROOT);
 
     if(this.fileInput.getIsFile){
       this.getFileSize();

@@ -24,6 +24,13 @@ export namespace FileExplorerSearchHelper {
         normalizePath:(path:string) => string;
         /** Resolve a path's parent directory. */
         getParentPath:(path:string) => string;
+        /**
+         * Authoritative directory check. `FileInfo.getIsFile` is unreliable for
+         * extension-less entries (the classifier treats a file such as "CHANGELOG"
+         * as a folder), so confirm with a real stat before recursing; otherwise
+         * readdir() gets called on a file and spams the console.
+         */
+        isDirectory:(path:string) => Promise<boolean>;
     }
 
     /**
@@ -86,8 +93,8 @@ export namespace FileExplorerSearchHelper {
 
         for(const entry of entries){
             collected.push(entry);
-            // Recurse only into real folders.
-            if(!entry.getIsFile){
+            // Recurse only into REAL directories — see `isDirectory` above.
+            if(!entry.getIsFile && await deps.isDirectory(entry.getCurrentPath)){
                 const childFiles = await collectFilesRecursively(entry.getCurrentPath, deps);
                 collected.push(...childFiles);
             }

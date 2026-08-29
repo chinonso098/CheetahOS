@@ -38,6 +38,7 @@ export class MenuService implements BaseService{
     closeContextMenu: Subject<string> = new Subject<string>();
     addToQuickAccess: Subject<FileTreeNode[]> = new Subject<FileTreeNode[]>();
     showPropertiesView: Subject<FileInfo> = new Subject<FileInfo>();
+    showFolderOptionsView: Subject<void> = new Subject<void>();
 
     hideShowTaskBar: Subject<void> = new Subject<void>();
     UnMergeTaskBarIcon: Subject<void> = new Subject<void>();

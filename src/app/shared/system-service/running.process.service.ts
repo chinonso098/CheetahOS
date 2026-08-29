@@ -75,21 +75,21 @@ export class RunningProcessService implements BaseService{
         this._eventOriginator = Constants.EMPTY_STRING;
     }
 
-    getProcess(processId:number):Process{
+    getProcess(processId:number):Process | undefined{
         const process = this._runningProcesses.find((process) => {
             return process.getProcessId === processId;
         });
 
-        return process!;
+        return process;
     }
 
     /**
      * 
      * @param appName 
-     * @returns Process
+     * @returns Process | null
      * 
      * This method will return the first of a given process with matching name, or null
-     * if proccess does not exsist
+     * if process does not exist
      */
     getProcessByName(appName:string):Process | null{
         const process = this._runningProcesses.find((process) => {

@@ -98,7 +98,7 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
 
     await this._scriptService.loadScript("ruffle","osdrive/Program-Files/Ruffle/ruffle.js", isModule);
     this.rufflePlayer = (window as any).RufflePlayer.newest();
-    this.loadSWF(this._fileInfo.getContentPath);
+    this.loadSWF(this._fileService.resolveContentUrl(this._fileInfo));
     this.storeAppState(this._gameSrc);
 
     await CommonFunctions.sleep(this.SECONDS_DELAY);
@@ -137,7 +137,8 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
   focusWindow(evt:MouseEvent):void{
     evt.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
@@ -184,6 +185,15 @@ export class RuffleComponent implements BaseComponent, OnInit, OnDestroy, AfterV
 
   updateComponentImg():void{
     this._intervalId = setInterval(async() => {
+        // Skip the expensive frame grab (captureStream + grabFrame + toDataURL)
+        // when there is no visible preview to refresh: the browser tab is
+        // backgrounded, or this window is minimized. A missing window state
+        // (very early in the window's life) is treated as visible so the first
+        // thumbnail is still captured.
+        // if(document.hidden) return;
+        const ws = this._windowService.getWindowState(this.processId);
+        if(ws && !ws.isVisible) return;
+
         await this.captureComponentImg()
     }, this.SECONDS_DELAY);
   }

@@ -19,7 +19,7 @@
     tabindex="0" 
     cdkDrag
     [cdkDragBoundary]="dragBoundarySelector"
-    (mousedown)="onMouseDown(this.processId)"
+    (mousedown)="onMouseDown(this.processId, $event)"
     (cdkDragEnded)="onDragEnded($event)"
     id="primWinCmpnt-{{uniqueId}}"
 
@@ -32,6 +32,7 @@
     <div class="header-container"
         appHighlight 
         [ngStyle]="headerActiveStyles"
+        (click)="onHeaderClick($event)"
         (dblclick)="onTitleBarDoubleClick($event)">
 
         <!--<tabindex="0"-->

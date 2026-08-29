@@ -194,7 +194,9 @@ All other trademarks, service marks, and logos are the property of their respect
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
+      
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 

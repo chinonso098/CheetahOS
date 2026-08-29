@@ -966,6 +966,14 @@ span.mid-search-entry{
     z-index: 1;
 }
 
+.li-iconview-container.is-hidable{
+    opacity: 0.4;
+}
+
+.li-iconview-container.is-hidden{
+    display: none;
+}
+
 .iconview-image {
     position: relative;
     height: 45px;

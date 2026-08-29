@@ -267,6 +267,7 @@ const INACTIVE_BORDER_COLOR = 'rgb(43,43,43)'; // #2b2b2b
       this._subs.add(this._windowService.onRestoreOrMinimizeFor(pid).subscribe(() => this.restoreHiddenWindow(pid)));
       this._subs.add(this._windowService.onFocusOnNextFor(pid).subscribe(() => this.setWindowToFocusAndResetWindowBoundsByPid(pid)));
       this._subs.add(this._windowService.onFocusOnCurrentFor(pid).subscribe(() => this.setFocusOnThisWindow(pid)));
+      this._subs.add(this._windowService.onRemoveFocusFor(pid).subscribe(() => this.setHeaderInActiveStyle()));
       this._subs.add(this._windowService.onShowOrSetFocusFor(pid).subscribe(() => this.showOrSetProcessWindowToFocusOnClick(pid)));
       this._subs.add(this._windowService.onResizeFor(pid).subscribe(info => this.onRZWindow(info)));
     }
@@ -634,8 +635,13 @@ const INACTIVE_BORDER_COLOR = 'rgb(43,43,43)'; // #2b2b2b
       this._windowMaximizeHandler.onTitleBarDoubleClick(evt);
     }
 
-    onMouseDown(pId:number):void{
-      this._windowDragHandler.onMouseDown(pId);
+    onHeaderClick(evt:MouseEvent):void{
+      evt.stopPropagation();
+      //this._windowFocusHandler.onHeaderClick(evt);
+    }
+
+    onMouseDown(pId:number, evt:MouseEvent):void{
+      this._windowDragHandler.onMouseDown(pId, evt);
     }
 
     onDragEnded(event: CdkDragEnd): void {
@@ -783,6 +789,9 @@ const INACTIVE_BORDER_COLOR = 'rgb(43,43,43)'; // #2b2b2b
 
     setFocusOnThisWindow(pId:number):void{
       this._windowFocusHandler.setFocusOnThisWindow(pId);
+
+      if(this._menuService.getIsContextMenuOpen())
+        this._menuService.closeAllContextMenus();
     }
 
     setFocusOnWindowAfterInit(pId:number):void{

@@ -7,6 +7,7 @@ import { ComponentType } from 'src/app/system-files/system.types';
 import { Process } from 'src/app/system-files/process';
 import {basename, dirname} from 'path';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
+import { QuickAccessService } from 'src/app/shared/system-service/quick.access.service';
 import { DefaultService } from 'src/app/shared/system-service/defaults.services';
 import { FileExplorerContextMenuHelper } from './fileexplorer.context.menu.helper';
 import { FileExplorerGeneralHelper } from './fileexplorer.general.helper';
@@ -109,6 +110,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _audioService!:AudioService;
   private _systemNotificationService!:SystemNotificationService;
   private _activityHistoryService!:ActivityHistoryService;
+  private _quickAccessService!:QuickAccessService;
   private _defaultService!: DefaultService;
   private _themeService!: ThemeService;
   private _formBuilder;
@@ -148,6 +150,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private _windowResizeSub!: Subscription;
   private _themeChangeSub!: Subscription;
   private _accentChangeSub!: Subscription;
+  private _folderOptionsSub!: Subscription;
   // (Refactor #12) `_createShortCutOnDesktopSub` removed — the field was
   // declared and unsubscribed in ngOnDestroy but never assigned anywhere
   // (no service ever called .subscribe() into it). Dropping it removes a
@@ -185,6 +188,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   isMultiSelectEnabled = true;
   isMultiSelectActive = false;
   areMultipleIconsHighlighted = false;
+
 
   private selectedFile!:FileInfo;
   private propertiesViewFile!:FileInfo
@@ -233,16 +237,24 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   quickAccessFilesSection = false;
   showFileSizeAndUnit = false;
   showAFolderSelected = false;
+ 
+  openFolderInSameWindow = false;
+  showHiddenFilesAndFolders = false;
+  showFileExtensions = false;
+  displayFullPathInTitleBar = false;
+  showRecentlyUsedFiles = false;
+  showFrequentlyUsedFolders = false;
   iconCntxtCntr = 0;
   fileExplrCntxtCntr = 0;
   selectFilesSizeSum = Constants.EMPTY_STRING;
   selectFilesSizeUnit = Constants.EMPTY_STRING;
+  openFileExplorerTo = Constants.EMPTY_STRING;
 
   readonly ZIP = '.zip';
   readonly ROOT = Constants.ROOT;
   readonly THIS_PC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
   readonly EMPTY_STRING = Constants.EMPTY_STRING
-  readonly QUICK_ACCESS = 'Quick access';
+  readonly QUICK_ACCESS = Constants.QUICK_ACCESS;
   fileTreeNavToPath = Constants.EMPTY_STRING
 
   fileExplrCntxtMenuStyle:Record<string, unknown> = {};
@@ -251,7 +263,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   // `document.getElementById('invalidChars-' + processId).style.transform = ...`
   // pattern. Per-instance, so two open FileExplorers cannot reposition each
   // other's tooltip.
-  invalidCharsTooltipTransform = '';
+  invalidCharsTooltipTransform = Constants.EMPTY_STRING;
   // (Refactor #11.g) Bound to .fx-information-tip-container in the template.
   // Replaces document.getElementById('fx-information-tip-' + processId) +
   // imperative style.left/top/position + classList.add('visible'). Each
@@ -331,6 +343,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   readonly MIN_WIDTH_PX = 560;
   readonly MIN_HEIGHT_PX = 360;
 
+  /* Approximate rendered heights, used only to decide whether a menu must flip
+     above the cursor. Should be measured once the menu can be sized on open. */
+  private readonly CTX_MENU_HEIGHT_FILE = 225;
+  private readonly CTX_MENU_HEIGHT_FOLDER = 344;
+  private readonly CTX_MENU_HEIGHT_EXPLORER = 230;
+
   isExtraLargeIcon = false;
   isLargeIcon = false;
   isMediumIcon = true;
@@ -359,7 +377,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     {icon:Constants.EMPTY_STRING, label: MenuAction.OPEN, action: this.onTriggerRunApplication.bind(this) },
     {icon:Constants.EMPTY_STRING, label: MenuAction.OPEN_WITH, action: this.showOpenWithDialog.bind(this) },
     {icon:Constants.EMPTY_STRING, label: MenuAction.OPEN_IN_NEW_WINDOW, action: this.openInANewWindow.bind(this) },
-    {icon:Constants.EMPTY_STRING, label: MenuAction.PIN_TO_QUICK_ACCESS, action: this.doNothing.bind(this) },
+    {icon:Constants.EMPTY_STRING, label: MenuAction.PIN_TO_QUICK_ACCESS, action: this.pinToQuickAccess.bind(this) },
     {icon:`${Constants.IMAGE_BASE_PATH}terminal.png`, label: MenuAction.OPEN_IN_TERMINAL, action: this.openInTerminal.bind(this) },
     {icon:Constants.EMPTY_STRING, label: MenuAction.PIN_TO_START, action: this.doNothing.bind(this) },
     {icon:`${Constants.IMAGE_BASE_PATH}send_to_zip.png`, label: MenuAction.SEND_TO_ZIP, action: this.onZip.bind(this) },
@@ -425,7 +443,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   displayName = 'fileexplorer';
   hasWindow = true;
   // opensWith for newly-created .txt files (matches the desktop's New-Text-File).
-  private readonly TEXT_EDITOR_APP = 'texteditor';
+  //private readonly TEXT_EDITOR_APP = 'texteditor';
 
   //#endregion Fields & Constants
 
@@ -434,7 +452,8 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
               triggerProcessService:ProcessHandlerService, formBuilder: FormBuilder, sessionManagementService:SessionManagementService, 
               menuService:MenuService, notificationService:UserNotificationService, windowService:WindowService, 
               audioService:AudioService, systemNotificationService:SystemNotificationService, activityHistoryService:ActivityHistoryService,
-              defaultService: DefaultService, clipboardService:ClipboardService, themeService:ThemeService) { 
+              defaultService: DefaultService, clipboardService:ClipboardService, themeService:ThemeService,
+              quickAccessService:QuickAccessService) { 
 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -448,11 +467,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._audioService = audioService;
     this._systemNotificationService = systemNotificationService;
     this._activityHistoryService = activityHistoryService;
+    this._quickAccessService = quickAccessService;
     this._formBuilder = formBuilder;
     this._defaultService = defaultService;
     this._themeService = themeService;
     this.processId = this._processIdService.getNewProcessId();
     this._runningProcessService.addProcess(this.getComponentDetail());
+    this.initFolderOptions();
 
     this._dirFilesUpdatedSub = this._fileService.dirFilesUpdateNotify.subscribe(() =>{
       if(this._fileService.getEventOriginator() === this.name){
@@ -488,6 +509,45 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
         this.hideIconContextMenu();
     });
 
+    // Keeps already-open windows in sync with the Folder Options dialog.
+    this._folderOptionsSub = this._defaultService.defaultSettingsChangeNotify.subscribe((p:string) => {
+      if(p === Constants.DEFAULT_OPEN_FILE_EXPLORER_TO){
+        // Read on the next open / root navigation, so nothing to re-render here.
+        this.openFileExplorerTo =
+          this._defaultService.getDefaultSetting(Constants.DEFAULT_OPEN_FILE_EXPLORER_TO) || Constants.OPEN_FILE_EXPLORER_TO_QUICK_ACCESS;
+      }
+
+      if(p === Constants.DEFAULT_OPEN_FOLDER_IN_SAME_WINDOW){
+        this.openFolderInSameWindow =
+          this._defaultService.getDefaultSetting(Constants.DEFAULT_OPEN_FOLDER_IN_SAME_WINDOW) !== Constants.FALSE;
+      }
+
+      if(p === Constants.DEFAULT_SHOW_HIDDEN_FILES_AND_FOLDERS){
+        this.showHiddenFilesAndFolders =
+          this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_HIDDEN_FILES_AND_FOLDERS) === Constants.TRUE;
+      }
+
+      if(p === Constants.DEFAULT_SHOW_FILE_EXTENSIONS){
+        this.showFileExtensions =
+          this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_FILE_EXTENSIONS) === Constants.TRUE;
+      }
+
+      if(p === Constants.DEFAULT_DISPLAY_FULL_PATH_IN_TITLE_BAR){
+        this.displayFullPathInTitleBar =
+          this._defaultService.getDefaultSetting(Constants.DEFAULT_DISPLAY_FULL_PATH_IN_TITLE_BAR) === Constants.TRUE;
+        this.generateBreadCrumbs();
+      }
+
+      if(p === Constants.DEFAULT_SHOW_RECENTLY_USED_FILES){
+        this.showRecentlyUsedFiles =
+          this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_RECENTLY_USED_FILES) !== Constants.FALSE;
+      }
+
+      if(p === Constants.DEFAULT_SHOW_FREQUENTLY_USED_FOLDERS){
+        this.showFrequentlyUsedFolders =
+          this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_FREQUENTLY_USED_FOLDERS) !== Constants.FALSE;
+      }
+    });
   }
 
   ngOnInit():void{
@@ -510,10 +570,11 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
     else{ // URL or Shortcut, use the content path to load the files
 
-      this.directory = this._fileInfo.getContentPath || Constants.ROOT;
+      const path = CommonFunctions.isValidPathFormat(this._fileInfo.getContentPath) ? this._fileInfo.getContentPath : Constants.ROOT;
+      this.directory = path;
       this.generateBreadCrumbs();
       this.checkAndSetIfRecycleBin();
-      this.setNavPathIcon(fileName, this._fileInfo.getContentPath || Constants.ROOT);
+      this.setNavPathIcon(fileName, path);
     }
     
     this.renameForm = this._formBuilder.nonNullable.group({ renameInput: Constants.EMPTY_STRING, });
@@ -594,7 +655,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(tip?.parentNode)
       tip.parentNode.removeChild(tip);
 
-    
+    this.removeRelocatedMenus();
+
+    // The invalid-chars tip auto-hides ~6s later; cancel it so the callback
+    // can't fire against a destroyed component.
+    clearTimeout(this.invalidCharTimeOutId);
+
     this._systemNotificationService.removeAppIconNotication(this.processId);
     this._viewByNotifySub?.unsubscribe();
     this._sortByNotifySub?.unsubscribe();
@@ -610,6 +676,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._goToDirectoryDataSub?.unsubscribe();
     this._themeChangeSub?.unsubscribe();
     this._accentChangeSub?.unsubscribe();
+    this._folderOptionsSub?.unsubscribe();
     // (Refactor #12) `_createShortCutOnDesktopSub?.unsubscribe()` removed
     // along with the dead field declaration above.
   }
@@ -649,6 +716,24 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     }
   }
 
+  /** Seeds the seven Folder Options fields from persisted defaults at construction. */
+  private initFolderOptions():void{
+    this.openFileExplorerTo =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_OPEN_FILE_EXPLORER_TO) || Constants.OPEN_FILE_EXPLORER_TO_QUICK_ACCESS;
+    this.openFolderInSameWindow =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_OPEN_FOLDER_IN_SAME_WINDOW) !== Constants.FALSE;
+    this.showHiddenFilesAndFolders =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_HIDDEN_FILES_AND_FOLDERS) === Constants.TRUE;
+    this.showFileExtensions =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_FILE_EXTENSIONS) === Constants.TRUE;
+    this.displayFullPathInTitleBar =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_DISPLAY_FULL_PATH_IN_TITLE_BAR) === Constants.TRUE;
+    this.showRecentlyUsedFiles =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_RECENTLY_USED_FILES) !== Constants.FALSE;
+    this.showFrequentlyUsedFolders =
+      this._defaultService.getDefaultSetting(Constants.DEFAULT_SHOW_FREQUENTLY_USED_FOLDERS) !== Constants.FALSE;
+  }
+
   getIsBtnClickEvt() {
     return this._isBtnClickEvt;
   }
@@ -678,7 +763,9 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   //#region Window Management (focus / maximize / minimize / resize)
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
@@ -953,7 +1040,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // and caused `navigateTo` to keep treating us as "inside the mount".
     this.mountPath = Constants.EMPTY_STRING;
 
-    const quickAccess = 'Quick access';
+    const quickAccess = Constants.QUICK_ACCESS;
     const thisPC = Constants.THISPC.replace(Constants.BLANK_SPACE, Constants.DASH);
 
     const fileName = data[0];
@@ -1157,7 +1244,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       userBasePath: Constants.USER_BASE_PATH,
       osDisk: Constants.OSDISK,
       empty: Constants.EMPTY_STRING,
-    });
+    }, this.displayFullPathInTitleBar);
   }
 
   async captureComponentImg():Promise<void>{  
@@ -1248,6 +1335,13 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     if(evt)
       evt.stopPropagation();
 
+    // if(!this.openFolderInSameWindow && !file.getIsFile){
+    //   this._processHandlerService.runApplication(file);
+    //   this.pinToQuickAccess();
+
+    //   return;
+    // }
+
     //console.log('fileexplorer-runApplication:',file)
     this.fileTreeNavToPath = Constants.EMPTY_STRING;
 
@@ -1259,6 +1353,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       this._menuService.showPropertiesView.next(file);
       return;
     }
+
+    // Track this open in Quick Access (files & folders): first open adds the
+    // item, repeat opens bump its count so the most-used rise to the top.
+    // if((this.showRecentlyUsedFiles && this.showFrequentlyUsedFolders))
+    //   this._quickAccessService.add(this.selectedFile);
+    // else if(this.showRecentlyUsedFiles && this.selectedFile.getIsFile)
+    //   this._quickAccessService.add(this.selectedFile);
+    // else if(this.showFrequentlyUsedFolders && !this.selectedFile.getIsFile)
+    //   this._quickAccessService.add(this.selectedFile);
 
     const isFolder = (file.getOpensWith === Constants.FILE_EXPLORER 
       && file.getFileName !== Constants.FILE_EXPLORER) 
@@ -1542,6 +1645,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   async showToolTip(evt:MouseEvent, file:FileInfo):Promise<void>{
+    if(this.isMultiSelectActive) return;
     await this.showFileExplorerToolTip(evt, file);
   }
 
@@ -1560,6 +1664,16 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   }
 
   doNothing():void{/** */}
+
+  /**
+   * Context-menu "Pin to Quick access": explicitly add the selected item to the
+   * persisted Quick Access list (same store the open-tracking uses — pinning
+   * just seeds the entry).
+   */
+  pinToQuickAccess():void{
+    if(!this.selectedFile || this.selectedFile.getIsShortCut) return;
+    this._quickAccessService.add(this.selectedFile);
+  }
 
   async openInTerminal():Promise<void>{
     const terminal ="terminal";
@@ -1609,7 +1723,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this._menuService.openContextMenu(`${this.name}-${this.processId}`);
     this.hideToolTip();
 
-    const menuHeight = (file.getIsFile)? 225 : 344; //this is not ideal.. menu height should be gotten dynmically
+    const menuHeight = (file.getIsFile)? this.CTX_MENU_HEIGHT_FILE : this.CTX_MENU_HEIGHT_FOLDER;
     this.iconCntxtCntr++;
 
     // Bound the menu against the viewport (not the content container) because
@@ -1623,8 +1737,12 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.selectedFile = file;
     this.propertiesViewFile = file
     this.isIconInFocusDueToPriorAction = false;
-    this.showFileExplrCntxtMenu = false;
 
+    // Detach the empty-space menu's body node too, or the two can overlap.
+    this.showFileExplrCntxtMenu = false;
+    this.detachRelocatedMenu(this.fileCtxMenuRef);
+
+    const menuWasClosed = !this.showIconCntxtMenu;
     if(!this.showIconCntxtMenu)
       this.showIconCntxtMenu = !this.showIconCntxtMenu;
 
@@ -1634,16 +1752,26 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     // handled by [class.is-selected-current] reacting to `selectedElementId`
     // and `isIconInFocusDueToCurrentAction` (both updated by doBtnClickThings).
 
+    // On a fresh open the menu first mounts inside the transformed window, where
+    // position:fixed anchors to the window instead of the viewport. Keep it
+    // hidden until the setTimeout below relocates it to document.body, otherwise
+    // it flashes for a frame at the wrong spot. Re-positioning an already-open
+    // menu stays visible (no blink).
     this.fileExplrCntxtMenuStyle = {
       'position': 'fixed',
       'left':`${Math.round(axis.xAxis)}px`,
       'top':`${Math.round(axis.yAxis)}px`,
       'z-index': Constants.Z_INDEX_FILE_EXPLORER_CONTEXT_MENU,
+      'visibility': menuWasClosed ? 'hidden' : 'visible',
     }
 
     // Lift the freshly-rendered menu out of the window into document.body so it
     // can extend past the window's clipped edges (mirrors the tooltip fix).
-    setTimeout(() => this.relocateMenuToBody(this.iconCtxMenuRef), 0);
+    setTimeout(() => {
+      this.relocateMenuToBody(this.iconCtxMenuRef);
+      if(menuWasClosed)
+        this.fileExplrCntxtMenuStyle = { ...this.fileExplrCntxtMenuStyle, 'visibility': 'visible' };
+    }, 0);
   }
 
   adjustIconContextMenuData(file:FileInfo):void{
@@ -1671,29 +1799,49 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
     // Register this instance as the open-menu owner; closes any other open menu.
     this._menuService.openContextMenu(`${this.name}-${this.processId}`);
-    const menuHeight = 230; //this is not ideal.. menu height should be gotten dynmically
+
+    // Rebuild the menu so the Show-hidden / Show-extensions checkmarks reflect
+    // the current toggle state each time the menu opens.
+    this.getFileExplorerMenuData();
+
+    const menuHeight = this.CTX_MENU_HEIGHT_EXPLORER;
 
     // Viewport-origin rect → viewport-relative coords for the body-relocated,
     // `fixed`-positioned menu (see onShowIconContextMenu for the rationale).
     const viewportRect:DOMRect = new DOMRect(0, 0, window.innerWidth, window.innerHeight);
     const axis = this.checkAndHandleMenuBounds(viewportRect, evt, menuHeight);
 
+    // Detach the icon menu's body node too, or the two can overlap.
+    this.detachRelocatedMenu(this.iconCtxMenuRef);
+
+    const menuWasClosed = !this.showFileExplrCntxtMenu;
     if(!this.showFileExplrCntxtMenu)
       this.showFileExplrCntxtMenu = !this.showFileExplrCntxtMenu;
 
+    // Hidden until relocated (see onShowIconContextMenu) to avoid the flash.
     this.fileExplrCntxtMenuStyle = {
       'position': 'fixed',
       'left':`${Math.round(axis.xAxis)}px`,
       'top':`${Math.round(axis.yAxis)}px`,
       'z-index': Constants.Z_INDEX_FILE_EXPLORER_CONTEXT_MENU,
+      'visibility': menuWasClosed ? 'hidden' : 'visible',
     }
 
     // Lift the freshly-rendered menu out of the window into document.body.
-    setTimeout(() => this.relocateMenuToBody(this.fileCtxMenuRef), 0);
+    setTimeout(() => {
+      this.relocateMenuToBody(this.fileCtxMenuRef);
+      if(menuWasClosed)
+        this.fileExplrCntxtMenuStyle = { ...this.fileExplrCntxtMenuStyle, 'visibility': 'visible' };
+    }, 0);
   }
 
   showPropertiesWindow():void{
     this._menuService.showPropertiesView.next(this.propertiesViewFile);
+  }
+
+  onOpenFolderOptions():void{
+    // Hand off to the properties window shell running in its Folder Options mode.
+    this._menuService.showFolderOptionsView.next();
   }
 
   hideIconContextMenu(evt?:MouseEvent, caller?:string):void{
@@ -1708,6 +1856,10 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
     this.iconCntxtCntr = 0;
     this.fileExplrCntxtCntr = 0;
     this.showExpandTreeIcon = false;
+
+    // The open menu was relocated to document.body; *ngIf teardown won't remove
+    // a node moved off its container, so detach it here to avoid orphans.
+    this.removeRelocatedMenus();
 
     // Close the open menu (this window's or the desktop's). Pass our uId so the
     // targeted close doesn't bounce back here via the subscription.
@@ -1837,14 +1989,15 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
 
   getFileExplorerMenuData():void{
     this.fileExplrMenu = [
-          {icon1:Constants.EMPTY_STRING,  icon2: `${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'View', nest:this.buildViewMenu(), action: ()=> Constants.EMPTY_STRING, action1: this.shiftViewSubMenu.bind(this), emptyline:false},
-          {icon1:Constants.EMPTY_STRING,  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'Sort by', nest:this.buildSortByMenu(), action: ()=> Constants.EMPTY_STRING, action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
-          {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label: 'Refresh', nest:[], action:() => this.refresh(), action1: ()=> Constants.EMPTY_STRING, emptyline:true},
-          {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label: 'Paste', nest:[], action: this.onPaste.bind(this), action1: ()=> Constants.EMPTY_STRING, emptyline:false},
-          {icon1:`${Constants.IMAGE_BASE_PATH}terminal.png`, icon2:Constants.EMPTY_STRING, label:'Open in Terminal', nest:[], action: () => console.log('Open Terminal'), action1: ()=> Constants.EMPTY_STRING, emptyline:false},
-          {icon1:`${Constants.IMAGE_BASE_PATH}vs_code.png`, icon2:Constants.EMPTY_STRING, label:'Open with Code', nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> Constants.EMPTY_STRING, emptyline:true},
-          {icon1:Constants.EMPTY_STRING,  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:'New', nest:this.buildNewMenu(), action: ()=> Constants.EMPTY_STRING, action1: this.shiftNewSubMenu.bind(this), emptyline:true},
-          {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label:'Properties', nest:[], action: () => console.log('Properties'), action1: ()=> Constants.EMPTY_STRING, emptyline:false}
+          {icon1:Constants.EMPTY_STRING,  icon2: `${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:MenuAction.VIEW, nest:this.buildViewMenu(), action: ()=> Constants.EMPTY_STRING, action1: this.shiftViewSubMenu.bind(this), emptyline:false},
+          {icon1:Constants.EMPTY_STRING,  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label:MenuAction.SORTBY, nest:this.buildSortByMenu(), action: ()=> Constants.EMPTY_STRING, action1: this.shiftSortBySubMenu.bind(this), emptyline:false},
+          {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label: MenuAction.REFRESH, nest:[], action:() => this.refresh(), action1: ()=> Constants.EMPTY_STRING, emptyline:true},
+          {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label: MenuAction.PASTE, nest:[], action: this.onPaste.bind(this), action1: ()=> Constants.EMPTY_STRING, emptyline:false},
+          {icon1:`${Constants.IMAGE_BASE_PATH}terminal.png`, icon2:Constants.EMPTY_STRING, label: MenuAction.OPEN_IN_TERMINAL, nest:[], action: this.openInTerminal.bind(this), action1: ()=> Constants.EMPTY_STRING, emptyline:false},
+          {icon1:`${Constants.IMAGE_BASE_PATH}vs_code.png`, icon2:Constants.EMPTY_STRING, label: MenuAction.OPEN_WITH_CODE, nest:[], action: () => console.log('Open CodeEditor'), action1: ()=> Constants.EMPTY_STRING, emptyline:true},
+          {icon1:Constants.EMPTY_STRING,  icon2:`${Constants.IMAGE_BASE_PATH}arrow_next_1.png`, label: MenuAction.NEW, nest:this.buildNewMenu(), action: ()=> Constants.EMPTY_STRING, action1: this.shiftNewSubMenu.bind(this), emptyline:true},
+          {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label: MenuAction.OPTIONS, nest:[], action: this.onOpenFolderOptions.bind(this), action1: ()=> Constants.EMPTY_STRING, emptyline:true},
+          {icon1:Constants.EMPTY_STRING,  icon2:Constants.EMPTY_STRING, label: MenuAction.PROPERTIES, nest:[], action: () => console.log('Properties'), action1: ()=> Constants.EMPTY_STRING, emptyline:false}
     ]
   }
   //#endregion Context Menu (build / show / hide / position)
@@ -2539,8 +2692,24 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
   private relocateMenuToBody(menuRef?: ElementRef<HTMLElement>): void {
     const menu = menuRef?.nativeElement;
     if(!menu) return;
+    // Tag with this window's id so removeRelocatedMenus() can find + detach it
+    // on close/destroy — we own the body node's lifecycle once it is moved.
+    menu.setAttribute('data-fe-menu-owner', String(this.processId));
     if(menu.parentElement !== document.body)
       document.body.appendChild(menu);
+  }
+
+  /** Detach every context-menu node this window relocated to document.body. */
+  private removeRelocatedMenus(): void {
+    const owned = document.querySelectorAll(`body > cos-menu[data-fe-menu-owner="${this.processId}"]`);
+    owned.forEach(el => el.parentNode?.removeChild(el));
+  }
+
+  /** Detach one relocated menu, so opening the other type can't overlap it. */
+  private detachRelocatedMenu(menuRef?: ElementRef<HTMLElement>): void {
+    const el = menuRef?.nativeElement;
+    if(el && el.parentNode === document.body)
+      document.body.removeChild(el);
   }
 
   /**
@@ -2568,6 +2737,7 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       getFilesAndFolders: (path:string) => this.getAListOfFilesAndFoldersInCurrentDirectory(path),
       loadImageContent: (path:string) => this._fileService.getFileInfoAsync(path),
       isRecycleBinFolder: this.isRecycleBinFolder,
+      isStillCurrent: () => this.currentTooltipFileId === file.getCurrentPath,
     });
   }
 
@@ -2708,7 +2878,17 @@ export class FileExplorerComponent implements BaseComponent, OnInit, AfterViewIn
       cache: this._searchIndexCache,
       normalizePath: (path:string) => this.normalizePath(path),
       getParentPath: (path:string) => this.getParentPath(path),
+      isDirectory: (path:string) => this._fileService.getStatAsync(path).then(s => s.isDirectory),
     });
+  }
+
+  /**
+   * trackBy for the file-listing *ngFor loops. Keying rows by path lets Angular
+   * reuse the existing DOM nodes across sort / refresh / search instead of
+   * rebuilding every icon.
+   */
+  trackByFile(index:number, file:FileInfo):string{
+    return file?.getCurrentPath ?? String(index);
   }
 
   /** Drop the cached search index so the next search re-walks fresh data. */

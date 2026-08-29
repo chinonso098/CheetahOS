@@ -71,11 +71,9 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   readonly SECONDS_DELAY = 300;// 300ms
   readonly GALLERY_VIEW = 'gallery view';
   readonly PHOTO_VIEW = 'photo view'
-  readonly BASE_64_PNG_IMG = 'data:image/png;base64';
-  // Match any object URL regardless of scheme. The blob's origin mirrors the
-  // page origin, so it's 'blob:http://...' on the local dev server but
-  // 'blob:https://...' on gh-pages — checking the bare 'blob:' prefix covers both.
-  readonly BLOB = 'blob:';
+  // Matches any base64 image data URI (png, jpeg, gif, webp, svg+xml, avif, ...),
+  // e.g. 'data:image/jpeg;base64,...'.
+  readonly BASE_64_IMG = /^data:image\/[\w.+-]+;base64,/i;
   firstView = Constants.EMPTY_STRING;
 
   defaultView = this.GALLERY_VIEW;
@@ -103,6 +101,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   currentImg = Constants.EMPTY_STRING;
   selectedIdx = 0;
 
+  isGalleryView = false;
   GALLERY = 'Gallery';
   FAVORITE = 'Favorite';
 
@@ -199,90 +198,127 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   }
 
   async ngOnInit():Promise<void> {
-    this.isLightTheme = this._themeService.isLightTheme();
-    this._themeChangeSub = this._themeService.themeChange.subscribe(() => {
-      this.isLightTheme = this._themeService.isLightTheme();
-    });
-
+    this.initTheme();
     this.retrievePastSessionData();
 
-    if(this._skipOnInit) return;
+    // Restored from a prior session (_skipOnInit), or launched with no specific
+    // image (icon / Start-menu shortcut): nothing to pre-load here — the gallery
+    // is loaded by ngAfterViewInit instead.
+    this.isGalleryView = this.isLaunchPhotosAppInGalleryView(this._fileInfo);
+    if(this._skipOnInit || this.isGalleryView) return;
 
-    // Launched from the Photos icon / Start-menu shortcut (no specific image):
-    // the trigger carries no usable path (both 'None'), so there's nothing to
-    // pre-load here. ngAfterViewInit loads the full Pictures gallery instead.
-    if(this.isGalleryLaunch(this._fileInfo)) return;
-
-    //this._fileInfo = this._processHandlerService.getLastProcessTrigger();
-    await this.getImageData(this._fileInfo);
-    this.setFirstView(this._fileInfo);
-
-    if(this._fileInfo)
-        this.imageFileList.push(this._fileInfo);
-
-    //base64 imgs are generated screenshots, opened  immediately after creation
-    if(this.checkIfImgIsBase64(this._fileInfo.getStringBuffer)){
-      this.currentImg = this._fileInfo.getStringBuffer;
-      const imgByteSize = CommonFunctions.getBase64SizeInBytes(this._fileInfo.getStringBuffer);
-      this.imgSize = `${CommonFunctions.getReadableFileSizeValue(imgByteSize)} ${CommonFunctions.getFileSizeUnit(imgByteSize)}`;
-      this.imgFilePath = this._fileInfo.getCurrentPath;
-      this._skipAfterInit = true;
-      this.defaultView = this.PHOTO_VIEW;
-      return;
-    }
-
-    if(this.checkForBlobURI(this._fileInfo.getContentPath)){
-      this.currentImg = this._fileInfo.getContentPath;
-      //this.imgFilePath = this._fileInfo.getCurrentPath;
-      this.defaultView = this.PHOTO_VIEW;
-      return;
-    }
-  } 
+    await this.loadImageIntoPhotoView();
+  }
 
   async ngAfterViewInit():Promise<void> {
     await CommonFunctions.sleep(this.SECONDS_DELAY);
     await this.captureComponentImg();
-    this.updateImg();
+    this.adjustImageScale();
 
+    // A single image was already fully resolved in ngOnInit.
     if(this._skipAfterInit) return;
 
-    this.setFirstView(this._fileInfo);
+    this.setViewForTheFirstTime();
 
-    // No specific image was opened (Photos launched from its icon / shortcut, or
-    // the trigger only carries the .url placeholder). Show every picture in the
-    // Pictures folder as a gallery.
-    if(this.isGalleryLaunch(this._fileInfo)){
-      await this.getAllPicturesInthePicturesFolder(this.defaultPath);
-      this.defaultView = this.GALLERY_VIEW;
-      return;
-    }
-
+    // Resolve the path of the image carried by the trigger (if any).
     this._picSrc = this.getPictureSrc(this._fileInfo);
-    if(this._picSrc === Constants.EMPTY_STRING && this._returnedPicSrc === Constants.EMPTY_STRING){
-      await this.getAllPicturesInthePicturesFolder(this.defaultPath);
-      this.defaultView = this.GALLERY_VIEW;
+    const hasNoImageToShow = this._picSrc === Constants.EMPTY_STRING
+      && this._returnedPicSrc === Constants.EMPTY_STRING;
+
+    // Launched from the icon / shortcut with no specific image, or nothing
+    // loadable resolved from the trigger or the restored session: fall back to
+    // the full Pictures gallery.
+    if(this.isGalleryView || hasNoImageToShow){
+      await this.showPicturesGallery();
       return;
     }
 
-    if(this._checkThisDirectoryForMoreImages){
-      await this.getAllPicturesIntheCurrentPath();
+    // // A real image was opened: pull in its neighbours, otherwise just show it.
+    // if(this._checkThisDirectoryForMoreImages)
+    //   await this.scanAndLoadImagesInCurrentDirectory();
+    // else
+    //   this.currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
+  }
 
-      const wereMoreImagesFound = (this.imageList.length > 0);
-      if(wereMoreImagesFound)
-        this.currentImg = this.imageList[0][0];
-      else{ 
-        if(this._fileInfo.getContentPath !== Constants.EMPTY_STRING)
-          this.currentImg =  this._fileInfo.getContentPath;
-        else
-          this.currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
-      }
+  private initTheme():void{
+    this.isLightTheme = this._themeService.isLightTheme();
+    this._themeChangeSub = this._themeService.themeChange.subscribe(() => {
+      this.isLightTheme = this._themeService.isLightTheme();
+    });
+  }
 
-      const appData = (wereMoreImagesFound)? this.imageListUrl : this._fileInfo.getCurrentPath;
-      this.storeAppState(appData);
-    }else{
-      const currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
-      this.currentImg = currentImg;
+  // Resolve the single image carried by the launch trigger. Covers a .url
+  // shortcut pointing at an image, a freshly generated screenshot (base64), and
+  // an already-materialized blob URI. Each case fully sets up the photo view and
+  // flags ngAfterViewInit to skip the gallery fallback.
+  private async loadImageIntoPhotoView():Promise<void>{
+    this.setViewForTheFirstTime();
+
+    console.log('Loading image into photo view. File info:', this._fileInfo);
+
+    if(!this.isGalleryView){
+      this.defaultView = this.PHOTO_VIEW;
+      this._skipAfterInit = true;
+      //await this.scanAndLoadImagesInCurrentDirectory();
     }
+
+    // Resolve the image source from whichever form the trigger carries: a .url
+    // shortcut (fetched as a blob), a base64 screenshot, or an existing blob URI.
+
+    if(this._fileInfo.isUrlShortcut()){
+      this.currentImg = await this._fileService.getFileAsBlobAsync(this._fileInfo.getContentPath);
+    }    else if(this.checkIfImgIsBase64(this._fileInfo.getStringBuffer)){
+      /**
+       * 2 options to load the image into the photo view:
+       * 1. Use the base64 string directly as the image source (this.currentImg = file.getStringBuffer). 
+       * This is simple and works well for small images, but can be inefficient for large images because the entire base64 string is loaded into memory.
+       * 2. Use the file service to fetch the blob by using the getCurrentPath, and fetching the file by getFileInfoAsync. 
+       * This is more efficient for large images, as it allows the browser to handle the image loading and rendering more efficiently.
+       *  However, it requires an additional step to fetch the blob.
+       */
+
+      /* this.currentImg = file.getStringBuffer;
+       this._fileInfo.setContentPath = file.getStringBuffer;
+       const imgByteSize = CommonFunctions.getBase64SizeInBytes(file.getStringBuffer);
+       this.imgSize = `${CommonFunctions.getReadableFileSizeValue(imgByteSize)} ${CommonFunctions.getFileSizeUnit(imgByteSize)}`; */
+
+      // Use the file service to fetch the blob by using the getCurrentPath, and fetching the file by getFileInfoAsync.
+      this._fileInfo  = await this._fileService.getFileInfoAsync(this._fileInfo.getCurrentPath);
+      this.currentImg = this._fileInfo.getContentPath;
+      this.imgFilePath = this._fileInfo.getCurrentPath;
+    }
+    else if(this.checkForBlobURI(this._fileInfo.getContentPath)){
+      this.currentImg = this._fileInfo.getContentPath;
+    }else{
+      return;
+    }
+
+    //this.imageFileList.push(this._fileInfo);
+    await this.scanAndLoadImagesInCurrentDirectory();
+    await this.fetchImageDetails(this._fileInfo, this.currentImg);
+  }
+
+
+  private async showPicturesGallery():Promise<void>{
+    await this.getAllPicturesInthePicturesFolder(this.defaultPath);
+    this.defaultView = this.GALLERY_VIEW;
+  }
+
+  // Load the opened image alongside the other images sitting next to it, and
+  // persist the resulting list to the session.
+  private async scanAndLoadImagesInCurrentDirectory():Promise<void>{
+    await this.getAllPicturesIntheCurrentPath();
+
+    const wereMoreImagesFound = this.imageList.length > 0;
+    if(wereMoreImagesFound)
+      this.currentImg = this.imageList[0][0];
+    else if(this._fileInfo.getContentPath !== Constants.EMPTY_STRING)
+      this.currentImg = this._fileInfo.getContentPath;
+    else
+      this.currentImg = await this._fileService.getFileAsBlobAsync(this.defaultImg);
+
+    const appData = wereMoreImagesFound ? this.imageListUrl : this._fileInfo.getCurrentPath;
+    this.storeAppState(appData);
   }
 
   ngOnDestroy(): void {
@@ -290,26 +326,21 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this._themeChangeSub?.unsubscribe();
   }
 
-  setFirstView(file:FileInfo):void{
-
+  setViewForTheFirstTime():void{
     if(this.firstView !== Constants.EMPTY_STRING) return;
-
-    this.firstView = this.isGalleryLaunch(file) ? this.GALLERY_VIEW : this.PHOTO_VIEW;
+    this.firstView = (this.isGalleryView) ? this.GALLERY_VIEW : this.PHOTO_VIEW;
   }
 
-  async getImageData(file:FileInfo): Promise<void>{
-    if(!file || (file.getContentPath === Constants.NONE && file.getCurrentPath === Constants.NONE)) return;
-
-    const contentPath = file.getContentPath;
+  async fetchImageDetails(file:FileInfo, byPass?:string): Promise<void>{
+    if(!file 
+      || (file.getContentPath === Constants.NONE && file.getCurrentPath === Constants.NONE)
+      || (file.getContentPath === Constants.EMPTY_STRING)) return;
 
     // Only a base64 data URI, a blob URI, or a real (non-empty) path is loadable.
     // For gallery view / the .url placeholder, getContentPath is empty, and setting
     // img.src = '' makes the browser resolve it against the document URL and fire
     // onerror. Skip loading in that case to avoid the noisy "Failed to load image".
-    const isLoadable = contentPath !== Constants.EMPTY_STRING
-      && contentPath !== this.PATH_TO_IGNORE;
-
-    if(!isLoadable) return;
+    const contentPath = (byPass) ? byPass : file.getContentPath;
 
     await new Promise<void>((resolve) => {
       const img = new Image();
@@ -336,7 +367,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     await CommonFunctions.captureComponentImgAsync(this.photoContainer, this.processId, this.name, this.icon, this._windowService);
   }
 
-  updateImg():void{
+  adjustImageScale():void{
     this.scaleImg = (this.zoomLevel < 1)? this.scaleInImg : this.fullScaleImg;
   }
 
@@ -370,7 +401,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     } else {
       this.zoomOut();
     }
-    this.updateImg();
+    this.adjustImageScale();
   }
 
   zoomIn(): void {
@@ -378,7 +409,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.currentZoomValue = `${(this.zoomLevel * 100).toFixed(0)}%`;
     this.updateTransform();
     this.updateCursor();
-    this.updateImg();
+    this.adjustImageScale();
   }
 
   zoomOut(): void {
@@ -386,7 +417,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.currentZoomValue = `${(this.zoomLevel * 100).toFixed(0)}%`;
     this.updateTransform();
     this.updateCursor();
-    this.updateImg();
+    this.adjustImageScale();
   }
 
   updateCursor(): void {
@@ -527,7 +558,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.currentImgIndex = id;
 
     const file = this.imageFileList[id];
-    await this.getImageData(file)
+    await this.fetchImageDetails(file)
   }
 
   focusHere(evt:MouseEvent):void{
@@ -627,7 +658,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
       return 'ScreenShot';
 
     return 'Other';
-  }
+  } 
 
   async handleGalleryOptionSelection(selection:string, idx:number, evt:MouseEvent, view:string): Promise<void>{
 
@@ -655,7 +686,7 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
 
     const imgIdx = this.imageList.findIndex(x => x[0] === img);
     const imgFile = this.imageFileList[imgIdx + 1];
-    await this.getImageData(imgFile);
+    await this.fetchImageDetails(imgFile);
   }
 
   @HostListener('document:click')
@@ -667,29 +698,23 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
     evt?.stopPropagation();
     this.onOutsideClick();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
+      
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }
 
   // A real image was opened: return its current path so ngAfterViewInit can also
   // pull in the other images sitting next to it. The 'launched from icon' cases
-  // (NONE/NONE and the .url placeholder) are handled upstream by isGalleryLaunch.
+  // (NONE/NONE and the .url placeholder) are handled upstream by isLaunchPhotosAppInGalleryView.
   getPictureSrc(file:FileInfo):string{   
     if(!file) return Constants.EMPTY_STRING;
 
-    const { getCurrentPath, getContentPath } = file;
-    if(this.checkIfImgIsBase64(getContentPath)){
-      this._checkThisDirectoryForMoreImages = false;
-      return getContentPath;
-    }
-
-    if(getCurrentPath !== Constants.EMPTY_STRING){
-      return getCurrentPath;
-    }
-
-    if(getContentPath === Constants.EMPTY_STRING){
-      return this._picSrc;
-    }
+    // A real image (screenshot/blob) resolves to its saved path; a .url shortcut
+    // pointing at an image resolves to the path it links to. Anything else has no
+    // single image to show.
+    if(this.isRealImageFile(file)) return file.getCurrentPath;
+    if(file.isUrlShortcut()) return file.getContentPath;
 
     return Constants.EMPTY_STRING;
   }
@@ -702,24 +727,29 @@ export class PhotoViewerComponent implements BaseComponent, OnInit, OnDestroy, A
   //  - a blank/absent trigger.
   // A real image (file explorer, screenshot, blob/base64) always carries a
   // concrete currentPath, so it is NOT treated as a gallery launch.
-  private isGalleryLaunch(file:FileInfo):boolean{
+  private isLaunchPhotosAppInGalleryView(file:FileInfo):boolean{
     if(!file) return true;
 
-    const { getCurrentPath, getContentPath } = file;
-    return (getCurrentPath === Constants.NONE)
-      || (getCurrentPath === this.PATH_TO_IGNORE)
-      || (getCurrentPath === Constants.EMPTY_STRING && getContentPath === Constants.EMPTY_STRING);
+    // A real image (file explorer, screenshot, blob/base64) or a .url shortcut
+    // pointing at an image opens directly in photo view. Everything else — the
+    // Photos icon (NONE/NONE), the Start-menu .url placeholder, or a blank
+    // trigger — has no single loadable image, so it falls back to the gallery.
+    return !(this.isRealImageFile(file) || file.isUrlShortcut());
   }
 
   checkIfImgIsBase64(getContentPath:string):boolean{
-    if(getContentPath.substring(0, 21) === this.BASE_64_PNG_IMG)
-      return true;
-
-    return false
+    return this.BASE_64_IMG.test(getContentPath);
   }
 
   checkForBlobURI(getContentPath:string):boolean{
-    return getContentPath.startsWith(this.BLOB);
+    return getContentPath.startsWith(Constants.BLOB_URI_PREFIX);
+  }
+
+  // A real (non-shortcut) image file whose content is an inline base64 image or a
+  // blob URI — e.g. a screenshot saved to the Screen-Shots folder.
+  private isRealImageFile(file:FileInfo):boolean{
+    return file.isRealFile(Constants.IMAGE_FILE_EXTENSIONS)
+      && (this.checkIfImgIsBase64(file.getContentPath) || this.checkIfImgIsBase64(file.getStringBuffer) || this.checkForBlobURI(file.getContentPath));
   }
 
   storeAppState(app_data:unknown):void{

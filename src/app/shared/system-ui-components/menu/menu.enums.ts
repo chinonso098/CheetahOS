@@ -10,6 +10,7 @@ export enum MenuAction {
     SORTBY = 'Sort by',
     VIEW = 'View',
     NEW = 'New',
+    OPEN_WITH_CODE = 'Open with Code',
 
     RENAME = 'Rename',
     RESTORE = 'Restore',
@@ -47,5 +48,7 @@ export enum MenuAction {
     UNMERGE_TASKBAR_ICONS = 'Unmerge taskbar Icons',
     SHOW_THE_TASKBAR = 'Show the taskbar',
 
-
+    // SHOW_HIDDEN_FILES_AND_FOLDERS = 'Show hidden...',
+    // SHOW_FILE_EXTENSIONS = 'Show file ext...',
+    OPTIONS = 'Folder Options'
 }

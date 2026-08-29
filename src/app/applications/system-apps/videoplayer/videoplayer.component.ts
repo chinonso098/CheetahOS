@@ -2,7 +2,6 @@
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from 'src/app/system-files/base/base.component.interface';
 import { ComponentType } from 'src/app/system-files/system.types';
-import {extname} from 'path';
 import { ProcessIDService } from 'src/app/shared/system-service/process.id.service';
 import { Process } from 'src/app/system-files/process';
 import { RunningProcessService } from 'src/app/shared/system-service/running.process.service';
@@ -125,8 +124,12 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
     this.fileType =  (this.fileType !== Constants.EMPTY_STRING) ? 
       this.fileType : 'video/' + this._fileInfo.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING);
 
+    console.log('fileType:', this.fileType);
+
     this.videoSrc = (this.videoSrc !== Constants.EMPTY_STRING) ? 
-      this.videoSrc : this.getVideoSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+      this.videoSrc : this._fileService.resolveContentUrl(this._fileInfo);
+
+    console.log('videoSrc:', this.videoSrc);
 
     const videoOptions = {
         // fill (not fluid): the .video-js box matches the parent container's
@@ -210,7 +213,7 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
 
       this.videoSrc = (this.videoSrc !== Constants.EMPTY_STRING)
       ? this.videoSrc 
-      : this.getVideoSrc(this._fileInfo.getContentPath, this._fileInfo.getCurrentPath);
+      : this._fileService.resolveContentUrl(this._fileInfo);
       this.fileType = 'video/'+this._fileInfo.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING);
 
       const fileName = this._fileInfo?.getFileName;
@@ -281,43 +284,10 @@ export class VideoPlayerComponent implements BaseComponent, OnInit, OnDestroy, A
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
-  }
-
-  getVideoSrc(pathOne:string, pathTwo:string):string{
-    // pathOne = contentPath, pathTwo = currentPath.
-    //
-    // 1) An already-materialized blob URL (session restore, or a file that
-    //    lives in the writable IndexedDB layer) is played as-is.
-    if(pathOne.includes('blob:http')){
-      return pathOne;
-    }
-    // 2) Legacy form where contentPath itself is a media path with an extension
-    //    (e.g. opened via a .url shortcut whose resolved target is the clip).
-    //    Anchor it to <base href> so it resolves under a sub-path deploy instead
-    //    of hitting the origin root (which 404s on GitHub Pages project sites).
-    if(this.checkForExt(pathOne, pathTwo)){
-      return this._fileService.toAbsoluteOsdriveUrl(this._fileInfo.getContentPath);
-    }
-    // 3) Default (the common case): stream straight from the file's direct
-    //    osdrive URL. The browser range-fetches the bytes on demand instead of
-    //    us downloading the whole (potentially 25 MB+) file into memory first.
-    return this._fileService.getDirectFileUrl(pathTwo);
-  }
-
-  checkForExt(contentPath:string, currentPath:string):boolean{
-    const contentExt = extname(contentPath);
-    const currentPathExt = extname(currentPath);
-    let res = false;
-
-    if(Constants.VIDEO_FILE_EXTENSIONS.includes(contentExt)){
-      res = true;
-    }else if(Constants.VIDEO_FILE_EXTENSIONS.includes(currentPathExt)){
-      res = false;
-    }
-    return res;
   }
 
   storeAppState(app_data:unknown):void{

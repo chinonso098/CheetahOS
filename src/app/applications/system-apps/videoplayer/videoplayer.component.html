@@ -6,7 +6,9 @@
     [minimumWindowWidth]="MIN_WIDTH_PX" 
     [minimumWindowHeight]="MIN_HEIGHT_PX" 
      [priorUId]="priorUId">
-    <div class="my-video-main-container" #mainVideoCntnr (click)="focusWindow($event)" (contextmenu)="silenceCtxEvt($event)">
+
+    <div class="my-video-main-container" #mainVideoCntnr 
+    (click)="focusWindow($event)" (contextmenu)="silenceCtxEvt($event)">
         <!-- <div class="video-top-menu-bar">
             <button class=" btn btn-primary head" (click)="showMenu()"> File</button>
                 <span class="video-top-menu" *ngIf="showTopMenu">

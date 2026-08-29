@@ -367,3 +367,372 @@ svg {
 .used{
     background-color: #2da6da;
 }
+
+/* ---- File and folder Properties (General tab) --------------------------- */
+.item-properties-main{
+    width: 380px;
+}
+
+.item-properties-body{
+    box-sizing: border-box;
+    padding: 0 7px;
+}
+
+.item-properties-top-space{
+    height: 8px;
+}
+
+.item-properties-tabs .properties-header-tabs{
+    padding-left: 0;
+}
+
+.item-properties-tabs .properties-tab{
+    min-width: 0;
+    padding: 3px 10px 4px;
+}
+
+.item-properties-content{
+    box-sizing: border-box;
+}
+
+.item-properties-content .properties-tab-pane.active{
+    width: 100%;
+}
+
+.item-properties-container{
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 340px;
+    padding: 14px 14px 12px;
+    text-align: left;
+}
+
+.item-properties-identity{
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    column-gap: 14px;
+    align-items: center;
+    min-height: 48px;
+    padding: 0 4px 10px;
+}
+
+.item-properties-icon{
+    display: block;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.item-properties-name{
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 23px;
+    padding: 3px 5px;
+    overflow: hidden;
+    color: var(--pr-text);
+    background-color: var(--pr-panel);
+    border: 1px solid var(--pr-field-border);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.item-properties-name--plain{
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.item-properties-divider{
+    height: 1px;
+    margin: 0 0 10px;
+    background-color: var(--pr-border);
+}
+
+.item-properties-section{
+    display: grid;
+    row-gap: 6px;
+    padding: 0 6px 10px;
+}
+
+.item-properties-row{
+    display: grid;
+    grid-template-columns: 94px minmax(0, 1fr);
+    column-gap: 10px;
+    align-items: center;
+    min-height: 16px;
+}
+
+.item-properties-label,
+.item-properties-value{
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.item-properties-app{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.item-properties-app-icon{
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+.item-properties-fill{
+    flex: 1 1 24px;
+    min-height: 24px;
+}
+
+.item-properties-footer{
+    min-height: 48px;
+    margin-top: 0;
+    border-top: 0;
+}
+
+.item-properties-footer .footer-btn{
+    right: 9px;
+}
+
+.drive-properties-container{
+    min-height: 405px;
+}
+
+.drive-space-table{
+    display: grid;
+    row-gap: 7px;
+    padding: 0 6px 10px;
+}
+
+.drive-space-row{
+    display: grid;
+    grid-template-columns: 104px minmax(0, 1fr) 72px;
+    column-gap: 8px;
+    align-items: center;
+    min-height: 16px;
+}
+
+.drive-space-label{
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.drive-space-label--capacity{
+    padding-left: 19px;
+}
+
+.drive-space-swatch{
+    box-sizing: border-box;
+    flex: 0 0 13px;
+    width: 13px;
+    height: 13px;
+    margin-right: 6px;
+}
+
+.drive-space-bytes,
+.drive-space-readable{
+    min-width: 0;
+    overflow: hidden;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.drive-chart{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    min-height: 142px;
+    padding-top: 2px;
+}
+
+.drive-chart-svg{
+    display: block;
+    width: 112px;
+    height: 112px;
+    margin: 0;
+}
+
+.drive-chart-caption{
+    margin-top: 2px;
+}
+
+/* ---- Folder Options (General tab) --------------------------------------- */
+.folder-options-main{
+    width: 380px;
+}
+
+.folder-options-body{
+    box-sizing: border-box;
+    padding: 0 6px;
+}
+
+.folder-options-top-space{
+    height: 8px;
+}
+
+.folder-options-tabs .properties-header-tabs{
+    padding-left: 0;
+}
+
+.folder-options-tabs .properties-tab{
+    min-width: 0;
+    padding: 3px 9px 4px;
+}
+
+.folder-options-content{
+    box-sizing: border-box;
+}
+
+.folder-options-content .properties-tab-pane.active{
+    width: 100%;
+}
+
+.folder-options-container{
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 13px 14px;
+    text-align: left;
+    color: var(--pr-text);
+}
+
+.fo-open-row{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.fo-inline-label{
+    margin: 0;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.fo-select{
+    box-sizing: border-box;
+    flex: 1 1 220px;
+    height: 22px;
+    font-size: 12px;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    padding: 1px 4px;
+    color: var(--pr-text);
+    background-color: var(--pr-panel);
+    border: 1px solid var(--pr-field-border);
+}
+
+.fo-group{
+    box-sizing: border-box;
+    min-width: 0;
+    margin: 0 0 10px;
+    padding: 7px 10px 9px;
+    border: 1px solid var(--pr-border);
+    color: var(--pr-text);
+}
+
+.fo-group:last-child{
+    margin-bottom: 0;
+}
+
+.fo-group legend{
+    padding: 0 4px;
+    font-size: 12px;
+    font-weight: normal;
+    line-height: 1;
+}
+
+.fo-group-layout{
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    column-gap: 8px;
+    align-items: center;
+}
+
+.fo-section-img{
+    display: block;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    image-rendering: auto;
+    position: relative;
+    top: -6px
+}
+
+.fo-section-body{
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.fo-option{
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 17px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.fo-option input{
+    flex: 0 0 auto;
+    margin: 0 2px 0 0;
+    cursor: pointer;
+}
+
+.fo-group--privacy .fo-section-img{
+    width: 30px;
+    height: 30px;
+}
+
+.fo-clear-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 25px;
+    margin-top: 3px;
+    padding-left: 20px;
+    font-size: 12px;
+}
+
+.fo-button{
+    box-sizing: border-box;
+    min-width: 62px;
+    height: 23px;
+    padding: 2px 12px;
+    font-size: 12px;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    color: var(--pr-text);
+    background-color: var(--pr-btn-bg);
+    border: 1px solid var(--pr-btn-border);
+    cursor: default;
+}
+
+.fo-button:hover{
+    background-color: var(--pr-btn-hover);
+}
+
+.fo-button:active{
+    background-color: var(--pr-btn-active);
+}
+
+.folder-options-footer{
+    min-height: 48px;
+    margin-top: 0;
+    border-top: 0;
+}
+
+.folder-options-footer .footer-btn{
+    right: 8px;
+}

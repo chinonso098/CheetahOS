@@ -142,6 +142,7 @@ export class WindowFocusHandler {
       this._host.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);
       this.setHeaderActive(pId);
       WindowHelper.setFocusOnDiv(winCmpntId);
+
     } else if (ws.zIndex === WindowConstants.MAX_Z_INDEX) {
       this._windowService.addProcessWindowIDWithHighestZIndex(pId);
       this._host.applyOpacityZ(WindowConstants.MAX_Z_INDEX, 1);

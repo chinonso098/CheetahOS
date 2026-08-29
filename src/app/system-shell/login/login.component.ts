@@ -498,6 +498,35 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
     this.resetAuthFormTimeOut();
   }
 
+  async onClickProceedArrow(evt:MouseEvent): Promise<void>{
+    evt.stopPropagation();
+
+    const loginTxt = this.loginForm.value.loginInput as string;
+    if(!loginTxt || loginTxt === Constants.EMPTY_STRING) return;
+
+    if(this.defaultPassWord.includes(Number(loginTxt))){
+      this.isUserLogedIn = true;
+      this.showPasswordEntry = false;
+      this.showLoading = true;
+      this.logInCounter++;
+
+      this.doVeryBasicAccountThings();
+      this.stopScreenSaver();
+      await CommonFunctions.sleep(LoginComponent.LOGIN_SUCCESS_TRANSITION_MS);
+      await this.showDesktop();
+    }else{
+      this.showPasswordEntry = false;
+      this.showLoading = true;
+
+      await CommonFunctions.sleep(LoginComponent.LOGIN_FAILURE_TRANSITION_MS);
+      this.showLoading = false;
+      this.showFailedEntry = true;
+
+      this.loginForm.controls[this.formCntrlName].setValue(null);
+    }
+    this.resetAuthFormTimeOut();
+  }
+
   onBtnClick():void{
     this.resetAuthFormState();
   }

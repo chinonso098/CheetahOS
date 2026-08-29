@@ -22,7 +22,7 @@ import { TabCompletionState } from './model/tab-completion.state';
 import { ProcessHandlerService } from 'src/app/shared/system-service/process.handler.service';
 import { FileService } from 'src/app/shared/system-service/file.service';
 import { ActivityHistoryService } from 'src/app/shared/system-service/activity.tracking.service';
-import { SystemMetric } from 'src/app/shared/system-service/system.metrics';
+import { SystemMetricService } from 'src/app/shared/system-service/system.metrics.sservice';
 import { CommonFunctions } from 'src/app/system-files/commons/common.functions';
 import { SystemNotificationService } from 'src/app/shared/system-service/system.notification.service';
 import { InformationUpdate } from 'src/app/system-files/commons/common.interfaces';
@@ -129,7 +129,7 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   readonly MIN_HEIGHT_PX = 320;
 
   constructor( processIdService:ProcessIDService,runningProcessService:RunningProcessService, processHandlerService:ProcessHandlerService, fileService:FileService,  formBuilder:FormBuilder,
-               sessionManagementService: SessionManagementService, windowService:WindowService, activityHistoryService:ActivityHistoryService, systemMetric:SystemMetric,
+               sessionManagementService: SessionManagementService, windowService:WindowService, activityHistoryService:ActivityHistoryService, systemMetric:SystemMetricService,
                systemNotificationService:SystemNotificationService, themeService:ThemeService, defaultService:DefaultService ) { 
     this._processIdService = processIdService;
     this._runningProcessService = runningProcessService;
@@ -1054,7 +1054,8 @@ export class TerminalComponent implements BaseComponent, OnInit, AfterViewInit, 
   focusWindow(evt?:MouseEvent):void{
     evt?.stopPropagation();
 
-    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId) return;
+    if(this._windowService.getProcessWindowIDWithHighestZIndex() === this.processId 
+      && this._windowService.getIsWindowInFocus()) return;
 
     this._windowService.focusOnCurrentProcessWindowNotify.next(this.processId);
   }

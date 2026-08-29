@@ -20,10 +20,14 @@ export namespace FileExplorerTooltipHelper {
         getFilesAndFolders:(path:string) => Promise<string[]>;
         loadImageContent:(path:string) => Promise<FileInfo>;
         isRecycleBinFolder:boolean;
+        // Returns false once the user has hovered away, so the async folder-size
+        // branch doesn't append rows for a folder they've already left.
+        isStillCurrent:() => boolean;
     }
 
     export const buildInformationTip = async (file:FileInfo, deps:InfoTipDeps):Promise<FileToolTip[]> => {
-        const infoTipFields = ['Author:', 'Item type:', 'Date created:', 'Date modified:', 'Dimensions:', 'General', 'Size:', 'Type:', 'Original location:', 'Files:', 'Folders:'];
+
+        const infoTipFields = ['Author:', 'Item type:', 'Date created:', 'Date modified:', 'Dimensions:', 'General', 'Size:', 'Type:', 'Original location:', 'Files:', 'Folders:', 'Location:'];
         const specialFolders:Record<string, string> = {
             'Music': 'Contains music and other audio files',
             'Videos': 'Contains movies and other video files',
@@ -36,11 +40,13 @@ export namespace FileExplorerTooltipHelper {
         const fileSize = `${String(file.getSize)}  ${file.getFileSizeUnit}`;
         const fileName = file.getFileName;
         const isFile = file.getIsFile;
+        const isShortCut = file.getIsShortCut;
+        const fileExtension = file.getFileExtension;
         const currentPath = dirname(file.getCurrentPath);
+        const contentPath = file.getContentPath;
         const isRoot = currentPath === Constants.ROOT;
 
         let isFolder = fileType === Constants.FOLDER;
-
         const infoTipData:FileToolTip[] = [];
 
         // Special Cases: normally IsFile & IsFolder can't both be true, except for
@@ -51,35 +57,50 @@ export namespace FileExplorerTooltipHelper {
             // due to lazy loading, the file's content isn't loaded yet; ask the
             // caller to explicitly load the image content so we can read its dimensions.
             const imageFile = await deps.loadImageContent(file.getCurrentPath);
+            if(imageFile.getIsShortCut && imageFile.getFileExtension === Constants.URL){
+                infoTipData.push({
+                    label: infoTipFields[11],
+                    data: `${imageFile.getContentPath}`
+                });
+            }else{
+                await new Promise<void>((resolve) => {
+                    const img = new Image();
+                    img.src = imageFile.getContentPath;
+                    img.onload = () => {
+                        const width = img.naturalWidth;
+                        const height = img.naturalHeight;
+                        const imgDimensions = `${width} x ${height}`;
 
-            await new Promise<void>((resolve) => {
-                const img = new Image();
-                img.src = imageFile.getContentPath;
-                img.onload = () => {
-                    const width = img.naturalWidth;
-                    const height = img.naturalHeight;
-                    const imgDimensions = `${width} x ${height}`;
+                        infoTipData.push({
+                            label: infoTipFields[1],
+                            data: `${imageFile.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`
+                        });
 
-                    infoTipData.push({
-                        label: infoTipFields[1],
-                        data: `${imageFile.getFileType.replace(Constants.DOT, Constants.EMPTY_STRING).toLocaleUpperCase()} File`
-                    });
+                        infoTipData.push({ label: infoTipFields[4], data: imgDimensions });
+                        infoTipData.push({ label: infoTipFields[6], data: fileSize });
 
-                    infoTipData.push({ label: infoTipFields[4], data: imgDimensions });
-                    infoTipData.push({ label: infoTipFields[6], data: fileSize });
+                        resolve();
+                    };
+                    img.onerror = (err) => {
+                        console.error("Failed to load image", err);
+                        resolve(); // Still resolve to prevent blocking
+                    };
+                });
+            }
 
-                    resolve();
-                };
-                img.onerror = (err) => {
-                    console.error("Failed to load image", err);
-                    resolve(); // Still resolve to prevent blocking
-                };
-            });
         }else if(isFile && !isFolder){
-            const fileTypeName = (fileType !== Constants.FOLDER) ? CommonFunctions.getFileTypeName(fileType) : CommonFunctions.getFileTypeName(Constants.URL);
-            infoTipData.push({ label: infoTipFields[7], data: fileTypeName });
-            infoTipData.push({ label: infoTipFields[3], data: fileDateModified });
-            infoTipData.push({ label: infoTipFields[6], data: fileSize });
+            if(isShortCut && fileExtension === Constants.URL){
+                infoTipData.push({
+                    label: infoTipFields[11],
+                    data: `${contentPath}`
+                });
+            }
+            else{
+                const fileTypeName = (fileType !== Constants.FOLDER) ? CommonFunctions.getFileTypeName(fileType) : CommonFunctions.getFileTypeName(Constants.URL);
+                infoTipData.push({ label: infoTipFields[7], data: fileTypeName });
+                infoTipData.push({ label: infoTipFields[3], data: fileDateModified });
+                infoTipData.push({ label: infoTipFields[6], data: fileSize });
+            }
         }
         else if(isFolder){
             if(isRoot && (standardFolders.includes(fileName))){
@@ -90,6 +111,9 @@ export namespace FileExplorerTooltipHelper {
                 infoTipData.push({ label: infoTipFields[2], data: fileDateModified });
 
                 const folderSizeInBytes = await deps.getFolderSizeAsync(file.getCurrentPath);
+                if(!deps.isStillCurrent()){
+                    return infoTipData;
+                }
                 const folderSize = CommonFunctions.getReadableFileSizeValue(folderSizeInBytes);
                 const folderUnit = CommonFunctions.getFileSizeUnit(folderSizeInBytes);
 

@@ -103,7 +103,8 @@ export class WindowCloseHandler {
         // flag) stayed stuck thinking a drag was still in flight until a
         // full page reload. Publishing it here -- on every destroy path --
         // guarantees the flag is reset no matter how the window closed.
-        this._windowService.windowDragIsInActive.next();
+        //this._windowService.windowDragIsInActive.next();
+        this._windowService.setWindowDragInActive();
 
         this._windowService.removeWindowState(host.processId);
         this._windowService.removeProcessIDToHiddenOrVisibleWindows(host.processId);
