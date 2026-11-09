@@ -805,7 +805,7 @@ export class FileService implements BaseService{
         else if(Constants.IMAGE_FILE_EXTENSIONS.includes(extension)
 			|| Constants.VIDEO_FILE_EXTENSIONS.includes(extension)
 			|| Constants.AUDIO_FILE_EXTENSIONS.includes(extension)
-			|| Constants.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension)){
+			|| Constants.PROGRAMMING_LANGUAGE_FILE_EXTENSIONS.includes(extension)){
 
 			let fileContent:FileContent | undefined = undefined;
 			const resolved = this.getOpensWith(extension);
@@ -857,6 +857,7 @@ export class FileService implements BaseService{
 
 	public getOpensWith(extension: string): OpensWith{
 		const empty = Constants.EMPTY_STRING;
+
 		const isAudioFile = Constants.AUDIO_FILE_EXTENSIONS.includes(extension);
 		if(isAudioFile)
 			return {fileType:'audio', apps: [{ isDefault: true, appName: 'audioplayer', appIcon: 'music_file.png' }]};
@@ -869,27 +870,27 @@ export class FileService implements BaseService{
 		if(isImageFile)
 			return {fileType:'image', apps: [{ isDefault: true, appName: 'photoviewer', appIcon: 'image_file.png' }]};
 
-		const isSourceFile = Constants.PROGRAMING_LANGUAGE_FILE_EXTENSIONS.includes(extension);
+		const isSourceFile = Constants.PROGRAMMING_LANGUAGE_FILE_EXTENSIONS.includes(extension);
 		if(isSourceFile)
 			return {fileType:'source', apps: [{ isDefault: true, appName: 'codeeditor', appIcon: 'code_file.png' }] };
 
 
 		const cleanedExt = extension.replace(Constants.DOT, empty);
 		const knownFileHandlers: Record<string, OpensWith> = {
-			'.wasm': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'codeeditor', appIcon: 'wasm_file.png' }] },
-			'.txt': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'texteditor', appIcon: 'text_file.png' },
+			[Constants.KNOWN_FILE_EXTENSION_WASM]: { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'codeeditor', appIcon: 'wasm_file.png' }] },
+			[Constants.KNOWN_FILE_EXTENSION_TXT]: { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'texteditor', appIcon: 'text_file.png' },
                                                     { isDefault: false, appName: 'codeeditor', appIcon: 'code_file.png' }]},
-			'.properties': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'texteditor', appIcon: 'text_file.png' },
+			[Constants.KNOWN_FILE_EXTENSION_PROPERTIES]: { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'texteditor', appIcon: 'text_file.png' },
                                                     { isDefault: false, appName: 'codeeditor', appIcon: 'code_file.png' }] },
-			'.log': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'texteditor', appIcon: 'text_file.png' },
+			[Constants.KNOWN_FILE_EXTENSION_LOG]: { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'texteditor', appIcon: 'text_file.png' },
                                                     { isDefault: false, appName: 'codeeditor', appIcon: 'code_file.png' }] },
-			'.md': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'markdownviewer', appIcon: 'markdown_file.png' },
+			[Constants.KNOWN_FILE_EXTENSION_MD]: { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'markdownviewer', appIcon: 'markdown_file.png' },
                                                     { isDefault: false, appName: 'codeeditor', appIcon: 'code_file.png' }] },
-			'.jsdos': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'jsdos', appIcon: 'js-dos_file.png' }] },
-			'.swf': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'ruffle', appIcon: 'swf_file.png' }] },
-			'.pdf': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'pdfviewer', appIcon: 'pdf_file.png' }] },
-            '.zip': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'fileexplorer', appIcon: 'zip_file.png' }] },
-            '.ssvr': { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'screensaverviewer', appIcon: 'scrn_saver.png' }, 
+			[Constants.KNOWN_FILE_EXTENSION_JSDOS]: { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'jsdos', appIcon: 'js-dos_file.png' }] },
+			[Constants.KNOWN_FILE_EXTENSION_SWF]: { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'ruffle', appIcon: 'swf_file.png' }] },
+			[Constants.KNOWN_FILE_EXTENSION_PDF]: { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'pdfviewer', appIcon: 'pdf_file.png' }] },
+            [Constants.KNOWN_FILE_EXTENSION_ZIP]: { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'fileexplorer', appIcon: 'zip_file.png' }] },
+            [Constants.KNOWN_FILE_EXTENSION_SSVR]: { fileType: cleanedExt, apps: [{ isDefault: true, appName: 'screensaverviewer', appIcon: 'scrn_saver.png' }, 
                                                     { isDefault: false, appName: 'codeeditor', appIcon: 'code_file.png' }] },
 		};
 

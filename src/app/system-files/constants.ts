@@ -309,127 +309,249 @@ export namespace Constants{
     export const DEFAULT_SHOW_KNOWN_FILE_TYPES_VALUE = TRUE;
 
 
+
+    export const IMAGE_EXTENSION_JPG = '.jpg'
+    export const IMAGE_EXTENSION_PNG = '.png'
+    export const IMAGE_EXTENSION_AVIF = '.avif'
+    export const IMAGE_EXTENSION_BMP = '.bmp'
+    export const IMAGE_EXTENSION_ICO = '.ico'
+    export const IMAGE_EXTENSION_JPEG = '.jpeg'
+    export const IMAGE_EXTENSION_TIFF = '.tiff'
+    export const IMAGE_EXTENSION_TIF = '.tif'
+    export const IMAGE_EXTENSION_SVG = '.svg'
+    export const IMAGE_EXTENSION_WEBP = '.webp'
+    export const IMAGE_EXTENSION_JXL = '.jxl'
+    export const IMAGE_EXTENSION_GIF = '.gif'
+
     export const IMAGE_FILE_EXTENSIONS = [
-        '.jpg',
-        '.png',
-        '.avif',
-        '.bmp',
-        '.ico',
-        '.jpeg',
-        '.tiff',
-        '.tif',
-        '.svg',
-        '.webp',
-        '.xlm',
-        '.gif'
+        IMAGE_EXTENSION_JPG,
+        IMAGE_EXTENSION_PNG,
+        IMAGE_EXTENSION_AVIF,
+        IMAGE_EXTENSION_BMP,
+        IMAGE_EXTENSION_ICO,
+        IMAGE_EXTENSION_JPEG,
+        IMAGE_EXTENSION_TIFF,
+        IMAGE_EXTENSION_TIF,
+        IMAGE_EXTENSION_SVG,
+        IMAGE_EXTENSION_WEBP,
+        IMAGE_EXTENSION_JXL,
+        IMAGE_EXTENSION_GIF
     ]
+
+
+    export const VIDEO_EXTENSION_MP4 = '.mp4'
+    export const VIDEO_EXTENSION_WEBM = '.webm'
+    export const VIDEO_EXTENSION_OGG = '.ogg'
+    export const VIDEO_EXTENSION_MKV = '.mkv'
 
     export const VIDEO_FILE_EXTENSIONS = [
-        '.mp4',
-        '.webm',
-        '.ogg',
-        '.mkv'
+        VIDEO_EXTENSION_MP4,
+        VIDEO_EXTENSION_WEBM,
+        VIDEO_EXTENSION_OGG,
+        VIDEO_EXTENSION_MKV
     ]
+
+
+    export const AUDIO_EXTENSION_MP3 = '.mp3'
+    export const AUDIO_EXTENSION_FLAC = '.flac'
+    export const AUDIO_EXTENSION_AAC = '.aac'
+    export const AUDIO_EXTENSION_DOLBY = '.dolby'
+    export const AUDIO_EXTENSION_MPEG = '.mpeg'
+    export const AUDIO_EXTENSION_OPUS = '.opus'
+    export const AUDIO_EXTENSION_M4A = '.m4a'
+    export const AUDIO_EXTENSION_OGG = '.ogg'
+    export const AUDIO_EXTENSION_OGA = '.oga'
+    export const AUDIO_EXTENSION_WAV = '.wav'
+    export const AUDIO_EXTENSION_CAF = '.caf'
+    export const AUDIO_EXTENSION_WEBA = '.weba'
+    export const AUDIO_EXTENSION_WEBM = '.webm'
 
     export const AUDIO_FILE_EXTENSIONS = [
-        '.mp3',
-        '.flac',
-        '.aac',
-        '.dolby',
-        '.mpeg',
-        '.opus',
-        '.m4a',
-        '.ogg',
-        '.oga',
-        '.wav',
-        '.caf',
-        '.weba',
-        '.webm'
+        AUDIO_EXTENSION_MP3,
+        AUDIO_EXTENSION_FLAC,
+        AUDIO_EXTENSION_AAC,
+        AUDIO_EXTENSION_DOLBY,
+        AUDIO_EXTENSION_MPEG,
+        AUDIO_EXTENSION_OPUS,
+        AUDIO_EXTENSION_M4A,
+        AUDIO_EXTENSION_OGG,
+        AUDIO_EXTENSION_OGA,
+        AUDIO_EXTENSION_WAV,
+        AUDIO_EXTENSION_CAF,
+        AUDIO_EXTENSION_WEBA,
+        AUDIO_EXTENSION_WEBM
     ]
 
-    export const PROGRAMING_LANGUAGE_FILE_EXTENSIONS = [
-        '.js',
-        '.js.map',
-        '.map',
-        '.mjs',
-        '.ts',
-        '.cs',
-        '.java',
-        '.py',
-        '.c',
-        '.cpp',
-        '.html'
+    export const PROGRAMMING_LANGUAGE_EXTENSION_JS = '.js'
+    export const PROGRAMMING_LANGUAGE_EXTENSION_JS_MAP = '.js.map'
+    export const PROGRAMMING_LANGUAGE_EXTENSION_MAP = '.map'
+    export const PROGRAMMING_LANGUAGE_EXTENSION_MJS = '.mjs'
+    export const PROGRAMMING_LANGUAGE_EXTENSION_TS = '.ts'
+    export const PROGRAMMING_LANGUAGE_EXTENSION_CS = '.cs'
+    export const PROGRAMMING_LANGUAGE_EXTENSION_JAVA = '.java'
+    export const PROGRAMMING_LANGUAGE_EXTENSION_PY = '.py'
+    export const PROGRAMMING_LANGUAGE_EXTENSION_C = '.c'
+    export const PROGRAMMING_LANGUAGE_EXTENSION_CPP = '.cpp'
+    export const PROGRAMMING_LANGUAGE_EXTENSION_HTML = '.html'
+
+    export const PROGRAMMING_LANGUAGE_FILE_EXTENSIONS = [
+        PROGRAMMING_LANGUAGE_EXTENSION_JS,
+        PROGRAMMING_LANGUAGE_EXTENSION_JS_MAP,
+        PROGRAMMING_LANGUAGE_EXTENSION_MAP,
+        PROGRAMMING_LANGUAGE_EXTENSION_MJS,
+        PROGRAMMING_LANGUAGE_EXTENSION_TS,
+        PROGRAMMING_LANGUAGE_EXTENSION_CS,
+        PROGRAMMING_LANGUAGE_EXTENSION_JAVA,
+        PROGRAMMING_LANGUAGE_EXTENSION_PY,
+        PROGRAMMING_LANGUAGE_EXTENSION_C,
+        PROGRAMMING_LANGUAGE_EXTENSION_CPP,
+        PROGRAMMING_LANGUAGE_EXTENSION_HTML
     ]
+
+    export const KNOWN_FILE_EXTENSION_WASM = '.wasm'
+    export const KNOWN_FILE_EXTENSION_TXT = '.txt'
+    export const KNOWN_FILE_EXTENSION_PROPERTIES = '.properties'
+    export const KNOWN_FILE_EXTENSION_LOG = '.log'
+    export const KNOWN_FILE_EXTENSION_MD = '.md'
+    export const KNOWN_FILE_EXTENSION_JSDOS = '.jsdos'
+    export const KNOWN_FILE_EXTENSION_SWF = '.swf'
+    export const KNOWN_FILE_EXTENSION_PDF = '.pdf'
+    export const KNOWN_FILE_EXTENSION_ZIP = '.zip'
+    export const KNOWN_FILE_EXTENSION_SSVR = '.ssvr'
+    export const KNOWN_FILE_EXTENSION_XLM = '.xlm'
+    export const KNOWN_FILE_EXTENSION_URL = '.url'
+    export const KNOWN_FILE_EXTENSION_CAB = '.cab'
 
     export const KNOWN_FILE_EXTENSIONS = [
-        '.wasm',
-        '.txt',
-        '.properties',
-        '.log',
-        '.md',
-        '.jsdos',
-        '.swf',
-        '.pdf',
-        '.zip',
-        '.ssvr'
+        KNOWN_FILE_EXTENSION_WASM,
+        KNOWN_FILE_EXTENSION_TXT,
+        KNOWN_FILE_EXTENSION_PROPERTIES,
+        KNOWN_FILE_EXTENSION_LOG,
+        KNOWN_FILE_EXTENSION_MD,
+        KNOWN_FILE_EXTENSION_JSDOS,
+        KNOWN_FILE_EXTENSION_SWF,
+        KNOWN_FILE_EXTENSION_PDF,
+        KNOWN_FILE_EXTENSION_ZIP,
+        KNOWN_FILE_EXTENSION_SSVR,
+        KNOWN_FILE_EXTENSION_XLM
     ]
 
     export const FILE_EXTENSION_MAP = [
-        ['.url','Shortcut File'],
-        ['.txt','Text Document'],   
-        ['.log','Log File'],
-        ['.wasm','WASM File'],
-        ['.properties','Properties File '],
-        ['.md','MarkDown File'],
-        ['.swf','Small Web Format'],
-        ['.jsdos','JSDos File'],
-        ['.pdf','PDF File'],
-        ['.ssvr','Screen Saver File'],
-        ['.jpg',  'JPEG File'],
-        ['.png',  'PNG File'],
-        ['.avif', 'AV1 Image File Format'],
-        ['.bmp', 'Bitmap Image File'],
-        ['.ico',  'Icon File'],
-        ['.jpeg', 'JPEG File'],
-        ['.tiff', 'Tagged Image File Format'],
-        ['.tif', 'Tagged Image File Format'],
-        ['.svg',  'SVG Files'],
-        ['.webp', 'WebP Image File'],
-        ['.xlm', 'Microsoft Excel Macro'],
+        [KNOWN_FILE_EXTENSION_URL, 'Shortcut File'],
+        [KNOWN_FILE_EXTENSION_TXT, 'Text Document'],
+        [KNOWN_FILE_EXTENSION_LOG, 'Log File'],
+        [KNOWN_FILE_EXTENSION_WASM, 'WASM File'],
+        [KNOWN_FILE_EXTENSION_PROPERTIES, 'Properties File '],
+        [KNOWN_FILE_EXTENSION_MD, 'MarkDown File'],
+        [KNOWN_FILE_EXTENSION_SWF, 'Small Web Format'],
+        [KNOWN_FILE_EXTENSION_JSDOS, 'JSDos File'],
+        [KNOWN_FILE_EXTENSION_PDF, 'PDF File'],
+        [KNOWN_FILE_EXTENSION_SSVR, 'Screen Saver File'],
+        [KNOWN_FILE_EXTENSION_XLM, 'Microsoft Excel Macro'], 
 
-        ['.mp3', 'MP3 Audio File'],
-        ['.flac', 'FLAC File'],
-        ['.aac', 'AAC File'],
-        ['.dolby', 'Dolby Digital File'],
-        ['.mpeg', 'MPEG Video File'],
-        ['.opus', 'Opus Audio File'],
-        ['.m4a', 'MPEG-4 Audio File'],
-        ['.ogg', 'Ogg Vorbis File'],
-        ['.oga', 'Ogg Vorbis Audio File'],
-        ['.wav', 'WAV File'],
-        ['.caf', 'CAF File'],
-        ['.weba', 'WebM Audio File'],
-        ['.webm', 'WebM Video File'],
+        [IMAGE_EXTENSION_JPG, 'JPEG File'],
+        [IMAGE_EXTENSION_PNG, 'PNG File'],
+        [IMAGE_EXTENSION_AVIF, 'AV1 Image File Format'],
+        [IMAGE_EXTENSION_BMP, 'Bitmap Image File'],
+        [IMAGE_EXTENSION_ICO, 'Icon File'],
+        [IMAGE_EXTENSION_JPEG, 'JPEG File'],
+        [IMAGE_EXTENSION_TIFF, 'Tagged Image File Format'],
+        [IMAGE_EXTENSION_TIF, 'Tagged Image File Format'],
+        [IMAGE_EXTENSION_SVG, 'SVG Files'],
+        [IMAGE_EXTENSION_WEBP, 'WebP Image File'],
+        [IMAGE_EXTENSION_JXL, 'JPEG XL'],
 
-        ['.mp4', 'MP4 Video File'],
-        ['.webm', 'WebM Video File'],
-        ['.mkv', 'Matroska Video File'],
+        [AUDIO_EXTENSION_MP3, 'MP3 Audio File'],
+        [AUDIO_EXTENSION_FLAC, 'FLAC File'],
+        [AUDIO_EXTENSION_AAC, 'AAC File'],
+        [AUDIO_EXTENSION_DOLBY, 'Dolby Digital File'],
+        [AUDIO_EXTENSION_MPEG, 'MPEG Video File'],
+        [AUDIO_EXTENSION_OPUS, 'Opus Audio File'],
+        [AUDIO_EXTENSION_M4A, 'MPEG-4 Audio File'],
+        [AUDIO_EXTENSION_OGG, 'Ogg Vorbis File'],
+        [AUDIO_EXTENSION_OGA, 'Ogg Vorbis Audio File'],
+        [AUDIO_EXTENSION_WAV, 'WAV File'],
+        [AUDIO_EXTENSION_CAF, 'CAF File'],
+        [AUDIO_EXTENSION_WEBA, 'WebM Audio File'],
+        [AUDIO_EXTENSION_WEBM, 'WebM Video File'],
 
-        ['.js', 'JS File'],
-        ['.js.map', 'JS Map File'],
-        ['.map', ' Map'],
-        ['.mjs', 'JS Module File'],
-        ['.ts', 'TS File'],
-        ['.cs', 'C# File'],
-        ['.java', 'Java File'],
-        ['.py', 'Python File'],
-        ['.c', 'C File'],
-        ['.cpp', 'C++ File'],
-        ['.html', 'HTML File'],
-        ['.zip', 'Compressed (zipped) Folder'],
-        ['.cab', 'CAB File']
+        [VIDEO_EXTENSION_MP4, 'MP4 Video File'],
+        [VIDEO_EXTENSION_WEBM, 'WebM Video File'],
+        [VIDEO_EXTENSION_MKV, 'Matroska Video File'],
 
+        [PROGRAMMING_LANGUAGE_EXTENSION_JS, 'JS File'],
+        [PROGRAMMING_LANGUAGE_EXTENSION_JS_MAP, 'JS Map File'],
+        [PROGRAMMING_LANGUAGE_EXTENSION_MAP, ' Map'],
+        [PROGRAMMING_LANGUAGE_EXTENSION_MJS, 'JS Module File'],
+        [PROGRAMMING_LANGUAGE_EXTENSION_TS, 'TS File'],
+        [PROGRAMMING_LANGUAGE_EXTENSION_CS, 'C# File'],
+        [PROGRAMMING_LANGUAGE_EXTENSION_JAVA, 'Java File'],
+        [PROGRAMMING_LANGUAGE_EXTENSION_PY, 'Python File'],
+        [PROGRAMMING_LANGUAGE_EXTENSION_C, 'C File'],
+        [PROGRAMMING_LANGUAGE_EXTENSION_CPP, 'C++ File'],
+        [PROGRAMMING_LANGUAGE_EXTENSION_HTML, 'HTML File'],
+
+        [KNOWN_FILE_EXTENSION_ZIP, 'Compressed (zipped) Folder'],
+        [KNOWN_FILE_EXTENSION_CAB, 'CAB File']
     ]
+
+
+
+    // export const FILE_EXTENSION_MAP = [
+    //     ['.url','Shortcut File'],
+    //     ['.txt','Text Document'],   
+    //     ['.log','Log File'],
+    //     ['.wasm','WASM File'],
+    //     ['.properties','Properties File '],
+    //     ['.md','MarkDown File'],
+    //     ['.swf','Small Web Format'],
+    //     ['.jsdos','JSDos File'],
+    //     ['.pdf','PDF File'],
+    //     ['.ssvr','Screen Saver File'],
+    //     ['.jpg',  'JPEG File'],
+    //     ['.png',  'PNG File'],
+    //     ['.avif', 'AV1 Image File Format'],
+    //     ['.bmp', 'Bitmap Image File'],
+    //     ['.ico',  'Icon File'],
+    //     ['.jpeg', 'JPEG File'],
+    //     ['.tiff', 'Tagged Image File Format'],
+    //     ['.tif', 'Tagged Image File Format'],
+    //     ['.svg',  'SVG Files'],
+    //     ['.webp', 'WebP Image File'],
+    //     ['.xlm', 'Microsoft Excel Macro'],
+
+    //     ['.mp3', 'MP3 Audio File'],
+    //     ['.flac', 'FLAC File'],
+    //     ['.aac', 'AAC File'],
+    //     ['.dolby', 'Dolby Digital File'],
+    //     ['.mpeg', 'MPEG Video File'],
+    //     ['.opus', 'Opus Audio File'],
+    //     ['.m4a', 'MPEG-4 Audio File'],
+    //     ['.ogg', 'Ogg Vorbis File'],
+    //     ['.oga', 'Ogg Vorbis Audio File'],
+    //     ['.wav', 'WAV File'],
+    //     ['.caf', 'CAF File'],
+    //     ['.weba', 'WebM Audio File'],
+    //     ['.webm', 'WebM Video File'],
+
+    //     ['.mp4', 'MP4 Video File'],
+    //     ['.webm', 'WebM Video File'],
+    //     ['.mkv', 'Matroska Video File'],
+
+    //     ['.js', 'JS File'],
+    //     ['.js.map', 'JS Map File'],
+    //     ['.map', ' Map'],
+    //     ['.mjs', 'JS Module File'],
+    //     ['.ts', 'TS File'],
+    //     ['.cs', 'C# File'],
+    //     ['.java', 'Java File'],
+    //     ['.py', 'Python File'],
+    //     ['.c', 'C File'],
+    //     ['.cpp', 'C++ File'],
+    //     ['.html', 'HTML File'],
+    //     ['.zip', 'Compressed (zipped) Folder'],
+    //     ['.cab', 'CAB File']
+    // ]
 
     export const LOCKSCREEN_DESKTOP_COLORS =[
         '#fe8d00', '#e91022', '#d13337', '#c30052', '#bf0077', '#9a0088', '#871499', '#754caa',
